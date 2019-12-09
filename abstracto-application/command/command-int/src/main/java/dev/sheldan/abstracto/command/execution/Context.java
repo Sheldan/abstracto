@@ -1,0 +1,18 @@
+package dev.sheldan.abstracto.command.execution;
+
+import lombok.Builder;
+import lombok.Getter;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
+
+@Builder
+@Getter
+public class Context {
+    private TextChannel channel;
+    private User author;
+    private Message message;
+    private Parameters parameters;
+    private JDA jda;
+}
