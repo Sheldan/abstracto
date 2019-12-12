@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.service;
+package dev.sheldan.abstracto.core.service;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

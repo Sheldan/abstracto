@@ -1,13 +1,15 @@
-package dev.sheldan.abstracto.models;
+package dev.sheldan.abstracto.core.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table
+@Table(name="channelGroup")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ChannelGroup {
 
     @Id
@@ -25,7 +27,7 @@ public class ChannelGroup {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "channel_id"))
     @Getter
-    private Set<Channel> channels;
+    private Set<AChannel> channels;
 
 
 }

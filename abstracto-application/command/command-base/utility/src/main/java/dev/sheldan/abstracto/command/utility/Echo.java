@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.command.utility;
 
 import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.HelpInfo;
 import dev.sheldan.abstracto.command.execution.Configuration;
 import dev.sheldan.abstracto.command.execution.Context;
 import dev.sheldan.abstracto.command.execution.Parameter;
@@ -27,12 +28,14 @@ public class Echo implements Command {
     public Configuration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("input").type(String.class).remainder(true).build());
+        HelpInfo helpInfo = HelpInfo.builder().usage("echo <text>").longHelp("Echos back the text put in").build();
         return Configuration.builder()
                 .name("echo")
                 .module("utility")
                 .description("Echos the input back to the same channel")
                 .causesReaction(false)
                 .parameters(parameters)
+                .help(helpInfo)
                 .build();
     }
 }

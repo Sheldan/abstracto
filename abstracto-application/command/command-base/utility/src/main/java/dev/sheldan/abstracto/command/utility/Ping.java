@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.command.utility;
 
 import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.Module;
 import dev.sheldan.abstracto.command.execution.Configuration;
 import dev.sheldan.abstracto.command.execution.Context;
 import dev.sheldan.abstracto.command.execution.Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,4 +27,5 @@ public class Ping implements Command {
                 .causesReaction(false)
                 .build();
     }
+
 }

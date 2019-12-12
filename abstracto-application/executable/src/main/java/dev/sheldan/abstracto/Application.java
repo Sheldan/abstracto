@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto;
 
-import dev.sheldan.abstracto.service.StartupManager;
+import dev.sheldan.abstracto.core.service.Startup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -9,12 +9,12 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "dev.sheldan.abstracto")
+@ComponentScan(basePackages = {"dev.sheldan.abstracto"})
 @EnableCaching
 public class Application implements CommandLineRunner {
 
     @Autowired
-    private StartupManager startup;
+    private Startup startup;
 
 
     public static void main(String[] args) {

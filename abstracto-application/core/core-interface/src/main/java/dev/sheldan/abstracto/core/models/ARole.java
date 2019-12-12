@@ -1,7 +1,6 @@
-package dev.sheldan.abstracto.models;
+package dev.sheldan.abstracto.core.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,11 +8,14 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table
-public class Role {
+@Table(name="role")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ARole implements SnowFlake {
 
     @Id
-    @Getter
+    @Getter @Setter
     private Long id;
 
     @Column(unique = true)

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.commands.management;
 
 import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.Module;
 import dev.sheldan.abstracto.command.execution.Configuration;
 import dev.sheldan.abstracto.command.execution.Parameter;
 import dev.sheldan.abstracto.command.meta.CommandRegistry;
@@ -9,6 +10,7 @@ import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +26,7 @@ public class CommandManager implements CommandRegistry {
             Configuration configuration = o.getConfiguration();
             boolean parameterFit;
             if(configuration.getParameters() != null){
-                boolean paramCountFits = unParsedCommandParameter.getParameters().size() - 1 == configuration.getParameters().size();
+                boolean paramCountFits = unParsedCommandParameter.getParameters().size() >= configuration.getNecessaryParameterCount();
                 boolean hasRemainderParameter = configuration.getParameters().stream().anyMatch(Parameter::isRemainder);
                 parameterFit = paramCountFits || hasRemainderParameter;
             } else {
@@ -51,6 +53,17 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public List<Command> getAllCommands() {
+        return commands;
+    }
+
+    @Override
+    public List<Command> getAllCommandsFromModule(Module module) {
+        List<Command> commands = new ArrayList<>();
+        this.getAllCommands().forEach(command -> {
+            if(command.getConfiguration().getModule().equals(module.getInfo().getName())){
+                commands.add(command);
+            }
+        });
         return commands;
     }
 

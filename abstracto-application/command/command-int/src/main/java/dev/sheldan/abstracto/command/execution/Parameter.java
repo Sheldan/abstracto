@@ -8,6 +8,7 @@ import lombok.Setter;
 public class Parameter {
     private String name;
     private Class type;
+    private String description;
     private boolean optional;
     private boolean remainder;
 }
