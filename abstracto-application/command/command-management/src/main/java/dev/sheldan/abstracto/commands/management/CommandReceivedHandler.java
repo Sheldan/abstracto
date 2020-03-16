@@ -42,6 +42,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
         Context context = Context.builder()
                 .author(event.getAuthor())
+                .guild(event.getGuild())
                 .channel(event.getTextChannel())
                 .message(event.getMessage())
                 .parameters(parsedParameters)

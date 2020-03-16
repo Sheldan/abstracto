@@ -5,31 +5,31 @@ import dev.sheldan.abstracto.command.execution.Configuration;
 import dev.sheldan.abstracto.command.execution.Context;
 import dev.sheldan.abstracto.command.execution.Parameter;
 import dev.sheldan.abstracto.command.execution.Result;
-import dev.sheldan.abstracto.core.models.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class PostTarget implements Command {
+public class SetPostTargetCommand implements Command {
 
     @Autowired
-    private PostTargetService service;
+    private PostTargetService postTargetService;
 
     @Autowired
     private ChannelService channelService;
 
     @Override
+    @Transactional
     public Result execute(Context context) {
         GuildChannel channel = (GuildChannel) context.getParameters().getParameters().get(1);
         String targetName = (String) context.getParameters().getParameters().get(0);
-        AChannel dbChannel = channelService.loadChannel(channel.getIdLong());
-        service.createOrUpdate(targetName, dbChannel);
+        postTargetService.createOrUpdate(targetName, channel.getIdLong(), channel.getGuild().getIdLong());
         return Result.fromSuccess();
     }
 

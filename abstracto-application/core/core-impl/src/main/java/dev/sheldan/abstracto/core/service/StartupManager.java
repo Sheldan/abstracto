@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.AChannel;
 import dev.sheldan.abstracto.core.models.AChannelType;
 import dev.sheldan.abstracto.core.models.ARole;
 import dev.sheldan.abstracto.core.models.AServer;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
@@ -19,6 +20,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class StartupManager implements Startup {
 
@@ -47,7 +49,9 @@ public class StartupManager implements Startup {
     @Override
     @Transactional
     public void synchronize() {
+        log.info("Synchronizing servers.");
         synchronizeServers();
+        log.info("Done synchronizing servers");
     }
 
     private void synchronizeServers(){
@@ -57,6 +61,7 @@ public class StartupManager implements Startup {
         availableServers.forEach(aLong -> {
             AServer newAServer = serverService.createServer(aLong);
             Guild newGuild = instance.getGuildById(aLong);
+            log.debug("Synchronizing server: {}", aLong);
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
@@ -73,6 +78,7 @@ public class StartupManager implements Startup {
         Set<Long> newRoles = SetUtils.disjunction(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
             ARole newRole = roleService.createRole(aLong);
+            log.debug("Adding new role: {}", aLong);
             existingAServer.getRoles().add(newRole);
         });
     }
@@ -85,6 +91,7 @@ public class StartupManager implements Startup {
         Set<Long> newChannels = SetUtils.disjunction(existingChannelsIds, knownChannelsIds);
         newChannels.forEach(aLong -> {
             GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
+            log.debug("Adding new channel: {}", aLong);
             AChannelType type = AChannel.getAChannelType(channel1.getType());
             AChannel newChannel = channelService.createChannel(channel1.getIdLong(), type);
             serverService.addChannelToServer(existingServer, newChannel);

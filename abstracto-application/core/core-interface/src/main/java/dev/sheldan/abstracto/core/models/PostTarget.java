@@ -23,12 +23,18 @@ public class PostTarget {
     @Getter
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
     @Getter @Setter
-    private AChannel AChannel;
+    private AChannel channelReference;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="server_id", nullable = false)
+    @Getter @Setter
+    private AServer serverReference;
 
     public static String JOIN_LOG = "joinlog";
+    public static String LEAVE_LOG = "leavelog";
 
-    public static List<String> AVAILABLE_POST_TARGETS = Arrays.asList(JOIN_LOG);
+    public static List<String> AVAILABLE_POST_TARGETS = Arrays.asList(JOIN_LOG, LEAVE_LOG);
 }

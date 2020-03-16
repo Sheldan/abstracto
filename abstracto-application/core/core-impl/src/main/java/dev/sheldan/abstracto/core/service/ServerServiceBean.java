@@ -15,11 +15,19 @@ public class ServerServiceBean implements ServerService {
     private ServerRepository repository;
 
     @Override
+    @Transactional
     public AServer createServer(Long id) {
         return repository.save(AServer.builder().id(id).build());
     }
 
     @Override
+    @Transactional
+    public AServer loadServer(Long id) {
+        return repository.getOne(id);
+    }
+
+    @Override
+    @Transactional
     public void addChannelToServer(AServer server, AChannel channel) {
         server.getChannels().add(channel);
     }

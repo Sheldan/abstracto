@@ -1,0 +1,1 @@
+User ${user.name}#${user.discriminator} (${userMention}) has left the guild.

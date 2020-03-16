@@ -29,6 +29,12 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>dev.sheldan.abstracto.templating</groupId>
+            <artifactId>templating-interface</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
 

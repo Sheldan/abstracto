@@ -18,6 +18,7 @@
         <module>command</module>
         <module>core</module>
         <module>executable</module>
+        <module>templating</module>
     </modules>
 
 
@@ -38,6 +39,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.9</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
