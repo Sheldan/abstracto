@@ -18,12 +18,7 @@ public class DatabaseTemplateLoader implements TemplateLoader {
 
     @Override
     public Object findTemplateSource(String s) throws IOException {
-        TemplateDto templateDtoByKey = templateService.getTemplateByKey(s);
-        if(templateDtoByKey != null){
-            return templateDtoByKey;
-        } else {
-            return null;
-        }
+        return templateService.getTemplateByKey(s);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package dev.sheldan.abstracto.core.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.dv8tion.jda.api.entities.ChannelType;
 
 import javax.persistence.*;
@@ -23,6 +20,10 @@ public class AChannel implements SnowFlake {
     @Getter
     @ManyToMany(mappedBy = "channels")
     private Set<ChannelGroup> groups;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Getter @Setter
+    private AServer server;
 
     @Getter
     @Enumerated(EnumType.STRING)

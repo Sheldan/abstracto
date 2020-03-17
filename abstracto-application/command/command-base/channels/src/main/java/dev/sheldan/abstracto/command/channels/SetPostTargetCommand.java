@@ -2,11 +2,11 @@ package dev.sheldan.abstracto.command.channels;
 
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.execution.Configuration;
-import dev.sheldan.abstracto.command.execution.Context;
+import dev.sheldan.abstracto.command.execution.CommandContext;
 import dev.sheldan.abstracto.command.execution.Parameter;
 import dev.sheldan.abstracto.command.execution.Result;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,17 +19,17 @@ import java.util.List;
 public class SetPostTargetCommand implements Command {
 
     @Autowired
-    private PostTargetService postTargetService;
+    private PostTargetManagement postTargetManagement;
 
     @Autowired
-    private ChannelService channelService;
+    private ChannelManagementService channelManagementService;
 
     @Override
     @Transactional
-    public Result execute(Context context) {
-        GuildChannel channel = (GuildChannel) context.getParameters().getParameters().get(1);
-        String targetName = (String) context.getParameters().getParameters().get(0);
-        postTargetService.createOrUpdate(targetName, channel.getIdLong(), channel.getGuild().getIdLong());
+    public Result execute(CommandContext commandContext) {
+        GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
+        String targetName = (String) commandContext.getParameters().getParameters().get(0);
+        postTargetManagement.createOrUpdate(targetName, channel.getIdLong(), channel.getGuild().getIdLong());
         return Result.fromSuccess();
     }
 

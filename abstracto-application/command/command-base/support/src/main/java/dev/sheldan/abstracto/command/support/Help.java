@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 
 @Service
@@ -23,10 +21,10 @@ public class Help implements Command {
     private ModuleRegistry registry;
 
     @Override
-    public Result execute(Context context) {
+    public Result execute(CommandContext commandContext) {
         CommandHierarchy commandStructure = registry.getDetailedModules();
         StringBuilder sb = new StringBuilder();
-        if(context.getParameters().getParameters().isEmpty()){
+        if(commandContext.getParameters().getParameters().isEmpty()){
             sb.append("Help | Module overview \n");
             sb.append("```");
             commandStructure.getRootModules().forEach(packedModule -> {
@@ -35,7 +33,7 @@ public class Help implements Command {
             });
             sb.append("```");
         } else {
-            String parameterValue = context.getParameters().getParameters().get(0).toString();
+            String parameterValue = commandContext.getParameters().getParameters().get(0).toString();
             PackedModule module = commandStructure.getModuleWithName(parameterValue);
             if(module != null){
                 sb.append("Help | Module overview \n");
@@ -53,7 +51,7 @@ public class Help implements Command {
             }
         }
 
-        context.getChannel().sendMessage(sb.toString()).queue();
+        commandContext.getChannel().sendMessage(sb.toString()).queue();
         return Result.fromSuccess();
     }
 

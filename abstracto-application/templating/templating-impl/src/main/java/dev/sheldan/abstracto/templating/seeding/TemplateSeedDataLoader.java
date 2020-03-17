@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.templating.seeddata;
+package dev.sheldan.abstracto.templating.seeding;
 
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.apache.commons.io.FilenameUtils;

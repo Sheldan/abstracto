@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.templating.TemplateDto;
 import dev.sheldan.abstracto.templating.TemplateService;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
 
+@Slf4j
 @Component
 public class TemplateServiceBean implements TemplateService {
 
@@ -37,10 +39,18 @@ public class TemplateServiceBean implements TemplateService {
     public String renderTemplate(String key, HashMap<String, Object> parameters) {
         try {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), parameters);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TemplateException e) {
-            e.printStackTrace();
+        } catch (IOException | TemplateException e) {
+            log.warn("Failed to render template: {}", e.getMessage());
+        }
+        return "";
+    }
+
+    @Override
+    public String renderTemplate(String key, Object model) {
+        try {
+            return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), model);
+        } catch (IOException | TemplateException e) {
+            log.warn("Failed to render template: {}", e.getMessage());
         }
         return "";
     }

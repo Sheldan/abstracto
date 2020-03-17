@@ -2,12 +2,12 @@ package dev.sheldan.abstracto.commands.management;
 
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.PostCommandExecution;
-import dev.sheldan.abstracto.command.execution.Context;
-import dev.sheldan.abstracto.command.execution.Parameter;
-import dev.sheldan.abstracto.command.execution.Parameters;
-import dev.sheldan.abstracto.command.execution.Result;
+import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
-import net.dv8tion.jda.api.entities.Guild;
+import dev.sheldan.abstracto.core.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.management.ServerManagementService;
+import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.AServer;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -29,6 +29,12 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private PostCommandExecution execution;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if(!manager.isCommand(event.getMessage())) {
@@ -40,16 +46,23 @@ public class CommandReceivedHandler extends ListenerAdapter {
         String withoutPrefix = parameters.get(0).substring(1);
         Command foundCommand = manager.findCommandByParameters(withoutPrefix, unparsedParameter);
         Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
-        Context context = Context.builder()
+        CommandContext commandContext = CommandContext.builder()
                 .author(event.getAuthor())
                 .guild(event.getGuild())
                 .channel(event.getTextChannel())
                 .message(event.getMessage())
                 .parameters(parsedParameters)
                 .jda(event.getJDA())
+                .commandTemplateContext(buildTemplateParameter(event))
                 .build();
-        Result result = foundCommand.execute(context);
-        execution.execute(context, result, foundCommand);
+        Result result = foundCommand.execute(commandContext);
+        execution.execute(commandContext, result, foundCommand);
+    }
+
+    private CommandTemplateContext buildTemplateParameter(MessageReceivedEvent event) {
+        AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
+        AServer server = serverManagementService.loadServer(event.getGuild().getIdLong());
+        return CommandTemplateContext.builder().channel(channel).server(server).build();
     }
 
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){

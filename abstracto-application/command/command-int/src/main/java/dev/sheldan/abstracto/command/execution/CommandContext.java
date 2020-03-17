@@ -10,11 +10,12 @@ import net.dv8tion.jda.api.entities.User;
 
 @Builder
 @Getter
-public class Context {
+public class CommandContext {
     private TextChannel channel;
     private Guild guild;
     private User author;
     private Message message;
+    private CommandTemplateContext commandTemplateContext;
     private Parameters parameters;
     private JDA jda;
 }

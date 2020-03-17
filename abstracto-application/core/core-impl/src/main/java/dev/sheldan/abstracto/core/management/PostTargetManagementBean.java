@@ -1,28 +1,29 @@
-package dev.sheldan.abstracto.core.service;
+package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.commands.management.PostTargetException;
+import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.models.AChannel;
 import dev.sheldan.abstracto.core.models.AServer;
 import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.management.PostTargetManagement;
+import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.repository.PostTargetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 @Service
 @Slf4j
-public class PostTargetServiceServiceBean implements PostTargetService {
+public class PostTargetManagementBean implements PostTargetManagement {
     @Autowired
     private PostTargetRepository postTargetRepository;
 
     @Autowired
-    private ChannelService channelService;
+    private ChannelManagementService channelManagementService;
 
     @Autowired
-    private ServerService serverService;
+    private ServerManagementService serverManagementService;
 
     @Override
     public void createPostTarget(String name, AChannel targetChannel, AServer server) {
@@ -45,14 +46,14 @@ public class PostTargetServiceServiceBean implements PostTargetService {
 
     @Override
     public void createOrUpdate(String name, Long channelId, AServer server) {
-        AChannel dbChannel = channelService.loadChannel(channelId);
+        AChannel dbChannel = channelManagementService.loadChannel(channelId);
         createOrUpdate(name, dbChannel, server);
     }
 
     @Override
     public void createOrUpdate(String name, Long channelId, Long serverId) {
-        AChannel dbChannel = channelService.loadChannel(channelId);
-        AServer dbServer = serverService.loadServer(serverId);
+        AChannel dbChannel = channelManagementService.loadChannel(channelId);
+        AServer dbServer = serverManagementService.loadServer(serverId);
         createOrUpdate(name, dbChannel, dbServer);
     }
 
@@ -60,6 +61,12 @@ public class PostTargetServiceServiceBean implements PostTargetService {
     @Cacheable("posttargets")
     public PostTarget getPostTarget(String name, AServer server) {
         return postTargetRepository.findPostTargetByName(name);
+    }
+
+    @Override
+    public PostTarget getPostTarget(String name, Long serverId) {
+        AServer server = serverManagementService.loadServer(serverId);
+        return getPostTarget(name, server);
     }
 
     @Override

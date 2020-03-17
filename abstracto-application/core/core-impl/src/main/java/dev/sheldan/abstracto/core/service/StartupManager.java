@@ -1,6 +1,9 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.SnowflakeUtils;
+import dev.sheldan.abstracto.core.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.management.RoleManagementService;
+import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.AChannel;
 import dev.sheldan.abstracto.core.models.AChannelType;
 import dev.sheldan.abstracto.core.models.ARole;
@@ -31,13 +34,13 @@ public class StartupManager implements Startup {
     private List<? extends  ListenerAdapter> listeners;
 
     @Autowired
-    private ServerService serverService;
+    private ServerManagementService serverManagementService;
 
     @Autowired
-    private ChannelService channelService;
+    private ChannelManagementService channelManagementService;
 
     @Autowired
-    private RoleService roleService;
+    private RoleManagementService roleManagementService;
 
 
     @Override
@@ -59,7 +62,7 @@ public class StartupManager implements Startup {
         List<Guild> onlineGuilds = instance.getGuilds();
         Set<Long> availableServers = SnowflakeUtils.getSnowflakeIds(onlineGuilds);
         availableServers.forEach(aLong -> {
-            AServer newAServer = serverService.createServer(aLong);
+            AServer newAServer = serverManagementService.createServer(aLong);
             Guild newGuild = instance.getGuildById(aLong);
             log.debug("Synchronizing server: {}", aLong);
             if(newGuild != null){
@@ -77,7 +80,7 @@ public class StartupManager implements Startup {
         Set<Long> availableRoles = SnowflakeUtils.getSnowflakeIds(existingRoles);
         Set<Long> newRoles = SetUtils.disjunction(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
-            ARole newRole = roleService.createRole(aLong);
+            ARole newRole = roleManagementService.createRole(aLong);
             log.debug("Adding new role: {}", aLong);
             existingAServer.getRoles().add(newRole);
         });
@@ -93,8 +96,8 @@ public class StartupManager implements Startup {
             GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
             log.debug("Adding new channel: {}", aLong);
             AChannelType type = AChannel.getAChannelType(channel1.getType());
-            AChannel newChannel = channelService.createChannel(channel1.getIdLong(), type);
-            serverService.addChannelToServer(existingServer, newChannel);
+            AChannel newChannel = channelManagementService.createChannel(channel1.getIdLong(), type);
+            serverManagementService.addChannelToServer(existingServer, newChannel);
         });
     }
 }

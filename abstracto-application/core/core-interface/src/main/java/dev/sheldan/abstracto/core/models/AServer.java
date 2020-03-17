@@ -25,7 +25,11 @@ public class AServer implements SnowFlake {
     @Builder.Default
     private List<ARole> roles = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "server",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @Getter
     @Builder.Default
     private List<AChannel> channels = new ArrayList<>();

@@ -1,12 +1,11 @@
 package dev.sheldan.abstracto.listener;
 
-import dev.sheldan.abstracto.core.models.AServer;
 import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.service.ServerService;
+import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
@@ -23,30 +22,34 @@ import java.util.HashMap;
 @Slf4j
 public class JoinLeaveListener extends ListenerAdapter {
 
-    public static final String USER_JOIN_TEMPLATE = "user_join";
-    public static final String USER_LEAVE_TEMPLATE = "user_leave";
+    private static final String USER_JOIN_TEMPLATE = "user_join";
+    private static final String USER_LEAVE_TEMPLATE = "user_leave";
     @Autowired
-    private PostTargetService postTargetService;
+    private PostTargetManagement postTargetManagement;
 
     @Autowired
-    private ServerService serverService;
+    private ServerManagementService serverManagementService;
 
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private PostTargetService postTargetService;
+
     @Override
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
-        AServer server = serverService.loadServer(event.getGuild().getIdLong());
-        PostTarget target = postTargetService.getPostTarget(PostTarget.JOIN_LOG, server);
-        TextChannel textChannelById = event.getGuild().getTextChannelById(target.getChannelReference().getId());
-        if(textChannelById != null){
-            HashMap<String, Object> parameters = getUserParameter(event.getUser());
-            String text = templateService.renderTemplate(USER_JOIN_TEMPLATE, parameters);
-            textChannelById.sendMessage(text).queue();
-        } else {
-            log.warn("{} post target is not defined for server {}", PostTarget.JOIN_LOG, server.getId());
-        }
+        String text = getRenderedEvent(event.getUser(), USER_JOIN_TEMPLATE);
+        PostTarget postTarget = postTargetManagement.getPostTarget(PostTarget.JOIN_LOG, event.getGuild().getIdLong());
+        postTargetService.sendTextInPostTarget(text, postTarget);
+    }
+
+    @Override
+    @Transactional
+    public void onGuildMemberLeave(@Nonnull GuildMemberLeaveEvent event) {
+        String text = getRenderedEvent(event.getUser(), USER_LEAVE_TEMPLATE);
+        PostTarget postTarget = postTargetManagement.getPostTarget(PostTarget.LEAVE_LOG, event.getGuild().getIdLong());
+        postTargetService.sendTextInPostTarget(text, postTarget);
     }
 
     @NotNull
@@ -57,18 +60,8 @@ public class JoinLeaveListener extends ListenerAdapter {
         return parameters;
     }
 
-    @Override
-    @Transactional
-    public void onGuildMemberLeave(@Nonnull GuildMemberLeaveEvent event) {
-        AServer server = serverService.loadServer(event.getGuild().getIdLong());
-        PostTarget target = postTargetService.getPostTarget(PostTarget.LEAVE_LOG, server);
-        TextChannel textChannelById = event.getGuild().getTextChannelById(target.getChannelReference().getId());
-        if(textChannelById != null){
-            HashMap<String, Object> parameters = getUserParameter(event.getUser());
-            String text = templateService.renderTemplate(USER_LEAVE_TEMPLATE, parameters);
-            textChannelById.sendMessage(text).queue();
-        } else {
-            log.warn("{} post target is not defined for server {}", PostTarget.LEAVE_LOG, server.getId());
-        }
+    private String getRenderedEvent(User user, String templateName) {
+        HashMap<String, Object> parameters = getUserParameter(user);
+        return templateService.renderTemplate(templateName, parameters);
     }
 }

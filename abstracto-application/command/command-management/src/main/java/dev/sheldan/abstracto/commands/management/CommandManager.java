@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.command.execution.Configuration;
 import dev.sheldan.abstracto.command.execution.Parameter;
 import dev.sheldan.abstracto.command.meta.CommandRegistry;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
+import dev.sheldan.abstracto.commands.management.exception.CommandNotFoundException;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

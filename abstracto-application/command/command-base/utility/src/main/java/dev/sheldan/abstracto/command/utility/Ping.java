@@ -2,14 +2,13 @@ package dev.sheldan.abstracto.command.utility;
 
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.execution.Configuration;
-import dev.sheldan.abstracto.command.execution.Context;
+import dev.sheldan.abstracto.command.execution.CommandContext;
 import dev.sheldan.abstracto.command.execution.Result;
+import dev.sheldan.abstracto.command.utility.model.PingModel;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
 
 @Service
 public class Ping implements Command {
@@ -21,12 +20,11 @@ public class Ping implements Command {
 
     @Override
     @Transactional
-    public Result execute(Context context) {
-        long ping = context.getJda().getGatewayPing();
-        HashMap<String, Object> parameters = new HashMap<>();
-        parameters.put("latency", ping);
-        String text = templateService.renderTemplate(PING_TEMPLATE, parameters);
-        context.getChannel().sendMessage(text).queue();
+    public Result execute(CommandContext commandContext) {
+        long ping = commandContext.getJda().getGatewayPing();
+        PingModel model = PingModel.parentBuilder().parent(commandContext.getCommandTemplateContext()).latency(ping).build();
+        String text = templateService.renderTemplate(PING_TEMPLATE, model);
+        commandContext.getChannel().sendMessage(text).queue();
         return Result.fromSuccess();
     }
 

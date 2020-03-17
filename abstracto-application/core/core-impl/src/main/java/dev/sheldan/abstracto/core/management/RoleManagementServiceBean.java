@@ -1,12 +1,13 @@
-package dev.sheldan.abstracto.core.service;
+package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.ARole;
+import dev.sheldan.abstracto.core.management.RoleManagementService;
 import dev.sheldan.abstracto.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RoleServiceBean implements RoleService {
+public class RoleManagementServiceBean implements RoleManagementService {
 
     @Autowired
     private RoleRepository repository;
