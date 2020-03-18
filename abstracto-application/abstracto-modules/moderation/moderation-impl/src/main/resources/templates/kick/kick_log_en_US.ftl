@@ -1,0 +1,1 @@
+User ${kickedUser.effectiveName} (${kickedUser.asMention}) has been kicked with reason: ${reason}.

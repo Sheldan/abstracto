@@ -28,7 +28,6 @@ public class SetPostTargetCommand implements Command {
     private ChannelManagementService channelManagementService;
 
     @Override
-    @Transactional
     public Result execute(CommandContext commandContext) {
         GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
         String targetName = (String) commandContext.getParameters().getParameters().get(0);

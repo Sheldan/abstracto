@@ -39,6 +39,6 @@ public class BanServiceBean implements BanService {
     @Override
     public void sendBanLog(BanLog banLog) {
         String warnLogMessage = templateService.renderTemplate(BAN_LOG_TEMPLATE, banLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.WARN_LOG, banLog.getServer().getId());
+        postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.BAN_LOG, banLog.getServer().getId());
     }
 }
