@@ -61,20 +61,35 @@ public class Help implements Command {
         CommandConfiguration commandConfiguration = command.getConfiguration();
         sb.append(String.format("Command: **%s**", commandConfiguration.getName()));
         sb.append("\n");
-        sb.append(String.format("Description: %s", getTemplateOrDefault(commandConfiguration.getDescriptionTemplate(), commandConfiguration.getDescription())));
+        String descriptionTemplate = getDescriptionTemplate(commandConfiguration.getName());
+        sb.append(String.format("Description: %s", getTemplateOrDefault(commandConfiguration, descriptionTemplate, commandConfiguration.getDescription())));
         sb.append("\n");
         HelpInfo helpObj = commandConfiguration.getHelp();
         if(helpObj != null){
-            sb.append(String.format("Usage: %s", getTemplateOrDefault(helpObj.getUsageTemplate(), helpObj.getUsage())));
+            String usageTemplate = getUsageTemplate(commandConfiguration.getName());
+            sb.append(String.format("Usage: %s", getTemplateOrDefault(commandConfiguration, usageTemplate, helpObj.getUsage())));
             sb.append("\n");
-            sb.append(String.format("Detailed help: %s", getTemplateOrDefault(helpObj.getLongHelpTemplate(), helpObj.getLongHelp())));
+            String longHelpTemplate = getLongHelpTemplate(commandConfiguration.getName());
+            sb.append(String.format("Detailed help: %s", getTemplateOrDefault(commandConfiguration, longHelpTemplate, helpObj.getLongHelp())));
             sb.append("\n");
         }
         return sb.toString();
     }
 
-    private String getTemplateOrDefault(String templateKey, String defaultText) {
-        if(templateKey == null) {
+    private String getDescriptionTemplate(String commandName) {
+        return commandName + "_description";
+    }
+
+    private String getUsageTemplate(String commandName) {
+        return commandName + "_usage";
+    }
+
+    private String getLongHelpTemplate(String commandName) {
+        return commandName + "_long_help";
+    }
+
+    private String getTemplateOrDefault(CommandConfiguration commandConfiguration, String templateKey, String defaultText) {
+        if(templateKey == null || !commandConfiguration.isTemplated()) {
             return defaultText;
         } else {
             return templateService.renderTemplate(templateKey, null);

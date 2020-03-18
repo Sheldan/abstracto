@@ -50,11 +50,11 @@ public class Kick implements Command {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").type(Member.class).optional(false).build());
         parameters.add(Parameter.builder().name("reason").type(String.class).optional(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().usageTemplate("kick_usage").longHelpTemplate("kick_long_help").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("kick")
                 .module(Moderation.MODERATION)
-                .descriptionTemplate("kick_help_description")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -56,11 +56,11 @@ public class Warn implements Command {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").type(Member.class).optional(false).build());
         parameters.add(Parameter.builder().name("reason").type(String.class).optional(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().usageTemplate("warn_usage").longHelpTemplate("long_help").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("warn")
                 .module(Moderation.MODERATION)
-                .descriptionTemplate("warn_help_description")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

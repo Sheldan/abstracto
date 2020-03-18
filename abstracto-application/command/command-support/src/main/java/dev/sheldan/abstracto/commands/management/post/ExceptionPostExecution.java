@@ -25,7 +25,7 @@ public class ExceptionPostExecution implements PostCommandExecution {
                     String text = templateService.renderTemplate(exception.getTemplateName(), exception.getTemplateModel());
                     commandContext.getChannel().sendMessage(text).queue();
                 } else {
-                    commandContext.getChannel().sendMessage(result.getMessage()).queue();
+                    commandContext.getChannel().sendMessage("Exception: " + result.getThrowable().getClass() + ": " + result.getMessage()).queue();
                 }
             }
         }

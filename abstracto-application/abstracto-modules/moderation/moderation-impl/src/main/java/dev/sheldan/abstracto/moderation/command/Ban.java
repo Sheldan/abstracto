@@ -53,11 +53,11 @@ public class Ban implements Command {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").type(Member.class).optional(false).build());
         parameters.add(Parameter.builder().name("reason").type(String.class).optional(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().usageTemplate("ban_usage").longHelpTemplate("ban_long_help").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("ban")
                 .module(Moderation.MODERATION)
-                .descriptionTemplate("ban_help_description")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -31,7 +31,7 @@ public class Ping implements Command {
         return CommandConfiguration.builder()
                 .name("ping")
                 .module("utility")
-                .descriptionTemplate("ping_description")
+                .templated(true)
                 .causesReaction(false)
                 .build();
     }

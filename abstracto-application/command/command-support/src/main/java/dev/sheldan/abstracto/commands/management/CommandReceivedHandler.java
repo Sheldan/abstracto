@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.PostCommandExecution;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
+import dev.sheldan.abstracto.commands.management.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.commands.management.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.AChannel;
@@ -11,6 +13,7 @@ import dev.sheldan.abstracto.core.models.AServer;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class CommandReceivedHandler extends ListenerAdapter {
@@ -84,25 +85,30 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
-        int mentionedChannelsCount = 0;
-        int mentionedUserCount = 0;
-        for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
-            Parameter param = command.getConfiguration().getParameters().get(i);
-            String value = unParsedCommandParameter.getParameters().get(i);
-            if(param.getType().equals(Integer.class)){
-                parsedParameters.add(Integer.parseInt(value));
-            } else if(param.getType().equals(Double.class)){
-                parsedParameters.add(Double.parseDouble(value));
-            } else if(param.getType().equals(GuildChannel.class)){
-                parsedParameters.add(message.getMentionedChannels().get(mentionedChannelsCount));
-                mentionedChannelsCount++;
-            } else if(param.getType().equals(Member.class)) {
-                parsedParameters.add(message.getMentionedMembers().get(mentionedUserCount));
-                mentionedUserCount++;
-            } else {
-                parsedParameters.add(value);
+        Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
+        Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
+            for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
+                Parameter param = command.getConfiguration().getParameters().get(i);
+                String value = unParsedCommandParameter.getParameters().get(i);
+                try {
+                    if(param.getType().equals(Integer.class)){
+                        parsedParameters.add(Integer.parseInt(value));
+                    } else if(param.getType().equals(Double.class)){
+                        parsedParameters.add(Double.parseDouble(value));
+                    }  else if(param.getType().equals(Long.class)){
+                        parsedParameters.add(Long.parseLong(value));
+                    } else if(param.getType().equals(TextChannel.class)){
+                        parsedParameters.add(channelIterator.next());
+                    } else if(param.getType().equals(Member.class)) {
+                        parsedParameters.add(memberIterator.next());
+                    } else {
+                        parsedParameters.add(value);
+                    }
+                } catch (NoSuchElementException e) {
+                    throw new IncorrectParameterException("The passed parameters did not have the correct type.", command, param.getType(), param.getName());
+                }
             }
-        }
+
         return Parameters.builder().parameters(parsedParameters).build();
     }
 }

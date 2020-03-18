@@ -10,9 +10,9 @@ import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +39,7 @@ public class SetPostTargetCommand implements Command {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channel = Parameter.builder().name("channel").type(GuildChannel.class).description("The channel to post towards").build();
+        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).description("The channel to post towards").build();
         Parameter postTargetName = Parameter.builder().name("name").type(String.class).description("The name of the post target to redirect").build();
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
         return CommandConfiguration.builder()

@@ -37,11 +37,11 @@ public class Echo implements Command {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("input").type(String.class).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().usageTemplate("echo_usage").longHelpTemplate("echo_long_help").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("echo")
                 .module("utility")
-                .descriptionTemplate("echo_description")
+                .templated(true)
                 .causesReaction(false)
                 .parameters(parameters)
                 .help(helpInfo)

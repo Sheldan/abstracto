@@ -13,9 +13,9 @@ public class CommandConfiguration {
     private String name;
     private String module;
     private String description;
-    private String descriptionTemplate;
     private List<Parameter> parameters;
     private boolean causesReaction;
+    private boolean templated;
     private HelpInfo help;
 
     public int getNecessaryParameterCount(){

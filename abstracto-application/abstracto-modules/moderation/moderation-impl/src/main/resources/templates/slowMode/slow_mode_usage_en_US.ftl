@@ -1,0 +1,1 @@
+slowmode <duration> [channel]
