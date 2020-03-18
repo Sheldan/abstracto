@@ -40,16 +40,14 @@ public class JoinLeaveListener extends ListenerAdapter {
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         String text = getRenderedEvent(event.getUser(), USER_JOIN_TEMPLATE);
-        PostTarget postTarget = postTargetManagement.getPostTarget(PostTarget.JOIN_LOG, event.getGuild().getIdLong());
-        postTargetService.sendTextInPostTarget(text, postTarget);
+        postTargetService.sendTextInPostTarget(text, PostTarget.JOIN_LOG, event.getGuild().getIdLong());
     }
 
     @Override
     @Transactional
     public void onGuildMemberLeave(@Nonnull GuildMemberLeaveEvent event) {
         String text = getRenderedEvent(event.getUser(), USER_LEAVE_TEMPLATE);
-        PostTarget postTarget = postTargetManagement.getPostTarget(PostTarget.LEAVE_LOG, event.getGuild().getIdLong());
-        postTargetService.sendTextInPostTarget(text, postTarget);
+        postTargetService.sendTextInPostTarget(text, PostTarget.LEAVE_LOG, event.getGuild().getIdLong());
     }
 
     @NotNull

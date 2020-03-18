@@ -28,7 +28,7 @@ import java.util.Set;
 public class StartupManager implements Startup {
 
     @Autowired
-    private BotService service;
+    private Bot service;
 
     @Autowired
     private List<? extends  ListenerAdapter> listeners;

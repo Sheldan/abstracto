@@ -11,17 +11,15 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class AServer implements SnowFlake {
 
     @Id
-    @Getter @Setter
     private Long id;
 
-    @Getter
     private String name;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @Getter
     @Builder.Default
     private List<ARole> roles = new ArrayList<>();
 
@@ -30,9 +28,14 @@ public class AServer implements SnowFlake {
             mappedBy = "server",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    @Getter
     @Builder.Default
     private List<AChannel> channels = new ArrayList<>();
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "serverReference",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<AUserInAServer> users;
 
 
 

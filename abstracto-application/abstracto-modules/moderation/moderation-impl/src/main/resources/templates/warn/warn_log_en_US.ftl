@@ -1,0 +1,1 @@
+User ${warnedUser.effectiveName} (${warnedUser.asMention}) has been warned with reason ${warning.reason}.

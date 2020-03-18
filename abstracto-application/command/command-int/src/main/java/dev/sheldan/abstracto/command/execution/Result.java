@@ -9,6 +9,7 @@ import lombok.Setter;
 public class Result {
     private ResultState result;
     private String message;
+    private Throwable throwable;
 
     public static Result fromSuccess() {
         return Result.builder().result(ResultState.SUCCESSFUL).build();
@@ -16,5 +17,9 @@ public class Result {
 
     public static Result fromError(String message){
         return Result.builder().result(ResultState.ERROR).message(message).build();
+    }
+
+    public static Result fromError(String message, Throwable throwable) {
+        return Result.builder().result(ResultState.ERROR).message(message).throwable(throwable).build();
     }
 }

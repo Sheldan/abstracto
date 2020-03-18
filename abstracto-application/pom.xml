@@ -19,6 +19,7 @@
         <module>core</module>
         <module>executable</module>
         <module>templating</module>
+        <module>abstracto-modules</module>
     </modules>
 
 

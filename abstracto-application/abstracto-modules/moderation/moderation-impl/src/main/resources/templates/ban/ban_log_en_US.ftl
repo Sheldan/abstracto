@@ -1,0 +1,1 @@
+User ${bannedUser.effectiveName} (${bannedUser.asMention}) has been banned with reason ${reason}.

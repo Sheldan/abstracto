@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class ChannelServiceBean implements ChannelService {
 
     @Autowired
-    private BotService botService;
+    private Bot botService;
 
     @Override
     public void sendTextInAChannel(String text, AChannel channel) {

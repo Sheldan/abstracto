@@ -1,11 +1,6 @@
-package dev.sheldan.abstracto.core.service.management;
+package dev.sheldan.abstracto.core.management;
 
-import dev.sheldan.abstracto.core.models.AChannel;
-import dev.sheldan.abstracto.core.models.AServer;
-import dev.sheldan.abstracto.core.models.PostTarget;
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
+import dev.sheldan.abstracto.core.models.*;
 import dev.sheldan.abstracto.repository.ServerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +30,13 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public void addChannelToServer(AServer server, AChannel channel) {
         server.getChannels().add(channel);
+    }
+
+    @Override
+    public AUserInAServer addUserToServer(AServer server, AUser user) {
+        AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(server).userReference(user).build();
+        server.getUsers().add(aUserInAServer);
+        return aUserInAServer;
     }
 
     @Override

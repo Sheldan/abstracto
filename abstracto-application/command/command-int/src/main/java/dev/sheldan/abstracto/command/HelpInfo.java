@@ -7,4 +7,6 @@ import lombok.Getter;
 public class HelpInfo {
     private String usage;
     private String longHelp;
+    private String longHelpTemplate;
+    private String usageTemplate;
 }

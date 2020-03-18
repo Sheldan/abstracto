@@ -49,25 +49,11 @@
         <!-- modules containing commands -->
 
         <dependency>
-            <groupId>dev.sheldan.abstracto.command</groupId>
-            <artifactId>utility</artifactId>
+            <groupId>dev.sheldan.abstracto.modules</groupId>
+            <artifactId>moderation-impl</artifactId>
             <version>${project.version}</version>
-            <scope>runtime</scope>
         </dependency>
 
-        <dependency>
-            <groupId>dev.sheldan.abstracto.command</groupId>
-            <artifactId>support</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>dev.sheldan.abstracto.command</groupId>
-            <artifactId>channels</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
 
 
     </dependencies>

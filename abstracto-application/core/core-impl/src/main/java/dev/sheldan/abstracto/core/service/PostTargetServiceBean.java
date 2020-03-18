@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.PostTarget;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,10 @@ public class PostTargetServiceBean implements PostTargetService {
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private BotService botService;
+    private PostTargetManagement postTargetManagement;
+
+    @Autowired
+    private Bot botService;
 
     @Override
     public void sendTextInPostTarget(String text, PostTarget target) {
@@ -32,6 +36,16 @@ public class PostTargetServiceBean implements PostTargetService {
             }
         } else {
             log.warn("Incorrect post target configuration: Guild id {} was not found.", target.getServerReference().getId());
+        }
+    }
+
+    @Override
+    public void sendTextInPostTarget(String text, String postTargetName, Long serverId) {
+        PostTarget postTarget = postTargetManagement.getPostTarget(postTargetName, serverId);
+        if(postTarget != null) {
+            this.sendTextInPostTarget(text, postTarget);
+        } else {
+            log.warn("PostTarget {} in server {} was not found!", postTargetName, serverId);
         }
     }
 }

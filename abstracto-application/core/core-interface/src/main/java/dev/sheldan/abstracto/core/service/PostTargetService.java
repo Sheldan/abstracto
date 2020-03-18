@@ -4,4 +4,5 @@ import dev.sheldan.abstracto.core.models.PostTarget;
 
 public interface PostTargetService {
     void sendTextInPostTarget(String text, PostTarget target);
+    void sendTextInPostTarget(String text, String postTargetName, Long serverId);
 }
