@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.moderation.models.template.listener.MessageEditedLo
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,5 +44,8 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
                 .member(messageAfter.getMember()).build();
         String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_EDITED_TEMPLATE, log);
         postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, PostTarget.EDIT_LOG, messageAfter.getGuild().getIdLong());
+        MessageEmbed embed = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log);
+        postTargetService.sendEmbedInPostTarget(embed, PostTarget.DELETE_LOG, messageBefore.getGuild().getIdLong());
+
     }
 }

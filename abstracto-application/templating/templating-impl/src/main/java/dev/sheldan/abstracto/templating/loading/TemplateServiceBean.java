@@ -76,10 +76,14 @@ public class TemplateServiceBean implements TemplateService {
         if(footer != null) {
             builder.setFooter(footer.getText(), footer.getIcon());
         }
-        configuration.getFields().forEach(embedField -> {
-            Boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
-            builder.addField(embedField.getName(), embedField.getValue(), inline);
-        });
+        if(configuration.getFields() != null) {
+            configuration.getFields().forEach(embedField -> {
+                Boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
+                builder.addField(embedField.getName(), embedField.getValue(), inline);
+            });
+        }
+
+        builder.setImage(configuration.getImageUrl());
 
         EmbedColor color = configuration.getColor();
         if(color != null) {

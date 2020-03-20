@@ -12,6 +12,7 @@ public class EmbedConfiguration {
     private EmbedColor color;
     private String description;
     private String thumbnail;
+    private String imageUrl;
     private List<EmbedField> fields;
     private EmbedFooter footer;
 }

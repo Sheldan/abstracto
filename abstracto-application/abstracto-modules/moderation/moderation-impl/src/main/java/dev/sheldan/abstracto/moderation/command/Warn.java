@@ -37,9 +37,9 @@ public class Warn implements Command {
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
         WarnLog warnLogModel = (WarnLog) ContextConverter.fromCommandContext(commandContext, WarnLog.class);
         warnLogModel.setWarnedUser(member);
+        warnLogModel.setMessage(commandContext.getMessage());
         warnLogModel.setReason(reason);
         warnLogModel.setWarningUser(commandContext.getAuthor());
-        warnLogModel.setMessageLink(commandContext.getMessage().getJumpUrl());
         warnService.warnUser(member, commandContext.getAuthor(), reason, warnLogModel);
         return Result.fromSuccess();
     }
