@@ -7,6 +7,6 @@ import net.dv8tion.jda.api.entities.Member;
 
 
 public interface WarnService {
-    void warnUser(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, ServerContext warnLog);
-    void warnUser(Member warnedUser, Member warningUser, String reason, ServerContext warnLog);
+    void warnUser(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, WarnLog warnLog);
+    void warnUser(Member warnedUser, Member warningUser, String reason, WarnLog warnLog);
 }

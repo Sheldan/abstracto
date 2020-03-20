@@ -2,9 +2,7 @@ package dev.sheldan.abstracto.moderation.command;
 
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.models.template.BanIdLog;
 import dev.sheldan.abstracto.moderation.models.template.WarnLog;
-import dev.sheldan.abstracto.moderation.models.Warning;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.HelpInfo;
@@ -41,6 +39,7 @@ public class Warn implements Command {
         warnLogModel.setWarnedUser(member);
         warnLogModel.setReason(reason);
         warnLogModel.setWarningUser(commandContext.getAuthor());
+        warnLogModel.setMessageLink(commandContext.getMessage().getJumpUrl());
         warnService.warnUser(member, commandContext.getAuthor(), reason, warnLogModel);
         return Result.fromSuccess();
     }

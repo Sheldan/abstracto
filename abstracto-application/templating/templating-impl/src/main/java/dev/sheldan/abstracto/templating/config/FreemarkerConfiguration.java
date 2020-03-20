@@ -19,6 +19,9 @@ public class FreemarkerConfiguration {
     public Configuration freeMarkerConfiguration() throws IOException, TemplateException {
         FreeMarkerConfigurationFactory factory = new FreeMarkerConfigurationFactory();
         factory.setPreTemplateLoaders(templateLoader);
-        return factory.createConfiguration();
+        Configuration configuration = factory.createConfiguration();
+        // needed to support default methods in interfaces
+        configuration.setIncompatibleImprovements(Configuration.VERSION_2_3_29);
+        return configuration;
     }
 }

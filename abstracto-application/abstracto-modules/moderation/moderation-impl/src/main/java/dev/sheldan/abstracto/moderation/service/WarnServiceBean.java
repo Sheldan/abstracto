@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,7 +50,7 @@ public class WarnServiceBean implements WarnService {
     private static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
 
     @Override
-    public void warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, ServerContext warnLog) {
+    public void warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, WarnLog warnLog) {
         AUser warningAUser = warningAUserInAServer.getUserReference();
         AUser warnedAUser = warnedAUserInAServer.getUserReference();
         AServer serverOfWarning = warnedAUserInAServer.getServerReference();
@@ -72,18 +73,21 @@ public class WarnServiceBean implements WarnService {
         } else {
             log.warn("Unable to find user {} in guild {} to warn.", warnedAUser.getId(), serverOfWarning.getId());
         }
+        warnLog.setWarning(warning);
         this.sendWarnLog(warnLog);
     }
 
     @Override
-    public void warnUser(Member warnedMember, Member warningMember, String reason, ServerContext warnLog) {
+    public void warnUser(Member warnedMember, Member warningMember, String reason, WarnLog warnLog) {
         AUserInAServer warnedAUser = userManagementService.loadUser(warnedMember);
         AUserInAServer warningAUser = userManagementService.loadUser(warningMember);
         this.warnUser(warnedAUser, warningAUser, reason, warnLog);
     }
 
-    public void sendWarnLog(ServerContext warnLogModel) {
+    private void sendWarnLog(ServerContext warnLogModel) {
         String warnLogMessage = templateService.renderContextAwareTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.WARN_LOG, warnLogModel.getServer().getId());
+        MessageEmbed embed = templateService.renderEmbedTemplate("warn_log", warnLogModel);
+        postTargetService.sendEmbedInPostTarget(embed, PostTarget.WARN_LOG, warnLogModel.getServer().getId());
     }
 }

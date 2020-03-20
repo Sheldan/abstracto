@@ -7,10 +7,12 @@ import dev.sheldan.abstracto.command.execution.CommandContext;
 import dev.sheldan.abstracto.command.execution.Result;
 import dev.sheldan.abstracto.command.execution.ResultState;
 import dev.sheldan.abstracto.templating.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ExceptionPostExecution implements PostCommandExecution {
 
     @Autowired
@@ -20,6 +22,7 @@ public class ExceptionPostExecution implements PostCommandExecution {
     public void execute(CommandContext commandContext, Result result, Command command) {
         if(result.getResult().equals(ResultState.ERROR)) {
             if(result.getThrowable() != null) {
+                log.warn("Exception", result.getThrowable());
                 if(result.getThrowable() instanceof TemplatedException) {
                     TemplatedException exception = (TemplatedException) result.getThrowable();
                     String text = templateService.renderTemplate(exception.getTemplateName(), exception.getTemplateModel());

@@ -14,5 +14,6 @@ public class WarnLog extends UserInitiatedServerContext {
     private String reason;
     private Member warnedUser;
     private Member warningUser;
-
+    private String messageLink;
+    private Warning warning;
 }

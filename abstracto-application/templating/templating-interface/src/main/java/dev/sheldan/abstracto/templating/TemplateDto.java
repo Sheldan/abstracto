@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -22,6 +23,7 @@ public class TemplateDto {
     private String key;
 
     @Getter
+    @Column(length = 4000)
     private String content;
 
     @Getter

@@ -1,18 +1,24 @@
 package dev.sheldan.abstracto.templating.loading;
 
+import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.models.ContextAware;
 import dev.sheldan.abstracto.core.models.ServerContext;
 import dev.sheldan.abstracto.templating.TemplateDto;
 import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.templating.embed.*;
 import freemarker.template.Configuration;
+import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
+import java.awt.*;
 import java.io.IOException;
+import java.io.StringReader;
 import java.time.Instant;
 import java.util.HashMap;
 
@@ -26,8 +32,10 @@ public class TemplateServiceBean implements TemplateService {
     @Autowired
     private Configuration configuration;
 
+    @Autowired
+    private Gson gson;
+
     @Override
-    @Cacheable("template")
     public TemplateDto getTemplateByKey(String key) {
         return repository.getOne(key);
     }
@@ -40,6 +48,58 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public String renderTemplate(TemplateDto templateDto) {
         return null;
+    }
+
+    @Override
+    public MessageEmbed renderEmbedTemplate(String key, Object model) {
+        String embedConfig = this.renderTemplate(key + "_embed", model);
+        EmbedBuilder builder = new EmbedBuilder();
+        EmbedConfiguration configuration = gson.fromJson(embedConfig, EmbedConfiguration.class);
+        String description = configuration.getDescription();
+        if(description != null) {
+            builder.setDescription(description);
+        }
+        EmbedAuthor author = configuration.getAuthor();
+        if(author != null) {
+            builder.setAuthor(author.getName(), author.getUrl(), author.getAvatar());
+        }
+
+        String thumbnail = configuration.getThumbnail();
+        if(thumbnail != null) {
+            builder.setThumbnail(thumbnail);
+        }
+        EmbedTitle title = configuration.getTitle();
+        if(title != null) {
+            builder.setTitle(title.getTitle(), title.getUrl());
+        }
+        EmbedFooter footer = configuration.getFooter();
+        if(footer != null) {
+            builder.setFooter(footer.getText(), footer.getIcon());
+        }
+        configuration.getFields().forEach(embedField -> {
+            Boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
+            builder.addField(embedField.getName(), embedField.getValue(), inline);
+        });
+
+        EmbedColor color = configuration.getColor();
+        if(color != null) {
+            builder.setColor(new Color(color.getR(), color.getG(), color.getB()).getRGB());
+        }
+
+        return builder.build();
+    }
+
+    private String impromptu(String templateStr, Object model) {
+        try {
+            Template t = new Template("name", new StringReader(templateStr),
+                    new Configuration(Configuration.VERSION_2_3_29));
+            return  FreeMarkerTemplateUtils.processTemplateIntoString(t, model);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (TemplateException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override
@@ -58,8 +118,8 @@ public class TemplateServiceBean implements TemplateService {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), model);
         } catch (IOException | TemplateException e) {
             log.warn("Failed to render template: {}", e.getMessage());
+            throw new RuntimeException("Failed to render template", e);
         }
-        return "";
     }
 
     @Override

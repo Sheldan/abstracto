@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.templating.seeding;
 
 import dev.sheldan.abstracto.templating.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@Slf4j
 public class TemplateSeedDataLoader {
 
     @Value("classpath*:**/templates/**/*.ftl")
@@ -31,6 +33,7 @@ public class TemplateSeedDataLoader {
             try {
                 String templateKey = FilenameUtils.getBaseName(resource.getFilename());
                 String templateContent = IOUtils.toString(resource.getURI(), Charset.defaultCharset());
+                log.debug("Creating template {}", templateKey);
                 service.createTemplate(templateKey, templateContent);
             } catch (IOException e) {
                 e.printStackTrace();
