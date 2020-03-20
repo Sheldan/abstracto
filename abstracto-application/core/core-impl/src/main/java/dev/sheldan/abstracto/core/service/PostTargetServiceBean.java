@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
-import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;

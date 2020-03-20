@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.listener;
 
-import dev.sheldan.abstracto.core.models.AChannel;
-import dev.sheldan.abstracto.core.models.AServer;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.repository.ServerRepository;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;

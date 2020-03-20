@@ -1,5 +1,7 @@
-package dev.sheldan.abstracto.core.models;
+package dev.sheldan.abstracto.core.models.database;
 
+import dev.sheldan.abstracto.core.models.AChannelType;
+import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 import net.dv8tion.jda.api.entities.ChannelType;
 

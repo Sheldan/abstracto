@@ -1,5 +1,6 @@
-package dev.sheldan.abstracto.core.models;
+package dev.sheldan.abstracto.core.models.database;
 
+import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 
 import javax.persistence.*;

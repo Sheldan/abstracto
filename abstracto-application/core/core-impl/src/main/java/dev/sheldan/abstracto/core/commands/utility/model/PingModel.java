@@ -1,16 +1,11 @@
 package dev.sheldan.abstracto.core.commands.utility.model;
 
-import dev.sheldan.abstracto.command.execution.CommandTemplateContext;
+import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
-@Getter
-public class PingModel extends CommandTemplateContext {
+@Getter @SuperBuilder
+public class PingModel extends UserInitiatedServerContext {
     private Long latency;
-
-    @Builder(builderMethodName = "parentBuilder")
-    private PingModel(CommandTemplateContext parent, Long latency) {
-        super(parent);
-        this.latency = latency;
-    }
 }

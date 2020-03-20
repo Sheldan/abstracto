@@ -5,12 +5,14 @@ import dev.sheldan.abstracto.command.PostCommandExecution;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
 import dev.sheldan.abstracto.commands.management.exception.IncorrectParameterException;
-import dev.sheldan.abstracto.commands.management.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
-import dev.sheldan.abstracto.core.models.AChannel;
-import dev.sheldan.abstracto.core.models.AServer;
-import net.dv8tion.jda.api.entities.GuildChannel;
+import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -36,6 +38,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private ServerManagementService serverManagementService;
 
     @Autowired
+    private UserManagementService userManagementService;
+
+    @Autowired
     private ChannelManagementService channelManagementService;
 
     @Override
@@ -53,7 +58,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .channel(event.getTextChannel())
                 .message(event.getMessage())
                 .jda(event.getJDA())
-                .commandTemplateContext(buildTemplateParameter(event));
+                .userInitiatedContext(buildTemplateParameter(event));
         Command foundCommand = null;
         try {
             List<String> parameters = Arrays.asList(event.getMessage().getContentStripped().split(" "));
@@ -77,10 +82,20 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     }
 
-    private CommandTemplateContext buildTemplateParameter(MessageReceivedEvent event) {
+    private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
         AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
         AServer server = serverManagementService.loadServer(event.getGuild().getIdLong());
-        return CommandTemplateContext.builder().channel(channel).server(server).build();
+        AUserInAServer user = userManagementService.loadUser(event.getMember());
+        return UserInitiatedServerContext
+                .builder()
+                .channel(channel)
+                .server(server)
+                .member(event.getMember())
+                .aUserInAServer(user)
+                .user(user.getUserReference())
+                .textChannel(event.getTextChannel())
+                .guild(event.getGuild())
+                .build();
     }
 
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){

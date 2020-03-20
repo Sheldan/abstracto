@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.repository;
 
-import dev.sheldan.abstracto.core.models.AServer;
-import dev.sheldan.abstracto.core.models.AUser;
-import dev.sheldan.abstracto.core.models.AUserInAServer;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.models;
 
-import dev.sheldan.abstracto.core.models.AUserInAServer;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

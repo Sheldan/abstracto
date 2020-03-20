@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;

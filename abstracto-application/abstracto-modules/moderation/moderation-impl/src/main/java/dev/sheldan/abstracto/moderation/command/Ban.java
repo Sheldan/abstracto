@@ -2,18 +2,14 @@ package dev.sheldan.abstracto.moderation.command;
 
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.HelpInfo;
-import dev.sheldan.abstracto.command.execution.CommandConfiguration;
-import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.Parameter;
-import dev.sheldan.abstracto.command.execution.Result;
+import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.models.BanLog;
-import dev.sheldan.abstracto.moderation.models.WarnLog;
+import dev.sheldan.abstracto.moderation.models.template.BanLog;
+import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
-import org.hibernate.sql.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,15 +32,12 @@ public class Ban implements Command {
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderTemplate("ban_default_reason", null);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
-        banService.banMember(member, reason);
-        BanLog banLogModel = BanLog
-                .parentBuilder()
-                .commandTemplateContext(commandContext.getCommandTemplateContext())
-                .bannedUser(member)
-                .banningUser(commandContext.getAuthor())
-                .reason(reason)
-                .build();
-        banService.sendBanLog(banLogModel);
+
+        BanLog banLogModel = (BanLog) ContextConverter.fromCommandContext(commandContext, BanLog.class);
+        banLogModel.setBannedUser(member);
+        banLogModel.setBanningUser(commandContext.getAuthor());
+        banLogModel.setReason(reason);
+        banService.banMember(member, reason, banLogModel);
         return Result.fromSuccess();
     }
 

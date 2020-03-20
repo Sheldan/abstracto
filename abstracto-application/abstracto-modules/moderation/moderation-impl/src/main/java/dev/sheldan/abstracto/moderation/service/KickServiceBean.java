@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.moderation.models.KickLogModel;
+import dev.sheldan.abstracto.moderation.models.template.KickLogModel;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,18 +26,18 @@ public class KickServiceBean implements KickService {
     private PostTargetService postTargetService;
 
     @Override
-    public void kickMember(Member member, String reason) {
+    public void kickMember(Member member, String reason, KickLogModel kickLogModel) {
         Guild guildById = bot.getInstance().getGuildById(member.getGuild().getIdLong());
         if(guildById != null) {
             guildById.kick(member, reason).queue();
+            this.sendKickLog(kickLogModel);
         } else {
             log.warn("Failed to kick member {} from guild {}. Guild was not found.", member.getId(), member.getGuild().getId());
         }
     }
 
-    @Override
-    public void sendKickLog(KickLogModel kickLogModel) {
-        String warnLogMessage = templateService.renderTemplate(KICK_LOG_TEMPLATE, kickLogModel);
+    private void sendKickLog(KickLogModel kickLogModel) {
+        String warnLogMessage = templateService.renderContextAwareTemplate(KICK_LOG_TEMPLATE, kickLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.WARN_LOG, kickLogModel.getServer().getId());
     }
 }

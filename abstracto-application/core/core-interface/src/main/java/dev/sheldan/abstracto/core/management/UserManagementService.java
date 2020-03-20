@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.management;
 
-import dev.sheldan.abstracto.core.models.AServer;
-import dev.sheldan.abstracto.core.models.AUser;
-import dev.sheldan.abstracto.core.models.AUserInAServer;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import net.dv8tion.jda.api.entities.Member;
 
 public interface UserManagementService {

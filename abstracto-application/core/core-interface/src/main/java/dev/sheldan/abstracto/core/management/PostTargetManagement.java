@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.management;
 
-import dev.sheldan.abstracto.core.models.AChannel;
-import dev.sheldan.abstracto.core.models.AServer;
-import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
 
 public interface PostTargetManagement {
     void createPostTarget(String name, AChannel targetChanel, AServer server);

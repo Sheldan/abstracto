@@ -1,15 +1,13 @@
 package dev.sheldan.abstracto.moderation.command;
 
+import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.models.WarnLog;
+import dev.sheldan.abstracto.moderation.models.template.BanIdLog;
+import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.moderation.models.Warning;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.HelpInfo;
-import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.CommandConfiguration;
-import dev.sheldan.abstracto.command.execution.Parameter;
-import dev.sheldan.abstracto.command.execution.Result;
 import dev.sheldan.abstracto.core.management.UserManagementService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,15 +37,11 @@ public class Warn implements Command {
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderTemplate("warn_default_reason", null);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
-        Warning warning = warnService.warnUser(member, commandContext.getAuthor(), reason);
-        WarnLog warnLogModel = WarnLog
-                .parentBuilder()
-                .commandTemplateContext(commandContext.getCommandTemplateContext())
-                .warnedUser(member)
-                .warningUser(commandContext.getAuthor())
-                .warning(warning)
-                .build();
-        warnService.sendWarnLog(warnLogModel);
+        WarnLog warnLogModel = (WarnLog) ContextConverter.fromCommandContext(commandContext, WarnLog.class);
+        warnLogModel.setWarnedUser(member);
+        warnLogModel.setReason(reason);
+        warnLogModel.setWarningUser(commandContext.getAuthor());
+        warnService.warnUser(member, commandContext.getAuthor(), reason, warnLogModel);
         return Result.fromSuccess();
     }
 

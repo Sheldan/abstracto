@@ -20,7 +20,7 @@ public class Ping implements Command {
     @Override
     public Result execute(CommandContext commandContext) {
         long ping = commandContext.getJda().getGatewayPing();
-        PingModel model = PingModel.parentBuilder().parent(commandContext.getCommandTemplateContext()).latency(ping).build();
+        PingModel model = PingModel.builder().latency(ping).build();
         String text = templateService.renderTemplate(PING_TEMPLATE, model);
         commandContext.getChannel().sendMessage(text).queue();
         return Result.fromSuccess();

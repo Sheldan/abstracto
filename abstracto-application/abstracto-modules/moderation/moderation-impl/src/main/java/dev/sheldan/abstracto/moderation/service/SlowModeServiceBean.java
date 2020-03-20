@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.Bot;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;

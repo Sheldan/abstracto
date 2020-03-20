@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.exception.PostTargetException;
-import dev.sheldan.abstracto.core.models.AChannel;
-import dev.sheldan.abstracto.core.models.AServer;
-import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.management.ServerManagementService;

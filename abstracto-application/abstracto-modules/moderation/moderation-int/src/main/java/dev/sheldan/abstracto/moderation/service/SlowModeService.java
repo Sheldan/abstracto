@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.time.Duration;

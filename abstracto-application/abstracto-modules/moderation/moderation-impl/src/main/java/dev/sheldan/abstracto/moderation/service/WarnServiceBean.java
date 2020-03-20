@@ -1,15 +1,17 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.AServer;
-import dev.sheldan.abstracto.core.models.AUser;
-import dev.sheldan.abstracto.moderation.models.WarnLog;
-import dev.sheldan.abstracto.moderation.models.WarnNotification;
+import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.moderation.models.template.WarnLog;
+import dev.sheldan.abstracto.moderation.models.template.WarnNotification;
 import dev.sheldan.abstracto.moderation.models.Warning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.management.UserManagementService;
-import dev.sheldan.abstracto.core.models.AUserInAServer;
-import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.TemplateService;
@@ -47,7 +49,7 @@ public class WarnServiceBean implements WarnService {
     private static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
 
     @Override
-    public Warning warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason) {
+    public void warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, ServerContext warnLog) {
         AUser warningAUser = warningAUserInAServer.getUserReference();
         AUser warnedAUser = warnedAUserInAServer.getUserReference();
         AServer serverOfWarning = warnedAUserInAServer.getServerReference();
@@ -70,19 +72,18 @@ public class WarnServiceBean implements WarnService {
         } else {
             log.warn("Unable to find user {} in guild {} to warn.", warnedAUser.getId(), serverOfWarning.getId());
         }
-        return warning;
+        this.sendWarnLog(warnLog);
     }
 
     @Override
-    public Warning warnUser(Member warnedMember, Member warningMember, String reason) {
+    public void warnUser(Member warnedMember, Member warningMember, String reason, ServerContext warnLog) {
         AUserInAServer warnedAUser = userManagementService.loadUser(warnedMember);
         AUserInAServer warningAUser = userManagementService.loadUser(warningMember);
-        return this.warnUser(warnedAUser, warningAUser, reason);
+        this.warnUser(warnedAUser, warningAUser, reason, warnLog);
     }
 
-    @Override
-    public void sendWarnLog(WarnLog warnLogModel) {
-        String warnLogMessage = templateService.renderTemplate(WARN_LOG_TEMPLATE, warnLogModel);
+    public void sendWarnLog(ServerContext warnLogModel) {
+        String warnLogMessage = templateService.renderContextAwareTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.WARN_LOG, warnLogModel.getServer().getId());
     }
 }

@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.models;
+package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
 

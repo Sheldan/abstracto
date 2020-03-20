@@ -28,7 +28,7 @@ public class Echo implements Command {
         commandContext.getParameters().getParameters().forEach(o -> {
             sb.append(o.toString());
         });
-        EchoModel model = EchoModel.parentBuilder().parent(commandContext.getCommandTemplateContext()).text(sb.toString()).build();
+        EchoModel model = EchoModel.builder().text(sb.toString()).build();
         commandContext.getChannel().sendMessage(templateService.renderTemplate(TEMPLATE_NAME, model)).queue();
         return Result.fromSuccess();
     }

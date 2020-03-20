@@ -1,6 +1,9 @@
-package dev.sheldan.abstracto.core.management;
+package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.models.*;
+import dev.sheldan.abstracto.core.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.management.PostTargetManagement;
+import dev.sheldan.abstracto.core.management.ServerManagementService;
+import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.repository.ServerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

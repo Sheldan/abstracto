@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.models.ARole;
+import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.management.RoleManagementService;
 import dev.sheldan.abstracto.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;

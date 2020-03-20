@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.management;
 
-import dev.sheldan.abstracto.core.models.*;
+import dev.sheldan.abstracto.core.models.database.*;
 
 public interface ServerManagementService {
     AServer createServer(Long id);

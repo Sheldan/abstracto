@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.templating.loading;
 
+import dev.sheldan.abstracto.core.models.ContextAware;
+import dev.sheldan.abstracto.core.models.ServerContext;
 import dev.sheldan.abstracto.templating.TemplateDto;
 import dev.sheldan.abstracto.templating.TemplateService;
 import freemarker.template.Configuration;
@@ -31,6 +33,11 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     @Override
+    public boolean templateExists(String key) {
+        return getTemplateByKey(key) != null;
+    }
+
+    @Override
     public String renderTemplate(TemplateDto templateDto) {
         return null;
     }
@@ -53,6 +60,18 @@ public class TemplateServiceBean implements TemplateService {
             log.warn("Failed to render template: {}", e.getMessage());
         }
         return "";
+    }
+
+    @Override
+    public String renderContextAwareTemplate(String key, ServerContext serverContext) {
+        return renderTemplate(getTemplateKey(key, serverContext), serverContext);
+    }
+
+    private String getTemplateKey(String key, ContextAware contextAware) {
+        if(!contextAware.getTemplateSuffix().equals("")) {
+            return key + "_" + contextAware.getTemplateSuffix();
+        }
+        return key;
     }
 
     @Override
