@@ -37,6 +37,7 @@ public class PostTarget {
     public static String WARN_LOG = "warnlog";
     public static String KICK_LOG = "kicklog";
     public static String BAN_LOG = "banlog";
+    public static String EDIT_LOG = "editLog";
 
-    public static List<String> AVAILABLE_POST_TARGETS = Arrays.asList(JOIN_LOG, LEAVE_LOG, WARN_LOG, KICK_LOG, BAN_LOG);
+    public static List<String> AVAILABLE_POST_TARGETS = Arrays.asList(JOIN_LOG, LEAVE_LOG, WARN_LOG, KICK_LOG, BAN_LOG, EDIT_LOG);
 }

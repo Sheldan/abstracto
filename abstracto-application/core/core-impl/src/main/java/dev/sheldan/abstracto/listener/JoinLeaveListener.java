@@ -24,8 +24,6 @@ public class JoinLeaveListener extends ListenerAdapter {
 
     private static final String USER_JOIN_TEMPLATE = "user_join";
     private static final String USER_LEAVE_TEMPLATE = "user_leave";
-    @Autowired
-    private PostTargetManagement postTargetManagement;
 
     @Autowired
     private ServerManagementService serverManagementService;
