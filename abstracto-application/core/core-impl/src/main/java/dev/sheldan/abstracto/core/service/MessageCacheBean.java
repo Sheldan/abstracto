@@ -28,17 +28,29 @@ public class MessageCacheBean implements MessageCache {
     @Cacheable(key = "#message.id")
     public Message getMessageFromCache(Message message) {
         log.debug("Retrieving message {}", message.getId());
-        Guild guildById = bot.getInstance().getGuildById(message.getGuild().getIdLong());
+        return getMessageInTextChannelOfGuild(message.getIdLong(), message.getTextChannel().getIdLong(), message.getGuild().getIdLong());
+    }
+
+    @Override
+    @Cacheable(key = "#messageId.toString()")
+    public Message getMessageFromCache(Long messageId, Long textChannelId, Long guildId) {
+        log.info("Retrieving message with parameters");
+        return getMessageInTextChannelOfGuild(messageId, textChannelId, guildId);
+    }
+
+    private Message getMessageInTextChannelOfGuild(Long messageId, Long textChannelId, Long guildId) {
+        Guild guildById = bot.getInstance().getGuildById(guildId);
         if(guildById != null) {
-            TextChannel textChannelById = guildById.getTextChannelById(message.getTextChannel().getIdLong());
+            TextChannel textChannelById = guildById.getTextChannelById(textChannelId);
             if(textChannelById != null) {
-                return textChannelById.retrieveMessageById(message.getId()).complete();
+                return textChannelById.retrieveMessageById(messageId).complete();
             } else {
-                log.warn("Failed to load text channel {} of message {} in guild {}", message.getTextChannel().getIdLong(), message.getId(), message.getGuild().getId());
+                log.warn("Failed to load text channel {} of message {} in guild {}", textChannelId, messageId, guildId);
             }
         } else {
-            log.warn("Failed to guild {} of message {}", message.getGuild().getIdLong(), message.getId());
+            log.warn("Failed to guild {} of message {}", guildId, messageId);
         }
         throw new RuntimeException("Message was not found");
     }
+
 }
