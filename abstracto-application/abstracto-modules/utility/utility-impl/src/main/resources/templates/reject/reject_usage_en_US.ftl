@@ -1,0 +1,1 @@
+reject <suggestionId> [reason]

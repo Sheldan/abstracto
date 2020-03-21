@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.PostTargetLoader;
 import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -25,9 +26,12 @@ public class PostTargetManagementBean implements PostTargetManagement {
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private PostTargetLoader postTargetLoader;
+
     @Override
     public void createPostTarget(String name, AServer server, AChannel targetChannel) {
-        if(!PostTarget.AVAILABLE_POST_TARGETS.contains(name)) {
+        if(!postTargetLoader.getPostTargetsAsList().contains(name)) {
             throw new PostTargetException("PostTarget not found");
         }
         log.info("Creating post target {} pointing towards {}", name, targetChannel);

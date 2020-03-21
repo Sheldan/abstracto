@@ -1,0 +1,1 @@
+Rejects the given suggestion. Will post the suggestion again, with the given reason for rejection, with the old text strike through and 'Rejected by' as a notice.

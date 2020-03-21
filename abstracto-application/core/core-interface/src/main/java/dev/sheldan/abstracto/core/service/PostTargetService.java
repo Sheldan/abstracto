@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface PostTargetService {
     CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target);
-    CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
-    CompletableFuture<Message>  sendTextInPostTarget(String text, String postTargetName, Long serverId);
-    CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId);
+    CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
+    CompletableFuture<Message> sendTextInPostTarget(String text, String postTargetName, Long serverId);
+    CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId);
 }

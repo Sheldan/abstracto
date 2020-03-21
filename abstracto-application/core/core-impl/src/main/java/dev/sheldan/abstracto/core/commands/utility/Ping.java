@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class Ping implements Command {
 
-    public static final String PING_TEMPLATE = "ping";
+    public static final String PING_TEMPLATE = "ping_response";
 
     @Autowired
     private TemplateService templateService;
