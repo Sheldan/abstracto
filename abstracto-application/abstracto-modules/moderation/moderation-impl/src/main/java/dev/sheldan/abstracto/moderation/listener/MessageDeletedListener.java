@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.listener;
 
-import dev.sheldan.abstracto.core.ContextUtils;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;

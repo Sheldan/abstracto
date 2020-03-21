@@ -36,7 +36,15 @@ public class AServer implements SnowFlake {
             fetch = FetchType.LAZY,
             mappedBy = "serverReference",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<AUserInAServer> users;
+    @Builder.Default
+    private List<AUserInAServer> users = new ArrayList<>();
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "serverRef",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Builder.Default
+    private List<AEmote> emotes = new ArrayList<>();
 
 
 

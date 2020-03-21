@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class SetPostTargetCommand implements Command {
+public class PostTargetCommand implements Command {
 
     @Autowired
     private PostTargetManagement postTargetManagement;
@@ -32,7 +32,7 @@ public class SetPostTargetCommand implements Command {
         GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
         String targetName = (String) commandContext.getParameters().getParameters().get(0);
         Guild guild = channel.getGuild();
-        postTargetManagement.createOrUpdate(targetName, channel.getIdLong(), guild.getIdLong());
+        postTargetManagement.createOrUpdate(targetName, guild.getIdLong(), channel.getIdLong());
         log.info("Setting posttarget {} in {} to {}", targetName, guild.getIdLong(), channel.getId());
         return Result.fromSuccess();
     }

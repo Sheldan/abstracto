@@ -1,11 +1,15 @@
 package dev.sheldan.abstracto.core.models.database;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Entity @Getter @Builder
+@Entity
+@Getter
+@Builder
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AUserInAServer {
 
     @Id

@@ -26,7 +26,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
     private ServerManagementService serverManagementService;
 
     @Override
-    public void createPostTarget(String name, AChannel targetChannel, AServer server) {
+    public void createPostTarget(String name, AServer server, AChannel targetChannel) {
         if(!PostTarget.AVAILABLE_POST_TARGETS.contains(name)) {
             throw new PostTargetException("PostTarget not found");
         }
@@ -35,26 +35,26 @@ public class PostTargetManagementBean implements PostTargetManagement {
     }
 
     @Override
-    public void createOrUpdate(String name, AChannel targetChannel, AServer server) {
+    public void createOrUpdate(String name, AServer server, AChannel targetChannel) {
         PostTarget existing = postTargetRepository.findPostTargetByName(name);
         if(existing == null){
-            this.createPostTarget(name, targetChannel, server);
+            this.createPostTarget(name, server, targetChannel);
         } else {
-            this.updatePostTarget(existing, targetChannel, server);
+            this.updatePostTarget(existing, server, targetChannel);
         }
     }
 
     @Override
-    public void createOrUpdate(String name, Long channelId, AServer server) {
+    public void createOrUpdate(String name, AServer server, Long channelId) {
         AChannel dbChannel = channelManagementService.loadChannel(channelId);
-        createOrUpdate(name, dbChannel, server);
+        createOrUpdate(name, server, dbChannel);
     }
 
     @Override
-    public void createOrUpdate(String name, Long channelId, Long serverId) {
+    public void createOrUpdate(String name, Long serverId, Long channelId) {
         AChannel dbChannel = channelManagementService.loadChannel(channelId);
         AServer dbServer = serverManagementService.loadServer(serverId);
-        createOrUpdate(name, dbChannel, dbServer);
+        createOrUpdate(name, dbServer, dbChannel);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
     }
 
     @Override
-    public void updatePostTarget(PostTarget target, AChannel newTargetChannel, AServer server) {
+    public void updatePostTarget(PostTarget target, AServer server, AChannel newTargetChannel) {
         postTargetRepository.getOne(target.getId()).setChannelReference(newTargetChannel);
     }
 

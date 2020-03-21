@@ -39,6 +39,7 @@ public class PostTarget {
     public static String BAN_LOG = "banLog";
     public static String EDIT_LOG = "editLog";
     public static String DELETE_LOG = "deleteLog";
+    public static String SUGGESTIONS = "suggestions";
 
-    public static List<String> AVAILABLE_POST_TARGETS = Arrays.asList(JOIN_LOG, LEAVE_LOG, WARN_LOG, KICK_LOG, BAN_LOG, EDIT_LOG, DELETE_LOG);
+    public static List<String> AVAILABLE_POST_TARGETS = Arrays.asList(JOIN_LOG, LEAVE_LOG, WARN_LOG, KICK_LOG, BAN_LOG, EDIT_LOG, DELETE_LOG, SUGGESTIONS);
 }

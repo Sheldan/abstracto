@@ -9,11 +9,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = { FreeMarkerAutoConfiguration.class })
 @ComponentScan(basePackages = {"dev.sheldan.abstracto"})
 @EnableCaching
+@EnableAsync
+@EnableTransactionManagement
 public class Application implements CommandLineRunner {
 
     @Autowired

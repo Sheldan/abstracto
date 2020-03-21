@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>moderation</module>
+        <module>utility</module>
     </modules>
 
 

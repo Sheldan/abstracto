@@ -21,7 +21,7 @@ public class AChannel implements SnowFlake {
 
     @Getter
     @ManyToMany(mappedBy = "channels")
-    private Set<ChannelGroup> groups;
+    private Set<AChannelGroup> groups;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter @Setter

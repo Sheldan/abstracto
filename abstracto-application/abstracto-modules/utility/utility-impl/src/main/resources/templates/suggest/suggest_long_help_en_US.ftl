@@ -1,0 +1,1 @@
+Suggests a text in the suggestions channel to be voted on.

@@ -10,15 +10,15 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChannelGroup {
+@Getter
+public class AChannelGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     private Long id;
 
     @Column
-    @Getter @Setter
+    @Setter
     private String groupName;
 
     @ManyToMany
@@ -26,7 +26,6 @@ public class ChannelGroup {
             name = "channel_in_group",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "channel_id"))
-    @Getter
     private Set<AChannel> channels;
 
 

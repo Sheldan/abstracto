@@ -6,10 +6,13 @@ import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
 
 
 @Slf4j
@@ -26,15 +29,15 @@ public class PostTargetServiceBean implements PostTargetService {
     private Bot botService;
 
     @Override
-    public void sendTextInPostTarget(String text, PostTarget target) {
+    public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target) {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        textChannelForPostTarget.sendMessage(text).queue();
+        return textChannelForPostTarget.sendMessage(text).submit();
     }
 
     @Override
-    public void sendEmbedInPostTarget(MessageEmbed embed, PostTarget target) {
+    public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTarget target) {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        textChannelForPostTarget.sendMessage(embed).queue();
+        return textChannelForPostTarget.sendMessage(embed).submit();
     }
 
     private TextChannel getTextChannelForPostTarget(PostTarget target) {
@@ -64,14 +67,14 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public void sendTextInPostTarget(String text, String postTargetName, Long serverId) {
+    public CompletableFuture<Message>  sendTextInPostTarget(String text, String postTargetName, Long serverId) {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
-        this.sendTextInPostTarget(text, postTarget);
+        return this.sendTextInPostTarget(text, postTarget);
     }
 
     @Override
-    public void sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId) {
+    public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId) {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
-        this.sendEmbedInPostTarget(embed, postTarget);
+        return this.sendEmbedInPostTarget(embed, postTarget);
     }
 }

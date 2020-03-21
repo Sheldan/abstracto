@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core;
+package dev.sheldan.abstracto.core.utils;
 
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
