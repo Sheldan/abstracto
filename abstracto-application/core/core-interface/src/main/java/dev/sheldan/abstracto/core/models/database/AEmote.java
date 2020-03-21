@@ -20,15 +20,19 @@ public class AEmote {
     private String name;
 
     @Column
+    @Setter
     private String emoteKey;
 
     @Column
+    @Setter
     private Long emoteId;
 
     @Column
+    @Setter
     private Boolean animated;
 
     @Column
+    @Setter
     private Boolean custom;
 
     @ManyToOne(fetch = FetchType.LAZY)

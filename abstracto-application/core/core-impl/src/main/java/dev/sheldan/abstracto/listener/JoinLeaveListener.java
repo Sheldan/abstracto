@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.listener;
 
 import dev.sheldan.abstracto.core.models.database.PostTarget;
-import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.TemplateService;

@@ -7,9 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class UtilityModule implements Module {
 
+    public static final String UTILITY = "utility";
+
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name("utility").description("General utilities").build();
+        return ModuleInfo.builder().name(UTILITY).description("General utilities").build();
     }
 
     @Override

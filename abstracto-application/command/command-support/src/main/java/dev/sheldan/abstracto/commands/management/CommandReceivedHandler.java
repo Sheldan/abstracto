@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CommandReceivedHandler extends ListenerAdapter {
@@ -63,6 +65,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Command foundCommand = null;
         try {
             List<String> parameters = Arrays.asList(event.getMessage().getContentStripped().split(" "));
+            parameters = parameters.stream().filter(s -> {
+                return !s.equals("");
+            }).collect(Collectors.toList());
             UnParsedCommandParameter unparsedParameter = new UnParsedCommandParameter();
             unparsedParameter.setParameters(parameters.subList(1, parameters.size()));
             String withoutPrefix = parameters.get(0).substring(1);
@@ -102,6 +107,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
+        Iterator<Emote> emoteIterator = message.getEmotes().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
             for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
                 Parameter param = command.getConfiguration().getParameters().get(i);
@@ -111,12 +117,20 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         parsedParameters.add(Integer.parseInt(value));
                     } else if(param.getType().equals(Double.class)){
                         parsedParameters.add(Double.parseDouble(value));
-                    }  else if(param.getType().equals(Long.class)){
+                    } else if(param.getType().equals(Long.class)){
                         parsedParameters.add(Long.parseLong(value));
                     } else if(param.getType().equals(TextChannel.class)){
                         parsedParameters.add(channelIterator.next());
                     } else if(param.getType().equals(Member.class)) {
                         parsedParameters.add(memberIterator.next());
+                    } else if(param.getType().equals(Emote.class)) {
+                        // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
+                        // the second one shadows the first one, and there are too little parameters to go of
+                        if(emoteIterator.hasNext()) {
+                            parsedParameters.add(emoteIterator.next());
+                        } else {
+                            parsedParameters.add(value);
+                        }
                     } else {
                         parsedParameters.add(value);
                     }
