@@ -5,7 +5,9 @@ import dev.sheldan.abstracto.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.command.execution.CommandContext;
 import dev.sheldan.abstracto.command.execution.Parameter;
 import dev.sheldan.abstracto.command.execution.Result;
+import dev.sheldan.abstracto.core.exception.ConfigurationException;
 import dev.sheldan.abstracto.core.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.EmoteService;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,9 @@ public class SetEmote implements Command {
     @Autowired
     private EmoteManagementService emoteManagementService;
 
+    @Autowired
+    private EmoteService emoteService;
+
     @Override
     public Result execute(CommandContext commandContext) {
         String emoteKey = (String) commandContext.getParameters().getParameters().get(0);
@@ -28,7 +33,11 @@ public class SetEmote implements Command {
             emoteManagementService.setEmoteToDefaultEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
         } else {
             Emote emote = (Emote) o;
-            emoteManagementService.setEmoteToCustomEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
+            if(emoteService.isEmoteUsableByBot(emote)) {
+                emoteManagementService.setEmoteToCustomEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
+            } else {
+                throw new ConfigurationException("Emote is not usable by bot.");
+            }
         }
         return Result.fromSuccess();
     }

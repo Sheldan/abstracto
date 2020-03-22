@@ -1,11 +1,8 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.ServerContext;
-import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.moderation.models.template.BanIdLog;
-import dev.sheldan.abstracto.moderation.models.template.BanLog;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -17,8 +14,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class BanServiceBean implements BanService {
 
-    public static final String BAN_LOG_TEMPLATE = "ban_log";
-    public static final String BAN_ID_LOG_TEMPLATE = "banid_log";
+    private static final String BAN_LOG_TEMPLATE = "ban_log";
+    private static final String BAN_ID_LOG_TEMPLATE = "banid_log";
+    private static final String BAN_LOG_TARGET = "banLog";
     @Autowired
     private Bot bot;
 
@@ -32,14 +30,14 @@ public class BanServiceBean implements BanService {
     public void banMember(Member member, String reason, ServerContext banLog) {
         this.banUser(member.getGuild().getIdLong(), member.getIdLong(), reason);
         String warnLogMessage = templateService.renderContextAwareTemplate(BAN_LOG_TEMPLATE, banLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.BAN_LOG, banLog.getServer().getId());
+        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, banLog.getServer().getId());
     }
 
     @Override
     public void banMember(Long guildId, Long userId, String reason, ServerContext banIdLog) {
         banUser(guildId, userId, reason);
         String warnLogMessage = templateService.renderContextAwareTemplate(BAN_ID_LOG_TEMPLATE, banIdLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.BAN_LOG, guildId);
+        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, guildId);
     }
 
     private void banUser(Long guildId, Long userId, String reason) {

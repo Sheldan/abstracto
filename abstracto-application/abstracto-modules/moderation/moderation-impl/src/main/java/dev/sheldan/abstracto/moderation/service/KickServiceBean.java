@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.models.template.KickLogModel;
@@ -15,7 +14,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class KickServiceBean implements KickService {
 
-    public static final String KICK_LOG_TEMPLATE = "kick_log";
+    private static final String KICK_LOG_TEMPLATE = "kick_log";
+    private static final String WARN_LOG_TARGET = "warnLog";
     @Autowired
     private Bot bot;
 
@@ -38,6 +38,6 @@ public class KickServiceBean implements KickService {
 
     private void sendKickLog(KickLogModel kickLogModel) {
         String warnLogMessage = templateService.renderContextAwareTemplate(KICK_LOG_TEMPLATE, kickLogModel);
-        postTargetService.sendTextInPostTarget(warnLogMessage, PostTarget.WARN_LOG, kickLogModel.getServer().getId());
+        postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, kickLogModel.getServer().getId());
     }
 }

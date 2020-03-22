@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.MessageTextUpdatedListener;
-import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageEditedLog;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MessageEditedListener implements MessageTextUpdatedListener {
 
     private static final String MESSAGE_EDITED_TEMPLATE = "message_edited";
+    private static final String EDIT_LOG_TARGET = "editLog";
 
     @Autowired
     private TemplateService templateService;
@@ -43,9 +43,9 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
                 .guild(messageAfter.getGuild())
                 .member(messageAfter.getMember()).build();
         String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_EDITED_TEMPLATE, log);
-        postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, PostTarget.EDIT_LOG, messageAfter.getGuild().getIdLong());
+        postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, EDIT_LOG_TARGET, messageAfter.getGuild().getIdLong());
         MessageEmbed embed = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log);
-        postTargetService.sendEmbedInPostTarget(embed, PostTarget.DELETE_LOG, messageBefore.getGuild().getIdLong());
+        postTargetService.sendEmbedInPostTarget(embed, EDIT_LOG_TARGET, messageBefore.getGuild().getIdLong());
 
     }
 }

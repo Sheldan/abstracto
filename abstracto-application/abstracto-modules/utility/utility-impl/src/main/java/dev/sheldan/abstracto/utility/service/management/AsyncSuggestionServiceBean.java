@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.utility.models.template.SuggestionLog;
@@ -15,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static dev.sheldan.abstracto.utility.service.SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE;
+import static dev.sheldan.abstracto.utility.service.SuggestionServiceBean.SUGGESTIONS_TARGET;
 
 @Component
 @Slf4j
@@ -34,7 +34,7 @@ public class AsyncSuggestionServiceBean {
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
             MessageEmbed embed = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
-            postTargetService.sendEmbedInPostTarget(embed, PostTarget.SUGGESTIONS, suggestionLog.getServer().getId());
+            postTargetService.sendEmbedInPostTarget(embed, SUGGESTIONS_TARGET, suggestionLog.getServer().getId());
         }
     }
 

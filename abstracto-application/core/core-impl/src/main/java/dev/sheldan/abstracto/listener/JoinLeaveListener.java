@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.listener;
 
-import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.TemplateService;
@@ -23,6 +22,8 @@ public class JoinLeaveListener extends ListenerAdapter {
 
     private static final String USER_JOIN_TEMPLATE = "user_join";
     private static final String USER_LEAVE_TEMPLATE = "user_leave";
+    private static final String JOIN_LOG_TARGET = "joinLog";
+    private static final String LEAVE_LOG_TARGET = "leaveLog";
 
     @Autowired
     private ServerManagementService serverManagementService;
@@ -37,14 +38,14 @@ public class JoinLeaveListener extends ListenerAdapter {
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         String text = getRenderedEvent(event.getUser(), USER_JOIN_TEMPLATE);
-        postTargetService.sendTextInPostTarget(text, PostTarget.JOIN_LOG, event.getGuild().getIdLong());
+        postTargetService.sendTextInPostTarget(text, JOIN_LOG_TARGET, event.getGuild().getIdLong());
     }
 
     @Override
     @Transactional
     public void onGuildMemberLeave(@Nonnull GuildMemberLeaveEvent event) {
         String text = getRenderedEvent(event.getUser(), USER_LEAVE_TEMPLATE);
-        postTargetService.sendTextInPostTarget(text, PostTarget.LEAVE_LOG, event.getGuild().getIdLong());
+        postTargetService.sendTextInPostTarget(text, LEAVE_LOG_TARGET, event.getGuild().getIdLong());
     }
 
     @NotNull

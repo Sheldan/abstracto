@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -24,8 +23,9 @@ import org.springframework.stereotype.Component;
 public class SuggestionServiceBean implements SuggestionService {
 
     public static final String SUGGESTION_LOG_TEMPLATE = "suggest_log";
-    public static final String SUGGESTION_YES_EMOTE = "SUGGESTION_YES";
-    public static final String SUGGESTION_NO_EMOTE = "SUGGESTION_NO";
+    private static final String SUGGESTION_YES_EMOTE = "SUGGESTION_YES";
+    private static final String SUGGESTION_NO_EMOTE = "SUGGESTION_NO";
+    public static final String SUGGESTIONS_TARGET = "suggestions";
     @Autowired
     private SuggestionManagementService suggestionManagementService;
 
@@ -57,7 +57,7 @@ public class SuggestionServiceBean implements SuggestionService {
         JDA instance = botService.getInstance();
         Guild guildById = instance.getGuildById(guildId);
         if(guildById != null) {
-            postTargetService.sendEmbedInPostTarget(embed, PostTarget.SUGGESTIONS, guildId).thenAccept(message -> {
+            postTargetService.sendEmbedInPostTarget(embed, SUGGESTIONS_TARGET, guildId).thenAccept(message -> {
                 messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
                 messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
                 suggestionManagementService.setPostedMessage(suggestion, message);
