@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.repository.PostTargetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +32,13 @@ public class PostTargetManagementBean implements PostTargetManagement {
     @Autowired
     private DynamicKeyLoader dynamicKeyLoader;
 
+    @Autowired
+    private PostTargetService postTargetService;
+
     @Override
     public void createPostTarget(String name, AServer server, AChannel targetChannel) {
-        List<String> possiblePostTargets = dynamicKeyLoader.getPostTargetsAsList();
-        if(!possiblePostTargets.contains(name)) {
-            throw new ConfigurationException("PostTarget not found. Possible values are: " + String.join(", ", possiblePostTargets));
+        if(!postTargetService.validPostTarget(name)) {
+            throw new ConfigurationException("PostTarget not found. Possible values are: " + String.join(", ", dynamicKeyLoader.getPostTargetsAsList()));
         }
         log.info("Creating post target {} pointing towards {}", name, targetChannel);
         postTargetRepository.save(PostTarget.builder().name(name).channelReference(targetChannel).serverReference(server).build());

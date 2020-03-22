@@ -1,0 +1,1 @@
+**Name**: ${emote.name} **Link**: ${emote.imageUrl}

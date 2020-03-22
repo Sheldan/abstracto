@@ -1,7 +1,6 @@
-package dev.sheldan.abstracto.core.commands.utility.model;
+package dev.sheldan.abstracto.core.models.command;
 
 import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

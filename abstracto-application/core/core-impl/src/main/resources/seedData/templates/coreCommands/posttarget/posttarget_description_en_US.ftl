@@ -1,0 +1,1 @@
+Sets the target of the given posts to a channel.

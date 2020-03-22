@@ -1,0 +1,1 @@
+Retrieves the URL to the given emote.

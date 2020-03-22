@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.command.execution.CommandContext;
 import dev.sheldan.abstracto.command.execution.Result;
-import dev.sheldan.abstracto.core.commands.utility.model.PingModel;
+import dev.sheldan.abstracto.core.models.command.PingModel;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

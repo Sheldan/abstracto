@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.command.Command;
-import dev.sheldan.abstracto.command.execution.CommandConfiguration;
-import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.Parameter;
-import dev.sheldan.abstracto.command.execution.Result;
+import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.PostTargetManagement;
+import dev.sheldan.abstracto.core.models.command.PostTargetErrorModel;
+import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
@@ -21,16 +21,36 @@ import java.util.List;
 @Slf4j
 public class PostTargetCommand implements Command {
 
+    public static final String POST_TARGET_NO_TARGET_TEMPLATE = "posttarget_no_target";
+    public static final String POST_TARGET_INVALID_TARGET_TEMPLATE = "posttarget_invalid_target";
     @Autowired
     private PostTargetManagement postTargetManagement;
 
     @Autowired
+    private PostTargetService postTargetService;
+
+    @Autowired
     private ChannelManagementService channelManagementService;
+
+    @Autowired
+    private TemplateService templateService;
 
     @Override
     public Result execute(CommandContext commandContext) {
-        GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
+        if(commandContext.getParameters().getParameters().isEmpty()) {
+            PostTargetErrorModel postTargetErrorModel = (PostTargetErrorModel) ContextConverter.fromCommandContext(commandContext, PostTargetErrorModel.class);
+            postTargetErrorModel.setValidPostTargets(postTargetService.getAvailablePostTargets());
+            String errorMessage = templateService.renderTemplate(POST_TARGET_NO_TARGET_TEMPLATE, postTargetErrorModel);
+            return Result.fromError(errorMessage);
+        }
         String targetName = (String) commandContext.getParameters().getParameters().get(0);
+        if(!postTargetService.validPostTarget(targetName)) {
+            PostTargetErrorModel postTargetErrorModel = (PostTargetErrorModel) ContextConverter.fromCommandContext(commandContext, PostTargetErrorModel.class);
+            postTargetErrorModel.setValidPostTargets(postTargetService.getAvailablePostTargets());
+            String errorMessage = templateService.renderTemplate(POST_TARGET_INVALID_TARGET_TEMPLATE, postTargetErrorModel);
+            return Result.fromError(errorMessage);
+        }
+        GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
         Guild guild = channel.getGuild();
         postTargetManagement.createOrUpdate(targetName, guild.getIdLong(), channel.getIdLong());
         log.info("Setting posttarget {} in {} to {}", targetName, guild.getIdLong(), channel.getId());
@@ -39,8 +59,8 @@ public class PostTargetCommand implements Command {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).description("The channel to post towards").build();
-        Parameter postTargetName = Parameter.builder().name("name").type(String.class).description("The name of the post target to redirect").build();
+        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).optional(true).description("The channel to post towards").build();
+        Parameter postTargetName = Parameter.builder().name("name").type(String.class).optional(true).description("The name of the post target to redirect").build();
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
         return CommandConfiguration.builder()
                 .name("posttarget")

@@ -13,6 +13,9 @@ public class ReactionPostExecution implements PostCommandExecution {
     public void execute(CommandContext commandContext, Result result, Command command) {
         if(result.getResult().equals(ResultState.ERROR)) {
             commandContext.getMessage().addReaction("⚠️").queue();
+            if(result.getMessage() != null && result.getThrowable() == null){
+                commandContext.getChannel().sendMessage(result.getMessage()).queue();
+            }
         } else {
             if(command.getConfiguration().isCausesReaction()){
                 commandContext.getMessage().addReaction("⭐").queue();

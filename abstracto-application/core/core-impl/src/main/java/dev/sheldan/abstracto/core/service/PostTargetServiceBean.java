@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.ConfigurationException;
 import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -27,6 +29,9 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Autowired
     private Bot botService;
+
+    @Autowired
+    private DynamicKeyLoader dynamicKeyLoader;
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target) {
@@ -76,5 +81,16 @@ public class PostTargetServiceBean implements PostTargetService {
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId) {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(embed, postTarget);
+    }
+
+    @Override
+    public boolean validPostTarget(String name) {
+        List<String> possiblePostTargets = dynamicKeyLoader.getPostTargetsAsList();
+        return possiblePostTargets.contains(name);
+    }
+
+    @Override
+    public List<String> getAvailablePostTargets() {
+        return dynamicKeyLoader.getPostTargetsAsList();
     }
 }
