@@ -12,11 +12,11 @@
   "fields": [
     {
       "name": ":x: Original Message: ",
-      "value": "${message.contentRaw}"
+      "value": "${message.content}"
     },
     {
         "name": "Link",
-        "value": "[${textChannel.name}](${message.jumpUrl})"
+        "value": "[${textChannel.name}](${message.messageUrl})"
     }
   ]
 }

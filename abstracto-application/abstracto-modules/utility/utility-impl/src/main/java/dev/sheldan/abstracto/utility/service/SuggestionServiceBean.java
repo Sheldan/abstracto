@@ -10,13 +10,16 @@ import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.utility.models.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
 import dev.sheldan.abstracto.utility.models.template.SuggestionLog;
-import dev.sheldan.abstracto.utility.service.management.AsyncSuggestionServiceBean;
 import dev.sheldan.abstracto.utility.service.management.SuggestionManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -39,13 +42,13 @@ public class SuggestionServiceBean implements SuggestionService {
     private Bot botService;
 
     @Autowired
-    private AsyncSuggestionServiceBean suggestionServiceBean;
-
-    @Autowired
     private EmoteManagementService emoteManagementService;
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private SuggestionServiceBean self;
 
     @Override
     public void createSuggestion(Member member, String text, SuggestionLog suggestionLog) {
@@ -93,10 +96,22 @@ public class SuggestionServiceBean implements SuggestionService {
                 TextChannel textChannelById = guildById.getTextChannelById(channelId);
                 if(textChannelById != null) {
                     textChannelById.retrieveMessageById(originalMessageId).queue(message -> {
-                        suggestionServiceBean.updateSuggestionMessageText(text, suggestionLog, message);
+                        self.updateSuggestionMessageText(text, suggestionLog, message);
                     });
                 }
             }
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateSuggestionMessageText(String text, SuggestionLog suggestionLog, Message message) {
+        Optional<MessageEmbed> embedOptional = message.getEmbeds().stream().filter(embed -> embed.getDescription() != null).findFirst();
+        if(embedOptional.isPresent()) {
+            MessageEmbed suggestionEmbed = embedOptional.get();
+            suggestionLog.setReason(text);
+            suggestionLog.setText(suggestionEmbed.getDescription());
+            MessageEmbed embed = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
+            postTargetService.sendEmbedInPostTarget(embed, SUGGESTIONS_TARGET, suggestionLog.getServer().getId());
         }
     }
 

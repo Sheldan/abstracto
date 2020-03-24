@@ -21,21 +21,17 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
-        Guild guildById = bot.getInstance().getGuildById(serverId);
-        if(guildById != null) {
-            AEmote emote = emoteManagementService.loadEmoteByName(emoteKey, serverId);
-            if(emote.getCustom()) {
-                Emote emoteById = guildById.getEmoteById(emote.getEmoteId());
-                if(emoteById != null) {
-                    message.addReaction(emoteById).queue();
-                } else {
-                    log.warn("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guildById.getId());
-                }
+        Guild guildById = bot.getGuildById(serverId);
+        AEmote emote = emoteManagementService.loadEmoteByName(emoteKey, serverId);
+        if(emote.getCustom()) {
+            Emote emoteById = guildById.getEmoteById(emote.getEmoteId());
+            if(emoteById != null) {
+                message.addReaction(emoteById).queue();
             } else {
-                message.addReaction(emote.getEmoteKey()).queue();
+                log.warn("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guildById.getId());
             }
         } else {
-            log.warn("Guild {} was not found when trying to react to a message.", serverId);
+            message.addReaction(emote.getEmoteKey()).queue();
         }
     }
 }

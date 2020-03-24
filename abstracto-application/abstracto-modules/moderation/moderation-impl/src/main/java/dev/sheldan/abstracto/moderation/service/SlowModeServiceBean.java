@@ -29,17 +29,7 @@ public class SlowModeServiceBean implements SlowModeService {
 
     @Override
     public void setSlowMode(AChannel channel, Duration duration) {
-        JDA jpaInstance = bot.getInstance();
-        Guild guild = jpaInstance.getGuildById(channel.getServer().getId());
-        if(guild != null) {
-            TextChannel textChannelById = guild.getTextChannelById(channel.getId());
-            if(textChannelById != null) {
-                this.setSlowMode(textChannelById, duration);
-            } else {
-                log.warn("Channel {} was not found in guild {} when trying to set a slow mode.", channel.getId(), channel.getServer().getId());
-            }
-        } else {
-            log.warn("Guild {} was not found when trying to set slow mode.", channel.getServer().getId());
-        }
+        TextChannel textChannel = bot.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
+        this.setSlowMode(textChannel, duration);
     }
 }

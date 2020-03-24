@@ -27,13 +27,9 @@ public class KickServiceBean implements KickService {
 
     @Override
     public void kickMember(Member member, String reason, KickLogModel kickLogModel) {
-        Guild guildById = bot.getInstance().getGuildById(member.getGuild().getIdLong());
-        if(guildById != null) {
-            guildById.kick(member, reason).queue();
-            this.sendKickLog(kickLogModel);
-        } else {
-            log.warn("Failed to kick member {} from guild {}. Guild was not found.", member.getId(), member.getGuild().getId());
-        }
+        Guild guildById = bot.getGuildById(kickLogModel.getGuild().getIdLong());
+        guildById.kick(member, reason).queue();
+        this.sendKickLog(kickLogModel);
     }
 
     private void sendKickLog(KickLogModel kickLogModel) {

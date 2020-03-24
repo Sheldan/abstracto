@@ -57,7 +57,7 @@ public class WarnServiceBean implements WarnService {
         Warning warning = warnManagementService.createWarning(warnedAUserInAServer, warningAUserInAServer, reason);
         JDA instance = bot.getInstance();
         User userBeingWarned = instance.getUserById(warnedAUser.getId());
-        Guild guildById = instance.getGuildById(serverOfWarning.getId());
+        Guild guildById = bot.getGuildById(serverOfWarning.getId());
         String guildName = "<defaultName>";
         if(guildById != null) {
             guildName = guildById.getName();

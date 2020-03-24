@@ -6,7 +6,8 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 public class EmbedConfiguration {
     private EmbedAuthor author;
     private EmbedTitle title;

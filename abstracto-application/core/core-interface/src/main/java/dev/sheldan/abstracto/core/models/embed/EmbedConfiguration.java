@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.templating.embed;
+package dev.sheldan.abstracto.core.models.embed;
 
 import lombok.Getter;
 import lombok.Setter;

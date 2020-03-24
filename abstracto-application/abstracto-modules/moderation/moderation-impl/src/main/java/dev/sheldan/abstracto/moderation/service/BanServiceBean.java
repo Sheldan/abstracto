@@ -41,12 +41,8 @@ public class BanServiceBean implements BanService {
     }
 
     private void banUser(Long guildId, Long userId, String reason) {
-        Guild guildById = bot.getInstance().getGuildById(guildId);
-        if(guildById != null) {
-            log.info("Banning user {} in guild {}.", userId, guildId);
-            guildById.ban(userId.toString(), 0, reason).queue();
-        } else {
-            log.warn("Guild id {} from member was not found.", guildId);
-        }
+        Guild guildById = bot.getGuildById(guildId);
+        log.info("Banning user {} in guild {}.", userId, guildId);
+        guildById.ban(userId.toString(), 0, reason).queue();
     }
 }

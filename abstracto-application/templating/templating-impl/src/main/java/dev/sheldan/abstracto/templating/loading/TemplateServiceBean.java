@@ -82,6 +82,7 @@ public class TemplateServiceBean implements TemplateService {
                 builder.addField(embedField.getName(), embedField.getValue(), inline);
             });
         }
+        builder.setTimestamp(configuration.getTimeStamp());
 
         builder.setImage(configuration.getImageUrl());
 

@@ -1,13 +1,16 @@
-package dev.sheldan.abstracto.templating.embed;
+package dev.sheldan.abstracto.core.models.embed;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@Getter @Setter
-public class EmbedConfiguration {
+@Getter
+@Setter
+@Builder
+public class CachedEmbed {
     private EmbedAuthor author;
     private EmbedTitle title;
     private EmbedColor color;

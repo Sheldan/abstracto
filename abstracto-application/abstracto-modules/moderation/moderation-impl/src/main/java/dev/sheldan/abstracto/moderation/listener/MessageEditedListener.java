@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.MessageTextUpdatedListener;
+import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageEditedLog;
@@ -30,8 +31,8 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
 
     @Override
     @Transactional
-    public void execute(Message messageBefore, Message messageAfter) {
-        if(messageBefore.getContentRaw().equals(messageAfter.getContentRaw())){
+    public void execute(CachedMessage messageBefore, Message messageAfter) {
+        if(messageBefore.getContent().equals(messageAfter.getContentRaw())){
             log.debug("Message content was the same. Possible reason was: message was not in cache.");
             return;
         }
@@ -45,7 +46,7 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
         String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_EDITED_TEMPLATE, log);
         postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, EDIT_LOG_TARGET, messageAfter.getGuild().getIdLong());
         MessageEmbed embed = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log);
-        postTargetService.sendEmbedInPostTarget(embed, EDIT_LOG_TARGET, messageBefore.getGuild().getIdLong());
+        postTargetService.sendEmbedInPostTarget(embed, EDIT_LOG_TARGET, messageBefore.getServerId());
 
     }
 }

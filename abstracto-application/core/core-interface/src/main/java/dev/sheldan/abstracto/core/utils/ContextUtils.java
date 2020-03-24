@@ -3,10 +3,12 @@ package dev.sheldan.abstracto.core.utils;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.models.ServerChannelUser;
 import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.Bot;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,18 +28,22 @@ public class ContextUtils {
     @Autowired
     private ServerManagementService serverManagementService;
 
-    public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(Message message, Class<T> clazz) {
+    @Autowired
+    private Bot bot;
+
+    public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(CachedMessage message, Class<T> clazz) {
         Method m = null;
+        ServerChannelUser serverChannelUser = bot.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthorId());
         try {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
-            AUserInAServer aUserInAServer = userManagementService.loadUser(message.getMember());
+            AUserInAServer aUserInAServer = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
             return builder
-                    .member(message.getMember())
-                    .guild(message.getGuild())
-                    .textChannel(message.getTextChannel())
-                    .channel(channelManagementService.loadChannel(message.getTextChannel().getIdLong()))
-                    .server(serverManagementService.loadServer(message.getGuild().getIdLong()))
+                    .member(serverChannelUser.getMember())
+                    .guild(serverChannelUser.getGuild())
+                    .textChannel(serverChannelUser.getTextChannel())
+                    .channel(channelManagementService.loadChannel(message.getChannelId()))
+                    .server(serverManagementService.loadServer(message.getServerId()))
                     .aUserInAServer(aUserInAServer)
                     .user(aUserInAServer.getUserReference())
                     .build();
