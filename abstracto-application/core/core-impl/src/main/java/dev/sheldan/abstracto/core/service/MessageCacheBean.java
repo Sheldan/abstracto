@@ -77,6 +77,7 @@ public class MessageCacheBean implements MessageCache {
         return CachedMessage.builder()
                 .authorId(message.getAuthor().getIdLong())
                 .serverId(message.getGuild().getIdLong())
+                .messageId(message.getIdLong())
                 .channelId(message.getChannel().getIdLong())
                 .content(message.getContentRaw())
                 .embeds(embeds)
