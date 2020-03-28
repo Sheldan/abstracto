@@ -10,10 +10,10 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.listener.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.MessageCache;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang3.StringUtils;
@@ -91,8 +91,8 @@ public class MessageEmbedListener extends ListenerAdapter {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createEmbedAndPostEmbed(@Nonnull GuildMessageReceivedEvent event, CachedMessage message) {
         MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(event, message);
-        MessageEmbed embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
-        event.getChannel().sendMessage(embed).queue();
+        MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
+        event.getChannel().sendMessage(embed.getMessage()).embed(embed.getEmbed()).queue();
     }
 
     private MessageEmbeddedModel buildTemplateParameter(GuildMessageReceivedEvent event, CachedMessage embeddedMessage) {

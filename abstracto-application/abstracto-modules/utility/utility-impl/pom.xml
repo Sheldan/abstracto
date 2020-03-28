@@ -17,6 +17,12 @@
             <artifactId>utility-int</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>dev.sheldan.abstracto.scheduling</groupId>
+            <artifactId>scheduling-int</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

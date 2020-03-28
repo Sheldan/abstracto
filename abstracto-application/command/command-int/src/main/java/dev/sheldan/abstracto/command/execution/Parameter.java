@@ -11,4 +11,5 @@ public class Parameter {
     private String description;
     private boolean optional;
     private boolean remainder;
+    private Integer maxLength;
 }

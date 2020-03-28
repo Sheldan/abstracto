@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.templating.loading;
 import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.models.ContextAware;
 import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateDto;
 import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.templating.embed.*;
@@ -11,7 +12,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -51,7 +51,7 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     @Override
-    public MessageEmbed renderEmbedTemplate(String key, Object model) {
+    public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
         EmbedBuilder builder = new EmbedBuilder();
         EmbedConfiguration configuration = gson.fromJson(embedConfig, EmbedConfiguration.class);
@@ -91,7 +91,11 @@ public class TemplateServiceBean implements TemplateService {
             builder.setColor(new Color(color.getR(), color.getG(), color.getB()).getRGB());
         }
 
-        return builder.build();
+
+        return MessageToSend.builder()
+                .embed(builder.build())
+                .message(configuration.getAdditionalMessage())
+                .build();
     }
 
     private String impromptu(String templateStr, Object model) {

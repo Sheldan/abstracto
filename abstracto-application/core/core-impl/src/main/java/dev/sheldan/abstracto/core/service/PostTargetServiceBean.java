@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.exception.ConfigurationException;
 import dev.sheldan.abstracto.core.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -81,6 +82,18 @@ public class PostTargetServiceBean implements PostTargetService {
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId) {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(embed, postTarget);
+    }
+
+    @Override
+    public CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId) {
+        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        return this.sendEmbedInPostTarget(message, postTarget);
+    }
+
+    @Override
+    public CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, PostTarget target) {
+        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+        return textChannelForPostTarget.sendMessage(message.getMessage()).embed(message.getEmbed()).submit();
     }
 
     @Override

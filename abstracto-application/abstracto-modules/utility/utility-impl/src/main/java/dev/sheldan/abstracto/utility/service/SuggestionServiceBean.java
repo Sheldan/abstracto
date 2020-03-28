@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -55,12 +56,12 @@ public class SuggestionServiceBean implements SuggestionService {
         Suggestion suggestion = suggestionManagementService.createSuggestion(member, text);
         suggestionLog.setSuggestion(suggestion);
         suggestionLog.setText(text);
-        MessageEmbed embed = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
         long guildId = member.getGuild().getIdLong();
         JDA instance = botService.getInstance();
         Guild guildById = instance.getGuildById(guildId);
         if(guildById != null) {
-            postTargetService.sendEmbedInPostTarget(embed, SUGGESTIONS_TARGET, guildId).thenAccept(message -> {
+            postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId).thenAccept(message -> {
                 messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
                 messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
                 suggestionManagementService.setPostedMessage(suggestion, message);
@@ -110,8 +111,8 @@ public class SuggestionServiceBean implements SuggestionService {
             MessageEmbed suggestionEmbed = embedOptional.get();
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
-            MessageEmbed embed = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
-            postTargetService.sendEmbedInPostTarget(embed, SUGGESTIONS_TARGET, suggestionLog.getServer().getId());
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
+            postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, suggestionLog.getServer().getId());
         }
     }
 

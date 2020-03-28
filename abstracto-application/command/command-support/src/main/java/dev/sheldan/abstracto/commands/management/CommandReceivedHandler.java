@@ -5,6 +5,8 @@ import dev.sheldan.abstracto.command.PostCommandExecution;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
 import dev.sheldan.abstracto.commands.management.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.commands.management.exception.ParameterTooLongException;
+import dev.sheldan.abstracto.core.Constants;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.management.UserManagementService;
@@ -12,6 +14,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.utils.ParseUtils;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,14 +68,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .userInitiatedContext(buildTemplateParameter(event));
         Command foundCommand = null;
         try {
-            List<String> parameters = Arrays.asList(event.getMessage().getContentStripped().split(" "));
-            parameters = parameters.stream().filter(s -> {
-                return !s.equals("");
-            }).collect(Collectors.toList());
-            UnParsedCommandParameter unparsedParameter = new UnParsedCommandParameter();
-            unparsedParameter.setParameters(parameters.subList(1, parameters.size()));
-            String withoutPrefix = parameters.get(0).substring(1);
-            foundCommand = commandManager.findCommandByParameters(withoutPrefix, unparsedParameter);
+            String contentStripped = event.getMessage().getContentStripped();
+            List<String> parameters = Arrays.asList(contentStripped.split(" "));
+            UnParsedCommandParameter unparsedParameter = new UnParsedCommandParameter(contentStripped);
+            String commandName = parameters.get(0).substring(1);
+            foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
             Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             Result result = foundCommand.execute(commandContext);
@@ -106,12 +107,24 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
+        if(command.getConfiguration().getParameters().size() == 0) {
+            return Parameters.builder().parameters(parsedParameters).build();
+        }
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
         Iterator<Emote> emoteIterator = message.getEmotes().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
-            for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
-                Parameter param = command.getConfiguration().getParameters().get(i);
+        Parameter param = command.getConfiguration().getParameters().get(0);
+        boolean reminderActive = false;
+        for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
+                if(i < command.getConfiguration().getParameters().size() && !param.isRemainder()) {
+                    param = command.getConfiguration().getParameters().get(i);
+                } else {
+                    reminderActive = true;
+                }
                 String value = unParsedCommandParameter.getParameters().get(i);
+                if(param.getMaxLength() != null && (value.length() + Constants.PARAMETER_LIMIT) > param.getMaxLength()) {
+                    throw new ParameterTooLongException("The passed parameter was too long.", command, param.getName(), value.length(), param.getMaxLength());
+                }
                 try {
                     if(param.getType().equals(Integer.class)){
                         parsedParameters.add(Integer.parseInt(value));
@@ -126,13 +139,20 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     } else if(param.getType().equals(Emote.class)) {
                         // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
                         // the second one shadows the first one, and there are too little parameters to go of
-                        if(emoteIterator.hasNext()) {
+                        if (emoteIterator.hasNext()) {
                             parsedParameters.add(emoteIterator.next());
                         } else {
                             parsedParameters.add(value);
                         }
+                    } else if (param.getType().equals(Duration.class)) {
+                        parsedParameters.add(ParseUtils.parseDuration(value));
                     } else {
-                        parsedParameters.add(value);
+                        if(!reminderActive) {
+                            parsedParameters.add(value);
+                        } else {
+                            int lastIndex = parsedParameters.size() - 1;
+                            parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                        }
                     }
                 } catch (NoSuchElementException e) {
                     throw new IncorrectParameterException("The passed parameters did not have the correct type.", command, param.getType(), param.getName());

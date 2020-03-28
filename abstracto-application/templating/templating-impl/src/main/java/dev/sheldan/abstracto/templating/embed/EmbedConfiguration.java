@@ -17,4 +17,5 @@ public class EmbedConfiguration {
     private List<EmbedField> fields;
     private EmbedFooter footer;
     private OffsetDateTime timeStamp;
+    private String additionalMessage;
 }

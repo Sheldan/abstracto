@@ -6,9 +6,9 @@ import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedLog;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -53,13 +53,13 @@ public class MessageDeletedListener extends ListenerAdapter {
         logModel.setMessage(messageFromCache);
         String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
         postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, DELETE_LOG_TARGET, event.getGuild().getIdLong());
-        MessageEmbed embed = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
-        postTargetService.sendEmbedInPostTarget(embed, DELETE_LOG_TARGET, event.getGuild().getIdLong());
+        MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
+        postTargetService.sendEmbedInPostTarget(message, DELETE_LOG_TARGET, event.getGuild().getIdLong());
         for (int i = 0; i < messageFromCache.getAttachmentUrls().size(); i++) {
             MessageDeletedAttachmentLog log = (MessageDeletedAttachmentLog) contextUtils.fromMessage(messageFromCache, MessageDeletedAttachmentLog.class);
             log.setImageUrl(messageFromCache.getAttachmentUrls().get(i));
             log.setCounter(i + 1);
-            MessageEmbed attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log);
+            MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log);
             postTargetService.sendEmbedInPostTarget(attachmentEmbed, DELETE_LOG_TARGET, event.getGuild().getIdLong());
         }
     }

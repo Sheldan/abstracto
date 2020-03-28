@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.models.ServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.moderation.models.template.WarnNotification;
 import dev.sheldan.abstracto.moderation.models.Warning;
@@ -17,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -86,7 +86,7 @@ public class WarnServiceBean implements WarnService {
     private void sendWarnLog(ServerContext warnLogModel) {
         String warnLogMessage = templateService.renderContextAwareTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, warnLogModel.getServer().getId());
-        MessageEmbed embed = templateService.renderEmbedTemplate("warn_log", warnLogModel);
-        postTargetService.sendEmbedInPostTarget(embed, WARN_LOG_TARGET, warnLogModel.getServer().getId());
+        MessageToSend message = templateService.renderEmbedTemplate("warn_log", warnLogModel);
+        postTargetService.sendEmbedInPostTarget(message, WARN_LOG_TARGET, warnLogModel.getServer().getId());
     }
 }

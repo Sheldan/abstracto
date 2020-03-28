@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
@@ -12,6 +13,8 @@ public interface PostTargetService {
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
     CompletableFuture<Message> sendTextInPostTarget(String text, String postTargetName, Long serverId);
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId);
+    CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId);
+    CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
     boolean validPostTarget(String name);
     List<String> getAvailablePostTargets();
 }
