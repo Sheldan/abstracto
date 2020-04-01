@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.exception.NotFoundException;
 import dev.sheldan.abstracto.core.models.ServerContext;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -9,6 +10,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -41,8 +44,13 @@ public class BanServiceBean implements BanService {
     }
 
     private void banUser(Long guildId, Long userId, String reason) {
-        Guild guildById = bot.getGuildById(guildId);
-        log.info("Banning user {} in guild {}.", userId, guildId);
-        guildById.ban(userId.toString(), 0, reason).queue();
+        Optional<Guild> guildByIdOptional = bot.getGuildById(guildId);
+        if(guildByIdOptional.isPresent()) {
+            log.info("Banning user {} in guild {}.", userId, guildId);
+            guildByIdOptional.get().ban(userId.toString(), 0, reason).queue();
+        } else {
+            log.warn("Guild {} not found. Not able to ban user {}", guildId, userId);
+            throw new NotFoundException(String.format("Guild %s not found. Not able to ban user %s", guildId, userId));
+        }
     }
 }

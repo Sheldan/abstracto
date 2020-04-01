@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.MessageReaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @Slf4j
 public class EmoteServiceBean implements EmoteService {
@@ -38,9 +40,9 @@ public class EmoteServiceBean implements EmoteService {
     @Override
     public String getEmoteAsMention(AEmote emote, Long serverId, String defaultText) {
         if(emote != null && emote.getCustom()) {
-            Emote emote1 = botService.getEmote(serverId, emote);
-            if (emote1 != null) {
-                return emote1.getAsMention();
+            Optional<Emote> emoteOptional = botService.getEmote(serverId, emote);
+            if (emoteOptional.isPresent()) {
+                return emoteOptional.get().getAsMention();
             } else {
                 log.warn("Emote {} with name {} in server {} defined, but not usable.", emote.getEmoteId(), emote.getName(), serverId);
                 return defaultText;

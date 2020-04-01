@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ServerManagementService {
     AServer createServer(Long id);
-    AServer loadServer(Long id);
+    AServer loadOrCreate(Long id);
     void addChannelToServer(AServer server, AChannel channel);
     AUserInAServer addUserToServer(AServer server, AUser user);
     AUserInAServer addUserToServer(Long serverId, Long userId);

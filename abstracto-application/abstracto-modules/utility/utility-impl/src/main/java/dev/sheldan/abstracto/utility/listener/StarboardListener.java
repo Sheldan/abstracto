@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StarboardListener implements ReactedAddedListener, ReactedRemovedListener {
 
-    public static final String STAR_EMOTE = "STAR";
+    public static final String STAR_EMOTE = "star";
 
     @Autowired
     private EmoteManagementService emoteManagementService;
@@ -69,8 +69,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         if(aEmote.isPresent()) {
             AEmote emote = aEmote.get();
             MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
-            Emote emoteInGuild = bot.getEmote(guildId, emote);
-            if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, Optional.ofNullable(emoteInGuild))) {
+            Optional<Emote> emoteInGuild = bot.getEmote(guildId, emote);
+            if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, emoteInGuild.orElse(null))) {
                 Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, emote);
                 updateStarboardPost(message, reactionOptional.orElse(null), userAdding, true);
             }
@@ -88,6 +88,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
                 AUserInAServer author = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
                 if(starboardPostOptional.isPresent()) {
                     StarboardPost starboardPost = starboardPostOptional.get();
+                    starboardPost.setIgnored(false);
                     starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor);
                     if(adding) {
                         starboardPostReactorManagementService.addReactor(starboardPost, userReacting.getUserReference());
@@ -98,17 +99,17 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
                     starboardService.createStarboardPost(message, userExceptAuthor, userReacting, author);
                 }
             } else {
-                starboardPostOptional.ifPresent(starboardPost ->  {
-                    starboardService.removeStarboardPost(starboardPost);
-                    starboardPostReactorManagementService.removeReactors(starboardPost);
-                });
+                starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
             }
         } else {
-            starboardPostOptional.ifPresent(starboardPost -> {
-                starboardService.removeStarboardPost(starboardPost);
-                starboardPostReactorManagementService.removeReactors(starboardPost);
-            });
+            starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
         }
+    }
+
+    private void completelyRemoveStarboardPost(StarboardPost starboardPost) {
+        starboardPostReactorManagementService.removeReactors(starboardPost);
+        starboardService.removeStarboardPost(starboardPost);
+        starboardPostManagementService.removePost(starboardPost);
     }
 
     @Override
@@ -122,8 +123,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         if(aEmote.isPresent()) {
             AEmote emote = aEmote.get();
             MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
-            Emote emoteInGuild = bot.getEmote(guildId, emote);
-            if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, Optional.ofNullable(emoteInGuild))) {
+            Optional<Emote> emoteInGuild = bot.getEmote(guildId, emote);
+            if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, emoteInGuild.orElse(null))) {
                 Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, emote);
                 updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);
             }

@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.exception.NotFoundException;
 import dev.sheldan.abstracto.core.models.ServerChannelUser;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Emote;
@@ -13,8 +15,10 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
+import java.util.Optional;
 
 @Service
+@Slf4j
 public class BotService implements Bot {
 
     private JDA instance;
@@ -36,13 +40,21 @@ public class BotService implements Bot {
 
     @Override
     public ServerChannelUser getServerChannelUser(Long serverId, Long channelId, Long userId) {
-        TextChannel textChannelById = getTextChannelFromServer(serverId, channelId);
-        Guild guildById  = getGuildById(serverId);
-        if(textChannelById != null) {
-            Member member = guildById.getMemberById(userId);
-            return ServerChannelUser.builder().guild(guildById).textChannel(textChannelById).member(member).build();
+        Optional<Guild> guildOptional = getGuildById(serverId);
+        if(guildOptional.isPresent()) {
+            Guild guild = guildOptional.get();
+            Optional<TextChannel> textChannelOptional = this.getTextChannelFromServer(guild, channelId);
+            if(textChannelOptional.isPresent()) {
+                TextChannel textChannel = textChannelOptional.get();
+                Member member = guild.getMemberById(userId);
+                return ServerChannelUser.builder().guild(guild).textChannel(textChannel).member(member).build();
+            } else {
+                throw new NotFoundException(String.format("Text channel %s not found in guild %s", channelId, serverId));
+            }
         }
-        throw new RuntimeException(String.format("Member %s or text channel %s not found in guild %s", userId, channelId, serverId));
+        else {
+            throw new NotFoundException(String.format("Guild %s not found.", serverId));
+        }
     }
 
 
@@ -59,37 +71,48 @@ public class BotService implements Bot {
 
     @Override
     public void deleteMessage(Long serverId, Long channelId, Long messageId) {
-        getTextChannelFromServer(serverId, channelId).deleteMessageById(messageId).queue();
+        Optional<TextChannel> textChannelOptional = getTextChannelFromServer(serverId, channelId);
+        if(textChannelOptional.isPresent()) {
+            TextChannel textChannel = textChannelOptional.get();
+            textChannel.deleteMessageById(messageId).queue(aVoid -> {}, throwable -> {
+                log.warn("Failed to delete message {} in channel {} in guild {}", messageId, channelId, serverId, throwable);
+            });
+        } else {
+            log.warn("Could not find channel {} in guild {} to delete message {} in.", channelId, serverId, messageId);
+        }
     }
 
     @Override
-    public Emote getEmote(Long serverId, AEmote emote) {
+    public Optional<Emote> getEmote(Long serverId, AEmote emote) {
         if(!emote.getCustom()) {
-            return null;
+            return Optional.empty();
         }
-        Guild guildById = getGuildById(serverId);
-        return guildById.getEmoteById(emote.getEmoteId());
+        Optional<Guild> guildById = getGuildById(serverId);
+        if(guildById.isPresent()) {
+            Guild guild = guildById.get();
+            return Optional.ofNullable(guild.getEmoteById(emote.getEmoteId()));
+        }
+        throw new NotFoundException(String.format("Not able to find emote %s in server %s", emote.getId(), serverId));
     }
 
     @Override
-    public TextChannel getTextChannelFromServer(Long serverId, Long textChannelId) {
-        Guild guild = getGuildById(serverId);
-        TextChannel textChannelById = guild.getTextChannelById(textChannelId);
-        if(textChannelById != null) {
-            return textChannelById;
-        } else {
-            throw new RuntimeException(String.format("Text channel %s in guild %s not found", textChannelId, serverId));
-        }
+    public Optional<TextChannel> getTextChannelFromServer(Guild guild, Long textChannelId) {
+        return Optional.ofNullable(guild.getTextChannelById(textChannelId));
     }
 
     @Override
-    public Guild getGuildById(Long serverId) {
-        Guild guildById = instance.getGuildById(serverId);
-        if(guildById != null) {
-            return guildById;
-        } else {
-            throw new RuntimeException(String.format("Guild %s not found", serverId));
+    public Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId) {
+        Optional<Guild> guildOptional = getGuildById(serverId);
+        if(guildOptional.isPresent()) {
+            Guild guild = guildOptional.get();
+            return Optional.ofNullable(guild.getTextChannelById(textChannelId));
         }
+        throw new NotFoundException(String.format("Not able to find guild %s", serverId));
+    }
+
+    @Override
+    public Optional<Guild> getGuildById(Long serverId) {
+        return Optional.ofNullable(instance.getGuildById(serverId));
     }
 
     @Override

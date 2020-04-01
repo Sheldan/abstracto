@@ -29,7 +29,6 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
         StarboardPost post = StarboardPost
                 .builder()
                 .author(starredUser.getUserReference())
-                .deleted(false)
                 .postMessageId(starredMessage.getMessageId())
                 .starboardMessageId(starboardPost.getMessageId())
                 .starboardChannel(starboardPost.getChannel())
@@ -66,6 +65,28 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
     @Override
     public Optional<StarboardPost> findByMessageId(Long messageId) {
         return Optional.ofNullable(repository.findByPostMessageId(messageId));
+    }
+
+    @Override
+    public Optional<StarboardPost> findByStarboardPostId(Long postId) {
+        return Optional.ofNullable(repository.findByStarboardMessageId(postId));
+    }
+
+    @Override
+    public void setStarboardPostIgnored(Long messageId, Boolean newValue) {
+        StarboardPost post = repository.findByStarboardMessageId(messageId);
+        post.setIgnored(newValue);
+        repository.save(post);
+    }
+
+    @Override
+    public boolean isStarboardPost(Long messageId) {
+        return repository.findByStarboardMessageId(messageId) != null;
+    }
+
+    @Override
+    public void removePost(StarboardPost starboardPost) {
+        repository.deleteById(starboardPost.getId());
     }
 
 

@@ -52,7 +52,7 @@ public class StarboardPost {
     private Instant starredDate;
 
     @Column
-    private boolean deleted;
+    private boolean ignored;
 
     public int getReactionCount() {
         if(this.reactions == null) {

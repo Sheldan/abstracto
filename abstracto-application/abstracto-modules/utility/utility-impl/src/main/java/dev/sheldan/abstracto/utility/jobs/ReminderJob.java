@@ -23,8 +23,12 @@ public class ReminderJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        reminderService.executeReminder(reminderId);
-        log.info("executing reminder job for reminder {}", reminderId);
+        try {
+            reminderService.executeReminder(reminderId);
+            log.info("executing reminder job for reminder {}", reminderId);
+        } catch (Exception e) {
+            log.error("Reminder job failed to execute.", e);
+        }
     }
 
     public Long getReminderId() {

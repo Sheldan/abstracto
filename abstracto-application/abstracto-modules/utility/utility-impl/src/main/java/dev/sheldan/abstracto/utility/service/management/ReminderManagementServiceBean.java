@@ -36,4 +36,10 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
         return reminderRepository.getOne(reminderId);
     }
 
+    @Override
+    public void setReminded(Reminder reminder) {
+        reminder.setReminded(true);
+        reminderRepository.save(reminder);
+    }
+
 }

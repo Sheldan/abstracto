@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface StarboardPostRepository extends JpaRepository<StarboardPost, Long> {
     StarboardPost findByPostMessageId(Long messageId);
+    StarboardPost findByStarboardMessageId(Long messageId);
     List<StarboardPost> findByStarboardChannelServerId(Long serverId);
 
 }

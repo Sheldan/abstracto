@@ -43,7 +43,7 @@ public class ContextUtils {
                     .guild(serverChannelUser.getGuild())
                     .textChannel(serverChannelUser.getTextChannel())
                     .channel(channelManagementService.loadChannel(message.getChannelId()))
-                    .server(serverManagementService.loadServer(message.getServerId()))
+                    .server(serverManagementService.loadOrCreate(message.getServerId()))
                     .aUserInAServer(aUserInAServer)
                     .user(aUserInAServer.getUserReference())
                     .build();

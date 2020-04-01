@@ -10,10 +10,9 @@ import java.util.Optional;
 
 public class EmoteUtils {
 
-    public static boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote emote, Optional<Emote> emoteInGuildOptional) {
+    public static boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote emote, Emote emoteInGuild) {
         if(reaction.isEmote() && emote.getCustom()) {
-            if(emoteInGuildOptional.isPresent()) {
-                Emote emoteInGuild = emoteInGuildOptional.get();
+            if(emoteInGuild != null) {
                 return emoteInGuild.equals(reaction.getEmote());
             } else {
                 return false;

@@ -34,6 +34,11 @@ public class AChannel implements SnowFlake {
     @Enumerated(EnumType.STRING)
     private AChannelType type;
 
+    @Getter
+    @Setter
+    @Column
+    private Boolean deleted;
+
     public static AChannelType getAChannelType(ChannelType type) {
         switch (type) {
             case TEXT: return AChannelType.TEXT;

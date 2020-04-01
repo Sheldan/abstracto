@@ -92,8 +92,8 @@ public class StarboardServiceBean implements StarboardService {
 
     private StarboardPostModel buildStarboardPostModel(CachedMessage message, Integer starCount) {
         Member member = bot.getMemberInServer(message.getServerId(), message.getAuthorId());
-        TextChannel channel = bot.getTextChannelFromServer(message.getServerId(), message.getChannelId());
-        Guild guild = bot.getGuildById(message.getServerId());
+        Optional<TextChannel> channel = bot.getTextChannelFromServer(message.getServerId(), message.getChannelId());
+        Optional<Guild> guild = bot.getGuildById(message.getServerId());
         AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
         AUser user = AUser.builder().id(message.getAuthorId()).build();
         AServer server = AServer.builder().id(message.getServerId()).build();
@@ -110,10 +110,10 @@ public class StarboardServiceBean implements StarboardService {
                 .builder()
                 .message(message)
                 .author(member)
-                .channel(channel)
+                .channel(channel.orElse(null))
                 .aChannel(aChannel)
                 .starCount(starCount)
-                .guild(guild)
+                .guild(guild.orElse(null))
                 .user(user)
                 .server(server)
                 .starLevelEmote(emoteText)

@@ -8,4 +8,5 @@ import java.time.Instant;
 public interface ReminderManagementService {
     Reminder createReminder(AServerAChannelAUser userToBeReminded, String text, Instant timeToBeRemindedAt, Long messageId);
     Reminder loadReminder(Long reminderId);
+    void setReminded(Reminder reminder);
 }

@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,7 +98,7 @@ public class MessageEmbedListener extends ListenerAdapter {
 
     private MessageEmbeddedModel buildTemplateParameter(GuildMessageReceivedEvent event, CachedMessage embeddedMessage) {
         AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
-        AServer server = serverManagementService.loadServer(event.getGuild().getIdLong());
+        AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         AUserInAServer user = userManagementService.loadUser(event.getMember());
         Member author = bot.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
         return MessageEmbeddedModel

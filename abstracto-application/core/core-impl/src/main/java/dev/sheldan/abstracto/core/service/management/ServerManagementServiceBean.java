@@ -34,7 +34,7 @@ public class ServerManagementServiceBean implements ServerManagementService {
     }
 
     @Override
-    public AServer loadServer(Long id) {
+    public AServer loadOrCreate(Long id) {
         if(repository.existsById(id)) {
             return repository.getOne(id);
         } else {
@@ -66,13 +66,13 @@ public class ServerManagementServiceBean implements ServerManagementService {
 
     @Override
     public AChannel getPostTarget(Long serverId, String name) {
-        AServer server = this.loadServer(serverId);
+        AServer server = this.loadOrCreate(serverId);
         return getPostTarget(server, name);
     }
 
     @Override
     public AChannel getPostTarget(Long serverId, PostTarget target) {
-        AServer server = this.loadServer(serverId);
+        AServer server = this.loadOrCreate(serverId);
         return getPostTarget(server, target);
     }
 

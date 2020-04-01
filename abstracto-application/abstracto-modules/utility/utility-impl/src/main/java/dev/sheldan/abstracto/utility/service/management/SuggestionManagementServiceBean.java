@@ -60,7 +60,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
         suggestion.setMessageId(message.getIdLong());
         AChannel channel = channelManagementService.loadChannel(message.getTextChannel().getIdLong());
         suggestion.setChannel(channel);
-        AServer server = serverManagementService.loadServer(message.getGuild().getIdLong());
+        AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
         suggestion.setServer(server);
         suggestionRepository.save(suggestion);
     }

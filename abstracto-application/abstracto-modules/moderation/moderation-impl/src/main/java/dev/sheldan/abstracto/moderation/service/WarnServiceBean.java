@@ -22,6 +22,8 @@ import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Slf4j
 @Component
 public class WarnServiceBean implements WarnService {
@@ -57,10 +59,10 @@ public class WarnServiceBean implements WarnService {
         Warning warning = warnManagementService.createWarning(warnedAUserInAServer, warningAUserInAServer, reason);
         JDA instance = bot.getInstance();
         User userBeingWarned = instance.getUserById(warnedAUser.getId());
-        Guild guildById = bot.getGuildById(serverOfWarning.getId());
+        Optional<Guild> guildById = bot.getGuildById(serverOfWarning.getId());
         String guildName = "<defaultName>";
-        if(guildById != null) {
-            guildName = guildById.getName();
+        if(guildById.isPresent()) {
+            guildName = guildById.get().getName();
         }
         WarnNotification warnNotification = WarnNotification.builder().warning(warning).serverName(guildName).build();
         if(userBeingWarned != null) {

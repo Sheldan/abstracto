@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -92,16 +93,21 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
         AServer server = reminderToRemindFor.getServer();
         AChannel channel = reminderToRemindFor.getChannel();
-        AUser userReference = reminderToRemindFor.getToBeReminded().getUserReference();
-        Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
-        ExecutedReminderModel build = ExecutedReminderModel
-                .builder()
-                .reminder(reminderToRemindFor)
-                .member(memberInServer)
-                .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
-        // todo, if channel does not exist anymore
-        TextChannel channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
-        channelToAnswerIn.sendMessage(messageToSend.getMessage()).embed(messageToSend.getEmbed()).queue();
+        Optional<TextChannel> channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
+        // only send the message if the channel still exists, if not, only set the reminder to reminded.
+        if(channelToAnswerIn.isPresent()) {
+            AUser userReference = reminderToRemindFor.getToBeReminded().getUserReference();
+            Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
+            ExecutedReminderModel build = ExecutedReminderModel
+                    .builder()
+                    .reminder(reminderToRemindFor)
+                    .member(memberInServer)
+                    .build();
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
+            channelToAnswerIn.get().sendMessage(messageToSend.getMessage()).embed(messageToSend.getEmbed()).queue();
+        } else {
+            log.warn("Channel {} in server {} to remind user did not exist anymore. Ignoring.", channel.getId(), server.getId());
+        }
+        reminderManagementService.setReminded(reminderToRemindFor);
     }
 }

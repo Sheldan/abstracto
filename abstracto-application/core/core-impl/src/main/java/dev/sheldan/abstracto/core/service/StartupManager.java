@@ -23,6 +23,7 @@ import javax.security.auth.login.LoginException;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -66,7 +67,7 @@ public class StartupManager implements Startup {
         List<Guild> onlineGuilds = instance.getGuilds();
         Set<Long> availableServers = SnowflakeUtils.getSnowflakeIds(onlineGuilds);
         availableServers.forEach(aLong -> {
-            AServer newAServer = serverManagementService.createServer(aLong);
+            AServer newAServer = serverManagementService.loadOrCreate(aLong);
             Guild newGuild = instance.getGuildById(aLong);
             log.debug("Synchronizing server: {}", aLong);
             if(newGuild != null){
@@ -95,16 +96,21 @@ public class StartupManager implements Startup {
 
     private void synchronizeChannelsOf(Guild guild, AServer existingServer){
         List<GuildChannel> available = guild.getChannels();
-        List<AChannel> knownChannels = existingServer.getChannels();
+        List<AChannel> knownChannels = existingServer.getChannels().stream().filter(aChannel -> !aChannel.getDeleted()).collect(Collectors.toList());
         Set<Long> knownChannelsIds = SnowflakeUtils.getOwnItemsIds(knownChannels);
         Set<Long> existingChannelsIds = SnowflakeUtils.getSnowflakeIds(available);
-        Set<Long> newChannels = SetUtils.disjunction(existingChannelsIds, knownChannelsIds);
+        Set<Long> newChannels = SetUtils.difference(existingChannelsIds, knownChannelsIds);
         newChannels.forEach(aLong -> {
             GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
             log.debug("Adding new channel: {}", aLong);
             AChannelType type = AChannel.getAChannelType(channel1.getType());
             AChannel newChannel = channelManagementService.createChannel(channel1.getIdLong(), type);
             serverManagementService.addChannelToServer(existingServer, newChannel);
+        });
+
+        Set<Long> noLongAvailable = SetUtils.difference(knownChannelsIds, existingChannelsIds);
+        noLongAvailable.forEach(aLong -> {
+            channelManagementService.markAsDeleted(aLong);
         });
     }
 }

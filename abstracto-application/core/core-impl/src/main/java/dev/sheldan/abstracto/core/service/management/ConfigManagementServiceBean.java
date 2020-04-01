@@ -41,7 +41,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
 
     @Override
     public AConfig createConfig(Long serverId, String name, String value) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         AConfig config = AConfig
                 .builder()
                 .stringValue(value)
@@ -54,7 +54,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
 
     @Override
     public AConfig createConfig(Long serverId, String name, Double value) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         AConfig config = AConfig
                 .builder()
                 .doubleValue(value)

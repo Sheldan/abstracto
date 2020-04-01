@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CommandReceivedHandler extends ListenerAdapter {
@@ -91,7 +90,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
         AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
-        AServer server = serverManagementService.loadServer(event.getGuild().getIdLong());
+        AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         AUserInAServer user = userManagementService.loadUser(event.getMember());
         return UserInitiatedServerContext
                 .builder()

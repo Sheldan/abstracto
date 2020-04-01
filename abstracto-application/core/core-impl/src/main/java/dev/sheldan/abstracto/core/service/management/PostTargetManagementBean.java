@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @Slf4j
 public class PostTargetManagementBean implements PostTargetManagement {
@@ -63,7 +61,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
     @Override
     public void createOrUpdate(String name, Long serverId, Long channelId) {
         AChannel dbChannel = channelManagementService.loadChannel(channelId);
-        AServer dbServer = serverManagementService.loadServer(serverId);
+        AServer dbServer = serverManagementService.loadOrCreate(serverId);
         createOrUpdate(name, dbServer, dbChannel);
     }
 
@@ -75,7 +73,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
 
     @Override
     public PostTarget getPostTarget(String name, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         return getPostTarget(name, server);
     }
 

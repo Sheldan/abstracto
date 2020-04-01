@@ -15,4 +15,8 @@ public interface StarboardPostManagementService {
     List<StarboardPost> retrieveAllPosts(Long serverId);
     Integer getPostCount(Long serverId);
     Optional<StarboardPost> findByMessageId(Long messageId);
+    Optional<StarboardPost> findByStarboardPostId(Long postId);
+    void setStarboardPostIgnored(Long starboardPostId, Boolean newValue);
+    boolean isStarboardPost(Long starboardPostId);
+    void removePost(StarboardPost starboardPost);
 }

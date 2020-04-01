@@ -29,7 +29,7 @@ public class UserManagementServiceBean implements UserManagementService {
     @Override
     public AUserInAServer loadUser(Long serverId, Long userId) {
         AUser user = this.loadUser(userId);
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         return loadUser(server, user);
     }
 

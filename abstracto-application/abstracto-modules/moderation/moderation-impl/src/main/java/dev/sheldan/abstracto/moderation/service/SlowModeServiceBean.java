@@ -1,15 +1,15 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.exception.NotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.Bot;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -29,7 +29,12 @@ public class SlowModeServiceBean implements SlowModeService {
 
     @Override
     public void setSlowMode(AChannel channel, Duration duration) {
-        TextChannel textChannel = bot.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
-        this.setSlowMode(textChannel, duration);
+        Optional<TextChannel> textChannelOptional = bot.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
+        if(textChannelOptional.isPresent()) {
+            TextChannel textChannel = textChannelOptional.get();
+            this.setSlowMode(textChannel, duration);
+        } else {
+            throw new NotFoundException(String.format("Channel %s not found in guild %s", channel.getId(), channel.getServer().getId()));
+        }
     }
 }

@@ -33,7 +33,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         return this.createCustomEmote(name, emoteKey, emoteId, animated, server);
     }
 
@@ -55,7 +55,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote createDefaultEmote(String name, String emoteKey, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         return createDefaultEmote(name, emoteKey, server);
     }
 
@@ -75,7 +75,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public Optional<AEmote> loadEmoteByName(String name, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         return loadEmoteByName(name, server);
     }
 
@@ -86,7 +86,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote setEmoteToCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         AEmote emote;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, server);
         if(!emoteOptional.isPresent()) {
@@ -104,7 +104,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         AEmote emoteBeingSet;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
         if(!emoteOptional.isPresent()) {
@@ -122,7 +122,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote setEmoteToDefaultEmote(String name, String emoteKey, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         AEmote emoteBeingSet;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
         if(!emoteOptional.isPresent()) {
@@ -138,7 +138,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public boolean emoteExists(String name, Long serverId) {
-        AServer server = serverManagementService.loadServer(serverId);
+        AServer server = serverManagementService.loadOrCreate(serverId);
         return emoteExists(name, server);
     }
 

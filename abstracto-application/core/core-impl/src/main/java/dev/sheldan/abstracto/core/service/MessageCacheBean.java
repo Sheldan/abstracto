@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.exception.NotFoundException;
 import dev.sheldan.abstracto.core.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.CachedMessage;
@@ -7,10 +8,7 @@ import dev.sheldan.abstracto.core.models.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.embed.*;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.MessageReaction;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -81,10 +80,23 @@ public class MessageCacheBean implements MessageCache {
     @Async
     @Override
     public void loadMessage(CompletableFuture<CachedMessage> future, Long guildId, Long textChannelId, Long messageId) {
-        TextChannel textChannelById = bot.getTextChannelFromServer(guildId, textChannelId);
-        textChannelById.retrieveMessageById(messageId).queue(message -> {
-            buildCachedMessageFromMessage(future, message);
-        });
+        Optional<Guild> guildOptional = bot.getGuildById(guildId);
+        if(guildOptional.isPresent()) {
+            Optional<TextChannel> textChannelByIdOptional = bot.getTextChannelFromServer(guildOptional.get(), textChannelId);
+            if(textChannelByIdOptional.isPresent()) {
+                TextChannel textChannel = textChannelByIdOptional.get();
+                textChannel.retrieveMessageById(messageId).queue(message -> {
+                    buildCachedMessageFromMessage(future, message);
+                });
+            } else {
+                log.warn("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
+                future.completeExceptionally(new NotFoundException(String.format("Not able to load message %s. Text channel %s not found in guild %s", messageId, textChannelId, guildId)));
+            }
+        } else {
+            log.warn("Not able to load message {} in channel {} in guild {}. Guild not found.", messageId, textChannelId, guildId);
+            future.completeExceptionally(new NotFoundException(String.format("Not able to load message %s. Guild %s not found.", messageId, guildId)));
+
+        }
     }
 
     @Override

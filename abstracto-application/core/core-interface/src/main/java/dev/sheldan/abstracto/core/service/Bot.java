@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
+import java.util.Optional;
 
 @Service
 public interface Bot {
@@ -18,8 +19,9 @@ public interface Bot {
     ServerChannelUser getServerChannelUser(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
     void deleteMessage(Long serverId, Long channelId, Long messageId);
-    Emote getEmote(Long serverId, AEmote emote);
-    TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
-    Guild getGuildById(Long serverId);
+    Optional<Emote> getEmote(Long serverId, AEmote emote);
+    Optional<TextChannel> getTextChannelFromServer(Guild serverId, Long textChannelId);
+    Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId);
+    Optional<Guild> getGuildById(Long serverId);
     void shutdown();
 }
