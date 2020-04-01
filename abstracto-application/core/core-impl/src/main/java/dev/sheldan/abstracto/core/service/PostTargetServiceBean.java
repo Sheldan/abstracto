@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -93,7 +94,60 @@ public class PostTargetServiceBean implements PostTargetService {
     @Override
     public CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, PostTarget target) {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        return textChannelForPostTarget.sendMessage(message.getMessage()).embed(message.getEmbed()).submit();
+        String messageText = message.getMessage();
+        if(StringUtils.isBlank(messageText)) {
+            return textChannelForPostTarget.sendMessage(message.getEmbed()).submit();
+        } else  {
+            return textChannelForPostTarget.sendMessage(messageText).embed(message.getEmbed()).submit();
+        }
+    }
+
+    @Override
+    public CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target) {
+        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+        String messageText = message.getMessage();
+        if(StringUtils.isBlank(messageText)) {
+            return textChannelForPostTarget.editMessageById(messageId, message.getEmbed()).submit();
+        } else {
+            return textChannelForPostTarget.editMessageById(messageId, messageText).embed(message.getEmbed()).submit();
+        }
+    }
+
+    @Override
+    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, CompletableFuture<Message> future) {
+        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+        if(StringUtils.isBlank(messageToSend.getMessage().trim())) {
+            textChannelForPostTarget
+                    .retrieveMessageById(messageId)
+                    .queue(
+                            existingMessage -> existingMessage
+                                    .editMessage(messageToSend.getEmbed())
+                                    .submit().thenAccept(future::complete),
+                            throwable -> sendEmbedInPostTarget(messageToSend, target)
+                                    .thenAccept(future::complete));
+        } else {
+            textChannelForPostTarget
+                    .retrieveMessageById(messageId)
+                    .queue(
+                            existingMessage -> existingMessage
+                                    .editMessage(messageToSend.getMessage())
+                                    .embed(messageToSend.getEmbed())
+                                    .submit().thenAccept(future::complete),
+                            throwable -> sendEmbedInPostTarget(messageToSend, target)
+                                    .thenAccept(future::complete));
+        }
+    }
+
+    @Override
+    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTargetName, Long serverId, CompletableFuture<Message> future) {
+        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget, future);
+    }
+
+    @Override
+    public CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId) {
+        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        return editEmbedInPostTarget(messageId, message, postTarget);
     }
 
     @Override

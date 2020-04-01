@@ -15,6 +15,10 @@ public interface PostTargetService {
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId);
     CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId);
     CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
+    CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target);
+    CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId);
+    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, CompletableFuture<Message> future);
+    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTarget, Long serverId, CompletableFuture<Message> future);
     boolean validPostTarget(String name);
     List<String> getAvailablePostTargets();
 }

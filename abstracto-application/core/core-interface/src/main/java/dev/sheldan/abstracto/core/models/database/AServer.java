@@ -16,6 +16,7 @@ import java.util.List;
 public class AServer implements SnowFlake {
 
     @Id
+    @Column(name = "id")
     private Long id;
 
     private String name;
@@ -26,10 +27,10 @@ public class AServer implements SnowFlake {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "server",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @Builder.Default
+    @JoinColumn(name = "server_id")
     private List<AChannel> channels = new ArrayList<>();
 
     @OneToMany(

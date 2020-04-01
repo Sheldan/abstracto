@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class EmoteManagementServiceBean implements EmoteManagementService {
@@ -73,24 +74,25 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote loadEmoteByName(String name, Long serverId) {
+    public Optional<AEmote> loadEmoteByName(String name, Long serverId) {
         AServer server = serverManagementService.loadServer(serverId);
         return loadEmoteByName(name, server);
     }
 
     @Override
-    public AEmote loadEmoteByName(String name, AServer server) {
-        return repository.findAEmoteByNameAndServerRef(name, server);
+    public Optional<AEmote> loadEmoteByName(String name, AServer server) {
+        return Optional.ofNullable(repository.findAEmoteByNameAndServerRef(name, server));
     }
 
     @Override
     public AEmote setEmoteToCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId) {
         AServer server = serverManagementService.loadServer(serverId);
         AEmote emote;
-        if(!emoteExists(name, server)) {
+        Optional<AEmote> emoteOptional = loadEmoteByName(name, server);
+        if(!emoteOptional.isPresent()) {
             emote = this.createCustomEmote(name, emoteKey, emoteId, animated, server);
         } else {
-            emote = loadEmoteByName(name, server);
+            emote = emoteOptional.get();
             emote.setEmoteKey(emoteKey);
             emote.setEmoteId(emoteId);
             emote.setAnimated(animated);
@@ -104,11 +106,14 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     public AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId) {
         AServer server = serverManagementService.loadServer(serverId);
         AEmote emoteBeingSet;
-        if(!emoteExists(name, server)) {
-            emoteBeingSet = this.createDefaultEmote(name, emote.getName(), server);
+        Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
+        if(!emoteOptional.isPresent()) {
+            emoteBeingSet = this.createCustomEmote(name, emote.getName(), emote.getIdLong(), emote.isAnimated(), server);
         } else {
-            emoteBeingSet = loadEmoteByName(name, serverId);
-            emoteBeingSet.setCustom(false);
+            emoteBeingSet = emoteOptional.get();
+            emoteBeingSet.setCustom(true);
+            emoteBeingSet.setEmoteId(emote.getIdLong());
+            emoteBeingSet.setAnimated(emote.isAnimated());
             emoteBeingSet.setEmoteKey(emote.getName());
             repository.save(emoteBeingSet);
         }
@@ -117,11 +122,18 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote setEmoteToDefaultEmote(String name, String emoteKey, Long serverId) {
-        AEmote existing = loadEmoteByName(name, serverId);
-        existing.setEmoteKey(emoteKey);
-        existing.setCustom(false);
-        repository.save(existing);
-        return existing;
+        AServer server = serverManagementService.loadServer(serverId);
+        AEmote emoteBeingSet;
+        Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
+        if(!emoteOptional.isPresent()) {
+            emoteBeingSet = this.createDefaultEmote(name, emoteKey, server);
+        } else {
+            emoteBeingSet = emoteOptional.get();
+            emoteBeingSet.setEmoteKey(emoteKey);
+            emoteBeingSet.setCustom(false);
+            repository.save(emoteBeingSet);
+        }
+        return emoteBeingSet;
     }
 
     @Override

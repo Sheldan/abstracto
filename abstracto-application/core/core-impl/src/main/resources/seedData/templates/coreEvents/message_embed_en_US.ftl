@@ -1,7 +1,7 @@
 {
   "author": {
     "name": "${author.effectiveName}",
-    "avatar": "${author.user.avatarUrl}"
+    "avatar": "${author.user.effectiveAvatarUrl}"
   },
   "color" : {
     "r": 200,

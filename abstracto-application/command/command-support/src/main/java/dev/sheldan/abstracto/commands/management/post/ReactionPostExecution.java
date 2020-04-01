@@ -18,7 +18,7 @@ public class ReactionPostExecution implements PostCommandExecution {
             }
         } else {
             if(command.getConfiguration().isCausesReaction()){
-                commandContext.getMessage().addReaction("⭐").queue();
+                commandContext.getMessage().addReaction("✅").queue();
             }
         }
 

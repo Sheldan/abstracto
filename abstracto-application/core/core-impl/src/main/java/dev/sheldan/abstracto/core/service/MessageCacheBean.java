@@ -1,15 +1,22 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.models.CachedReaction;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.embed.*;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
@@ -18,54 +25,71 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-@Component @Slf4j
-@CacheConfig(cacheNames = {"messages"})
+@Component
+@Slf4j
 public class MessageCacheBean implements MessageCache {
 
     @Autowired
     private Bot bot;
 
+    @Autowired
+    private UserManagementService userManagementService;
+
+    @Autowired
+    private EmoteManagementService emoteManagementService;
+
+    @Autowired
+    private EmoteService emoteService;
+
+    @Autowired
+    @Lazy
+    private MessageCache self;
+
     @Override
-    @CachePut(key = "#message.id")
-    public CachedMessage putMessageInCache(Message message) {
-        log.debug("Adding message {} to cache", message.getId());
-        return buildCachedMessageFromMessage(message);
+    @CachePut(key = "#message.id", cacheNames = "messages")
+    public CompletableFuture<CachedMessage> putMessageInCache(Message message) {
+        log.info("Adding message {} to cache", message.getId());
+        CompletableFuture<CachedMessage> future = new CompletableFuture<>();
+        self.buildCachedMessageFromMessage(future, message);
+        return future;
     }
+
 
     @CachePut(key = "#message.messageId")
-    public CachedMessage putMessageInCache(CachedMessage message) {
-        return message;
+    public CompletableFuture<CachedMessage> putMessageInCache(CachedMessage message) {
+        log.info("Adding cached message to cache");
+        return CompletableFuture.completedFuture(message);
     }
 
     @Override
-    public CachedMessage getMessageFromCache(Message message) throws ExecutionException, InterruptedException {
-        log.debug("Retrieving message {}", message.getId());
+    @Cacheable(key = "#message.id", cacheNames = "messages")
+    public CompletableFuture<CachedMessage> getMessageFromCache(Message message) {
+        log.info("Retrieving message {}", message.getId());
         return getMessageFromCache(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
     }
 
     @Override
-    @Cacheable(key = "#messageId.toString()")
-    public CachedMessage getMessageFromCache(Long guildId, Long textChannelId, Long messageId) throws ExecutionException, InterruptedException {
+    @Cacheable(key = "#messageId.toString()", cacheNames = "messages")
+    public CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId) {
         log.info("Retrieving message with parameters");
 
-        CompletableFuture<CachedMessage> cachedMessageCompletableFuture =
-                getMessage(guildId, textChannelId, messageId)
-                        .thenApply(jdaMessage -> {
-                            CachedMessage cachedMessage = buildCachedMessageFromMessage(jdaMessage);
-                            putMessageInCache(cachedMessage);
-                            return cachedMessage;
-                        });
+        CompletableFuture<CachedMessage> cachedMessageCompletableFuture = new CompletableFuture<>();
+        self.loadMessage(cachedMessageCompletableFuture, guildId, textChannelId, messageId);
+        return cachedMessageCompletableFuture;
+    }
 
-        return cachedMessageCompletableFuture.get();
+    @Async
+    @Override
+    public void loadMessage(CompletableFuture<CachedMessage> future, Long guildId, Long textChannelId, Long messageId) {
+        TextChannel textChannelById = bot.getTextChannelFromServer(guildId, textChannelId);
+        textChannelById.retrieveMessageById(messageId).queue(message -> {
+            buildCachedMessageFromMessage(future, message);
+        });
     }
 
     @Override
-    public CompletableFuture<Message> getMessage(Long guildId, Long textChannelId, Long messageId) {
-        TextChannel textChannelById = bot.getTextChannelFromServer(guildId, textChannelId);
-        return textChannelById.retrieveMessageById(messageId).submit();
-    }
-
-    private CachedMessage buildCachedMessageFromMessage(Message message) {
+    @Async
+    public void buildCachedMessageFromMessage(CompletableFuture<CachedMessage> future, Message message) {
         List<String> attachmentUrls = new ArrayList<>();
         message.getAttachments().forEach(attachment -> {
             attachmentUrls.add(attachment.getProxyUrl());
@@ -74,16 +98,55 @@ public class MessageCacheBean implements MessageCache {
         message.getEmbeds().forEach(embed -> {
             embeds.add(getCachedEmbedFromEmbed(embed));
         });
-        return CachedMessage.builder()
-                .authorId(message.getAuthor().getIdLong())
-                .serverId(message.getGuild().getIdLong())
-                .messageId(message.getIdLong())
-                .channelId(message.getChannel().getIdLong())
-                .content(message.getContentRaw())
-                .embeds(embeds)
-                .timeCreated(message.getTimeCreated())
-                .attachmentUrls(attachmentUrls)
-                .build();
+
+        List<CompletableFuture<CachedReaction>> futures = new ArrayList<>();
+        message.getReactions().forEach(messageReaction -> {
+            CompletableFuture<CachedReaction> future1 = new CompletableFuture<>();
+            self.getCachedReactionFromReaction(future1, messageReaction);
+            futures.add(future1);
+        });
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+        future.complete(CachedMessage.builder()
+                    .authorId(message.getAuthor().getIdLong())
+                    .serverId(message.getGuild().getIdLong())
+                    .messageId(message.getIdLong())
+                    .channelId(message.getChannel().getIdLong())
+                    .content(message.getContentRaw())
+                    .embeds(embeds)
+                    .reactions(getFutures(futures))
+                    .timeCreated(message.getTimeCreated())
+                    .attachmentUrls(attachmentUrls)
+                    .build());
+        });
+    }
+
+    private List<CachedReaction> getFutures(List<CompletableFuture<CachedReaction>> futures) {
+        List<CachedReaction> reactions = new ArrayList<>();
+        futures.forEach(future -> {
+            try {
+                CachedReaction cachedReaction = future.get();
+                reactions.add(cachedReaction);
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Error while executing future to retrieve reaction.", e);
+            }
+        });
+        return reactions;
+    }
+
+    @Override
+    @Async
+    public void getCachedReactionFromReaction(CompletableFuture<CachedReaction> future, MessageReaction reaction) {
+        ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
+        CachedReaction.CachedReactionBuilder builder = CachedReaction.builder();
+
+        List<AUser> ausers = new ArrayList<>();
+        users.forEachAsync(user -> {
+            ausers.add(AUser.builder().id(user.getIdLong()).build());
+            return false;
+        }).thenAccept(o -> future.complete(builder.build()));
+        builder.users(ausers);
+        builder.emote(emoteService.buildAEmoteFromReaction(reaction.getReactionEmote()));
     }
 
     private CachedEmbed getCachedEmbedFromEmbed(MessageEmbed embed) {

@@ -98,19 +98,6 @@ public class TemplateServiceBean implements TemplateService {
                 .build();
     }
 
-    private String impromptu(String templateStr, Object model) {
-        try {
-            Template t = new Template("name", new StringReader(templateStr),
-                    new Configuration(Configuration.VERSION_2_3_29));
-            return  FreeMarkerTemplateUtils.processTemplateIntoString(t, model);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TemplateException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
     @Override
     public String renderTemplate(String key, HashMap<String, Object> parameters) {
         try {

@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.core.management;
 
 import dev.sheldan.abstracto.core.models.database.*;
 
+import java.util.List;
+
 public interface ServerManagementService {
     AServer createServer(Long id);
     AServer loadServer(Long id);
@@ -12,4 +14,5 @@ public interface ServerManagementService {
     AChannel getPostTarget(Long serverId, PostTarget target);
     AChannel getPostTarget(AServer server, PostTarget target);
     AChannel getPostTarget(AServer server, String name);
+    List<AServer> getAllServers();
 }

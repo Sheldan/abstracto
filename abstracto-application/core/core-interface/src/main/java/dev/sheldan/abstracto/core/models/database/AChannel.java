@@ -17,6 +17,7 @@ public class AChannel implements SnowFlake {
 
     @Id
     @Getter
+    @Column(name = "id")
     public Long id;
 
     @Getter
@@ -24,7 +25,9 @@ public class AChannel implements SnowFlake {
     private Set<AChannelGroup> groups;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Getter @Setter
+    @Getter
+    @Setter
+    @JoinColumn(name = "server_id")
     private AServer server;
 
     @Getter

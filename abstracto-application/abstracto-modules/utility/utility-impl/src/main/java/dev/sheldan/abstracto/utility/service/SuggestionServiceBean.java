@@ -27,8 +27,8 @@ import java.util.Optional;
 public class SuggestionServiceBean implements SuggestionService {
 
     public static final String SUGGESTION_LOG_TEMPLATE = "suggest_log";
-    private static final String SUGGESTION_YES_EMOTE = "SUGGESTION_YES";
-    private static final String SUGGESTION_NO_EMOTE = "SUGGESTION_NO";
+    private static final String SUGGESTION_YES_EMOTE = "suggestionYes";
+    private static final String SUGGESTION_NO_EMOTE = "suggestionNo";
     public static final String SUGGESTIONS_TARGET = "suggestions";
     @Autowired
     private SuggestionManagementService suggestionManagementService;

@@ -73,13 +73,11 @@ public class MessageEmbedListener extends ListenerAdapter {
                 Long serverIdLong = Long.parseLong(serverId);
                 Long channelIdLong = Long.parseLong(channelId);
                 Long messageIdLong = Long.parseLong(messageId);
-                try {
-                    CachedMessage messageFromCache = messageCache.getMessageFromCache(serverIdLong, channelIdLong, messageIdLong);
-                    messageRaw = messageRaw.replace(wholeLink, "");
-                    self.createEmbedAndPostEmbed(event, messageFromCache);
-                } catch (ExecutionException | InterruptedException e) {
-                    log.warn("Failed to load message from cache", e);
-                }
+                messageRaw = messageRaw.replace(wholeLink, "");
+                messageCache.getMessageFromCache(serverIdLong, channelIdLong, messageIdLong).thenAccept(cachedMessage -> {
+                    self.createEmbedAndPostEmbed(event, cachedMessage);
+                });
+
             }
         }
         if(StringUtils.isBlank(messageRaw) && matched) {
@@ -92,7 +90,11 @@ public class MessageEmbedListener extends ListenerAdapter {
     public void createEmbedAndPostEmbed(@Nonnull GuildMessageReceivedEvent event, CachedMessage message) {
         MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(event, message);
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
-        event.getChannel().sendMessage(embed.getMessage()).embed(embed.getEmbed()).queue();
+        if(StringUtils.isBlank(embed.getMessage())) {
+            event.getChannel().sendMessage(embed.getEmbed()).queue();
+        } else {
+            event.getChannel().sendMessage(embed.getMessage()).embed(embed.getEmbed()).queue();
+        }
     }
 
     private MessageEmbeddedModel buildTemplateParameter(GuildMessageReceivedEvent event, CachedMessage embeddedMessage) {

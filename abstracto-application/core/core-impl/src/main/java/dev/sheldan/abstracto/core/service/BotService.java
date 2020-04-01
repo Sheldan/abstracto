@@ -1,8 +1,10 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.ServerChannelUser;
+import dev.sheldan.abstracto.core.models.database.AEmote;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -53,6 +55,20 @@ public class BotService implements Bot {
         } else {
             throw new RuntimeException(String.format("Member %s not found in guild %s", memberId, serverId));
         }
+    }
+
+    @Override
+    public void deleteMessage(Long serverId, Long channelId, Long messageId) {
+        getTextChannelFromServer(serverId, channelId).deleteMessageById(messageId).queue();
+    }
+
+    @Override
+    public Emote getEmote(Long serverId, AEmote emote) {
+        if(!emote.getCustom()) {
+            return null;
+        }
+        Guild guildById = getGuildById(serverId);
+        return guildById.getEmoteById(emote.getEmoteId());
     }
 
     @Override

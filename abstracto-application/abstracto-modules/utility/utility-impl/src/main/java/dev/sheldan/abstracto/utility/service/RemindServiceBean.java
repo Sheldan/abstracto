@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.utility.service.management.ReminderManagementServic
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -66,7 +67,12 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, reminderModel.getMessage().getIdLong());
         reminderModel.setReminder(reminder);
         MessageToSend message = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, reminderModel);
-        reminderModel.getTextChannel().sendMessage(message.getMessage()).embed(message.getEmbed()).queue();
+        String messageText = message.getMessage();
+        if(StringUtils.isBlank(messageText)) {
+            reminderModel.getTextChannel().sendMessage(message.getEmbed()).queue();
+        } else {
+            reminderModel.getTextChannel().sendMessage(messageText).embed(message.getEmbed()).queue();
+        }
 
         if(remindIn.getSeconds() < 60) {
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);

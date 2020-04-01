@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class CachedMessage {
     private String content;
     private List<CachedEmbed> embeds;
     private List<String> attachmentUrls;
+    private List<CachedReaction> reactions;
 
     public String getMessageUrl() {
         return MessageUtils.buildMessageUrl(this.serverId ,this.channelId, this.messageId);

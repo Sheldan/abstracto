@@ -39,16 +39,25 @@ public class MessageDeletedListener extends ListenerAdapter {
     @Autowired
     private PostTargetService postTargetService;
 
+    @Autowired
+    private MessageDeletedListener self;
+
     @Override
     @Transactional
     public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
-        CachedMessage messageFromCache = null;
-        try {
-            messageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
-        } catch (ExecutionException | InterruptedException e) {
-            log.warn("Failed to load message.", e);
-            return;
-        }
+        messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong())
+        .thenAccept(messageFromCache -> {
+            try {
+                self.logMessage(event, messageFromCache);
+            } catch (Exception e) {
+                log.error("Error when logging message deletion.", e);
+            }
+        });
+
+    }
+
+    @Transactional
+    public void logMessage(@Nonnull GuildMessageDeleteEvent event, CachedMessage messageFromCache) {
         MessageDeletedLog logModel = (MessageDeletedLog) contextUtils.fromMessage(messageFromCache, MessageDeletedLog.class);
         logModel.setMessage(messageFromCache);
         String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_DELETED_TEMPLATE, logModel);

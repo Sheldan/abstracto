@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class ServerManagementServiceBean implements ServerManagementService {
@@ -43,6 +45,8 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public void addChannelToServer(AServer server, AChannel channel) {
         server.getChannels().add(channel);
+        channel.setServer(server);
+        repository.save(server);
     }
 
     @Override
@@ -81,6 +85,11 @@ public class ServerManagementServiceBean implements ServerManagementService {
     public AChannel getPostTarget(AServer server, String name) {
         PostTarget target = postTargetManagement.getPostTarget(name, server);
         return getPostTarget(server, target);
+    }
+
+    @Override
+    public List<AServer> getAllServers() {
+        return repository.findAll();
     }
 
 

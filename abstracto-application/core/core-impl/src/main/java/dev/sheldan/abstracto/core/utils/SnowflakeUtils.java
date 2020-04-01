@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto;
+package dev.sheldan.abstracto.core.utils;
 
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import net.dv8tion.jda.api.entities.ISnowflake;

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.SnowflakeUtils;
+import dev.sheldan.abstracto.core.listener.ServerConfigListener;
+import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.core.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.management.RoleManagementService;
 import dev.sheldan.abstracto.core.management.ServerManagementService;
@@ -42,6 +43,9 @@ public class StartupManager implements Startup {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private List<ServerConfigListener> configListeners;
+
 
     @Override
     public void startBot() throws LoginException {
@@ -68,6 +72,9 @@ public class StartupManager implements Startup {
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
+                configListeners.forEach(serverConfigListener -> {
+                    serverConfigListener.updateServerConfig(newAServer);
+                });
             }
         });
 

@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core;
+package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.models.CachedMessage;
 import net.dv8tion.jda.api.entities.Message;

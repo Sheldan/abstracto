@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.listener;
 
-import dev.sheldan.abstracto.core.MessageTextUpdatedListener;
+import dev.sheldan.abstracto.core.listener.MessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.core.service.MessageCache;
