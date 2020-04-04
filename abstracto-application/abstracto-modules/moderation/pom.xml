@@ -20,15 +20,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>dev.sheldan.abstracto.command</groupId>
-            <artifactId>command-int</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
             <artifactId>core-interface</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.sheldan.abstracto.templating</groupId>
+            <artifactId>templating-interface</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

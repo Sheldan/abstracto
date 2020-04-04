@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.core.commands.help;
 
-import dev.sheldan.abstracto.command.*;
-import dev.sheldan.abstracto.command.execution.*;
-import dev.sheldan.abstracto.command.module.ModuleInfo;
-import dev.sheldan.abstracto.command.service.ModuleRegistry;
+import dev.sheldan.abstracto.core.command.*;
+import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.command.module.ModuleInfo;
+import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
 import dev.sheldan.abstracto.config.AbstractoFeatures;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.apache.commons.lang3.StringUtils;
@@ -104,7 +104,7 @@ public class Help implements Command {
         if(depth > 0){
           intentation = StringUtils.repeat("-", depth) + ">";
         }
-        ModuleInfo info = module.getModule().getInfo();
+        ModuleInfo info = module.getModuleInterface().getInfo();
         sb.append(String.format(intentation +"**%s** \n", info.getName()));
         sb.append(String.format(intentation + "%s \n", info.getDescription()));
         if(recursive) {

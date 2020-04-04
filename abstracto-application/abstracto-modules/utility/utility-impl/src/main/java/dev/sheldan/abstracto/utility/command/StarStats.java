@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.utility.command;
 
-import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
-import dev.sheldan.abstracto.command.HelpInfo;
-import dev.sheldan.abstracto.command.execution.CommandConfiguration;
-import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.CommandResult;
-import dev.sheldan.abstracto.command.execution.Parameter;
+import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.HelpInfo;
+import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.execution.Parameter;
 import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.utility.Utility;

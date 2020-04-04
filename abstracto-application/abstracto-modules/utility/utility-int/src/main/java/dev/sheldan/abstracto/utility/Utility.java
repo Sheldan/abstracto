@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.utility;
 
-import dev.sheldan.abstracto.command.Module;
-import dev.sheldan.abstracto.command.module.ModuleInfo;
+import dev.sheldan.abstracto.core.command.ModuleInterface;
+import dev.sheldan.abstracto.core.command.module.ModuleInfo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Utility implements Module {
+public class Utility implements ModuleInterface {
 
     public static final String UTILITY = "utility";
 

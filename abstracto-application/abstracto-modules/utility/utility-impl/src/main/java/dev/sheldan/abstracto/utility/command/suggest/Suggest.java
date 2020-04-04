@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.command.suggest;
 
-import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
-import dev.sheldan.abstracto.command.HelpInfo;
-import dev.sheldan.abstracto.command.execution.*;
+import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.HelpInfo;
+import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.utility.Utility;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.template.SuggestionLog;

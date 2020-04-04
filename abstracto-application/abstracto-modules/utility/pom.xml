@@ -20,11 +20,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>dev.sheldan.abstracto.command</groupId>
-            <artifactId>command-int</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
             <artifactId>core-interface</artifactId>
             <version>${project.version}</version>

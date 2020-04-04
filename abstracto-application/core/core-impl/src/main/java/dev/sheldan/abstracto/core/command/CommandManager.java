@@ -1,0 +1,93 @@
+package dev.sheldan.abstracto.core.command;
+
+import dev.sheldan.abstracto.core.command.exception.CommandNotFound;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
+import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.execution.Parameter;
+import dev.sheldan.abstracto.core.command.meta.CommandRegistry;
+import dev.sheldan.abstracto.core.command.meta.UnParsedCommandParameter;
+import net.dv8tion.jda.api.entities.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CommandManager implements CommandRegistry {
+
+    @Autowired
+    private List<Command> commands;
+
+    @Override
+    public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter) {
+        Optional<Command> commandOptional = commands.stream().filter((Command o )-> {
+            CommandConfiguration commandConfiguration = o.getConfiguration();
+            if(!commandNameMatches(name, commandConfiguration)) {
+                return false;
+            }
+            boolean parameterFit;
+            if(commandConfiguration.getParameters() != null){
+                boolean paramCountFits = unParsedCommandParameter.getParameters().size() >= commandConfiguration.getNecessaryParameterCount();
+                boolean hasRemainderParameter = commandConfiguration.getParameters().stream().anyMatch(Parameter::isRemainder);
+                if(unParsedCommandParameter.getParameters().size() < commandConfiguration.getNecessaryParameterCount()) {
+                    String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
+                    throw new InsufficientParameters("Insufficient parameters", o, nextParameterName);
+                }
+                parameterFit = paramCountFits || hasRemainderParameter;
+            } else {
+                parameterFit = unParsedCommandParameter.getParameters().size() == 0;
+            }
+            return parameterFit;
+        }).findFirst();
+        if(commandOptional.isPresent()){
+            return commandOptional.get();
+        }
+        throw new CommandNotFound("Command not found.");
+    }
+
+    private boolean commandNameMatches(String name, CommandConfiguration commandConfiguration) {
+        boolean commandNameMatches = commandConfiguration.getName().equalsIgnoreCase(name);
+        if(commandNameMatches) {
+            return true;
+        }
+        boolean aliasesMatch = false;
+        if(commandConfiguration.getAliases() != null) {
+            aliasesMatch = commandConfiguration.getAliases().stream().anyMatch(s -> s.equalsIgnoreCase(name));
+        }
+        return aliasesMatch;
+    }
+
+    public Command findCommand(String name) {
+        Optional<Command> commandOptional = commands.stream().filter((Command o )-> {
+            CommandConfiguration commandConfiguration = o.getConfiguration();
+            return commandConfiguration.getName().equals(name);
+        }).findFirst();
+        if(commandOptional.isPresent()){
+            return commandOptional.get();
+        }
+        throw new CommandNotFound("Command not found.");
+    }
+
+    @Override
+    public List<Command> getAllCommands() {
+        return commands;
+    }
+
+    @Override
+    public List<Command> getAllCommandsFromModule(ModuleInterface moduleInterface) {
+        List<Command> commands = new ArrayList<>();
+        this.getAllCommands().forEach(command -> {
+            if(command.getConfiguration().getModule().equals(moduleInterface.getInfo().getName())){
+                commands.add(command);
+            }
+        });
+        return commands;
+    }
+
+    @Override
+    public boolean isCommand(Message message) {
+        return message.getContentRaw().startsWith("!");
+    }
+}

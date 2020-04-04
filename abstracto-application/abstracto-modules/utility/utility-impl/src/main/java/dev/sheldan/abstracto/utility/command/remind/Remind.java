@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.command.remind;
 
-import dev.sheldan.abstracto.command.*;
-import dev.sheldan.abstracto.command.execution.*;
+import dev.sheldan.abstracto.core.command.*;
+import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.Utility;

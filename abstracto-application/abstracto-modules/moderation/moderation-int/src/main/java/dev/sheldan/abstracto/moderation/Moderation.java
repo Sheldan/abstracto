@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.moderation;
 
-import dev.sheldan.abstracto.command.Module;
-import dev.sheldan.abstracto.command.module.ModuleInfo;
+import dev.sheldan.abstracto.core.command.ModuleInterface;
+import dev.sheldan.abstracto.core.command.module.ModuleInfo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Moderation implements Module {
+public class Moderation implements ModuleInterface {
 
     public static final String MODERATION = "moderation";
 

@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.core.commands;
 
-import dev.sheldan.abstracto.command.Command;
-import dev.sheldan.abstracto.command.execution.CommandConfiguration;
-import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.CommandResult;
-import dev.sheldan.abstracto.command.execution.Parameter;
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.execution.Parameter;
 import dev.sheldan.abstracto.config.AbstractoFeatures;
-import dev.sheldan.abstracto.core.commands.utility.UtilityModule;
+import dev.sheldan.abstracto.core.commands.utility.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class Enable implements Command {
         List<Parameter> parameters = Arrays.asList(featureName);
         return CommandConfiguration.builder()
                 .name("enable")
-                .module(UtilityModule.UTILITY)
+                .module(UtilityModuleInterface.UTILITY)
                 .parameters(parameters)
                 .description("Enables features for this server.")
                 .causesReaction(true)

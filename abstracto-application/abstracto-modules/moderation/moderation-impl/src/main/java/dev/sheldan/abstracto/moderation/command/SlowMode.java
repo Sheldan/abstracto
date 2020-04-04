@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.command.*;
-import dev.sheldan.abstracto.command.execution.CommandConfiguration;
-import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.Parameter;
-import dev.sheldan.abstracto.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.*;
+import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.Parameter;
+import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;

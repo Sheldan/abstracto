@@ -15,7 +15,6 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>command</module>
         <module>core</module>
         <module>executable</module>
         <module>templating</module>

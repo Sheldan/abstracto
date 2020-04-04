@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
-import dev.sheldan.abstracto.command.HelpInfo;
-import dev.sheldan.abstracto.command.execution.*;
+import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.HelpInfo;
+import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
