@@ -6,8 +6,8 @@ import dev.sheldan.abstracto.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.command.execution.Parameter;
 import dev.sheldan.abstracto.command.meta.CommandRegistry;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
-import dev.sheldan.abstracto.commands.management.exception.CommandNotFoundException;
-import dev.sheldan.abstracto.commands.management.exception.InsufficientParametersException;
+import dev.sheldan.abstracto.commands.management.exception.CommandNotFound;
+import dev.sheldan.abstracto.commands.management.exception.InsufficientParameters;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class CommandManager implements CommandRegistry {
                 boolean hasRemainderParameter = commandConfiguration.getParameters().stream().anyMatch(Parameter::isRemainder);
                 if(unParsedCommandParameter.getParameters().size() < commandConfiguration.getNecessaryParameterCount()) {
                     String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
-                    throw new InsufficientParametersException("Insufficient parameters", o, nextParameterName);
+                    throw new InsufficientParameters("Insufficient parameters", o, nextParameterName);
                 }
                 parameterFit = paramCountFits || hasRemainderParameter;
             } else {
@@ -46,7 +46,7 @@ public class CommandManager implements CommandRegistry {
         if(commandOptional.isPresent()){
             return commandOptional.get();
         }
-        throw new CommandNotFoundException("Command not found.");
+        throw new CommandNotFound("Command not found.");
     }
 
     public Command findCommand(String name) {
@@ -57,7 +57,7 @@ public class CommandManager implements CommandRegistry {
         if(commandOptional.isPresent()){
             return commandOptional.get();
         }
-        throw new CommandNotFoundException("Command not found.");
+        throw new CommandNotFound("Command not found.");
     }
 
     @Override

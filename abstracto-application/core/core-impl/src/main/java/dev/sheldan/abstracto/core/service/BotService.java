@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.NotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.ServerChannelUser;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,7 @@ public class BotService implements Bot {
     }
 
     @Override
-    public ServerChannelUser getServerChannelUser(Long serverId, Long channelId, Long userId) {
+    public ServerChannelUser getServerChannelUser(Long serverId, Long channelId, Long userId)  {
         Optional<Guild> guildOptional = getGuildById(serverId);
         if(guildOptional.isPresent()) {
             Guild guild = guildOptional.get();
@@ -49,15 +50,13 @@ public class BotService implements Bot {
                 Member member = guild.getMemberById(userId);
                 return ServerChannelUser.builder().guild(guild).textChannel(textChannel).member(member).build();
             } else {
-                throw new NotFoundException(String.format("Text channel %s not found in guild %s", channelId, serverId));
+                throw new ChannelException(String.format("Text channel %s not found in guild %s", channelId, serverId));
             }
         }
         else {
-            throw new NotFoundException(String.format("Guild %s not found.", serverId));
+            throw new GuildException(String.format("Guild %s not found.", serverId));
         }
     }
-
-
 
     @Override
     public Member getMemberInServer(Long serverId, Long memberId) {
@@ -70,7 +69,7 @@ public class BotService implements Bot {
     }
 
     @Override
-    public void deleteMessage(Long serverId, Long channelId, Long messageId) {
+    public void deleteMessage(Long serverId, Long channelId, Long messageId)  {
         Optional<TextChannel> textChannelOptional = getTextChannelFromServer(serverId, channelId);
         if(textChannelOptional.isPresent()) {
             TextChannel textChannel = textChannelOptional.get();
@@ -83,16 +82,17 @@ public class BotService implements Bot {
     }
 
     @Override
-    public Optional<Emote> getEmote(Long serverId, AEmote emote) {
+    public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
         if(!emote.getCustom()) {
             return Optional.empty();
         }
         Optional<Guild> guildById = getGuildById(serverId);
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
-            return Optional.ofNullable(guild.getEmoteById(emote.getEmoteId()));
+            Emote emoteById = guild.getEmoteById(emote.getEmoteId());
+            return Optional.ofNullable(emoteById);
         }
-        throw new NotFoundException(String.format("Not able to find emote %s in server %s", emote.getId(), serverId));
+        throw new GuildException(String.format("Not able to find  server %s", serverId));
     }
 
     @Override
@@ -101,13 +101,13 @@ public class BotService implements Bot {
     }
 
     @Override
-    public Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId) {
+    public Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId)  {
         Optional<Guild> guildOptional = getGuildById(serverId);
         if(guildOptional.isPresent()) {
             Guild guild = guildOptional.get();
             return Optional.ofNullable(guild.getTextChannelById(textChannelId));
         }
-        throw new NotFoundException(String.format("Not able to find guild %s", serverId));
+        throw new GuildException(String.format("Not able to find guild %s", serverId));
     }
 
     @Override

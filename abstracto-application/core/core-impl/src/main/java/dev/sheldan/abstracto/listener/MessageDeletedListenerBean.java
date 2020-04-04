@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.listener;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
@@ -25,6 +27,9 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Autowired
     private MessageDeletedListenerBean self;
 
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
     @Override
     @Transactional
     public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
@@ -36,10 +41,13 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Transactional
     public void executeListener(CachedMessage cachedMessage) {
         listener.forEach(messageDeletedListener -> {
+            if(!featureFlagService.isFeatureEnabled(messageDeletedListener.getFeature(), cachedMessage.getServerId())) {
+                return;
+            }
             try {
                 messageDeletedListener.execute(cachedMessage);
-            } catch (Exception e) {
-                log.warn("Listener {} failed with exception:", messageDeletedListener.getClass().getName(), e);
+            } catch (AbstractoRunTimeException e) {
+                log.error("Listener {} failed with exception:", messageDeletedListener.getClass().getName(), e);
             }
         });
     }

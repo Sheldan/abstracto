@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;

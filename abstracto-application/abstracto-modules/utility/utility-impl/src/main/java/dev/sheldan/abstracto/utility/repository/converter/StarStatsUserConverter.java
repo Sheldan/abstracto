@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.repository.converter;
 
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsUser;

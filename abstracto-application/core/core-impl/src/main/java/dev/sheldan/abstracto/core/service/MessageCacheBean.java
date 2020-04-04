@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.NotFoundException;
-import dev.sheldan.abstracto.core.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.models.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -89,12 +90,12 @@ public class MessageCacheBean implements MessageCache {
                     buildCachedMessageFromMessage(future, message);
                 });
             } else {
-                log.warn("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
-                future.completeExceptionally(new NotFoundException(String.format("Not able to load message %s. Text channel %s not found in guild %s", messageId, textChannelId, guildId)));
+                log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
+                future.completeExceptionally(new ChannelException(String.format("Not able to load message %s. Text channel %s not found in guild %s", messageId, textChannelId, guildId)));
             }
         } else {
-            log.warn("Not able to load message {} in channel {} in guild {}. Guild not found.", messageId, textChannelId, guildId);
-            future.completeExceptionally(new NotFoundException(String.format("Not able to load message %s. Guild %s not found.", messageId, guildId)));
+            log.error("Not able to load message {} in channel {} in guild {}. Guild not found.", messageId, textChannelId, guildId);
+            future.completeExceptionally(new GuildException(String.format("Not able to load message %s. Guild %s not found.", messageId, guildId)));
 
         }
     }

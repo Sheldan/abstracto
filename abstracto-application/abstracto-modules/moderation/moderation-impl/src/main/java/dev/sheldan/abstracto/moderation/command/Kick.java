@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
 import dev.sheldan.abstracto.command.HelpInfo;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.models.template.BanIdLog;
+import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.KickLogModel;
 import dev.sheldan.abstracto.moderation.service.KickServiceBean;
 import dev.sheldan.abstracto.templating.TemplateService;
@@ -16,15 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Kick implements Command {
+public class Kick extends AbstractFeatureFlaggedCommand {
 
     @Autowired
     private TemplateService templateService;
 
     @Autowired
     private KickServiceBean kickService;
+
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
 
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
@@ -36,7 +37,7 @@ public class Kick implements Command {
         kickLogModel.setKickingUser(commandContext.getAuthor());
         kickLogModel.setReason(reason);
         kickService.kickMember(member, reason, kickLogModel);
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -53,5 +54,10 @@ public class Kick implements Command {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return ModerationFeatures.MODERATION;
     }
 }

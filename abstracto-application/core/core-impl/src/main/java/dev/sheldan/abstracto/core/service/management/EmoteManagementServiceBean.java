@@ -1,11 +1,10 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.DynamicKeyLoader;
-import dev.sheldan.abstracto.core.exception.ConfigurationException;
-import dev.sheldan.abstracto.core.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
+import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.repository.EmoteRepository;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,19 +25,22 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     @Autowired
     private DynamicKeyLoader dynamicKeyLoader;
 
+    @Autowired
+    private Bot botService;
+
     @Override
     public AEmote loadEmote(Long id) {
         return repository.getOne(id);
     }
 
     @Override
-    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId) {
+    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId)  {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return this.createCustomEmote(name, emoteKey, emoteId, animated, server);
     }
 
     @Override
-    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, AServer server) {
+    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, AServer server)  {
         validateEmoteName(name);
         AEmote emoteToCreate = AEmote
                 .builder()
@@ -54,13 +56,13 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote createDefaultEmote(String name, String emoteKey, Long serverId) {
+    public AEmote createDefaultEmote(String name, String emoteKey, Long serverId)  {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return createDefaultEmote(name, emoteKey, server);
     }
 
     @Override
-    public AEmote createDefaultEmote(String name, String emoteKey, AServer server) {
+    public AEmote createDefaultEmote(String name, String emoteKey, AServer server)  {
         validateEmoteName(name);
         AEmote emoteToCreate = AEmote
                 .builder()
@@ -85,7 +87,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote setEmoteToCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId) {
+    public AEmote setEmoteToCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId)  {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AEmote emote;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, server);
@@ -103,7 +105,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId) {
+    public AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId)  {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AEmote emoteBeingSet;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
@@ -121,7 +123,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote setEmoteToDefaultEmote(String name, String emoteKey, Long serverId) {
+    public AEmote setEmoteToDefaultEmote(String name, String emoteKey, Long serverId)  {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AEmote emoteBeingSet;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
@@ -171,10 +173,10 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         return emote;
     }
 
-    private void validateEmoteName(String name) {
+    private void validateEmoteName(String name)  {
         List<String> possibleEmotes = dynamicKeyLoader.getEmoteNamesAsList();
         if(!possibleEmotes.contains(name)) {
-            throw new ConfigurationException("Emote `" + name + "` is not defined. Possible values are: " + String.join(", ", possibleEmotes));
+            throw new EmoteException("Emote `" + name + "` is not defined. Possible values are: " + String.join(", ", possibleEmotes));
         }
     }
 }

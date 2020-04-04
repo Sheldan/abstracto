@@ -1,20 +1,24 @@
 package dev.sheldan.abstracto.commands.management;
 
 import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.CommandCondition;
+import dev.sheldan.abstracto.command.ConditionalCommand;
 import dev.sheldan.abstracto.command.PostCommandExecution;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.meta.UnParsedCommandParameter;
-import dev.sheldan.abstracto.commands.management.exception.IncorrectParameterException;
-import dev.sheldan.abstracto.commands.management.exception.ParameterTooLongException;
+import dev.sheldan.abstracto.commands.management.exception.IncorrectParameter;
+import dev.sheldan.abstracto.commands.management.exception.ParameterTooLong;
 import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.exception.*;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -29,8 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
+@Slf4j
 public class CommandReceivedHandler extends ListenerAdapter {
 
     @Autowired
@@ -74,18 +80,34 @@ public class CommandReceivedHandler extends ListenerAdapter {
             foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
             Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
-            Result result = foundCommand.execute(commandContext);
+            if(foundCommand instanceof ConditionalCommand) {
+                ConditionalCommand castedCommand = (ConditionalCommand) foundCommand;
+                if (!shouldExecute(commandContext, foundCommand, castedCommand.getConditions())) {
+                    throw new FeatureDisabledException(String.format("Feature `%s` has been disabled. Command is not usable", foundCommand.getFeature()));
+                }
+
+            }
+            CommandResult commandResult = foundCommand.execute(commandContext);
             for (PostCommandExecution postCommandExecution : executions) {
-                postCommandExecution.execute(commandContext, result, foundCommand);
+                postCommandExecution.execute(commandContext, commandResult, foundCommand);
             }
         } catch (Exception e) {
-            Result result = Result.fromError(e.getMessage(), e);
+            CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
             CommandContext commandContext = commandContextBuilder.build();
             for (PostCommandExecution postCommandExecution : executions) {
-                postCommandExecution.execute(commandContext, result, foundCommand);
+                postCommandExecution.execute(commandContext, commandResult, foundCommand);
             }
         }
+    }
 
+    public boolean shouldExecute(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
+        AtomicBoolean shouldExecute = new AtomicBoolean(true);
+        if(conditions != null) {
+            conditions.forEach(condition -> {
+                shouldExecute.set(shouldExecute.get() && condition.shouldExecute(commandContext, command));
+            });
+        }
+        return shouldExecute.get();
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
@@ -99,7 +121,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .member(event.getMember())
                 .aUserInAServer(user)
                 .user(user.getUserReference())
-                .textChannel(event.getTextChannel())
+                .messageChannel(event.getTextChannel())
                 .guild(event.getGuild())
                 .build();
     }
@@ -122,7 +144,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 }
                 String value = unParsedCommandParameter.getParameters().get(i);
                 if(param.getMaxLength() != null && (value.length() + Constants.PARAMETER_LIMIT) > param.getMaxLength()) {
-                    throw new ParameterTooLongException("The passed parameter was too long.", command, param.getName(), value.length(), param.getMaxLength());
+                    throw new ParameterTooLong("The passed parameter was too long.", command, param.getName(), value.length(), param.getMaxLength());
                 }
                 try {
                     if(param.getType().equals(Integer.class)){
@@ -143,18 +165,24 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         } else {
                             parsedParameters.add(value);
                         }
+                    } else if(param.getType().equals(Boolean.class)) {
+                        parsedParameters.add(Boolean.valueOf(value));
                     } else if (param.getType().equals(Duration.class)) {
                         parsedParameters.add(ParseUtils.parseDuration(value));
                     } else {
                         if(!reminderActive) {
                             parsedParameters.add(value);
                         } else {
-                            int lastIndex = parsedParameters.size() - 1;
-                            parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                            if(parsedParameters.size() == 0) {
+                                parsedParameters.add(value);
+                            } else {
+                                int lastIndex = parsedParameters.size() - 1;
+                                parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                            }
                         }
                     }
                 } catch (NoSuchElementException e) {
-                    throw new IncorrectParameterException("The passed parameters did not have the correct type.", command, param.getType(), param.getName());
+                    throw new IncorrectParameter("The passed parameters did not have the correct type.", command, param.getType(), param.getName());
                 }
             }
 

@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -16,6 +18,9 @@ public class EmoteServiceBean implements EmoteService {
 
     @Autowired
     private Bot botService;
+
+    @Autowired
+    private EmoteManagementService emoteManagementService;
 
     @Override
     public boolean isEmoteUsableByBot(Emote emote) {
@@ -38,7 +43,7 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public String getEmoteAsMention(AEmote emote, Long serverId, String defaultText) {
+    public String getEmoteAsMention(AEmote emote, Long serverId, String defaultText)  {
         if(emote != null && emote.getCustom()) {
             Optional<Emote> emoteOptional = botService.getEmote(serverId, emote);
             if (emoteOptional.isPresent()) {
@@ -56,7 +61,14 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public String getEmoteAsMention(AEmote emote, Long serverId) {
+    public String getEmoteAsMention(AEmote emote, Long serverId)  {
         return this.getEmoteAsMention(emote, serverId, " ");
+    }
+
+    @Override
+    public void throwIfEmoteDoesNotExist(String emoteKey, Long serverId)  {
+        if(!emoteManagementService.loadEmoteByName(emoteKey, serverId).isPresent()) {
+            throw new EmoteException(String.format("Emote %s not defined.", emoteKey));
+        }
     }
 }

@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.listener;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.listener.MessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -27,6 +29,9 @@ public class MessageUpdatedListener extends ListenerAdapter {
     @Autowired
     private MessageUpdatedListener self;
 
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
     @Override
     public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
         Message message = event.getMessage();
@@ -40,7 +45,14 @@ public class MessageUpdatedListener extends ListenerAdapter {
     @Transactional
     public void executeListener(Message message, CachedMessage cachedMessage) {
         listener.forEach(messageTextUpdatedListener -> {
-            messageTextUpdatedListener.execute(cachedMessage, message);
+            if(!featureFlagService.isFeatureEnabled(messageTextUpdatedListener.getFeature(), message.getGuild().getIdLong())) {
+                return;
+            }
+            try {
+                messageTextUpdatedListener.execute(cachedMessage, message);
+            } catch (AbstractoRunTimeException e) {
+                log.error(String.format("Failed to execute listener. %s", messageTextUpdatedListener.getClass().getName()), e);
+            }
         });
     }
 }

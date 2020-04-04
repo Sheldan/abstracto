@@ -1,32 +1,33 @@
 package dev.sheldan.abstracto.utility.command.suggest;
 
-import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
 import dev.sheldan.abstracto.command.HelpInfo;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.utility.Utility;
+import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.template.SuggestionLog;
 import dev.sheldan.abstracto.utility.service.SuggestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Suggest implements Command {
+public class Suggest extends AbstractFeatureFlaggedCommand {
 
     @Autowired
     private SuggestionService suggestionService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
+        suggestionService.validateSetup(commandContext.getGuild().getIdLong());
         List<Object> parameters = commandContext.getParameters().getParameters();
         String text = (String) parameters.get(0);
         SuggestionLog suggestLogModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
         suggestLogModel.setSuggester(commandContext.getAuthor());
         suggestionService.createSuggestion(commandContext.getAuthor(), text, suggestLogModel);
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -42,5 +43,10 @@ public class Suggest implements Command {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return UtilityFeatures.SUGGEST;
     }
 }

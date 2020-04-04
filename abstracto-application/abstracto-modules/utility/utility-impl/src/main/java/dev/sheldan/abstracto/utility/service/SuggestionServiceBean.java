@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
@@ -46,13 +47,16 @@ public class SuggestionServiceBean implements SuggestionService {
     private EmoteManagementService emoteManagementService;
 
     @Autowired
+    private EmoteService emoteService;
+
+    @Autowired
     private MessageService messageService;
 
     @Autowired
     private SuggestionServiceBean self;
 
     @Override
-    public void createSuggestion(Member member, String text, SuggestionLog suggestionLog) {
+    public void createSuggestion(Member member, String text, SuggestionLog suggestionLog)  {
         Suggestion suggestion = suggestionManagementService.createSuggestion(member, text);
         suggestionLog.setSuggestion(suggestion);
         suggestionLog.setText(text);
@@ -62,9 +66,9 @@ public class SuggestionServiceBean implements SuggestionService {
         Guild guildById = instance.getGuildById(guildId);
         if(guildById != null) {
             postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId).thenAccept(message -> {
+                suggestionManagementService.setPostedMessage(suggestion, message);
                 messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
                 messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
-                suggestionManagementService.setPostedMessage(suggestion, message);
             });
         } else {
             log.warn("Guild {} or member {} was not found when creating suggestion.", member.getGuild().getIdLong(), member.getIdLong());
@@ -105,7 +109,7 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateSuggestionMessageText(String text, SuggestionLog suggestionLog, Message message) {
+    public void updateSuggestionMessageText(String text, SuggestionLog suggestionLog, Message message)  {
         Optional<MessageEmbed> embedOptional = message.getEmbeds().stream().filter(embed -> embed.getDescription() != null).findFirst();
         if(embedOptional.isPresent()) {
             MessageEmbed suggestionEmbed = embedOptional.get();
@@ -121,5 +125,12 @@ public class SuggestionServiceBean implements SuggestionService {
         Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
         updateSuggestion(text, log, suggestion);
+    }
+
+    @Override
+    public void validateSetup(Long serverId) {
+        emoteService.throwIfEmoteDoesNotExist(SUGGESTION_YES_EMOTE, serverId);
+        emoteService.throwIfEmoteDoesNotExist(SUGGESTION_NO_EMOTE, serverId);
+        postTargetService.throwIfPostTargetIsNotDefined(SUGGESTION_YES_EMOTE, serverId);
     }
 }

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.utility.models.template.ExecutedReminderModel;
 import dev.sheldan.abstracto.utility.models.template.ReminderModel;
 import dev.sheldan.abstracto.utility.service.management.ReminderManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.apache.commons.lang3.StringUtils;
@@ -70,9 +71,9 @@ public class RemindServiceBean implements ReminderService {
         MessageToSend message = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, reminderModel);
         String messageText = message.getMessage();
         if(StringUtils.isBlank(messageText)) {
-            reminderModel.getTextChannel().sendMessage(message.getEmbed()).queue();
+            reminderModel.getMessageChannel().sendMessage(message.getEmbed()).queue();
         } else {
-            reminderModel.getTextChannel().sendMessage(messageText).embed(message.getEmbed()).queue();
+            reminderModel.getMessageChannel().sendMessage(messageText).embed(message.getEmbed()).queue();
         }
 
         if(remindIn.getSeconds() < 60) {
@@ -89,24 +90,29 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     @Transactional
-    public void executeReminder(Long reminderId) {
+    public void executeReminder(Long reminderId)  {
         Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
         AServer server = reminderToRemindFor.getServer();
         AChannel channel = reminderToRemindFor.getChannel();
-        Optional<TextChannel> channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
-        // only send the message if the channel still exists, if not, only set the reminder to reminded.
-        if(channelToAnswerIn.isPresent()) {
-            AUser userReference = reminderToRemindFor.getToBeReminded().getUserReference();
-            Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
-            ExecutedReminderModel build = ExecutedReminderModel
-                    .builder()
-                    .reminder(reminderToRemindFor)
-                    .member(memberInServer)
-                    .build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
-            channelToAnswerIn.get().sendMessage(messageToSend.getMessage()).embed(messageToSend.getEmbed()).queue();
+        Optional<Guild> guildToAnswerIn = bot.getGuildById(server.getId());
+        if(guildToAnswerIn.isPresent()) {
+            Optional<TextChannel> channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
+            // only send the message if the channel still exists, if not, only set the reminder to reminded.
+            if(channelToAnswerIn.isPresent()) {
+                AUser userReference = reminderToRemindFor.getToBeReminded().getUserReference();
+                Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
+                ExecutedReminderModel build = ExecutedReminderModel
+                        .builder()
+                        .reminder(reminderToRemindFor)
+                        .member(memberInServer)
+                        .build();
+                MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
+                channelToAnswerIn.get().sendMessage(messageToSend.getMessage()).embed(messageToSend.getEmbed()).queue();
+            } else {
+                log.warn("Channel {} in server {} to remind user did not exist anymore. Ignoring reminder {}", channel.getId(), server.getId(), reminderId);
+            }
         } else {
-            log.warn("Channel {} in server {} to remind user did not exist anymore. Ignoring.", channel.getId(), server.getId());
+            log.warn("Guild {} to remind user in did not exist anymore. Ignoring reminder {}.", server.getId(), reminderId);
         }
         reminderManagementService.setReminded(reminderToRemindFor);
     }

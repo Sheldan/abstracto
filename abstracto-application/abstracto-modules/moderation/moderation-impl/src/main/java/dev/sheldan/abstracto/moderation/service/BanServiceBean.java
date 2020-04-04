@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.NotFoundException;
+import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.ServerContext;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -50,7 +50,7 @@ public class BanServiceBean implements BanService {
             guildByIdOptional.get().ban(userId.toString(), 0, reason).queue();
         } else {
             log.warn("Guild {} not found. Not able to ban user {}", guildId, userId);
-            throw new NotFoundException(String.format("Guild %s not found. Not able to ban user %s", guildId, userId));
+            throw new GuildException(String.format("Guild %s not found. Not able to ban user %s", guildId, userId));
         }
     }
 }

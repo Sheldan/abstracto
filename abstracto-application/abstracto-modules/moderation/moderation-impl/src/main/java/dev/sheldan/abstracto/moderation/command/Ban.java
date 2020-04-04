@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
 import dev.sheldan.abstracto.command.HelpInfo;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.moderation.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.BanLog;
-import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class Ban implements Command {
+public class Ban extends AbstractFeatureFlaggedCommand {
 
     @Autowired
     private BanService banService;
@@ -27,7 +27,7 @@ public class Ban implements Command {
     private TemplateService templateService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderTemplate("ban_default_reason", null);
@@ -38,7 +38,7 @@ public class Ban implements Command {
         banLogModel.setBanningUser(commandContext.getAuthor());
         banLogModel.setReason(reason);
         banService.banMember(member, reason, banLogModel);
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -55,5 +55,10 @@ public class Ban implements Command {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return ModerationFeatures.MODERATION;
     }
 }

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.utils;
 
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.models.ServerChannelUser;
 import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
@@ -41,7 +41,7 @@ public class ContextUtils {
             return builder
                     .member(serverChannelUser.getMember())
                     .guild(serverChannelUser.getGuild())
-                    .textChannel(serverChannelUser.getTextChannel())
+                    .messageChannel(serverChannelUser.getTextChannel())
                     .channel(channelManagementService.loadChannel(message.getChannelId()))
                     .server(serverManagementService.loadOrCreate(message.getServerId()))
                     .aUserInAServer(aUserInAServer)

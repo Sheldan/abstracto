@@ -1,8 +1,10 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.AServerChannelMessage;
 import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.*;
@@ -36,6 +38,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StarboardServiceBean implements StarboardService {
 
+    public static final String STARBOARD_POSTTARGET = "starboard";
+    public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
     @Autowired
     private Bot bot;
 
@@ -70,11 +74,11 @@ public class StarboardServiceBean implements StarboardService {
     private EmoteService emoteService;
 
     @Override
-    public void createStarboardPost(CachedMessage message, List<AUser> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser) {
+    public void createStarboardPost(CachedMessage message, List<AUser> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("starboard_post", starboardPostModel);
-        PostTarget starboard = postTargetManagement.getPostTarget("starboard", message.getServerId());
-        postTargetService.sendEmbedInPostTarget(messageToSend, "starboard", message.getServerId()).thenAccept(message1 -> {
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
+        PostTarget starboard = postTargetManagement.getPostTarget(STARBOARD_POSTTARGET, message.getServerId());
+        postTargetService.sendEmbedInPostTarget(messageToSend, STARBOARD_POSTTARGET, message.getServerId()).thenAccept(message1 -> {
             AServerChannelMessage aServerChannelMessage = AServerChannelMessage
                     .builder()
                     .messageId(message1.getIdLong())
@@ -90,7 +94,7 @@ public class StarboardServiceBean implements StarboardService {
 
     }
 
-    private StarboardPostModel buildStarboardPostModel(CachedMessage message, Integer starCount) {
+    private StarboardPostModel buildStarboardPostModel(CachedMessage message, Integer starCount)  {
         Member member = bot.getMemberInServer(message.getServerId(), message.getAuthorId());
         Optional<TextChannel> channel = bot.getTextChannelFromServer(message.getServerId(), message.getChannelId());
         Optional<Guild> guild = bot.getGuildById(message.getServerId());
@@ -121,7 +125,7 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     @Override
-    public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUser> userExceptAuthor) {
+    public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUser> userExceptAuthor)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate("starboard_post", starboardPostModel);
         CompletableFuture<Message> future = new CompletableFuture<>();
@@ -132,13 +136,13 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     @Override
-    public void removeStarboardPost(StarboardPost message) {
+    public void removeStarboardPost(StarboardPost message)  {
         AChannel starboardChannel = message.getStarboardChannel();
         bot.deleteMessage(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
     }
 
     @Override
-    public StarStatsModel retrieveStarStats(Long serverId) {
+    public StarStatsModel retrieveStarStats(Long serverId)  {
         int count = 3;
         List<StarboardPost> starboardPosts = starboardPostManagementService.retrieveTopPosts(serverId, count);
         List<StarStatsUser> topStarGivers = starboardPostReactorManagementService.retrieveTopStarGiver(serverId, count);

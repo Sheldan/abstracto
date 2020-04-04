@@ -2,9 +2,9 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.listener.ServerConfigListener;
 import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.RoleManagementService;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;

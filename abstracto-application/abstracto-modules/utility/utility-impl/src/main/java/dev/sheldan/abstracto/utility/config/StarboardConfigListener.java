@@ -1,15 +1,11 @@
 package dev.sheldan.abstracto.utility.config;
 
 import dev.sheldan.abstracto.core.listener.ServerConfigListener;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.management.ConfigManagementService;
+import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j

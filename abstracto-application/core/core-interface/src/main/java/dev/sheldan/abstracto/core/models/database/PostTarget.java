@@ -18,7 +18,6 @@ public class PostTarget {
     @Getter
     private Long id;
 
-    @Column(unique = true)
     @Getter
     private String name;
 

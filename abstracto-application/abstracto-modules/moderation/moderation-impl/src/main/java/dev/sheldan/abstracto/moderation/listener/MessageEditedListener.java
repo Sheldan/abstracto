@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageEditedLog;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,13 +41,17 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
                 builder().
                 messageAfter(messageAfter)
                 .messageBefore(messageBefore)
-                .textChannel(messageAfter.getTextChannel())
+                .messageChannel(messageAfter.getTextChannel())
                 .guild(messageAfter.getGuild())
                 .member(messageAfter.getMember()).build();
         String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_EDITED_TEMPLATE, log);
         postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, EDIT_LOG_TARGET, messageAfter.getGuild().getIdLong());
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log);
         postTargetService.sendEmbedInPostTarget(message, EDIT_LOG_TARGET, messageBefore.getServerId());
+    }
 
+    @Override
+    public String getFeature() {
+        return ModerationFeatures.LOGGING;
     }
 }

@@ -25,7 +25,7 @@
      <#if warning?has_content>
     {
         "name": "Location of the incident",
-        "value": "[${textChannel.name}](${message.jumpUrl})"
+        "value": "[${messageChannel.name}](${message.jumpUrl})"
     },
     </#if>
     {

@@ -1,13 +1,18 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
 import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.CommandCondition;
 import dev.sheldan.abstracto.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.command.execution.CommandContext;
-import dev.sheldan.abstracto.command.execution.Result;
+import dev.sheldan.abstracto.command.execution.CommandResult;
+import dev.sheldan.abstracto.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.models.command.PingModel;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class Ping implements Command {
@@ -18,12 +23,12 @@ public class Ping implements Command {
     private TemplateService templateService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         long ping = commandContext.getJda().getGatewayPing();
         PingModel model = PingModel.builder().latency(ping).build();
         String text = templateService.renderTemplate(PING_TEMPLATE, model);
         commandContext.getChannel().sendMessage(text).queue();
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -34,6 +39,11 @@ public class Ping implements Command {
                 .templated(true)
                 .causesReaction(false)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return AbstractoFeatures.CORE;
     }
 
 }

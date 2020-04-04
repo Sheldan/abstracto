@@ -1,9 +1,5 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
-import dev.sheldan.abstracto.core.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;

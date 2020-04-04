@@ -17,7 +17,7 @@ public class ContextConverter {
             return builder
                     .member(commandContext.getAuthor())
                     .guild(commandContext.getGuild())
-                    .textChannel(commandContext.getChannel())
+                    .messageChannel(commandContext.getChannel())
                     .channel(commandContext.getUserInitiatedContext().getChannel())
                     .server(commandContext.getUserInitiatedContext().getServer())
                     .aUserInAServer(commandContext.getUserInitiatedContext().getAUserInAServer())

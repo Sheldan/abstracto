@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.utility.listener;
 
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.StarboardPost;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,5 +22,10 @@ public class StarboardPostDeletedListener implements MessageDeletedListener {
         if(byStarboardPostId.isPresent()) {
             starboardPostManagementService.setStarboardPostIgnored(messageBefore.getMessageId(), true);
         }
+    }
+
+    @Override
+    public String getFeature() {
+        return UtilityFeatures.STARBOARD;
     }
 }

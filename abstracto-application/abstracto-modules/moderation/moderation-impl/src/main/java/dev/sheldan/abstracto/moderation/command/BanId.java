@@ -1,19 +1,21 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.command.Command;
+import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
 import dev.sheldan.abstracto.command.HelpInfo;
 import dev.sheldan.abstracto.command.execution.*;
-import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
 import dev.sheldan.abstracto.moderation.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.BanIdLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BanId implements Command {
+@Component
+public class BanId extends AbstractFeatureFlaggedCommand {
 
     @Autowired
     private TemplateService templateService;
@@ -22,7 +24,7 @@ public class BanId implements Command {
     private BanService banService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long userId = (Long) parameters.get(0);
         String defaultReason = templateService.renderTemplate("ban_default_reason", null);
@@ -33,7 +35,7 @@ public class BanId implements Command {
         banLogModel.setReason(reason);
         banService.banMember(userId, commandContext.getGuild().getIdLong(), reason, banLogModel);
 
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -50,5 +52,10 @@ public class BanId implements Command {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return ModerationFeatures.MODERATION;
     }
 }

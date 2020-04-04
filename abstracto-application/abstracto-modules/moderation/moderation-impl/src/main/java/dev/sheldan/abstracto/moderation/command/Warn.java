@@ -1,12 +1,13 @@
 package dev.sheldan.abstracto.moderation.command;
 
+import dev.sheldan.abstracto.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.command.HelpInfo;
 import dev.sheldan.abstracto.command.execution.*;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.moderation.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.moderation.service.WarnService;
-import dev.sheldan.abstracto.command.Command;
-import dev.sheldan.abstracto.command.HelpInfo;
-import dev.sheldan.abstracto.core.management.UserManagementService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
@@ -18,7 +19,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class Warn implements Command {
+public class Warn extends AbstractFeatureFlaggedCommand {
 
     @Autowired
     private UserManagementService userManagementService;
@@ -30,7 +31,7 @@ public class Warn implements Command {
     private TemplateService templateService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderTemplate("warn_default_reason", null);
@@ -41,7 +42,7 @@ public class Warn implements Command {
         warnLogModel.setReason(reason);
         warnLogModel.setWarningUser(commandContext.getAuthor());
         warnService.warnUser(member, commandContext.getAuthor(), reason, warnLogModel);
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -58,5 +59,10 @@ public class Warn implements Command {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return ModerationFeatures.WARNINGS;
     }
 }

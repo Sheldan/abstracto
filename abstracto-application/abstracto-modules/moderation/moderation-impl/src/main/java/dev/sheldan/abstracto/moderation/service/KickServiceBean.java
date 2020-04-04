@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.NotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.models.template.KickLogModel;
@@ -29,18 +30,18 @@ public class KickServiceBean implements KickService {
     private PostTargetService postTargetService;
 
     @Override
-    public void kickMember(Member member, String reason, KickLogModel kickLogModel) {
+    public void kickMember(Member member, String reason, KickLogModel kickLogModel)  {
         Optional<Guild> guildById = bot.getGuildById(kickLogModel.getGuild().getIdLong());
         if(guildById.isPresent()) {
             guildById.get().kick(member, reason).queue();
             this.sendKickLog(kickLogModel);
         } else {
             log.warn("Not able to kick. Guild {} not found.", kickLogModel.getGuild().getIdLong());
-            throw new NotFoundException(String.format("Not able to kick %s. Guild %s not found", kickLogModel.getMember().getIdLong(), kickLogModel.getGuild().getIdLong()));
+            throw new GuildException(String.format("Not able to kick %s. Guild %s not found", kickLogModel.getMember().getIdLong(), kickLogModel.getGuild().getIdLong()));
         }
     }
 
-    private void sendKickLog(KickLogModel kickLogModel) {
+    private void sendKickLog(KickLogModel kickLogModel)  {
         String warnLogMessage = templateService.renderContextAwareTemplate(KICK_LOG_TEMPLATE, kickLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, kickLogModel.getServer().getId());
     }

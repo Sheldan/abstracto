@@ -1,8 +1,10 @@
 package dev.sheldan.abstracto.listener;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
-import dev.sheldan.abstracto.core.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.CachedMessage;
 import dev.sheldan.abstracto.core.models.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -46,6 +48,8 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     @Autowired
     private ReactionUpdatedListener self;
 
+    @Autowired
+    private FeatureFlagService featureFlagService;
 
     @Override
     @Transactional
@@ -91,13 +95,16 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
         AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         addReactionIfNotThere(cachedMessage, reaction, userInAServer.getUserReference());
-        try {
-            addedListenerList.forEach(reactedAddedListener -> {
+        addedListenerList.forEach(reactedAddedListener -> {
+            if(!featureFlagService.isFeatureEnabled(reactedAddedListener.getFeature(), event.getGuild().getIdLong())) {
+                return;
+            }
+            try {
                 reactedAddedListener.executeReactionAdded(cachedMessage, event.getReaction(), userInAServer);
-            });
-        } catch (Exception e) {
-            log.warn("Exception on reaction added handler:", e);
-        }
+            } catch (AbstractoRunTimeException e) {
+                log.warn(String.format("Failed to execute reaction added listener %s.", reactedAddedListener.getClass().getName()), e);
+            }
+        });
     }
 
     @Override
@@ -120,7 +127,14 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         removeReactionIfThere(cachedMessage, reaction, userInAServer.getUserReference());
         reactionRemovedListener.forEach(reactedAddedListener -> {
-            reactedAddedListener.executeReactionRemoved(cachedMessage, event.getReaction(), userInAServer);
+            if(!featureFlagService.isFeatureEnabled(reactedAddedListener.getFeature(), event.getGuild().getIdLong())) {
+                return;
+            }
+            try {
+                reactedAddedListener.executeReactionRemoved(cachedMessage, event.getReaction(), userInAServer);
+            } catch (AbstractoRunTimeException e) {
+                log.warn(String.format("Failed to execute reaction removed listener %s.", reactedAddedListener.getClass().getName()), e);
+            }
         });
     }
 

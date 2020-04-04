@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.utility.command.remind;
 
-import dev.sheldan.abstracto.command.Command;
-import dev.sheldan.abstracto.command.HelpInfo;
+import dev.sheldan.abstracto.command.*;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.Utility;
 import dev.sheldan.abstracto.utility.models.template.ReminderModel;
 import dev.sheldan.abstracto.utility.service.ReminderService;
@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Remind implements Command {
+public class Remind extends AbstractFeatureFlaggedCommand {
 
     @Autowired
     private ReminderService remindService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Duration remindTime = (Duration) parameters.get(0);
         String text = (String) parameters.get(1);
@@ -31,7 +31,7 @@ public class Remind implements Command {
         remindModel.setMessage(commandContext.getMessage());
         remindModel.setRemindText(text);
         remindService.createReminderInForUser(aUserInAServer, text, remindTime, remindModel);
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -48,5 +48,10 @@ public class Remind implements Command {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return UtilityFeatures.REMIND;
     }
 }

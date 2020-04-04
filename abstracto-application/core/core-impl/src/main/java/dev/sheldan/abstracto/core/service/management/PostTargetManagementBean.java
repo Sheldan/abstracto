@@ -2,12 +2,10 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.ConfigurationException;
+import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
-import dev.sheldan.abstracto.core.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.repository.PostTargetRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +34,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
     @Override
     public void createPostTarget(String name, AServer server, AChannel targetChannel) {
         if(!postTargetService.validPostTarget(name)) {
-            throw new ConfigurationException("PostTarget not found. Possible values are: " + String.join(", ", dynamicKeyLoader.getPostTargetsAsList()));
+            throw new PostTargetException("PostTarget not found. Possible values are: " + String.join(", ", dynamicKeyLoader.getPostTargetsAsList()));
         }
         log.info("Creating post target {} pointing towards {}", name, targetChannel);
         postTargetRepository.save(PostTarget.builder().name(name).channelReference(targetChannel).serverReference(server).build());
@@ -44,7 +42,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
 
     @Override
     public void createOrUpdate(String name, AServer server, AChannel targetChannel) {
-        PostTarget existing = postTargetRepository.findPostTargetByName(name);
+        PostTarget existing = postTargetRepository.findPostTargetByNameAndServerReference(name, server);
         if(existing == null){
             this.createPostTarget(name, server, targetChannel);
         } else {
@@ -68,7 +66,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
     @Override
     @Cacheable("posttargets")
     public PostTarget getPostTarget(String name, AServer server) {
-        return postTargetRepository.findPostTargetByName(name);
+        return postTargetRepository.findPostTargetByNameAndServerReference(name, server);
     }
 
     @Override

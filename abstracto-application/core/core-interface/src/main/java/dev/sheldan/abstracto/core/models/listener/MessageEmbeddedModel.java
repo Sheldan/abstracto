@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 @SuperBuilder
 public class MessageEmbeddedModel extends UserInitiatedServerContext {
     private CachedMessage embeddedMessage;
-    private TextChannel sourceChannel;
     private Member author;
+    private TextChannel sourceChannel;
     private Member embeddingUser;
 }

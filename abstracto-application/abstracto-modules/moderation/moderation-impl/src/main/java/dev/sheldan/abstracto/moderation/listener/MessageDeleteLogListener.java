@@ -2,12 +2,13 @@ package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.CachedMessage;
-import dev.sheldan.abstracto.core.utils.ContextUtils;
+import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
+import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedLog;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +49,10 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
             MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log);
             postTargetService.sendEmbedInPostTarget(attachmentEmbed, DELETE_LOG_TARGET, messageFromCache.getServerId());
         }
+    }
+
+    @Override
+    public String getFeature() {
+        return ModerationFeatures.LOGGING;
     }
 }

@@ -3,7 +3,7 @@
     "name": "${member.effectiveName}#${member.user.discriminator}",
     "avatar":  "${member.user.effectiveAvatarUrl}"
   },
-  "description": "Message from ${member.effectiveName}#${member.user.discriminator} (${member.idLong?c}) removed in ${textChannel.asMention}",
+  "description": "Message from ${member.effectiveName}#${member.user.discriminator} (${member.idLong?c}) removed in ${messageChannel.asMention}",
   "color" : {
     "r": 200,
     "g": 0,
@@ -16,7 +16,7 @@
     },
     {
         "name": "Link",
-        "value": "[${textChannel.name}](${message.messageUrl})"
+        "value": "[${messageChannel.name}](${message.messageUrl})"
     }
   ]
 }

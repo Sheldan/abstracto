@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.management.ConfigManagementService;
+import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -22,10 +24,12 @@ public class ChannelServiceBean implements ChannelService {
             if(textChannel != null) {
                 textChannel.sendMessage(text).queue();
             } else {
-                log.warn("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
+                log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
+                throw new ChannelException(String.format("Channel %s to post to not found.", channel.getId()));
             }
         } else {
-            log.warn("Guild {} was not found when trying to post a message", channel.getServer().getId());
+            log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
+            throw new GuildException(String.format("Guild %s to post in channel %s was not found.", channel.getServer().getId(), channel.getId()));
         }
     }
 }

@@ -1,3 +1,3 @@
-Message from ${member.effectiveName} (${member.idLong?c}) edited in ${textChannel.asMention}.
-Before: ${messageBefore.contentRaw}
+Message from ${member.effectiveName} (${member.idLong?c}) edited in ${messageChannel.asMention}.
+Before: ${messageBefore.content}
 After: ${messageAfter.contentRaw}

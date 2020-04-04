@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.embed.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
@@ -19,6 +21,7 @@ public interface PostTargetService {
     CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId);
     void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, CompletableFuture<Message> future);
     void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTarget, Long serverId, CompletableFuture<Message> future);
+    void throwIfPostTargetIsNotDefined(String name, Long serverId);
     boolean validPostTarget(String name);
     List<String> getAvailablePostTargets();
 }

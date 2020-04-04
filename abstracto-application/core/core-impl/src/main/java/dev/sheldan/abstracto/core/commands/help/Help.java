@@ -3,12 +3,14 @@ package dev.sheldan.abstracto.core.commands.help;
 import dev.sheldan.abstracto.command.*;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.module.ModuleInfo;
+import dev.sheldan.abstracto.config.AbstractoFeatures;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 
 
 @Service
@@ -22,7 +24,7 @@ public class Help implements Command {
     private TemplateService templateService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         CommandHierarchy commandStructure = registry.getDetailedModules();
         StringBuilder sb = new StringBuilder();
         if(commandContext.getParameters().getParameters().isEmpty()){
@@ -53,7 +55,7 @@ public class Help implements Command {
         }
 
         commandContext.getChannel().sendMessage(sb.toString()).queue();
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     private String getCommand(Command command){
@@ -132,4 +134,8 @@ public class Help implements Command {
                 .build();
     }
 
+    @Override
+    public String getFeature() {
+        return AbstractoFeatures.CORE;
+    }
 }

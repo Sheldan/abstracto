@@ -3,11 +3,11 @@ package dev.sheldan.abstracto.core.commands.utility;
 import dev.sheldan.abstracto.command.Command;
 import dev.sheldan.abstracto.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.command.execution.CommandContext;
+import dev.sheldan.abstracto.command.execution.CommandResult;
 import dev.sheldan.abstracto.command.execution.Parameter;
-import dev.sheldan.abstracto.command.execution.Result;
-import dev.sheldan.abstracto.core.exception.ConfigurationException;
-import dev.sheldan.abstracto.core.management.EmoteManagementService;
+import dev.sheldan.abstracto.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class SetEmote implements Command {
     private EmoteService emoteService;
 
     @Override
-    public Result execute(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         String emoteKey = (String) commandContext.getParameters().getParameters().get(0);
         Object o = commandContext.getParameters().getParameters().get(1);
         if(o instanceof String) {
@@ -33,13 +33,10 @@ public class SetEmote implements Command {
             emoteManagementService.setEmoteToDefaultEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
         } else {
             Emote emote = (Emote) o;
-            if(emoteService.isEmoteUsableByBot(emote)) {
-                emoteManagementService.setEmoteToCustomEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
-            } else {
-                throw new ConfigurationException("Emote is not usable by bot.");
-            }
+            // todo check if usable
+            emoteManagementService.setEmoteToCustomEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
         }
-        return Result.fromSuccess();
+        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -54,5 +51,10 @@ public class SetEmote implements Command {
                 .description("Configures the emote key pointing towards a defined emote")
                 .causesReaction(true)
                 .build();
+    }
+
+    @Override
+    public String getFeature() {
+        return AbstractoFeatures.CORE;
     }
 }
