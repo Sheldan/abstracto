@@ -1,13 +1,12 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.DynamicKeyLoader;
-import dev.sheldan.abstracto.core.exception.ConfigurationException;
 import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.repository.PostTargetRepository;
+import dev.sheldan.abstracto.core.repository.PostTargetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;

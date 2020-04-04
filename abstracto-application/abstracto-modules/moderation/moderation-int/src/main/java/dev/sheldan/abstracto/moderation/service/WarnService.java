@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.ServerContext;
 import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import net.dv8tion.jda.api.entities.Member;

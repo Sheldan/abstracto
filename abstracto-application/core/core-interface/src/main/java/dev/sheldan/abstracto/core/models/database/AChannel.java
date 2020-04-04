@@ -6,6 +6,7 @@ import lombok.*;
 import net.dv8tion.jda.api.entities.ChannelType;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -22,7 +23,7 @@ public class AChannel implements SnowFlake {
 
     @Getter
     @ManyToMany(mappedBy = "channels")
-    private Set<AChannelGroup> groups;
+    private List<AChannelGroup> groups;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter

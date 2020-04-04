@@ -78,7 +78,7 @@
 
         <dependency>
             <groupId>dev.sheldan.abstracto.command</groupId>
-            <artifactId>command-support</artifactId>
+            <artifactId>command-int</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>

@@ -31,20 +31,9 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>core-interface</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>core-interface</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -56,6 +45,13 @@
         <dependency>
             <groupId>dev.sheldan.abstracto.templating</groupId>
             <artifactId>templating-impl</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.sheldan.abstracto.command</groupId>
+            <artifactId>command-impl</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>

@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.AChannelType;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.repository.ServerRepository;
+import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;

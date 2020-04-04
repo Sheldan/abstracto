@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.commands.help;
 import dev.sheldan.abstracto.command.*;
 import dev.sheldan.abstracto.command.execution.*;
 import dev.sheldan.abstracto.command.module.ModuleInfo;
+import dev.sheldan.abstracto.command.service.ModuleRegistry;
 import dev.sheldan.abstracto.config.AbstractoFeatures;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.List;
 
 
 @Service

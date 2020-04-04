@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>command-int</module>
-        <module>command-support</module>
+        <module>command-impl</module>
     </modules>
 
 

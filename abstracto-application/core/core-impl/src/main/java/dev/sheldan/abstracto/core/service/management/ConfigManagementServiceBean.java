@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.repository.ConfigRepository;
+import dev.sheldan.abstracto.core.repository.ConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

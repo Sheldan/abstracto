@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -26,7 +27,7 @@ public class AChannelGroup {
             name = "channel_in_group",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "channel_id"))
-    private Set<AChannel> channels;
+    private List<AChannel> channels;
 
 
 }
