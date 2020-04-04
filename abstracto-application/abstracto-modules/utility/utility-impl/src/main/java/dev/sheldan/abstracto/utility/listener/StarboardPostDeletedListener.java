@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.listener;
 
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
-import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.StarboardPost;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;

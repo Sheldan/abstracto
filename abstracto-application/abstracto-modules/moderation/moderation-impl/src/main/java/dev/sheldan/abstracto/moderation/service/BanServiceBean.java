@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.TemplateService;

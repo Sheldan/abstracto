@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.models.template;
 
-import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.moderation.models.Warning;
 import lombok.Getter;
 import lombok.Setter;

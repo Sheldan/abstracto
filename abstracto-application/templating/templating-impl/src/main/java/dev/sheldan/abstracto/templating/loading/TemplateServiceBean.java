@@ -1,14 +1,13 @@
 package dev.sheldan.abstracto.templating.loading;
 
 import com.google.gson.Gson;
-import dev.sheldan.abstracto.core.models.ContextAware;
-import dev.sheldan.abstracto.core.models.ServerContext;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.context.ContextAware;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateDto;
 import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.templating.embed.*;
 import freemarker.template.Configuration;
-import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -18,7 +17,6 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.StringReader;
 import java.time.Instant;
 import java.util.HashMap;
 

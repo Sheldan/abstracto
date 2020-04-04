@@ -1,18 +1,14 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.CommandCondition;
 import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.models.command.PingModel;
 import dev.sheldan.abstracto.templating.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
 
 @Service
 public class Ping implements Command {

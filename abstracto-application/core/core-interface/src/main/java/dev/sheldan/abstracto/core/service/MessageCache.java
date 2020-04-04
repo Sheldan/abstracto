@@ -1,12 +1,11 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.models.CachedMessage;
-import dev.sheldan.abstracto.core.models.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public interface MessageCache {
     CompletableFuture<CachedMessage> putMessageInCache(Message message);

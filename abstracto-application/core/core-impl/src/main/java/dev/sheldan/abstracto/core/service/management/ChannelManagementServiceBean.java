@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.AChannelType;
+import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.repository.ChannelRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

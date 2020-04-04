@@ -1,13 +1,11 @@
 package dev.sheldan.abstracto.core.models.database;
 
-import dev.sheldan.abstracto.core.models.AChannelType;
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 import net.dv8tion.jda.api.entities.ChannelType;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name="channel")

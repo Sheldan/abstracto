@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.Parameter;
-import dev.sheldan.abstracto.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

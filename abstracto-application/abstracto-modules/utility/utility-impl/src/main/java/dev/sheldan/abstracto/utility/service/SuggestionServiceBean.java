@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.utility.service;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;

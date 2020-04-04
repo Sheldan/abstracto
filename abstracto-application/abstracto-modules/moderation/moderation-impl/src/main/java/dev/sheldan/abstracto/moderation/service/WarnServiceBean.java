@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.UserException;
-import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 import dev.sheldan.abstracto.moderation.models.template.WarnLog;
 import dev.sheldan.abstracto.moderation.models.template.WarnNotification;
 import dev.sheldan.abstracto.moderation.models.Warning;

@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import lombok.extern.slf4j.Slf4j;

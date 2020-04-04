@@ -4,10 +4,10 @@ import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.core.models.CachedMessage;
-import dev.sheldan.abstracto.core.models.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.embed.*;
+import dev.sheldan.abstracto.core.models.cache.*;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
@@ -167,21 +167,21 @@ public class MessageCacheBean implements MessageCache {
                 .builder();
         MessageEmbed.AuthorInfo author = embed.getAuthor();
         if(author != null) {
-            builder.author(EmbedAuthor.builder().avatar(author.getProxyIconUrl()).url(author.getUrl()).name(author.getName()).build());
+            builder.author(CachedEmbedAuthor.builder().avatar(author.getProxyIconUrl()).url(author.getUrl()).name(author.getName()).build());
         }
         List<MessageEmbed.Field> fields = embed.getFields();
         if(!fields.isEmpty()) {
-            List<EmbedField> embedFields = new ArrayList<>();
+            List<CachedEmbedField> cachedEmbedFields = new ArrayList<>();
             fields.forEach(field -> {
-               EmbedField build = EmbedField
+               CachedEmbedField build = CachedEmbedField
                        .builder()
                        .name(field.getName())
                        .value(field.getValue())
                        .inline(field.isInline())
                        .build();
-               embedFields.add(build);
+               cachedEmbedFields.add(build);
             });
-            builder.fields(embedFields);
+            builder.fields(cachedEmbedFields);
         }
         MessageEmbed.ImageInfo image = embed.getImage();
         if(image != null) {
@@ -189,7 +189,7 @@ public class MessageCacheBean implements MessageCache {
         }
         Color color = embed.getColor();
         if(color != null) {
-            EmbedColor build = EmbedColor
+            CachedEmbedColor build = CachedEmbedColor
                     .builder()
                     .r(color.getRed())
                     .g(color.getGreen())
@@ -200,7 +200,7 @@ public class MessageCacheBean implements MessageCache {
         builder.description(embed.getDescription());
         MessageEmbed.Footer footer = embed.getFooter();
         if(footer != null) {
-            EmbedFooter build = EmbedFooter
+            CachedEmbedFooter build = CachedEmbedFooter
                     .builder()
                     .icon(footer.getProxyIconUrl())
                     .text(footer.getText())

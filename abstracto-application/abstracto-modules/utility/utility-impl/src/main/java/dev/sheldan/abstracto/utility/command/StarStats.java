@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.Parameter;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.utility.Utility;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;

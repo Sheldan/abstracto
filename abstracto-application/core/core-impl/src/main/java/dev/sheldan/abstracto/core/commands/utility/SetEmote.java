@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.Parameter;
-import dev.sheldan.abstracto.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import net.dv8tion.jda.api.entities.Emote;

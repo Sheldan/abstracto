@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.StarboardPost;

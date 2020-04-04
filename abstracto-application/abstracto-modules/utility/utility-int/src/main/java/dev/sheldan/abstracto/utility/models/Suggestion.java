@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.models;
 
-import dev.sheldan.abstracto.core.models.AChannelType;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;

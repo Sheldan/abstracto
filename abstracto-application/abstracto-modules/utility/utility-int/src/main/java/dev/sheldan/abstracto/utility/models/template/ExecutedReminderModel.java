@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.models.template;
 
-import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import dev.sheldan.abstracto.utility.models.Reminder;
 import lombok.Getter;

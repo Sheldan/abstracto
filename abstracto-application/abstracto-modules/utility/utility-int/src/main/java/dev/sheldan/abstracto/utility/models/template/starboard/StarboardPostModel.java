@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.models.template.starboard;
 
-import dev.sheldan.abstracto.core.models.CachedMessage;
-import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import lombok.Getter;

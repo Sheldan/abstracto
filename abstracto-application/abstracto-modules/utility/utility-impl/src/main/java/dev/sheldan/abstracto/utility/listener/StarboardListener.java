@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.utility.listener;
 
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
-import dev.sheldan.abstracto.core.models.CachedMessage;
-import dev.sheldan.abstracto.core.models.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;

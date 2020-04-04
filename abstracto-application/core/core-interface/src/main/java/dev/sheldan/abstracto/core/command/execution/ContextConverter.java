@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.execution;
 
-import dev.sheldan.abstracto.core.models.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;

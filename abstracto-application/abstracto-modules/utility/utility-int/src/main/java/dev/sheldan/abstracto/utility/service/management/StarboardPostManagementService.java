@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerChannelMessage;
-import dev.sheldan.abstracto.core.models.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.StarboardPost;
 

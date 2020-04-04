@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.models.command.PostTargetErrorModel;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;

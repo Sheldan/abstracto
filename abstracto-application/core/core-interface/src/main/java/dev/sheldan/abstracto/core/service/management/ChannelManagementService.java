@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.AChannelType;
+import dev.sheldan.abstracto.core.models.database.AChannelType;
 
 public interface ChannelManagementService {
     AChannel loadChannel(Long id);

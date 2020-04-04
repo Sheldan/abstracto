@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.ServerContext;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
 import net.dv8tion.jda.api.entities.Member;
 
 public interface BanService {

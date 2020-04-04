@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.templating;
 
-import dev.sheldan.abstracto.core.models.ServerContext;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.context.ServerContext;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 
 import java.util.HashMap;
 

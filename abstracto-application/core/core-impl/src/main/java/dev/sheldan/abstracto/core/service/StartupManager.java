@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.AChannelType;
+import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.extern.slf4j.Slf4j;

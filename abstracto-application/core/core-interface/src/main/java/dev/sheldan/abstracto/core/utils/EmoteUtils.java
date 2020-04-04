@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.utils;
 
-import dev.sheldan.abstracto.core.models.CachedMessage;
-import dev.sheldan.abstracto.core.models.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.MessageReaction;

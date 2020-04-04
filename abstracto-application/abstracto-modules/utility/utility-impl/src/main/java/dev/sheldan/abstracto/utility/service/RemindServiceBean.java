@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.scheduling.model.SchedulerService;
 import dev.sheldan.abstracto.templating.TemplateService;

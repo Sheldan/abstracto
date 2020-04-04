@@ -1,9 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelException;
-import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
-import dev.sheldan.abstracto.core.models.embed.MessageToSend;
+import dev.sheldan.abstracto.core.models.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
