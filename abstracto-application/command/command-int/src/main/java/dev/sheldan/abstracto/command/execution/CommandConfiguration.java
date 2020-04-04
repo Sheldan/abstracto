@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.command.execution;
 import dev.sheldan.abstracto.command.HelpInfo;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
@@ -14,6 +13,7 @@ public class CommandConfiguration {
     private String module;
     private String description;
     private List<Parameter> parameters;
+    private List<String> aliases;
     private boolean causesReaction;
     private boolean templated;
     private HelpInfo help;

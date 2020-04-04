@@ -26,7 +26,7 @@ public class CommandManager implements CommandRegistry {
     public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter) {
         Optional<Command> commandOptional = commands.stream().filter((Command o )-> {
             CommandConfiguration commandConfiguration = o.getConfiguration();
-            if(!commandConfiguration.getName().equalsIgnoreCase(name)) {
+            if(!commandNameMatches(name, commandConfiguration)) {
                 return false;
             }
             boolean parameterFit;
@@ -47,6 +47,18 @@ public class CommandManager implements CommandRegistry {
             return commandOptional.get();
         }
         throw new CommandNotFound("Command not found.");
+    }
+
+    private boolean commandNameMatches(String name, CommandConfiguration commandConfiguration) {
+        boolean commandNameMatches = commandConfiguration.getName().equalsIgnoreCase(name);
+        if(commandNameMatches) {
+            return true;
+        }
+        boolean aliasesMatch = false;
+        if(commandConfiguration.getAliases() != null) {
+            aliasesMatch = commandConfiguration.getAliases().stream().anyMatch(s -> s.equalsIgnoreCase(name));
+        }
+        return aliasesMatch;
     }
 
     public Command findCommand(String name) {

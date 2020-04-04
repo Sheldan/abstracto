@@ -34,9 +34,11 @@ public class RemoveFromChannelGroup implements Command {
         Parameter channelGroupName = Parameter.builder().name("name").type(String.class).description("The name of the channel group to remove the channel from.").build();
         Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).description("The mention of the channel to remove from the group.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
+        List<String> aliases = Arrays.asList("rmChChgrp", "chGrpCh-");
         return CommandConfiguration.builder()
                 .name("removeFromChannelGroup")
                 .module("channels")
+                .aliases(aliases)
                 .parameters(parameters)
                 .description("Removes the mentioned channel from the channel group.")
                 .causesReaction(true)
