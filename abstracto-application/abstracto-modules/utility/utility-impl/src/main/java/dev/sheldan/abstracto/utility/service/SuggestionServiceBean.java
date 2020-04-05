@@ -21,7 +21,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Component
 @Slf4j
@@ -65,10 +68,16 @@ public class SuggestionServiceBean implements SuggestionService {
         JDA instance = botService.getInstance();
         Guild guildById = instance.getGuildById(guildId);
         if(guildById != null) {
-            postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId).thenAccept(message -> {
-                suggestionManagementService.setPostedMessage(suggestion, message);
-                messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
-                messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
+            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId);
+            CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+                try {
+                    Message message = completableFutures.get(0).get();
+                    suggestionManagementService.setPostedMessage(suggestion, message);
+                    messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
+                    messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
+                } catch (InterruptedException | ExecutionException e) {
+                    log.warn("Failed to post suggestion", e);
+                }
             });
         } else {
             log.warn("Guild {} or member {} was not found when creating suggestion.", member.getGuild().getIdLong(), member.getIdLong());

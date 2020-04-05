@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.command.suggest;
 
-import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.utility.Utility;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Suggest extends AbstractFeatureFlaggedCommand {
+public class Suggest extends AbstractConditionableCommand {
 
     @Autowired
     private SuggestionService suggestionService;

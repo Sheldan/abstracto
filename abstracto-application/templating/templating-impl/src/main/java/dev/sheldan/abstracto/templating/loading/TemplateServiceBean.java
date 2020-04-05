@@ -18,6 +18,7 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import java.awt.*;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 
 @Slf4j
@@ -91,7 +92,7 @@ public class TemplateServiceBean implements TemplateService {
 
 
         return MessageToSend.builder()
-                .embed(builder.build())
+                .embeds(Arrays.asList(builder.build()))
                 .message(configuration.getAdditionalMessage())
                 .build();
     }

@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.SlowModeService;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class SlowMode extends AbstractFeatureFlaggedCommand {
+public class SlowMode extends AbstractConditionableCommand {
 
     @Autowired
     private SlowModeService slowModeService;

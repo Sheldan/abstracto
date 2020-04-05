@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ShowEmote extends AbstractFeatureFlaggedCommand {
+public class ShowEmote extends AbstractConditionableCommand {
 
     private static final String SHOW_EMOTE_RESPONSE_TEMPLATE = "showEmote_response";
 

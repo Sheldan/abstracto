@@ -65,7 +65,7 @@ public class PostTarget implements Command {
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
         return CommandConfiguration.builder()
                 .name("posttarget")
-                .module("channels")
+                .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
                 .description("Sets the target of a post done by the bot")
                 .causesReaction(true)

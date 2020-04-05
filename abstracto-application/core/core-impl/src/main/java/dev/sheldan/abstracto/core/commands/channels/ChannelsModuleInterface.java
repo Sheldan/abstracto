@@ -6,9 +6,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ChannelsModuleInterface implements ModuleInterface {
+
+    public static final String CHANNELS = "channels";
+
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name("channels").description("Includes utilities to configure the channel configuration stored in the database").build();
+        return ModuleInfo.builder().name(CHANNELS).description("Includes utilities to configure the channel configuration stored in the database").build();
     }
 
     @Override

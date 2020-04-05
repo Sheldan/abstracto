@@ -22,6 +22,12 @@ public class AChannelGroup {
     @Setter
     private String groupName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Getter
+    @Setter
+    @JoinColumn(name = "group_server")
+    private AServer server;
+
     @ManyToMany
     @JoinTable(
             name = "channel_in_group",

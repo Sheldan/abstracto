@@ -1,12 +1,13 @@
 package dev.sheldan.abstracto.utility.command;
 
-import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.Parameter;
 import dev.sheldan.abstracto.core.models.MessageToSend;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.templating.TemplateService;
 import dev.sheldan.abstracto.utility.Utility;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class StarStats extends AbstractFeatureFlaggedCommand {
+public class StarStats extends AbstractConditionableCommand {
 
     public static final String STARSTATS_RESPONSE_TEMPLATE = "starStats_response";
     @Autowired
@@ -28,11 +29,14 @@ public class StarStats extends AbstractFeatureFlaggedCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         StarStatsModel result = starboardService.retrieveStarStats(commandContext.getGuild().getIdLong());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARSTATS_RESPONSE_TEMPLATE, result);
-        commandContext.getChannel().sendMessage(messageToSend.getEmbed()).queue();
+        channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

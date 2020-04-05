@@ -13,12 +13,12 @@ public interface PostTargetService {
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
     CompletableFuture<Message> sendTextInPostTarget(String text, String postTargetName, Long serverId);
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId);
-    CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId);
-    CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
-    CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target);
-    CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId);
-    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, CompletableFuture<Message> future);
-    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTarget, Long serverId, CompletableFuture<Message> future);
+    List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId);
+    List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
+    List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target);
+    List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId);
+    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, List<CompletableFuture<Message>> future);
+    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTarget, Long serverId, List<CompletableFuture<Message>> future);
     void throwIfPostTargetIsNotDefined(String name, Long serverId);
     boolean validPostTarget(String name);
     List<String> getAvailablePostTargets();

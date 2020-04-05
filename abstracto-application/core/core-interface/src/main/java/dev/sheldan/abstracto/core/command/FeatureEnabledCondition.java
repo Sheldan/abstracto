@@ -12,11 +12,14 @@ public class FeatureEnabledCondition implements CommandCondition {
     private FeatureFlagManagementService featureFlagManagementService;
 
     @Override
-    public boolean shouldExecute(CommandContext context, Command command) {
+    public ConditionResult shouldExecute(CommandContext context, Command command) {
         String featureName = command.getFeature();
+        boolean featureFlagValue = false;
+        String reason = "";
         if(featureName != null) {
-            return featureFlagManagementService.getFeatureFlagValue(featureName, context.getGuild().getIdLong());
+            featureFlagValue = featureFlagManagementService.getFeatureFlagValue(featureName, context.getGuild().getIdLong());
+            reason = "Feature has been disabled.";
         }
-        return false;
+        return ConditionResult.builder().reason(reason).result(featureFlagValue).build();
     }
 }

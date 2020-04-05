@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.moderation.Moderation;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Kick extends AbstractFeatureFlaggedCommand {
+public class Kick extends AbstractConditionableCommand {
 
     @Autowired
     private TemplateService templateService;

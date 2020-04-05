@@ -22,7 +22,7 @@ public class CreateChannelGroup implements Command {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String groupName = (String) commandContext.getParameters().getParameters().get(0);
-        channelGroupService.createChannelGroup(groupName);
+        channelGroupService.createChannelGroup(groupName, commandContext.getGuild().getIdLong());
         return CommandResult.fromSuccess();
     }
 
@@ -30,10 +30,12 @@ public class CreateChannelGroup implements Command {
     public CommandConfiguration getConfiguration() {
         Parameter channelGroupName = Parameter.builder().name("name").type(String.class).description("The name of the channel group to create.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName);
+        List<String> aliases = Arrays.asList("+ChGroup");
         return CommandConfiguration.builder()
                 .name("createChannelGroup")
-                .module("channels")
+                .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
+                .aliases(aliases)
                 .description("Creates a channel group to which channels can be added to.")
                 .causesReaction(true)
                 .build();

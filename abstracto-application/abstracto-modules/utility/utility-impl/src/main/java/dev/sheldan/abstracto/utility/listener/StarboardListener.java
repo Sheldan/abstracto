@@ -70,8 +70,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         if(aEmote.isPresent()) {
             AEmote emote = aEmote.get();
             MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
-            Optional<Emote> emoteInGuild = null;
-            emoteInGuild = bot.getEmote(guildId, emote);
+            Optional<Emote> emoteInGuild = bot.getEmote(guildId, emote);
             if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, emoteInGuild.orElse(null))) {
                 Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, emote);
                     updateStarboardPost(message, reactionOptional.orElse(null), userAdding, true);

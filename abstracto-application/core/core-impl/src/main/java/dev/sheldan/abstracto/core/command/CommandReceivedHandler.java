@@ -2,11 +2,14 @@ package dev.sheldan.abstracto.core.command;
 
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.ParameterTooLong;
+import dev.sheldan.abstracto.core.command.models.ACommand;
+import dev.sheldan.abstracto.core.command.service.ChannelGroupCommandService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.meta.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.exception.*;
+import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -57,6 +60,12 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Lazy
     private CommandReceivedHandler self;
 
+    @Autowired
+    private ChannelGroupCommandService channelGroupCommandService;
+
+    @Autowired
+    private CommandManagementService commandManagementService;
+
     @Override
     @Async
     @Transactional
@@ -85,8 +94,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             if(foundCommand instanceof ConditionalCommand) {
                 ConditionalCommand castedCommand = (ConditionalCommand) foundCommand;
-                if (!shouldExecute(commandContext, foundCommand, castedCommand.getConditions())) {
-                    throw new FeatureDisabledException(String.format("Feature `%s` has been disabled. Command is not usable", foundCommand.getFeature()));
+                ConditionResult conditionResult = checkConditions(commandContext, foundCommand, castedCommand.getConditions());
+                if(!conditionResult.isResult()) {
+                    throw new AbstractoRunTimeException(conditionResult.getReason());
                 }
             }
             CommandResult commandResult = self.executeCommand(foundCommand, commandContext);
@@ -107,14 +117,16 @@ public class CommandReceivedHandler extends ListenerAdapter {
         return foundCommand.execute(commandContext);
     }
 
-    public boolean shouldExecute(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
-        AtomicBoolean shouldExecute = new AtomicBoolean(true);
+    public ConditionResult checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
         if(conditions != null) {
-            conditions.forEach(condition -> {
-                shouldExecute.set(shouldExecute.get() && condition.shouldExecute(commandContext, command));
-            });
+            for (CommandCondition condition : conditions) {
+                ConditionResult conditionResult = condition.shouldExecute(commandContext, command);
+                if(!conditionResult.isResult()) {
+                    return conditionResult;
+                }
+            }
         }
-        return shouldExecute.get();
+        return ConditionResult.builder().result(true).build();
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
@@ -135,7 +147,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
-        if(command.getConfiguration().getParameters().size() == 0) {
+        if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().size() == 0) {
             return Parameters.builder().parameters(parsedParameters).build();
         }
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();

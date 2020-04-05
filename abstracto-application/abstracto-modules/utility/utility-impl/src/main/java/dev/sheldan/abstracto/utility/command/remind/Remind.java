@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Remind extends AbstractFeatureFlaggedCommand {
+public class Remind extends AbstractConditionableCommand {
 
     @Autowired
     private ReminderService remindService;

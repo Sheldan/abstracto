@@ -1,12 +1,15 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.command.exception.ChannelGroupException;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ChannelGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 @Component
@@ -15,19 +18,37 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     @Autowired
     private ChannelGroupRepository channelGroupRepository;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
-    public AChannelGroup createChannelGroup(String name) {
+    public AChannelGroup createChannelGroup(String name, AServer server) {
+        name = name.toLowerCase();
         AChannelGroup channelGroup = AChannelGroup
                 .builder()
                 .groupName(name)
+                .server(server)
                 .build();
         channelGroupRepository.save(channelGroup);
         return channelGroup;
     }
 
     @Override
+    public void deleteChannelGroup(String name, AServer server) {
+        name = name.toLowerCase();
+        AChannelGroup existing = findByNameAndServer(name, server);
+        if(existing == null) {
+            throw new ChannelGroupException(String.format("Channel group %s does not exist", name));
+        }
+        channelGroupRepository.delete(existing);
+    }
+
+    @Override
     public AChannelGroup addChannelToChannelGroup(AChannelGroup channelGroup, AChannel channel) {
         Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
+        if(channelGroup == null) {
+            throw new ChannelGroupException("Channel group was not found.");
+        }
         if(channelGroup.getChannels().stream().anyMatch(channelInGroupPredicate)) {
             throw new ChannelException(String.format("Channel %s is already part of group %s.", channel.getId(), channelGroup.getGroupName()));
         }
@@ -49,7 +70,19 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     }
 
     @Override
-    public AChannelGroup findByName(String name) {
-        return channelGroupRepository.findByGroupName(name);
+    public AChannelGroup findByNameAndServer(String name, AServer server) {
+        name = name.toLowerCase();
+        return channelGroupRepository.findByGroupNameAndServer(name, server);
+    }
+
+    @Override
+    public List<AChannelGroup> findAllInServer(AServer server) {
+        return channelGroupRepository.findByServer(server);
+    }
+
+    @Override
+    public List<AChannelGroup> findAllInServer(Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return findAllInServer(server);
     }
 }

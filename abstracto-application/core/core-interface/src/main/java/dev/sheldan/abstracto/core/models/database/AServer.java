@@ -35,6 +35,14 @@ public class AServer implements SnowFlake {
 
     @OneToMany(
             fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @Builder.Default
+    @JoinColumn(name = "group_server")
+    private List<AChannelGroup> channelGroups = new ArrayList<>();
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
             mappedBy = "serverReference",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Builder.Default

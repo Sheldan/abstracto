@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -76,18 +77,24 @@ public class StarboardServiceBean implements StarboardService {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
         PostTarget starboard = postTargetManagement.getPostTarget(STARBOARD_POSTTARGET, message.getServerId());
-        postTargetService.sendEmbedInPostTarget(messageToSend, STARBOARD_POSTTARGET, message.getServerId()).thenAccept(message1 -> {
-            AServerChannelMessage aServerChannelMessage = AServerChannelMessage
-                    .builder()
-                    .messageId(message1.getIdLong())
-                    .channel(starboard.getChannelReference())
-                    .server(userReacting.getServerReference())
-                    .build();
-            StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, starredUser, userReacting, aServerChannelMessage);
-            // TODO maybe in bulk, but numbers should be small enough
-            userExceptAuthor.forEach(user -> {
-                starboardPostReactorManagementService.addReactor(starboardPost, user);
-            });
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, STARBOARD_POSTTARGET, message.getServerId());
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+            try {
+                Message message1 = completableFutures.get(0).get();
+                AServerChannelMessage aServerChannelMessage = AServerChannelMessage
+                        .builder()
+                        .messageId(message1.getIdLong())
+                        .channel(starboard.getChannelReference())
+                        .server(userReacting.getServerReference())
+                        .build();
+                StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, starredUser, userReacting, aServerChannelMessage);
+                // TODO maybe in bulk, but numbers should be small enough
+                userExceptAuthor.forEach(user -> {
+                    starboardPostReactorManagementService.addReactor(starboardPost, user);
+                });
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Failed to post messages.", e);
+            }
         });
 
     }
@@ -126,10 +133,14 @@ public class StarboardServiceBean implements StarboardService {
     public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUser> userExceptAuthor)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate("starboard_post", starboardPostModel);
-        CompletableFuture<Message> future = new CompletableFuture<>();
-        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, "starboard", message.getServerId(), future);
-        future.thenAccept(newOrOldMessage -> {
-            starboardPostManagementService.setStarboardPostMessageId(post, newOrOldMessage.getIdLong());
+        List<CompletableFuture<Message>> futures = new ArrayList<>();
+        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, "starboard", message.getServerId(), futures);
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+            try {
+                starboardPostManagementService.setStarboardPostMessageId(post, futures.get(0).get().getIdLong());
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Failed to post starboard post.", e);
+            }
         });
     }
 

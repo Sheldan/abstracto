@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,6 +36,9 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Autowired
     private DynamicKeyLoader dynamicKeyLoader;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
@@ -88,46 +92,41 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId)  {
+    public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(message, postTarget);
     }
 
     @Override
-    public CompletableFuture<Message> sendEmbedInPostTarget(MessageToSend message, PostTarget target)  {
+    public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        String messageText = message.getMessage();
-        if(StringUtils.isBlank(messageText)) {
-            return textChannelForPostTarget.sendMessage(message.getEmbed()).submit();
-        } else  {
-            return textChannelForPostTarget.sendMessage(messageText).embed(message.getEmbed()).submit();
-        }
+        return channelService.sendMessageToEndInTextChannel(message, textChannelForPostTarget);
     }
 
     @Override
-    public CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target)  {
+    public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         String messageText = message.getMessage();
         if(StringUtils.isBlank(messageText)) {
-            return textChannelForPostTarget.editMessageById(messageId, message.getEmbed()).submit();
+            return Arrays.asList(textChannelForPostTarget.editMessageById(messageId, message.getEmbeds().get(0)).submit());
         } else {
-            return textChannelForPostTarget.editMessageById(messageId, messageText).embed(message.getEmbed()).submit();
+            return Arrays.asList(textChannelForPostTarget.editMessageById(messageId, messageText).embed(message.getEmbeds().get(0)).submit());
         }
     }
 
     @Override
-    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, CompletableFuture<Message> future)  {
+    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, List<CompletableFuture<Message>> future)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         if(StringUtils.isBlank(messageToSend.getMessage().trim())) {
             textChannelForPostTarget
                     .retrieveMessageById(messageId)
                     .queue(
                             existingMessage -> existingMessage
-                                    .editMessage(messageToSend.getEmbed())
-                                    .submit().thenAccept(future::complete),
+                                    .editMessage(messageToSend.getEmbeds().get(0))
+                                    .submit().thenAccept(message -> future.get(0).complete(message)),
                             throwable -> {
-                                sendEmbedInPostTarget(messageToSend, target)
-                                            .thenAccept(future::complete);
+                                sendEmbedInPostTarget(messageToSend, target).get(0)
+                                            .thenAccept(message -> future.get(0).complete(message));
                             });
         } else {
             textChannelForPostTarget
@@ -135,17 +134,17 @@ public class PostTargetServiceBean implements PostTargetService {
                     .queue(
                             existingMessage -> existingMessage
                                     .editMessage(messageToSend.getMessage())
-                                    .embed(messageToSend.getEmbed())
-                                    .submit().thenAccept(future::complete),
+                                    .embed(messageToSend.getEmbeds().get(0))
+                                    .submit().thenAccept(message -> future.get(0).complete(message)),
                             throwable -> {
-                                sendEmbedInPostTarget(messageToSend, target)
-                                            .thenAccept(future::complete);
+                                sendEmbedInPostTarget(messageToSend, target).get(0)
+                                            .thenAccept(message -> future.get(0).complete(message));
                             });
         }
     }
 
     @Override
-    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTargetName, Long serverId, CompletableFuture<Message> future)  {
+    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTargetName, Long serverId, List<CompletableFuture<Message>> future)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget, future);
     }
@@ -159,7 +158,7 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public CompletableFuture<Message> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId)  {
+    public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return editEmbedInPostTarget(messageId, message, postTarget);
     }

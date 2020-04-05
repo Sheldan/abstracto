@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.listener;
 
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -57,15 +58,14 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createEmbedAndPostEmbed(@Nonnull Message postedMessage, CachedMessage message) {
         MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(postedMessage, message);
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
-        if(StringUtils.isBlank(embed.getMessage())) {
-            postedMessage.getChannel().sendMessage(embed.getEmbed()).queue();
-        } else {
-            postedMessage.getChannel().sendMessage(embed.getMessage()).embed(embed.getEmbed()).queue();
-        }
+        channelService.sendMessageToEndInTextChannel(embed, postedMessage.getTextChannel());
     }
 
     private MessageEmbeddedModel buildTemplateParameter(Message message, CachedMessage embeddedMessage) {

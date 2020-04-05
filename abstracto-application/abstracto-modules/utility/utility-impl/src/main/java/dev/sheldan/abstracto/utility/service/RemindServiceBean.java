@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -55,6 +56,9 @@ public class RemindServiceBean implements ReminderService {
     @Autowired
     private ReminderService self;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public void createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, ReminderModel reminderModel) {
         AChannel channel = channelManagementService.loadChannel(reminderModel.getChannel().getId());
@@ -69,12 +73,7 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, reminderModel.getMessage().getIdLong());
         reminderModel.setReminder(reminder);
         MessageToSend message = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, reminderModel);
-        String messageText = message.getMessage();
-        if(StringUtils.isBlank(messageText)) {
-            reminderModel.getMessageChannel().sendMessage(message.getEmbed()).queue();
-        } else {
-            reminderModel.getMessageChannel().sendMessage(messageText).embed(message.getEmbed()).queue();
-        }
+        channelService.sendMessageToEndInAChannel(message, reminderModel.getChannel());
 
         if(remindIn.getSeconds() < 60) {
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -107,7 +106,7 @@ public class RemindServiceBean implements ReminderService {
                         .member(memberInServer)
                         .build();
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
-                channelToAnswerIn.get().sendMessage(messageToSend.getMessage()).embed(messageToSend.getEmbed()).queue();
+                channelService.sendMessageToEndInTextChannel(messageToSend, channelToAnswerIn.get());
             } else {
                 log.warn("Channel {} in server {} to remind user did not exist anymore. Ignoring reminder {}", channel.getId(), server.getId(), reminderId);
             }

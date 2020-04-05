@@ -37,7 +37,7 @@ public class AddToChannelGroup implements Command {
         List<String> aliases = Arrays.asList("addTChGrp", "chGrpCh+");
         return CommandConfiguration.builder()
                 .name("addToChannelGroup")
-                .module("channels")
+                .module(ChannelsModuleInterface.CHANNELS)
                 .aliases(aliases)
                 .parameters(parameters)
                 .description("Adds the mentioned channel to the channel group.")

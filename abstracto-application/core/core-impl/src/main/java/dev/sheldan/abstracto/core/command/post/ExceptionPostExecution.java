@@ -23,6 +23,7 @@ public class ExceptionPostExecution implements PostCommandExecution {
         if(commandResult.getResult().equals(ResultState.ERROR)) {
             Throwable throwable = commandResult.getThrowable();
             if(throwable != null) {
+                log.error("Exception: ", throwable);
                 if(throwable instanceof Templatable) {
                     Templatable exception = (Templatable) throwable;
                     String text = templateService.renderTemplate(exception.getTemplateName(), exception.getTemplateModel());

@@ -5,10 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
 public class MessageToSend {
-    private MessageEmbed embed;
+    private List<MessageEmbed> embeds;
     private String message;
 }

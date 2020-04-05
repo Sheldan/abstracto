@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.command;
 
-import dev.sheldan.abstracto.core.command.AbstractFeatureFlaggedCommand;
+import dev.sheldan.abstracto.core.command.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class Warn extends AbstractFeatureFlaggedCommand {
+public class Warn extends AbstractConditionableCommand {
 
     @Autowired
     private UserManagementService userManagementService;
