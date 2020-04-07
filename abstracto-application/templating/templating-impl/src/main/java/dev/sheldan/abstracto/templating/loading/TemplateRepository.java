@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.templating.loading;
 
-import dev.sheldan.abstracto.templating.TemplateDto;
+import dev.sheldan.abstracto.templating.model.database.Template;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TemplateRepository extends JpaRepository<TemplateDto, String> {
+public interface TemplateRepository extends JpaRepository<Template, String> {
 }

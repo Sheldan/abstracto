@@ -1,7 +1,8 @@
 package dev.sheldan.abstracto.templating.loading;
 
-import dev.sheldan.abstracto.templating.TemplateDto;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.templating.model.database.Template;
+import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.templating.service.management.TemplateManagementService;
 import freemarker.cache.TemplateLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,17 +17,20 @@ public class DatabaseTemplateLoader implements TemplateLoader {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private TemplateManagementService templateManagementService;
+
     @Override
     public Object findTemplateSource(String s) throws IOException {
-        return templateService.getTemplateByKey(s);
+        return templateManagementService.getTemplateByKey(s);
     }
 
     @Override
     public long getLastModified(Object o) {
-        TemplateDto casted = (TemplateDto) o;
-        TemplateDto templateDtoByKey = templateService.getTemplateByKey(casted.getKey());
-        if(templateDtoByKey != null){
-            return templateDtoByKey.getLastModified().getEpochSecond();
+        Template casted = (Template) o;
+        Template templateByKey = templateManagementService.getTemplateByKey(casted.getKey());
+        if(templateByKey != null){
+            return templateByKey.getLastModified().getEpochSecond();
         } else {
             return Long.MAX_VALUE;
         }
@@ -34,7 +38,7 @@ public class DatabaseTemplateLoader implements TemplateLoader {
 
     @Override
     public Reader getReader(Object o, String s) throws IOException {
-        return new StringReader(((TemplateDto) o).getContent());
+        return new StringReader(((Template) o).getContent());
     }
 
     @Override

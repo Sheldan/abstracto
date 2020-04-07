@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.repository;
 
-import dev.sheldan.abstracto.utility.models.EmbeddedMessage;
+import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EmbeddedMessageRepository extends JpaRepository<EmbeddedMessage, Long> {

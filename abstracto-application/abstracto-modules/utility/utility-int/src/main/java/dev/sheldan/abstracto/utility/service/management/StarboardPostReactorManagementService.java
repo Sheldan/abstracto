@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.utility.models.StarboardPost;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsUser;
+import dev.sheldan.abstracto.utility.models.database.StarboardPost;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.repository;
 
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.utility.models.StarboardPost;
-import dev.sheldan.abstracto.utility.models.StarboardPostReaction;
+import dev.sheldan.abstracto.utility.models.database.StarboardPost;
+import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

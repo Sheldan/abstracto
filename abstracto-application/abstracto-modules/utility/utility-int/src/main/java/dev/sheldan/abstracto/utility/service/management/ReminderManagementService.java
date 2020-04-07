@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.utility.models.Reminder;
+import dev.sheldan.abstracto.utility.models.database.Reminder;
 
 import java.time.Instant;
 

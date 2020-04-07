@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.core.commands.help;
 
 import dev.sheldan.abstracto.core.command.*;
+import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.command.module.ModuleInfo;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
 import dev.sheldan.abstracto.core.config.AbstractoFeatures;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

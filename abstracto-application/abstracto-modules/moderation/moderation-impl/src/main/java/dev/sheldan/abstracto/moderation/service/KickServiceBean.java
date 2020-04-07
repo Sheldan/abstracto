@@ -1,11 +1,10 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.moderation.models.template.KickLogModel;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -42,7 +41,7 @@ public class KickServiceBean implements KickService {
     }
 
     private void sendKickLog(KickLogModel kickLogModel)  {
-        String warnLogMessage = templateService.renderContextAwareTemplate(KICK_LOG_TEMPLATE, kickLogModel);
+        String warnLogMessage = templateService.renderTemplate(KICK_LOG_TEMPLATE, kickLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, kickLogModel.getServer().getId());
     }
 }

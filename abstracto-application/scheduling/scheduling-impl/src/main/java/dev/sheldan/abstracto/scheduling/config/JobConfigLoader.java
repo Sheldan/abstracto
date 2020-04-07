@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.scheduling.config;
 
+import dev.sheldan.abstracto.scheduling.model.SchedulerJobProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

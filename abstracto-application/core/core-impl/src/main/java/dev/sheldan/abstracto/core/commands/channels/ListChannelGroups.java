@@ -1,19 +1,19 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.AbstractoFeatures;
-import dev.sheldan.abstracto.core.models.MessageToSend;
-import dev.sheldan.abstracto.core.models.command.ChannelGroupChannelModel;
-import dev.sheldan.abstracto.core.models.command.ChannelGroupModel;
-import dev.sheldan.abstracto.core.models.command.ListChannelGroupsModel;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
+import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
+import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsModel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

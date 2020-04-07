@@ -1,14 +1,14 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.HelpInfo;
-import dev.sheldan.abstracto.core.command.execution.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.execution.Parameter;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.AbstractoFeatures;
-import dev.sheldan.abstracto.core.models.command.EchoModel;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.core.models.template.commands.EchoModel;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

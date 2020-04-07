@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
-import dev.sheldan.abstracto.moderation.models.Warning;
+import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import org.springframework.beans.factory.annotation.Autowired;

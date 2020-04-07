@@ -1,12 +1,17 @@
 package dev.sheldan.abstracto.core.command;
 
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
+import dev.sheldan.abstracto.core.command.condition.ConditionResult;
+import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
+import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.ParameterTooLong;
-import dev.sheldan.abstracto.core.command.models.ACommand;
 import dev.sheldan.abstracto.core.command.service.ChannelGroupCommandService;
+import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.command.meta.UnParsedCommandParameter;
+import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
@@ -35,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Slf4j

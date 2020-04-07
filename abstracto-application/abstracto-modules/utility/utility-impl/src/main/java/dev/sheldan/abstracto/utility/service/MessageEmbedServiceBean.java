@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.listener.models.MessageEmbeddedModel;
-import dev.sheldan.abstracto.core.models.MessageToSend;
+import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -13,8 +13,8 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.templating.TemplateService;
-import dev.sheldan.abstracto.utility.MessageEmbedLink;
+import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;

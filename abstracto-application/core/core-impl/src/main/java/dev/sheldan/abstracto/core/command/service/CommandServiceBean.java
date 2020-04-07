@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.service;
 
-import dev.sheldan.abstracto.core.command.models.ACommand;
-import dev.sheldan.abstracto.core.command.models.AModule;
+import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.command.models.database.AModule;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.ModuleManagementService;
 import org.springframework.beans.factory.annotation.Autowired;

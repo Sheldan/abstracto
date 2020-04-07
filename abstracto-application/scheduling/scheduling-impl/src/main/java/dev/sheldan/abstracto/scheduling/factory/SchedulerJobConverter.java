@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.scheduling.factory;
 
-import dev.sheldan.abstracto.scheduling.config.SchedulerJobProperties;
-import dev.sheldan.abstracto.scheduling.model.SchedulerJob;
+import dev.sheldan.abstracto.scheduling.model.SchedulerJobProperties;
+import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
 import org.springframework.stereotype.Component;
 
 @Component

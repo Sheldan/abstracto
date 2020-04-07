@@ -18,11 +18,10 @@
         </dependency>
 
         <dependency>
-            <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>core-interface</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
+            <groupId>net.dv8tion</groupId>
+            <artifactId>JDA</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

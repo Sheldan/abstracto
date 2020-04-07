@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation;
 
-import dev.sheldan.abstracto.core.command.ModuleInterface;
-import dev.sheldan.abstracto.core.command.module.ModuleInfo;
+import dev.sheldan.abstracto.core.command.config.ModuleInterface;
+import dev.sheldan.abstracto.core.command.config.ModuleInfo;
 import org.springframework.stereotype.Component;
 
 @Component

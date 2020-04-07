@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.models.database;
 
-import dev.sheldan.abstracto.core.command.models.ACommand;
+import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import lombok.*;
 
 import javax.persistence.*;

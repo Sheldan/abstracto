@@ -3,21 +3,21 @@ package dev.sheldan.abstracto.utility.service;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.core.models.AServerChannelMessage;
+import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.*;
-import dev.sheldan.abstracto.core.models.MessageToSend;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.StarboardConfig;
-import dev.sheldan.abstracto.utility.models.StarboardPost;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsModel;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsPost;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsUser;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarboardPostModel;
+import dev.sheldan.abstracto.utility.models.database.StarboardPost;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsPost;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarboardPostModel;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -81,13 +81,13 @@ public class StarboardServiceBean implements StarboardService {
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             try {
                 Message message1 = completableFutures.get(0).get();
-                AServerChannelMessage aServerChannelMessage = AServerChannelMessage
+                AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
                         .builder()
                         .messageId(message1.getIdLong())
                         .channel(starboard.getChannelReference())
                         .server(userReacting.getServerReference())
                         .build();
-                StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, starredUser, userReacting, aServerChannelMessage);
+                StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, starredUser, userReacting, aServerAChannelMessage);
                 // TODO maybe in bulk, but numbers should be small enough
                 userExceptAuthor.forEach(user -> {
                     starboardPostReactorManagementService.addReactor(starboardPost, user);

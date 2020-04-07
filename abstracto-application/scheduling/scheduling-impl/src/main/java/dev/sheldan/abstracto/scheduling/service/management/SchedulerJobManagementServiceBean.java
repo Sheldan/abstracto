@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.scheduling.service.management;
 
-import dev.sheldan.abstracto.scheduling.model.SchedulerJob;
+import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
 import dev.sheldan.abstracto.scheduling.repository.SchedulerJobRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

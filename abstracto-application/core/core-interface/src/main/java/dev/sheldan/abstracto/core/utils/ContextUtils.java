@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.ServerChannelUser;
+import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.Bot;
@@ -33,15 +33,15 @@ public class ContextUtils {
 
     public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(CachedMessage message, Class<T> clazz) {
         Method m = null;
-        ServerChannelUser serverChannelUser = bot.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthorId());
+        GuildChannelMember guildChannelMember = bot.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthorId());
         try {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
             AUserInAServer aUserInAServer = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
             return builder
-                    .member(serverChannelUser.getMember())
-                    .guild(serverChannelUser.getGuild())
-                    .messageChannel(serverChannelUser.getTextChannel())
+                    .member(guildChannelMember.getMember())
+                    .guild(guildChannelMember.getGuild())
+                    .messageChannel(guildChannelMember.getTextChannel())
                     .channel(channelManagementService.loadChannel(message.getChannelId()))
                     .server(serverManagementService.loadOrCreate(message.getServerId()))
                     .aUserInAServer(aUserInAServer)

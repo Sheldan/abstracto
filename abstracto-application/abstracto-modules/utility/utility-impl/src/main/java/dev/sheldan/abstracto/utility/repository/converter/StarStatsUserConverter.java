@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.utility.repository.converter;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.service.Bot;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsUser;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.repository;
 
-import dev.sheldan.abstracto.utility.models.StarboardPost;
+import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

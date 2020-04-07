@@ -1,17 +1,15 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.utility.models.StarboardPost;
-import dev.sheldan.abstracto.utility.models.StarboardPostReaction;
-import dev.sheldan.abstracto.utility.models.template.starboard.StarStatsUser;
+import dev.sheldan.abstracto.utility.models.database.StarboardPost;
+import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
 import dev.sheldan.abstracto.utility.repository.StarboardPostReactionRepository;
 import dev.sheldan.abstracto.utility.repository.converter.StarStatsUserConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @Component

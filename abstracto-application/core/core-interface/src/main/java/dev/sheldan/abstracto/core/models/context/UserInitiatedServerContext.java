@@ -20,8 +20,4 @@ public class UserInitiatedServerContext extends ServerContext {
     private AUser user;
     private AUserInAServer aUserInAServer;
 
-    @Override
-    public String getTemplateSuffix() {
-        return "";
-    }
 }

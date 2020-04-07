@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.utility.models.template.ReminderModel;
+import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 
 import java.time.Duration;
 

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
-import dev.sheldan.abstracto.core.service.StartupManager;
+import dev.sheldan.abstracto.core.service.StartupServiceBean;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 public class ReadyListener extends ListenerAdapter {
 
     @Autowired
-    private StartupManager startup;
+    private StartupServiceBean startup;
 
     @Value("${abstracto.startup.synchronize}")
     private boolean synchronize;

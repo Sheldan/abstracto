@@ -4,17 +4,17 @@ import dev.sheldan.abstracto.core.exception.UserException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.MessageToSend;
-import dev.sheldan.abstracto.moderation.models.template.WarnLog;
-import dev.sheldan.abstracto.moderation.models.template.WarnNotification;
-import dev.sheldan.abstracto.moderation.models.Warning;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
+import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
+import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
+import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.templating.TemplateService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -98,7 +98,7 @@ public class WarnServiceBean implements WarnService {
     }
 
     private void sendWarnLog(ServerContext warnLogModel)  {
-        String warnLogMessage = templateService.renderContextAwareTemplate(WARN_LOG_TEMPLATE, warnLogModel);
+        String warnLogMessage = templateService.renderTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, warnLogModel.getServer().getId());
         MessageToSend message = templateService.renderEmbedTemplate("warn_log", warnLogModel);
         postTargetService.sendEmbedInPostTarget(message, WARN_LOG_TARGET, warnLogModel.getServer().getId());

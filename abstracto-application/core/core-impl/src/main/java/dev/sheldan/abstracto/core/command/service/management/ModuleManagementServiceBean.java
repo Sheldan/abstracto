@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.AModule;
+import dev.sheldan.abstracto.core.command.models.database.AModule;
 import dev.sheldan.abstracto.core.command.repository.ModuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

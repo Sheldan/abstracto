@@ -1,8 +1,7 @@
 package dev.sheldan.abstracto.scheduling.service;
 
 import dev.sheldan.abstracto.scheduling.factory.QuartzConfigFactory;
-import dev.sheldan.abstracto.scheduling.model.SchedulerJob;
-import dev.sheldan.abstracto.scheduling.model.SchedulerService;
+import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
 import dev.sheldan.abstracto.scheduling.service.management.SchedulerJobManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;

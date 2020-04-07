@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.moderation.models.template.KickLogModel;
+import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import net.dv8tion.jda.api.entities.Member;
 
 public interface KickService {

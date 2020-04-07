@@ -13,12 +13,8 @@ import net.dv8tion.jda.api.entities.Guild;
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
-public class ServerContext implements ContextAware{
+public class ServerContext {
     private Guild guild;
     private AServer server;
 
-    @Override
-    public String getTemplateSuffix() {
-        return "server";
-    }
 }
