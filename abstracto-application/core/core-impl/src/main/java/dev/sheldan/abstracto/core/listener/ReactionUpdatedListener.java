@@ -99,7 +99,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             }
             try {
                 reactedAddedListener.executeReactionAdded(cachedMessage, event.getReaction(), userInAServer);
-            } catch (AbstractoRunTimeException e) {
+            } catch (Exception e) {
                 log.warn(String.format("Failed to execute reaction added listener %s.", reactedAddedListener.getClass().getName()), e);
             }
         });

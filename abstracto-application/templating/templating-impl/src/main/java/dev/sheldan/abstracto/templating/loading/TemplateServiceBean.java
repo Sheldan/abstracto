@@ -11,6 +11,7 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -18,8 +19,10 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import java.awt.*;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -49,52 +52,80 @@ public class TemplateServiceBean implements TemplateService {
         return null;
     }
 
+    private String getPageString(Integer count) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("count", count);
+        return renderTemplate("embed_page_count", params);
+    }
+
     @Override
     public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
-        EmbedBuilder builder = new EmbedBuilder();
+        List<EmbedBuilder> embedBuilders = new ArrayList<>();
         EmbedConfiguration configuration = gson.fromJson(embedConfig, EmbedConfiguration.class);
         String description = configuration.getDescription();
         if(description != null) {
-            builder.setDescription(description);
+            double parts = Math.ceil(description.length() / (double) MessageEmbed.TEXT_MAX_LENGTH);
+            extendIfNecessary(embedBuilders, parts);
+            for (int i = 0; i < parts; i++) {
+                String descriptionText = description.substring(MessageEmbed.TEXT_MAX_LENGTH * i, Math.min(MessageEmbed.TEXT_MAX_LENGTH * (i + 1), description.length()));
+                embedBuilders.get(i).setDescription(descriptionText);
+            }
         }
         EmbedAuthor author = configuration.getAuthor();
+        EmbedBuilder firstBuilder = embedBuilders.get(0);
         if(author != null) {
-            builder.setAuthor(author.getName(), author.getUrl(), author.getAvatar());
+            firstBuilder.setAuthor(author.getName(), author.getUrl(), author.getAvatar());
         }
 
         String thumbnail = configuration.getThumbnail();
         if(thumbnail != null) {
-            builder.setThumbnail(thumbnail);
+            firstBuilder.setThumbnail(thumbnail);
         }
         EmbedTitle title = configuration.getTitle();
         if(title != null) {
-            builder.setTitle(title.getTitle(), title.getUrl());
+            firstBuilder.setTitle(title.getTitle(), title.getUrl());
         }
         EmbedFooter footer = configuration.getFooter();
         if(footer != null) {
-            builder.setFooter(footer.getText(), footer.getIcon());
+            firstBuilder.setFooter(footer.getText(), footer.getIcon());
         }
         if(configuration.getFields() != null) {
-            configuration.getFields().forEach(embedField -> {
+            double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;
+            extendIfNecessary(embedBuilders, neededIndex);
+            for (int i = 0; i < configuration.getFields().size(); i++) {
+                double currentPart = Math.floor(i / 25D);
+                EmbedField embedField = configuration.getFields().get(i);
                 Boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
-                builder.addField(embedField.getName(), embedField.getValue(), inline);
-            });
+                embedBuilders.get((int) currentPart).addField(embedField.getName(), embedField.getValue(), inline);
+            }
         }
-        builder.setTimestamp(configuration.getTimeStamp());
+        firstBuilder.setTimestamp(configuration.getTimeStamp());
 
-        builder.setImage(configuration.getImageUrl());
+        firstBuilder.setImage(configuration.getImageUrl());
 
         EmbedColor color = configuration.getColor();
         if(color != null) {
-            builder.setColor(new Color(color.getR(), color.getG(), color.getB()).getRGB());
+            int colorToSet = new Color(color.getR(), color.getG(), color.getB()).getRGB();
+            embedBuilders.forEach(embedBuilder -> embedBuilder.setColor(colorToSet));
         }
 
+        List<MessageEmbed> embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
 
         return MessageToSend.builder()
-                .embeds(Arrays.asList(builder.build()))
+                .embeds(embeds)
                 .message(configuration.getAdditionalMessage())
                 .build();
+    }
+
+    private void extendIfNecessary(List<EmbedBuilder> builders, double neededIndex) {
+        if(neededIndex > builders.size() - 1) {
+            for (int i = builders.size(); i < neededIndex + 1; i++) {
+                EmbedBuilder e = new EmbedBuilder();
+                e.setFooter(getPageString(i + 1));
+                builders.add(e);
+            }
+        }
     }
 
     @Override
