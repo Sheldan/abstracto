@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -69,16 +70,15 @@ public class BotService implements Bot {
     }
 
     @Override
-    public void deleteMessage(Long serverId, Long channelId, Long messageId)  {
+    public CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId)  {
         Optional<TextChannel> textChannelOptional = getTextChannelFromServer(serverId, channelId);
         if(textChannelOptional.isPresent()) {
             TextChannel textChannel = textChannelOptional.get();
-            textChannel.deleteMessageById(messageId).queue(aVoid -> {}, throwable -> {
-                log.warn("Failed to delete message {} in channel {} in guild {}", messageId, channelId, serverId, throwable);
-            });
+            return textChannel.deleteMessageById(messageId).submit();
         } else {
             log.warn("Could not find channel {} in guild {} to delete message {} in.", channelId, serverId, messageId);
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

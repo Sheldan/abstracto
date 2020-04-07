@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -50,5 +51,10 @@ public class MessageServiceBean implements MessageService {
             log.error("Cannot add reaction, guild not found {}", serverId);
             throw new GuildException(String.format("Cannot add reaction, guild %s not found.", serverId));
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
+        return bot.deleteMessage(serverId, channelId, messageId);
     }
 }

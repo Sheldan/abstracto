@@ -65,9 +65,9 @@ public class TemplateServiceBean implements TemplateService {
         EmbedConfiguration configuration = gson.fromJson(embedConfig, EmbedConfiguration.class);
         String description = configuration.getDescription();
         if(description != null) {
-            double parts = Math.ceil(description.length() / (double) MessageEmbed.TEXT_MAX_LENGTH);
-            extendIfNecessary(embedBuilders, parts);
-            for (int i = 0; i < parts; i++) {
+            double neededIndices = Math.ceil(description.length() / (double) MessageEmbed.TEXT_MAX_LENGTH) - 1;
+            extendIfNecessary(embedBuilders, neededIndices);
+            for (int i = 0; i < neededIndices + 1; i++) {
                 String descriptionText = description.substring(MessageEmbed.TEXT_MAX_LENGTH * i, Math.min(MessageEmbed.TEXT_MAX_LENGTH * (i + 1), description.length()));
                 embedBuilders.get(i).setDescription(descriptionText);
             }
@@ -133,7 +133,7 @@ public class TemplateServiceBean implements TemplateService {
         try {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), parameters);
         } catch (IOException | TemplateException e) {
-            log.warn("Failed to render template: {}", e.getMessage());
+            log.warn("Failed to render template. ", e);
         }
         return "";
     }
@@ -143,8 +143,8 @@ public class TemplateServiceBean implements TemplateService {
         try {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), model);
         } catch (IOException | TemplateException e) {
-            log.warn("Failed to render template: {}", e.getMessage());
-            throw new RuntimeException("Failed to render template", e);
+            log.warn("Failed to render template. ", e);
+            return null;
         }
     }
 

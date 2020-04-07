@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -49,9 +50,15 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+    @Autowired
+    private Bot bot;
+
     @Override
     @Transactional
     public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
+        if(event.getUserIdLong() == bot.getInstance().getSelfUser().getIdLong()) {
+            return;
+        }
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             CompletableFuture<CachedReaction> future = new CompletableFuture<>();
@@ -108,6 +115,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     @Override
     @Transactional
     public void onGuildMessageReactionRemove(@Nonnull GuildMessageReactionRemoveEvent event) {
+        if(event.getUserIdLong() == bot.getInstance().getSelfUser().getIdLong()) {
+            return;
+        }
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             CompletableFuture<CachedReaction> future = new CompletableFuture<>();

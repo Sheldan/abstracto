@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public interface Bot {
@@ -18,7 +19,7 @@ public interface Bot {
     JDA getInstance();
     ServerChannelUser getServerChannelUser(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
-    void deleteMessage(Long serverId, Long channelId, Long messageId);
+    CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId);
     Optional<Emote> getEmote(Long serverId, AEmote emote);
     Optional<TextChannel> getTextChannelFromServer(Guild serverId, Long textChannelId);
     Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId);
