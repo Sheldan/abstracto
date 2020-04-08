@@ -97,7 +97,7 @@ public class RemindServiceBean implements ReminderService {
             Optional<TextChannel> channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
-                AUser userReference = reminderToRemindFor.getToBeReminded().getUserReference();
+                AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();
                 Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
                 ExecutedReminderModel build = ExecutedReminderModel
                         .builder()

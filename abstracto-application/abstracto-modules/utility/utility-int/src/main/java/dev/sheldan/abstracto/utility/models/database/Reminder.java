@@ -25,7 +25,7 @@ public class Reminder {
     @Getter
     @ManyToOne
     @JoinColumn(name = "remindedUser")
-    private AUserInAServer toBeReminded;
+    private AUserInAServer remindedUser;
 
     @Getter
     private Long messageId;

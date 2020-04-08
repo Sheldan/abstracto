@@ -44,6 +44,7 @@ public class TemplateServiceBean implements TemplateService {
     public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
         List<EmbedBuilder> embedBuilders = new ArrayList<>();
+        embedBuilders.add(new EmbedBuilder());
         EmbedConfiguration configuration = gson.fromJson(embedConfig, EmbedConfiguration.class);
         String description = configuration.getDescription();
         if(description != null) {
@@ -116,8 +117,8 @@ public class TemplateServiceBean implements TemplateService {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), parameters);
         } catch (IOException | TemplateException e) {
             log.warn("Failed to render template. ", e);
+            throw new RuntimeException(e);
         }
-        return "";
     }
 
     @Override
@@ -126,7 +127,7 @@ public class TemplateServiceBean implements TemplateService {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), model);
         } catch (IOException | TemplateException e) {
             log.warn("Failed to render template. ", e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 }
