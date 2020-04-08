@@ -8,6 +8,6 @@ import java.util.HashMap;
 public interface TemplateService {
     String renderTemplate(Template template);
     MessageToSend renderEmbedTemplate(String key, Object model);
-    String renderTemplate(String key, HashMap<String, Object> parameters);
+    String renderTemplateWithMap(String key, HashMap<String, Object> parameters);
     String renderTemplate(String key, Object model);
 }

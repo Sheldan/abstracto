@@ -37,7 +37,7 @@ public class TemplateServiceBean implements TemplateService {
     private String getPageString(Integer count) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("count", count);
-        return renderTemplate("embed_page_count", params);
+        return renderTemplateWithMap("embed_page_count", params);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     @Override
-    public String renderTemplate(String key, HashMap<String, Object> parameters) {
+    public String renderTemplateWithMap(String key, HashMap<String, Object> parameters) {
         try {
             return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), parameters);
         } catch (IOException | TemplateException e) {

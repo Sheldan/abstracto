@@ -31,7 +31,7 @@ public class Kick extends AbstractConditionableCommand {
 
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
-        String defaultReason = templateService.renderTemplate("ban_default_reason", null);
+        String defaultReason = templateService.renderTemplateWithMap("ban_default_reason", null);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
         KickLogModel kickLogModel = (KickLogModel) ContextConverter.fromCommandContext(commandContext, KickLogModel.class);

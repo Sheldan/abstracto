@@ -29,7 +29,7 @@ public class BanId extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long userId = (Long) parameters.get(0);
-        String defaultReason = templateService.renderTemplate("ban_default_reason", null);
+        String defaultReason = templateService.renderTemplateWithMap("ban_default_reason", null);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
         BanIdLog banLogModel = (BanIdLog) ContextConverter.fromCommandContext(commandContext, BanIdLog.class);
         banLogModel.setBannedUserId(userId);

@@ -94,7 +94,7 @@ public class Help implements Command {
         if(templateKey == null || !commandConfiguration.isTemplated()) {
             return defaultText;
         } else {
-            return templateService.renderTemplate(templateKey, null);
+            return templateService.renderTemplateWithMap(templateKey, null);
         }
     }
 

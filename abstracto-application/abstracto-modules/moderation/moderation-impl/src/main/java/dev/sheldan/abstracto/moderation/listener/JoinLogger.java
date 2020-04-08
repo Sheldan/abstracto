@@ -43,7 +43,7 @@ public class JoinLogger implements JoinListener {
     @Override
     public void execute(Member member, Guild guild) {
         HashMap<String, Object> parameters = getUserParameter(member.getUser());
-        String text = templateService.renderTemplate(USER_JOIN_TEMPLATE, parameters);;
+        String text = templateService.renderTemplateWithMap(USER_JOIN_TEMPLATE, parameters);;
         postTargetService.sendTextInPostTarget(text, JOIN_LOG_TARGET, guild.getIdLong());
     }
 
