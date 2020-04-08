@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.utils;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -26,9 +27,6 @@ public class ContextUtils {
     private UserManagementService userManagementService;
 
     @Autowired
-    private ServerManagementService serverManagementService;
-
-    @Autowired
     private Bot bot;
 
     public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(CachedMessage message, Class<T> clazz) {
@@ -43,13 +41,13 @@ public class ContextUtils {
                     .guild(guildChannelMember.getGuild())
                     .messageChannel(guildChannelMember.getTextChannel())
                     .channel(channelManagementService.loadChannel(message.getChannelId()))
-                    .server(serverManagementService.loadOrCreate(message.getServerId()))
+                    .server(aUserInAServer.getServerReference())
                     .aUserInAServer(aUserInAServer)
                     .user(aUserInAServer.getUserReference())
                     .build();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);
         }
-        throw new RuntimeException("Failed to create model from message");
+        throw new AbstractoRunTimeException("Failed to create model from message");
     }
 }
