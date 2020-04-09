@@ -5,9 +5,12 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.command.service.UserService;
+import dev.sheldan.abstracto.core.converter.UserInServerModelConverter;
+import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.models.template.commands.BanLog;
+import dev.sheldan.abstracto.moderation.models.template.commands.BanLogModel;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,13 @@ public class Ban extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private PostTargetService postTargetService;
+
+    @Autowired
+    private UserInServerModelConverter userConverter;
+
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -35,11 +45,12 @@ public class Ban extends AbstractConditionableCommand {
         String defaultReason = templateService.renderTemplateWithMap("ban_default_reason", null);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
-        BanLog banLogModel = (BanLog) ContextConverter.fromCommandContext(commandContext, BanLog.class);
-        banLogModel.setBannedUser(member);
-        banLogModel.setBanningUser(commandContext.getAuthor());
+        BanLogModel banLogModel = (BanLogModel) ContextConverter.fromCommandContext(commandContext, BanLogModel.class);
+        banLogModel.setBannedUser(userConverter.fromMember(member));
+        banLogModel.setBanningUser(userConverter.fromUser(commandContext.getUserInitiatedContext().getAUserInAServer()));
         banLogModel.setReason(reason);
-        banService.banMember(member, reason, banLogModel);
+        banService.banMember(member, reason);
+        banService.sendBanLog(banLogModel);
         return CommandResult.fromSuccess();
     }
 

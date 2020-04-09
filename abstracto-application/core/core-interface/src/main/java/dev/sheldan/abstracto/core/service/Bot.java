@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.dto.EmoteDto;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
-import dev.sheldan.abstracto.core.models.database.AEmote;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -20,7 +20,7 @@ public interface Bot {
     GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
     CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId);
-    Optional<Emote> getEmote(Long serverId, AEmote emote);
+    Optional<Emote> getEmote(Long serverId, EmoteDto emote);
     Optional<TextChannel> getTextChannelFromServer(Guild serverId, Long textChannelId);
     Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId);
     Optional<Guild> getGuildById(Long serverId);

@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.core.command.service;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.command.models.database.AModule;
-import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
-import dev.sheldan.abstracto.core.command.service.management.ModuleManagementService;
+import dev.sheldan.abstracto.core.models.ACommand;
+import dev.sheldan.abstracto.core.models.AModule;
+import dev.sheldan.abstracto.core.command.service.management.CommandManagementServiceBean;
+import dev.sheldan.abstracto.core.command.service.management.ModuleManagementServiceBean;
+import dev.sheldan.abstracto.core.models.converter.CommandConverter;
+import dev.sheldan.abstracto.core.models.dto.CommandDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,20 +13,27 @@ import org.springframework.stereotype.Component;
 public class CommandServiceBean implements CommandService {
 
     @Autowired
-    private ModuleManagementService moduleManagementService;
+    private ModuleManagementServiceBean moduleManagementService;
 
     @Autowired
-    private CommandManagementService commandManagementService;
+    private CommandManagementServiceBean commandManagementServiceBean;
+
+    @Autowired
+    private CommandConverter commandConverter;
 
     @Override
-    public ACommand createCommand(String name, String moduleName) {
-        AModule module = moduleManagementService.getOrCreate(moduleName);
-        return commandManagementService.createCommand(name, module);
+    public CommandDto createCommand(String name, String moduleName) {
+        return commandManagementServiceBean.createCommand(name, moduleName);
     }
 
     @Override
     public Boolean doesCommandExist(String name) {
-        return commandManagementService.doesCommandExist(name);
+        return commandManagementServiceBean.doesCommandExist(name);
+    }
+
+    @Override
+    public CommandDto findCommandByName(String name) {
+        return commandManagementServiceBean.findCommandByName(name);
     }
 
 

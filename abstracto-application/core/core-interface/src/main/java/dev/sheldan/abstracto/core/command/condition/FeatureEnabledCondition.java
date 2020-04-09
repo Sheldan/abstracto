@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class FeatureEnabledCondition implements CommandCondition {
 
     @Autowired
-    private FeatureFlagManagementService featureFlagManagementService;
+    private FeatureFlagService featureFlagManagementService;
 
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
@@ -18,7 +18,7 @@ public class FeatureEnabledCondition implements CommandCondition {
         boolean featureFlagValue = false;
         String reason = "";
         if(featureName != null) {
-            featureFlagValue = featureFlagManagementService.getFeatureFlagValue(featureName, context.getGuild().getIdLong());
+            featureFlagValue = featureFlagManagementService.isFeatureEnabled(featureName, context.getGuild().getIdLong());
             reason = "Feature has been disabled.";
         }
         return ConditionResult.builder().reason(reason).result(featureFlagValue).build();

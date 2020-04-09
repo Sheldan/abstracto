@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Builder
+@Getter
 public class Parameters {
-    @Getter
     private List<Object> parameters;
 }

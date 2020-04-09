@@ -6,13 +6,13 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.AbstractoFeatures;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.models.dto.ChannelGroupDto;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
 import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsModel;
-import dev.sheldan.abstracto.core.models.database.AChannelGroup;
+import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +30,14 @@ public class ListChannelGroups implements Command {
     private TemplateService templateService;
 
     @Autowired
-    private ChannelGroupManagementService channelGroupManagementService;
+    private ChannelGroupService channelGroupManagementService;
 
     @Autowired
     private ChannelService channelService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(commandContext.getUserInitiatedContext().getServer());
+        List<ChannelGroupDto> channelGroups = channelGroupManagementService.findAllInServer(commandContext.getUserInitiatedContext().getServer());
         ListChannelGroupsModel template = (ListChannelGroupsModel) ContextConverter.fromCommandContext(commandContext, ListChannelGroupsModel.class);
         template.setGroups(convertAChannelGroupToChannelGroupChannel(channelGroups));
         MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template);
@@ -45,7 +45,7 @@ public class ListChannelGroups implements Command {
         return CommandResult.fromSuccess();
     }
 
-    private List<ChannelGroupModel> convertAChannelGroupToChannelGroupChannel(List<AChannelGroup> channelGroups) {
+    private List<ChannelGroupModel> convertAChannelGroupToChannelGroupChannel(List<ChannelGroupDto> channelGroups) {
         List<ChannelGroupModel> converted = new ArrayList<>();
         channelGroups.forEach(group -> {
             List<ChannelGroupChannelModel> convertedChannels = new ArrayList<>();

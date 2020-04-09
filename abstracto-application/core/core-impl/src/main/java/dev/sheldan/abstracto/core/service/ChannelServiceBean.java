@@ -1,9 +1,12 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.converter.ChannelConverter;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementServiceBean;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -25,8 +28,14 @@ public class ChannelServiceBean implements ChannelService {
     @Autowired
     private Bot botService;
 
+    @Autowired
+    private ChannelManagementServiceBean channelManagementServiceBean;
+
+    @Autowired
+    private ChannelConverter channelConverter;
+
     @Override
-    public void sendTextInAChannel(String text, AChannel channel) {
+    public void sendTextInAChannel(String text, ChannelDto channel) {
         Guild guild = botService.getInstance().getGuildById(channel.getServer().getId());
         if (guild != null) {
             TextChannel textChannel = guild.getTextChannelById(channel.getId());
@@ -43,7 +52,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, AChannel channel) {
+    public List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, ChannelDto channel) {
         Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
         if(textChannelFromServer.isPresent()) {
             return sendMessageToEndInTextChannel(messageToSend, textChannelFromServer.get());
@@ -79,5 +88,10 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public Optional<TextChannel> getTextChannelInGuild(Long serverId, Long channelId) {
         return botService.getTextChannelFromServer(serverId, channelId);
+    }
+
+    @Override
+    public ChannelDto loadChannel(Long channelId) {
+        return channelManagementServiceBean.loadChannel(channelId);
     }
 }

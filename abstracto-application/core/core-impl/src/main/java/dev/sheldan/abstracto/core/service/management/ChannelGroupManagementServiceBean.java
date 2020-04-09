@@ -2,10 +2,17 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupException;
 import dev.sheldan.abstracto.core.exception.ChannelException;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.AChannelGroup;
+import dev.sheldan.abstracto.core.models.AServer;
+import dev.sheldan.abstracto.core.models.converter.ChannelConverter;
+import dev.sheldan.abstracto.core.models.converter.ChannelGroupConverter;
+import dev.sheldan.abstracto.core.models.converter.ServerConverter;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ChannelGroupDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
 import dev.sheldan.abstracto.core.repository.ChannelGroupRepository;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,39 +20,45 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @Component
-public class ChannelGroupManagementServiceBean implements ChannelGroupManagementService {
+public class ChannelGroupManagementServiceBean {
 
     @Autowired
     private ChannelGroupRepository channelGroupRepository;
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private ServerManagementServiceBean serverManagementService;
 
-    @Override
-    public AChannelGroup createChannelGroup(String name, AServer server) {
+    @Autowired
+    private ServerConverter serverConverter;
+
+    @Autowired
+    private ChannelGroupConverter channelGroupConverter;
+
+    @Autowired
+    private ChannelConverter channelConverter;
+
+    public AChannelGroup createChannelGroup(String name, ServerDto server) {
         name = name.toLowerCase();
         AChannelGroup channelGroup = AChannelGroup
                 .builder()
                 .groupName(name)
-                .server(server)
+                .server(serverConverter.fromDto(server))
                 .build();
         channelGroupRepository.save(channelGroup);
         return channelGroup;
     }
 
-    @Override
-    public void deleteChannelGroup(String name, AServer server) {
+    public void deleteChannelGroup(String name, ServerDto server) {
         name = name.toLowerCase();
-        AChannelGroup existing = findByNameAndServer(name, server);
+        AChannelGroup existing = findByNameAndServer(name, serverConverter.fromDto(server));
         if(existing == null) {
             throw new ChannelGroupException(String.format("Channel group %s does not exist", name));
         }
         channelGroupRepository.delete(existing);
     }
 
-    @Override
-    public AChannelGroup addChannelToChannelGroup(AChannelGroup channelGroup, AChannel channel) {
-        Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
+    public ChannelGroupDto addChannelToChannelGroup(ChannelGroupDto channelGroup, ChannelDto channel) {
+        Predicate<ChannelDto> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
         if(channelGroup == null) {
             throw new ChannelGroupException("Channel group was not found.");
         }
@@ -53,36 +66,43 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
             throw new ChannelException(String.format("Channel %s is already part of group %s.", channel.getId(), channelGroup.getGroupName()));
         }
         channelGroup.getChannels().add(channel);
-        channel.getGroups().add(channelGroup);
-        channelGroupRepository.save(channelGroup);
+        AChannel channel1 = channelConverter.fromDto(channel);
+        AChannelGroup entity = channelGroupConverter.fromChannelGroup(channelGroup);
+        channel1.getGroups().add(entity);
+        channelGroupRepository.save(entity);
         return channelGroup;
     }
 
-    @Override
-    public void removeChannelFromChannelGroup(AChannelGroup channelGroup, AChannel channel) {
-        Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
+    public void removeChannelFromChannelGroup(ChannelGroupDto channelGroup, ChannelDto channel) {
+        Predicate<ChannelDto> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
         if(channelGroup.getChannels().stream().noneMatch(channelInGroupPredicate)) {
             throw new ChannelException(String.format("Channel %s is not part of group %s.", channel.getId(), channelGroup.getGroupName()));
         }
         channelGroup.getChannels().removeIf(channelInGroupPredicate);
-        channel.getGroups().removeIf(channelGroup1 -> channelGroup1.getId().equals(channelGroup.getId()));
-        channelGroupRepository.save(channelGroup);
+        channelGroupRepository.save(channelGroupConverter.fromChannelGroup(channelGroup));
     }
 
-    @Override
-    public AChannelGroup findByNameAndServer(String name, AServer server) {
+    public ChannelGroupDto findByNameAndServer(String name, ServerDto server) {
+        name = name.toLowerCase();
+        AChannelGroup byGroupNameAndServer = channelGroupRepository.findByGroupNameAndServer(name, serverConverter.fromDto(server));
+        return channelGroupConverter.fromChannelGroup(byGroupNameAndServer);
+    }
+
+    private AChannelGroup findByNameAndServer(String name, AServer server) {
         name = name.toLowerCase();
         return channelGroupRepository.findByGroupNameAndServer(name, server);
     }
 
-    @Override
-    public List<AChannelGroup> findAllInServer(AServer server) {
+    public List<AChannelGroup> findAllInServer(ServerDto server) {
+        return findAllInServer(serverConverter.fromDto(server));
+    }
+
+    private List<AChannelGroup> findAllInServer(AServer server) {
         return channelGroupRepository.findByServer(server);
     }
 
-    @Override
     public List<AChannelGroup> findAllInServer(Long serverId) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
+        ServerDto server = serverManagementService.loadOrCreate(serverId);
         return findAllInServer(server);
     }
 }

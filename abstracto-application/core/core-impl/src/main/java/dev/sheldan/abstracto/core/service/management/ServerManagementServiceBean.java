@@ -1,91 +1,99 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.*;
+import dev.sheldan.abstracto.core.models.converter.PostTargetConverter;
+import dev.sheldan.abstracto.core.models.converter.ServerConverter;
+import dev.sheldan.abstracto.core.models.dto.*;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
-public class ServerManagementServiceBean implements ServerManagementService {
+public class ServerManagementServiceBean {
 
     @Autowired
     private ServerRepository repository;
 
     @Autowired
-    private PostTargetManagement postTargetManagement;
+    private PostTargetManagementBean postTargetManagement;
 
     @Autowired
-    private ChannelManagementService channelManagementService;
+    private ChannelManagementServiceBean channelManagementService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserManagementServiceBean userManagementService;
 
-    @Override
-    public AServer createServer(Long id) {
-        return repository.save(AServer.builder().id(id).build());
+    @Autowired
+    private ServerConverter serverConverter;
+
+    @Autowired
+    private PostTargetConverter postTargetConverter;
+
+    public ServerDto createServer(Long id) {
+        AServer aServer = AServer.builder().id(id).build();
+        return serverConverter.convertServer(repository.save(aServer));
     }
 
-    @Override
-    public AServer loadOrCreate(Long id) {
+    public ServerDto loadOrCreate(Long id) {
         if(repository.existsById(id)) {
-            return repository.getOne(id);
+            return serverConverter.convertServer(repository.getOne(id));
         } else {
             return createServer(id);
         }
     }
 
-    @Override
-    public void addChannelToServer(AServer server, AChannel channel) {
+    public void addChannelToServer(ServerDto server, ChannelDto channel) {
         server.getChannels().add(channel);
         channel.setServer(server);
-        repository.save(server);
+        repository.save(serverConverter.fromDto(server));
     }
 
-    @Override
-    public AUserInAServer addUserToServer(AServer server, AUser user) {
+    public UserInServerDto addUserToServer(ServerDto server, UserDto user) {
         return this.addUserToServer(server.getId(), user.getId());
     }
 
-    @Override
-    public AUserInAServer addUserToServer(Long serverId, Long userId) {
+    public UserInServerDto addUserToServer(Long serverId, Long userId) {
         log.info("Adding user {} to server {}", userId, serverId);
-        AServer server = repository.getOne(serverId);
-        AUser user = userManagementService.loadUser(userId);
-        AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(server).userReference(user).build();
+        ServerDto server = ServerDto.builder().id(serverId).build();
+        UserDto user = userManagementService.loadUser(userId);
+        UserInServerDto aUserInAServer = UserInServerDto.builder().server(server).user(user).build();
         server.getUsers().add(aUserInAServer);
+        repository.save(serverConverter.fromDto(server));
         return aUserInAServer;
     }
 
-    @Override
-    public AChannel getPostTarget(Long serverId, String name) {
-        AServer server = this.loadOrCreate(serverId);
-        return getPostTarget(server, name);
+    public ChannelDto getPostTarget(Long serverId, String name) {
+        ServerDto serverDto = ServerDto.builder().id(serverId).build();
+        return getPostTarget(serverDto, name);
     }
 
-    @Override
-    public AChannel getPostTarget(Long serverId, PostTarget target) {
-        AServer server = this.loadOrCreate(serverId);
-        return getPostTarget(server, target);
+    public ChannelDto getPostTarget(Long serverId, PostTargetDto target) {
+        ServerDto serverDto = ServerDto.builder().id(serverId).build();
+        return getPostTarget(serverDto, target);
     }
 
-    @Override
-    public AChannel getPostTarget(AServer server, PostTarget target) {
+    public ChannelDto getPostTarget(ServerDto server, PostTargetDto target) {
         return target.getChannelReference();
     }
 
-    @Override
-    public AChannel getPostTarget(AServer server, String name) {
+    public ChannelDto getPostTarget(ServerDto server, String name) {
         PostTarget target = postTargetManagement.getPostTarget(name, server);
-        return getPostTarget(server, target);
+
+        return getPostTarget(server, postTargetConverter.fromPostTarget(target));
     }
 
-    @Override
-    public List<AServer> getAllServers() {
-        return repository.findAll();
+    public List<ServerDto> getAllServers() {
+        List<ServerDto> servers = new ArrayList<>();
+        List<AServer> all = repository.findAll();
+        all.forEach(aServer -> {
+            servers.add(serverConverter.convertServer(aServer));
+        });
+        return servers;
     }
 
 

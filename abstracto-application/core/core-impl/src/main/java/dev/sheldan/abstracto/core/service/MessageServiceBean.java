@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.AEmote;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -22,7 +22,7 @@ public class MessageServiceBean implements MessageService {
     private Bot bot;
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
+    private EmoteManagementServiceBean emoteManagementService;
 
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {

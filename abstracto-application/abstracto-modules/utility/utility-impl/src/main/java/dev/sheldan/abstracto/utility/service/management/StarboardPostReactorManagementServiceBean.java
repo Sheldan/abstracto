@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.AUser;
+import dev.sheldan.abstracto.core.models.converter.UserConverter;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class StarboardPostReactorManagementServiceBean implements StarboardPostReactorManagementService {
+public class StarboardPostReactorManagementServiceBean {
 
     @Autowired
     private StarboardPostReactionRepository repository;
@@ -21,38 +23,37 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
     @Autowired
     private StarStatsUserConverter converter;
 
-    @Override
-    public void addReactor(StarboardPost post, AUser user) {
+    @Autowired
+    private UserConverter userConverter;
+
+    public void addReactor(StarboardPost post, UserDto user) {
+        AUser aUser = userConverter.toUser(user);
         StarboardPostReaction reactor = StarboardPostReaction
                 .builder()
                 .starboardPost(post)
-                .reactor(user)
+                .reactor(aUser)
                 .build();
         repository.save(reactor);
     }
 
-    @Override
-    public void removeReactor(StarboardPost post, AUser user) {
-        repository.deleteByReactorAndStarboardPost(user, post);
+    public void removeReactor(StarboardPost post, UserDto user) {
+        AUser aUser = userConverter.toUser(user);
+        repository.deleteByReactorAndStarboardPost(aUser, post);
     }
 
-    @Override
     public void removeReactors(StarboardPost post) {
         repository.deleteByStarboardPost(post);
     }
 
-    @Override
     public Integer getStarCount(Long serverId) {
         return repository.getReactionCountByServer(serverId);
     }
 
-    @Override
     public List<StarStatsUser> retrieveTopStarGiver(Long serverId, Integer count) {
         List<StarStatsUserResult> starGivers = repository.findTopStarGiverInServer(serverId, count);
         return converter.convertToStarStatsUser(starGivers, serverId);
     }
 
-    @Override
     public List<StarStatsUser> retrieveTopStarReceiver(Long serverId, Integer count) {
         List<StarStatsUserResult> starReceivers = repository.retrieveTopStarReceiverInServer(serverId, count);
         return converter.convertToStarStatsUser(starReceivers, serverId);

@@ -1,9 +1,10 @@
 package dev.sheldan.abstracto.core.command.service;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
+import dev.sheldan.abstracto.core.models.*;
+import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementServiceBean;
+import dev.sheldan.abstracto.core.models.converter.CommandConverter;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.CommandDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +15,13 @@ import java.util.Optional;
 public class ChannelGroupCommandServiceBean implements ChannelGroupCommandService {
 
     @Autowired
-    private ChannelGroupCommandManagementService channelGroupCommandService;
+    private ChannelGroupCommandManagementServiceBean channelGroupCommandService;
+
+    @Autowired
+    private CommandConverter commandConverter;
 
     @Override
-    public Boolean isCommandEnabled(ACommand command, AChannel channel) {
+    public Boolean isCommandEnabled(CommandDto command, ChannelDto channel) {
         List<AChannelGroupCommand> allChannelGroupsOfCommand = channelGroupCommandService.getAllGroupCommandsForCommand(command);
         for (AChannelGroupCommand aChannelGroupCommand : allChannelGroupsOfCommand) {
             Optional<AChannel> channelInGroup = aChannelGroupCommand.getGroup()
@@ -28,9 +32,6 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
                 }
             }
         }
-        if(allChannelGroupsOfCommand.size() == 0) {
-            return true;
-        }
-        return false;
+        return allChannelGroupsOfCommand.size() == 0;
     }
 }

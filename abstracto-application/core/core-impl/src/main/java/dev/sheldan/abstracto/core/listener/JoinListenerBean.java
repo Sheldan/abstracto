@@ -22,6 +22,7 @@ public class JoinListenerBean extends ListenerAdapter {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+
     @Override
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {

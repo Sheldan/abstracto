@@ -1,22 +1,23 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.command.service.UserService;
+import dev.sheldan.abstracto.core.converter.UserInServerModelConverter;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
+import dev.sheldan.abstracto.core.models.template.ChannelModel;
+import dev.sheldan.abstracto.core.models.template.ServerModel;
+import dev.sheldan.abstracto.core.models.template.UserInServerModel;
 import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
-import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
+import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -41,13 +42,10 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     public static final String REMOVAL_EMOTE = "removeEmbed";
 
     @Autowired
-    private ChannelManagementService channelManagementService;
+    private ChannelService channelManagementService;
 
     @Autowired
-    private ServerManagementService serverManagementService;
-
-    @Autowired
-    private UserManagementService userManagementService;
+    private UserService userManagementService;
 
     @Autowired
     private Bot bot;
@@ -65,10 +63,16 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private MessageCache messageCache;
 
     @Autowired
-    private MessageEmbedPostManagementService messageEmbedPostManagementService;
+    private MessageEmbedPostManagementServiceBean messageEmbedPostManagementService;
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private UserInServerModelConverter userInServerModelConverter;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<MessageEmbedLink> getLinksInMessage(String message) {
@@ -95,7 +99,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     @Override
-    public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, AUserInAServer reason, Message embeddingMessage) {
+    public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, UserInServerDto reason, Message embeddingMessage) {
         linksToEmbed.forEach(messageEmbedLink -> {
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
                     .thenAccept(cachedMessage -> {
@@ -106,7 +110,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Override
     @Transactional
-    public void embedLink(CachedMessage cachedMessage, TextChannel target, AUserInAServer cause, Message embeddingMessage) {
+    public void embedLink(CachedMessage cachedMessage, TextChannel target, UserInServerDto cause, Message embeddingMessage) {
         MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(embeddingMessage, cachedMessage);
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToEndInTextChannel(embed, target);
@@ -124,24 +128,22 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     private MessageEmbeddedModel buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
-        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
-        AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
-        AUserInAServer user = userManagementService.loadUser(message.getMember());
-        Member author = bot.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
-        TextChannel sourceChannel = bot.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId()).get();
+        ChannelModel currentChannel = ChannelModel.builder().id(message.getTextChannel().getIdLong()).build();
+        Guild guild = message.getGuild();
+        ServerModel server = ServerModel.builder().id(guild.getIdLong()).build();
+        UserInServerModel embeddingUser = userInServerModelConverter.fromMember(message.getMember());
+        UserInServerModel embeddedUser = userInServerModelConverter.fromUser(userService.loadUser(embeddedMessage.getServerId(), embeddedMessage.getAuthorId()));
+        ServerModel sourceServer = ServerModel.builder().id(embeddedMessage.getServerId()).build();
         return MessageEmbeddedModel
                 .builder()
-                .channel(channel)
+                .channel(currentChannel)
                 .server(server)
-                .member(message.getMember())
-                .aUserInAServer(user)
-                .author(author)
-                .sourceChannel(sourceChannel)
-                .embeddingUser(message.getMember())
-                .user(user.getUserReference())
-                .messageChannel(message.getChannel())
-                .guild(message.getGuild())
                 .embeddedMessage(embeddedMessage)
+                .embeddedUser(embeddedUser.getUser())
+                .embeddedUserInServer(embeddedUser)
+                .userModel(embeddingUser.getUser())
+                .userInServer(embeddedUser)
+                .sourceServer(sourceServer)
                 .build();
     }
 }

@@ -4,5 +4,6 @@ import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import net.dv8tion.jda.api.entities.Member;
 
 public interface KickService {
-    void kickMember(Member member, String reason, KickLogModel kickLogModel);
+    void kickMember(Member member, String reason);
+    void sendKickLog(KickLogModel kickLogModel);
 }

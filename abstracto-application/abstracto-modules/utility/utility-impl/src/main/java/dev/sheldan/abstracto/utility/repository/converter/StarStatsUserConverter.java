@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.repository.converter;
 
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.command.service.UserService;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
@@ -15,7 +15,7 @@ import java.util.List;
 public class StarStatsUserConverter {
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserService userManagementService;
 
     @Autowired
     private Bot bot;
@@ -27,7 +27,7 @@ public class StarStatsUserConverter {
                     .builder()
                     .starCount(starStatsUserResult.getStarCount())
                     .member(bot.getMemberInServer(serverId, starStatsUserResult.getUserId()))
-                    .user(AUser.builder().id(starStatsUserResult.getUserId()).build())
+                    .user(UserDto.builder().id(starStatsUserResult.getUserId()).build())
                     .build();
             result.add(newUser);
         });

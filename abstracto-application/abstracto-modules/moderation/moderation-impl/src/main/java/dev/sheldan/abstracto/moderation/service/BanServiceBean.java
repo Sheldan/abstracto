@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.moderation.models.template.commands.BanIdLogModel;
+import dev.sheldan.abstracto.moderation.models.template.commands.BanLogModel;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -18,8 +20,9 @@ import java.util.Optional;
 public class BanServiceBean implements BanService {
 
     private static final String BAN_LOG_TEMPLATE = "ban_log";
-    private static final String BAN_ID_LOG_TEMPLATE = "banid_log";
     private static final String BAN_LOG_TARGET = "banLog";
+    private static final String BAN_ID_LOG_TEMPLATE = "banid_log";
+
     @Autowired
     private Bot bot;
 
@@ -30,17 +33,25 @@ public class BanServiceBean implements BanService {
     private PostTargetService postTargetService;
 
     @Override
-    public void banMember(Member member, String reason, ServerContext banLog) {
+    public void banMember(Member member, String reason) {
         this.banUser(member.getGuild().getIdLong(), member.getIdLong(), reason);
-        String warnLogMessage = templateService.renderTemplate(BAN_LOG_TEMPLATE, banLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, banLog.getServer().getId());
     }
 
     @Override
-    public void banMember(Long guildId, Long userId, String reason, ServerContext banIdLog) {
-        banUser(guildId, userId, reason);
-        String warnLogMessage = templateService.renderTemplate(BAN_ID_LOG_TEMPLATE, banIdLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, guildId);
+    public void banMember(Long guildId, Long userId, String reason) {
+        this.banUser(guildId, userId, reason);
+    }
+
+    @Override
+    public void sendBanLog(BanLogModel banLogModel) {
+        String warnLogMessage = templateService.renderTemplate(BAN_LOG_TEMPLATE, banLogModel);
+        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, banLogModel.getGuild().getIdLong());
+    }
+
+    @Override
+    public void sendBanIdLog(BanIdLogModel banIdLogModel) {
+        String warnLogMessage = templateService.renderTemplate(BAN_ID_LOG_TEMPLATE, banIdLogModel);
+        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, banIdLogModel.getGuild().getIdLong());
     }
 
     private void banUser(Long guildId, Long userId, String reason) {

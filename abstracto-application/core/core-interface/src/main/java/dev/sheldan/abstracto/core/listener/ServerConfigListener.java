@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.listener;
 
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
 
 public interface ServerConfigListener {
-    void updateServerConfig(AServer server);
+    void updateServerConfig(ServerDto server);
 }

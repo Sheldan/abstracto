@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
-import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
+import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementServiceBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import java.util.Optional;
 public class StarboardPostDeletedListener implements MessageDeletedListener {
 
     @Autowired
-    private StarboardPostManagementService starboardPostManagementService;
+    private StarboardPostManagementServiceBean starboardPostManagementService;
 
     @Override
     public void execute(CachedMessage messageBefore) {

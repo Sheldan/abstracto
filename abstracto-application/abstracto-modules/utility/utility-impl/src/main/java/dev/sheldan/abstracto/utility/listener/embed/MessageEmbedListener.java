@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.utility.listener.embed;
 
+import dev.sheldan.abstracto.core.command.service.UserService;
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.core.service.MessageCache;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.service.MessageEmbedService;
@@ -25,7 +25,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
     public static final String MESSAGE_EMBED_TEMPLATE = "message";
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserService userManagementService;
 
     @Autowired
     private MessageEmbedService messageEmbedService;
@@ -36,7 +36,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         for (MessageEmbedLink messageEmbedLink : links) {
             messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
-            AUserInAServer cause = userManagementService.loadUser(message.getMember());
+            UserInServerDto cause = userManagementService.loadUser(message.getMember());
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessage -> {
                 messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause, message);
             });

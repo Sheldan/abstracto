@@ -5,7 +5,8 @@ import lombok.Getter;
 
 import java.util.List;
 
-@Getter @Builder
+@Getter
+@Builder
 public class CommandConfiguration {
 
     private String name;

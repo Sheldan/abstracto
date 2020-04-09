@@ -6,7 +6,8 @@ import lombok.Getter;
 
 import java.util.List;
 
-@Getter @Builder
+@Getter
+@Builder
 public class CommandHierarchy {
     private List<PackedModule> rootModules;
 

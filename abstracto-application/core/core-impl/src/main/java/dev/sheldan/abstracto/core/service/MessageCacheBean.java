@@ -2,12 +2,12 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementServiceBean;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.cache.*;
+import dev.sheldan.abstracto.core.service.management.UserManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
@@ -33,10 +33,10 @@ public class MessageCacheBean implements MessageCache {
     private Bot bot;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserManagementServiceBean userManagementService;
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
+    private EmoteManagementServiceBean emoteManagementService;
 
     @Autowired
     private EmoteService emoteService;
@@ -153,9 +153,9 @@ public class MessageCacheBean implements MessageCache {
         ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
         CachedReaction.CachedReactionBuilder builder = CachedReaction.builder();
 
-        List<AUser> ausers = new ArrayList<>();
+        List<UserDto> ausers = new ArrayList<>();
         users.forEachAsync(user -> {
-            ausers.add(AUser.builder().id(user.getIdLong()).build());
+            ausers.add(UserDto.builder().id(user.getIdLong()).build());
             return false;
         }).thenAccept(o -> future.complete(builder.build()));
         builder.users(ausers);

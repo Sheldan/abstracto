@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.repository;
 
-import dev.sheldan.abstracto.core.models.database.AConfig;
+import dev.sheldan.abstracto.core.models.AConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ConfigRepository extends JpaRepository<AConfig, Long> {

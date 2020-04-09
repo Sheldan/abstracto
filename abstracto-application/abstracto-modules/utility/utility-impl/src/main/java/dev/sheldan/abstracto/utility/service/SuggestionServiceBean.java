@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.models.converter.UserInServerConverter;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
-import dev.sheldan.abstracto.utility.service.management.SuggestionManagementService;
+import dev.sheldan.abstracto.utility.service.management.SuggestionManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
@@ -35,7 +35,7 @@ public class SuggestionServiceBean implements SuggestionService {
     private static final String SUGGESTION_NO_EMOTE = "suggestionNo";
     public static final String SUGGESTIONS_TARGET = "suggestions";
     @Autowired
-    private SuggestionManagementService suggestionManagementService;
+    private SuggestionManagementServiceBean suggestionManagementService;
 
     @Autowired
     private PostTargetService postTargetService;
@@ -47,9 +47,6 @@ public class SuggestionServiceBean implements SuggestionService {
     private Bot botService;
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
     private EmoteService emoteService;
 
     @Autowired
@@ -57,6 +54,9 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Autowired
     private SuggestionServiceBean self;
+
+    @Autowired
+    private UserInServerConverter userInServerConverter;
 
     @Override
     public void createSuggestion(Member member, String text, SuggestionLog suggestionLog)  {
@@ -99,11 +99,11 @@ public class SuggestionServiceBean implements SuggestionService {
         suggestionLog.setOriginalChannelId(channelId);
         suggestionLog.setOriginalMessageId(originalMessageId);
         suggestionLog.setOriginalMessageUrl(MessageUtils.buildMessageUrl(serverId, channelId, originalMessageId));
-        AUserInAServer suggester = suggestion.getSuggester();
+        UserInServerDto suggester = userInServerConverter.fromAUserInAServer(suggestion.getSuggester());
         JDA instance = botService.getInstance();
         Guild guildById = instance.getGuildById(serverId);
         if(guildById != null) {
-            Member memberById = guildById.getMemberById(suggester.getUserReference().getId());
+            Member memberById = guildById.getMemberById(suggester.getUser().getId());
             if(memberById != null) {
                 suggestionLog.setSuggester(memberById);
                 suggestionLog.setSuggestion(suggestion);
@@ -140,6 +140,6 @@ public class SuggestionServiceBean implements SuggestionService {
     public void validateSetup(Long serverId) {
         emoteService.throwIfEmoteDoesNotExist(SUGGESTION_YES_EMOTE, serverId);
         emoteService.throwIfEmoteDoesNotExist(SUGGESTION_NO_EMOTE, serverId);
-        postTargetService.throwIfPostTargetIsNotDefined(SUGGESTION_YES_EMOTE, serverId);
+        postTargetService.throwIfPostTargetIsNotDefined(SUGGESTIONS_TARGET, serverId);
     }
 }

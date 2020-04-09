@@ -5,10 +5,11 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
+import dev.sheldan.abstracto.moderation.converter.WarnConverter;
+import dev.sheldan.abstracto.moderation.models.dto.WarnDto;
+import dev.sheldan.abstracto.moderation.models.template.commands.WarnLogModel;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +25,13 @@ import java.util.List;
 public class Warn extends AbstractConditionableCommand {
 
     @Autowired
-    private UserManagementService userManagementService;
-
-    @Autowired
     private WarnService warnService;
 
     @Autowired
     private TemplateService templateService;
+
+    @Autowired
+    private WarnConverter warnConverter;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
@@ -38,12 +39,11 @@ public class Warn extends AbstractConditionableCommand {
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderTemplateWithMap("warn_default_reason", null);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
-        WarnLog warnLogModel = (WarnLog) ContextConverter.fromCommandContext(commandContext, WarnLog.class);
-        warnLogModel.setWarnedUser(member);
+        WarnLogModel warnLogModel = (WarnLogModel) ContextConverter.fromCommandContext(commandContext, WarnLogModel.class);
         warnLogModel.setMessage(commandContext.getMessage());
-        warnLogModel.setReason(reason);
-        warnLogModel.setWarningUser(commandContext.getAuthor());
-        warnService.warnUser(member, commandContext.getAuthor(), reason, warnLogModel);
+        WarnDto warnDto = warnService.warnUser(member, commandContext.getAuthor(), reason);
+        warnLogModel.setWarning(warnConverter.convertFromWarnDto(warnDto));
+        warnService.sendWarnLog(warnLogModel);
         return CommandResult.fromSuccess();
     }
 

@@ -1,21 +1,20 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.models.database.AConfig;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.AConfig;
+import dev.sheldan.abstracto.core.models.AServer;
 import dev.sheldan.abstracto.core.repository.ConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConfigManagementServiceBean implements ConfigManagementService {
+public class ConfigManagementServiceBean {
 
     @Autowired
     private ConfigRepository configRepository;
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private ServerManagementServiceBean serverManagementService;
 
-    @Override
     public void setOrCreateStringValue(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
@@ -26,7 +25,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         }
     }
 
-    @Override
     public void setOrCreateDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
@@ -37,9 +35,8 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         }
     }
 
-    @Override
     public AConfig createConfig(Long serverId, String name, String value) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
+        AServer server = AServer.builder().id(serverId).build();
         AConfig config = AConfig
                 .builder()
                 .stringValue(value)
@@ -50,9 +47,8 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         return config;
     }
 
-    @Override
     public AConfig createConfig(Long serverId, String name, Double value) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
+        AServer server = AServer.builder().id(serverId).build();
         AConfig config = AConfig
                 .builder()
                 .doubleValue(value)
@@ -63,7 +59,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         return config;
     }
 
-    @Override
     public AConfig createIfNotExists(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
@@ -72,7 +67,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         return config;
     }
 
-    @Override
     public AConfig createIfNotExists(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
@@ -81,7 +75,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         return config;
     }
 
-    @Override
     public AConfig loadConfig(Long serverId, String name) {
         return configRepository.findAConfigByServerIdAndName(serverId, name);
     }

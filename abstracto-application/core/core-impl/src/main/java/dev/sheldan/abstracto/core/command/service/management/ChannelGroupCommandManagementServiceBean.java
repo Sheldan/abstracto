@@ -1,23 +1,27 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.models.AChannelGroup;
+import dev.sheldan.abstracto.core.models.AChannelGroupCommand;
+import dev.sheldan.abstracto.core.models.ACommand;
 import dev.sheldan.abstracto.core.command.repository.ChannelGroupCommandRepository;
-import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
+import dev.sheldan.abstracto.core.models.dto.ChannelGroupDto;
+import dev.sheldan.abstracto.core.models.dto.CommandDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+
 @Component
-public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCommandManagementService {
+public class ChannelGroupCommandManagementServiceBean  {
 
     @Autowired
     private ChannelGroupCommandRepository groupCommandRepository;
 
-    @Override
-    public void setCommandInGroupTo(ACommand command, AChannelGroup group, Boolean enabled) {
-        AChannelGroupCommand groupCommand = groupCommandRepository.findByCommandAndGroup(command, group);
+    public void setCommandInGroupTo(CommandDto command, ChannelGroupDto group, Boolean enabled) {
+        AChannelGroup aChannelGroup = AChannelGroup.builder().id(group.getId()).build();
+        ACommand aCommand = ACommand.builder().id(command.getId()).build();
+        AChannelGroupCommand groupCommand = groupCommandRepository.findByCommandAndGroup(aCommand, aChannelGroup);
         if(groupCommand == null) {
             groupCommand = createCommandInGroupTo(command, group);
         }
@@ -25,12 +29,11 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
         groupCommandRepository.save(groupCommand);
     }
 
-    @Override
-    public AChannelGroupCommand createCommandInGroupTo(ACommand command, AChannelGroup group) {
+    public AChannelGroupCommand createCommandInGroupTo(CommandDto command, ChannelGroupDto group) {
         AChannelGroupCommand channelGroupCommand = AChannelGroupCommand
                 .builder()
-                .command(command)
-                .group(group)
+                .command(ACommand.builder().id(command.getId()).build())
+                .group(AChannelGroup.builder().id(group.getId()).build())
                 .enabled(false)
                 .build();
 
@@ -38,14 +41,14 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
         return channelGroupCommand;
     }
 
-    @Override
-    public AChannelGroupCommand getChannelGroupCommand(ACommand command, AChannelGroup group) {
-        return groupCommandRepository.findByCommandAndGroup(command, group);
+    public AChannelGroupCommand getChannelGroupCommand(CommandDto command, ChannelGroupDto group) {
+        ACommand aCommand = ACommand.builder().id(command.getId()).build();
+        AChannelGroup aChannelGroup = AChannelGroup.builder().id(group.getId()).build();
+        return groupCommandRepository.findByCommandAndGroup(aCommand, aChannelGroup);
     }
 
-    @Override
-    public List<AChannelGroupCommand> getAllGroupCommandsForCommand(ACommand command) {
-        return groupCommandRepository.findByCommand(command);
+    public List<AChannelGroupCommand> getAllGroupCommandsForCommand(CommandDto command) {
+        return groupCommandRepository.findByCommand(ACommand.builder().id(command.getId()).build());
     }
 
 

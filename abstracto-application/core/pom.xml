@@ -13,6 +13,7 @@
     <artifactId>core</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>core-db-models</module>
         <module>core-interface</module>
         <module>core-impl</module>
     </modules>

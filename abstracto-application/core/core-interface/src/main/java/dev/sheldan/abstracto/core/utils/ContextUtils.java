@@ -1,14 +1,13 @@
 package dev.sheldan.abstracto.core.utils;
 
+import dev.sheldan.abstracto.core.command.service.UserService;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,10 +20,10 @@ import java.lang.reflect.Method;
 public class ContextUtils {
 
     @Autowired
-    private ChannelManagementService channelManagementService;
+    private ChannelService channelService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserService userService;
 
     @Autowired
     private Bot bot;
@@ -35,15 +34,15 @@ public class ContextUtils {
         try {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
-            AUserInAServer aUserInAServer = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
+            UserInServerDto aUserInAServer = userService.loadUser(message.getServerId(), message.getAuthorId());
             return builder
                     .member(guildChannelMember.getMember())
                     .guild(guildChannelMember.getGuild())
                     .messageChannel(guildChannelMember.getTextChannel())
-                    .channel(channelManagementService.loadChannel(message.getChannelId()))
-                    .server(aUserInAServer.getServerReference())
+                    .channel(channelService.loadChannel(message.getChannelId()))
+                    .server(aUserInAServer.getServer())
                     .aUserInAServer(aUserInAServer)
-                    .user(aUserInAServer.getUserReference())
+                    .user(aUserInAServer.getUser())
                     .build();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);

@@ -2,27 +2,28 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.PostTargetException;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.AServer;
+import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.repository.PostTargetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class PostTargetManagementBean implements PostTargetManagement {
+public class PostTargetManagementBean {
     @Autowired
     private PostTargetRepository postTargetRepository;
 
     @Autowired
-    private ChannelManagementService channelManagementService;
+    private ChannelManagementServiceBean channelManagementService;
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private ServerManagementServiceBean serverManagementService;
 
     @Autowired
     private DynamicKeyLoader dynamicKeyLoader;
@@ -30,18 +31,25 @@ public class PostTargetManagementBean implements PostTargetManagement {
     @Autowired
     private PostTargetService postTargetService;
 
-    @Override
-    public void createPostTarget(String name, AServer server, AChannel targetChannel) {
+    public void createPostTarget(String name, ServerDto server, ChannelDto targetChannel) {
         if(!postTargetService.validPostTarget(name)) {
             throw new PostTargetException("PostTarget not found. Possible values are: " + String.join(", ", dynamicKeyLoader.getPostTargetsAsList()));
         }
         log.info("Creating post target {} pointing towards {}", name, targetChannel);
-        postTargetRepository.save(PostTarget.builder().name(name).channelReference(targetChannel).serverReference(server).build());
+        AChannel aChannel = AChannel.builder().id(targetChannel.getId()).build();
+        AServer aServer = AServer.builder().id(server.getId()).build();
+        PostTarget build = PostTarget
+                .builder()
+                .name(name)
+                .channelReference(aChannel)
+                .serverReference(aServer)
+                .build();
+        postTargetRepository.save(build);
     }
 
-    @Override
-    public void createOrUpdate(String name, AServer server, AChannel targetChannel) {
-        PostTarget existing = postTargetRepository.findPostTargetByNameAndServerReference(name, server);
+    public void createOrUpdate(String name, ServerDto server, ChannelDto targetChannel) {
+        AServer aServer = AServer.builder().id(server.getId()).build();
+        PostTarget existing = postTargetRepository.findPostTargetByNameAndServerReference(name, aServer);
         if(existing == null){
             this.createPostTarget(name, server, targetChannel);
         } else {
@@ -49,34 +57,30 @@ public class PostTargetManagementBean implements PostTargetManagement {
         }
     }
 
-    @Override
-    public void createOrUpdate(String name, AServer server, Long channelId) {
-        AChannel dbChannel = channelManagementService.loadChannel(channelId);
-        createOrUpdate(name, server, dbChannel);
+    public void createOrUpdate(String name, ServerDto server, Long channelId) {
+        ChannelDto channelDto = ChannelDto.builder().id(channelId).build();
+        createOrUpdate(name, server, channelDto);
     }
 
-    @Override
     public void createOrUpdate(String name, Long serverId, Long channelId) {
-        AChannel dbChannel = channelManagementService.loadChannel(channelId);
-        AServer dbServer = serverManagementService.loadOrCreate(serverId);
-        createOrUpdate(name, dbServer, dbChannel);
+        ChannelDto channelDto = ChannelDto.builder().id(channelId).build();
+        ServerDto serverDto = ServerDto.builder().id(serverId).build();
+        createOrUpdate(name, serverDto, channelDto);
     }
 
-    @Override
-    @Cacheable("posttargets")
-    public PostTarget getPostTarget(String name, AServer server) {
-        return postTargetRepository.findPostTargetByNameAndServerReference(name, server);
+    public PostTarget getPostTarget(String name, ServerDto server) {
+        AServer aServer = AServer.builder().id(server.getId()).build();
+        return postTargetRepository.findPostTargetByNameAndServerReference(name, aServer);
     }
 
-    @Override
     public PostTarget getPostTarget(String name, Long serverId) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        return getPostTarget(name, server);
+        ServerDto serverDto = ServerDto.builder().id(serverId).build();
+        return getPostTarget(name, serverDto);
     }
 
-    @Override
-    public void updatePostTarget(PostTarget target, AServer server, AChannel newTargetChannel) {
-        postTargetRepository.getOne(target.getId()).setChannelReference(newTargetChannel);
+    public void updatePostTarget(PostTarget target, ServerDto server, ChannelDto newTargetChannel) {
+        AChannel aChannel = AChannel.builder().id(newTargetChannel.getId()).build();
+        postTargetRepository.getOne(target.getId()).setChannelReference(aChannel);
     }
 
 }

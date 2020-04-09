@@ -1,17 +1,17 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.command.service.UserService;
 import dev.sheldan.abstracto.core.exception.UserException;
-import dev.sheldan.abstracto.core.models.context.ServerContext;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
+import dev.sheldan.abstracto.moderation.converter.WarnConverter;
+import dev.sheldan.abstracto.moderation.models.dto.WarnDto;
+import dev.sheldan.abstracto.moderation.models.template.commands.WarnLogModel;
+import dev.sheldan.abstracto.moderation.service.management.WarnManagementServiceBean;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
-import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotificationModel;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -33,13 +33,10 @@ public class WarnServiceBean implements WarnService {
 
     public static final String WARN_LOG_TARGET = "warnLog";
     @Autowired
-    private UserManagementService userManagementService;
+    private UserService userService;
 
     @Autowired
-    private WarnManagementService warnManagementService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
+    private WarnManagementServiceBean warnManagementService;
 
     @Autowired
     private PostTargetService postTargetService;
@@ -53,13 +50,19 @@ public class WarnServiceBean implements WarnService {
     private static final String WARN_LOG_TEMPLATE = "warn_log";
     private static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
 
+    @Autowired
+    private WarnConverter warnConverter;
+
+
     @Override
-    public void warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, WarnLog warnLog)  {
-        AUser warningAUser = warningAUserInAServer.getUserReference();
-        AUser warnedAUser = warnedAUserInAServer.getUserReference();
-        AServer serverOfWarning = warnedAUserInAServer.getServerReference();
+    public WarnDto warnUser(UserInServerDto warnedAUserInAServer, UserInServerDto warningAUserInAServer, String reason)  {
+        UserDto warningAUser = warningAUserInAServer.getUser();
+        UserDto warnedAUser = warnedAUserInAServer.getUser();
+        ServerDto serverOfWarning = warnedAUserInAServer.getServer();
         log.info("User {} is warning {} in server {} because of {}", warningAUser.getId(), warnedAUser.getId(), serverOfWarning.getId(), reason);
-        Warning warning = warnManagementService.createWarning(warnedAUserInAServer, warningAUserInAServer, reason);
+        AUserInAServer warnedUserInAServerDb = AUserInAServer.builder().userInServerId(warnedAUserInAServer.getUserInServerId()).build();
+        AUserInAServer warningUserInAServerDb = AUserInAServer.builder().userInServerId(warnedAUserInAServer.getUserInServerId()).build();
+        WarnDto warning = warnManagementService.createWarning(warnedUserInAServerDb, warningUserInAServerDb, reason);
         JDA instance = bot.getInstance();
         User userBeingWarned = instance.getUserById(warnedAUser.getId());
         Optional<Guild> guildById = bot.getGuildById(serverOfWarning.getId());
@@ -67,11 +70,9 @@ public class WarnServiceBean implements WarnService {
         if(guildById.isPresent()) {
             guildName = guildById.get().getName();
         }
-        warnLog.setWarning(warning);
-        this.sendWarnLog(warnLog);
-        WarnNotification warnNotification = WarnNotification.builder().warning(warning).serverName(guildName).build();
+        WarnNotificationModel warnNotificationModel = WarnNotificationModel.builder().warning(warnConverter.convertFromWarnDto(warning)).serverName(guildName).build();
         if(userBeingWarned != null) {
-            String warnLogMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification);
+            String warnLogMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotificationModel);
             CompletableFuture<Message> messageFuture = new CompletableFuture<>();
 
             // TODO the person executing this, is unaware that the message failed
@@ -88,16 +89,18 @@ public class WarnServiceBean implements WarnService {
             log.warn("Unable to find user {} in guild {} to warn.", warnedAUser.getId(), serverOfWarning.getId());
             throw new UserException(String.format("Unable to find user %s.", warnedAUser.getId()));
         }
+        return warning;
     }
 
     @Override
-    public void warnUser(Member warnedMember, Member warningMember, String reason, WarnLog warnLog)  {
-        AUserInAServer warnedAUser = userManagementService.loadUser(warnedMember);
-        AUserInAServer warningAUser = userManagementService.loadUser(warningMember);
-        this.warnUser(warnedAUser, warningAUser, reason, warnLog);
+    public WarnDto warnUser(Member warnedMember, Member warningMember, String reason)  {
+        UserInServerDto warnedAUser = userService.loadUser(warnedMember.getGuild().getIdLong(), warnedMember.getIdLong());
+        UserInServerDto warningAUser = userService.loadUser(warningMember.getGuild().getIdLong(), warningMember.getIdLong());
+        return this.warnUser(warnedAUser, warningAUser, reason);
     }
 
-    private void sendWarnLog(ServerContext warnLogModel)  {
+    @Override
+    public void sendWarnLog(WarnLogModel warnLogModel)  {
         String warnLogMessage = templateService.renderTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, warnLogModel.getServer().getId());
         MessageToSend message = templateService.renderEmbedTemplate("warn_log", warnLogModel);

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.repository;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
+import dev.sheldan.abstracto.core.models.AChannelGroup;
+import dev.sheldan.abstracto.core.models.AChannelGroupCommand;
+import dev.sheldan.abstracto.core.models.ACommand;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

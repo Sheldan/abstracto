@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.models;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AServerAChannelMessage {
-    private AServer server;
-    private AChannel channel;
+    private ServerDto server;
+    private ChannelDto channel;
     private Long messageId;
 }

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -10,8 +10,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface ChannelService {
-    void sendTextInAChannel(String text, AChannel channel);
-    List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, AChannel channel);
+    void sendTextInAChannel(String text, ChannelDto channel);
+    List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, ChannelDto channel);
     List<CompletableFuture<Message>> sendMessageToEndInTextChannel(MessageToSend messageToSend, TextChannel textChannel);
     Optional<TextChannel> getTextChannelInGuild(Long serverId, Long channelId);
+    ChannelDto loadChannel(Long channelId);
 }

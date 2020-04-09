@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.core.command.service;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.models.dto.CommandDto;
 
 public interface CommandService {
-    ACommand createCommand(String name, String moduleName);
+    CommandDto createCommand(String name, String moduleName);
     Boolean doesCommandExist(String name);
+    CommandDto findCommandByName(String name);
 }

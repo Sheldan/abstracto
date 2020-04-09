@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.converter.UserInServerModelConverter;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
@@ -26,6 +27,9 @@ public class Kick extends AbstractConditionableCommand {
     @Autowired
     private KickServiceBean kickService;
 
+    @Autowired
+    private UserInServerModelConverter userConverter;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
 
@@ -35,10 +39,11 @@ public class Kick extends AbstractConditionableCommand {
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
         KickLogModel kickLogModel = (KickLogModel) ContextConverter.fromCommandContext(commandContext, KickLogModel.class);
-        kickLogModel.setKickedUser(member);
-        kickLogModel.setKickingUser(commandContext.getAuthor());
+        kickLogModel.setKickedUser(userConverter.fromMember(member));
+        kickLogModel.setKickingUser(userConverter.fromUser(commandContext.getUserInitiatedContext().getAUserInAServer()));
         kickLogModel.setReason(reason);
-        kickService.kickMember(member, reason, kickLogModel);
+        kickService.kickMember(member, reason);
+        kickService.sendKickLog(kickLogModel);
         return CommandResult.fromSuccess();
     }
 

@@ -1,15 +1,17 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.models.converter.UserInServerConverter;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
-import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageCache;
+import dev.sheldan.abstracto.core.service.management.UserManagementServiceBean;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -36,7 +38,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     private EmoteService emoteService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserManagementServiceBean userManagementService;
 
     @Autowired
     private List<ReactedAddedListener> addedListenerList;
@@ -52,6 +54,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Autowired
     private Bot bot;
+
+    @Autowired
+    private UserInServerConverter userInServerConverter;
 
     @Override
     @Transactional
@@ -70,7 +75,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         });
     }
 
-    private void addReactionIfNotThere(CachedMessage message, CachedReaction reaction, AUser userReacting) {
+    private void addReactionIfNotThere(CachedMessage message, CachedReaction reaction, UserDto userReacting) {
         Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 -> {
             return EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote());
         }).findAny();
@@ -78,14 +83,14 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             message.getReactions().add(reaction);
         } else {
             CachedReaction cachedReaction = existingReaction.get();
-            Optional<AUser> any = cachedReaction.getUsers().stream().filter(user -> user.getId().equals(userReacting.getId())).findAny();
+            Optional<UserDto> any = cachedReaction.getUsers().stream().filter(user -> user.getId().equals(userReacting.getId())).findAny();
             if(!any.isPresent()){
                 cachedReaction.getUsers().add(userReacting);
             }
         }
     }
 
-    private void removeReactionIfThere(CachedMessage message, CachedReaction reaction, AUser userReacting) {
+    private void removeReactionIfThere(CachedMessage message, CachedReaction reaction, UserDto userReacting) {
         Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 -> {
             return EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote());
         }).findAny();
@@ -98,8 +103,8 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Transactional
     public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
-        AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
-        addReactionIfNotThere(cachedMessage, reaction, userInAServer.getUserReference());
+        UserInServerDto userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
+        addReactionIfNotThere(cachedMessage, reaction, userInAServer.getUser());
         addedListenerList.forEach(reactedAddedListener -> {
             if(!featureFlagService.isFeatureEnabled(reactedAddedListener.getFeature(), event.getGuild().getIdLong())) {
                 return;
@@ -132,8 +137,8 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Transactional
     public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
-        AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
-        removeReactionIfThere(cachedMessage, reaction, userInAServer.getUserReference());
+        UserInServerDto userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
+        removeReactionIfThere(cachedMessage, reaction, userInAServer.getUser());
         reactionRemovedListener.forEach(reactedAddedListener -> {
             if(!featureFlagService.isFeatureEnabled(reactedAddedListener.getFeature(), event.getGuild().getIdLong())) {
                 return;

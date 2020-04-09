@@ -1,12 +1,14 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.models.converter.ChannelConverter;
+import dev.sheldan.abstracto.core.models.converter.ServerConverter;
+import dev.sheldan.abstracto.core.models.converter.UserConverter;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
@@ -14,7 +16,7 @@ import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ExecutedReminderModel;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
-import dev.sheldan.abstracto.utility.service.management.ReminderManagementService;
+import dev.sheldan.abstracto.utility.service.management.ReminderManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -38,10 +40,10 @@ public class RemindServiceBean implements ReminderService {
 
     public static final String REMINDER_EMBED_KEY = "remind_response";
     @Autowired
-    private ReminderManagementService reminderManagementService;
+    private ReminderManagementServiceBean reminderManagementService;
 
     @Autowired
-    private ChannelManagementService channelManagementService;
+    private ChannelService channelManagementService;
 
     @Autowired
     private TemplateService templateService;
@@ -58,14 +60,23 @@ public class RemindServiceBean implements ReminderService {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private ServerConverter serverConverter;
+
+    @Autowired
+    private ChannelConverter channelConverter;
+
+    @Autowired
+    private UserConverter userConverter;
+
     @Override
-    public void createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, ReminderModel reminderModel) {
-        AChannel channel = channelManagementService.loadChannel(reminderModel.getChannel().getId());
+    public void createReminderInForUser(UserInServerDto user, String remindText, Duration remindIn, ReminderModel reminderModel) {
+        ChannelDto channel = channelManagementService.loadChannel(reminderModel.getChannel().getId());
         AServerAChannelAUser aServerAChannelAUser = AServerAChannelAUser
                 .builder()
-                .user(user.getUserReference())
+                .user(user.getUser())
                 .aUserInAServer(user)
-                .guild(user.getServerReference())
+                .guild(user.getServer())
                 .channel(channel)
                 .build();
         Instant remindAt = Instant.now().plusNanos(remindIn.toNanos());
@@ -90,14 +101,14 @@ public class RemindServiceBean implements ReminderService {
     @Transactional
     public void executeReminder(Long reminderId)  {
         Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
-        AServer server = reminderToRemindFor.getServer();
-        AChannel channel = reminderToRemindFor.getChannel();
+        ServerDto server = serverConverter.convertServer(reminderToRemindFor.getServer());
+        ChannelDto channel = channelConverter.fromChannel(reminderToRemindFor.getChannel());
         Optional<Guild> guildToAnswerIn = bot.getGuildById(server.getId());
         if(guildToAnswerIn.isPresent()) {
             Optional<TextChannel> channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
-                AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();
+                UserDto userReference = userConverter.fromAUser(reminderToRemindFor.getRemindedUser().getUserReference());
                 Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
                 ExecutedReminderModel build = ExecutedReminderModel
                         .builder()

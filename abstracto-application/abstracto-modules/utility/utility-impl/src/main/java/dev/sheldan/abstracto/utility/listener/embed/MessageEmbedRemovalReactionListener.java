@@ -2,15 +2,15 @@ package dev.sheldan.abstracto.utility.listener.embed;
 
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AEmote;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.EmoteDto;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
-import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
+import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -26,31 +26,31 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
     public static final String REMOVAL_EMOTE = "removeEmbed";
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
+    private EmoteService emoteManagementService;
 
     @Autowired
     private Bot bot;
 
     @Autowired
-    private MessageEmbedPostManagementService messageEmbedPostManagementService;
+    private MessageEmbedPostManagementServiceBean messageEmbedPostManagementService;
 
     @Autowired
     private MessageService messageService;
 
     @Override
-    public void executeReactionAdded(CachedMessage message, MessageReaction reaction, AUserInAServer userAdding) {
+    public void executeReactionAdded(CachedMessage message, MessageReaction reaction, UserInServerDto userAdding) {
         Long guildId = message.getServerId();
-        Optional<AEmote> aEmote = emoteManagementService.loadEmoteByName(REMOVAL_EMOTE, guildId);
+        Optional<EmoteDto> aEmote = emoteManagementService.getEmoteByName(REMOVAL_EMOTE, guildId);
         if(aEmote.isPresent()) {
-            AEmote emote = aEmote.get();
+            EmoteDto emote = aEmote.get();
             MessageReaction.ReactionEmote reactionEmote = reaction.getReactionEmote();
             Optional<Emote> emoteInGuild = bot.getEmote(guildId, emote);
             if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, emoteInGuild.orElse(null))) {
                 Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
                 if(embeddedMessageOptional.isPresent()) {
                     EmbeddedMessage embeddedMessage = embeddedMessageOptional.get();
-                    if(embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(userAdding.getUserReference().getId())
-                        || embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(userAdding.getUserReference().getId())
+                    if(embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(userAdding.getUser().getId())
+                        || embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(userAdding.getUser().getId())
                     ) {
                         messageService.deleteMessageInChannelInServer(message.getServerId(), message.getChannelId(), message.getMessageId()).thenAccept(aVoid -> {
                             messageEmbedPostManagementService.deleteEmbeddedMessageTransactional(embeddedMessage);

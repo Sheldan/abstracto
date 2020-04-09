@@ -1,17 +1,16 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.database.AModule;
+import dev.sheldan.abstracto.core.models.AModule;
 import dev.sheldan.abstracto.core.command.repository.ModuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ModuleManagementServiceBean implements ModuleManagementService {
+public class ModuleManagementServiceBean {
 
     @Autowired
     private ModuleRepository moduleRepository;
 
-    @Override
     public AModule createModule(String name) {
         AModule module = AModule.
                 builder()
@@ -21,7 +20,6 @@ public class ModuleManagementServiceBean implements ModuleManagementService {
         return module;
     }
 
-    @Override
     public AModule getOrCreate(String name) {
         AModule module = findModuleByName(name);
         if(module == null) {
@@ -30,12 +28,10 @@ public class ModuleManagementServiceBean implements ModuleManagementService {
         return module;
     }
 
-    @Override
     public AModule findModuleByName(String name) {
         return moduleRepository.findByName(name);
     }
 
-    @Override
     public Boolean doesModuleExist(String name) {
         return findModuleByName(name) != null;
     }

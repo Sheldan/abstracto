@@ -1,11 +1,13 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.command.service.UserService;
+import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.AUserInAServer;
+import dev.sheldan.abstracto.core.models.converter.ChannelConverter;
+import dev.sheldan.abstracto.core.models.converter.UserInServerConverter;
+import dev.sheldan.abstracto.core.models.dto.*;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.Bot;
 import dev.sheldan.abstracto.core.service.ConfigService;
@@ -13,13 +15,14 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.StarboardConfig;
+import dev.sheldan.abstracto.utility.converter.StarPostConverter;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsPost;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarboardPostModel;
-import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
-import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
+import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementServiceBean;
+import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,34 +52,40 @@ public class StarboardServiceBean implements StarboardService {
     private TemplateService templateService;
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
     private ConfigService configService;
 
     @Autowired
-    private StarboardPostManagementService starboardPostManagementService;
+    private StarboardPostManagementServiceBean starboardPostManagementService;
 
     @Autowired
     private StarboardConfig starboardConfig;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserService userManagementService;
 
     @Autowired
-    private StarboardPostReactorManagementService starboardPostReactorManagementService;
+    private StarboardPostReactorManagementServiceBean starboardPostReactorManagementService;
 
     @Autowired
-    private PostTargetManagement postTargetManagement;
+    private PostTargetService postTargetManagement;
 
     @Autowired
     private EmoteService emoteService;
 
+    @Autowired
+    private UserInServerConverter userInServerConverter;
+
+    @Autowired
+    private ChannelConverter channelConverter;
+
+    @Autowired
+    private StarPostConverter starPostConverter;
+
     @Override
-    public void createStarboardPost(CachedMessage message, List<AUser> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser)  {
+    public void createStarboardPost(CachedMessage message, List<UserDto> userExceptAuthor, UserInServerDto userReacting, UserInServerDto starredUser)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
-        PostTarget starboard = postTargetManagement.getPostTarget(STARBOARD_POSTTARGET, message.getServerId());
+        PostTargetDto starboard = postTargetManagement.getPostTarget(STARBOARD_POSTTARGET, message.getServerId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, STARBOARD_POSTTARGET, message.getServerId());
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             try {
@@ -85,7 +94,7 @@ public class StarboardServiceBean implements StarboardService {
                         .builder()
                         .messageId(message1.getIdLong())
                         .channel(starboard.getChannelReference())
-                        .server(userReacting.getServerReference())
+                        .server(userReacting.getServer())
                         .build();
                 StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, starredUser, userReacting, aServerAChannelMessage);
                 // TODO maybe in bulk, but numbers should be small enough
@@ -103,13 +112,13 @@ public class StarboardServiceBean implements StarboardService {
         Member member = bot.getMemberInServer(message.getServerId(), message.getAuthorId());
         Optional<TextChannel> channel = bot.getTextChannelFromServer(message.getServerId(), message.getChannelId());
         Optional<Guild> guild = bot.getGuildById(message.getServerId());
-        AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
-        AUser user = AUser.builder().id(message.getAuthorId()).build();
-        AServer server = AServer.builder().id(message.getServerId()).build();
-        Optional<AEmote> appropriateEmoteOptional = getAppropriateEmote(message.getServerId(), starCount);
+        ChannelDto aChannel = ChannelDto.builder().id(message.getChannelId()).build();
+        UserDto user = UserDto.builder().id(message.getAuthorId()).build();
+        ServerDto server = ServerDto.builder().id(message.getServerId()).build();
+        Optional<EmoteDto> appropriateEmoteOptional = getAppropriateEmote(message.getServerId(), starCount);
         String emoteText;
         if(appropriateEmoteOptional.isPresent()) {
-            AEmote emote = appropriateEmoteOptional.get();
+            EmoteDto emote = appropriateEmoteOptional.get();
             emoteText = emoteService.getEmoteAsMention(emote, message.getServerId(), "⭐");
         } else  {
             log.warn("No emote defined to be used for starboard post. Falling back to default.");
@@ -130,7 +139,7 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     @Override
-    public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUser> userExceptAuthor)  {
+    public void updateStarboardPost(StarboardPost post, CachedMessage message, List<UserDto> userExceptAuthor)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate("starboard_post", starboardPostModel);
         List<CompletableFuture<Message>> futures = new ArrayList<>();
@@ -155,14 +164,14 @@ public class StarboardServiceBean implements StarboardService {
         int count = 3;
         List<StarboardPost> starboardPosts = starboardPostManagementService.retrieveTopPosts(serverId, count);
         List<StarStatsUser> topStarGivers = starboardPostReactorManagementService.retrieveTopStarGiver(serverId, count);
-        List<StarStatsPost> starStatsPosts = starboardPosts.stream().map(StarStatsPost::fromStarboardPost).collect(Collectors.toList());
+        List<StarStatsPost> starStatsPosts = starboardPosts.stream().map(starboardPost -> starPostConverter.fromStarboardPost(starboardPost)).collect(Collectors.toList());
         List<StarStatsUser> topStarReceiver = starboardPostReactorManagementService.retrieveTopStarReceiver(serverId, count);
         Integer postCount = starboardPostManagementService.getPostCount(serverId);
         Integer reactionCount = starboardPostReactorManagementService.getStarCount(serverId);
         List<String> emotes = new ArrayList<>();
         for (int i = 1; i < count + 1; i++) {
-            Optional<AEmote> starboardRankingEmote = getStarboardRankingEmote(serverId, i);
-            AEmote emote = starboardRankingEmote.orElse(null);
+            Optional<EmoteDto> starboardRankingEmote = getStarboardRankingEmote(serverId, i);
+            EmoteDto emote = starboardRankingEmote.orElse(null);
             String defaultEmoji = starboardConfig.getBadge().get(i - 1);
             emotes.add(emoteService.getEmoteAsMention(emote, serverId, defaultEmoji));
         }
@@ -178,17 +187,17 @@ public class StarboardServiceBean implements StarboardService {
                 .build();
     }
 
-    private Optional<AEmote> getStarboardRankingEmote(Long serverId, Integer position) {
-        return emoteManagementService.loadEmoteByName("starboardBadge" + position, serverId);
+    private Optional<EmoteDto> getStarboardRankingEmote(Long serverId, Integer position) {
+        return emoteService.getEmoteByName("starboardBadge" + position, serverId);
     }
 
-    private Optional<AEmote> getAppropriateEmote(Long serverId, Integer starCount) {
+    private Optional<EmoteDto> getAppropriateEmote(Long serverId, Integer starCount) {
         for(int i = starboardConfig.getLvl().size(); i > 0; i--) {
             Double starMinimum = configService.getDoubleValue("starLvl" + i, serverId);
             if(starCount >= starMinimum) {
-                return emoteManagementService.loadEmoteByName("star" + i, serverId);
+                return emoteService.getEmoteByName("star" + i, serverId);
             }
         }
-        return emoteManagementService.loadEmoteByName("star0", serverId);
+        return emoteService.getEmoteByName("star0", serverId);
     }
 }

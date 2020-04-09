@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.Utility;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
@@ -29,7 +29,7 @@ public class Remind extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Duration remindTime = (Duration) parameters.get(0);
         String text = (String) parameters.get(1);
-        AUserInAServer aUserInAServer = commandContext.getUserInitiatedContext().getAUserInAServer();
+        UserInServerDto aUserInAServer = commandContext.getUserInitiatedContext().getAUserInAServer();
         ReminderModel remindModel = (ReminderModel) ContextConverter.fromCommandContext(commandContext, ReminderModel.class);
         remindModel.setMessage(commandContext.getMessage());
         remindModel.setRemindText(text);

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.models.database;
 
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.AUser;
 import lombok.*;
 
 import javax.persistence.*;

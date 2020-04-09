@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.models.dto.EmoteDto;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
-import dev.sheldan.abstracto.core.models.database.AEmote;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -82,7 +82,7 @@ public class BotServiceBean implements Bot {
     }
 
     @Override
-    public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
+    public Optional<Emote> getEmote(Long serverId, EmoteDto emote)  {
         if(!emote.getCustom()) {
             return Optional.empty();
         }

@@ -13,7 +13,7 @@ import dev.sheldan.abstracto.utility.Utility;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.RemindersModel;
-import dev.sheldan.abstracto.utility.service.management.ReminderManagementService;
+import dev.sheldan.abstracto.utility.service.management.ReminderManagementServiceBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ import java.util.List;
 public class Reminders extends AbstractConditionableCommand {
 
     @Autowired
-    private ReminderManagementService reminderManagementService;
+    private ReminderManagementServiceBean reminderManagementService;
 
     @Autowired
     private ChannelService channelService;

@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.core.models;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,8 +12,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AServerAChannelAUser {
-    private AServer guild;
-    private AChannel channel;
-    private AUserInAServer aUserInAServer;
-    private AUser user;
+    private ServerDto guild;
+    private ChannelDto channel;
+    private UserInServerDto aUserInAServer;
+    private UserDto user;
 }

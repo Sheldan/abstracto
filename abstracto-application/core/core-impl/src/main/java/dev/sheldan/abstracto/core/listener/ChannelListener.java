@@ -1,11 +1,14 @@
 package dev.sheldan.abstracto.core.listener;
 
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.models.database.AChannelType;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.AChannel;
+import dev.sheldan.abstracto.core.models.AChannelType;
+import dev.sheldan.abstracto.core.models.AServer;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
+import dev.sheldan.abstracto.core.models.utils.ChannelUtils;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementServiceBean;
+import dev.sheldan.abstracto.core.service.management.ServerManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
@@ -22,13 +25,10 @@ import javax.annotation.Nonnull;
 public class ChannelListener extends ListenerAdapter {
 
     @Autowired
-    private ServerRepository serverRepository;
+    private ChannelManagementServiceBean channelManagementService;
 
     @Autowired
-    private ChannelManagementService channelManagementService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
+    private ServerManagementServiceBean serverManagementService;
 
     @Override
     @Transactional
@@ -41,10 +41,10 @@ public class ChannelListener extends ListenerAdapter {
     @Transactional
     public void onTextChannelCreate(@Nonnull TextChannelCreateEvent event) {
         log.info("Handling channel created event. Channel {}, Server {}", event.getChannel().getIdLong(), event.getGuild().getIdLong());
-        AServer serverObject = serverRepository.getOne(event.getGuild().getIdLong());
         TextChannel createdChannel = event.getChannel();
-        AChannelType type = AChannel.getAChannelType(createdChannel.getType());
-        AChannel newChannel = channelManagementService.createChannel(createdChannel.getIdLong(), type);
-        serverManagementService.addChannelToServer(serverObject, newChannel);
+        AChannelType type = ChannelUtils.getAChannelType(createdChannel.getType());
+        ChannelDto newChannel = channelManagementService.createChannel(createdChannel.getIdLong(), type);
+        ServerDto serverDto = ServerDto.builder().id(event.getGuild().getIdLong()).build();
+        serverManagementService.addChannelToServer(serverDto, newChannel);
     }
 }

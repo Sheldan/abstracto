@@ -1,11 +1,13 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.DynamicKeyLoader;
+import dev.sheldan.abstracto.core.models.converter.PostTargetConverter;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.PostTarget;
+import dev.sheldan.abstracto.core.models.dto.PostTargetDto;
+import dev.sheldan.abstracto.core.service.management.PostTargetManagementBean;
+import dev.sheldan.abstracto.core.service.management.ServerManagementServiceBean;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,10 +28,10 @@ import java.util.concurrent.CompletableFuture;
 public class PostTargetServiceBean implements PostTargetService {
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private ServerManagementServiceBean serverManagementService;
 
     @Autowired
-    private PostTargetManagement postTargetManagement;
+    private PostTargetManagementBean postTargetManagement;
 
     @Autowired
     private Bot botService;
@@ -40,19 +42,22 @@ public class PostTargetServiceBean implements PostTargetService {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private PostTargetConverter postTargetConverter;
+
     @Override
-    public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
+    public CompletableFuture<Message> sendTextInPostTarget(String text, PostTargetDto target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         return textChannelForPostTarget.sendMessage(text).submit();
     }
 
     @Override
-    public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTarget target)  {
+    public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTargetDto target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         return textChannelForPostTarget.sendMessage(embed).submit();
     }
 
-    private TextChannel getTextChannelForPostTarget(PostTarget target)  {
+    private TextChannel getTextChannelForPostTarget(PostTargetDto target)  {
         Guild guild = botService.getInstance().getGuildById(target.getServerReference().getId());
         if(guild != null) {
             TextChannel textChannelById = guild.getTextChannelById(target.getChannelReference().getId());
@@ -69,10 +74,11 @@ public class PostTargetServiceBean implements PostTargetService {
         }
     }
 
-    private PostTarget getPostTarget(String postTargetName, Long serverId) {
+    @Override
+    public PostTargetDto getPostTarget(String postTargetName, Long serverId) {
         PostTarget postTarget = postTargetManagement.getPostTarget(postTargetName, serverId);
         if(postTarget != null) {
-            return postTarget;
+            return postTargetConverter.fromPostTarget(postTarget);
         } else {
             log.error("PostTarget {} in server {} was not found!", postTargetName, serverId);
             throw new ChannelException(String.format("Incorrect post target configuration: Post target %s was not found.", postTargetName));
@@ -81,30 +87,30 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message>  sendTextInPostTarget(String text, String postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTargetDto postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendTextInPostTarget(text, postTarget);
     }
 
     @Override
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTargetDto postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(embed, postTarget);
     }
 
     @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTargetDto postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(message, postTarget);
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target)  {
+    public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTargetDto target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         return channelService.sendMessageToEndInTextChannel(message, textChannelForPostTarget);
     }
 
     @Override
-    public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target)  {
+    public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetDto target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         String messageText = message.getMessage();
         if(StringUtils.isBlank(messageText)) {
@@ -115,7 +121,7 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, List<CompletableFuture<Message>> future)  {
+    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetDto target, List<CompletableFuture<Message>> future)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         if(StringUtils.isBlank(messageToSend.getMessage().trim())) {
             textChannelForPostTarget
@@ -145,7 +151,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTargetName, Long serverId, List<CompletableFuture<Message>> future)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTargetDto postTarget = this.getPostTarget(postTargetName, serverId);
         this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget, future);
     }
 
@@ -159,7 +165,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTargetDto postTarget = this.getPostTarget(postTargetName, serverId);
         return editEmbedInPostTarget(messageId, message, postTarget);
     }
 

@@ -13,15 +13,19 @@ import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
+import dev.sheldan.abstracto.core.command.service.management.CommandManagementServiceBean;
+import dev.sheldan.abstracto.core.models.converter.ChannelConverter;
+import dev.sheldan.abstracto.core.models.converter.ServerConverter;
+import dev.sheldan.abstracto.core.models.converter.UserInServerConverter;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.*;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.dto.ChannelDto;
+import dev.sheldan.abstracto.core.models.dto.ServerDto;
+import dev.sheldan.abstracto.core.models.dto.UserInServerDto;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementServiceBean;
+import dev.sheldan.abstracto.core.service.management.ServerManagementServiceBean;
+import dev.sheldan.abstracto.core.service.management.UserManagementServiceBean;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
@@ -31,6 +35,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -52,13 +57,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private List<PostCommandExecution> executions;
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private ServerManagementServiceBean serverManagementService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserManagementServiceBean userManagementService;
 
     @Autowired
-    private ChannelManagementService channelManagementService;
+    private ChannelManagementServiceBean channelManagementService;
 
     @Autowired
     @Lazy
@@ -68,7 +73,16 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private ChannelGroupCommandService channelGroupCommandService;
 
     @Autowired
-    private CommandManagementService commandManagementService;
+    private CommandManagementServiceBean commandManagementService;
+
+    @Autowired
+    private ChannelConverter channelConverter;
+
+    @Autowired
+    private ServerConverter serverConverter;
+
+    @Autowired
+    private UserInServerConverter userConverter;
 
     @Override
     @Async
@@ -134,16 +148,16 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
-        AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
-        AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
-        AUserInAServer user = userManagementService.loadUser(event.getMember());
+        ChannelDto aChannel = channelManagementService.loadChannel(event.getChannel().getIdLong());
+        ServerDto server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
+        UserInServerDto user = userManagementService.loadUser(event.getMember());
         return UserInitiatedServerContext
                 .builder()
-                .channel(channel)
+                .channel(aChannel)
                 .server(server)
                 .member(event.getMember())
                 .aUserInAServer(user)
-                .user(user.getUserReference())
+                .user(user.getUser())
                 .messageChannel(event.getTextChannel())
                 .guild(event.getGuild())
                 .build();

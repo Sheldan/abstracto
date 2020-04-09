@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.models.cache;
 
-import dev.sheldan.abstracto.core.models.database.AEmote;
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.dto.EmoteDto;
+import dev.sheldan.abstracto.core.models.dto.UserDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +12,6 @@ import java.util.List;
 @Setter
 @Builder
 public class CachedReaction {
-    private AEmote emote;
-    private List<AUser> users;
+    private EmoteDto emote;
+    private List<UserDto> users;
 }

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
-import dev.sheldan.abstracto.core.models.database.AConfig;
+import dev.sheldan.abstracto.core.models.AConfig;
+import dev.sheldan.abstracto.core.service.management.ConfigManagementServiceBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class ConfigServiceBean implements ConfigService{
 
     @Autowired
-    private ConfigManagementService configManagementService;
+    private ConfigManagementServiceBean configManagementService;
 
     @Override
     public Double getDoubleValue(String name, Long serverId) {
@@ -23,5 +23,10 @@ public class ConfigServiceBean implements ConfigService{
             return defaultValue;
         }
         return config.getDoubleValue();
+    }
+
+    @Override
+    public void createValueIfNotExists(String name, Long serverId, Double value) {
+        configManagementService.createIfNotExists(serverId, name, value);
     }
 }

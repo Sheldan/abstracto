@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.management.EmoteManagementServiceBean;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ import java.util.List;
 public class SetEmote implements Command {
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
+    private EmoteManagementServiceBean emoteManagementService;
 
     @Autowired
     private EmoteService emoteService;
