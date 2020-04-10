@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.AbstractoFeatures;
 import dev.sheldan.abstracto.core.commands.utility.UtilityModuleInterface;
-import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +17,13 @@ import java.util.List;
 @Component
 public class Disable implements Command {
 
-
     @Autowired
-    private FeatureFlagManagementService featureFlagManagementService;
+    private FeatureFlagService featureFlagManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String flagKey = (String) commandContext.getParameters().getParameters().get(0);
-        featureFlagManagementService.updateOrCreateFeatureFlag(flagKey, commandContext.getGuild().getIdLong(), false);
+        featureFlagManagementService.disableFeature(flagKey, commandContext.getGuild().getIdLong());
         return CommandResult.fromSuccess();
     }
 

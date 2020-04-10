@@ -9,6 +9,6 @@ public interface FeatureFlagManagementService {
     void createFeatureFlag(String key, Long serverId, Boolean newValue);
     void createFeatureFlag(String key, AServer server, Boolean newValue);
     boolean getFeatureFlagValue(String key, Long serverId);
-    void updateOrCreateFeatureFlag(String key, Long serverId, Boolean newValue);
+    void updateFeatureFlag(String key, Long serverId, Boolean newValue);
     Optional<AFeatureFlag> getFeatureFlag(String key, Long serverId);
 }

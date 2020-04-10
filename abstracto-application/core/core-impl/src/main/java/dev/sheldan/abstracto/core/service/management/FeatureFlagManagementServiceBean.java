@@ -41,14 +41,12 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     }
 
     @Override
-    public void updateOrCreateFeatureFlag(String key, Long serverId, Boolean newValue) {
+    public void updateFeatureFlag(String key, Long serverId, Boolean newValue) {
         Optional<AFeatureFlag> existing = getFeatureFlag(key, serverId);
         if(existing.isPresent()) {
             AFeatureFlag flag = existing.get();
             flag.setEnabled(newValue);
             repository.save(flag);
-        } else {
-            createFeatureFlag(key, serverId, newValue);
         }
     }
 
