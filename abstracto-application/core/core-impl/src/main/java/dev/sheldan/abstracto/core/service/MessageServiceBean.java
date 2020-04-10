@@ -24,6 +24,9 @@ public class MessageServiceBean implements MessageService {
     @Autowired
     private EmoteManagementService emoteManagementService;
 
+    @Autowired
+    private EmoteService emoteService;
+
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
         Optional<Guild> guildByIdOptional = bot.getGuildById(serverId);
@@ -44,9 +47,8 @@ public class MessageServiceBean implements MessageService {
                     message.addReaction(emote.getEmoteKey()).queue();
                 }
             } else {
-                log.error("Cannot add reaction, emote {} not defined for server {}.", emoteKey, serverId);
-                throw new EmoteException(String.format("Cannot add reaction. Emote `%s` not defined in server %s. Define the emote via the setEmote command.", emoteKey, serverId));
-            }
+                String defaultEmote = emoteService.getDefaultEmote(emoteKey);
+                message.addReaction(defaultEmote).queue();}
         } else {
             log.error("Cannot add reaction, guild not found {}", serverId);
             throw new GuildException(String.format("Cannot add reaction, guild %s not found.", serverId));

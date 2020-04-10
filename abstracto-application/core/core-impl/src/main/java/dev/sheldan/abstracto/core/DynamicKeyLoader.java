@@ -19,6 +19,7 @@ public class DynamicKeyLoader {
 
     private HashMap<String, String> postTargets = new HashMap<>();
     private HashMap<String, String> emoteNames = new HashMap<>();
+    private HashMap<String, String> defaultEmotes = new HashMap<>();
 
     public List<String> getPostTargetsAsList() {
         return getHashMapAsList(postTargets);

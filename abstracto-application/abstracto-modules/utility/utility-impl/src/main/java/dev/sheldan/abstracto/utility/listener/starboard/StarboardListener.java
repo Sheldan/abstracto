@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -59,6 +60,9 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     @Autowired
     private UserManagementService userManagementService;
 
+    @Autowired
+    private EmoteService emoteService;
+
     @Override
     @Transactional
     public void executeReactionAdded(CachedMessage message, MessageReaction addedReaction, AUserInAServer userAdding) {
@@ -66,17 +70,12 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
             return;
         }
         Long guildId = message.getServerId();
-        Optional<AEmote> aEmote = emoteManagementService.loadEmoteByName(STAR_EMOTE, guildId);
-        if(aEmote.isPresent()) {
-            AEmote emote = aEmote.get();
-            MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
-            Optional<Emote> emoteInGuild = bot.getEmote(guildId, emote);
-            if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, emoteInGuild.orElse(null))) {
-                Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, emote);
-                    updateStarboardPost(message, reactionOptional.orElse(null), userAdding, true);
-            }
-        } else {
-            log.warn("Emote {} is not defined for guild {}. Starboard not functional.", STAR_EMOTE, guildId);
+        AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
+        MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
+        Optional<Emote> emoteInGuild = bot.getEmote(guildId, aEmote);
+        if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+            Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
+                updateStarboardPost(message, reactionOptional.orElse(null), userAdding, true);
         }
     }
 
@@ -124,17 +123,12 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
             return;
         }
         Long guildId = message.getServerId();
-        Optional<AEmote> aEmote = emoteManagementService.loadEmoteByName(STAR_EMOTE, guildId);
-        if(aEmote.isPresent()) {
-            AEmote emote = aEmote.get();
-            MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
-            Optional<Emote> emoteInGuild = bot.getEmote(guildId, emote);
-            if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, emote, emoteInGuild.orElse(null))) {
-                Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, emote);
-                    updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);
-            }
-        } else {
-            log.warn("Emote {} is not defined for guild {}. Starboard not functional.", STAR_EMOTE, guildId);
+        AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
+        MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
+        Optional<Emote> emoteInGuild = bot.getEmote(guildId, aEmote);
+        if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+            Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
+                updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);
         }
     }
 

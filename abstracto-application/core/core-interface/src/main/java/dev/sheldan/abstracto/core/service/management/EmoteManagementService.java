@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.exception.ConfigurationException;
-import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import net.dv8tion.jda.api.entities.Emote;

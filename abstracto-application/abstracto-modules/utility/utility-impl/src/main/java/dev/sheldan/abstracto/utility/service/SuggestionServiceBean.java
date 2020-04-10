@@ -138,8 +138,6 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public void validateSetup(Long serverId) {
-        emoteService.throwIfEmoteDoesNotExist(SUGGESTION_YES_EMOTE, serverId);
-        emoteService.throwIfEmoteDoesNotExist(SUGGESTION_NO_EMOTE, serverId);
-        postTargetService.throwIfPostTargetIsNotDefined(SUGGESTION_YES_EMOTE, serverId);
+        postTargetService.throwIfPostTargetIsNotDefined(SUGGESTIONS_TARGET, serverId);
     }
 }

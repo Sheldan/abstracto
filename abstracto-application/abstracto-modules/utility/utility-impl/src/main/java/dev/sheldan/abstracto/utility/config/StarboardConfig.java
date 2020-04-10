@@ -14,5 +14,4 @@ import java.util.List;
 @ConfigurationProperties(prefix = "abstracto.starboard")
 public class StarboardConfig {
    private List<Integer> lvl = new ArrayList<>();
-   private List<String> badge = new ArrayList<>();
 }

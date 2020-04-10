@@ -106,15 +106,7 @@ public class StarboardServiceBean implements StarboardService {
         AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
         AUser user = AUser.builder().id(message.getAuthorId()).build();
         AServer server = AServer.builder().id(message.getServerId()).build();
-        Optional<AEmote> appropriateEmoteOptional = getAppropriateEmote(message.getServerId(), starCount);
-        String emoteText;
-        if(appropriateEmoteOptional.isPresent()) {
-            AEmote emote = appropriateEmoteOptional.get();
-            emoteText = emoteService.getEmoteAsMention(emote, message.getServerId(), "⭐");
-        } else  {
-            log.warn("No emote defined to be used for starboard post. Falling back to default.");
-            emoteText = "⭐";
-        }
+        String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
         return StarboardPostModel
                 .builder()
                 .message(message)
@@ -125,7 +117,7 @@ public class StarboardServiceBean implements StarboardService {
                 .guild(guild.orElse(null))
                 .user(user)
                 .server(server)
-                .starLevelEmote(emoteText)
+                .starLevelEmote(starLevelEmote)
                 .build();
     }
 
@@ -161,10 +153,7 @@ public class StarboardServiceBean implements StarboardService {
         Integer reactionCount = starboardPostReactorManagementService.getStarCount(serverId);
         List<String> emotes = new ArrayList<>();
         for (int i = 1; i < count + 1; i++) {
-            Optional<AEmote> starboardRankingEmote = getStarboardRankingEmote(serverId, i);
-            AEmote emote = starboardRankingEmote.orElse(null);
-            String defaultEmoji = starboardConfig.getBadge().get(i - 1);
-            emotes.add(emoteService.getEmoteAsMention(emote, serverId, defaultEmoji));
+            emotes.add(getStarboardRankingEmote(serverId, i));
         }
 
         return StarStatsModel
@@ -178,17 +167,21 @@ public class StarboardServiceBean implements StarboardService {
                 .build();
     }
 
-    private Optional<AEmote> getStarboardRankingEmote(Long serverId, Integer position) {
-        return emoteManagementService.loadEmoteByName("starboardBadge" + position, serverId);
+    private String getStarboardRankingEmote(Long serverId, Integer position) {
+        return emoteService.getUsableEmoteOrDefault(serverId, buildBadgeName(position));
     }
 
-    private Optional<AEmote> getAppropriateEmote(Long serverId, Integer starCount) {
+    private String buildBadgeName(Integer position) {
+        return "starboardBadge" + position;
+    }
+
+    private String getAppropriateEmote(Long serverId, Integer starCount) {
         for(int i = starboardConfig.getLvl().size(); i > 0; i--) {
             Double starMinimum = configService.getDoubleValue("starLvl" + i, serverId);
             if(starCount >= starMinimum) {
-                return emoteManagementService.loadEmoteByName("star" + i, serverId);
+                return emoteService.getUsableEmoteOrDefault(serverId, "star" + i);
             }
         }
-        return emoteManagementService.loadEmoteByName("star0", serverId);
+        return emoteService.getUsableEmoteOrDefault(serverId, "star0");
     }
 }

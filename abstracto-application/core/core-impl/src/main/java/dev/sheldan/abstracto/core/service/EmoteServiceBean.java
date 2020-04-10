@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -21,6 +22,9 @@ public class EmoteServiceBean implements EmoteService {
 
     @Autowired
     private EmoteManagementService emoteManagementService;
+
+    @Autowired
+    private DynamicKeyLoader keyLoader;
 
     @Override
     public boolean isEmoteUsableByBot(Emote emote) {
@@ -66,9 +70,27 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
+    public String getUsableEmoteOrDefault(Long serverId, String name) {
+        Optional<AEmote> aEmote = emoteManagementService.loadEmoteByName(name, serverId);
+        String defaultEmote = getDefaultEmote(name);
+        return getEmoteAsMention(aEmote.orElse(null), serverId, defaultEmote);
+    }
+
+    @Override
     public void throwIfEmoteDoesNotExist(String emoteKey, Long serverId)  {
         if(!emoteManagementService.loadEmoteByName(emoteKey, serverId).isPresent()) {
             throw new EmoteException(String.format("Emote %s not defined.", emoteKey));
         }
+    }
+
+    @Override
+    public AEmote getEmoteOrFakeEmote(String emoteKey, Long serverId) {
+        Optional<AEmote> emoteOptional = emoteManagementService.loadEmoteByName(emoteKey, serverId);
+        return emoteOptional.orElseGet(() -> AEmote.builder().emoteKey(getDefaultEmote(emoteKey)).custom(false).name(emoteKey).build());
+    }
+
+    @Override
+    public String getDefaultEmote(String emoteKey) {
+        return keyLoader.getDefaultEmotes().get(emoteKey);
     }
 }
