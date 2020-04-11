@@ -23,4 +23,6 @@ public interface SchedulerService {
     boolean executeJob(SchedulerJob job);
 
     boolean executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date);
+
+    void startScheduler();
 }

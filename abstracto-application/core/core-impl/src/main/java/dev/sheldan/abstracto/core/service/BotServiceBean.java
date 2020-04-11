@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
-public class BotServiceBean implements Bot {
+public class BotServiceBean implements BotService {
 
     private JDA instance;
 

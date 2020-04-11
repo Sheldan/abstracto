@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 public class MessageCacheBean implements MessageCache {
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private UserManagementService userManagementService;
@@ -81,9 +81,9 @@ public class MessageCacheBean implements MessageCache {
     @Async
     @Override
     public void loadMessage(CompletableFuture<CachedMessage> future, Long guildId, Long textChannelId, Long messageId) {
-        Optional<Guild> guildOptional = bot.getGuildById(guildId);
+        Optional<Guild> guildOptional = botService.getGuildById(guildId);
         if(guildOptional.isPresent()) {
-            Optional<TextChannel> textChannelByIdOptional = bot.getTextChannelFromServer(guildOptional.get(), textChannelId);
+            Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServer(guildOptional.get(), textChannelId);
             if(textChannelByIdOptional.isPresent()) {
                 TextChannel textChannel = textChannelByIdOptional.get();
                 textChannel.retrieveMessageById(messageId).queue(message -> {

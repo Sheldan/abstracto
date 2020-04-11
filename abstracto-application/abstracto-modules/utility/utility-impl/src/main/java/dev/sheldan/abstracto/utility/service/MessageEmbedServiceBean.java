@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -50,7 +50,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private UserManagementService userManagementService;
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private TemplateService templateService;
@@ -127,8 +127,8 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
         AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
         AUserInAServer user = userManagementService.loadUser(message.getMember());
-        Member author = bot.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
-        TextChannel sourceChannel = bot.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId()).get();
+        Member author = botService.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
+        TextChannel sourceChannel = botService.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId()).get();
         return MessageEmbeddedModel
                 .builder()
                 .channel(channel)

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ public class BanServiceBean implements BanService {
     private static final String BAN_ID_LOG_TEMPLATE = "banid_log";
     private static final String BAN_LOG_TARGET = "banLog";
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private TemplateService templateService;
@@ -44,7 +44,7 @@ public class BanServiceBean implements BanService {
     }
 
     private void banUser(Long guildId, Long userId, String reason) {
-        Optional<Guild> guildByIdOptional = bot.getGuildById(guildId);
+        Optional<Guild> guildByIdOptional = botService.getGuildById(guildId);
         if(guildByIdOptional.isPresent()) {
             log.info("Banning user {} in guild {}.", userId, guildId);
             guildByIdOptional.get().ban(userId.toString(), 0, reason).queue();

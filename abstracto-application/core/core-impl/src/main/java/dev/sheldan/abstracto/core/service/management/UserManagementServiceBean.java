@@ -52,7 +52,9 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Override
     public AUserInAServer createUserInServer(Long guildId, Long userId) {
-        return serverManagementService.addUserToServer(guildId, userId);
+        AUserInAServer aUserInAServer = serverManagementService.addUserToServer(guildId, userId);
+        userInServerRepository.save(aUserInAServer);
+        return aUserInAServer;
     }
 
     @Override

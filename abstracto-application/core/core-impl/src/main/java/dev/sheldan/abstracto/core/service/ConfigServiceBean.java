@@ -24,4 +24,9 @@ public class ConfigServiceBean implements ConfigService{
         }
         return config.getDoubleValue();
     }
+
+    @Override
+    public void createDoubleValueIfNotExist(String name, Long serverId, Double value) {
+        configManagementService.createIfNotExists(serverId, name, value);
+    }
 }

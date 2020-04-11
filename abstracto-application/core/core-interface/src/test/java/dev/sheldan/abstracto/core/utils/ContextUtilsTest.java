@@ -7,9 +7,8 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.commands.PingModel;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,12 +37,12 @@ public class ContextUtilsTest {
     private UserManagementService userManagementService;
 
     @Mock
-    private Bot bot;
+    private BotService botService;
 
     @Before
     public void setup() {
         GuildChannelMember build = GuildChannelMember.builder().build();
-        when(bot.getServerChannelUser(eq(SERVER_ID), eq(CHANNEL_ID), eq(AUTHOR_ID))).thenReturn(build);
+        when(botService.getServerChannelUser(eq(SERVER_ID), eq(CHANNEL_ID), eq(AUTHOR_ID))).thenReturn(build);
         AServer server = AServer.builder().id(SERVER_ID).build();
         AUserInAServer aUserInAServer = AUserInAServer.builder().userReference(AUser.builder().id(AUTHOR_ID).build()).serverReference(server).build();
         when(userManagementService.loadUser(eq(SERVER_ID), eq(AUTHOR_ID))).thenReturn(aUserInAServer);

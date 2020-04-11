@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -20,7 +20,7 @@ public class KickServiceBean implements KickService {
     private static final String KICK_LOG_TEMPLATE = "kick_log";
     private static final String WARN_LOG_TARGET = "warnLog";
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private TemplateService templateService;
@@ -30,7 +30,7 @@ public class KickServiceBean implements KickService {
 
     @Override
     public void kickMember(Member member, String reason, KickLogModel kickLogModel)  {
-        Optional<Guild> guildById = bot.getGuildById(kickLogModel.getGuild().getIdLong());
+        Optional<Guild> guildById = botService.getGuildById(kickLogModel.getGuild().getIdLong());
         if(guildById.isPresent()) {
             guildById.get().kick(member, reason).queue();
             this.sendKickLog(kickLogModel);

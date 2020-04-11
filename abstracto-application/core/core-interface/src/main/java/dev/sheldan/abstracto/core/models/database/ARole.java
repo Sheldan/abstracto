@@ -3,10 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name="role")
@@ -19,8 +16,14 @@ public class ARole implements SnowFlake {
     @Getter @Setter
     private Long id;
 
-    @Column(unique = true)
-    @Getter @Setter
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Getter
+    @Setter
+    @JoinColumn(name = "role_server_id")
+    private AServer server;
+
+    @Getter
+    @Setter
+    private Boolean deleted;
 
 }

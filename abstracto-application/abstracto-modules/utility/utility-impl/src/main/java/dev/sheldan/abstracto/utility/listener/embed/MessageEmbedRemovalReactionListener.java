@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -30,7 +30,7 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
     private EmoteManagementService emoteManagementService;
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private MessageEmbedPostManagementService messageEmbedPostManagementService;
@@ -47,7 +47,7 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrFakeEmote(REMOVAL_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = reaction.getReactionEmote();
-        Optional<Emote> emoteInGuild = bot.getEmote(guildId, aEmote);
+        Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
             if(embeddedMessageOptional.isPresent()) {

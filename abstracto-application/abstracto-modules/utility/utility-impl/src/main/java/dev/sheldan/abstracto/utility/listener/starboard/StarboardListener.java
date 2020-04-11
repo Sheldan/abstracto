@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
@@ -40,7 +40,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     private EmoteManagementService emoteManagementService;
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private MessageCache messageCache;
@@ -72,7 +72,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
-        Optional<Emote> emoteInGuild = bot.getEmote(guildId, aEmote);
+        Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
                 updateStarboardPost(message, reactionOptional.orElse(null), userAdding, true);
@@ -125,7 +125,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
-        Optional<Emote> emoteInGuild = bot.getEmote(guildId, aEmote);
+        Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
                 updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);

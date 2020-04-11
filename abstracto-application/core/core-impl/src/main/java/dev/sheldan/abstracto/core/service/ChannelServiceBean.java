@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 public class ChannelServiceBean implements ChannelService {
 
     @Autowired
-    private Bot botService;
+    private BotService botService;
 
     @Override
     public void sendTextInAChannel(String text, AChannel channel) {

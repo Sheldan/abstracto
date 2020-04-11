@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import java.util.Optional;
 public class SlowModeServiceBean implements SlowModeService {
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Override
     public void setSlowMode(TextChannel channel, Duration duration) {
@@ -29,7 +29,7 @@ public class SlowModeServiceBean implements SlowModeService {
 
     @Override
     public void setSlowMode(AChannel channel, Duration duration)  {
-        Optional<TextChannel> textChannelOptional = bot.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
+        Optional<TextChannel> textChannelOptional = botService.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
         if(textChannelOptional.isPresent()) {
             TextChannel textChannel = textChannelOptional.get();
             this.setSlowMode(textChannel, duration);

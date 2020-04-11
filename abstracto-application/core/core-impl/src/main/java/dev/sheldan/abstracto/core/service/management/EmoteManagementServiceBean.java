@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.repository.EmoteRepository;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     private DynamicKeyLoader dynamicKeyLoader;
 
     @Autowired
-    private Bot botService;
+    private BotService botService;
 
     @Override
     public AEmote loadEmote(Long id) {

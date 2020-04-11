@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -40,7 +40,7 @@ public class StarboardServiceBean implements StarboardService {
     public static final String STARBOARD_POSTTARGET = "starboard";
     public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private PostTargetService postTargetService;
@@ -100,9 +100,9 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     private StarboardPostModel buildStarboardPostModel(CachedMessage message, Integer starCount)  {
-        Member member = bot.getMemberInServer(message.getServerId(), message.getAuthorId());
-        Optional<TextChannel> channel = bot.getTextChannelFromServer(message.getServerId(), message.getChannelId());
-        Optional<Guild> guild = bot.getGuildById(message.getServerId());
+        Member member = botService.getMemberInServer(message.getServerId(), message.getAuthorId());
+        Optional<TextChannel> channel = botService.getTextChannelFromServer(message.getServerId(), message.getChannelId());
+        Optional<Guild> guild = botService.getGuildById(message.getServerId());
         AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
         AUser user = AUser.builder().id(message.getAuthorId()).build();
         AServer server = AServer.builder().id(message.getServerId()).build();
@@ -139,7 +139,7 @@ public class StarboardServiceBean implements StarboardService {
     @Override
     public void removeStarboardPost(StarboardPost message)  {
         AChannel starboardChannel = message.getStarboardChannel();
-        bot.deleteMessage(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
+        botService.deleteMessage(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
     }
 
     @Override

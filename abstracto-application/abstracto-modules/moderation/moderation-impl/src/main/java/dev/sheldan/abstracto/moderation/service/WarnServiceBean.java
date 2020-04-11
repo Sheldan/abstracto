@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.moderation.service.management.WarnManagementService
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +48,7 @@ public class WarnServiceBean implements WarnService {
     private TemplateService templateService;
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     private static final String WARN_LOG_TEMPLATE = "warn_log";
     private static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
@@ -60,9 +60,9 @@ public class WarnServiceBean implements WarnService {
         AServer serverOfWarning = warnedAUserInAServer.getServerReference();
         log.info("User {} is warning {} in server {} because of {}", warningAUser.getId(), warnedAUser.getId(), serverOfWarning.getId(), reason);
         Warning warning = warnManagementService.createWarning(warnedAUserInAServer, warningAUserInAServer, reason);
-        JDA instance = bot.getInstance();
+        JDA instance = botService.getInstance();
         User userBeingWarned = instance.getUserById(warnedAUser.getId());
-        Optional<Guild> guildById = bot.getGuildById(serverOfWarning.getId());
+        Optional<Guild> guildById = botService.getGuildById(serverOfWarning.getId());
         String guildName = "<defaultName>";
         if(guildById.isPresent()) {
             guildName = guildById.get().getName();

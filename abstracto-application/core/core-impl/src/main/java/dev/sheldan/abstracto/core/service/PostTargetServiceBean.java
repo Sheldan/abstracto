@@ -32,7 +32,7 @@ public class PostTargetServiceBean implements PostTargetService {
     private PostTargetManagement postTargetManagement;
 
     @Autowired
-    private Bot botService;
+    private BotService botService;
 
     @Autowired
     private DynamicKeyLoader dynamicKeyLoader;

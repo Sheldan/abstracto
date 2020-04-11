@@ -158,4 +158,13 @@ public class SchedulerServiceBean implements SchedulerService {
             return false;
         }
     }
+
+    @Override
+    public void startScheduler() {
+        try {
+            schedulerFactoryBean.getScheduler().start();
+        } catch (SchedulerException e) {
+            log.error("Failed to start scheduler.", e);
+        }
+    }
 }

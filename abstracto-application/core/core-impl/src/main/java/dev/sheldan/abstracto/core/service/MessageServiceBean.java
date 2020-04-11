@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class MessageServiceBean implements MessageService {
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private EmoteManagementService emoteManagementService;
@@ -29,14 +29,14 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
-        Optional<Guild> guildByIdOptional = bot.getGuildById(serverId);
+        Optional<Guild> guildByIdOptional = botService.getGuildById(serverId);
         Optional<AEmote> aEmote = emoteManagementService.loadEmoteByName(emoteKey, serverId);
         if(guildByIdOptional.isPresent()) {
             Guild guild = guildByIdOptional.get();
             if(aEmote.isPresent()) {
                 AEmote emote = aEmote.get();
                 if(emote.getCustom()) {
-                    Emote emoteById = bot.getInstance().getEmoteById(emote.getEmoteId());
+                    Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
                     if(emoteById != null) {
                         message.addReaction(emoteById).queue();
                     } else {
@@ -57,6 +57,6 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
-        return bot.deleteMessage(serverId, channelId, messageId);
+        return botService.deleteMessage(serverId, channelId, messageId);
     }
 }

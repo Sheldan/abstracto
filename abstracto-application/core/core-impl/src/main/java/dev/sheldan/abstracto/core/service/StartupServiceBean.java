@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class StartupServiceBean implements Startup {
 
     @Autowired
-    private Bot service;
+    private BotService service;
 
     @Autowired
     private List<? extends  ListenerAdapter> listeners;
@@ -88,7 +88,7 @@ public class StartupServiceBean implements Startup {
         Set<Long> availableRoles = SnowflakeUtils.getSnowflakeIds(existingRoles);
         Set<Long> newRoles = SetUtils.disjunction(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
-            ARole newRole = roleManagementService.createRole(aLong);
+            ARole newRole = roleManagementService.createRole(aLong, existingAServer);
             log.debug("Adding new role: {}", aLong);
             existingAServer.getRoles().add(newRole);
         });

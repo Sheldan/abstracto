@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
@@ -50,7 +50,7 @@ public class RemindServiceBean implements ReminderService {
     private SchedulerService schedulerService;
 
     @Autowired
-    private Bot bot;
+    private BotService botService;
 
     @Autowired
     private ReminderService self;
@@ -92,13 +92,13 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
         AServer server = reminderToRemindFor.getServer();
         AChannel channel = reminderToRemindFor.getChannel();
-        Optional<Guild> guildToAnswerIn = bot.getGuildById(server.getId());
+        Optional<Guild> guildToAnswerIn = botService.getGuildById(server.getId());
         if(guildToAnswerIn.isPresent()) {
-            Optional<TextChannel> channelToAnswerIn = bot.getTextChannelFromServer(server.getId(), channel.getId());
+            Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServer(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
                 AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();
-                Member memberInServer = bot.getMemberInServer(server.getId(), userReference.getId());
+                Member memberInServer = botService.getMemberInServer(server.getId(), userReference.getId());
                 ExecutedReminderModel build = ExecutedReminderModel
                         .builder()
                         .reminder(reminderToRemindFor)

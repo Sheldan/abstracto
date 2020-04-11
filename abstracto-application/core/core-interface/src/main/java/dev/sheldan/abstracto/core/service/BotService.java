@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public interface Bot {
+public interface BotService {
     void login() throws LoginException;
     JDA getInstance();
     GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId);

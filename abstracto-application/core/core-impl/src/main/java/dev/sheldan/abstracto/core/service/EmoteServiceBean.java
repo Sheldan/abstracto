@@ -18,7 +18,7 @@ import java.util.Optional;
 public class EmoteServiceBean implements EmoteService {
 
     @Autowired
-    private Bot botService;
+    private BotService botService;
 
     @Autowired
     private EmoteManagementService emoteManagementService;

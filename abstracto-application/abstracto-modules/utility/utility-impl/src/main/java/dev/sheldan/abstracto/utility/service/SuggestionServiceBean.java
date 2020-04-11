@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.service.Bot;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
@@ -44,7 +44,7 @@ public class SuggestionServiceBean implements SuggestionService {
     private TemplateService templateService;
 
     @Autowired
-    private Bot botService;
+    private BotService botService;
 
     @Autowired
     private EmoteManagementService emoteManagementService;

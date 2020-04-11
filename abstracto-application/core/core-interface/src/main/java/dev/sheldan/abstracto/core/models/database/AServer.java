@@ -21,8 +21,12 @@ public class AServer implements SnowFlake {
 
     private String name;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @Builder.Default
+    @JoinColumn(name = "role_server_id")
     private List<ARole> roles = new ArrayList<>();
 
     @OneToMany(
