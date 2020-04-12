@@ -28,7 +28,7 @@ public class ExperiencePersistingJob extends QuartzJobBean {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         HashMap<Long, List<AServer>> runtimeExperience = experienceTrackerService.getRuntimeExperience();
-        log.info("Storing experience");
+        log.info("Persisting experience");
         Long pastMinute = (Instant.now().getEpochSecond() / 60) - 1;
         if(runtimeExperience.containsKey(pastMinute)) {
             experienceTrackerService.handleExperienceGain(runtimeExperience.get(pastMinute));

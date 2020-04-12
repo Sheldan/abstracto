@@ -14,4 +14,5 @@ public class SchedulerJobProperties {
     private String cronExpression;
     private String clazz;
     private Boolean active;
+    private Boolean recovery;
 }

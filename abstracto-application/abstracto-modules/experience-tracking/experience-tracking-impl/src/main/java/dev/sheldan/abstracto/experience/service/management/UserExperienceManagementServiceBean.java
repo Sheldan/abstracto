@@ -1,12 +1,16 @@
 package dev.sheldan.abstracto.experience.service.management;
 
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.experience.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.repository.UserExperienceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -37,6 +41,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
         AUserExperience userExperience = AUserExperience
                 .builder()
                 .experience(0L)
+                .messageCount(0L)
                 .user(aUserInAServer)
                 .id(aUserInAServer.getUserInServerId())
                 .currentLevel(startingLevel)
@@ -48,6 +53,21 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     @Override
     public void saveUser(AUserExperience userExperience) {
         repository.save(userExperience);
+    }
+
+    @Override
+    public List<AUserExperience> loadAllUsers(AServer server) {
+        return repository.findByUser_ServerReference(server);
+    }
+
+    @Override
+    public List<AUserExperience> findLeaderboardUsersPaginated(AServer aServer, Integer start, Integer end) {
+        return repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(aServer, PageRequest.of(start, end));
+    }
+
+    @Override
+    public LeaderBoardEntryResult getRankOfUserInServer(AUserExperience userExperience) {
+        return repository.getRankOfUserInServer(userExperience.getId());
     }
 }
 

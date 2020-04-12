@@ -39,7 +39,7 @@ public class QuartzConfigFactory {
 
     public CronTrigger createBasicCronTrigger(Date startTime, String cronExpression) {
               return newTrigger()
-                .withSchedule(cronSchedule(cronExpression).inTimeZone(TimeZone.getTimeZone("UTC")).withMisfireHandlingInstructionIgnoreMisfires())
+                .withSchedule(cronSchedule(cronExpression).inTimeZone(TimeZone.getTimeZone("UTC")).withMisfireHandlingInstructionDoNothing())
                 .startAt(startTime)
                 .build();
     }

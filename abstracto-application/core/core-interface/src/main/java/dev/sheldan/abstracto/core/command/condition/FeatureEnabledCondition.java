@@ -15,7 +15,7 @@ public class FeatureEnabledCondition implements CommandCondition {
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         String featureName = command.getFeature();
-        boolean featureFlagValue = false;
+        boolean featureFlagValue = true;
         String reason = "";
         if(featureName != null) {
             featureFlagValue = featureFlagManagementService.getFeatureFlagValue(featureName, context.getGuild().getIdLong());

@@ -10,5 +10,7 @@ import java.util.List;
 public interface ExperienceRoleManagementService {
     void setLevelToRole(AExperienceLevel level, ARole role, AServer server);
     void unSetLevelInServer(AExperienceLevel level, AServer server);
+    void unsetRole(AExperienceRole role);
+    AExperienceRole getRoleInServer(ARole role, AServer server);
     List<AExperienceRole> getExperienceRoleForServer(AServer server);
 }

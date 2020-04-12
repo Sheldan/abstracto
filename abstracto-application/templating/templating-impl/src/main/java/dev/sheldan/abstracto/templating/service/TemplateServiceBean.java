@@ -93,7 +93,10 @@ public class TemplateServiceBean implements TemplateService {
             embedBuilders.forEach(embedBuilder -> embedBuilder.setColor(colorToSet));
         }
 
-        List<MessageEmbed> embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
+        List<MessageEmbed> embeds = new ArrayList<>();
+        if(embedBuilders.size() > 1 || !embedBuilders.get(0).isEmpty()) {
+            embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
+        }
 
         return MessageToSend.builder()
                 .embeds(embeds)

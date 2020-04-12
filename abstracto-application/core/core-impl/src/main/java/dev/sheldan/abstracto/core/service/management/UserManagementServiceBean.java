@@ -46,6 +46,11 @@ public class UserManagementServiceBean implements UserManagementService {
     }
 
     @Override
+    public AUserInAServer loadUserInServer(Long userInServerId) {
+        return userInServerRepository.getOne(userInServerId);
+    }
+
+    @Override
     public AUserInAServer createUserInServer(Member member) {
         return this.createUserInServer(member.getGuild().getIdLong(), member.getIdLong());
     }

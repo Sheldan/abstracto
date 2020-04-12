@@ -42,8 +42,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
-        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        return textChannelForPostTarget.sendMessage(text).submit();
+        return channelService.sendTextInAChannelFuture(text, target.getChannelReference());
     }
 
     @Override

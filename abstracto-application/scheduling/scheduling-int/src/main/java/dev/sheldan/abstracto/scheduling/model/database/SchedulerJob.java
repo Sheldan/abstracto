@@ -27,4 +27,6 @@ public class SchedulerJob {
     private String cronExpression;
 
     private boolean active;
+
+    private boolean recovery;
 }

@@ -2,8 +2,10 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,6 +28,9 @@ public class MessageServiceBean implements MessageService {
 
     @Autowired
     private EmoteService emoteService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
@@ -58,5 +63,15 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
         return botService.deleteMessage(serverId, channelId, messageId);
+    }
+
+    @Override
+    public CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, AChannel channel) {
+        return channelService.sendMessageToEndInAChannel(messageToSend, channel).get(0);
+    }
+
+    @Override
+    public void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend) {
+        channelService.editMessageInAChannel(messageToSend, channel, messageId);
     }
 }

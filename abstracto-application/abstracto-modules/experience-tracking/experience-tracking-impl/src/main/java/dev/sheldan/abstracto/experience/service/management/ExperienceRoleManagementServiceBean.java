@@ -25,6 +25,16 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     }
 
     @Override
+    public void unsetRole(AExperienceRole role) {
+        experienceRoleRepository.delete(role);
+    }
+
+    @Override
+    public AExperienceRole getRoleInServer(ARole role, AServer server) {
+        return experienceRoleRepository.findByRoleServerAndRole(server, role);
+    }
+
+    @Override
     public List<AExperienceRole> getExperienceRoleForServer(AServer server) {
         return experienceRoleRepository.findByRoleServer(server);
     }

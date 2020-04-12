@@ -56,7 +56,7 @@ public class SchedulerServiceBean implements SchedulerService {
                 // if its only started by triggers, it needs to be durable
                 boolean recurringJob = isRecurringJob(schedulerJob);
                 jobDetail = scheduleCreator.createJob((Class<? extends QuartzJobBean>) Class.forName(schedulerJob.getClazz()),
-                        !recurringJob, context, schedulerJob.getName(), schedulerJob.getGroupName(), false);
+                        !recurringJob, context, schedulerJob.getName(), schedulerJob.getGroupName(), schedulerJob.isRecovery());
                 if(recurringJob) {
                     Trigger trigger = scheduleCreator.createBasicCronTrigger(new Date(),
                             schedulerJob.getCronExpression());

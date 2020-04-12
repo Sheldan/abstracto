@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.listener.JoinListener;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
@@ -41,7 +42,7 @@ public class JoinLogger implements JoinListener {
     }
 
     @Override
-    public void execute(Member member, Guild guild) {
+    public void execute(Member member, Guild guild, AUserInAServer aUserInAServer) {
         HashMap<String, Object> parameters = getUserParameter(member.getUser());
         String text = templateService.renderTemplateWithMap(USER_JOIN_TEMPLATE, parameters);;
         postTargetService.sendTextInPostTarget(text, JOIN_LOG_TARGET, guild.getIdLong());

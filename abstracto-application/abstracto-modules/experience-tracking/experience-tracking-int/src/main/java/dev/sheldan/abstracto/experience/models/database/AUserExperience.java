@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.experience.models.database;
 
-import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 
@@ -23,6 +22,8 @@ public class AUserExperience {
     private AUserInAServer user;
 
     private Long experience;
+
+    private Long messageCount;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "level_id")

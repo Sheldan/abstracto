@@ -1,12 +1,15 @@
 package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -22,6 +25,9 @@ public class JoinListenerBean extends ListenerAdapter {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+    @Autowired
+    private UserManagementService userManagementService;
+
     @Override
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
@@ -30,10 +36,16 @@ public class JoinListenerBean extends ListenerAdapter {
                 return;
             }
             try {
-                joinListener.execute(event.getMember(), event.getGuild());
+                AUserInAServer aUserInAServer = userManagementService.loadUser(event.getMember());
+                executeListener(event, joinListener, aUserInAServer);
             } catch (AbstractoRunTimeException e) {
                 log.error("Listener {} failed with exception:", joinListener.getClass().getName(), e);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeListener(@Nonnull GuildMemberJoinEvent event, JoinListener joinListener, AUserInAServer aUserInAServer) {
+        joinListener.execute(event.getMember(), event.getGuild(), aUserInAServer);
     }
 }

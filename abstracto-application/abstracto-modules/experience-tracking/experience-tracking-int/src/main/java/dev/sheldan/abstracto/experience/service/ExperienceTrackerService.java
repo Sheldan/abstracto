@@ -1,7 +1,10 @@
 package dev.sheldan.abstracto.experience.service;
 
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.experience.models.LeaderBoard;
+import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
@@ -17,4 +20,9 @@ public interface ExperienceTrackerService {
     void increaseExpForUser(AUserExperience userInAServer, Long experience, List<AExperienceLevel> levels);
     void handleExperienceGain(List<AServer> serverExp);
     void handleExperienceRoleForUser(AUserExperience userExperience, List<AExperienceRole> roles);
+    void syncUserRoles(AServer server);
+    void syncUserRolesWithFeedback(AServer server, AChannel channel);
+    void syncForSingleUser(AUserExperience userExperience);
+    LeaderBoard findLeaderBoardData(AServer server, Integer page);
+    LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer);
 }

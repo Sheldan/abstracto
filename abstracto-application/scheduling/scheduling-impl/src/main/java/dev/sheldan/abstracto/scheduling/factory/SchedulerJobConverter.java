@@ -15,6 +15,7 @@ public class SchedulerJobConverter {
                 .active(properties.getActive())
                 .cronExpression(properties.getCronExpression())
                 .clazz(properties.getClazz())
+                .recovery(properties.getRecovery())
                 .build();
     }
 }
