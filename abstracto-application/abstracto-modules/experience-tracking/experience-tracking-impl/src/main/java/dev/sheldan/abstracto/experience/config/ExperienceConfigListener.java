@@ -23,6 +23,6 @@ public class ExperienceConfigListener implements ServerConfigListener {
         log.info("Setting up experience for {}", server.getId());
         service.createDoubleValueIfNotExist("minExp", server.getId(), experienceConfig.getMinExp().doubleValue());
         service.createDoubleValueIfNotExist("maxExp", server.getId(), experienceConfig.getMaxExp().doubleValue());
-        service.createDoubleValueIfNotExist("multiplier", server.getId(), experienceConfig.getMultiplier().doubleValue());
+        service.createDoubleValueIfNotExist("expMultiplier", server.getId(), experienceConfig.getExpMultiplier().doubleValue());
     }
 }

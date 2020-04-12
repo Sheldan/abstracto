@@ -131,7 +131,7 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
             log.debug("Handling experience for server {}", serverExp.getId());
             int minExp = configService.getDoubleValue("minExp", serverExp.getId()).intValue();
             int maxExp = configService.getDoubleValue("maxExp", serverExp.getId()).intValue();
-            Integer multiplier = configService.getDoubleValue("multiplier", serverExp.getId()).intValue();
+            Integer multiplier = configService.getDoubleValue("expMultiplier", serverExp.getId()).intValue();
             PrimitiveIterator.OfInt iterator = new Random().ints(serverExp.getUsers().size(), minExp, maxExp + 1).iterator();
             List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
             List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(serverExp);

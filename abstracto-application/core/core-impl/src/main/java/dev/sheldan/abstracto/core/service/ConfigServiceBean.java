@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.exception.ConfigurationException;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +29,14 @@ public class ConfigServiceBean implements ConfigService{
     @Override
     public void createDoubleValueIfNotExist(String name, Long serverId, Double value) {
         configManagementService.createIfNotExists(serverId, name, value);
+    }
+
+    @Override
+    public void setDoubleValue(String name, Long serverId, Double value) {
+        if(configManagementService.configExists(serverId, name)) {
+            configManagementService.setDoubleValue(serverId, name, value);
+        } else {
+            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+        }
     }
 }

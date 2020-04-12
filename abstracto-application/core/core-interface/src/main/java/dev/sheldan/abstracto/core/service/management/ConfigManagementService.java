@@ -10,4 +10,6 @@ public interface ConfigManagementService {
     AConfig createIfNotExists(Long serverId, String name, String value);
     AConfig createIfNotExists(Long serverId, String name, Double value);
     AConfig loadConfig(Long serverId, String name);
+    boolean configExists(Long serverId, String name);
+    void setDoubleValue(Long serverId, String name, Double value);
 }

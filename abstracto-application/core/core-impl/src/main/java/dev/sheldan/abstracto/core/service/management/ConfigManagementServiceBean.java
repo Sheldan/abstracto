@@ -86,4 +86,16 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         return configRepository.findAConfigByServerIdAndName(serverId, name);
     }
 
+    @Override
+    public boolean configExists(Long serverId, String name) {
+        return loadConfig(serverId, name) != null;
+    }
+
+    @Override
+    public void setDoubleValue(Long serverId, String name, Double value) {
+        AConfig config = loadConfig(serverId, name);
+        config.setDoubleValue(value);
+        configRepository.save(config);
+    }
+
 }

@@ -12,6 +12,6 @@ import org.springframework.stereotype.Component;
 public class ExperienceConfig {
     private Integer minExp;
     private Integer maxExp;
-    private Integer multiplier;
+    private Integer expMultiplier;
     private Integer maxLvl;
 }
