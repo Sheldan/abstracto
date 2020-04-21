@@ -33,7 +33,7 @@ public class TemplateSeedDataLoader {
             try {
                 String templateKey = FilenameUtils.getBaseName(resource.getFilename());
                 String templateContent = IOUtils.toString(resource.getURI(), Charset.defaultCharset());
-                log.debug("Creating template {}", templateKey);
+                log.trace("Creating template {}", templateKey);
                 service.createTemplate(templateKey, templateContent);
             } catch (IOException e) {
                 e.printStackTrace();

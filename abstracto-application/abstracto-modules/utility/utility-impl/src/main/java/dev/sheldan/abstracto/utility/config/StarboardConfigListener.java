@@ -19,6 +19,7 @@ public class StarboardConfigListener implements ServerConfigListener {
 
     @Override
     public void updateServerConfig(AServer server) {
+        log.info("Creating starboard config for server {}", server.getId());
         for (int i = 0; i < starboardConfig.getLvl().size(); i++) {
             Integer value = starboardConfig.getLvl().get(i);
             configManagementService.createIfNotExists(server.getId(), "starLvl" + ( i + 1 ), Double.valueOf(value));

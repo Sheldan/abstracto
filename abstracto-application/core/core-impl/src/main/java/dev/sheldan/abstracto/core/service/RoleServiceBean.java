@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.RoleException;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +68,16 @@ public class RoleServiceBean implements RoleService {
             roleManagementService.markDeleted(role);
         } else {
             throw new RoleException(String.format("Cannot find role %s to mark as deleted.", id));
+        }
+    }
+
+    @Override
+    public boolean isRoleInServer(AServer server, ARole role) {
+        Optional<Guild> guildById = botService.getGuildById(server.getId());
+        if(guildById.isPresent()) {
+            return guildById.get().getRoleById(role.getId()) != null;
+        } else {
+            throw new GuildException(String.format("Failed to load guild %s.", server.getId()));
         }
     }
 }

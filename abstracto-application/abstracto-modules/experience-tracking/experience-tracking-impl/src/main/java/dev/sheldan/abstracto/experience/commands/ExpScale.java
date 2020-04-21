@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class ExpScale extends AbstractConditionableCommand {
 
     public static final String EXP_MULTIPLIER_KEY = "expMultiplier";
@@ -24,7 +26,9 @@ public class ExpScale extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Double scale = (Double) commandContext.getParameters().getParameters().get(0);
-        configService.setDoubleValue(EXP_MULTIPLIER_KEY, commandContext.getGuild().getIdLong(), scale);
+        Long guildId = commandContext.getGuild().getIdLong();
+        configService.setDoubleValue(EXP_MULTIPLIER_KEY, guildId, scale);
+        log.info("Setting experience scale to {} for {}", scale, guildId);
         return CommandResult.fromSuccess();
     }
 

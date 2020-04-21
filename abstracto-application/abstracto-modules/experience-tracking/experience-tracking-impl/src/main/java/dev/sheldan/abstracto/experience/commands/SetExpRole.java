@@ -6,10 +6,15 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.RoleException;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,32 +22,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class UnSetRole extends AbstractConditionableCommand {
+@Slf4j
+public class SetExpRole extends AbstractConditionableCommand {
+
+    @Autowired
+    private ExperienceRoleService experienceRoleService;
 
     @Autowired
     private RoleManagementService roleManagementService;
 
     @Autowired
-    private ExperienceRoleService experienceRoleService;
+    private RoleService roleService;
 
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(0);
+        Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
+        Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
         ARole role = roleManagementService.findRole(roleId);
-        experienceRoleService.unsetRole(role, commandContext.getUserInitiatedContext().getServer());
+        AServer server = commandContext.getUserInitiatedContext().getServer();
+        if(!roleService.isRoleInServer(server, role)) {
+            throw new RoleException("Role not found.");
+        }
+        log.info("Setting role  {} to be used for level {} on server {}", roleId, level, server.getId());
+        experienceRoleService.setRoleToLevel(role, level, server);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
+        parameters.add(Parameter.builder().name("level").type(Integer.class).build());
         parameters.add(Parameter.builder().name("roleId").type(Long.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Removes the role from the experience tracking").usage("unsetRole <roleId>").build();
+        HelpInfo helpInfo = HelpInfo.builder().longHelp("Sets the role to a certain level").usage("setExpRole <level> <roleId>").build();
         return CommandConfiguration.builder()
-                .name("unsetRole")
+                .name("setExpRole")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Removes the role from experience tracking")
+                .description("Sets the role to a certain level")
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -73,13 +73,17 @@ public class RemindServiceBean implements ReminderService {
         reminderModel.setReminder(reminder);
         MessageToSend message = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, reminderModel);
         channelService.sendMessageToEndInAChannel(message, reminderModel.getChannel());
+        log.info("Creating reminder for user {} in guild {} due at {}.",
+                user.getUserReference().getId(), user.getServerReference().getId(), remindAt);
 
         if(remindIn.getSeconds() < 60) {
+            log.trace("Directly scheduling the reminder, because it was below the threshold.");
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> {
                 self.executeReminder(reminder.getId());
             }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
         } else {
+            log.trace("Starting scheduled job to execute reminder.");
             JobDataMap parameters = new JobDataMap();
             parameters.putAsString("reminderId", reminder.getId());
             schedulerService.executeJobWithParametersOnce("reminderJob", "utility", parameters, Date.from(reminder.getTargetDate()));
@@ -92,6 +96,7 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
         AServer server = reminderToRemindFor.getServer();
         AChannel channel = reminderToRemindFor.getChannel();
+        log.info("Executing reminder {}.", reminderId);
         Optional<Guild> guildToAnswerIn = botService.getGuildById(server.getId());
         if(guildToAnswerIn.isPresent()) {
             Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServer(server.getId(), channel.getId());
@@ -99,6 +104,7 @@ public class RemindServiceBean implements ReminderService {
             if(channelToAnswerIn.isPresent()) {
                 AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();
                 Member memberInServer = botService.getMemberInServer(server.getId(), userReference.getId());
+                log.trace("Reminding user {}", memberInServer.getUser().getIdLong());
                 ExecutedReminderModel build = ExecutedReminderModel
                         .builder()
                         .reminder(reminderToRemindFor)

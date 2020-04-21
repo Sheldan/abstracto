@@ -60,6 +60,7 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
 
     @Override
     public void addExperience(AUserInAServer userInAServer) {
+        log.trace("Adding experience for user {} in server {}", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         Long second = Instant.now().getEpochSecond() / 60;
         if(runtimeExperience.containsKey(second)) {
             List<AServer> existing = runtimeExperience.get(second);
@@ -115,11 +116,13 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
 
     @Override
     public void increaseExpForUser(AUserExperience userInAServer, Long experience, List<AExperienceLevel> levels) {
+        AUserInAServer user = userInAServer.getUser();
+        log.trace("Increasing experience for user {} in server {} by {}.", user.getUserReference().getId(), user.getServerReference().getId(), experience);
         userInAServer.setExperience(userInAServer.getExperience() + experience);
         Integer correctLevel = calculateLevel(userInAServer, levels);
         Integer currentLevel = userInAServer.getCurrentLevel() != null ? userInAServer.getCurrentLevel().getLevel() : 0;
         if(!correctLevel.equals(currentLevel)) {
-            log.info("User {} leveled from {} to {}", userInAServer.getUser().getUserReference().getId(), currentLevel, correctLevel);
+            log.info("User {} leveled from {} to {}", user.getUserReference().getId(), currentLevel, correctLevel);
             userInAServer.setCurrentLevel(experienceLevelManagementService.getLevel(correctLevel));
         }
     }
@@ -128,7 +131,7 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
     @Override
     public void handleExperienceGain(List<AServer> servers) {
         servers.forEach(serverExp -> {
-            log.debug("Handling experience for server {}", serverExp.getId());
+            log.trace("Handling experience for server {}", serverExp.getId());
             int minExp = configService.getDoubleValue("minExp", serverExp.getId()).intValue();
             int maxExp = configService.getDoubleValue("maxExp", serverExp.getId()).intValue();
             Integer multiplier = configService.getDoubleValue("expMultiplier", serverExp.getId()).intValue();
@@ -136,10 +139,11 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
             List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
             List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(serverExp);
             levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
+            roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
             serverExp.getUsers().forEach(userInAServer -> {
                 Integer gainedExperience = iterator.next();
                 gainedExperience *= multiplier;
-                log.debug("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
+                log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
                 AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
                 increaseExpForUser(userExperience, gainedExperience.longValue(), levels);
                 userExperience.setMessageCount(userExperience.getMessageCount() + 1);
@@ -150,21 +154,23 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
 
     @Override
     public void handleExperienceRoleForUser(AUserExperience userExperience, List<AExperienceRole> roles) {
+        AUserInAServer user = userExperience.getUser();
+        log.trace("Updating experience role for user {} in server {}", user.getUserReference().getId(), user.getServerReference().getId());
         AExperienceRole role = calculateRole(userExperience, roles);
         boolean currentlyHasNoExperienceRole = userExperience.getCurrentExperienceRole() == null;
         if(role == null) {
             if(!currentlyHasNoExperienceRole){
-                roleService.removeRoleFromUser(userExperience.getUser(), userExperience.getCurrentExperienceRole().getRole());
+                roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
             }
             return;
         }
         if(currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId())) {
-            log.info("User {} gets a new role {}", userExperience.getUser().getUserReference().getId(), role.getRole().getId());
+            log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
             if(!currentlyHasNoExperienceRole) {
-                roleService.removeRoleFromUser(userExperience.getUser(), userExperience.getCurrentExperienceRole().getRole());
+                roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
             }
             userExperience.setCurrentExperienceRole(role);
-            roleService.addRoleToUser(userExperience.getUser(), userExperience.getCurrentExperienceRole().getRole());
+            roleService.addRoleToUser(user, userExperience.getCurrentExperienceRole().getRole());
         }
     }
 
@@ -175,7 +181,7 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(server);
         for (int i = 0; i < aUserExperiences.size(); i++) {
             AUserExperience userExperience = aUserExperiences.get(i);
-            log.debug("Synchronizing {} out of {}", i, aUserExperiences.size());
+            log.trace("Synchronizing {} out of {}", i, aUserExperiences.size());
             handleExperienceRoleForUser(userExperience, roles);
         }
     }
@@ -189,13 +195,15 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
         MessageToSend status = templateService.renderEmbedTemplate("status_message", statusModel);
         try {
             Message statusMessage = messageService.createStatusMessage(status, channel).get();
+            int interval = Math.min(aUserExperiences.size() / 10, 100);
             for (int i = 0; i < aUserExperiences.size(); i++) {
-                if((i % 100) == 1) {
+                if((i % interval) == 1) {
+                    log.trace("Updating feedback message with new index {} out of {}", i, aUserExperiences.size());
                     UserSyncStatusModel incrementalStatusModel = UserSyncStatusModel.builder().currentCount(i).totalUserCount(aUserExperiences.size()).build();
                     status = templateService.renderEmbedTemplate("status_message", incrementalStatusModel);
                     messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
                 }
-                log.debug("Synchronizing {} out of {}", i, aUserExperiences.size());
+                log.trace("Synchronizing {} out of {}", i, aUserExperiences.size());
                 AUserExperience userExperience = aUserExperiences.get(i);
                 handleExperienceRoleForUser(userExperience, roles);
             }
@@ -210,15 +218,15 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
 
     @Override
     public void syncForSingleUser(AUserExperience userExperience) {
-        log.info("Synchronizing for user {}", userExperience.getUser().getUserReference().getId());
-        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(userExperience.getUser().getServerReference());
+        AUserInAServer user = userExperience.getUser();
+        log.info("Synchronizing for user {} in server {}", user.getUserReference().getId(), user.getServerReference().getId());
+        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(user.getServerReference());
         handleExperienceRoleForUser(userExperience, roles);
     }
 
     @Override
     public LeaderBoard findLeaderBoardData(AServer server, Integer page) {
         List<AUserExperience> experiences = userExperienceManagementService.findLeaderboardUsersPaginated(server, page * 10, (page +1) * 10);
-        log.info("We found {}", experiences.size());
         List<LeaderBoardEntry> entries = new ArrayList<>();
         for (int i = 0; i < experiences.size(); i++) {
             AUserExperience userExperience = experiences.get(i);
@@ -229,6 +237,7 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
 
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {
+        log.info("Retrieving rank for {}", userInAServer.getUserReference().getId());
         AUserExperience experience = userExperienceManagementService.findUserInServer(userInAServer);
         LeaderBoardEntryResult rankOfUserInServer = userExperienceManagementService.getRankOfUserInServer(experience);
         AUserExperience aUserExperience = AUserExperience

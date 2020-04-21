@@ -34,9 +34,10 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
     @Transactional
     public void execute(CachedMessage messageBefore, Message messageAfter) {
         if(messageBefore.getContent().equals(messageAfter.getContentRaw())){
-            log.debug("Message content was the same. Possible reason was: message was not in cache.");
+            log.trace("Message content was the same. Possible reason was: message was not in cache.");
             return;
         }
+        log.trace("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), messageBefore.getServerId());
         MessageEditedLog log = MessageEditedLog.
                 builder().
                 messageAfter(messageAfter)

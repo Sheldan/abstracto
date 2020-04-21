@@ -2,10 +2,12 @@ package dev.sheldan.abstracto.experience.service;
 
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class ExperienceLevelServiceBean implements ExperienceLevelService {
 
     @Autowired
@@ -14,6 +16,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
     @Override
     public void createExperienceLevel(Integer level, Long experienceNeeded) {
         if(!experienceLevelManagementService.levelExists(level)) {
+            log.trace("Creating new experience level {} with experience needed {}.", level, experienceNeeded);
             experienceLevelManagementService.createExperienceLevel(level, experienceNeeded);
         }
     }

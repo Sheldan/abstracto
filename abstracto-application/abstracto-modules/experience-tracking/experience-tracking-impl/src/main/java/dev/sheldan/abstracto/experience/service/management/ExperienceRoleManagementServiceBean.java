@@ -5,12 +5,14 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.repository.ExperienceRoleRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class ExperienceRoleManagementServiceBean implements ExperienceRoleManagementService {
 
     @Autowired
@@ -18,6 +20,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
 
     @Override
     public void unSetLevelInServer(AExperienceLevel level, AServer server) {
+        log.trace("Removing all role assignments for level {}.", level.getLevel());
         List<AExperienceRole> existingExperienceRoles = experienceRoleRepository.findByLevelAndRoleServer(level, server);
         existingExperienceRoles.forEach(existingRole -> {
             experienceRoleRepository.delete(existingRole);

@@ -17,34 +17,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class SetRole extends AbstractConditionableCommand {
-
-    @Autowired
-    private ExperienceRoleService experienceRoleService;
+public class UnSetExpRole extends AbstractConditionableCommand {
 
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private ExperienceRoleService experienceRoleService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
+        Long roleId = (Long) commandContext.getParameters().getParameters().get(0);
         ARole role = roleManagementService.findRole(roleId);
-        experienceRoleService.setRoleToLevel(role, level, commandContext.getUserInitiatedContext().getServer());
+        experienceRoleService.unsetRole(role, commandContext.getUserInitiatedContext().getServer());
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("level").type(Integer.class).build());
         parameters.add(Parameter.builder().name("roleId").type(Long.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Sets the role to a certain level").usage("setRole <level> <roleId>").build();
+        HelpInfo helpInfo = HelpInfo.builder().longHelp("Removes the role from the experience tracking").usage("unSetExpRole <roleId>").build();
         return CommandConfiguration.builder()
-                .name("setRole")
+                .name("unSetExpRole")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Sets the role to a certain level")
+                .description("Removes the role from experience tracking")
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

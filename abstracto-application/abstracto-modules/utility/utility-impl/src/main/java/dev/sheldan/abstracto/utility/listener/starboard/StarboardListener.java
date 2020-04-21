@@ -74,6 +74,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+            log.trace("User {} in server {} reacted with star to put a message {} on starboard.", userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), message.getMessageId());
             Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
                 updateStarboardPost(message, reactionOptional.orElse(null), userAdding, true);
         }
@@ -85,28 +86,31 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
             List<AUser> userExceptAuthor = getUsersExcept(reaction.getUsers(), message.getAuthorId());
             Double starMinimum = getFromConfig("starLvl1", message.getServerId());
             if (userExceptAuthor.size() >= starMinimum) {
+                log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
+                        message.getMessageId(), message.getChannelId(), message.getServerId());
                 AUserInAServer author = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
                 if(starboardPostOptional.isPresent()) {
                     StarboardPost starboardPost = starboardPostOptional.get();
                     starboardPost.setIgnored(false);
                     starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor);
                     if(adding) {
+                        log.trace("Adding reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
                         starboardPostReactorManagementService.addReactor(starboardPost, userReacting.getUserReference());
                     } else {
+                        log.trace("Removing reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
                         starboardPostReactorManagementService.removeReactor(starboardPost, userReacting.getUserReference());
                     }
                 } else {
+                    log.info("Creating starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
                     starboardService.createStarboardPost(message, userExceptAuthor, userReacting, author);
                 }
             } else {
-                if(starboardPostOptional.isPresent()) {
-                    this.completelyRemoveStarboardPost(starboardPostOptional.get());
-                }
+                log.info("Removing starboard post for message {} in channel {} in server {}. It fell under the threshold {}", message.getMessageId(), message.getChannelId(), message.getServerId(), starMinimum);
+                starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
             }
         } else {
-            if(starboardPostOptional.isPresent()) {
-                this.completelyRemoveStarboardPost(starboardPostOptional.get());
-            }
+            log.info("Removing starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
+            starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
         }
     }
 
@@ -127,6 +131,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+            log.trace("User {} in server {} removed star reaction from message {} on starboard.",
+                    userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), message.getMessageId());
             Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
                 updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);
         }

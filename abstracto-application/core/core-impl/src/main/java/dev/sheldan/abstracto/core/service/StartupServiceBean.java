@@ -69,7 +69,7 @@ public class StartupServiceBean implements Startup {
         availableServers.forEach(aLong -> {
             AServer newAServer = serverManagementService.loadOrCreate(aLong);
             Guild newGuild = instance.getGuildById(aLong);
-            log.debug("Synchronizing server: {}", aLong);
+            log.trace("Synchronizing server: {}", aLong);
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
@@ -89,7 +89,7 @@ public class StartupServiceBean implements Startup {
         Set<Long> newRoles = SetUtils.disjunction(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
             ARole newRole = roleManagementService.createRole(aLong, existingAServer);
-            log.debug("Adding new role: {}", aLong);
+            log.trace("Adding new role: {}", aLong);
             existingAServer.getRoles().add(newRole);
         });
     }
@@ -102,7 +102,7 @@ public class StartupServiceBean implements Startup {
         Set<Long> newChannels = SetUtils.difference(existingChannelsIds, knownChannelsIds);
         newChannels.forEach(aLong -> {
             GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
-            log.debug("Adding new channel: {}", aLong);
+            log.trace("Adding new channel: {}", aLong);
             AChannelType type = AChannel.getAChannelType(channel1.getType());
             AChannel newChannel = channelManagementService.createChannel(channel1.getIdLong(), type);
             serverManagementService.addChannelToServer(existingServer, newChannel);

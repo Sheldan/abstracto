@@ -6,8 +6,10 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
 import dev.sheldan.abstracto.experience.service.ExperienceTrackerService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class SyncRoles extends AbstractConditionableCommand {
 
     @Autowired
@@ -22,7 +25,9 @@ public class SyncRoles extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        experienceTrackerService.syncUserRolesWithFeedback(commandContext.getUserInitiatedContext().getServer(), commandContext.getUserInitiatedContext().getChannel());
+        AServer server = commandContext.getUserInitiatedContext().getServer();
+        log.info("Synchronizing roles on server {}", server.getId());
+        experienceTrackerService.syncUserRolesWithFeedback(server, commandContext.getUserInitiatedContext().getChannel());
         return CommandResult.fromSuccess();
     }
 

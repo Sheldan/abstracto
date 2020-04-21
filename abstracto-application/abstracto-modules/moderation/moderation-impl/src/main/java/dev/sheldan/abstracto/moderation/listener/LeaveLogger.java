@@ -43,6 +43,7 @@ public class LeaveLogger implements LeaveListener {
 
     @Override
     public void execute(Member member, Guild guild) {
+        log.info("User {} left server {}.", member.getUser().getId(), guild.getIdLong());
         String text = templateService.renderTemplateWithMap(USER_LEAVE_TEMPLATE, getUserParameter(member.getUser()));
         postTargetService.sendTextInPostTarget(text, LEAVE_LOG_TARGET, guild.getIdLong());
     }

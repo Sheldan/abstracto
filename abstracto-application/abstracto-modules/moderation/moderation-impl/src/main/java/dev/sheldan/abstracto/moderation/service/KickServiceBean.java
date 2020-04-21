@@ -31,6 +31,7 @@ public class KickServiceBean implements KickService {
     @Override
     public void kickMember(Member member, String reason, KickLogModel kickLogModel)  {
         Optional<Guild> guildById = botService.getGuildById(kickLogModel.getGuild().getIdLong());
+        log.info("Kicking user {} from guild {}", member.getUser().getIdLong(), member.getGuild().getIdLong());
         if(guildById.isPresent()) {
             guildById.get().kick(member, reason).queue();
             this.sendKickLog(kickLogModel);

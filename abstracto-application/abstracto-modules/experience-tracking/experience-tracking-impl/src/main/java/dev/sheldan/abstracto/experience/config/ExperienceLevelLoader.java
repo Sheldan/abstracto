@@ -21,6 +21,7 @@ public class ExperienceLevelLoader {
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
         Integer maxLevel = experienceConfig.getMaxLvl();
         Long experience = 0L;
+        log.info("Setting up experience level configuration.");
         experienceLevelService.createExperienceLevel(0, 0L);
         for (int i = 1; i < maxLevel; i++) {
             experience = experience + experienceLevelService.calculateExperienceForLevel(i - 1);

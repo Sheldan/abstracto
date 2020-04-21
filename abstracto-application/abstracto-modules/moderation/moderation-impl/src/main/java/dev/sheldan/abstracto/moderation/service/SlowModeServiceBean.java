@@ -20,6 +20,7 @@ public class SlowModeServiceBean implements SlowModeService {
 
     @Override
     public void setSlowMode(TextChannel channel, Duration duration) {
+        log.info("Setting slow mode to {} in channel {} in server {}", duration.toString(), channel.getIdLong(), channel.getGuild().getId());
         long seconds = duration.getSeconds();
         if(seconds > TextChannel.MAX_SLOWMODE) {
             throw new IllegalArgumentException("Slow mode duration must be < " + TextChannel.MAX_SLOWMODE + " seconds.");

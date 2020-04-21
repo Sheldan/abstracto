@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.utility.listener.embed;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
@@ -48,12 +49,14 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
         AEmote aEmote = emoteService.getEmoteOrFakeEmote(REMOVAL_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = reaction.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
+        log.trace("Removing embed in message {} in channel {} in server {} because of a user reaction.", message.getMessageId(), message.getChannelId(), message.getServerId());
         if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
             if(embeddedMessageOptional.isPresent()) {
                 EmbeddedMessage embeddedMessage = embeddedMessageOptional.get();
-                if(embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(userAdding.getUserReference().getId())
-                    || embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(userAdding.getUserReference().getId())
+                AUser userReacting = userAdding.getUserReference();
+                if(embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(userReacting.getId())
+                    || embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(userReacting.getId())
                 ) {
                     messageService.deleteMessageInChannelInServer(message.getServerId(), message.getChannelId(), message.getMessageId()).thenAccept(aVoid -> {
                         messageEmbedPostManagementService.deleteEmbeddedMessageTransactional(embeddedMessage);
