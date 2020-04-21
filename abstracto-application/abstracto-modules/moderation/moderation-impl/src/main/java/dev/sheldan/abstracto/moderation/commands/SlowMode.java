@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.SlowModeService;
@@ -26,20 +27,26 @@ public class SlowMode extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         TextChannel channel;
-        long seconds = (Long) commandContext.getParameters().getParameters().get(0);
+        String durationString = (String) commandContext.getParameters().getParameters().get(0);
+        Duration duration;
+        if(durationString.equalsIgnoreCase("off")) {
+            duration = Duration.ZERO;
+        } else {
+            duration = ParseUtils.parseDuration(durationString);
+        }
         if(commandContext.getParameters().getParameters().size() == 2) {
             channel = (TextChannel) commandContext.getParameters().getParameters().get(1);
         } else {
             channel = commandContext.getChannel();
         }
-        slowModeService.setSlowMode(channel, Duration.ofSeconds(seconds));
+        slowModeService.setSlowMode(channel, duration);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("seconds").type(Long.class).optional(false).build());
+        parameters.add(Parameter.builder().name("duration").type(String.class).optional(false).build());
         parameters.add(Parameter.builder().name("channel").type(TextChannel.class).optional(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

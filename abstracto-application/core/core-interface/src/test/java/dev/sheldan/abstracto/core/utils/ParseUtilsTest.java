@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.utils;
 
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -40,5 +41,10 @@ public class ParseUtilsTest {
     public void overFlowingTimeFormats() {
         Duration duration = ParseUtils.parseDuration("70s");
         assertEquals(Duration.ofMinutes(1).plus(Duration.ofSeconds(10)), duration);
+    }
+
+    @Test(expected = AbstractoRunTimeException.class)
+    public void invalidTimeFormat() {
+        ParseUtils.parseDuration("1k");
     }
 }

@@ -7,5 +7,6 @@ import java.time.Duration;
 
 public interface SlowModeService {
     void setSlowMode(TextChannel channel, Duration duration);
+    void disableSlowMOde(TextChannel channel);
     void setSlowMode(AChannel channel, Duration duration);
 }

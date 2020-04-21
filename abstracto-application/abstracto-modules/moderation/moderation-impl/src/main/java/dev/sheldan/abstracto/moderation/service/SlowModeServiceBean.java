@@ -29,6 +29,11 @@ public class SlowModeServiceBean implements SlowModeService {
     }
 
     @Override
+    public void disableSlowMOde(TextChannel channel) {
+        setSlowMode(channel, Duration.ZERO);
+    }
+
+    @Override
     public void setSlowMode(AChannel channel, Duration duration)  {
         Optional<TextChannel> textChannelOptional = botService.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
         if(textChannelOptional.isPresent()) {
