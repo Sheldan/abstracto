@@ -35,6 +35,10 @@ public class StarboardPost {
     @JoinColumn(name = "channelId")
     private AChannel starboardChannel;
 
+    @ManyToOne
+    @JoinColumn(name = "sourceChannelId")
+    private AChannel sourceChanel;
+
     @Transient
     private Integer reactionCount;
 

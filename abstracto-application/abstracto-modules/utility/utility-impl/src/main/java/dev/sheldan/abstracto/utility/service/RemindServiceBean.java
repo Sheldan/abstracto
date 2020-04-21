@@ -28,9 +28,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Component
 @Slf4j
@@ -80,8 +78,14 @@ public class RemindServiceBean implements ReminderService {
             log.trace("Directly scheduling the reminder, because it was below the threshold.");
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> {
-                self.executeReminder(reminder.getId());
+                try {
+                    self.executeReminder(reminder.getId());
+                } catch (Exception exception) {
+                    log.error("Failed to remind immediately.", exception);
+                }
             }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
+
+
         } else {
             log.trace("Starting scheduled job to execute reminder.");
             JobDataMap parameters = new JobDataMap();
@@ -109,6 +113,7 @@ public class RemindServiceBean implements ReminderService {
                         .builder()
                         .reminder(reminderToRemindFor)
                         .member(memberInServer)
+                        .duration(Duration.between(reminderToRemindFor.getReminderDate(), reminderToRemindFor.getTargetDate()))
                         .build();
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
                 channelService.sendMessageToEndInTextChannel(messageToSend, channelToAnswerIn.get());

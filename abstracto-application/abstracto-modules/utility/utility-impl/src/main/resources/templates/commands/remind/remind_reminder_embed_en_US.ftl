@@ -8,6 +8,20 @@
     "g": 0,
     "b": 255
   },
-  "description": "You wanted to be reminded of: '${reminder.text}'. Original message was [here](${messageUrl}).",
+  "description": "You wanted to be reminded.",
+  "fields": [
+    {
+        "name": "Duration",
+        "value": "${fmtDuration(duration)}"
+    },
+    {
+        "name": "Note",
+        "value": "${reminder.text}"
+    },
+    {
+        "name": "Link",
+        "value": "[Jump!](${messageUrl})"
+    }
+  ],
   "additionalMessage": "${member.asMention}"
 }

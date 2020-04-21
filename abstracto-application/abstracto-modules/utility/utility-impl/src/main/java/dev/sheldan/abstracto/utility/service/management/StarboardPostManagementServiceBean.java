@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.repository.StarboardPostRepository;
@@ -32,6 +33,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
                 .postMessageId(starredMessage.getMessageId())
                 .starboardMessageId(starboardPost.getMessageId())
                 .starboardChannel(starboardPost.getChannel())
+                .sourceChanel(AChannel.builder().id(starredMessage.getChannelId()).build())
                 .starredDate(Instant.now())
                 .build();
         repository.save(post);
