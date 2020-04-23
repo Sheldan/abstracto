@@ -13,7 +13,7 @@ import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardModel;
-import dev.sheldan.abstracto.experience.service.ExperienceTrackerService;
+import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -30,7 +30,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
 
     public static final String LEADERBOARD_POST_EMBED_TEMPLATE = "leaderboard_post";
     @Autowired
-    private ExperienceTrackerService experienceTrackerService;
+    private AUserExperienceService userExperienceService;
 
     @Autowired
     private UserExperienceManagementService userExperienceManagementService;
@@ -48,12 +48,13 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
+        // parameter is optional, in case its not present, we default to the 0th page
         Integer page = parameters.size() > 0 ? (Integer) parameters.get(0) : 0;
-        LeaderBoard leaderBoard = experienceTrackerService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
+        LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
         LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.fromCommandContext(commandContext, LeaderBoardModel.class);
         leaderBoardModel.setUserExperiences(converter.fromLeaderBoard(leaderBoard));
 
-        LeaderBoardEntry userRank = experienceTrackerService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
+        LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         leaderBoardModel.setUserExecuting(converter.fromLeaderBoardEntry(userRank));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADERBOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
         channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());

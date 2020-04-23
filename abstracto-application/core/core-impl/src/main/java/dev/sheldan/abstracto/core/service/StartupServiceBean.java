@@ -104,8 +104,7 @@ public class StartupServiceBean implements Startup {
             GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
             log.trace("Adding new channel: {}", aLong);
             AChannelType type = AChannel.getAChannelType(channel1.getType());
-            AChannel newChannel = channelManagementService.createChannel(channel1.getIdLong(), type);
-            serverManagementService.addChannelToServer(existingServer, newChannel);
+            channelManagementService.createChannel(channel1.getIdLong(), type, existingServer);
         });
 
         Set<Long> noLongAvailable = SetUtils.difference(knownChannelsIds, existingChannelsIds);

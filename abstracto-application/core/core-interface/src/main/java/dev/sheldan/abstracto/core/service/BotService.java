@@ -2,11 +2,10 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
@@ -19,6 +18,7 @@ public interface BotService {
     JDA getInstance();
     GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
+    Member getMemberInServer(AServer server, AUser member);
     CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId);
     Optional<Emote> getEmote(Long serverId, AEmote emote);
     Optional<TextChannel> getTextChannelFromServer(Guild serverId, Long textChannelId);

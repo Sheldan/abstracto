@@ -6,6 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Member;
 
+/**
+ * Model used in the list of members when rendering the leaderboard command. The reason this is necessary,
+ * is because we need more than just the {@link AUserExperience} object, we also need the position of the user in this
+ * guild and the {@link Member} for convenience in the templates.
+ */
 @Getter
 @Setter
 @Builder

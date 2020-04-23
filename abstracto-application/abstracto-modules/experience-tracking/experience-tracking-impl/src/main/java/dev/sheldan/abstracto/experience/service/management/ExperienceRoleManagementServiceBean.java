@@ -18,8 +18,13 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     @Autowired
     private ExperienceRoleRepository experienceRoleRepository;
 
+    /**
+     * Removes all assignments of roles for the given level
+     * @param level The level to remove the roles for
+     * @param server The server in which this should happen
+     */
     @Override
-    public void unSetLevelInServer(AExperienceLevel level, AServer server) {
+    public void removeAllRoleAssignmentsForLevelInServer(AExperienceLevel level, AServer server) {
         log.trace("Removing all role assignments for level {}.", level.getLevel());
         List<AExperienceRole> existingExperienceRoles = experienceRoleRepository.findByLevelAndRoleServer(level, server);
         existingExperienceRoles.forEach(existingRole -> {
@@ -38,7 +43,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     }
 
     @Override
-    public List<AExperienceRole> getExperienceRoleForServer(AServer server) {
+    public List<AExperienceRole> getExperienceRolesForServer(AServer server) {
         return experienceRoleRepository.findByRoleServer(server);
     }
 

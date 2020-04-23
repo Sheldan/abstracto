@@ -24,7 +24,8 @@ public class Suggestion {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "suggesterId")
+    @JoinColumn(name = "suggesterId",
+            nullable = false)
     private AUserInAServer suggester;
 
     @Getter

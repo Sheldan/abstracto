@@ -24,7 +24,7 @@ public class Reminder {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "remindedUser")
+    @JoinColumn(name = "remindedUser", nullable = false)
     private AUserInAServer remindedUser;
 
     @Getter
@@ -32,12 +32,12 @@ public class Reminder {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "channelId")
+    @JoinColumn(name = "channelId", nullable = false)
     private AChannel channel;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "serverId")
+    @JoinColumn(name = "serverId", nullable = false)
     private AServer server;
 
     @Getter

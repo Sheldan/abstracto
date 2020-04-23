@@ -44,7 +44,6 @@ public class ChannelListener extends ListenerAdapter {
         AServer serverObject = serverRepository.getOne(event.getGuild().getIdLong());
         TextChannel createdChannel = event.getChannel();
         AChannelType type = AChannel.getAChannelType(createdChannel.getType());
-        AChannel newChannel = channelManagementService.createChannel(createdChannel.getIdLong(), type);
-        serverManagementService.addChannelToServer(serverObject, newChannel);
+        channelManagementService.createChannel(createdChannel.getIdLong(), type, serverObject);
     }
 }

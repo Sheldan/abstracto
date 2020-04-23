@@ -26,7 +26,7 @@ public class AChannel implements SnowFlake {
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "server_id")
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Getter

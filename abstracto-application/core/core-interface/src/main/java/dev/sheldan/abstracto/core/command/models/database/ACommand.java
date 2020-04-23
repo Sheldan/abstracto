@@ -21,7 +21,7 @@ public class ACommand {
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "module_id")
+    @JoinColumn(name = "module_id", nullable = false)
     private AModule module;
 
 }

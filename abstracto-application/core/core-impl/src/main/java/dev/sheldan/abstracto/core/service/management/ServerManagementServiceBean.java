@@ -42,7 +42,6 @@ public class ServerManagementServiceBean implements ServerManagementService {
     public void addChannelToServer(AServer server, AChannel channel) {
         server.getChannels().add(channel);
         channel.setServer(server);
-        repository.save(server);
     }
 
     @Override

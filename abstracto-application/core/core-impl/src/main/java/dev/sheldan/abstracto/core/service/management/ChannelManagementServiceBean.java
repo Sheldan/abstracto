@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ChannelRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +21,16 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     }
 
     @Override
-    public AChannel createChannel(Long id, AChannelType type) {
+    public AChannel createChannel(Long id, AChannelType type, AServer server) {
         log.info("Creating channel {} with type {}", id, type);
-        return repository.save(AChannel.builder().id(id).type(type).deleted(false).build());
+        AChannel build = AChannel
+                .builder()
+                .id(id)
+                .type(type)
+                .server(server)
+                .deleted(false)
+                .build();
+        return repository.save(build);
     }
 
     @Override

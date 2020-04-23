@@ -22,7 +22,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
             createConfig(serverId, name, value);
         } else {
             config.setStringValue(value);
-            configRepository.save(config);
         }
     }
 
@@ -33,7 +32,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
             createConfig(serverId, name, value);
         } else {
             config.setDoubleValue(value);
-            configRepository.save(config);
         }
     }
 
@@ -95,7 +93,6 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public void setDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         config.setDoubleValue(value);
-        configRepository.save(config);
     }
 
 }

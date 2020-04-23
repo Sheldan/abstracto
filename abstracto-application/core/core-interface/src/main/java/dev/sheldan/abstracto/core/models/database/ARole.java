@@ -13,13 +13,14 @@ import javax.persistence.*;
 public class ARole implements SnowFlake {
 
     @Id
-    @Getter @Setter
+    @Getter
+    @Setter
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "role_server_id")
+    @JoinColumn(name = "role_server_id", nullable = false)
     private AServer server;
 
     @Getter

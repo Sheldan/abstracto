@@ -36,6 +36,7 @@ public class AEmote {
     private Boolean custom;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "emote_server_id", nullable = false)
     private AServer serverRef;
 
 

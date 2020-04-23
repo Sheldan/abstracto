@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Listener responsible to configure the required experience configurations in case the bot joins a new server.
+ */
 @Component
 @Slf4j
 public class ExperienceConfigListener implements ServerConfigListener {

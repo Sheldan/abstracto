@@ -19,11 +19,11 @@ public class StarboardPostReaction {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "reactorId")
+    @JoinColumn(name = "reactorId", nullable = false)
     private AUser reactor;
 
     @ManyToOne
-    @JoinColumn(name = "postId")
+    @JoinColumn(name = "postId", nullable = false)
     private StarboardPost starboardPost;
 
 }

@@ -41,11 +41,11 @@ public class SetExpRole extends AbstractConditionableCommand {
         Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
         ARole role = roleManagementService.findRole(roleId);
         AServer server = commandContext.getUserInitiatedContext().getServer();
-        if(!roleService.isRoleInServer(server, role)) {
+        if(!roleService.isRoleInServer(role)) {
             throw new RoleException("Role not found.");
         }
         log.info("Setting role  {} to be used for level {} on server {}", roleId, level, server.getId());
-        experienceRoleService.setRoleToLevel(role, level, server);
+        experienceRoleService.setRoleToLevel(role, level, server, commandContext.getUserInitiatedContext().getChannel());
         return CommandResult.fromSuccess();
     }
 

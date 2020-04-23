@@ -14,7 +14,13 @@ public class RoleManagementServiceBean implements RoleManagementService {
 
     @Override
     public ARole createRole(Long id, AServer server) {
-        return repository.save(ARole.builder().id(id).server(server).deleted(false).build());
+        ARole build = ARole
+                .builder()
+                .id(id)
+                .server(server)
+                .deleted(false)
+                .build();
+        return repository.save(build);
     }
 
     @Override
@@ -25,6 +31,5 @@ public class RoleManagementServiceBean implements RoleManagementService {
     @Override
     public void markDeleted(ARole role) {
         role.setDeleted(true);
-        repository.save(role);
     }
 }

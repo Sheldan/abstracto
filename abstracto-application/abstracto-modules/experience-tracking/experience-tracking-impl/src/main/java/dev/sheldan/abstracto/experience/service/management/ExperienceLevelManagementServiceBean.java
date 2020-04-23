@@ -35,11 +35,6 @@ public class ExperienceLevelManagementServiceBean implements ExperienceLevelMana
     }
 
     @Override
-    public AExperienceLevel getLevelClosestTo(Long experience) {
-        return experienceLevelRepository.findTopByExperienceNeededGreaterThanOrderByExperienceNeededAsc(experience);
-    }
-
-    @Override
     public List<AExperienceLevel> getLevelConfig() {
         return experienceLevelRepository.findAll();
     }

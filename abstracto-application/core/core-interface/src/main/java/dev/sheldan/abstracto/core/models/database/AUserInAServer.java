@@ -17,10 +17,10 @@ public class AUserInAServer {
     private Long userInServerId;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "userReference")
+    @JoinColumn(name = "userReference", nullable = false)
     private AUser userReference;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "serverReference")
+    @JoinColumn(name = "serverReference", nullable = false)
     private AServer serverReference;
 }

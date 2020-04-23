@@ -18,22 +18,22 @@ public class EmbeddedMessage {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddedUser")
+    @JoinColumn(name = "embeddedUser", nullable = false)
     private AUserInAServer embeddedUser;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddingUser")
+    @JoinColumn(name = "embeddingUser", nullable = false)
     private AUserInAServer embeddingUser;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "originalServer")
+    @JoinColumn(name = "originalServer", nullable = false)
     private AServer embeddedServer;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "originalChannel")
+    @JoinColumn(name = "originalChannel", nullable = false)
     private AChannel embeddedChannel;
 
     @Column
@@ -41,12 +41,12 @@ public class EmbeddedMessage {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddingServer")
+    @JoinColumn(name = "embeddingServer", nullable = false)
     private AServer embeddingServer;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddingChannel")
+    @JoinColumn(name = "embeddingChannel", nullable = false)
     private AChannel embeddingChannel;
 
     @Column

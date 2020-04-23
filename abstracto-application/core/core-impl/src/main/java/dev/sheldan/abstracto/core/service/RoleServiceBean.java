@@ -3,11 +3,11 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.RoleException;
 import dev.sheldan.abstracto.core.models.database.ARole;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -72,12 +72,27 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
-    public boolean isRoleInServer(AServer server, ARole role) {
-        Optional<Guild> guildById = botService.getGuildById(server.getId());
+    public Role getRoleFromGuild(ARole role) {
+        Optional<Guild> guildById = botService.getGuildById(role.getServer().getId());
         if(guildById.isPresent()) {
-            return guildById.get().getRoleById(role.getId()) != null;
+            return guildById.get().getRoleById(role.getId());
         } else {
-            throw new GuildException(String.format("Failed to load guild %s.", server.getId()));
+            throw new GuildException(String.format("Failed to load guild %s.", role.getServer().getId()));
         }
+    }
+
+    @Override
+    public boolean memberHasRole(Member member, Role role) {
+        return member.getRoles().stream().anyMatch(role1 -> role1.getIdLong() == role.getIdLong());
+    }
+
+    @Override
+    public boolean memberHasRole(Member member, ARole role) {
+        return member.getRoles().stream().anyMatch(role1 -> role1.getIdLong() == role.getId());
+    }
+
+    @Override
+    public boolean isRoleInServer(ARole role) {
+       return getRoleFromGuild(role) != null;
     }
 }

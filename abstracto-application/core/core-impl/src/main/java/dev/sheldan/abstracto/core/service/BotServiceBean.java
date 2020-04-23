@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -67,6 +69,11 @@ public class BotServiceBean implements BotService {
         } else {
             throw new RuntimeException(String.format("Member %s not found in guild %s", memberId, serverId));
         }
+    }
+
+    @Override
+    public Member getMemberInServer(AServer server, AUser member) {
+        return getMemberInServer(server.getId(), member.getId());
     }
 
     @Override

@@ -20,6 +20,7 @@ import java.util.List;
 public class ExpScale extends AbstractConditionableCommand {
 
     public static final String EXP_MULTIPLIER_KEY = "expMultiplier";
+
     @Autowired
     private ConfigService configService;
 

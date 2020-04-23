@@ -18,7 +18,6 @@ public class AUser {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "userReference",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<AUserInAServer> servers;
 }

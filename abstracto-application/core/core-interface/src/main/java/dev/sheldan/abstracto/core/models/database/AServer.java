@@ -23,7 +23,6 @@ public class AServer implements SnowFlake {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
             orphanRemoval = true)
     @Builder.Default
     @JoinColumn(name = "role_server_id")
@@ -31,7 +30,7 @@ public class AServer implements SnowFlake {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             orphanRemoval = true)
     @Builder.Default
     @JoinColumn(name = "server_id")
@@ -39,7 +38,7 @@ public class AServer implements SnowFlake {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             orphanRemoval = true)
     @Builder.Default
     @JoinColumn(name = "group_server")
@@ -47,15 +46,17 @@ public class AServer implements SnowFlake {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "serverReference",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true)
+    @JoinColumn(name = "serverReference")
     @Builder.Default
     private List<AUserInAServer> users = new ArrayList<>();
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "serverRef",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true)
+    @JoinColumn(name = "emote_server_id")
     @Builder.Default
     private List<AEmote> emotes = new ArrayList<>();
 

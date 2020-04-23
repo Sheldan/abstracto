@@ -23,12 +23,12 @@ public class Warning {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "warnedUserId")
+    @JoinColumn(name = "warnedUserId", nullable = false)
     private AUserInAServer warnedUser;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "warningUserId")
+    @JoinColumn(name = "warningUserId", nullable = false)
     private AUserInAServer warningUser;
 
     @Getter

@@ -7,6 +7,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Component responsible to create the amount of {@link dev.sheldan.abstracto.experience.models.database.AExperienceLevel}
+ * configured in the {@link ExperienceConfig}. This is executed when the application starts up.
+ */
 @Component
 @Slf4j
 public class ExperienceLevelLoader {
@@ -20,12 +24,7 @@ public class ExperienceLevelLoader {
     @EventListener
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
         Integer maxLevel = experienceConfig.getMaxLvl();
-        Long experience = 0L;
         log.info("Setting up experience level configuration.");
-        experienceLevelService.createExperienceLevel(0, 0L);
-        for (int i = 1; i < maxLevel; i++) {
-            experience = experience + experienceLevelService.calculateExperienceForLevel(i - 1);
-            experienceLevelService.createExperienceLevel(i, experience);
-        }
+        experienceLevelService.createLevelsUntil(maxLevel);
     }
 }

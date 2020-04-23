@@ -19,7 +19,7 @@ public class FeatureEnabledCondition implements CommandCondition {
         String reason = "";
         if(featureName != null) {
             featureFlagValue = featureFlagManagementService.getFeatureFlagValue(featureName, context.getGuild().getIdLong());
-            reason = "Feature has been disabled.";
+            reason = "Feature has been disabled. Necessary feature is: " + featureName;
         }
         return ConditionResult.builder().reason(reason).result(featureFlagValue).build();
     }

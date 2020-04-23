@@ -25,7 +25,7 @@ public class AChannelGroup {
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "group_server")
+    @JoinColumn(name = "group_server", nullable = false)
     private AServer server;
 
     @ManyToMany

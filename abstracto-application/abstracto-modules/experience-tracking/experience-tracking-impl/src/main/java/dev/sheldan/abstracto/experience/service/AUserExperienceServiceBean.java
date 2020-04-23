@@ -3,10 +3,11 @@ package dev.sheldan.abstracto.experience.service;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.RoleService;
-import dev.sheldan.abstracto.experience.LeaderBoardEntryResult;
+import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
@@ -19,6 +20,7 @@ import dev.sheldan.abstracto.experience.service.management.UserExperienceManagem
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,10 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 @Component
 @Slf4j
-public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
+public class AUserExperienceServiceBean implements AUserExperienceService {
 
     private HashMap<Long, List<AServer>> runtimeExperience = new HashMap<>();
 
@@ -39,6 +42,9 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
 
     @Autowired
     private ExperienceLevelService experienceLevelService;
+
+    @Autowired
+    private ExperienceRoleService experienceRoleService;
 
     @Autowired
     private ExperienceLevelManagementService experienceLevelManagementService;
@@ -58,6 +64,13 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private BotService botService;
+
+    /**
+     * Creates the user in the runtime experience, if the user was not in yet. Also creates an entry for the minute, if necessary.
+     * @param userInAServer The {@link AUserInAServer} to be added to the list of users gaining experience
+     */
     @Override
     public void addExperience(AUserInAServer userInAServer) {
         log.trace("Adding experience for user {} in server {}", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
@@ -85,11 +98,17 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
         return runtimeExperience;
     }
 
+    /**
+     * Calculates the level of the given {@link AUserExperience} accoring to the given {@link AExperienceLevel} list
+     * @param experience The {@link AUserExperience} to calculate the level for
+     * @param levels The list of {@link AExperienceLevel} representing the level configuration
+     * @return The appropriate level according to the level config
+     */
     @Override
-    public Integer calculateLevel(AUserExperience userInAServer, List<AExperienceLevel> levels) {
+    public Integer calculateLevel(AUserExperience experience, List<AExperienceLevel> levels) {
         AExperienceLevel lastLevel = levels.get(0);
         for (AExperienceLevel level : levels) {
-            if(level.getExperienceNeeded() >= userInAServer.getExperience()) {
+            if(level.getExperienceNeeded() >= experience.getExperience()) {
                 return lastLevel.getLevel();
             } else {
                 lastLevel = level;
@@ -99,34 +118,26 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
     }
 
     @Override
-    public AExperienceRole calculateRole(AUserExperience userInAServer, List<AExperienceRole> roles) {
-        if(roles.size() == 0) {
-            return null;
-        }
-        AExperienceRole lastRole = null;
-        for (AExperienceRole experienceRole : roles) {
-            if(userInAServer.getCurrentLevel().getLevel() >= experienceRole.getLevel().getLevel()) {
-                lastRole = experienceRole;
-            } else {
-                return lastRole;
-            }
-        }
-        return lastRole;
-    }
-
-    @Override
-    public void increaseExpForUser(AUserExperience userInAServer, Long experience, List<AExperienceLevel> levels) {
-        AUserInAServer user = userInAServer.getUser();
-        log.trace("Increasing experience for user {} in server {} by {}.", user.getUserReference().getId(), user.getServerReference().getId(), experience);
-        userInAServer.setExperience(userInAServer.getExperience() + experience);
-        Integer correctLevel = calculateLevel(userInAServer, levels);
-        Integer currentLevel = userInAServer.getCurrentLevel() != null ? userInAServer.getCurrentLevel().getLevel() : 0;
+    public boolean updateUserlevel(AUserExperience userExperience, List<AExperienceLevel> levels) {
+        AUserInAServer user = userExperience.getUser();
+        Integer correctLevel = calculateLevel(userExperience, levels);
+        Integer currentLevel = userExperience.getCurrentLevel() != null ? userExperience.getCurrentLevel().getLevel() : 0;
         if(!correctLevel.equals(currentLevel)) {
             log.info("User {} leveled from {} to {}", user.getUserReference().getId(), currentLevel, correctLevel);
-            userInAServer.setCurrentLevel(experienceLevelManagementService.getLevel(correctLevel));
+            userExperience.setCurrentLevel(experienceLevelManagementService.getLevel(correctLevel));
+            return true;
         }
+        return false;
     }
 
+    /**
+     * Calculates the actually gained experience for every user in the given servers and adds them to the users.
+     * This method only actually increases the message count, and calls other methods for experience gain
+     * and role change.
+     * Loads the level and role configuration for each server and sorts them for them to be used.
+     * Only actually updates the role, if the user also changed level.
+     * @param servers The list of {@link AServer} containing the user which need to gain experience
+     */
     @Transactional
     @Override
     public void handleExperienceGain(List<AServer> servers) {
@@ -137,93 +148,133 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
             Integer multiplier = configService.getDoubleValue("expMultiplier", serverExp.getId()).intValue();
             PrimitiveIterator.OfInt iterator = new Random().ints(serverExp.getUsers().size(), minExp, maxExp + 1).iterator();
             List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
-            List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(serverExp);
             levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
+            List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(serverExp);
             roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
             serverExp.getUsers().forEach(userInAServer -> {
                 Integer gainedExperience = iterator.next();
                 gainedExperience *= multiplier;
                 log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
-                AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
-                increaseExpForUser(userExperience, gainedExperience.longValue(), levels);
-                userExperience.setMessageCount(userExperience.getMessageCount() + 1);
-                handleExperienceRoleForUser(userExperience, roles);
+                AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
+                updateUserlevel(aUserExperience, levels);
+                updateUserRole(aUserExperience, roles);
+                userExperienceManagementService.saveUser(aUserExperience);
             });
         });
     }
 
+    /**
+     * Calculates the appropriate level of the user and changes the role, if the {@link AExperienceLevel} changes.
+     * This changes the config in the database, and also gives the {@link net.dv8tion.jda.api.entities.Member} the new
+     * {@link net.dv8tion.jda.api.entities.Role}. If the user does not warrant an {@link AExperienceRole},
+     * this method also removes it. The role is only changed, if the user does not have
+     * @param userExperience The {@link AUserExperience} object to recalculate the {@link AExperienceRole} for
+     * @param roles The list of {@link AExperienceRole} used as a role configuration
+     */
     @Override
-    public void handleExperienceRoleForUser(AUserExperience userExperience, List<AExperienceRole> roles) {
+    public void updateUserRole(AUserExperience userExperience, List<AExperienceRole> roles) {
         AUserInAServer user = userExperience.getUser();
         log.trace("Updating experience role for user {} in server {}", user.getUserReference().getId(), user.getServerReference().getId());
-        AExperienceRole role = calculateRole(userExperience, roles);
+        AExperienceRole role = experienceRoleService.calculateRole(userExperience, roles);
+        Member member = botService.getMemberInServer(user.getServerReference(), user.getUserReference());
         boolean currentlyHasNoExperienceRole = userExperience.getCurrentExperienceRole() == null;
         if(role == null) {
             if(!currentlyHasNoExperienceRole){
                 roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
             }
+            userExperience.setCurrentExperienceRole(null);
             return;
         }
-        if(currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId())) {
-            log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
-            if(!currentlyHasNoExperienceRole) {
-                roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
+        boolean userHasRoleAlready = roleService.memberHasRole(member, role.getRole());
+        if(!userHasRoleAlready) {
+            if(currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId())) {
+                log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
+                if(!currentlyHasNoExperienceRole) {
+                    roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
+                }
+                roleService.addRoleToUser(user, role.getRole());
             }
-            userExperience.setCurrentExperienceRole(role);
-            roleService.addRoleToUser(user, userExperience.getCurrentExperienceRole().getRole());
         }
+        userExperience.setCurrentExperienceRole(role);
     }
 
+    /**
+     * Synchronizes the {@link net.dv8tion.jda.api.entities.Role} of all {@link net.dv8tion.jda.api.entities.Member} in
+     * the given {@link AServer}. This might take a long time to complete, because there are a lot of role changes.
+     * @param server The {@link AServer} to update the users for
+     */
     @Override
     public void syncUserRoles(AServer server) {
         List<AUserExperience> aUserExperiences = userExperienceManagementService.loadAllUsers(server);
         log.info("Found {} users to synchronize", aUserExperiences.size());
-        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(server);
+        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
         for (int i = 0; i < aUserExperiences.size(); i++) {
             AUserExperience userExperience = aUserExperiences.get(i);
             log.trace("Synchronizing {} out of {}", i, aUserExperiences.size());
-            handleExperienceRoleForUser(userExperience, roles);
+            updateUserRole(userExperience, roles);
         }
     }
 
+    /**
+     * Synchronizes the roles of all the users and provides feedback to the user executing
+     * @param server The {@link AServer} to update users for
+     * @param channel The {@link AChannel} in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel}
+     */
     @Override
     public void syncUserRolesWithFeedback(AServer server, AChannel channel) {
         List<AUserExperience> aUserExperiences = userExperienceManagementService.loadAllUsers(server);
         log.info("Found {} users to synchronize", aUserExperiences.size());
-        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(server);
-        UserSyncStatusModel statusModel = UserSyncStatusModel.builder().currentCount(0).totalUserCount(aUserExperiences.size()).build();
-        MessageToSend status = templateService.renderEmbedTemplate("status_message", statusModel);
-        try {
-            Message statusMessage = messageService.createStatusMessage(status, channel).get();
-            int interval = Math.min(aUserExperiences.size() / 10, 100);
-            for (int i = 0; i < aUserExperiences.size(); i++) {
-                if((i % interval) == 1) {
-                    log.trace("Updating feedback message with new index {} out of {}", i, aUserExperiences.size());
-                    UserSyncStatusModel incrementalStatusModel = UserSyncStatusModel.builder().currentCount(i).totalUserCount(aUserExperiences.size()).build();
-                    status = templateService.renderEmbedTemplate("status_message", incrementalStatusModel);
-                    messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
-                }
-                log.trace("Synchronizing {} out of {}", i, aUserExperiences.size());
-                AUserExperience userExperience = aUserExperiences.get(i);
-                handleExperienceRoleForUser(userExperience, roles);
-            }
-            UserSyncStatusModel incrementalStatusModel = UserSyncStatusModel.builder().currentCount(aUserExperiences.size()).totalUserCount(aUserExperiences.size()).build();
-            status = templateService.renderEmbedTemplate("status_message", incrementalStatusModel);
-            messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
+        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+        executeActionOnUserExperiencesWithFeedBack(aUserExperiences, channel, (AUserExperience experience) -> {
+            updateUserRole(experience, roles);
+        });
     }
 
+    @Override
+    public void executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Consumer<AUserExperience> toExecute) {
+        MessageToSend status = getUserSyncStatusUpdateModel(0, experiences.size());
+        try {
+            Message statusMessage = messageService.createStatusMessage(status, channel).get();
+            int interval = Math.min(Math.max(experiences.size() / 10, 1), 100);
+            for (int i = 0; i < experiences.size(); i++) {
+                if((i % interval) == 1) {
+                    log.trace("Updating feedback message with new index {} out of {}", i, experiences.size());
+                    status = getUserSyncStatusUpdateModel(i, experiences.size());
+                    messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
+                }
+                toExecute.accept(experiences.get(i));
+                log.trace("Synchronizing {} out of {}", i, experiences.size());
+            }
+            status = getUserSyncStatusUpdateModel(experiences.size(), experiences.size());
+            messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
+        } catch (InterruptedException | ExecutionException e) {
+            log.info("Failed to synchronize users.", e);
+        }
+    }
+
+    private MessageToSend getUserSyncStatusUpdateModel(Integer current, Integer total) {
+        UserSyncStatusModel statusModel = UserSyncStatusModel.builder().currentCount(current).totalUserCount(total).build();
+        return templateService.renderEmbedTemplate("user_sync_status_message", statusModel);
+    }
+
+    /**
+     * Retrieves the role configuration and executes the method responsible to sync the experience role of the user
+     * @param userExperience The {@link AUserExperience} to synchronize the role for
+     */
     @Override
     public void syncForSingleUser(AUserExperience userExperience) {
         AUserInAServer user = userExperience.getUser();
         log.info("Synchronizing for user {} in server {}", user.getUserReference().getId(), user.getServerReference().getId());
-        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRoleForServer(user.getServerReference());
-        handleExperienceRoleForUser(userExperience, roles);
+        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(user.getServerReference());
+        updateUserRole(userExperience, roles);
     }
 
+    /**
+     * Retrieves the leaderboard data for the given page of the given server
+     * @param server The {@link AServer} to retrieve the leaderboard for
+     * @param page The desired page on the leaderboard. The pagesize is 10
+     * @return The {@link LeaderBoard} containing all necessary information concerning the leaderboard
+     */
     @Override
     public LeaderBoard findLeaderBoardData(AServer server, Integer page) {
         List<AUserExperience> experiences = userExperienceManagementService.findLeaderboardUsersPaginated(server, page * 10, (page +1) * 10);
@@ -235,6 +286,11 @@ public class ExperienceTrackerServiceBean implements ExperienceTrackerService {
         return LeaderBoard.builder().entries(entries).build();
     }
 
+    /**
+     * Builds an {@link AUserExperience} and loads the appropriate rank of the passed {@link AUserInAServer}
+     * @param userInAServer The {@link AUserInAServer} to retrieve the {@link LeaderBoardEntry} for
+     * @return The {@link LeaderBoardEntry} representing one single row in the leaderboard
+     */
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {
         log.info("Retrieving rank for {}", userInAServer.getUserReference().getId());

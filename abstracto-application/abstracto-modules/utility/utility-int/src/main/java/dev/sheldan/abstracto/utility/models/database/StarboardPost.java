@@ -22,7 +22,7 @@ public class StarboardPost {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "poster")
+    @JoinColumn(name = "poster", nullable = false)
     private AUser author;
 
     @Column
@@ -32,11 +32,11 @@ public class StarboardPost {
     private Long postMessageId;
 
     @ManyToOne
-    @JoinColumn(name = "channelId")
+    @JoinColumn(name = "channelId", nullable = false)
     private AChannel starboardChannel;
 
     @ManyToOne
-    @JoinColumn(name = "sourceChannelId")
+    @JoinColumn(name = "sourceChannelId", nullable = false)
     private AChannel sourceChanel;
 
     @Transient
@@ -48,7 +48,9 @@ public class StarboardPost {
     }
 
     @Getter
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @OneToMany(fetch = FetchType.LAZY,
+            orphanRemoval = true,
+            cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name="postId")
     private List<StarboardPostReaction> reactions;
 

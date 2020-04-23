@@ -26,7 +26,7 @@ public class AModule {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             orphanRemoval = true)
     @Builder.Default
     @JoinColumn(name = "module_id")
