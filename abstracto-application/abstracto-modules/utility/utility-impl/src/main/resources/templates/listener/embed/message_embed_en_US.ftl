@@ -13,7 +13,7 @@
    <#list embeddedMessage.embeds>
         Embeds:
         <#items as embed>
-            Description: ${embed.description} <#if embed.imageUrl?has_content> ImageUrl: ${embed.imageUrl} </#if>
+            Description: <#if embed.description?has_content >${embed.description}</#if> <#if embed.imageUrl?has_content> ImageUrl: ${embed.imageUrl} </#if>
         </#items>
    </#list>
    ",

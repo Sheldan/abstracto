@@ -35,6 +35,8 @@ public class Mute {
 
     private Instant muteTargetDate;
 
+    private Boolean muteEnded;
+
     @Column
     private Long messageId;
 

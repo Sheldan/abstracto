@@ -29,10 +29,6 @@
         "value": "${mute.reason}"
     },
     {
-        "name": "Muted from",
-        "value": "${formatInstant(mute.muteDate, "yyyy-MM-dd HH:mm:ss")}"
-    },
-    {
         "name": "Muted for",
         "value": "${fmtDuration(muteDuration)}"
     },
@@ -43,5 +39,6 @@
   ],
   "footer": {
     "text": "Mute #${mute.id}"
-  }
+  },
+  "timeStamp": "${mute.muteDate}"
 }

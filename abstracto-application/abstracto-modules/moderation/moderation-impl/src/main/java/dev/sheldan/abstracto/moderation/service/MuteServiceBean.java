@@ -87,7 +87,7 @@ public class MuteServiceBean implements MuteService {
 
         FullUser mutingUser = FullUser
                 .builder()
-                .aUserInAServer(userManagementService.loadUser(memberToMute))
+                .aUserInAServer(userManagementService.loadUser(mutingMember))
                 .member(mutingMember)
                 .build();
         return muteUser(mutedUser, mutingUser, reason, unmuteDate, message);
@@ -123,8 +123,7 @@ public class MuteServiceBean implements MuteService {
             throw new MuteException("Mute role for server has not been setup");
         }
         AUserInAServer userInServerBeingMuted = userBeingMuted.getAUserInAServer();
-        MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(userInServerBeingMuted.getServerReference());
-        roleService.addRoleToUser(userInServerBeingMuted, muteRole.getRole());
+        applyMuteRole(userInServerBeingMuted);
         AServerAChannelMessage origin = null;
         if(message != null) {
             AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
@@ -145,6 +144,12 @@ public class MuteServiceBean implements MuteService {
 
         startUnmuteJobFor(unmuteDate, mute);
         return mute;
+    }
+
+    @Override
+    public void applyMuteRole(AUserInAServer aUserInAServer) {
+        MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(aUserInAServer.getServerReference());
+        roleService.addRoleToUser(aUserInAServer, muteRole.getRole());
     }
 
     @Override
@@ -205,6 +210,8 @@ public class MuteServiceBean implements MuteService {
                 .server(mute.getMutingServer())
                 .build();
         sendUnmuteLog(unMuteLog);
+        mute.setMuteEnded(true);
+        muteManagementService.saveMute(mute);
     }
 
     @Override

@@ -9,4 +9,6 @@ import java.time.Instant;
 public interface MuteManagementService {
     Mute createMute(AUserInAServer aUserInAServer, AUserInAServer mutingUser, String reason, Instant unmuteDate, AServerAChannelMessage creation);
     Mute findMute(Long muteId);
+    Mute saveMute(Mute mute);
+    boolean hasActiveMute(AUserInAServer userInAServer);
 }

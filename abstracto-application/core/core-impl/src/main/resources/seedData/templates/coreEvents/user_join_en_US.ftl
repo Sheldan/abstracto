@@ -1,1 +1,1 @@
-User ${user.name}#${user.discriminator} (${userMention}) has joined the guild.
+User ${user.name}#${user.discriminator} (${user.asMention}) has joined the guild.

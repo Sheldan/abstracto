@@ -13,6 +13,7 @@ public interface MuteService {
     Mute muteMember(Member memberToMute, Member userMuting, String reason, Instant unmuteDate, Message message);
     Mute muteMember(AUserInAServer member, AUserInAServer userMuting, String reason, Instant unmuteDate, Message message);
     Mute muteUser(FullUser userToMute, FullUser userMuting, String reason, Instant unmuteDate, Message message);
+    void applyMuteRole(AUserInAServer aUserInAServer);
     void muteMemberWithLog(Member memberToMute, Member memberMuting, String reason, Instant unmuteDate, MuteLog log, Message message);
     void startUnmuteJobFor(Instant unmuteDate, Mute mute);
     void unmuteUser(Mute mute);

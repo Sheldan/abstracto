@@ -38,7 +38,7 @@ public class JoinListenerBean extends ListenerAdapter {
             try {
                 AUserInAServer aUserInAServer = userManagementService.loadUser(event.getMember());
                 executeListener(event, joinListener, aUserInAServer);
-            } catch (AbstractoRunTimeException e) {
+            } catch (Exception e) {
                 log.error("Listener {} failed with exception:", joinListener.getClass().getName(), e);
             }
         });

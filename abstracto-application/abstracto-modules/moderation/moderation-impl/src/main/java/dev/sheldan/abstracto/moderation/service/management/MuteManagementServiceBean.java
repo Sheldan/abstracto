@@ -31,6 +31,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
                 .mutingChannel(origin.getChannel())
                 .messageId(origin.getMessageId())
                 .reason(reason)
+                .muteEnded(false)
                 .build();
         muteRepository.save(mute);
         return mute;
@@ -40,4 +41,17 @@ public class MuteManagementServiceBean implements MuteManagementService {
     public Mute findMute(Long muteId) {
         return muteRepository.getOne(muteId);
     }
+
+    @Override
+    public Mute saveMute(Mute mute) {
+        muteRepository.save(mute);
+        return mute;
+    }
+
+    @Override
+    public boolean hasActiveMute(AUserInAServer userInAServer) {
+        return muteRepository.existsByMutedUserAndMuteEndedFalse(userInAServer);
+    }
+
+
 }

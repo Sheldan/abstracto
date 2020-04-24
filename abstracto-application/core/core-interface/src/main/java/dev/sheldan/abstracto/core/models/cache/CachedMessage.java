@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -16,7 +16,7 @@ public class CachedMessage {
     private Long channelId;
     private Long messageId;
     private Long authorId;
-    private OffsetDateTime timeCreated;
+    private Instant timeCreated;
     private String content;
     private List<CachedEmbed> embeds;
     private List<String> attachmentUrls;
