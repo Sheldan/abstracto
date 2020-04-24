@@ -180,7 +180,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         boolean currentlyHasNoExperienceRole = userExperience.getCurrentExperienceRole() == null;
         if(role == null) {
             if(!currentlyHasNoExperienceRole){
-                roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
+                if(botService.isUserInGuild(userExperience.getUser())) {
+                    roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
+                }
             }
             userExperience.setCurrentExperienceRole(null);
             return;
@@ -190,7 +192,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             if(currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId())) {
                 log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
                 if(!currentlyHasNoExperienceRole) {
-                    roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
+                    if(botService.isUserInGuild(userExperience.getUser())) {
+                        roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
+                    }
                 }
                 roleService.addRoleToUser(user, role.getRole());
             }

@@ -1,8 +1,10 @@
 {
-  "author": {
-    "name": "${unMutedUser.effectiveName}",
-    "avatar":  "${unMutedUser.user.effectiveAvatarUrl}"
-  },
+  <#if unMutedUser?has_content>
+    "author": {
+        "name": "${unMutedUser.effectiveName}",
+        "avatar":  "${unMutedUser.user.effectiveAvatarUrl}"
+    },
+  </#if>
   "title": {
     "title": "User has been unmuted"
   },
@@ -14,11 +16,20 @@
   "fields": [
     {
       "name": "Unmuted User",
-      "value": "${unMutedUser.effectiveName} ${unMutedUser.asMention} (${unMutedUser.idLong?c})"
+      <#if unMutedUser?has_content>
+        "value": "${unMutedUser.effectiveName} ${unMutedUser.asMention} (${unMutedUser.idLong?c})"
+      <#else>
+        "value": "User has left the server (${mute.mutedUser.userReference.id?c})"
+      </#if>
+
     },
     {
         "name": "Muted by",
-        "value": "${mutingUser.effectiveName} ${mutingUser.asMention} (${mutingUser.idLong?c})"
+         <#if mutingUser?has_content>
+            "value": "${mutingUser.effectiveName} ${mutingUser.asMention} (${mutingUser.idLong?c})"
+         <#else>
+                "value": "User has left the server (${mute.mutingUser.userReference.id?c})"
+         </#if>
     },
     {
         "name": "Location of the mute",

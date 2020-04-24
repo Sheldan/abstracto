@@ -19,6 +19,8 @@ public interface BotService {
     JDA getInstance();
     GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
+    boolean isUserInGuild(AUserInAServer aUserInAServer);
+    boolean isUserInGuild(Guild guild, AUserInAServer aUserInAServer);
     Member getMemberInServer(AUserInAServer aUserInAServer);
     Member getMemberInServer(AServer server, AUser member);
     CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId);

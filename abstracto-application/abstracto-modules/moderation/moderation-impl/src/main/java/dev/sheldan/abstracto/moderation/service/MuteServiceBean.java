@@ -20,6 +20,7 @@ import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -200,13 +201,18 @@ public class MuteServiceBean implements MuteService {
         log.info("Unmuting {} in server {}", mutingServer.getId(), mute.getMutedUser().getUserReference().getId());
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
         log.trace("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
-        roleService.removeRoleFromUser(mute.getMutedUser(), muteRole.getRole());
+        Guild guild = botService.getGuildById(mute.getMutingServer().getId()).orElseGet(null);
+        if(botService.isUserInGuild(guild, mute.getMutedUser())) {
+            roleService.removeRoleFromUser(mute.getMutedUser(), muteRole.getRole());
+        } else {
+            log.info("User to unmute left the guild.");
+        }
         UnMuteLog unMuteLog = UnMuteLog
                 .builder()
                 .mute(mute)
                 .mutingUser(botService.getMemberInServer(mute.getMutingUser()))
                 .unMutedUser(botService.getMemberInServer(mute.getMutedUser()))
-                .guild(botService.getGuildById(mute.getMutingServer().getId()).orElseGet(null))
+                .guild(guild)
                 .server(mute.getMutingServer())
                 .build();
         sendUnmuteLog(unMuteLog);

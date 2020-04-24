@@ -68,8 +68,23 @@ public class BotServiceBean implements BotService {
         if(guildById != null) {
             return guildById.getMemberById(memberId);
         } else {
-            throw new RuntimeException(String.format("Member %s not found in guild %s", memberId, serverId));
+            throw new RuntimeException(String.format("Guild %s not found.", serverId));
         }
+    }
+
+    @Override
+    public boolean isUserInGuild(AUserInAServer aUserInAServer) {
+        Guild guildById = instance.getGuildById(aUserInAServer.getServerReference().getId());
+        if(guildById != null) {
+            return isUserInGuild(guildById, aUserInAServer);
+        } else {
+            throw new RuntimeException(String.format("Guild %s not found.", aUserInAServer.getServerReference().getId()));
+        }
+    }
+
+    @Override
+    public boolean isUserInGuild(Guild guild, AUserInAServer aUserInAServer) {
+        return guild.getMemberById(aUserInAServer.getUserReference().getId()) != null;
     }
 
     @Override
