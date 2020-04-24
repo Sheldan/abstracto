@@ -1,0 +1,1 @@
+You were muted on the server ${serverName} for the following reason: ${mute.reason}.

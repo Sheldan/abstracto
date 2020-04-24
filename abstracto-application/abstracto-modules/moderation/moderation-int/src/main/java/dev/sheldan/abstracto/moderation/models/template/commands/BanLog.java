@@ -6,7 +6,9 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
 
-@Getter @SuperBuilder @Setter
+@Getter
+@SuperBuilder
+@Setter
 public class BanLog extends UserInitiatedServerContext {
 
     private String reason;

@@ -12,7 +12,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ChannelService {
     void sendTextInAChannel(String text, AChannel channel);
+    void sendTextInAChannel(String text, TextChannel channel);
     CompletableFuture<Message> sendTextInAChannelFuture(String text, AChannel channel);
+    CompletableFuture<Message> sendTextInAChannelFuture(String text, TextChannel channel);
     CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, AChannel channel);
     CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, TextChannel channel);
     List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, AChannel channel);

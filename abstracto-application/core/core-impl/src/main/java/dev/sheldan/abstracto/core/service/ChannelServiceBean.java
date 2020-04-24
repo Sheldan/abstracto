@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +28,16 @@ public class ChannelServiceBean implements ChannelService {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
     public void sendTextInAChannel(String text, AChannel channel) {
+        sendTextInAChannelFuture(text, channel);
+    }
+
+    @Override
+    public void sendTextInAChannel(String text, TextChannel channel) {
         sendTextInAChannelFuture(text, channel);
     }
 
@@ -38,7 +47,7 @@ public class ChannelServiceBean implements ChannelService {
         if (guild != null) {
             TextChannel textChannel = guild.getTextChannelById(channel.getId());
             if(textChannel != null) {
-                return textChannel.sendMessage(text).submit();
+                return sendTextInAChannelFuture(text, textChannel);
             } else {
                 log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
                 throw new ChannelException(String.format("Channel %s to post to not found.", channel.getId()));
@@ -47,6 +56,11 @@ public class ChannelServiceBean implements ChannelService {
             log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
             throw new GuildException(String.format("Guild %s to post in channel %s was not found.", channel.getServer().getId(), channel.getId()));
         }
+    }
+
+    @Override
+    public CompletableFuture<Message> sendTextInAChannelFuture(String text, TextChannel channel) {
+        return channel.sendMessage(text).submit();
     }
 
     @Override

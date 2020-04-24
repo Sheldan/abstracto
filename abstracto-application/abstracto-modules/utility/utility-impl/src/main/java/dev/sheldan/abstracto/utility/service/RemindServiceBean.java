@@ -84,8 +84,6 @@ public class RemindServiceBean implements ReminderService {
                     log.error("Failed to remind immediately.", exception);
                 }
             }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
-
-
         } else {
             log.trace("Starting scheduled job to execute reminder.");
             JobDataMap parameters = new JobDataMap();

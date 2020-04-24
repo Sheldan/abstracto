@@ -43,7 +43,7 @@ public class Warn extends AbstractConditionableCommand {
         warnLogModel.setMessage(commandContext.getMessage());
         warnLogModel.setReason(reason);
         warnLogModel.setWarningUser(commandContext.getAuthor());
-        warnService.warnUser(member, commandContext.getAuthor(), reason, warnLogModel);
+        warnService.warnUserWithLog(member, commandContext.getAuthor(), reason, warnLogModel, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

@@ -3,15 +3,15 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -31,6 +31,9 @@ public class MessageServiceBean implements MessageService {
 
     @Autowired
     private ChannelService channelService;
+
+    @Autowired
+    private MessageServiceBean self;
 
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
@@ -73,5 +76,33 @@ public class MessageServiceBean implements MessageService {
     @Override
     public void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend) {
         channelService.editMessageInAChannel(messageToSend, channel, messageId);
+    }
+
+    @Override
+    public void sendMessageToUser(AUserInAServer userInAServer, String text, TextChannel feedbackChannel) {
+        Member memberInServer = botService.getMemberInServer(userInAServer);
+        sendMessageToUser(memberInServer.getUser(), text, feedbackChannel);
+    }
+
+    @Override
+    public void sendMessageToUser(User user, String text, TextChannel feedbackChannel) {
+        CompletableFuture<Message> messageFuture = new CompletableFuture<>();
+
+        user.openPrivateChannel().queue(privateChannel -> {
+            privateChannel.sendMessage(text).queue(messageFuture::complete, messageFuture::completeExceptionally);
+        });
+
+        messageFuture.exceptionally(e -> {
+            log.warn("Failed to send message. ", e);
+            if(feedbackChannel != null){
+                self.sendFeedbackAboutException(e, feedbackChannel);
+            }
+            return null;
+        });
+    }
+
+    @Transactional
+    public void sendFeedbackAboutException(Throwable e, TextChannel feedbackChannel) {
+        channelService.sendTextInAChannel(String.format("Failed to send message: %s", e.getMessage()), feedbackChannel);
     }
 }

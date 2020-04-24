@@ -15,7 +15,9 @@ import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -69,6 +71,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Autowired
     private CommandManagementService commandManagementService;
+
+    @Autowired
+    private RoleManagementService roleManagementService;
 
     @Override
     @Async
@@ -188,6 +193,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         } else {
                             parsedParameters.add(value);
                         }
+                    } else if(param.getType().equals(ARole.class)) {
+                        parsedParameters.add(roleManagementService.findRole(Long.parseLong(value)));
                     } else if(param.getType().equals(Boolean.class)) {
                         parsedParameters.add(Boolean.valueOf(value));
                     } else if (param.getType().equals(Duration.class)) {
