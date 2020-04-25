@@ -48,5 +48,7 @@ public class Mute {
     @JoinColumn(name = "mutingChannel")
     private AChannel mutingChannel;
 
+    private String triggerKey;
+
 
 }

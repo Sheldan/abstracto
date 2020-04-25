@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
 
 import java.time.Duration;
+import java.time.Instant;
 
 
 @Getter
@@ -22,7 +23,15 @@ public class UnMuteLog extends ServerContext {
     private Mute mute;
 
     public Duration getMuteDuration() {
+        return Duration.between(mute.getMuteDate(), Instant.now());
+    }
+
+    public Duration getPlannedMuteDuration() {
         return Duration.between(mute.getMuteDate(), mute.getMuteTargetDate());
+    }
+
+    public Instant getUnmuteDate() {
+        return Instant.now();
     }
 
     public String getMessageUrl() {

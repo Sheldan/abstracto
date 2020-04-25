@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.moderation.commands;
+package dev.sheldan.abstracto.moderation.commands.mute;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;

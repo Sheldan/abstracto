@@ -51,5 +51,5 @@
   "footer": {
     "text": "Mute #${mute.id}"
   },
-  "timeStamp": "${mute.muteTargetDate}"
+  "timeStamp": "${unmuteDate}"
 }

@@ -15,7 +15,10 @@ public interface MuteService {
     Mute muteUser(FullUser userToMute, FullUser userMuting, String reason, Instant unmuteDate, Message message);
     void applyMuteRole(AUserInAServer aUserInAServer);
     void muteMemberWithLog(Member memberToMute, Member memberMuting, String reason, Instant unmuteDate, MuteLog log, Message message);
-    void startUnmuteJobFor(Instant unmuteDate, Mute mute);
+    String startUnmuteJobFor(Instant unmuteDate, Mute mute);
+    void cancelUnmuteJob(Mute mute);
     void unmuteUser(Mute mute);
     void endMute(Long muteId);
+    void completelyUnmuteUser(AUserInAServer aUserInAServer);
+    void completelyUnmuteUser(Member member);
 }

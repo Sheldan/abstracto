@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -112,8 +113,9 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public Mute muteUser(FullUser userBeingMuted, FullUser userMuting, String reason, Instant unmuteDate, Message message) {
+        Member memberBeingMuted = userBeingMuted.getMember();
         log.info("User {} mutes {} until {}",
-                userBeingMuted.getMember().getIdLong(), userMuting.getMember().getIdLong(), unmuteDate);
+                memberBeingMuted.getIdLong(), userMuting.getMember().getIdLong(), unmuteDate);
         if(message != null) {
             log.trace("because of message {} in channel {} in server {}", message.getId(), message.getChannel().getId(), message.getGuild().getId());
         } else {
@@ -136,14 +138,19 @@ public class MuteServiceBean implements MuteService {
                     .build();
         }
         Mute mute = muteManagementService.createMute(userInServerBeingMuted, userMuting.getAUserInAServer(), reason, unmuteDate, origin);
-
+        Guild guild = memberBeingMuted.getGuild();
+        if(memberBeingMuted.getVoiceState() != null && memberBeingMuted.getVoiceState().getChannel() != null) {
+            guild.kickVoiceMember(memberBeingMuted).queue();
+        }
         log.trace("Notifying the user about the mute.");
-        MuteNotification muteNotification = MuteNotification.builder().mute(mute).serverName(userBeingMuted.getMember().getGuild().getName()).build();
+        MuteNotification muteNotification = MuteNotification.builder().mute(mute).serverName(guild.getName()).build();
         String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification);
         TextChannel textChannel = message != null ? message.getTextChannel() : null;
-        messageService.sendMessageToUser(userBeingMuted.getMember().getUser(), muteNotificationMessage, textChannel);
+        messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage, textChannel);
 
-        startUnmuteJobFor(unmuteDate, mute);
+        String triggerKey = startUnmuteJobFor(unmuteDate, mute);
+        mute.setTriggerKey(triggerKey);
+        muteManagementService.saveMute(mute);
         return mute;
     }
 
@@ -154,7 +161,7 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
-    public void startUnmuteJobFor(Instant unmuteDate, Mute mute) {
+    public String startUnmuteJobFor(Instant unmuteDate, Mute mute) {
         Duration muteDuration = Duration.between(Instant.now(), unmuteDate);
         if(muteDuration.getSeconds() < 60) {
             log.trace("Directly scheduling the unmute, because it was below the threshold.");
@@ -166,11 +173,19 @@ public class MuteServiceBean implements MuteService {
                     log.error("Failed to remind immediately.", exception);
                 }
             }, muteDuration.toNanos(), TimeUnit.NANOSECONDS);
+            return null;
         } else {
             log.trace("Starting scheduled job to execute unmute.");
             JobDataMap parameters = new JobDataMap();
             parameters.putAsString("muteId", mute.getId());
-            schedulerService.executeJobWithParametersOnce("unMuteJob", "moderation", parameters, Date.from(unmuteDate));
+            return schedulerService.executeJobWithParametersOnce("unMuteJob", "moderation", parameters, Date.from(unmuteDate));
+        }
+    }
+
+    @Override
+    public void cancelUnmuteJob(Mute mute) {
+        if(mute.getTriggerKey() != null) {
+            schedulerService.stopTrigger(mute.getTriggerKey());
         }
     }
 
@@ -198,6 +213,15 @@ public class MuteServiceBean implements MuteService {
     @Transactional
     public void unmuteUser(Mute mute) {
         AServer mutingServer = mute.getMutingServer();
+        Mute updatedMute = muteManagementService.findMute(mute.getId());
+        // we do not store any reference to the instant unmutes (<=60sec), so we cannot cancel it
+        // but if the person gets unmuted immediately, via command, this might still execute of the instant unmute
+        // so we need to load the mute, and check if the mute was unmuted already, because the mute object we have at
+        // hand was loaded earlier, and does not reflect the true state
+        if(updatedMute.getMuteEnded()) {
+            log.info("Mute {} has ended already, {} does not need to be unmuted anymore.", mute.getId(), mute.getMutedUser().getUserReference().getId());
+            return;
+        }
         log.info("Unmuting {} in server {}", mutingServer.getId(), mute.getMutedUser().getUserReference().getId());
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
         log.trace("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
@@ -226,5 +250,20 @@ public class MuteServiceBean implements MuteService {
         log.info("Unmuting the mute {}", muteId);
         Mute mute = muteManagementService.findMute(muteId);
         unmuteUser(mute);
+    }
+
+    @Override
+    public void completelyUnmuteUser(AUserInAServer aUserInAServer) {
+        List<Mute> allMutesOfUser = muteManagementService.getAllMutesOf(aUserInAServer);
+        allMutesOfUser.forEach(mute -> {
+            mute.setMuteEnded(true);
+            cancelUnmuteJob(mute);
+            muteManagementService.saveMute(mute);
+        });
+    }
+
+    @Override
+    public void completelyUnmuteUser(Member member) {
+        completelyUnmuteUser(userManagementService.loadUser(member));
     }
 }

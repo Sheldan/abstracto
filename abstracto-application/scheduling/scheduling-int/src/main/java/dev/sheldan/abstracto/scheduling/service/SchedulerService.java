@@ -22,7 +22,9 @@ public interface SchedulerService {
 
     boolean executeJob(SchedulerJob job);
 
-    boolean executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date);
+    String executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date);
+
+    void stopTrigger(String triggerKey);
 
     void startScheduler();
 }

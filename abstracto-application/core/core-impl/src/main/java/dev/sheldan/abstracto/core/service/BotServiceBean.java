@@ -32,7 +32,7 @@ public class BotServiceBean implements BotService {
     public void login() throws LoginException {
         JDABuilder builder = new JDABuilder(System.getenv("TOKEN"));
 
-        builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE));
+        builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY));
         builder.setBulkDeleteSplittingEnabled(false);
 
         this.instance = builder.build();

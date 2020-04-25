@@ -148,14 +148,23 @@ public class SchedulerServiceBean implements SchedulerService {
     }
 
     @Override
-    public boolean executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date) {
+    public String executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date) {
         Trigger onceOnlyTriggerForJob = scheduleCreator.createOnceOnlyTriggerForJob(name, group, date, dataMap);
         try {
             schedulerFactoryBean.getScheduler().scheduleJob(onceOnlyTriggerForJob);
-            return true;
+            return onceOnlyTriggerForJob.getKey().getName();
         } catch (SchedulerException e) {
             log.error("Failed to start new job - {}", name, e);
-            return false;
+            return null;
+        }
+    }
+
+    @Override
+    public void stopTrigger(String triggerKey) {
+        try {
+            schedulerFactoryBean.getScheduler().unscheduleJob(TriggerKey.triggerKey(triggerKey));
+        } catch (SchedulerException e) {
+            log.error("Failed to cancel job job - {}", triggerKey, e);
         }
     }
 
