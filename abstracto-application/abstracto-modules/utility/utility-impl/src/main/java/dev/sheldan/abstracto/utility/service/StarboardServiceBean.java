@@ -1,8 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.*;
@@ -39,6 +37,7 @@ public class StarboardServiceBean implements StarboardService {
 
     public static final String STARBOARD_POSTTARGET = "starboard";
     public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
+
     @Autowired
     private BotService botService;
 
@@ -49,9 +48,6 @@ public class StarboardServiceBean implements StarboardService {
     private TemplateService templateService;
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
     private ConfigService configService;
 
     @Autowired
@@ -59,9 +55,6 @@ public class StarboardServiceBean implements StarboardService {
 
     @Autowired
     private StarboardConfig starboardConfig;
-
-    @Autowired
-    private UserManagementService userManagementService;
 
     @Autowired
     private StarboardPostReactorManagementService starboardPostReactorManagementService;

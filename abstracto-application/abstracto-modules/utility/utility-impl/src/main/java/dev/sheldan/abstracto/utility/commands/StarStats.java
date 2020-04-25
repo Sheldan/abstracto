@@ -23,6 +23,7 @@ import java.util.List;
 public class StarStats extends AbstractConditionableCommand {
 
     public static final String STARSTATS_RESPONSE_TEMPLATE = "starStats_response";
+
     @Autowired
     private StarboardService starboardService;
 

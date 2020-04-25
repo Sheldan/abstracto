@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.listener.LeaveListener;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +21,6 @@ public class LeaveLogger implements LeaveListener {
 
     private static final String USER_LEAVE_TEMPLATE = "user_leave";
     private static final String LEAVE_LOG_TARGET = "leaveLog";
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Autowired
     private TemplateService templateService;

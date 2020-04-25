@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class PostTargetManagementBean implements PostTargetManagement {
+
     @Autowired
     private PostTargetRepository postTargetRepository;
 

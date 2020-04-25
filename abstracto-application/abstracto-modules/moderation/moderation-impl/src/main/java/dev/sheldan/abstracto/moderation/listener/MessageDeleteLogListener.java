@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.moderation.listener;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
@@ -21,9 +20,6 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
     private static final String DELETE_LOG_TARGET = "deleteLog";
     private static String MESSAGE_DELETED_TEMPLATE = "message_deleted";
     private static String MESSAGE_DELETED_ATTACHMENT_TEMPLATE = "message_deleted_attachment";
-
-    @Autowired
-    private MessageCache messageCache;
 
     @Autowired
     private ContextUtils contextUtils;

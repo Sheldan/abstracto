@@ -19,9 +19,6 @@ public class ServerManagementServiceBean implements ServerManagementService {
     private PostTargetManagement postTargetManagement;
 
     @Autowired
-    private ChannelManagementService channelManagementService;
-
-    @Autowired
     private UserManagementService userManagementService;
 
     @Override

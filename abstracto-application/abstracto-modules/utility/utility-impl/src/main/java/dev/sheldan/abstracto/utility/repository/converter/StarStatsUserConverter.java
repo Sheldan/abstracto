@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.repository.converter;
 
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
@@ -13,9 +12,6 @@ import java.util.List;
 
 @Component
 public class StarStatsUserConverter {
-
-    @Autowired
-    private UserManagementService userManagementService;
 
     @Autowired
     private BotService botService;

@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -24,14 +23,12 @@ import org.springframework.stereotype.Component;
 public class WarnServiceBean implements WarnService {
 
     public static final String WARN_LOG_TARGET = "warnLog";
+
     @Autowired
     private UserManagementService userManagementService;
 
     @Autowired
     private WarnManagementService warnManagementService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Autowired
     private PostTargetService postTargetService;
@@ -99,7 +96,7 @@ public class WarnServiceBean implements WarnService {
     }
 
     private void sendWarnLog(ServerContext warnLogModel)  {
-        MessageToSend message = templateService.renderEmbedTemplate("warn_log", warnLogModel);
+        MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendEmbedInPostTarget(message, WARN_LOG_TARGET, warnLogModel.getServer().getId());
     }
 }

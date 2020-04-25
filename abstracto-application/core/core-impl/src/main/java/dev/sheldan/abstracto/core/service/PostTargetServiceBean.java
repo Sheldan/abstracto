@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +23,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 public class PostTargetServiceBean implements PostTargetService {
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Autowired
     private PostTargetManagement postTargetManagement;

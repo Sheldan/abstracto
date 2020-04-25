@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +26,6 @@ public class ChannelServiceBean implements ChannelService {
 
     @Autowired
     private BotService botService;
-
-    @Autowired
-    private ChannelManagementService channelManagementService;
 
     @Override
     public void sendTextInAChannel(String text, AChannel channel) {

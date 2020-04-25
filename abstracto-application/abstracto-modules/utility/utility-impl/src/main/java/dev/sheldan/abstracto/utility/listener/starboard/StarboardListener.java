@@ -9,9 +9,7 @@ import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
@@ -37,13 +35,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     public static final String STAR_EMOTE = "star";
 
     @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
     private BotService botService;
-
-    @Autowired
-    private MessageCache messageCache;
 
     @Autowired
     private ConfigManagementService configManagementService;

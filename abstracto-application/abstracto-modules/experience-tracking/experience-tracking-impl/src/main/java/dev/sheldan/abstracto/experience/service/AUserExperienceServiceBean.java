@@ -41,9 +41,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     private UserExperienceManagementService userExperienceManagementService;
 
     @Autowired
-    private ExperienceLevelService experienceLevelService;
-
-    @Autowired
     private ExperienceRoleService experienceRoleService;
 
     @Autowired

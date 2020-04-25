@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
-import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,9 +28,6 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
 
     @Autowired
     private AUserExperienceService userExperienceService;
-
-    @Autowired
-    private UserExperienceManagementService userExperienceManagementService;
 
     /**
      * Unsets the current configuration for the passed level, and sets the {@link ARole} to be used for this level

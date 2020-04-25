@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.experience.listener;
 
 import dev.sheldan.abstracto.core.listener.JoinListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
@@ -23,9 +22,6 @@ public class JoiningUserRoleListener implements JoinListener {
 
     @Autowired
     private UserExperienceManagementService userExperienceManagementService;
-
-    @Autowired
-    private UserManagementService userManagementService;
 
     @Autowired
     private AUserExperienceService userExperienceService;

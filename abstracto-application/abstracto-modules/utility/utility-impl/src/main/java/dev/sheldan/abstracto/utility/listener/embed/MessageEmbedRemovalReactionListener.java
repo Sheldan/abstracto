@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatures;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
@@ -26,9 +25,6 @@ import java.util.Optional;
 public class MessageEmbedRemovalReactionListener implements ReactedAddedListener {
 
     public static final String REMOVAL_EMOTE = "removeEmbed";
-
-    @Autowired
-    private EmoteManagementService emoteManagementService;
 
     @Autowired
     private BotService botService;

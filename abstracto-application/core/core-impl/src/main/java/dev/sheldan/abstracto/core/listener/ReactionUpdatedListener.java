@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +30,6 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Autowired
     private MessageCache messageCache;
-
-    @Autowired
-    private EmoteService emoteService;
 
     @Autowired
     private UserManagementService userManagementService;

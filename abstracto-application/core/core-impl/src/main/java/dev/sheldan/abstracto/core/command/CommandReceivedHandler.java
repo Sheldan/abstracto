@@ -7,13 +7,11 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.ParameterTooLong;
-import dev.sheldan.abstracto.core.command.service.ChannelGroupCommandService;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -65,12 +63,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     @Lazy
     private CommandReceivedHandler self;
-
-    @Autowired
-    private ChannelGroupCommandService channelGroupCommandService;
-
-    @Autowired
-    private CommandManagementService commandManagementService;
 
     @Autowired
     private RoleManagementService roleManagementService;

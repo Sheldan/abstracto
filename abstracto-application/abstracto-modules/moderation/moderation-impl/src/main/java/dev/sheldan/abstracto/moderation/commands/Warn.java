@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.moderation.Moderation;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
@@ -22,9 +21,6 @@ import java.util.List;
 @Component
 @Slf4j
 public class Warn extends AbstractConditionableCommand {
-
-    @Autowired
-    private UserManagementService userManagementService;
 
     @Autowired
     private WarnService warnService;

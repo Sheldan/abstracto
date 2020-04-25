@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.repository.EmbeddedMessageRepository;
@@ -25,9 +24,6 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
 
     @Autowired
     private UserManagementService userManagementService;
-
-    @Autowired
-    private MessageService messageService;
 
     @Override
     @Transactional

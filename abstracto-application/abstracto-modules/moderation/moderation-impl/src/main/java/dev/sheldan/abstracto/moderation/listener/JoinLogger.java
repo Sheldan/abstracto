@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.moderation.listener;
 import dev.sheldan.abstracto.core.listener.JoinListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +22,6 @@ public class JoinLogger implements JoinListener {
 
     private static final String USER_JOIN_TEMPLATE = "user_join";
     private static final String JOIN_LOG_TARGET = "joinLog";
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Autowired
     private TemplateService templateService;

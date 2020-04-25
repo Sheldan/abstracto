@@ -11,6 +11,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class SchedulerJobManagementServiceBean {
+
     @Autowired
     private SchedulerJobRepository repository;
 

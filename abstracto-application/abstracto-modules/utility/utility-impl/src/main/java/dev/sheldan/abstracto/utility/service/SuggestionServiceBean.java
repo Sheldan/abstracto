@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -34,6 +32,7 @@ public class SuggestionServiceBean implements SuggestionService {
     private static final String SUGGESTION_YES_EMOTE = "suggestionYes";
     private static final String SUGGESTION_NO_EMOTE = "suggestionNo";
     public static final String SUGGESTIONS_TARGET = "suggestions";
+
     @Autowired
     private SuggestionManagementService suggestionManagementService;
 
@@ -45,12 +44,6 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Autowired
     private BotService botService;
-
-    @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
-    private EmoteService emoteService;
 
     @Autowired
     private MessageService messageService;

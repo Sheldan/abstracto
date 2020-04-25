@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.repository.StarboardPostRepository;
-import dev.sheldan.abstracto.utility.repository.converter.StarStatsUserConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,9 +20,6 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Autowired
     private StarboardPostRepository repository;
-
-    @Autowired
-    private StarStatsUserConverter converter;
 
     @Override
     public StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AUserInAServer starringUser, AServerAChannelMessage starboardPost) {

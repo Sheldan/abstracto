@@ -2,8 +2,6 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -34,16 +32,11 @@ public class MessageCacheBean implements MessageCache {
     private BotService botService;
 
     @Autowired
-    private UserManagementService userManagementService;
-
-    @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
     private EmoteService emoteService;
 
     @Autowired
     @Lazy
+    // needs to be lazy, because of circular dependency
     private MessageCache self;
 
     @Override

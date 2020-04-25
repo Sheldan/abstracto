@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -26,9 +25,6 @@ public class ChannelListener extends ListenerAdapter {
 
     @Autowired
     private ChannelManagementService channelManagementService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Override
     @Transactional
