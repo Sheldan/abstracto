@@ -14,4 +14,5 @@ public interface CommandRegistry {
     List<Command> getAllCommands();
     List<Command> getAllCommandsFromModule(ModuleInterface module);
     boolean isCommand(Message message);
+    String getCommandName(String input, Long serverId);
 }

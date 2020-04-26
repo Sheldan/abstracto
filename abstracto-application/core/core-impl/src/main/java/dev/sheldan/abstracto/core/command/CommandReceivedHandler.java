@@ -89,7 +89,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
             String contentStripped = event.getMessage().getContentStripped();
             List<String> parameters = Arrays.asList(contentStripped.split(" "));
             UnParsedCommandParameter unparsedParameter = new UnParsedCommandParameter(contentStripped);
-            String commandName = parameters.get(0).substring(1);
+            String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
             foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
             Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();

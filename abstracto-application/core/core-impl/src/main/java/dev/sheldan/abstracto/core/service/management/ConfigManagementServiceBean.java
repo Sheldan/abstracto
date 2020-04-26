@@ -95,4 +95,10 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         config.setDoubleValue(value);
     }
 
+    @Override
+    public void setStringValue(Long serverId, String name, String value) {
+        AConfig config = loadConfig(serverId, name);
+        config.setStringValue(value);
+    }
+
 }

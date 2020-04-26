@@ -6,10 +6,11 @@ import dev.sheldan.abstracto.core.command.exception.CommandNotFound;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
+import dev.sheldan.abstracto.core.service.ConfigService;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +22,12 @@ public class CommandManager implements CommandRegistry {
 
     @Autowired
     private List<Command> commands;
+
+    @Autowired
+    private ConfigService configService;
+
+    @Value("${abstracto.prefix}")
+    private String defaultPrefix;
 
     @Override
     public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter) {
@@ -90,6 +97,11 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public boolean isCommand(Message message) {
-        return message.getContentRaw().startsWith("!");
+        return message.getContentRaw().startsWith(configService.getStringValue("prefix", message.getGuild().getIdLong(), defaultPrefix));
+    }
+
+    @Override
+    public String getCommandName(String input, Long serverId) {
+        return input.replaceFirst(configService.getStringValue("prefix", serverId, defaultPrefix), "");
     }
 }

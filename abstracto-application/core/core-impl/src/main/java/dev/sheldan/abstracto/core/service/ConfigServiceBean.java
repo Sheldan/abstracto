@@ -27,6 +27,15 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
+    public String getStringValue(String name, Long serverId, String defaultValue) {
+        AConfig config = configManagementService.loadConfig(serverId, name);
+        if(config == null) {
+            return defaultValue;
+        }
+        return config.getStringValue();
+    }
+
+    @Override
     public void createDoubleValueIfNotExist(String name, Long serverId, Double value) {
         configManagementService.createIfNotExists(serverId, name, value);
     }
@@ -35,6 +44,15 @@ public class ConfigServiceBean implements ConfigService{
     public void setDoubleValue(String name, Long serverId, Double value) {
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setDoubleValue(serverId, name, value);
+        } else {
+            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+        }
+    }
+
+    @Override
+    public void setStringValue(String name, Long serverId, String value) {
+        if(configManagementService.configExists(serverId, name)) {
+            configManagementService.setStringValue(serverId, name, value);
         } else {
             throw new ConfigurationException(String.format("Key %s does not exist.", name));
         }

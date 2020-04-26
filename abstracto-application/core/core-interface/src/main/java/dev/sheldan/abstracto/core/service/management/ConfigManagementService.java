@@ -12,4 +12,5 @@ public interface ConfigManagementService {
     AConfig loadConfig(Long serverId, String name);
     boolean configExists(Long serverId, String name);
     void setDoubleValue(Long serverId, String name, Double value);
+    void setStringValue(Long serverId, String name, String value);
 }
