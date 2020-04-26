@@ -5,9 +5,10 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
-import dev.sheldan.abstracto.utility.Utility;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
+import dev.sheldan.abstracto.utility.config.Utility;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 import dev.sheldan.abstracto.utility.service.ReminderService;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -54,7 +55,7 @@ public class Remind extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.REMIND;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.REMIND;
     }
 }

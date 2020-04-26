@@ -5,8 +5,8 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.commands.channels.ChannelsModuleInterface;
-import dev.sheldan.abstracto.core.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ public class SetNumber implements Command {
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         return CommandConfiguration.builder()
                 .name("setNumber")
-                .module(ChannelsModuleInterface.CHANNELS)
+                .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
                 .description("Used to change the config on this server.")
                 .causesReaction(true)
@@ -44,7 +44,7 @@ public class SetNumber implements Command {
     }
 
     @Override
-    public String getFeature() {
-        return AbstractoFeatures.CORE;
+    public FeatureEnum getFeature() {
+        return CoreFeatures.CORE_FEATURE;
     }
 }

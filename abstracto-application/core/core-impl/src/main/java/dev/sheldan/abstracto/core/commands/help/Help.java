@@ -4,7 +4,8 @@ import dev.sheldan.abstracto.core.command.*;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
-import dev.sheldan.abstracto.core.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,7 +136,7 @@ public class Help implements Command {
     }
 
     @Override
-    public String getFeature() {
-        return AbstractoFeatures.CORE;
+    public FeatureEnum getFeature() {
+        return CoreFeatures.CORE_FEATURE;
     }
 }

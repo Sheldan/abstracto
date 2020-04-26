@@ -7,7 +7,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
-import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
@@ -66,7 +67,7 @@ public class Rank extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
-        return ExperienceFeatures.EXPERIENCE;
+    public FeatureEnum getFeature() {
+        return ExperienceFeature.EXPERIENCE;
     }
 }

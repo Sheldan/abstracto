@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -12,7 +13,7 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.service.StarboardService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
@@ -139,7 +140,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.STARBOARD;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.STARBOARD;
     }
 }

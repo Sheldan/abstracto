@@ -5,7 +5,8 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
-import dev.sheldan.abstracto.core.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
@@ -83,7 +84,7 @@ public class ListChannelGroups implements Command {
     }
 
     @Override
-    public String getFeature() {
-        return AbstractoFeatures.CORE;
+    public FeatureEnum getFeature() {
+        return CoreFeatures.CORE_FEATURE;
     }
 }

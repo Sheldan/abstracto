@@ -4,7 +4,8 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetErrorModel;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
@@ -72,7 +73,7 @@ public class PostTarget implements Command {
     }
 
     @Override
-    public String getFeature() {
-        return AbstractoFeatures.CORE;
+    public FeatureEnum getFeature() {
+        return CoreFeatures.CORE_FEATURE;
     }
 }

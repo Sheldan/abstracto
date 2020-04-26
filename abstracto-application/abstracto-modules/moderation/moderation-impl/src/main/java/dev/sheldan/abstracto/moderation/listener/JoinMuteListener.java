@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.moderation.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.JoinListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class JoinMuteListener implements JoinListener {
     }
 
     @Override
-    public String getFeature() {
+    public FeatureEnum getFeature() {
         return ModerationFeatures.MUTING;
     }
 }

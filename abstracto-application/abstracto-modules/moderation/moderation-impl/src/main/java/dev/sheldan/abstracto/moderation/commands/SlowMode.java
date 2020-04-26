@@ -6,9 +6,10 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
-import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.SlowModeService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class SlowMode extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
+    public FeatureEnum getFeature() {
         return ModerationFeatures.MODERATION;
     }
 }

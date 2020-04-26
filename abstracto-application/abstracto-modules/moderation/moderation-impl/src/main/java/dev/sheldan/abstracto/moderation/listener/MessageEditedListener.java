@@ -1,10 +1,11 @@
 package dev.sheldan.abstracto.moderation.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageEditedLog;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,7 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
     }
 
     @Override
-    public String getFeature() {
+    public FeatureEnum getFeature() {
         return ModerationFeatures.LOGGING;
     }
 }

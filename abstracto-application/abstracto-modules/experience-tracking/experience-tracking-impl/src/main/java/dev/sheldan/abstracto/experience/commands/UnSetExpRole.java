@@ -6,9 +6,10 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
+import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
-        return ExperienceFeatures.EXPERIENCE;
+    public FeatureEnum getFeature() {
+        return ExperienceFeature.EXPERIENCE;
     }
 }

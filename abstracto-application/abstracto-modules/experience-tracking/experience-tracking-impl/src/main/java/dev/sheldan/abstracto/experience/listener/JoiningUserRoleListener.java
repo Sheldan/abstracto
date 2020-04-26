@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.experience.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.JoinListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.experience.config.ExperienceFeatures;
+import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
@@ -36,7 +37,7 @@ public class JoiningUserRoleListener implements JoinListener {
     }
 
     @Override
-    public String getFeature() {
-        return ExperienceFeatures.EXPERIENCE;
+    public FeatureEnum getFeature() {
+        return ExperienceFeature.EXPERIENCE;
     }
 }

@@ -1,11 +1,12 @@
 package dev.sheldan.abstracto.utility.listener.embed;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.service.MessageEmbedService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -47,7 +48,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.LINK_EMBEDS;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.LINK_EMBEDS;
     }
 }

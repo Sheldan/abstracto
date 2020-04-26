@@ -52,6 +52,9 @@ public class SchedulerServiceBeanTest {
     @Mock
     private Scheduler scheduler;
 
+    @Mock
+    private Trigger trigger;
+
     @Before
     public void setup() throws ClassNotFoundException {
         when(schedulerFactoryBean.getScheduler()).thenReturn(scheduler);
@@ -97,7 +100,8 @@ public class SchedulerServiceBeanTest {
 
     @Test
     public void executeJobOnce() throws SchedulerException {
-        when(scheduleCreator.createOnceOnlyTriggerForJob(eq(JOB_NAME), eq(GROUP_NAME), any(Date.class), any(JobDataMap.class))).thenReturn(Mockito.mock(Trigger.class));
+        when(scheduleCreator.createOnceOnlyTriggerForJob(eq(JOB_NAME), eq(GROUP_NAME), any(Date.class), any(JobDataMap.class))).thenReturn(trigger);
+        when(trigger.getKey()).thenReturn(TriggerKey.triggerKey("random key"));
         classToTest.executeJobWithParametersOnce(JOB_NAME, GROUP_NAME, new JobDataMap(), new Date());
         verify(scheduler, times(1)).scheduleJob(any(Trigger.class));
     }

@@ -5,7 +5,8 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.config.AbstractoFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class SetEmote implements Command {
     }
 
     @Override
-    public String getFeature() {
-        return AbstractoFeatures.CORE;
+    public FeatureEnum getFeature() {
+        return CoreFeatures.CORE_FEATURE;
     }
 }

@@ -7,8 +7,9 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
-import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import net.dv8tion.jda.api.entities.Member;
@@ -58,7 +59,7 @@ public class Mute extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
+    public FeatureEnum getFeature() {
         return ModerationFeatures.MUTING;
     }
 }

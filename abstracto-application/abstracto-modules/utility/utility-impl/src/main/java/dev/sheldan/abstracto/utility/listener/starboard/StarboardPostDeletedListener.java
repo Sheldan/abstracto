@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ public class StarboardPostDeletedListener implements MessageDeletedListener {
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.STARBOARD;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.STARBOARD;
     }
 }

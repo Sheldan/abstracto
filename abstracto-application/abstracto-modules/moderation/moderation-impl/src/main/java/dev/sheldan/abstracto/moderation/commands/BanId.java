@@ -5,8 +5,9 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.moderation.Moderation;
-import dev.sheldan.abstracto.moderation.config.ModerationFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.BanIdLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -57,7 +58,7 @@ public class BanId extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
+    public FeatureEnum getFeature() {
         return ModerationFeatures.MODERATION;
     }
 }

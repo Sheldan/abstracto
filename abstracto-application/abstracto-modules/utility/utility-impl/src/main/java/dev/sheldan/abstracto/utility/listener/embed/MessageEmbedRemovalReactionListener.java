@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.listener.embed;
 
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -9,7 +10,7 @@ import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,7 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.LINK_EMBEDS;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.LINK_EMBEDS;
     }
 }

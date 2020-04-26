@@ -6,11 +6,12 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.utility.Utility;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
+import dev.sheldan.abstracto.utility.config.Utility;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.service.StarboardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class StarStats extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.STARBOARD;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.STARBOARD;
     }
 }

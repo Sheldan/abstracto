@@ -93,14 +93,18 @@ public class CommandReceivedHandler extends ListenerAdapter {
             foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
             Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
+            CommandResult commandResult;
             if(foundCommand instanceof ConditionalCommand) {
                 ConditionalCommand castedCommand = (ConditionalCommand) foundCommand;
                 ConditionResult conditionResult = checkConditions(commandContext, foundCommand, castedCommand.getConditions());
                 if(!conditionResult.isResult()) {
-                    throw new AbstractoRunTimeException(conditionResult.getReason());
+                    commandResult = CommandResult.fromCondition(conditionResult);
+                } else {
+                    commandResult = self.executeCommand(foundCommand, commandContext);
                 }
+            } else {
+                commandResult = self.executeCommand(foundCommand, commandContext);
             }
-            CommandResult commandResult = self.executeCommand(foundCommand, commandContext);
             for (PostCommandExecution postCommandExecution : executions) {
                 postCommandExecution.execute(commandContext, commandResult, foundCommand);
             }

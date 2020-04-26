@@ -5,8 +5,9 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.utility.Utility;
-import dev.sheldan.abstracto.utility.config.UtilityFeatures;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.utility.config.Utility;
+import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
 import dev.sheldan.abstracto.utility.service.SuggestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class Suggest extends AbstractConditionableCommand {
     }
 
     @Override
-    public String getFeature() {
-        return UtilityFeatures.SUGGEST;
+    public FeatureEnum getFeature() {
+        return UtilityFeature.SUGGEST;
     }
 }
