@@ -4,13 +4,14 @@ import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name="role")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ARole implements SnowFlake {
+public class ARole implements SnowFlake, Serializable {
 
     @Id
     @Getter

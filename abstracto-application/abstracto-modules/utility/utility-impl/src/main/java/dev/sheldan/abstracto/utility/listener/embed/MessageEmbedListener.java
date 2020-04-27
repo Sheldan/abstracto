@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.utility.listener.embed;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 @Component
 @Slf4j
@@ -38,11 +40,10 @@ public class MessageEmbedListener implements MessageReceivedListener {
         for (MessageEmbedLink messageEmbedLink : links) {
             messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
             AUserInAServer cause = userManagementService.loadUser(message.getMember());
-            messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessage -> {
-                messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause, message);
-            });
+            Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause, message);
+            messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer);
         }
-        if(StringUtils.isBlank(messageRaw) && links.size() > 0) {
+        if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
             message.delete().queue();
         }
     }

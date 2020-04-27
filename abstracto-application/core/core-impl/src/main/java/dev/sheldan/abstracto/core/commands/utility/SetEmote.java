@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;

@@ -36,7 +36,7 @@ public class TemplateSeedDataLoader {
                 log.trace("Creating template {}", templateKey);
                 service.createTemplate(templateKey, templateContent);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Failed to upload template", e);
             }
         });
     }

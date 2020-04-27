@@ -81,10 +81,9 @@ public class StarboardServiceBean implements StarboardService {
                         .server(userReacting.getServerReference())
                         .build();
                 StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, starredUser, userReacting, aServerAChannelMessage);
-                // TODO maybe in bulk, but numbers should be small enough
-                userExceptAuthor.forEach(user -> {
-                    starboardPostReactorManagementService.addReactor(starboardPost, user);
-                });
+                userExceptAuthor.forEach(user ->
+                    starboardPostReactorManagementService.addReactor(starboardPost, user)
+                );
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Failed to post messages.", e);
             }
@@ -117,9 +116,9 @@ public class StarboardServiceBean implements StarboardService {
     @Override
     public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUser> userExceptAuthor)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("starboard_post", starboardPostModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, "starboard", message.getServerId(), futures);
+        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, STARBOARD_POSTTARGET, message.getServerId(), futures);
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             try {
                 starboardPostManagementService.setStarboardPostMessageId(post, futures.get(0).get().getIdLong());

@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class AServer implements SnowFlake {
+public class AServer implements SnowFlake, Serializable {
 
     @Id
     @Column(name = "id")

@@ -46,7 +46,7 @@ public class CommandManager implements CommandRegistry {
                 }
                 parameterFit = paramCountFits || hasRemainderParameter;
             } else {
-                parameterFit = unParsedCommandParameter.getParameters().size() == 0;
+                parameterFit = unParsedCommandParameter.getParameters().isEmpty();
             }
             return parameterFit;
         }).findFirst();
@@ -86,13 +86,13 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public List<Command> getAllCommandsFromModule(ModuleInterface moduleInterface) {
-        List<Command> commands = new ArrayList<>();
+        List<Command> commandsFromModule = new ArrayList<>();
         this.getAllCommands().forEach(command -> {
             if(command.getConfiguration().getModule().equals(moduleInterface.getInfo().getName())){
-                commands.add(command);
+                commandsFromModule.add(command);
             }
         });
-        return commands;
+        return commandsFromModule;
     }
 
     @Override

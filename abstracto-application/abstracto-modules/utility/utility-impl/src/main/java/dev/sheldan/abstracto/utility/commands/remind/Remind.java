@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.commands.remind;
 
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
@@ -8,7 +9,6 @@ import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
-import dev.sheldan.abstracto.utility.config.Utility;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 import dev.sheldan.abstracto.utility.service.ReminderService;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -46,7 +46,7 @@ public class Remind extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("remind")
-                .module(Utility.UTILITY)
+                .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)

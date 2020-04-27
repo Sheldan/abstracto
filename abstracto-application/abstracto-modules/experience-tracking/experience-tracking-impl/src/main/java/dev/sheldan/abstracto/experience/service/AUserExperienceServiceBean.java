@@ -176,25 +176,19 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         Member member = botService.getMemberInServer(user.getServerReference(), user.getUserReference());
         boolean currentlyHasNoExperienceRole = userExperience.getCurrentExperienceRole() == null;
         if(role == null) {
-            if(!currentlyHasNoExperienceRole){
-                if(botService.isUserInGuild(userExperience.getUser())) {
-                    roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
-                }
+            if(!currentlyHasNoExperienceRole && botService.isUserInGuild(userExperience.getUser())){
+                roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
             }
             userExperience.setCurrentExperienceRole(null);
             return;
         }
         boolean userHasRoleAlready = roleService.memberHasRole(member, role.getRole());
-        if(!userHasRoleAlready) {
-            if(currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId())) {
-                log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
-                if(!currentlyHasNoExperienceRole) {
-                    if(botService.isUserInGuild(userExperience.getUser())) {
-                        roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
-                    }
-                }
-                roleService.addRoleToUser(user, role.getRole());
+        if(!userHasRoleAlready && (currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId()))) {
+            log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
+            if(!currentlyHasNoExperienceRole && botService.isUserInGuild(userExperience.getUser())) {
+                roleService.removeRoleFromUser(user, userExperience.getCurrentExperienceRole().getRole());
             }
+            roleService.addRoleToUser(user, role.getRole());
         }
         userExperience.setCurrentExperienceRole(role);
     }
@@ -226,9 +220,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         List<AUserExperience> aUserExperiences = userExperienceManagementService.loadAllUsers(server);
         log.info("Found {} users to synchronize", aUserExperiences.size());
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
-        executeActionOnUserExperiencesWithFeedBack(aUserExperiences, channel, (AUserExperience experience) -> {
-            updateUserRole(experience, roles);
-        });
+        executeActionOnUserExperiencesWithFeedBack(aUserExperiences, channel, (AUserExperience experience) -> updateUserRole(experience, roles));
     }
 
     @Override

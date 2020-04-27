@@ -95,17 +95,17 @@ public class ChannelServiceBean implements ChannelService {
         String messageText = messageToSend.getMessage();
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         if(StringUtils.isBlank(messageText)) {
-            messageToSend.getEmbeds().forEach(embed -> {
-                futures.add(sendEmbedInAChannelFuture(embed, textChannel));
-            });
+            messageToSend.getEmbeds().forEach(embed ->
+                futures.add(sendEmbedInAChannelFuture(embed, textChannel))
+            );
         } else  {
             MessageAction messageAction = textChannel.sendMessage(messageText);
-            if(messageToSend.getEmbeds() != null && messageToSend.getEmbeds().size() > 0) {
+            if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 CompletableFuture<Message> messageFuture = messageAction.embed(messageToSend.getEmbeds().get(0)).submit();
                 futures.add(messageFuture);
-                messageToSend.getEmbeds().stream().skip(1).forEach(embed -> {
-                    futures.add(sendEmbedInAChannelFuture(embed, textChannel));
-                });
+                messageToSend.getEmbeds().stream().skip(1).forEach(embed ->
+                    futures.add(sendEmbedInAChannelFuture(embed, textChannel))
+                );
             } else {
                 futures.add(messageAction.submit());
             }
@@ -134,11 +134,11 @@ public class ChannelServiceBean implements ChannelService {
         MessageAction messageAction;
         if(!StringUtils.isBlank(messageToSend.getMessage())) {
             messageAction = channel.editMessageById(messageId, messageToSend.getMessage());
-            if(messageToSend.getEmbeds() != null && messageToSend.getEmbeds().size() > 0) {
+            if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 messageAction = messageAction.embed(messageToSend.getEmbeds().get(0));
             }
         } else {
-            if(messageToSend.getEmbeds() != null && messageToSend.getEmbeds().size() > 0) {
+            if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 messageAction = channel.editMessageById(messageId, messageToSend.getEmbeds().get(0));
             } else {
                 throw new AbstractoRunTimeException("Message to send did not contain anything to send.");

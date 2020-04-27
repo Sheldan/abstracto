@@ -9,10 +9,10 @@ import java.util.HashMap;
 public class ParameterTooLong extends AbstractoRunTimeException implements Templatable {
 
 
-    private Command command;
-    private String parameterName;
-    private Integer actualLength;
-    private Integer maximumLength;
+    private final Command command;
+    private final String parameterName;
+    private final Integer actualLength;
+    private final Integer maximumLength;
 
     public ParameterTooLong(String s, Command command, String parameterName, Integer actualLength, Integer maximumLength) {
         super(s);

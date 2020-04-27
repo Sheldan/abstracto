@@ -25,10 +25,8 @@ public class ReactionPostExecution implements PostCommandExecution {
             if(commandResult.getMessage() != null && commandResult.getThrowable() == null){
                 commandContext.getChannel().sendMessage(commandResult.getMessage()).queue();
             }
-        } else if(result.equals(ResultState.SUCCESSFUL)) {
-            if(command.getConfiguration().isCausesReaction()){
-                messageService.addReactionToMessage(SUCCESS_REACTION_EMOTE, commandContext.getGuild().getIdLong(), commandContext.getMessage());
-            }
+        } else if(result.equals(ResultState.SUCCESSFUL) && command.getConfiguration().isCausesReaction()) {
+            messageService.addReactionToMessage(SUCCESS_REACTION_EMOTE, commandContext.getGuild().getIdLong(), commandContext.getMessage());
         }
 
     }

@@ -27,9 +27,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     public void removeAllRoleAssignmentsForLevelInServer(AExperienceLevel level, AServer server) {
         log.trace("Removing all role assignments for level {}.", level.getLevel());
         List<AExperienceRole> existingExperienceRoles = experienceRoleRepository.findByLevelAndRoleServer(level, server);
-        existingExperienceRoles.forEach(existingRole -> {
-            experienceRoleRepository.delete(existingRole);
-        });
+        existingExperienceRoles.forEach(existingRole -> experienceRoleRepository.delete(existingRole));
     }
 
     @Override

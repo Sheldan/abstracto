@@ -8,9 +8,9 @@ import java.util.HashMap;
 
 public class IncorrectParameter extends AbstractoRunTimeException implements Templatable {
 
-    private Command command;
-    private String parameterName;
-    private Class clazz;
+    private final Command command;
+    private final String parameterName;
+    private final Class clazz;
 
     public IncorrectParameter(String s, Command command, Class expected, String parameterName) {
         super(s);

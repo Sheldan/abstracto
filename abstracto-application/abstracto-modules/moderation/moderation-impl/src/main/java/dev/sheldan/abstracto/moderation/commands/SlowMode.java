@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
-import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.SlowModeService;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -52,7 +52,7 @@ public class SlowMode extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("slowmode")
-                .module(Moderation.MODERATION)
+                .module(ModerationModule.MODERATION)
                 .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)

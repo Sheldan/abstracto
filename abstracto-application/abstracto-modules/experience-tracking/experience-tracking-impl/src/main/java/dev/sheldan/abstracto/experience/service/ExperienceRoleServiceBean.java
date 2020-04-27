@@ -55,14 +55,13 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     public void unsetRole(ARole role, AServer server, AChannel feedbackChannel) {
         AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(role, server);
         if(roleInServer != null) {
-            if(roleInServer.getUsers().size() > 0) {
+            if(!roleInServer.getUsers().isEmpty()) {
                 log.info("Recalculating the roles for {} users, because their current role was removed from experience tracking.", roleInServer.getUsers().size());
                 List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
                 roles.removeIf(role1 -> role1.getId().equals(roleInServer.getId()));
 
-                userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), feedbackChannel, (AUserExperience ex) -> {
-                    userExperienceService.updateUserRole(ex, roles);
-                });
+                userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), feedbackChannel,
+                        (AUserExperience ex) -> userExperienceService.updateUserRole(ex, roles));
             }
             experienceRoleManagementService.unsetRole(roleInServer);
         }
@@ -76,7 +75,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      */
     @Override
     public AExperienceRole calculateRole(AUserExperience userExperience, List<AExperienceRole> roles) {
-        if(roles.size() == 0) {
+        if(roles.isEmpty()) {
             return null;
         }
         AExperienceRole lastRole = null;

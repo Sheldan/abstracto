@@ -225,7 +225,7 @@ public class MuteServiceBean implements MuteService {
         log.info("Unmuting {} in server {}", mutingServer.getId(), mute.getMutedUser().getUserReference().getId());
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
         log.trace("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
-        Guild guild = botService.getGuildById(mute.getMutingServer().getId()).orElseGet(null);
+        Guild guild = botService.getGuildByIdNullable(mute.getMutingServer().getId());
         if(botService.isUserInGuild(guild, mute.getMutedUser())) {
             roleService.removeRoleFromUser(mute.getMutedUser(), muteRole.getRole());
         } else {

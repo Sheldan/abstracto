@@ -43,9 +43,9 @@ public class MakeImmune extends AbstractConditionableCommand {
         ARole role = roleManagementService.findRole(roleId);
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
-            feature.getCommands().forEach(command -> {
-                commandService.makeRoleImmuneForCommand(command, role);
-            });
+            feature.getCommands().forEach(command ->
+                commandService.makeRoleImmuneForCommand(command, role)
+            );
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.makeRoleImmuneForCommand(command, role);

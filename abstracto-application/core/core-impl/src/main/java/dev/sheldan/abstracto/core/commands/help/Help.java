@@ -42,9 +42,9 @@ public class Help implements Command {
             if(module != null){
                 sb.append("Help | Module overview \n");
                 sb.append(getModule(module, 0, false));
-                module.getCommands().forEach(command -> {
-                    sb.append(getCommand(command));
-                });
+                module.getCommands().forEach(command ->
+                    sb.append(getCommand(command))
+                );
             } else {
                 Command command = commandStructure.getCommandWithName(parameterValue);
                 if(command != null) {
@@ -109,9 +109,9 @@ public class Help implements Command {
         sb.append(String.format(intentation +"**%s** \n", info.getName()));
         sb.append(String.format(intentation + "%s \n", info.getDescription()));
         if(recursive) {
-            module.getSubModules().forEach(subModule -> {
-                sb.append(getModule(subModule, depth + 1, true));
-            });
+            module.getSubModules().forEach(subModule ->
+                sb.append(getModule(subModule, depth + 1, true))
+            );
         }
         sb.append("\n");
         return sb.toString();

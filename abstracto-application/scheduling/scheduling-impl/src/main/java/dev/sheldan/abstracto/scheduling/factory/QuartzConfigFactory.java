@@ -44,7 +44,7 @@ public class QuartzConfigFactory {
                 .build();
     }
 
-    public Trigger createSimpleOnceOnlyTrigger(String triggerName, Date startTime) {
+    public Trigger createSimpleOnceOnlyTrigger(Date startTime) {
         return newTrigger()
                 .startAt(startTime)
                 .withSchedule(simpleSchedule())

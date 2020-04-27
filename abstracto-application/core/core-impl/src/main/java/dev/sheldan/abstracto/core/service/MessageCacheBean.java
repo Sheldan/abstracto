@@ -80,9 +80,9 @@ public class MessageCacheBean implements MessageCache {
             Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServer(guildOptional.get(), textChannelId);
             if(textChannelByIdOptional.isPresent()) {
                 TextChannel textChannel = textChannelByIdOptional.get();
-                textChannel.retrieveMessageById(messageId).queue(message -> {
-                    buildCachedMessageFromMessage(future, message);
-                });
+                textChannel.retrieveMessageById(messageId).queue(message ->
+                    buildCachedMessageFromMessage(future, message)
+                );
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
                 future.completeExceptionally(new ChannelException(String.format("Not able to load message %s. Text channel %s not found in guild %s", messageId, textChannelId, guildId)));
@@ -98,13 +98,13 @@ public class MessageCacheBean implements MessageCache {
     @Async
     public void buildCachedMessageFromMessage(CompletableFuture<CachedMessage> future, Message message) {
         List<String> attachmentUrls = new ArrayList<>();
-        message.getAttachments().forEach(attachment -> {
-            attachmentUrls.add(attachment.getProxyUrl());
-        });
+        message.getAttachments().forEach(attachment ->
+            attachmentUrls.add(attachment.getProxyUrl())
+        );
         List<CachedEmbed> embeds = new ArrayList<>();
-        message.getEmbeds().forEach(embed -> {
-            embeds.add(getCachedEmbedFromEmbed(embed));
-        });
+        message.getEmbeds().forEach(embed ->
+            embeds.add(getCachedEmbedFromEmbed(embed))
+        );
 
         List<CompletableFuture<CachedReaction>> futures = new ArrayList<>();
         message.getReactions().forEach(messageReaction -> {
@@ -113,7 +113,7 @@ public class MessageCacheBean implements MessageCache {
             futures.add(future1);
         });
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
         future.complete(CachedMessage.builder()
                     .authorId(message.getAuthor().getIdLong())
                     .serverId(message.getGuild().getIdLong())
@@ -124,8 +124,8 @@ public class MessageCacheBean implements MessageCache {
                     .reactions(getFutures(futures))
                     .timeCreated(Instant.from(message.getTimeCreated()))
                     .attachmentUrls(attachmentUrls)
-                    .build());
-        });
+                    .build())
+        );
     }
 
     private List<CachedReaction> getFutures(List<CompletableFuture<CachedReaction>> futures) {

@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.ARole;
-import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class SetMuteRole extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(false).build();
         return CommandConfiguration.builder()
                 .name("setMuteRole")
-                .module(Moderation.MODERATION)
+                .module(ModerationModule.MODERATION)
                 .templated(false)
                 .causesReaction(true)
                 .parameters(parameters)

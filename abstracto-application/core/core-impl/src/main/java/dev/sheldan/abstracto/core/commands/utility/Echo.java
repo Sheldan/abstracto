@@ -27,9 +27,9 @@ public class Echo extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         StringBuilder sb = new StringBuilder();
-        commandContext.getParameters().getParameters().forEach(o -> {
-            sb.append(o.toString());
-        });
+        commandContext.getParameters().getParameters().forEach(o ->
+            sb.append(o.toString())
+        );
         EchoModel model = EchoModel.builder().text(sb.toString()).build();
         commandContext.getChannel().sendMessage(templateService.renderTemplate(TEMPLATE_NAME, model)).queue();
         return CommandResult.fromSuccess();

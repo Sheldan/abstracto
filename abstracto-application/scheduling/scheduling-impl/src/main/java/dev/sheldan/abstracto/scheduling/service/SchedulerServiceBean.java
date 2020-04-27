@@ -84,7 +84,7 @@ public class SchedulerServiceBean implements SchedulerService {
         if (job.getCronExpression() != null) {
             newTrigger = scheduleCreator.createBasicCronTrigger(startDate, job.getCronExpression());
         } else {
-            newTrigger = scheduleCreator.createSimpleOnceOnlyTrigger(job.getName(), startDate);
+            newTrigger = scheduleCreator.createSimpleOnceOnlyTrigger(startDate);
         }
         try {
             schedulerFactoryBean.getScheduler().rescheduleJob(TriggerKey.triggerKey(job.getName()), newTrigger);

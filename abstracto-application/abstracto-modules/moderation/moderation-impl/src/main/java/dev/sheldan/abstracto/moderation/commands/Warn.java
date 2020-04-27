@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
 import dev.sheldan.abstracto.moderation.service.WarnService;
@@ -53,7 +53,7 @@ public class Warn extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("warn")
-                .module(Moderation.MODERATION)
+                .module(ModerationModule.MODERATION)
                 .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)

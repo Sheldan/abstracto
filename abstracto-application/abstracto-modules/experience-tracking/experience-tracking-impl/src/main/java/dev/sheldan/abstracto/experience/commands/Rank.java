@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
@@ -38,6 +39,10 @@ public class Rank extends AbstractConditionableCommand {
 
     @Autowired
     private ExperienceLevelService experienceLevelService;
+
+    @Autowired
+    protected ChannelService channelService;
+
 
     @Override
     public CommandResult execute(CommandContext commandContext) {

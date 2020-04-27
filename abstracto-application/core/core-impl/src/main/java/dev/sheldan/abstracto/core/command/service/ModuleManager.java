@@ -4,8 +4,6 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.CommandHierarchy;
 import dev.sheldan.abstracto.core.command.config.ModuleInterface;
 import dev.sheldan.abstracto.core.command.config.PackedModule;
-import dev.sheldan.abstracto.core.command.service.CommandRegistry;
-import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

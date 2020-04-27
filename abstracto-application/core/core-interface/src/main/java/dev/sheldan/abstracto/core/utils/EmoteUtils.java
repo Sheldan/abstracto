@@ -10,6 +10,10 @@ import java.util.Optional;
 
 public class EmoteUtils {
 
+    private EmoteUtils() {
+
+    }
+
     public static boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote emote, Emote emoteInGuild) {
         if(reaction.isEmote() && emote.getCustom()) {
             if(emoteInGuild != null) {

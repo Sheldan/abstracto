@@ -43,9 +43,9 @@ public class DisAllowRole extends AbstractConditionableCommand {
         ARole role = roleManagementService.findRole(roleId);
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
-            feature.getCommands().forEach(command -> {
-                commandService.disAllowCommandForRole(command, role);
-            });
+            feature.getCommands().forEach(command ->
+                commandService.disAllowCommandForRole(command, role)
+            );
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.disAllowCommandForRole(command, role);

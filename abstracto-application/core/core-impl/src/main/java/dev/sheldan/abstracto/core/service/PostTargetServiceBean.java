@@ -119,10 +119,10 @@ public class PostTargetServiceBean implements PostTargetService {
                             existingMessage -> existingMessage
                                     .editMessage(messageToSend.getEmbeds().get(0))
                                     .submit().thenAccept(message -> future.get(0).complete(message)),
-                            throwable -> {
+                            throwable ->
                                 sendEmbedInPostTarget(messageToSend, target).get(0)
-                                            .thenAccept(message -> future.get(0).complete(message));
-                            });
+                                            .thenAccept(message -> future.get(0).complete(message))
+                            );
         } else {
             textChannelForPostTarget
                     .retrieveMessageById(messageId)
@@ -131,10 +131,10 @@ public class PostTargetServiceBean implements PostTargetService {
                                     .editMessage(messageToSend.getMessage())
                                     .embed(messageToSend.getEmbeds().get(0))
                                     .submit().thenAccept(message -> future.get(0).complete(message)),
-                            throwable -> {
+                            throwable ->
                                 sendEmbedInPostTarget(messageToSend, target).get(0)
-                                            .thenAccept(message -> future.get(0).complete(message));
-                            });
+                                            .thenAccept(message -> future.get(0).complete(message))
+                            );
         }
     }
 
@@ -145,7 +145,7 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public void throwIfPostTargetIsNotDefined(String name, Long serverId) throws ChannelException {
+    public void throwIfPostTargetIsNotDefined(String name, Long serverId) {
         PostTarget postTarget = postTargetManagement.getPostTarget(name, serverId);
         if(postTarget == null) {
             throw new ChannelException(String.format("Post target %s is not defined.", name));

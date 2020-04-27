@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.database.AFeature;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "command")

@@ -1,17 +1,17 @@
-package dev.sheldan.abstracto.moderation.config;
+package dev.sheldan.abstracto.core.command;
 
 import dev.sheldan.abstracto.core.command.config.ModuleInterface;
 import dev.sheldan.abstracto.core.command.config.ModuleInfo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Moderation implements ModuleInterface {
+public class UtilityModuleInterface implements ModuleInterface {
 
-    public static final String MODERATION = "moderation";
+    public static final String UTILITY = "utility";
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(MODERATION).description("Utilities to moderate the server").build();
+        return ModuleInfo.builder().name(UTILITY).description("General utilities").build();
     }
 
     @Override

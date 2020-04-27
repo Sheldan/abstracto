@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.commands;
 
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -10,7 +11,6 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.utility.config.Utility;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.service.StarboardService;
@@ -48,7 +48,7 @@ public class StarStats extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("starStats")
-                .module(Utility.UTILITY)
+                .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .causesReaction(false)
                 .parameters(parameters)

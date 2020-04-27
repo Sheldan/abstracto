@@ -36,10 +36,4 @@ public class InstantMethod implements TemplateMethodModelEx {
                 .withZone(ZoneId.systemDefault());
         return formatter.format(duration);
     }
-
-    private HashMap<String, Object> getParam(Long value) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("amount", value);
-        return params;
-    }
 }

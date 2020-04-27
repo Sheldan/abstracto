@@ -28,5 +28,6 @@ public interface BotService {
     Optional<TextChannel> getTextChannelFromServer(Guild serverId, Long textChannelId);
     Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId);
     Optional<Guild> getGuildById(Long serverId);
+    Guild getGuildByIdNullable(Long serverId);
     void shutdown();
 }

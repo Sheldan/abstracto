@@ -9,6 +9,10 @@ import java.lang.reflect.Method;
 @Slf4j
 public class ContextConverter {
 
+    private ContextConverter() {
+
+    }
+
     public static <T extends UserInitiatedServerContext> UserInitiatedServerContext fromCommandContext(CommandContext commandContext, Class<T> clazz)  {
         Method m = null;
         try {

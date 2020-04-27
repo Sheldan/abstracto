@@ -73,9 +73,9 @@ public class StartupServiceBean implements Startup {
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
-                configListeners.forEach(serverConfigListener -> {
-                    serverConfigListener.updateServerConfig(newAServer);
-                });
+                configListeners.forEach(serverConfigListener ->
+                    serverConfigListener.updateServerConfig(newAServer)
+                );
             }
         });
 
@@ -108,8 +108,8 @@ public class StartupServiceBean implements Startup {
         });
 
         Set<Long> noLongAvailable = SetUtils.difference(knownChannelsIds, existingChannelsIds);
-        noLongAvailable.forEach(aLong -> {
-            channelManagementService.markAsDeleted(aLong);
-        });
+        noLongAvailable.forEach(aLong ->
+            channelManagementService.markAsDeleted(aLong)
+        );
     }
 }

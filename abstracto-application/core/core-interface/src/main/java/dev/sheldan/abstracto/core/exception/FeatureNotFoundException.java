@@ -7,8 +7,8 @@ import java.util.List;
 
 public class FeatureNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private String feature;
-    private List<String> availableFeatures;
+    private final String feature;
+    private final List<String> availableFeatures;
 
     public FeatureNotFoundException(String message, String feature, List<String> availableFeatures) {
         super(message);

@@ -34,7 +34,7 @@ public class Enable extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        if(commandContext.getParameters().getParameters().size() == 0) {
+        if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureFlagService.getAllFeatures());
             String response = templateService.renderTemplate("enable_features_response", model);

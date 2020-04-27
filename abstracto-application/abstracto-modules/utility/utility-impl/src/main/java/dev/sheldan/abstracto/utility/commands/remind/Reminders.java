@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.commands.remind;
 
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
@@ -10,7 +11,6 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.utility.config.Utility;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.RemindersModel;
@@ -47,7 +47,7 @@ public class Reminders extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().longHelp("Shows the current active reminders").usage("reminders").build();
         return CommandConfiguration.builder()
                 .name("reminders")
-                .module(Utility.UTILITY)
+                .module(UtilityModuleInterface.UTILITY)
                 .description("Shows the current active reminders")
                 .causesReaction(true)
                 .help(helpInfo)

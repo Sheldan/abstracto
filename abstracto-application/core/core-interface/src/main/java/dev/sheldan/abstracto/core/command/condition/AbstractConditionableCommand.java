@@ -18,9 +18,6 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
     protected CommandDisabledCondition commandDisabledCondition;
 
     @Autowired
-    protected ChannelService channelService;
-
-    @Autowired
     protected CommandDisallowedCondition commandDisallowedCondition;
 
     @Autowired

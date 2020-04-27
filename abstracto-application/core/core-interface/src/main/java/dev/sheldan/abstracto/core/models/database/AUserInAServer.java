@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Getter
@@ -10,7 +11,7 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AUserInAServer {
+public class AUserInAServer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

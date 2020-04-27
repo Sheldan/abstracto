@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
 @Table(name = "experience_role")
 @Getter
 @Setter
-public class AExperienceRole {
+public class AExperienceRole implements Serializable {
 
     /**
      * The abstracto unique id of this experience role.

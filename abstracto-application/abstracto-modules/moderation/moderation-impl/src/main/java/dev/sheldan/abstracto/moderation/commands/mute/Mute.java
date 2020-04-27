@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
 import dev.sheldan.abstracto.moderation.service.MuteService;
@@ -51,7 +51,7 @@ public class Mute extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(false).build();
         return CommandConfiguration.builder()
                 .name("mute")
-                .module(Moderation.MODERATION)
+                .module(ModerationModule.MODERATION)
                 .templated(false)
                 .causesReaction(true)
                 .parameters(parameters)

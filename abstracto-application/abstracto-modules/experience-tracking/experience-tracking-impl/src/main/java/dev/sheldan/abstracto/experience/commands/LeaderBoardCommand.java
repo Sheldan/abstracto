@@ -50,7 +50,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // parameter is optional, in case its not present, we default to the 0th page
-        Integer page = parameters.size() > 0 ? (Integer) parameters.get(0) : 0;
+        Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 0;
         LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
         LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.fromCommandContext(commandContext, LeaderBoardModel.class);
         leaderBoardModel.setUserExperiences(converter.fromLeaderBoard(leaderBoard));

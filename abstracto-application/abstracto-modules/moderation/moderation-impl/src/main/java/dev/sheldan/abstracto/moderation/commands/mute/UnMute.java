@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.moderation.config.Moderation;
+import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.exception.MuteException;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
@@ -50,7 +50,7 @@ public class UnMute extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(false).build();
         return CommandConfiguration.builder()
                 .name("unMute")
-                .module(Moderation.MODERATION)
+                .module(ModerationModule.MODERATION)
                 .templated(false)
                 .causesReaction(true)
                 .parameters(parameters)

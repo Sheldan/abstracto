@@ -102,9 +102,9 @@ public class SuggestionServiceBean implements SuggestionService {
                 suggestionLog.setSuggestion(suggestion);
                 TextChannel textChannelById = guildById.getTextChannelById(channelId);
                 if(textChannelById != null) {
-                    textChannelById.retrieveMessageById(originalMessageId).queue(message -> {
-                        self.updateSuggestionMessageText(text, suggestionLog, message);
-                    });
+                    textChannelById.retrieveMessageById(originalMessageId).queue(message ->
+                        self.updateSuggestionMessageText(text, suggestionLog, message)
+                    );
                 }
             }
         }

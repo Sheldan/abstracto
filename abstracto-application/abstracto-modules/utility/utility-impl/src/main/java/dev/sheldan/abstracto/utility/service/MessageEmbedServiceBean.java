@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -37,7 +38,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     private Pattern messageRegex = Pattern.compile("(?<whole>https://discordapp.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+");
 
-    public static final String MESSAGE_EMBED_TEMPLATE = "message";
+    public static final String MESSAGE_EMBED_TEMPLATE = "message_embed";
     public static final String REMOVAL_EMOTE = "removeEmbed";
 
     @Autowired
@@ -96,12 +97,12 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Override
     public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, AUserInAServer reason, Message embeddingMessage) {
-        linksToEmbed.forEach(messageEmbedLink -> {
+        linksToEmbed.forEach(messageEmbedLink ->
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
-                    .thenAccept(cachedMessage -> {
-                        self.embedLink(cachedMessage, target, reason, embeddingMessage);
-                    });
-        });
+                    .thenAccept(cachedMessage ->
+                        self.embedLink(cachedMessage, target, reason, embeddingMessage)
+                    )
+        );
     }
 
     @Override
@@ -129,7 +130,11 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
         AUserInAServer user = userManagementService.loadUser(message.getMember());
         Member author = botService.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
-        TextChannel sourceChannel = botService.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId()).get();
+        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
+        TextChannel sourceChannel = null;
+        if(textChannelFromServer.isPresent()) {
+            sourceChannel = textChannelFromServer.get();
+        }
         return MessageEmbeddedModel
                 .builder()
                 .channel(channel)

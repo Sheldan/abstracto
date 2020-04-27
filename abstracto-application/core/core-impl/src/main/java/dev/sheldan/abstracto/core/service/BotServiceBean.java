@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class BotServiceBean implements BotService {
 
+    public static final String GUILD_NOT_FOUND = "Guild %s not found.";
     private JDA instance;
 
     @Override
@@ -58,7 +59,7 @@ public class BotServiceBean implements BotService {
             }
         }
         else {
-            throw new GuildException(String.format("Guild %s not found.", serverId));
+            throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
         }
     }
 
@@ -68,7 +69,7 @@ public class BotServiceBean implements BotService {
         if(guildById != null) {
             return guildById.getMemberById(memberId);
         } else {
-            throw new RuntimeException(String.format("Guild %s not found.", serverId));
+            throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
         }
     }
 
@@ -78,7 +79,7 @@ public class BotServiceBean implements BotService {
         if(guildById != null) {
             return isUserInGuild(guildById, aUserInAServer);
         } else {
-            throw new RuntimeException(String.format("Guild %s not found.", aUserInAServer.getServerReference().getId()));
+            throw new GuildException(String.format(GUILD_NOT_FOUND, aUserInAServer.getServerReference().getId()));
         }
     }
 
@@ -120,7 +121,7 @@ public class BotServiceBean implements BotService {
             Emote emoteById = guild.getEmoteById(emote.getEmoteId());
             return Optional.ofNullable(emoteById);
         }
-        throw new GuildException(String.format("Not able to find  server %s", serverId));
+        throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
     }
 
     @Override
@@ -135,12 +136,17 @@ public class BotServiceBean implements BotService {
             Guild guild = guildOptional.get();
             return Optional.ofNullable(guild.getTextChannelById(textChannelId));
         }
-        throw new GuildException(String.format("Not able to find guild %s", serverId));
+        throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
     }
 
     @Override
     public Optional<Guild> getGuildById(Long serverId) {
         return Optional.ofNullable(instance.getGuildById(serverId));
+    }
+
+    @Override
+    public Guild getGuildByIdNullable(Long serverId) {
+        return instance.getGuildById(serverId);
     }
 
     @Override

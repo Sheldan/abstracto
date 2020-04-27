@@ -88,9 +88,9 @@ public class MessageServiceBean implements MessageService {
     public void sendMessageToUser(User user, String text, TextChannel feedbackChannel) {
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
 
-        user.openPrivateChannel().queue(privateChannel -> {
-            privateChannel.sendMessage(text).queue(messageFuture::complete, messageFuture::completeExceptionally);
-        });
+        user.openPrivateChannel().queue(privateChannel ->
+            privateChannel.sendMessage(text).queue(messageFuture::complete, messageFuture::completeExceptionally)
+        );
 
         messageFuture.exceptionally(e -> {
             log.warn("Failed to send message. ", e);

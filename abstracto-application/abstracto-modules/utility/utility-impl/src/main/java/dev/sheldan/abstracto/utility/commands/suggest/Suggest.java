@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.utility.commands.suggest;
 
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.utility.config.Utility;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
 import dev.sheldan.abstracto.utility.service.SuggestionService;
@@ -40,7 +40,7 @@ public class Suggest extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("suggest")
-                .module(Utility.UTILITY)
+                .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)

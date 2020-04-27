@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
 
 public class ParseUtils {
 
+    private ParseUtils() {
+
+    }
+
     private static Pattern messageRegex = Pattern.compile("(?<number>\\d+)(?<unit>[ywdhms]+)");
 
     public static Duration parseDuration(String textToParseFrom) {

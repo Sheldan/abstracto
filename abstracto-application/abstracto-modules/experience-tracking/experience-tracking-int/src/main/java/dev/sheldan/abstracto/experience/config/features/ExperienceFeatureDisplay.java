@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ExperienceFeatureDisplay implements FeatureDisplay {
-    public static String EXPERIENCE = "experience";
-
     @Override
     public FeatureEnum getFeature() {
         return ExperienceFeature.EXPERIENCE;

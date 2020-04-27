@@ -40,9 +40,9 @@ public class Restrict extends AbstractConditionableCommand {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
-            feature.getCommands().forEach(command -> {
-                commandService.restrictCommand(command, commandContext.getUserInitiatedContext().getServer());
-            });
+            feature.getCommands().forEach(command ->
+                commandService.restrictCommand(command, commandContext.getUserInitiatedContext().getServer())
+            );
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.restrictCommand(command, commandContext.getUserInitiatedContext().getServer());

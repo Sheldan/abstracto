@@ -22,15 +22,10 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
         for (AChannelGroupCommand aChannelGroupCommand : allChannelGroupsOfCommand) {
             Optional<AChannel> channelInGroup = aChannelGroupCommand.getGroup()
                     .getChannels().stream().filter(channel1 -> channel1.getId().equals(channel.getId())).findAny();
-            if (channelInGroup.isPresent()) {
-                if (aChannelGroupCommand.getEnabled()) {
-                    return true;
-                }
+            if (channelInGroup.isPresent() && aChannelGroupCommand.getEnabled()) {
+                return true;
             }
         }
-        if(allChannelGroupsOfCommand.size() == 0) {
-            return true;
-        }
-        return false;
+        return allChannelGroupsOfCommand.isEmpty();
     }
 }

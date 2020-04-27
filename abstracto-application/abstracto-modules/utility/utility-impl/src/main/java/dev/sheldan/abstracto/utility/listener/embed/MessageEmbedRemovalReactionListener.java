@@ -55,9 +55,9 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
                 if(embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(userReacting.getId())
                     || embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(userReacting.getId())
                 ) {
-                    messageService.deleteMessageInChannelInServer(message.getServerId(), message.getChannelId(), message.getMessageId()).thenAccept(aVoid -> {
-                        messageEmbedPostManagementService.deleteEmbeddedMessageTransactional(embeddedMessage);
-                    });
+                    messageService.deleteMessageInChannelInServer(message.getServerId(), message.getChannelId(), message.getMessageId()).thenAccept(aVoid ->
+                        messageEmbedPostManagementService.deleteEmbeddedMessageTransactional(embeddedMessage)
+                    );
                 }
 
             }

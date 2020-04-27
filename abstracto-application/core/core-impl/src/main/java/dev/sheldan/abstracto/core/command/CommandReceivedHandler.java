@@ -12,7 +12,6 @@ import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -152,7 +151,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
-        if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().size() == 0) {
+        if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().isEmpty()) {
             return Parameters.builder().parameters(parsedParameters).build();
         }
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
@@ -199,7 +198,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         if(!reminderActive) {
                             parsedParameters.add(value);
                         } else {
-                            if(parsedParameters.size() == 0) {
+                            if(parsedParameters.isEmpty()) {
                                 parsedParameters.add(value);
                             } else {
                                 int lastIndex = parsedParameters.size() - 1;

@@ -67,9 +67,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     }
 
     private void addReactionIfNotThere(CachedMessage message, CachedReaction reaction, AUser userReacting) {
-        Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 -> {
-            return EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote());
-        }).findAny();
+        Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 ->
+            EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote())
+        ).findAny();
         if(!existingReaction.isPresent()) {
             message.getReactions().add(reaction);
         } else {
@@ -82,9 +82,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     }
 
     private void removeReactionIfThere(CachedMessage message, CachedReaction reaction, AUser userReacting) {
-        Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 -> {
-            return EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote());
-        }).findAny();
+        Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 ->
+            EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote())
+        ).findAny();
         if(existingReaction.isPresent()) {
             CachedReaction cachedReaction = existingReaction.get();
             cachedReaction.getUsers().removeIf(user -> user.getId().equals(userReacting.getId()));
@@ -118,9 +118,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             CompletableFuture<CachedReaction> future = new CompletableFuture<>();
             messageCache.getCachedReactionFromReaction(future, event.getReaction());
-            future.thenAccept(reaction -> {
-                self.callRemoveListeners(event, cachedMessage, reaction);
-            });
+            future.thenAccept(reaction ->
+                self.callRemoveListeners(event, cachedMessage, reaction)
+            );
 
             messageCache.putMessageInCache(cachedMessage);
         });

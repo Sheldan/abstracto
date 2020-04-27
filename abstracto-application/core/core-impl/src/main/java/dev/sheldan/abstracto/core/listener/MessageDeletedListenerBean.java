@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Component
 @Slf4j
@@ -32,9 +33,8 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Override
     @Transactional
     public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
-        messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {
-            self.executeListener(cachedMessage);
-        });
+        Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> self.executeListener(cachedMessage);
+        messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessageConsumer);
     }
 
     @Transactional

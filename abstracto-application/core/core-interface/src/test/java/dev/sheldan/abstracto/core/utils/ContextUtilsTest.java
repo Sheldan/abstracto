@@ -53,11 +53,11 @@ public class ContextUtilsTest {
     @Test
     public void testFromMessage() {
         PingModel pingModel = (PingModel) classToTest.fromMessage(buildCachedMessage(), PingModel.class);
-        assertEquals(pingModel.getUser().getId(), AUTHOR_ID);
-        assertEquals(pingModel.getAUserInAServer().getUserReference().getId(), AUTHOR_ID);
-        assertEquals(pingModel.getAUserInAServer().getServerReference().getId(), SERVER_ID);
-        assertEquals(pingModel.getServer().getId(), SERVER_ID);
-        assertEquals(pingModel.getChannel().getId(), CHANNEL_ID);
+        assertEquals(AUTHOR_ID, pingModel.getUser().getId());
+        assertEquals(AUTHOR_ID, pingModel.getAUserInAServer().getUserReference().getId());
+        assertEquals(SERVER_ID, pingModel.getAUserInAServer().getServerReference().getId());
+        assertEquals(SERVER_ID, pingModel.getServer().getId());
+        assertEquals(CHANNEL_ID, pingModel.getChannel().getId());
     }
 
     private CachedMessage buildCachedMessage() {

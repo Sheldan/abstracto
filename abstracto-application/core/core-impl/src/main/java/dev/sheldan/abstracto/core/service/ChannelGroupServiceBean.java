@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ChannelGroupServiceBean implements ChannelGroupService {
 
+    private static final String CHANNEL_GROUP_NOT_FOUND = "Channel group %s was not found.";
+    private static final String COMMAND_NOT_FOUND = "Command %s not found.";
+
     @Autowired
     private ChannelGroupManagementService channelGroupManagementService;
 
@@ -61,7 +64,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(channel.getServer().getId());
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format("Channel group %s was not found.", channelGroupName));
+            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
         }
         channelGroupManagementService.addChannelToChannelGroup(channelGroup, channel);
     }
@@ -82,7 +85,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(channel.getServer().getId());
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format("Channel group %s was not found", channelGroupName));
+            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
         }
         channelGroupManagementService.removeChannelFromChannelGroup(channelGroup, channel);
     }
@@ -92,11 +95,11 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format("Channel group %s was not found", channelGroupName));
+            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
         }
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
-            throw new CommandException(String.format("Command %s not found.", commandName));
+            throw new CommandException(String.format(COMMAND_NOT_FOUND, commandName));
         }
         channelGroupCommandManagementService.setCommandInGroupTo(command, channelGroup, false);
     }
@@ -106,11 +109,11 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format("Channel group %s was not found", channelGroupName));
+            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
         }
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
-            throw new CommandException(String.format("Command %s not found.", commandName));
+            throw new CommandException(String.format(COMMAND_NOT_FOUND, commandName));
         }
         channelGroupCommandManagementService.setCommandInGroupTo(command, channelGroup, true);
     }
