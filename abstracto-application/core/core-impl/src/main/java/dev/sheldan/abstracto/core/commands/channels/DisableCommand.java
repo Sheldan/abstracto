@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class DisableCommand implements Command {
+public class DisableCommand extends AbstractConditionableCommand {
 
     @Autowired
     private ChannelGroupService channelGroupService;
@@ -45,5 +46,12 @@ public class DisableCommand implements Command {
     @Override
     public FeatureEnum getFeature() {
         return CoreFeatures.CORE_FEATURE;
+    }
+
+    @Override
+    public List<CommandCondition> getConditions() {
+        List<CommandCondition> conditions = super.getConditions();
+        conditions.remove(commandDisabledCondition);
+        return conditions;
     }
 }

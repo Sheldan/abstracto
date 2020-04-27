@@ -22,7 +22,7 @@ public class StarboardPostReaction {
     @JoinColumn(name = "reactorId", nullable = false)
     private AUser reactor;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "postId", nullable = false)
     private StarboardPost starboardPost;
 

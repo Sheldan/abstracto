@@ -12,7 +12,7 @@ public class CoreServiceConfigListener implements ServerConfigListener {
     @Autowired
     private ConfigManagementService configManagementService;
 
-    @Value("§{abstracto.prefix}")
+    @Value("${abstracto.prefix}")
     private String prefix;
 
     @Override

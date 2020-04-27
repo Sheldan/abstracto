@@ -1,0 +1,1 @@
+You lack the necessary role to execute this command. One of the following is needed: <#list allowedRoles as role>${role.name}<#sep>,<#else>None configured.</#list>

@@ -71,10 +71,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Async
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if(!commandManager.isCommand(event.getMessage())) {
+        if(!event.isFromGuild()) {
             return;
         }
-        if(!event.isFromGuild()) {
+        if(!commandManager.isCommand(event.getMessage())) {
             return;
         }
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()

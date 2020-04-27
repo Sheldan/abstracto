@@ -12,7 +12,9 @@ import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -79,6 +81,11 @@ public class RoleServiceBean implements RoleService {
         } else {
             throw new GuildException(String.format("Failed to load guild %s.", role.getServer().getId()));
         }
+    }
+
+    @Override
+    public List<Role> getRolesFromGuild(List<ARole> roles) {
+        return roles.stream().map(this::getRoleFromGuild).collect(Collectors.toList());
     }
 
     @Override

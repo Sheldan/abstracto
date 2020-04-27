@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class Echo implements Command {
+public class Echo extends AbstractConditionableCommand {
 
     private static final String TEMPLATE_NAME = "echo_response";
 

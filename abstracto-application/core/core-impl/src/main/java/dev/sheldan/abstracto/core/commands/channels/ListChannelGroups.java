@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class ListChannelGroups implements Command {
+public class ListChannelGroups extends AbstractConditionableCommand {
 
     @Autowired
     private TemplateService templateService;

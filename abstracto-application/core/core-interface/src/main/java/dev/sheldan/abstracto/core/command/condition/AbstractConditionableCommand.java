@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,17 +12,23 @@ import java.util.List;
 public abstract class AbstractConditionableCommand implements ConditionalCommand {
 
     @Autowired
-    private FeatureEnabledCondition featureEnabledCondition;
+    protected FeatureEnabledCondition featureEnabledCondition;
 
     @Autowired
-    private CommandDisabledCondition commandDisabledCondition;
+    protected CommandDisabledCondition commandDisabledCondition;
 
     @Autowired
     protected ChannelService channelService;
 
+    @Autowired
+    protected CommandDisallowedCondition commandDisallowedCondition;
+
+    @Autowired
+    protected ImmuneUserCondition immuneUserCondition;
+
 
     @Override
     public List<CommandCondition> getConditions() {
-        return Arrays.asList(featureEnabledCondition, commandDisabledCondition);
+        return new ArrayList<>(Arrays.asList(featureEnabledCondition, commandDisabledCondition, commandDisallowedCondition));
     }
 }

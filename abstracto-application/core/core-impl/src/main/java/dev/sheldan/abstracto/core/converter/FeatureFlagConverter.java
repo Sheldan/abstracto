@@ -18,7 +18,7 @@ public class FeatureFlagConverter {
     private FeatureFlagService featureFlagService;
 
     public FeatureFlagDisplay fromAFeatureFlag(AFeatureFlag featureFlag) {
-        FeatureEnum featureEnum = featureFlagService.getFeatureEnum(featureFlag.getKey());
+        FeatureEnum featureEnum = featureFlagService.getFeatureEnum(featureFlag.getFeature().getKey());
         FeatureDisplay forFeature = featureFlagService.getFeatureDisplayforFeature(featureEnum);
         return FeatureFlagDisplay
                 .builder()

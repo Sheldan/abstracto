@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class RemoveFromChannelGroup implements Command {
+public class RemoveFromChannelGroup extends AbstractConditionableCommand {
 
 
     @Autowired

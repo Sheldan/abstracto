@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
@@ -22,7 +22,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class PostTarget implements Command {
+public class PostTarget extends AbstractConditionableCommand {
 
     public static final String POST_TARGET_NO_TARGET_TEMPLATE = "posttarget_no_target";
     public static final String POST_TARGET_INVALID_TARGET_TEMPLATE = "posttarget_invalid_target";

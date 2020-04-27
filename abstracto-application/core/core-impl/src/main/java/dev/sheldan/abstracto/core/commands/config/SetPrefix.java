@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.commands.config;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class SetPrefix implements Command {
+public class SetPrefix extends AbstractConditionableCommand {
 
     @Autowired
     private ConfigService configService;

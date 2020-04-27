@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.commands.config.features;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class Features implements Command {
+public class Features extends AbstractConditionableCommand {
 
     @Autowired
     private FeatureFlagManagementService featureFlagManagementService;

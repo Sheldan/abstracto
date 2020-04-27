@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.FeatureFlagRepository;
@@ -19,32 +21,38 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private FeatureManagementService featureManagementService;
+
     @Override
-    public void createFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue) {
+    public void createFeatureFlag(AFeature feature, Long serverId, Boolean newValue) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        createFeatureFlag(key, server, newValue);
+        createFeatureFlag(feature, server, newValue);
     }
 
     @Override
-    public void createFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
+    public void createFeatureFlag(AFeature feature, AServer server, Boolean newValue) {
         AFeatureFlag featureFlag = AFeatureFlag
                 .builder()
                 .enabled(newValue)
-                .key(key.getKey())
+                .feature(feature)
                 .server(server)
                 .build();
         repository.save(featureFlag);
     }
 
+
     @Override
     public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
-        Optional<AFeatureFlag> featureFlag = getFeatureFlag(key, serverId);
+        AFeature feature = featureManagementService.getFeature(key.getKey());
+        Optional<AFeatureFlag> featureFlag = getFeatureFlag(feature, serverId);
         return featureFlag.isPresent() && featureFlag.get().isEnabled();
     }
 
     @Override
     public void updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue) {
-        Optional<AFeatureFlag> existing = getFeatureFlag(key, serverId);
+        AFeature feature = featureManagementService.getFeature(key.getKey());
+        Optional<AFeatureFlag> existing = getFeatureFlag(feature, serverId);
         if(existing.isPresent()) {
             AFeatureFlag flag = existing.get();
             flag.setEnabled(newValue);
@@ -53,9 +61,9 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     }
 
     @Override
-    public Optional<AFeatureFlag> getFeatureFlag(FeatureEnum key, Long serverId) {
+    public Optional<AFeatureFlag> getFeatureFlag(AFeature feature, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        return Optional.ofNullable(repository.findByServerAndKey(server, key.getKey()));
+        return Optional.ofNullable(repository.findByServerAndFeature(server, feature));
     }
 
     @Override

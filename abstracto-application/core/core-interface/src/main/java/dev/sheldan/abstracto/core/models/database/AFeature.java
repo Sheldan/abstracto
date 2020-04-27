@@ -1,16 +1,18 @@
 package dev.sheldan.abstracto.core.models.database;
 
+import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name="feature_flag")
+@Table(name="feature")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AFeatureFlag {
+public class AFeature implements SnowFlake {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,19 +20,14 @@ public class AFeatureFlag {
     @Column(name = "id")
     public Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "server_id", nullable = false)
-    private AServer server;
+    private String key;
 
     @Getter
     @Setter
-    @OneToOne
-    @JoinColumn(name = "feature_id", nullable = false)
-    private AFeature feature;
+    @OneToMany
+    @JoinColumn(name = "feature_id")
+    private List<ACommand> commands;
 
-    @Getter
-    @Setter
-    private boolean enabled;
 }

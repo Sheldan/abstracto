@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.commands.config.features;
 
-import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -20,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class Disable implements Command {
+public class Disable extends AbstractConditionableCommand {
 
     @Autowired
     private FeatureFlagService featureFlagService;
@@ -63,5 +64,12 @@ public class Disable implements Command {
     @Override
     public FeatureEnum getFeature() {
         return CoreFeatures.CORE_FEATURE;
+    }
+
+    @Override
+    public List<CommandCondition> getConditions() {
+        List<CommandCondition> conditions = super.getConditions();
+        conditions.remove(featureEnabledCondition);
+        return conditions;
     }
 }

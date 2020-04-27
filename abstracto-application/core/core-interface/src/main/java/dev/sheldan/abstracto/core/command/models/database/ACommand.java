@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.models.database;
 
-import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AFeature;
 import lombok.*;
 
 import javax.persistence.*;
@@ -26,10 +26,10 @@ public class ACommand {
     @JoinColumn(name = "module_id", nullable = false)
     private AModule module;
 
-    @ManyToMany(fetch = FetchType.LAZY)
     @Getter
-    @JoinColumn(name = "allowed_role_id")
-    private List<ARole> allowedRoles;
-
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "feature_id", nullable = false)
+    private AFeature feature;
 
 }

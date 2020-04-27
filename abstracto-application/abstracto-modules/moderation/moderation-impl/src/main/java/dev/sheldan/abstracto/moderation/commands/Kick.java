@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.commands;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -62,5 +63,12 @@ public class Kick extends AbstractConditionableCommand {
     @Override
     public FeatureEnum getFeature() {
         return ModerationFeatures.MODERATION;
+    }
+
+    @Override
+    public List<CommandCondition> getConditions() {
+        List<CommandCondition> conditions = super.getConditions();
+        conditions.add(immuneUserCondition);
+        return conditions;
     }
 }
