@@ -1,0 +1,1 @@
+Bans the user by ID. This is necessary, if the user already left the server for example.

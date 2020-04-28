@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.config;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class AbstracatoModuleInterface implements ModuleInterface {
     @Override
     public ModuleInfo getInfo() {

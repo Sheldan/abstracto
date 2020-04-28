@@ -1,0 +1,1 @@
+allowRole <command/feature> <roleId>

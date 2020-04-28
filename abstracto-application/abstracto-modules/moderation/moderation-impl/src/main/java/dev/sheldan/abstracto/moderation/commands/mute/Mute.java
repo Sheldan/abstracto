@@ -48,11 +48,11 @@ public class Mute extends AbstractConditionableCommand {
         parameters.add(Parameter.builder().name("user").type(Member.class).build());
         parameters.add(Parameter.builder().name("duration").type(Duration.class).build());
         parameters.add(Parameter.builder().name("reason").type(String.class).optional(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(false).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("mute")
                 .module(ModerationModule.MODERATION)
-                .templated(false)
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

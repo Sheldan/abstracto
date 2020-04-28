@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.command.condition;
 
-import dev.sheldan.abstracto.core.service.ChannelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
@@ -47,10 +48,12 @@ public class Features extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("features")
                 .module(ConfigModuleInterface.CONFIG)
-                .description("Lists the available features and whether they are enabled or not.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

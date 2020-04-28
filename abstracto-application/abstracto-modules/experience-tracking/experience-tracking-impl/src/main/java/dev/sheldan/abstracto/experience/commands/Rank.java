@@ -60,11 +60,11 @@ public class Rank extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Shows the leaderboard, first 10 places or given page.").usage("rank").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("rank")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Shows your experience, rank and level on this server.")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

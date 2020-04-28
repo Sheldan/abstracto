@@ -1,0 +1,2 @@
+Changes the experience scale on this server. This will only affect messages in the future. This scales the experience *after* the calculation has been done.
+So if the range is 10-25, a random experience in this range will be determined and *then* multiplied by this scale.

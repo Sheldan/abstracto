@@ -1,0 +1,1 @@
+Synchronizes the roles of all users with their respective level.

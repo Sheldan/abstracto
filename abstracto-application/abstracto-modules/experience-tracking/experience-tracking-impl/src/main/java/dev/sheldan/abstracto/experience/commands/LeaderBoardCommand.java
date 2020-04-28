@@ -67,11 +67,11 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("page").optional(true).type(Integer.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Shows the leaderboard, first 10 places or given page.").usage("leaderboard").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("leaderboard")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Shows the leaderboard, first 10 places or given page.")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

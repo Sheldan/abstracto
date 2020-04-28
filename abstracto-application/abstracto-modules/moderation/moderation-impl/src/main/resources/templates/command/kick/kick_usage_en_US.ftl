@@ -1,1 +1,1 @@
-kick <user> <reason>
+kick <user> [reason]

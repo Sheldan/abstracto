@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.config;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -34,11 +35,13 @@ public class SetNumber extends AbstractConditionableCommand {
         Parameter channelGroupName = Parameter.builder().name("key").type(String.class).description("The key to change.").build();
         Parameter channelToAdd = Parameter.builder().name("value").type(Double.class).description("The numeric value to use for the config.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setNumber")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
-                .description("Used to change the config on this server.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

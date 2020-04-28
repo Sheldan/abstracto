@@ -40,11 +40,11 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("roleId").type(Long.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Removes the role from the experience tracking").usage("unSetExpRole <roleId>").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("unSetExpRole")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Removes the role from experience tracking")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

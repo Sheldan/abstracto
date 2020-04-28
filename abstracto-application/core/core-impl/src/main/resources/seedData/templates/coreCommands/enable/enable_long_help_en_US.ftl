@@ -1,0 +1,2 @@
+Used to enable a feature of the server. If no feature is passed, this will print all the currently known features.
+This will make it possible that the commands contained in this feature will be executed again.

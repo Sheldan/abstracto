@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.commands.channels;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -34,11 +35,13 @@ public class DisableCommand extends AbstractConditionableCommand {
         Parameter channelGroupName = Parameter.builder().name("commandName").type(String.class).description("The name of the channel group to add the channel to.").build();
         Parameter channelToAdd = Parameter.builder().name("channelGroup").type(String.class).description("The name of the channel group in which the command should be disabled.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("disableCommand")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
-                .description("Disables the given command in the given channel group.")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(true)
                 .build();
     }

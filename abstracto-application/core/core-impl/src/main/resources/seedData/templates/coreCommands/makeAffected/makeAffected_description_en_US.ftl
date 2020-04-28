@@ -1,0 +1,1 @@
+Makes a role affected by certain commands/features

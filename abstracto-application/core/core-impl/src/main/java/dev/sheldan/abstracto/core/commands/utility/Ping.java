@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.utility;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -30,10 +31,12 @@ public class Ping implements Command {
 
     @Override
     public CommandConfiguration getConfiguration() {
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("ping")
                 .module("utility")
                 .templated(true)
+                .help(helpInfo)
                 .causesReaction(false)
                 .build();
     }

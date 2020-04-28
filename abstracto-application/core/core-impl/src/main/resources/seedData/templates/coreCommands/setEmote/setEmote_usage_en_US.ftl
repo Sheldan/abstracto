@@ -1,0 +1,1 @@
+setEmote <key> <emote>

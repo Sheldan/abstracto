@@ -35,11 +35,11 @@ public class SyncRoles extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Syncs the role of the current known users with their respective xp.").usage("syncExpRoles").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("syncExpRoles")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Syncs the roles of the users with their respective experience.")
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

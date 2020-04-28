@@ -1,0 +1,1 @@
+disableCommand <commandName> <channelGroupName>

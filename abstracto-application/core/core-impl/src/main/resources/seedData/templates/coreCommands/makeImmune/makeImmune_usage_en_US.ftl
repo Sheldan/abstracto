@@ -1,0 +1,1 @@
+makeImmune <feature/command> roleId

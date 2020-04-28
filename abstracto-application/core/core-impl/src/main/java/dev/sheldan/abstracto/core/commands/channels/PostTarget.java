@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -63,11 +64,13 @@ public class PostTarget extends AbstractConditionableCommand {
         Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).optional(true).description("The channel to post towards").build();
         Parameter postTargetName = Parameter.builder().name("name").type(String.class).optional(true).description("The name of the post target to redirect").build();
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("posttarget")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
-                .description("Sets the target of a post done by the bot")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(true)
                 .build();
     }

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -36,12 +37,14 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
         Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).description("The mention of the channel to remove from the group.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         List<String> aliases = Arrays.asList("rmChChgrp", "chGrpCh-");
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("removeFromChannelGroup")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .aliases(aliases)
                 .parameters(parameters)
-                .description("Removes the mentioned channel from the channel group.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

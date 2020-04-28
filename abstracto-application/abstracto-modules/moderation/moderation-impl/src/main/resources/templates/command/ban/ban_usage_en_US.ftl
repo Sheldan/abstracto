@@ -1,1 +1,1 @@
-ban <user> <reason>
+ban <user> [reason]

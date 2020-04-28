@@ -47,11 +47,11 @@ public class UnMute extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").type(Member.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(false).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("unMute")
                 .module(ModerationModule.MODERATION)
-                .templated(false)
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

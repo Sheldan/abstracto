@@ -48,7 +48,7 @@ public class BanId extends AbstractConditionableCommand {
         parameters.add(Parameter.builder().name("reason").type(String.class).optional(true).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("banid")
+                .name("banId")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
                 .causesReaction(true)

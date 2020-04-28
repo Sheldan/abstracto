@@ -1,0 +1,1 @@
+mute <user> <duration> <reason>

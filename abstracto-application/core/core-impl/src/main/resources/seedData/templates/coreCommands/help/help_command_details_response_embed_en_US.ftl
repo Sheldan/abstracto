@@ -24,11 +24,15 @@ Detailed help: ${command.help.longHelp}
 </#if>
 </#if>
 Parameters:
+<#if command.parameters??>
 <#list command.parameters as parameter>
 ${parameter.name}: ${(parameter.description)!""}
 Optional: ${parameter.optional?string('yes', 'no')}
 <#else>
 No parameters
 </#list>
+<#else>
+No parameters
+</#if>
   "
 }

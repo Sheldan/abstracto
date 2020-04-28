@@ -34,11 +34,11 @@ public class SetMuteRole extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("roleId").type(ARole.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(false).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setMuteRole")
                 .module(ModerationModule.MODERATION)
-                .templated(false)
+                .templated(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

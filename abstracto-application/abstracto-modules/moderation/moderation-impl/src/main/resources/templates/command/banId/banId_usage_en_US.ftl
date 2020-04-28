@@ -1,0 +1,1 @@
+banId <userId> [reason]

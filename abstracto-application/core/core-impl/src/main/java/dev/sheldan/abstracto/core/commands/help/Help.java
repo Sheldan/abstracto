@@ -76,12 +76,13 @@ public class Help implements Command {
                 .description("Name of module or command")
                 .type(String.class)
                 .build();
-
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("help")
                 .module("support")
                 .parameters(Collections.singletonList(moduleOrCommandName))
-                .description("Prints the help")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(false)
                 .build();
     }

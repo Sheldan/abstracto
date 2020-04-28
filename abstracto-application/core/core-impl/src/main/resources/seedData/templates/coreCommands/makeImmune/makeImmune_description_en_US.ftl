@@ -1,0 +1,1 @@
+Makes a role immune against certain commands/complete features

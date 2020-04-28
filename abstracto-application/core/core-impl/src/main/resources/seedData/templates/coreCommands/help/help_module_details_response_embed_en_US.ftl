@@ -12,7 +12,9 @@
        Description: ${module.moduleInterface.info.description}
        Commands:
        <#list module.commands as command>`${command.configuration.name}`<#sep>, </#list>
+       <#if module.subModules??>
        Submodules: <#list module.subModules as module>`${module.info.name}`<#sep>, </#list>
+       </#if>
   ",
   "footer": {
        "text": "Use 'help <command name>' for a detailed overview of this command."

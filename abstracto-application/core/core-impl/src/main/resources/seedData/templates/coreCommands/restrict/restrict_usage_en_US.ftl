@@ -1,0 +1,1 @@
+restrict <command/feature>

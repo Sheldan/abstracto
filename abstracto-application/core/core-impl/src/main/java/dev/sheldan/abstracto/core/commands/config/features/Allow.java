@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -56,11 +57,13 @@ public class Allow extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature name to allow for anyone to execute.").build();
         List<Parameter> parameters = Arrays.asList(featureName);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("allow")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
-                .description("Removes the role restrictions from a command.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

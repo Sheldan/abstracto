@@ -1,0 +1,1 @@
+deleteChannelGroup <name>

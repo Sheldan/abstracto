@@ -1,1 +1,1 @@
-Suggests a text in the suggestions channel to be voted on.
+Suggests the given text in the `suggestions` post target to be voted on.

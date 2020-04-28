@@ -1,0 +1,1 @@
+Changes the experience scale of this server to the new given value.

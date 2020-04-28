@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -60,11 +61,13 @@ public class DisAllowRole extends AbstractConditionableCommand {
         Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature the role should not be able to execute.").build();
         Parameter role = Parameter.builder().name("roleId").type(Long.class).description("The roleId to disallow it for.").build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("disAllowRole")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
-                .description("Disallows roles to execute commands in features or commands directly.")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(true)
                 .build();
     }

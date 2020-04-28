@@ -1,0 +1,1 @@
+Changes the value of a numerical value of the bots configuration

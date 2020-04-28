@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.commands.utility;
 import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -42,11 +43,13 @@ public class SetEmote extends AbstractConditionableCommand {
         Parameter emoteKey = Parameter.builder().name("emoteKey").type(String.class).description("The internal key of the emote").build();
         Parameter emote = Parameter.builder().name("emote").type(net.dv8tion.jda.api.entities.Emote.class).description("The emote to be used").build();
         List<Parameter> parameters = Arrays.asList(emoteKey, emote);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setEmote")
                 .module(UtilityModuleInterface.UTILITY)
                 .parameters(parameters)
-                .description("Configures the emote key pointing towards a defined emote")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(true)
                 .build();
     }

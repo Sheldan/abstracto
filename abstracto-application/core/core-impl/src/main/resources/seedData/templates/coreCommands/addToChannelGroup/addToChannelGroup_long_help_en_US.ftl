@@ -1,0 +1,1 @@
+Adds the mentioned channel to the channel group identified by the name.

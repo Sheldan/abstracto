@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -60,11 +61,13 @@ public class MakeImmune extends AbstractConditionableCommand {
         Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature name to make the role immune for.").build();
         Parameter role = Parameter.builder().name("roleId").type(Long.class).description("The roleId to make immune.").build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("makeImmune")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
-                .description("Makes a role immune to be affected by certain commands.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

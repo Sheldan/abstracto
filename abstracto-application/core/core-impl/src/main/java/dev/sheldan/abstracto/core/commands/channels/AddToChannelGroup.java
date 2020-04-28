@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -35,13 +36,15 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
         Parameter channelGroupName = Parameter.builder().name("name").type(String.class).description("The name of the channel group to add the channel to.").build();
         Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).description("The mention of the channel to add to the group.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<String> aliases = Arrays.asList("addTChGrp", "chGrpCh+");
         return CommandConfiguration.builder()
                 .name("addToChannelGroup")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .aliases(aliases)
                 .parameters(parameters)
-                .description("Adds the mentioned channel to the channel group.")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(true)
                 .build();
     }

@@ -1,0 +1,1 @@
+makeAffected <feature/command> roleId

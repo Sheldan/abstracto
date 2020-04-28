@@ -1,0 +1,1 @@
+Un-mutes the user. This does not send a notification in the `mutes` post target. Also removes any mutes towards the user on this server.

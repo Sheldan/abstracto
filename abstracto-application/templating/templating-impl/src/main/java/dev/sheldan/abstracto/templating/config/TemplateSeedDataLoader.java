@@ -28,6 +28,7 @@ public class TemplateSeedDataLoader {
 
     @EventListener
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
+        log.info("Updating templates.");
         List<Resource> templatesToLoad = Arrays.asList(resources);
         templatesToLoad.forEach(resource -> {
             try {

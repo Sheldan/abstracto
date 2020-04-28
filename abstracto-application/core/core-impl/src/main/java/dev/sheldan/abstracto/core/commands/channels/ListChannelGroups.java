@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.channels;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
@@ -74,11 +75,13 @@ public class ListChannelGroups extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<String> aliases = Arrays.asList("lsChGrp");
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("listChannelGroups")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .aliases(aliases)
-                .description("Lists the current channel groups and their respective groups.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

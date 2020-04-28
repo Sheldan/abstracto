@@ -1,0 +1,2 @@
+This causes the given role to be awarded at the given level. This will remove previously levels this role was assigned to, and also recalculate the users of the previous levels.
+This will not, however, award the users the new role immediately. This needs to be done by a separate `syncExpRole`.

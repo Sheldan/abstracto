@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.commands.config;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -31,11 +32,13 @@ public class SetPrefix extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         Parameter newPrefixParameter = Parameter.builder().name("prefix").type(String.class).description("The new prefix to be used for this server.").build();
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setPrefix")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
-                .description("Used to change the prefix on this server.")
+                .help(helpInfo)
+                .templated(true)
                 .causesReaction(true)
                 .build();
     }

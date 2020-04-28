@@ -1,0 +1,1 @@
+Lists all currently existing channel groups.

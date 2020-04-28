@@ -1,0 +1,1 @@
+Removes channels from a channel group.

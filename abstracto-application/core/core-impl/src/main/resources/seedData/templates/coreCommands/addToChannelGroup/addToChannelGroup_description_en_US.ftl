@@ -1,0 +1,1 @@
+Adds channels to a channel group.

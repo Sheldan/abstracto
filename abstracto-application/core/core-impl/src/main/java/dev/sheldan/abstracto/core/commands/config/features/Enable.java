@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -51,11 +52,13 @@ public class Enable extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter.builder().name("featureName").type(String.class).optional(true).description("The feature to enable.").build();
         List<Parameter> parameters = Arrays.asList(featureName);
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("enable")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
-                .description("Enables features for this server.")
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

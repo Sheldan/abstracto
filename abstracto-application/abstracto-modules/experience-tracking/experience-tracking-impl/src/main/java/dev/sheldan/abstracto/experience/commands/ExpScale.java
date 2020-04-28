@@ -38,12 +38,12 @@ public class ExpScale extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("scale").type(Double.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("The new scale of experience on this server.").usage("expScale").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("expScale")
                 .module(ExperienceModule.EXPERIENCE)
-                .description("Sets the experience scale of this server to this value.")
                 .causesReaction(true)
+                .templated(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

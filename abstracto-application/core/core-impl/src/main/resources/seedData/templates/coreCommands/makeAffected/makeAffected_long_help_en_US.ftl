@@ -1,0 +1,4 @@
+Makes the given role affected by certain commands like `ban`, `warn` or `mute`.
+When a feature name is used, all commands of this feature will be changed.
+Not all commands actually support this functionality.
+By default all roles are affected by the commands.

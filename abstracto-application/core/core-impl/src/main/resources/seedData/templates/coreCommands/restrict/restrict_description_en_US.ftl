@@ -1,0 +1,1 @@
+Restricts a command/feature.
