@@ -22,6 +22,9 @@ Detailed help: <#include "${command.name}_long_help">
 Usage: `${command.help.usage}`
 Detailed help: ${command.help.longHelp}
 </#if>
+<#if command.aliases?? && command.aliases?size gt 0>
+Aliases: `${command.aliases?join("`, `")}`
+</#if>
 </#if>
 Parameters:
 <#if command.parameters??>
