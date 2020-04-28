@@ -3,14 +3,19 @@ package dev.sheldan.abstracto.core.commands.help;
 import dev.sheldan.abstracto.core.command.*;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
+import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
+import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpCommandDetailsModel;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleDetailsModel;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOverviewModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +41,15 @@ public class Help implements Command {
     @Autowired
     private CommandRegistry commandRegistry;
 
+    @Autowired
+    private CommandInServerManagementService commandInServerManagementService;
+
+    @Autowired
+    private CommandManagementService commandManagementService;
+
+    @Autowired
+    private RoleService roleService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -59,7 +73,14 @@ public class Help implements Command {
                 channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
             } else if(commandRegistry.commandExists(parameter)) {
                 Command command = commandRegistry.getCommandByName(parameter);
+                ACommand aCommand = commandManagementService.findCommandByName(parameter);
+                ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getUserInitiatedContext().getServer());
                 HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
+                if(aCommandInAServer.getRestricted()) {
+                    model.setImmuneRoles(roleService.getRolesFromGuild(aCommandInAServer.getImmuneRoles()));
+                    model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
+                    model.setRestricted(true);
+                }
                 model.setCommand(command.getConfiguration());
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
                 channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());

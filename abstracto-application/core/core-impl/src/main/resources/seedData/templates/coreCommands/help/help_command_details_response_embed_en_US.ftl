@@ -25,6 +25,13 @@ Detailed help: ${command.help.longHelp}
 <#if command.aliases?? && command.aliases?size gt 0>
 Aliases: `${command.aliases?join("`, `")}`
 </#if>
+Restrictions:
+<#if restricted?? && restricted>
+Executable by:<#if allowedRoles??> <#list allowedRoles as allowedRole> ${allowedRole.asMention}<#sep>or<#else>Nobody</#list> </#if>
+<#if immuneRoles?? > Immune roles: <#list immuneRoles as immuneRole> ${immuneRole.asMention}<#sep>or<#else>None</#list> </#if>
+<#else>
+Not restricted
+</#if>
 </#if>
 Parameters:
 <#if command.parameters??>
