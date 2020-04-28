@@ -3,15 +3,21 @@ package dev.sheldan.abstracto.core.commands.help;
 import dev.sheldan.abstracto.core.command.*;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.template.commands.help.HelpCommandDetailsModel;
+import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleDetailsModel;
+import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOverviewModel;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 
 
 @Service
@@ -19,102 +25,47 @@ public class Help implements Command {
 
 
     @Autowired
-    private ModuleRegistry registry;
+    private ModuleRegistry moduleService;
 
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ChannelService channelService;
+
+    @Autowired
+    private CommandRegistry commandRegistry;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        CommandHierarchy commandStructure = registry.getDetailedModules();
-        StringBuilder sb = new StringBuilder();
-        if(commandContext.getParameters().getParameters().isEmpty()){
-            sb.append("Help | Module overview \n");
-            sb.append("```");
-            commandStructure.getRootModules().forEach(packedModule -> {
-                sb.append(getModule(packedModule, 0, true));
-                sb.append("\n");
-            });
-            sb.append("```");
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        if(parameters.isEmpty()) {
+            ModuleInterface moduleInterface = moduleService.getDefaultModule();
+            List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
+            HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
+            model.setModules(subModules);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
+            channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
         } else {
-            String parameterValue = commandContext.getParameters().getParameters().get(0).toString();
-            PackedModule module = commandStructure.getModuleWithName(parameterValue);
-            if(module != null){
-                sb.append("Help | Module overview \n");
-                sb.append(getModule(module, 0, false));
-                module.getCommands().forEach(command ->
-                    sb.append(getCommand(command))
-                );
-            } else {
-                Command command = commandStructure.getCommandWithName(parameterValue);
-                if(command != null) {
-                    sb.append("Help | Command overview");
-                    sb.append("\n");
-                    sb.append(getCommand(command));
-                }
+            String parameter = (String) parameters.get(0);
+            if(moduleService.moduleExists(parameter)){
+                ModuleInterface moduleInterface = moduleService.getModuleByName(parameter);
+                SingleLevelPackedModule module = moduleService.getPackedModule(moduleInterface);
+                List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
+                HelpModuleDetailsModel model = (HelpModuleDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpModuleDetailsModel.class);
+                model.setModule(module);
+                model.setSubModules(subModules);
+                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model);
+                channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+            } else if(commandRegistry.commandExists(parameter)) {
+                Command command = commandRegistry.getCommandByName(parameter);
+                HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
+                model.setCommand(command.getConfiguration());
+                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
+                channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
             }
         }
-
-        commandContext.getChannel().sendMessage(sb.toString()).queue();
         return CommandResult.fromSuccess();
-    }
-
-    private String getCommand(Command command){
-        StringBuilder sb = new StringBuilder();
-        CommandConfiguration commandConfiguration = command.getConfiguration();
-        sb.append(String.format("Command: **%s**", commandConfiguration.getName()));
-        sb.append("\n");
-        String descriptionTemplate = getDescriptionTemplate(commandConfiguration.getName());
-        sb.append(String.format("Description: %s", getTemplateOrDefault(commandConfiguration, descriptionTemplate, commandConfiguration.getDescription())));
-        sb.append("\n");
-        HelpInfo helpObj = commandConfiguration.getHelp();
-        if(helpObj != null){
-            String usageTemplate = getUsageTemplate(commandConfiguration.getName());
-            sb.append(String.format("Usage: %s", getTemplateOrDefault(commandConfiguration, usageTemplate, helpObj.getUsage())));
-            sb.append("\n");
-            String longHelpTemplate = getLongHelpTemplate(commandConfiguration.getName());
-            sb.append(String.format("Detailed help: %s", getTemplateOrDefault(commandConfiguration, longHelpTemplate, helpObj.getLongHelp())));
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    private String getDescriptionTemplate(String commandName) {
-        return commandName + "_description";
-    }
-
-    private String getUsageTemplate(String commandName) {
-        return commandName + "_usage";
-    }
-
-    private String getLongHelpTemplate(String commandName) {
-        return commandName + "_long_help";
-    }
-
-    private String getTemplateOrDefault(CommandConfiguration commandConfiguration, String templateKey, String defaultText) {
-        if(templateKey == null || !commandConfiguration.isTemplated()) {
-            return defaultText;
-        } else {
-            return templateService.renderTemplateWithMap(templateKey, null);
-        }
-    }
-
-    private String getModule(PackedModule module, int depth, boolean recursive){
-        StringBuilder sb = new StringBuilder();
-        String intentation = "";
-        if(depth > 0){
-          intentation = StringUtils.repeat("-", depth) + ">";
-        }
-        ModuleInfo info = module.getModuleInterface().getInfo();
-        sb.append(String.format(intentation +"**%s** \n", info.getName()));
-        sb.append(String.format(intentation + "%s \n", info.getDescription()));
-        if(recursive) {
-            module.getSubModules().forEach(subModule ->
-                sb.append(getModule(subModule, depth + 1, true))
-            );
-        }
-        sb.append("\n");
-        return sb.toString();
     }
 
     @Override

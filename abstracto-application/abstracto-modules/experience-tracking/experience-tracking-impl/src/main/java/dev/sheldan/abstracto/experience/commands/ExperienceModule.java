@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.config.ModuleInterface;
 
 public class ExperienceModule implements ModuleInterface {
 
-    public static final String EXPERIENCE = "utility";
+    public static final String EXPERIENCE = "experience";
 
     @Override
     public ModuleInfo getInfo() {

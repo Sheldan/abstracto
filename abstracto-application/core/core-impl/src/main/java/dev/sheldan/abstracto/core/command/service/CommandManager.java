@@ -101,6 +101,16 @@ public class CommandManager implements CommandRegistry {
     }
 
     @Override
+    public boolean commandExists(String name) {
+        return commands.stream().anyMatch(command -> command.getConfiguration().getName().equalsIgnoreCase(name));
+    }
+
+    @Override
+    public Command getCommandByName(String name) {
+        return commands.stream().filter(command -> command.getConfiguration().getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
+    @Override
     public String getCommandName(String input, Long serverId) {
         return input.replaceFirst(configService.getStringValue("prefix", serverId, defaultPrefix), "");
     }
