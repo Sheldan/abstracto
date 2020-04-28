@@ -28,8 +28,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(0);
-        ARole role = roleManagementService.findRole(roleId);
+        ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         // do not check for the existence of the role, because if the role was deleted, users should be able
         // to get rid of it in the configuration
         experienceRoleService.unsetRole(role, commandContext.getUserInitiatedContext().getServer(), commandContext.getUserInitiatedContext().getChannel());
@@ -39,7 +38,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("roleId").type(Long.class).build());
+        parameters.add(Parameter.builder().name("role").type(ARole.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("unSetExpRole")

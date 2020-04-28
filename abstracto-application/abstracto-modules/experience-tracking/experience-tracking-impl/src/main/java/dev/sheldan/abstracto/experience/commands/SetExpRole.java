@@ -53,7 +53,7 @@ public class SetExpRole extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("level").type(Integer.class).build());
-        parameters.add(Parameter.builder().name("roleId").type(Long.class).build());
+        parameters.add(Parameter.builder().name("role").type(ARole.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setExpRole")

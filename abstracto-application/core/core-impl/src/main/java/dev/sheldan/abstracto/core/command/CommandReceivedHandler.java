@@ -23,12 +23,10 @@ import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
@@ -157,6 +155,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
         Iterator<Emote> emoteIterator = message.getEmotes().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
+        Iterator<Role> roleIterator = message.getMentionedRoles().iterator();
         Parameter param = command.getConfiguration().getParameters().get(0);
         boolean reminderActive = false;
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
@@ -189,7 +188,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
                             parsedParameters.add(value);
                         }
                     } else if(param.getType().equals(ARole.class)) {
-                        parsedParameters.add(roleManagementService.findRole(Long.parseLong(value)));
+                        if(StringUtils.isNumeric(value)) {
+                            parsedParameters.add(roleManagementService.findRole(Long.parseLong(value)));
+                        } else {
+                            parsedParameters.add(roleManagementService.findRole(roleIterator.next().getIdLong()));
+                        }
                     } else if(param.getType().equals(Boolean.class)) {
                         parsedParameters.add(Boolean.valueOf(value));
                     } else if (param.getType().equals(Duration.class)) {

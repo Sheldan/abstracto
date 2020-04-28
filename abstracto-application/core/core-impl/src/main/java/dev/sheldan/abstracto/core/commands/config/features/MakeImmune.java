@@ -40,8 +40,7 @@ public class MakeImmune extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
-        ARole role = roleManagementService.findRole(roleId);
+        ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
             feature.getCommands().forEach(command ->
@@ -59,7 +58,7 @@ public class MakeImmune extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature name to make the role immune for.").build();
-        Parameter role = Parameter.builder().name("roleId").type(Long.class).description("The roleId to make immune.").build();
+        Parameter role = Parameter.builder().name("role").type(ARole.class).description("The roleId to make immune.").build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

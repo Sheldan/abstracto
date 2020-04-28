@@ -1,1 +1,1 @@
-allowRole <command/feature> <roleId>
+allowRole <command/feature> <role>

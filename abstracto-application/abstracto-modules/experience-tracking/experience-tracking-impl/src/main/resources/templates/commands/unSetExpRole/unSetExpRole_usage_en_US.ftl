@@ -1,1 +1,1 @@
-unSetExpRole <roleId>
+unSetExpRole <role>

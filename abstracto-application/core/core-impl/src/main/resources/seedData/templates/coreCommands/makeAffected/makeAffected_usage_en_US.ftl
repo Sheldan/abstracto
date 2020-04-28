@@ -1,1 +1,1 @@
-makeAffected <feature/command> roleId
+makeAffected <feature/command> <role>

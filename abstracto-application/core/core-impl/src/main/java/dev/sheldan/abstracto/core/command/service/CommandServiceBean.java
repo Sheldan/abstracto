@@ -44,7 +44,7 @@ public class CommandServiceBean implements CommandService {
     @Override
     public void allowCommandForRole(ACommand aCommand, ARole role) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
-        if(!commandForServer.getAllowedRoles().contains(role)) {
+        if(commandForServer.getAllowedRoles().stream().noneMatch(role1 -> role1.getId().equals(role.getId()))) {
             commandForServer.getAllowedRoles().add(role);
         }
         commandForServer.setRestricted(true);
@@ -53,7 +53,7 @@ public class CommandServiceBean implements CommandService {
     @Override
     public void makeRoleImmuneForCommand(ACommand aCommand, ARole role) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
-        if(!commandForServer.getImmuneRoles().contains(role)) {
+        if(commandForServer.getImmuneRoles().stream().noneMatch(role1 -> role1.getId().equals(role.getId()))) {
             commandForServer.getImmuneRoles().add(role);
         }
     }
@@ -61,7 +61,7 @@ public class CommandServiceBean implements CommandService {
     @Override
     public void makeRoleAffectedByCommand(ACommand aCommand, ARole role) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
-        commandForServer.getImmuneRoles().remove(role);
+        commandForServer.getImmuneRoles().removeIf(role1 -> role1.getId().equals(role.getId()));
     }
 
     @Override
@@ -80,7 +80,7 @@ public class CommandServiceBean implements CommandService {
     public void disAllowCommandForRole(ACommand aCommand, ARole role) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
         commandForServer.setRestricted(true);
-        commandForServer.getAllowedRoles().remove(role);
+        commandForServer.getAllowedRoles().removeIf(role1 -> role1.getId().equals(role.getId()));
     }
 
 

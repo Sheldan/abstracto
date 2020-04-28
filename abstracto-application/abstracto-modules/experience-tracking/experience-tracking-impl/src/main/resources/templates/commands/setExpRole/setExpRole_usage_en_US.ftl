@@ -1,1 +1,1 @@
-setExpRole <level> <roleId>
+setExpRole <level> <role>

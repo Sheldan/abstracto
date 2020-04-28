@@ -40,8 +40,7 @@ public class AllowRole extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
-        ARole role = roleManagementService.findRole(roleId);
+        ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
             feature.getCommands().forEach(command ->
@@ -59,7 +58,7 @@ public class AllowRole extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature the role should be able to execute.").build();
-        Parameter role = Parameter.builder().name("roleId").type(Long.class).description("The roleId to allow it for.").build();
+        Parameter role = Parameter.builder().name("role").type(ARole.class).description("The role to allow it for.").build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
