@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,8 @@ public class LeaveListenerBean extends ListenerAdapter {
     @Transactional
     public void onGuildMemberLeave(@Nonnull GuildMemberLeaveEvent event) {
         listenerList.forEach(leaveListener -> {
-            if(!featureFlagService.isFeatureEnabled(leaveListener.getFeature(), event.getGuild().getIdLong())) {
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(leaveListener.getFeature());
+            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }
             try {

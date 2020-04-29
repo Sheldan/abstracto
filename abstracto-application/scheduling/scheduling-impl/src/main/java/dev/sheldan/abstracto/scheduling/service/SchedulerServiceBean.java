@@ -160,6 +160,18 @@ public class SchedulerServiceBean implements SchedulerService {
     }
 
     @Override
+    public String startCronJobWithParameters(String name, String group, JobDataMap dataMap, String cronExpression) {
+        Trigger cronTrigger = scheduleCreator.createBasicCronTrigger(name, group, new Date(), cronExpression, dataMap);
+        try {
+            schedulerFactoryBean.getScheduler().scheduleJob(cronTrigger);
+            return cronTrigger.getKey().getName();
+        } catch (SchedulerException e) {
+            log.error("Failed to start new job - {}", name, e);
+            return null;
+        }
+    }
+
+    @Override
     public void stopTrigger(String triggerKey) {
         try {
             schedulerFactoryBean.getScheduler().unscheduleJob(TriggerKey.triggerKey(triggerKey));

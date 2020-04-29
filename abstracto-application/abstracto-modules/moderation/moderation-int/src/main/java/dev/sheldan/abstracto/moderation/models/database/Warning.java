@@ -1,10 +1,7 @@
 package dev.sheldan.abstracto.moderation.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -38,9 +35,11 @@ public class Warning {
     private Instant warnDate;
 
     @Getter
+    @Setter
     private Boolean decayed;
 
     @Getter
+    @Setter
     private Instant decayDate;
 
 

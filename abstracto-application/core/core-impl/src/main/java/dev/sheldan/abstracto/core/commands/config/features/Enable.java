@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
@@ -42,8 +43,13 @@ public class Enable extends AbstractConditionableCommand {
             channelService.sendTextInAChannel(response, commandContext.getChannel());
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
-            FeatureEnum feature = featureFlagService.getFeatureEnum(flagKey);
-            featureFlagService.enableFeature(feature, commandContext.getGuild().getIdLong());
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(flagKey);
+            featureFlagService.enableFeature(feature, commandContext.getUserInitiatedContext().getServer());
+            if(feature.getRequiredFeatures() != null) {
+                feature.getRequiredFeatures().forEach(featureDisplay -> {
+                    featureFlagService.enableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer());
+                });
+            }
         }
         return CommandResult.fromSuccess();
     }

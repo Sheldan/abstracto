@@ -12,7 +12,10 @@ public interface FeatureFlagManagementService {
     void createFeatureFlag(AFeature feature, Long serverId, Boolean newValue);
     void createFeatureFlag(AFeature feature, AServer server, Boolean newValue);
     boolean getFeatureFlagValue(FeatureEnum key, Long serverId);
+    boolean getFeatureFlagValue(FeatureEnum key, AServer server);
     void updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue);
+    void updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue);
     Optional<AFeatureFlag> getFeatureFlag(AFeature key, Long serverId);
+    Optional<AFeatureFlag> getFeatureFlag(AFeature key, AServer server);
     List<AFeatureFlag> getFeatureFlagsOfServer(AServer server);
 }

@@ -9,7 +9,7 @@
   },
   "description": "
 <#list features as feature>
-${feature.featureFlag.enabled?string('✅', '❌')} **<#include "${feature.featureDisplay.feature.key}_feature">** Key: `${feature.featureDisplay.feature.key}`
+${feature.featureFlag.enabled?string('✅', '❌')} **<#include "${feature.featureConfig.feature.key}_feature">** Key: `${feature.featureConfig.feature.key}`
 </#list>
 "
 }

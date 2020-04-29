@@ -1,1 +1,1 @@
-Feature has been disabled. Necessary feature is: <#include "${featureDisplay.feature.key}_feature">, you can enable it by executing `enable ${featureDisplay.feature.key}`.
+Feature has been disabled. Necessary feature is: <#include "${featureConfig.feature.key}_feature">, you can enable it by executing `enable ${featureConfig.feature.key}`.

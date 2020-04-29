@@ -1,10 +1,12 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.config.FeatureDisplay;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,28 +21,50 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     private FeatureFlagManagementService managementService;
 
     @Autowired
-    private List<FeatureDisplay> availableFeatures;
+    private List<FeatureConfig> availableFeatures;
+
+    @Autowired
+    private ServerManagementService serverManagementService;
 
 
     @Override
-    public boolean isFeatureEnabled(FeatureEnum name, Long serverId) {
-        return managementService.getFeatureFlagValue(name, serverId);
+    public boolean isFeatureEnabled(FeatureConfig name, Long serverId) {
+        return managementService.getFeatureFlagValue(name.getFeature(), serverId);
     }
 
     @Override
-    public void enableFeature(FeatureEnum name, Long serverId) {
-        if(!doesFeatureExist(name)) {
-            throw new FeatureNotFoundException("Feature not found.", name.getKey(), getFeaturesAsList());
-        }
-        managementService.updateFeatureFlag(name, serverId, true);
+    public boolean isFeatureEnabled(FeatureConfig name, AServer server) {
+        return managementService.getFeatureFlagValue(name.getFeature(), server);
     }
 
     @Override
-    public void disableFeature(FeatureEnum name, Long serverId) {
+    public void enableFeature(FeatureConfig name, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        enableFeature(name, server);
+    }
+
+    @Override
+    public void enableFeature(FeatureConfig name, AServer server) {
+        FeatureEnum feature = name.getFeature();
         if(!doesFeatureExist(name)) {
-            throw new FeatureNotFoundException("Feature not found.", name.getKey(), getFeaturesAsList());
+            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), getFeaturesAsList());
         }
-        managementService.updateFeatureFlag(name, serverId, false);
+        managementService.updateFeatureFlag(feature, server, true);
+    }
+
+    @Override
+    public void disableFeature(FeatureConfig name, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        disableFeature(name, server);
+    }
+
+    @Override
+    public void disableFeature(FeatureConfig name, AServer server) {
+        FeatureEnum feature = name.getFeature();
+        if(!doesFeatureExist(name)) {
+            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), getFeaturesAsList());
+        }
+        managementService.updateFeatureFlag(feature, server, false);
     }
 
     @Override
@@ -52,13 +76,13 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     }
 
     @Override
-    public List<FeatureDisplay> getAllFeatureDisplays() {
+    public List<FeatureConfig> getAllFeatureConfigs() {
         return availableFeatures;
     }
 
     @Override
-    public FeatureDisplay getFeatureDisplayforFeature(FeatureEnum featureEnum) {
-        Optional<FeatureDisplay> any = getAllFeatureDisplays().stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureEnum)).findAny();
+    public FeatureConfig getFeatureDisplayForFeature(FeatureEnum featureEnum) {
+        Optional<FeatureConfig> any = getAllFeatureConfigs().stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureEnum)).findAny();
         if(any.isPresent()) {
             return any.get();
         }
@@ -66,8 +90,13 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     }
 
     @Override
-    public boolean doesFeatureExist(FeatureEnum name) {
-        return availableFeatures.stream().anyMatch(featureDisplay -> featureDisplay.getFeature().equals(name));
+    public FeatureConfig getFeatureDisplayForFeature(String key) {
+        return getFeatureDisplayForFeature(getFeatureEnum(key));
+    }
+
+    @Override
+    public boolean doesFeatureExist(FeatureConfig name) {
+        return availableFeatures.stream().anyMatch(featureDisplay -> featureDisplay.getFeature().equals(name.getFeature()));
     }
 
     @Override
@@ -80,7 +109,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Override
     public FeatureEnum getFeatureEnum(String key) {
-        Optional<FeatureDisplay> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getFeature().getKey().equals(key)).findAny();
+        Optional<FeatureConfig> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getFeature().getKey().equals(key)).findAny();
         if(foundFeature.isPresent()) {
             return foundFeature.get().getFeature();
         }

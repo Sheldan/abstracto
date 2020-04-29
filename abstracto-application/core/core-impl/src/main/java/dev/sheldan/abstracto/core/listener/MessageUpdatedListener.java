@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -44,7 +45,8 @@ public class MessageUpdatedListener extends ListenerAdapter {
     @Transactional
     public void executeListener(Message message, CachedMessage cachedMessage) {
         listener.forEach(messageTextUpdatedListener -> {
-            if(!featureFlagService.isFeatureEnabled(messageTextUpdatedListener.getFeature(), message.getGuild().getIdLong())) {
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageTextUpdatedListener.getFeature());
+            if(!featureFlagService.isFeatureEnabled(feature, message.getGuild().getIdLong())) {
                 return;
             }
             try {

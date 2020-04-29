@@ -31,7 +31,7 @@ public class CommandCreationListener {
     @EventListener
     @Transactional
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
-        featureFlagService.getAllFeatureDisplays().forEach((featureFlagKey) -> {
+        featureFlagService.getAllFeatureConfigs().forEach((featureFlagKey) -> {
             String featureKey = featureFlagKey.getFeature().getKey();
             if(!featureManagementService.featureExists(featureKey)) {
                 featureManagementService.createFeature(featureKey);

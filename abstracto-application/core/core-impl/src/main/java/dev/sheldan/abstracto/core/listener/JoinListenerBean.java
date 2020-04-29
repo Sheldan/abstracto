@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -31,7 +32,8 @@ public class JoinListenerBean extends ListenerAdapter {
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         listenerList.forEach(joinListener -> {
-            if (!featureFlagService.isFeatureEnabled(joinListener.getFeature(), event.getGuild().getIdLong())) {
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(joinListener.getFeature());
+            if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }
             try {

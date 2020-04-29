@@ -1,0 +1,1 @@
+Decays all warnings which are currently active on this server, and logs them to the `decayLog` post target, if the parameter was true.

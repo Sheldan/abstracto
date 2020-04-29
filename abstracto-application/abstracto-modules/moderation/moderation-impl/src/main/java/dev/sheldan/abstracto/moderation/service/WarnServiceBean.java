@@ -2,7 +2,11 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
+import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayWarning;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
@@ -17,6 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -41,6 +51,9 @@ public class WarnServiceBean implements WarnService {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private ConfigService configService;
 
     private static final String WARN_LOG_TEMPLATE = "warn_log";
     private static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
@@ -93,6 +106,54 @@ public class WarnServiceBean implements WarnService {
         Warning warning = warnUser(warnedMember, warningMember, reason, feedbackChannel);
         warnLog.setWarning(warning);
         this.sendWarnLog(warnLog);
+    }
+
+    @Override
+    @Transactional
+    public void decayWarningsForServer(AServer server) {
+        Double days = configService.getDoubleValue("decayDays", server.getId());
+        Instant cutOffDay = Instant.now().minus(days.longValue(), ChronoUnit.DAYS);
+        List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);
+        decayWarnings(warningsToDecay);
+        logDecayedWarnings(server, warningsToDecay);
+    }
+
+    private void decayWarnings(List<Warning> warningsToDecay) {
+        Instant now = Instant.now();
+        warningsToDecay.forEach(warning -> {
+            warning.setDecayDate(now);
+            warning.setDecayed(true);
+        });
+    }
+
+    private void logDecayedWarnings(AServer server, List<Warning> warningsToDecay) {
+        List<WarnDecayWarning> warnDecayWarnings = new ArrayList<>();
+        warningsToDecay.forEach(warning -> {
+            WarnDecayWarning warnDecayWarning = WarnDecayWarning
+                    .builder()
+                    .warnedMember(botService.getMemberInServer(warning.getWarnedUser()))
+                    .warningMember(botService.getMemberInServer(warning.getWarningUser()))
+                    .warning(warning)
+                    .build();
+            warnDecayWarnings.add(warnDecayWarning);
+        });
+        WarnDecayLogModel warnDecayLogModel = WarnDecayLogModel
+                .builder()
+                .guild(botService.getGuildByIdNullable(server.getId()))
+                .server(server)
+                .warnings(warnDecayWarnings)
+                .build();
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("warn_decay_log", warnDecayLogModel);
+        postTargetService.sendEmbedInPostTarget(messageToSend, "decayLog", server.getId());
+    }
+
+    @Override
+    public void decayAllWarningsForServer(AServer server, Boolean logWarnings) {
+        List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, Instant.now());
+        decayWarnings(warningsToDecay);
+        if(logWarnings) {
+            logDecayedWarnings(server, warningsToDecay);
+        }
     }
 
     private void sendWarnLog(ServerContext warnLogModel)  {

@@ -9,18 +9,18 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class WarningFeature implements FeatureConfig {
+public class WarningDecayFeature implements FeatureConfig {
 
     @Autowired
-    private WarningDecayFeature warningDecayFeature;
+    private WarningFeature warningFeature;
 
     @Override
     public FeatureEnum getFeature() {
-        return ModerationFeatures.WARNING;
+        return ModerationFeatures.AUTOMATIC_WARN_DECAY;
     }
 
     @Override
-    public List<FeatureConfig> getDependantFeatures() {
-        return Arrays.asList(warningDecayFeature);
+    public List<FeatureConfig> getRequiredFeatures() {
+        return Arrays.asList(warningFeature);
     }
 }

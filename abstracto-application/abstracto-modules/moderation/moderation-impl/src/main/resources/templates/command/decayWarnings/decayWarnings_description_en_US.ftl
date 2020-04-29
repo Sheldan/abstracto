@@ -1,0 +1,1 @@
+Decays the warnings in this server.

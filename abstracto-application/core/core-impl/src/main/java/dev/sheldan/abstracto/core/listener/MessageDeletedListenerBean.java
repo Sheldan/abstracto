@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -40,7 +41,8 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Transactional
     public void executeListener(CachedMessage cachedMessage) {
         listener.forEach(messageDeletedListener -> {
-            if(!featureFlagService.isFeatureEnabled(messageDeletedListener.getFeature(), cachedMessage.getServerId())) {
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
+            if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
                 return;
             }
             try {

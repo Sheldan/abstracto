@@ -44,15 +44,27 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
 
     @Override
     public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return getFeatureFlagValue(key, server);
+    }
+
+    @Override
+    public boolean getFeatureFlagValue(FeatureEnum key, AServer server) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
-        Optional<AFeatureFlag> featureFlag = getFeatureFlag(feature, serverId);
+        Optional<AFeatureFlag> featureFlag = getFeatureFlag(feature, server);
         return featureFlag.isPresent() && featureFlag.get().isEnabled();
     }
 
     @Override
     public void updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        updateFeatureFlag(key, server, newValue);
+    }
+
+    @Override
+    public void updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
-        Optional<AFeatureFlag> existing = getFeatureFlag(feature, serverId);
+        Optional<AFeatureFlag> existing = getFeatureFlag(feature, server);
         if(existing.isPresent()) {
             AFeatureFlag flag = existing.get();
             flag.setEnabled(newValue);
@@ -63,7 +75,12 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     @Override
     public Optional<AFeatureFlag> getFeatureFlag(AFeature feature, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        return Optional.ofNullable(repository.findByServerAndFeature(server, feature));
+        return getFeatureFlag(feature, server);
+    }
+
+    @Override
+    public Optional<AFeatureFlag> getFeatureFlag(AFeature key, AServer server) {
+        return Optional.ofNullable(repository.findByServerAndFeature(server, key));
     }
 
     @Override

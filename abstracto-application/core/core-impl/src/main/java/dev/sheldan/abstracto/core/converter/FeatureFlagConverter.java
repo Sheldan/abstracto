@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.converter;
 
-import dev.sheldan.abstracto.core.config.FeatureDisplay;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureFlagDisplay;
@@ -19,10 +19,10 @@ public class FeatureFlagConverter {
 
     public FeatureFlagDisplay fromAFeatureFlag(AFeatureFlag featureFlag) {
         FeatureEnum featureEnum = featureFlagService.getFeatureEnum(featureFlag.getFeature().getKey());
-        FeatureDisplay forFeature = featureFlagService.getFeatureDisplayforFeature(featureEnum);
+        FeatureConfig forFeature = featureFlagService.getFeatureDisplayForFeature(featureEnum);
         return FeatureFlagDisplay
                 .builder()
-                .featureDisplay(forFeature)
+                .featureConfig(forFeature)
                 .featureFlag(featureFlag)
                 .build();
     }

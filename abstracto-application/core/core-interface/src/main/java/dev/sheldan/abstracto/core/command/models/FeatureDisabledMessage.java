@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.models;
 
-import dev.sheldan.abstracto.core.config.FeatureDisplay;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,5 +9,5 @@ import lombok.Setter;
 @Getter
 @Builder
 public class FeatureDisabledMessage {
-    private FeatureDisplay featureDisplay;
+    private FeatureConfig featureConfig;
 }

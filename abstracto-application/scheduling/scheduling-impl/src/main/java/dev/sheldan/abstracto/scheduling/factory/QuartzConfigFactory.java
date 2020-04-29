@@ -44,6 +44,15 @@ public class QuartzConfigFactory {
                 .build();
     }
 
+    public CronTrigger createBasicCronTrigger(String jobName, String jobGroup, Date startTime, String cronExpression, JobDataMap jobDataMap) {
+        return newTrigger()
+                .withSchedule(cronSchedule(cronExpression).inTimeZone(TimeZone.getTimeZone("UTC")).withMisfireHandlingInstructionDoNothing())
+                .startAt(startTime)
+                .usingJobData(jobDataMap)
+                .forJob(jobName, jobGroup)
+                .build();
+    }
+
     public Trigger createSimpleOnceOnlyTrigger(Date startTime) {
         return newTrigger()
                 .startAt(startTime)

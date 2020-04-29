@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -97,7 +98,8 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         addReactionIfNotThere(cachedMessage, reaction, userInAServer.getUserReference());
         addedListenerList.forEach(reactedAddedListener -> {
-            if(!featureFlagService.isFeatureEnabled(reactedAddedListener.getFeature(), event.getGuild().getIdLong())) {
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
+            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }
             try {
@@ -130,14 +132,15 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
         AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         removeReactionIfThere(cachedMessage, reaction, userInAServer.getUserReference());
-        reactionRemovedListener.forEach(reactedAddedListener -> {
-            if(!featureFlagService.isFeatureEnabled(reactedAddedListener.getFeature(), event.getGuild().getIdLong())) {
+        reactionRemovedListener.forEach(reactionRemovedListener -> {
+            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
+            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }
             try {
-                reactedAddedListener.executeReactionRemoved(cachedMessage, event.getReaction(), userInAServer);
+                reactionRemovedListener.executeReactionRemoved(cachedMessage, event.getReaction(), userInAServer);
             } catch (AbstractoRunTimeException e) {
-                log.warn(String.format("Failed to execute reaction removed listener %s.", reactedAddedListener.getClass().getName()), e);
+                log.warn(String.format("Failed to execute reaction removed listener %s.", reactionRemovedListener.getClass().getName()), e);
             }
         });
     }

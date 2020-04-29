@@ -31,7 +31,7 @@ public class FeatureEnabledCondition implements CommandCondition {
             featureFlagValue = featureFlagManagementService.getFeatureFlagValue(feature, context.getGuild().getIdLong());
             FeatureDisabledMessage featureDisabledMessage = FeatureDisabledMessage
                     .builder()
-                    .featureDisplay(featureFlagService.getFeatureDisplayforFeature(feature))
+                    .featureConfig(featureFlagService.getFeatureDisplayForFeature(feature))
                     .build();
             reason = templateService.renderTemplate("feature_disabled_message", featureDisabledMessage);
         }

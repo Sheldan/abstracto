@@ -31,7 +31,7 @@ public class FeatureFlagListener implements ServerConfigListener {
     @Override
     public void updateServerConfig(AServer server) {
         log.info("Setting up feature flags if necessary.");
-        featureFlagService.getAllFeatureDisplays().forEach((featureFlagKey) -> {
+        featureFlagService.getAllFeatureConfigs().forEach((featureFlagKey) -> {
             String featureKey = featureFlagKey.getFeature().getKey();
             AFeature feature = featureManagementService.getFeature(featureKey);
             boolean featureFlagValue = BooleanUtils.toBoolean(environment.getProperty("abstracto.features." + featureKey, "false"));
