@@ -6,7 +6,7 @@
     },
   </#if>
   "title": {
-    "title": "User has been unmuted"
+    "title": "<#include "unMute_log_title">"
   },
   "color" : {
     "r": 200,
@@ -15,41 +15,41 @@
   },
   "fields": [
     {
-      "name": "Unmuted User",
+      "name": "<#include "unMute_log_unmuted_user_field_title">",
       <#if unMutedUser?has_content>
         "value": "${unMutedUser.effectiveName} ${unMutedUser.asMention} (${unMutedUser.idLong?c})"
       <#else>
-        "value": "User has left the server (${mute.mutedUser.userReference.id?c})"
+        "value": "<#include "user_left_server"> (${mute.mutedUser.userReference.id?c})"
       </#if>
 
     },
     {
-        "name": "Muted by",
+        "name": "<#include "mute_log_muting_user_field_title">",
          <#if mutingUser?has_content>
             "value": "${mutingUser.effectiveName} ${mutingUser.asMention} (${mutingUser.idLong?c})"
          <#else>
-                "value": "User has left the server (${mute.mutingUser.userReference.id?c})"
+                "value": "<#include "user_left_server"> (${mute.mutingUser.userReference.id?c})"
          </#if>
     },
     {
-        "name": "Location of the mute",
+        "name": "<#include "mute_log_mute_location_field_title">",
         "value": "[Link](${messageUrl})"
     },
     {
-        "name": "Muted since",
+        "name": "<#include "unMute_log_muted_since_field_title">",
         "value": "${formatInstant(mute.muteDate, "yyyy-MM-dd HH:mm:ss")}"
     },
     {
-        "name": "Muted for",
+        "name": "<#include "mute_log_mute_duration_field_title">",
         "value": "${fmtDuration(muteDuration)}"
     },
     {
-        "name": "Reason",
+        "name": "<#include "mute_log_mute_reason_field_title">",
         "value": "${mute.reason}"
     }
   ],
   "footer": {
-    "text": "Mute #${mute.id}"
+    "text": "<#include "mute_log_mute_id_footer"> #${mute.id}"
   },
   "timeStamp": "${unmuteDate}"
 }

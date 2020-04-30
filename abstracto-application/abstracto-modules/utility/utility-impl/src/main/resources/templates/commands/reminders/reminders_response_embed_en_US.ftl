@@ -9,13 +9,14 @@
     "b": 255
   },
    "title": {
-      "title": "Currently active reminders"
+      "title": "<#include "reminders_reminders_embed_title">"
     },
    "fields": [
        <#list reminders as reminder>
            {
-            "name": "Reminder ${reminder.id}",
-            "value": "Due on ${reminder.targetDate} with text ${reminder.text}"
+           <#assign id>${reminder.id}</#assign>
+            "name": "<#include "reminders_reminder_field_title">",
+            "value": "<#include "reminders_due_on">"
            }
        <#sep>,
        </#list>

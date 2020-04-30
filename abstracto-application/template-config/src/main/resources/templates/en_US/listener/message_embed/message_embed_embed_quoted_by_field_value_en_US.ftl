@@ -1,0 +1,1 @@
+"${user} from [${channelName}](${messageLink})"

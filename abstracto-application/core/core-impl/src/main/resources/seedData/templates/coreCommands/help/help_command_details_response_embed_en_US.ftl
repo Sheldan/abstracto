@@ -1,48 +1,46 @@
 {
   "title": {
-    "title": "Help - Command ${command.name} details"
+    "title": "<#include "help_command_embed_title">"
   },
   "color" : {
     "r": 200,
     "g": 0,
     "b": 255
   },
-  "description": "Name: **${command.name}**
-Description: <#if command.templated >
-<#include "${command.name}_description">
-<#else>
-${command.description}
-</#if>
+  "description": "<#include "help_command_embed_command_name">: **${command.name}**
+<#include "help_command_embed_command_description">: <#if command.templated> <#include "${command.name}_description"> <#else> ${command.description} </#if>
 
 <#if command.help??>
 <#if command.help.templated>
-Usage: `<#include "${command.name}_usage">`
-Detailed help: <#include "${command.name}_long_help">
+<#include "help_command_embed_command_usage">: `<#include "${command.name}_usage">`
+<#include "help_command_embed_command_detailed_help">: <#include "${command.name}_long_help">
 <#else>
-Usage: `${command.help.usage}`
-Detailed help: ${command.help.longHelp}
+<#include "help_command_embed_command_usage">: `${command.help.usage}`
+<#include "help_command_embed_command_detailed_help">: ${command.help.longHelp}
 </#if>
 <#if command.aliases?? && command.aliases?size gt 0>
-Aliases: `${command.aliases?join("`, `")}`
+<#include "help_command_embed_command_aliases">: `${command.aliases?join("`, `")}`
 </#if>
-Restrictions:
+<#include "help_command_embed_command_description">:
 <#if restricted?? && restricted>
-Executable by:<#if allowedRoles??> <#list allowedRoles as allowedRole> ${allowedRole.asMention}<#sep>or<#else>Nobody</#list> </#if>
-<#if immuneRoles?? > Immune roles: <#list immuneRoles as immuneRole> ${immuneRole.asMention}<#sep>or<#else>None</#list> </#if>
+<#include "help_command_embed_command_description"><#if allowedRoles??> <#list allowedRoles as allowedRole> ${allowedRole.asMention}<#sep><#include "help_command_embed_or"><#else><#include "help_command_embed_command_executable_by_nobody"></#list> </#if>
+<#if immuneRoles?? ><#include "help_command_embed_command_immune">: <#list immuneRoles as immuneRole> ${immuneRole.asMention}<#sep><#include "help_command_embed_or"><#else>None</#list> </#if>
 <#else>
-Not restricted
+<#include "help_command_embed_command_not_restricted">
 </#if>
+
 </#if>
-Parameters:
+<#include "help_command_embed_command_parameters">:
 <#if command.parameters??>
 <#list command.parameters as parameter>
-${parameter.name}: ${(parameter.description)!""}
-Optional: ${parameter.optional?string('yes', 'no')}
+<#include "help_command_embed_command_description"> `${parameter.name}`: ${(parameter.description)!""}
+<#include "help_command_embed_command_optional"><#sep>
+
 <#else>
-No parameters
+<#include "help_command_embed_command_no_parameters">
 </#list>
 <#else>
-No parameters
+<#include "help_command_embed_command_no_parameters">
 </#if>
   "
 }

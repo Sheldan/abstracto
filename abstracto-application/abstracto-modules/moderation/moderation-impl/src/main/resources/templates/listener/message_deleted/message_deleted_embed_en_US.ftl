@@ -3,7 +3,7 @@
     "name": "${member.effectiveName}#${member.user.discriminator}",
     "avatar":  "${member.user.effectiveAvatarUrl}"
   },
-  "description": "Message from ${member.effectiveName}#${member.user.discriminator} (${member.idLong?c}) removed in ${messageChannel.asMention}",
+  "description": "<#include "messageDeleted_description_text">",
   "color" : {
     "r": 200,
     "g": 0,
@@ -11,11 +11,11 @@
   },
   "fields": [
     {
-      "name": ":x: Original Message: ",
+      "name": "<#include "messageDeleted_original_message_field_title">",
       "value": "${message.content}"
     },
     {
-        "name": "Link",
+        "name": "<#include "messageDeleted_message_link_field_title">",
         "value": "[${messageChannel.name}](${message.messageUrl})"
     }
   ]

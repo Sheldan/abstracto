@@ -1,1 +1,1 @@
-User ${user.name}#${user.discriminator} (${user.asMention}) has joined the guild.
+<#assign user>${user.name}#${user.discriminator} (${user.asMention})</#assign><#include "user_joined_text">

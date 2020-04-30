@@ -1,0 +1,1 @@
+Message from ${member.effectiveName}#${member.user.discriminator} (${member.idLong?c}) edited in ${messageChannel.asMention}

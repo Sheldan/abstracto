@@ -1,49 +1,51 @@
 {
   "title": {
-    "title": "Server starboard stats"
+    "title": "<#include "starStats_response_title">"
   },
   "color" : {
     "r": 200,
     "g": 0,
     "b": 255
   },
-  "description": "${starredMessages} starred messages with ${totalStars} stars in total",
+  "description": "<#include "startStats_description">",
   "fields": [
       {
-            "name": "Top starred posts",
+            "name": "<#include "starStats_top_starred_field_title">",
             "value": "
                 <#list topPosts as post>
-                    ${badgeEmotes[post?index]} - ${post.starCount} :star: [Jump!](${post.messageUrl})
+                <#assign badge>${badgeEmotes[post?index]}</#assign><#assign count>${post.starCount}</assign><#assign link>${post.messageUrl}</#assign> <#include "starStats_starred_entry">
                 <#else>
-                    No starred messages.
+                    <#include "starStats_no_starred_messages">
                 </#list>
             "
       },
       {
-            "name": "Top starrer",
+            "name": "<#include "starStats_top_starrer_field_title">",
             "value": "
                 <#list starGiver as starrer>
+                    <#assign badge>${badgeEmotes[starrer?index]}</#assign><#assign count>${starrer.starCount}</assign>
                     <#if starrer.member?has_content>
-                        ${badgeEmotes[starrer?index]} - ${starrer.starCount} :star: ${starrer.member.asMention}
+                    <#assign user>${starrer.member.asMention}</#assign> <#include "starStats_starrer_entry">
                     <#else>
-                        ${badgeEmotes[starrer?index]} - ${starrer.starCount} :star: ${starrer.user.id?c} (Left the guild)
+                        <#assign user>${starrer.user.id?c}</#assign> <#include "starStats_starrer_entry_left_guild_en_US.ftl">
                     </#if>
                  <#else>
-                    No starred messages.
+                     <#include "starStats_no_starred_messages">
                 </#list>
             "
       },
      {
-             "name": "Top star receiver",
+             "name": "<#include "starStats_top_receiver_field_title">",
              "value": "
                 <#list starReceiver as starred>
+                    <#assign badge>${badgeEmotes[starred?index]}</#assign><#assign count>${starred.starCount}</assign>
                     <#if starred.member?has_content>
-                        ${badgeEmotes[starred?index]} - ${starred.starCount} :star: ${starred.member.asMention}
+                     <#assign user>${starred.member.asMention}</#assign> <#include "starStats_receiver_entry">
                     <#else>
-                        ${badgeEmotes[starred?index]} - ${starred.starCount} :star: ${starred.user.id?c} (Left the guild)
+                     <#assign user>${starred.user.id?c}</#assign> <#include "starStats_receiver_entry_left_guild">
                     </#if>
                 <#else>
-                  No starred messages.
+                   <#include "starStats_no_starred_messages">
                 </#list>
              "
      }

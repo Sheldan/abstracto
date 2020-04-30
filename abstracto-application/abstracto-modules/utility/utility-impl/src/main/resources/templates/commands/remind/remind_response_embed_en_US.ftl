@@ -1,4 +1,6 @@
 {
+    <#assign id>${reminder.id}</#assign>
+    <#assign messageUrl>${message.jumpUrl}</#assign>
   "author": {
     "name": "${member.effectiveName}",
     "avatar":  "${member.user.effectiveAvatarUrl}"
@@ -8,6 +10,6 @@
     "g": 0,
     "b": 255
   },
-  "description": "Scheduled reminder ${reminder.id} to remind you of [this](${message.jumpUrl})",
+  "description": "<#include "remind_reminding_description_text">",
   "additionalMessage": "${member.asMention}"
 }

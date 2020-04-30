@@ -42,8 +42,6 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
                 .messageChannel(messageAfter.getTextChannel())
                 .guild(messageAfter.getGuild())
                 .member(messageAfter.getMember()).build();
-        String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_EDITED_TEMPLATE, log);
-        postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, EDIT_LOG_TARGET, messageAfter.getGuild().getIdLong());
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log);
         postTargetService.sendEmbedInPostTarget(message, EDIT_LOG_TARGET, messageBefore.getServerId());
     }

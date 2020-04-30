@@ -12,7 +12,7 @@
     "b": 255
   },
   "description": "
-        Rank | Name | Experience | Level | Messages
+        <#include "leaderboard_rank_column"> | <#include "leaderboard_name_column"> | <#include "leaderboard_experience_column"> | <#include "leaderboard_level_column"> | <#include "leaderboard_messages_column">
        <#list userExperiences as user>
             <@userDisplay user=user />
        </#list>

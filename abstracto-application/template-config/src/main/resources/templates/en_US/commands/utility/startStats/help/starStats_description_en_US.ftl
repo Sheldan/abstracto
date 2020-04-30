@@ -1,0 +1,1 @@
+Shows the current leader board of starboard posts.

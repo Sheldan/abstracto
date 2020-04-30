@@ -1,1 +1,1 @@
-The following features are available: ${features?join(", ")}
+<#assign featureString>${features?join(", ")}</#assign><#include "enable_available_features">

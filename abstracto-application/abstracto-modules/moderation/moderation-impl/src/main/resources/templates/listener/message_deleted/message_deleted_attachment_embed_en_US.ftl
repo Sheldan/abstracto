@@ -2,11 +2,11 @@
   "imageUrl": "${imageUrl}",
   "fields": [
   {
-    "name": "Direct Url",
-    "value": "[Link](${imageUrl})"
+    "name": "<#include "messageDeleted_attachment_link_field_title">",
+    "value": "[<#include "messageDeleted_attachment_link_display_text">](${imageUrl})"
   }
   ],
   "footer": {
-    "text": "Attachment #${counter}"
+    "text": "<#include "messageDeleted_attachment_footer"> #${counter}"
   }
 }

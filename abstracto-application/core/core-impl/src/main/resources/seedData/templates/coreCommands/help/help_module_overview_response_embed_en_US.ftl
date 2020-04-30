@@ -1,6 +1,6 @@
 {
   "title": {
-    "title": "Help - Module overview"
+    "title": "<#include "help_modules_embed_title">"
   },
   "color" : {
     "r": 200,
@@ -9,11 +9,11 @@
   },
   "description": "
        <#list modules as module>
-       Module name: **${module.info.name}**
-       Description: ${module.info.description}
+       <#include "help_module_embed_module_name">: **${module.info.name}**
+       <#include "help_module_embed_module_description">: ${module.info.description}
        </#list>
   ",
   "footer": {
-    "text": "Use 'help <module name>' for a list of commands of this module."
+    "text": "<#include "help_modules_embed_footer_hint">"
   }
 }

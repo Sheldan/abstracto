@@ -1,0 +1,1 @@
+${emote} ${count} ${channel} ID: ${messageId}",

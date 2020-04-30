@@ -20,6 +20,7 @@
         <module>templating</module>
         <module>abstracto-modules</module>
         <module>scheduling</module>
+        <module>template-config</module>
     </modules>
 
 

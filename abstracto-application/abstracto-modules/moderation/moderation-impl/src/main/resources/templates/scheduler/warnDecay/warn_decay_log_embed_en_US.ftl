@@ -8,10 +8,8 @@
     "b": 255
   },
   "description": "<#list warnings as warning>
-        <#if warning.warnedMember??>${warning.warnedMember.asMention} (${warning.warnedMember.id})<#else>${warning.warning.warnedUser.userReference.id?c}</#if> was warned on ${formatInstant(warning.warning.warnDate, "yyyy-MM-dd HH:mm:ss")}
-        with reason `${warning.warning.reason}` by <#if warning.warningMember??>${warning.warningMember.asMention} (${warning.warningMember.id})<#else>${warning.warning.warningUser.userReference.id?c}</#if>
-
+        <#if warning.warnedMember??><#assign warnedUser>${warning.warnedMember.asMention} (${warning.warnedMember.id})</#assign><#else><#assign warnedUser> ${warning.warning.warnedUser.userReference.id?c}</#assign></#if> <#if warning.warningMember??><#assign warningUser> ${warning.warningMember.asMention} (${warning.warningMember.id})</#assign><#else><#assign warningUser>${warning.warning.warningUser.userReference.id?c}</#assign></#if>   <#include "warnDecay_log_warn_entry">
   <#else>
-  No warnings to decay.
+  <#include "warnDecay_log_no_warnings">
   </#list>"
 }

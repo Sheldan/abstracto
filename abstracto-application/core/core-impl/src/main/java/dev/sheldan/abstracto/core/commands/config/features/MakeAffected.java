@@ -40,8 +40,7 @@ public class MakeAffected extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
-        ARole role = roleManagementService.findRole(roleId);
+        ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
             feature.getCommands().forEach(command ->

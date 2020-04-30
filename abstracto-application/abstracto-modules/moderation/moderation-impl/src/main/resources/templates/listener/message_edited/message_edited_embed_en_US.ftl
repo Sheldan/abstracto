@@ -3,7 +3,7 @@
     "name": "${member.effectiveName}#${member.user.discriminator}",
     "avatar":  "${member.user.effectiveAvatarUrl}"
   },
-  "description": "Message from ${member.effectiveName}#${member.user.discriminator} (${member.idLong?c}) edited in ${messageChannel.asMention}",
+  "description": "<#include "messageEdited_description_text">",
   "color" : {
     "r": 200,
     "g": 0,
@@ -11,15 +11,15 @@
   },
   "fields": [
     {
-      "name": "Original Message: ",
+      "name": "<#include "messageEdited_original_message_field_title">",
       "value": "${messageBefore.content}"
     },
     {
-          "name": "New Message: ",
+          "name": "<#include "messageEdited_new_message_field_title">",
           "value": "${messageAfter.contentRaw}"
     },
     {
-        "name": "Jump link",
+        "name": "<#include "messageEdited_link_field_title">",
         "value": "[${messageChannel.name}](${messageBefore.messageUrl})"
     }
   ]

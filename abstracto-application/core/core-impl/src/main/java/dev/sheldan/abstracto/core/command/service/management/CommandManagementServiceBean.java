@@ -30,7 +30,7 @@ public class CommandManagementServiceBean implements CommandManagementService {
     public ACommand createCommand(String name, AModule module, AFeature feature) {
         ACommand command = ACommand
                 .builder()
-                .name(name)
+                .name(name.toLowerCase())
                 .module(module)
                 .feature(feature)
                 .build();
@@ -40,7 +40,7 @@ public class CommandManagementServiceBean implements CommandManagementService {
 
     @Override
     public ACommand findCommandByName(String name) {
-        return commandRepository.findByName(name);
+        return commandRepository.findByName(name.toLowerCase());
     }
 
     @Override

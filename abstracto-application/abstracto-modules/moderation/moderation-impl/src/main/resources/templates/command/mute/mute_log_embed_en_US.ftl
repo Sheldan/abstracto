@@ -4,7 +4,7 @@
     "avatar":  "${mutedUser.user.effectiveAvatarUrl}"
   },
   "title": {
-    "title": "User has been muted"
+    "title": "<#include "mute_log_title">"
   },
   "color" : {
     "r": 200,
@@ -13,32 +13,32 @@
   },
   "fields": [
     {
-      "name": "Muted User",
+      "name": "<#include "mute_log_muted_user_field_title">",
       "value": "${mutedUser.effectiveName} ${mutedUser.asMention} (${mutedUser.idLong?c})"
     },
     {
-        "name": "Muted by",
+        "name": "<#include "mute_log_muting_user_field_title">",
         "value": "${mutingUser.effectiveName} ${mutingUser.asMention} (${mutingUser.idLong?c})"
     },
     {
-        "name": "Location of the mute",
+        "name": "<#include "mute_log_mute_location_field_title">",
         "value": "[${messageChannel.name}](${message.jumpUrl})"
     },
     {
-        "name": "Reason",
+        "name": "<#include "mute_log_mute_reason_field_title">",
         "value": "${mute.reason}"
     },
     {
-        "name": "Muted for",
+        "name": "<#include "mute_log_mute_duration_field_title">",
         "value": "${fmtDuration(muteDuration)}"
     },
     {
-        "name": "Muted until",
+        "name": "<#include "mute_log_muted_until_field_title">",
         "value": "${formatInstant(mute.muteTargetDate, "yyyy-MM-dd HH:mm:ss")}"
     }
   ],
   "footer": {
-    "text": "Mute #${mute.id}"
+    "text": "<#include "mute_log_mute_id_footer"> #${mute.id}"
   },
   "timeStamp": "${mute.muteDate}"
 }

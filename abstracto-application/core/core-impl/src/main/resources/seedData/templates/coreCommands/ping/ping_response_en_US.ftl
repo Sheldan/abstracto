@@ -1,1 +1,1 @@
-Latency: ${latency} ms.
+<#include "ping_latency_response">

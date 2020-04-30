@@ -1,1 +1,1 @@
-The available post targets are: ${validPostTargets?join(", ")}
+<#include "posttarget_available_post_targets">: ${validPostTargets?join(", ")}.

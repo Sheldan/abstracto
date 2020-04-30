@@ -8,19 +8,19 @@
     "g": 0,
     "b": 255
   },
-  "description": "You wanted to be reminded.",
+  "description": "<#include "remind_reminder_description">",
   "fields": [
     {
-        "name": "Duration",
+        "name": "<#include "remind_reminder_duration_field_title">",
         "value": "${fmtDuration(duration)}"
     },
     {
-        "name": "Note",
+        "name": "<#include "remind_reminder_note_field_title">",
         "value": "${reminder.text}"
     },
     {
-        "name": "Link",
-        "value": "[Jump!](${messageUrl})"
+        "name": "<#include "remind_reminder_link_field_title">",
+        "value": "[<#include "remind_reminder_link_content_display_text">](${messageUrl})"
     }
   ],
   "additionalMessage": "${member.asMention}"
