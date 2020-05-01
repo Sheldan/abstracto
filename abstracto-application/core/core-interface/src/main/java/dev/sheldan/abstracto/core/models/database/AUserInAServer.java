@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -11,6 +13,8 @@ import java.io.Serializable;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AUserInAServer implements Serializable {
 
     @Id
@@ -24,4 +28,19 @@ public class AUserInAServer implements Serializable {
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "serverReference", nullable = false)
     private AServer serverReference;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AUserInAServer that = (AUserInAServer) o;
+        return Objects.equals(userInServerId, that.userInServerId) &&
+                Objects.equals(userReference, that.userReference) &&
+                Objects.equals(serverReference, that.serverReference);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userInServerId, userReference, serverReference);
+    }
 }

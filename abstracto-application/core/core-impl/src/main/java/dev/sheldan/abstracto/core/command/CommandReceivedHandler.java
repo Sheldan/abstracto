@@ -16,7 +16,7 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
@@ -52,7 +52,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private ChannelManagementService channelManagementService;
@@ -74,13 +74,14 @@ public class CommandReceivedHandler extends ListenerAdapter {
         if(!commandManager.isCommand(event.getMessage())) {
             return;
         }
+        UserInitiatedServerContext userInitiatedContext = buildTemplateParameter(event);
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
                 .author(event.getMember())
                 .guild(event.getGuild())
                 .channel(event.getTextChannel())
                 .message(event.getMessage())
                 .jda(event.getJDA())
-                .userInitiatedContext(buildTemplateParameter(event));
+                .userInitiatedContext(userInitiatedContext);
         Command foundCommand = null;
         try {
             String contentStripped = event.getMessage().getContentStripped();
@@ -88,7 +89,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
             UnParsedCommandParameter unparsedParameter = new UnParsedCommandParameter(contentStripped);
             String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
             foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
-            Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage());
+            Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             CommandResult commandResult;
             if(foundCommand instanceof ConditionalCommand) {
@@ -134,7 +135,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
         AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
-        AUserInAServer user = userManagementService.loadUser(event.getMember());
+        AUserInAServer user = userInServerManagementService.loadUser(event.getMember());
         return UserInitiatedServerContext
                 .builder()
                 .channel(channel)
@@ -147,7 +148,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .build();
     }
 
-    public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
+    public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message, UserInitiatedServerContext userInitiatedServerContext){
         List<Object> parsedParameters = new ArrayList<>();
         if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().isEmpty()) {
             return Parameters.builder().parameters(parsedParameters).build();
@@ -189,9 +190,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         }
                     } else if(param.getType().equals(ARole.class)) {
                         if(StringUtils.isNumeric(value)) {
-                            parsedParameters.add(roleManagementService.findRole(Long.parseLong(value)));
+                            parsedParameters.add(roleManagementService.findRole(Long.parseLong(value), userInitiatedServerContext.getServer()));
                         } else {
-                            parsedParameters.add(roleManagementService.findRole(roleIterator.next().getIdLong()));
+                            parsedParameters.add(roleManagementService.findRole(roleIterator.next().getIdLong(), userInitiatedServerContext.getServer()));
                         }
                     } else if(param.getType().equals(Boolean.class)) {
                         parsedParameters.add(Boolean.valueOf(value));

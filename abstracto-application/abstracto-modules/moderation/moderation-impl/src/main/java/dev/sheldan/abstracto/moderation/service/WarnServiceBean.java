@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -35,7 +35,7 @@ public class WarnServiceBean implements WarnService {
     public static final String WARN_LOG_TARGET = "warnLog";
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private WarnManagementService warnManagementService;
@@ -78,13 +78,13 @@ public class WarnServiceBean implements WarnService {
     public Warning warnUser(Member warnedMember, Member warningMember, String reason, TextChannel feedbackChannel) {
         FullUser warnedUser = FullUser
                 .builder()
-                .aUserInAServer(userManagementService.loadUser(warnedMember))
+                .aUserInAServer(userInServerManagementService.loadUser(warnedMember))
                 .member(warnedMember)
                 .build();
 
         FullUser warningUser = FullUser
                 .builder()
-                .aUserInAServer(userManagementService.loadUser(warningMember))
+                .aUserInAServer(userInServerManagementService.loadUser(warningMember))
                 .member(warningMember)
                 .build();
         return warnUser(warnedUser, warningUser, reason, feedbackChannel);

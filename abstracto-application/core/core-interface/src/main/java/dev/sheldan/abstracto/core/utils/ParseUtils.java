@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.utils;
 
+
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 
 import java.time.Duration;

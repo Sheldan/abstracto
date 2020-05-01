@@ -3,10 +3,12 @@ package dev.sheldan.abstracto.core.service.management;
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ConfigRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class ConfigManagementServiceBean implements ConfigManagementService {
 
     @Autowired
@@ -16,23 +18,25 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     private ServerManagementService serverManagementService;
 
     @Override
-    public void setOrCreateStringValue(Long serverId, String name, String value) {
+    public AConfig setOrCreateStringValue(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
             createConfig(serverId, name, value);
         } else {
             config.setStringValue(value);
         }
+        return config;
     }
 
     @Override
-    public void setOrCreateDoubleValue(Long serverId, String name, Double value) {
+    public AConfig setOrCreateDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
             createConfig(serverId, name, value);
         } else {
             config.setDoubleValue(value);
         }
+        return config;
     }
 
     @Override
@@ -90,15 +94,17 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
-    public void setDoubleValue(Long serverId, String name, Double value) {
+    public AConfig setDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         config.setDoubleValue(value);
+        return config;
     }
 
     @Override
-    public void setStringValue(Long serverId, String name, String value) {
+    public AConfig setStringValue(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         config.setStringValue(value);
+        return config;
     }
 
 }

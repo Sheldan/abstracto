@@ -39,7 +39,7 @@ public class SetExpRole extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
         Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
-        ARole role = roleManagementService.findRole(roleId);
+        ARole role = roleManagementService.findRole(roleId, commandContext.getUserInitiatedContext().getServer());
         AServer server = commandContext.getUserInitiatedContext().getServer();
         if(!roleService.isRoleInServer(role)) {
             throw new RoleException("Role not found.");

@@ -36,11 +36,6 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
-    public void createDoubleValueIfNotExist(String name, Long serverId, Double value) {
-        configManagementService.createIfNotExists(serverId, name, value);
-    }
-
-    @Override
     public void setDoubleValue(String name, Long serverId, Double value) {
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setDoubleValue(serverId, name, value);

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.listener;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -26,7 +26,7 @@ public class JoinListenerBean extends ListenerAdapter {
     private FeatureFlagService featureFlagService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Override
     @Transactional
@@ -37,7 +37,7 @@ public class JoinListenerBean extends ListenerAdapter {
                 return;
             }
             try {
-                AUserInAServer aUserInAServer = userManagementService.loadUser(event.getMember());
+                AUserInAServer aUserInAServer = userInServerManagementService.loadUser(event.getMember());
                 executeListener(event, joinListener, aUserInAServer);
             } catch (Exception e) {
                 log.error("Listener {} failed with exception:", joinListener.getClass().getName(), e);

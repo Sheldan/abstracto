@@ -4,18 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
+import java.util.Objects;
 
 @Builder
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "template")
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Template {
 
     @Id
@@ -31,4 +32,20 @@ public class Template {
 
     @Getter
     private Instant lastModified;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Template template = (Template) o;
+        return Objects.equals(key, template.key) &&
+                Objects.equals(content, template.content) &&
+                Objects.equals(section, template.section) &&
+                Objects.equals(lastModified, template.lastModified);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, content, section, lastModified);
+    }
 }

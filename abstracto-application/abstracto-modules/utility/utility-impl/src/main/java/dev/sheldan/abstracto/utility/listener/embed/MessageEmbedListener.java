@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.service.MessageEmbedService;
@@ -25,10 +25,8 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Autowired
     private MessageCache messageCache;
 
-    public static final String MESSAGE_EMBED_TEMPLATE = "message";
-
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private MessageEmbedService messageEmbedService;
@@ -39,9 +37,13 @@ public class MessageEmbedListener implements MessageReceivedListener {
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         for (MessageEmbedLink messageEmbedLink : links) {
             messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
-            AUserInAServer cause = userManagementService.loadUser(message.getMember());
+            AUserInAServer cause = userInServerManagementService.loadUser(message.getMember());
             Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause, message);
-            messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer);
+            messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer)
+                    .exceptionally(throwable -> {
+                        log.error("Error when embedding link.", throwable);
+                        return null;
+                    });
         }
         if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
             message.delete().queue();

@@ -27,16 +27,20 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     private FeatureFlagService featureFlagService;
 
     @Override
-    @Transactional
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
         messageCache.putMessageInCache(event.getMessage());
         listenerList.forEach(messageReceivedListener -> {
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
-            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                return;
+            try {
+                FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
+                if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
+                    return;
+                }
+                messageReceivedListener.execute(event.getMessage());
+            } catch (Exception e) {
+                log.error("Listener {} had exception when executing.", messageReceivedListener, e);
             }
-            messageReceivedListener.execute(event.getMessage());
         });
     }
+
 
 }

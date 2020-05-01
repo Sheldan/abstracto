@@ -1,1 +1,1 @@
-"${user} from [${channelName}](${messageLink})"
+${user} from [${channelName}](${messageLink})

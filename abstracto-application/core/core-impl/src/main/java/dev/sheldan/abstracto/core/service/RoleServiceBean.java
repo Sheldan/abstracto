@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.RoleException;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -59,13 +60,13 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
-    public void markDeleted(Role role) {
-        markDeleted(role.getIdLong());
+    public void markDeleted(Role role, AServer server) {
+        markDeleted(role.getIdLong(), server);
     }
 
     @Override
-    public void markDeleted(Long id) {
-        ARole role = roleManagementService.findRole(id);
+    public void markDeleted(Long id, AServer server) {
+        ARole role = roleManagementService.findRole(id, server);
         if(role != null) {
             roleManagementService.markDeleted(role);
         } else {

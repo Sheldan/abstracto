@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -33,7 +33,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     private MessageCache messageCache;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private List<ReactedAddedListener> addedListenerList;
@@ -95,7 +95,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Transactional
     public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
-        AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
+        AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         addReactionIfNotThere(cachedMessage, reaction, userInAServer.getUserReference());
         addedListenerList.forEach(reactedAddedListener -> {
             FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
@@ -130,7 +130,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Transactional
     public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
-        AUserInAServer userInAServer = userManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
+        AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         removeReactionIfThere(cachedMessage, reaction, userInAServer.getUserReference());
         reactionRemovedListener.forEach(reactionRemovedListener -> {
             FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());

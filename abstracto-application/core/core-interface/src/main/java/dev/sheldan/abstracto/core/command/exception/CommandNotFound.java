@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.exception;
 
-import dev.sheldan.abstracto.templating.Templatable;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.templating.Templatable;
 
 public class CommandNotFound extends AbstractoRunTimeException implements Templatable {
 

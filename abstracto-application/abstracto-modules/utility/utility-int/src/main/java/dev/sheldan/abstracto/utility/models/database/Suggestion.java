@@ -8,13 +8,15 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name="suggestion")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
 public class Suggestion {
 
     @Id
@@ -48,4 +50,22 @@ public class Suggestion {
     @Enumerated(EnumType.STRING)
     private SuggestionState state;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Suggestion that = (Suggestion) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(suggester, that.suggester) &&
+                Objects.equals(messageId, that.messageId) &&
+                Objects.equals(channel, that.channel) &&
+                Objects.equals(server, that.server) &&
+                Objects.equals(suggestionDate, that.suggestionDate) &&
+                state == that.state;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, suggester, messageId, channel, server, suggestionDate, state);
+    }
 }

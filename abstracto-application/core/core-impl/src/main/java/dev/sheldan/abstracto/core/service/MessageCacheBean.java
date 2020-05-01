@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -26,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 @Component
 @Slf4j
+@CacheConfig(cacheNames = "messages")
 public class MessageCacheBean implements MessageCache {
 
     @Autowired
@@ -40,7 +42,7 @@ public class MessageCacheBean implements MessageCache {
     private MessageCache self;
 
     @Override
-    @CachePut(key = "#message.id", cacheNames = "messages")
+    @CachePut(key = "#message.id")
     public CompletableFuture<CachedMessage> putMessageInCache(Message message) {
         log.info("Adding message {} to cache", message.getId());
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
@@ -56,14 +58,14 @@ public class MessageCacheBean implements MessageCache {
     }
 
     @Override
-    @Cacheable(key = "#message.id", cacheNames = "messages")
+    @Cacheable(key = "#message.id")
     public CompletableFuture<CachedMessage> getMessageFromCache(Message message) {
         log.info("Retrieving message {}", message.getId());
         return getMessageFromCache(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
     }
 
     @Override
-    @Cacheable(key = "#messageId.toString()", cacheNames = "messages")
+    @Cacheable(key = "#messageId.toString()")
     public CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId) {
         log.info("Retrieving message with parameters");
 
@@ -204,4 +206,5 @@ public class MessageCacheBean implements MessageCache {
 
         return builder.build();
     }
+
 }

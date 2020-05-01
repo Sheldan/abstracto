@@ -2,9 +2,11 @@ package dev.sheldan.abstracto.experience.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 
 /**
@@ -18,6 +20,8 @@ import java.io.Serializable;
 @Table(name = "user_experience")
 @Getter
 @Setter
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AUserExperience implements Serializable {
 
     /**
@@ -53,4 +57,22 @@ public class AUserExperience implements Serializable {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "experience_role_id")
     private AExperienceRole currentExperienceRole;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AUserExperience that = (AUserExperience) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(user, that.user) &&
+                Objects.equals(experience, that.experience) &&
+                Objects.equals(messageCount, that.messageCount) &&
+                Objects.equals(currentLevel, that.currentLevel) &&
+                Objects.equals(currentExperienceRole, that.currentExperienceRole);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, user, experience, messageCount, currentLevel, currentExperienceRole);
+    }
 }

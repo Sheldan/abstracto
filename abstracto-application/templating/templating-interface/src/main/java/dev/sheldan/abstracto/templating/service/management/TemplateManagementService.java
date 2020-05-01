@@ -5,5 +5,5 @@ import dev.sheldan.abstracto.templating.model.database.Template;
 public interface TemplateManagementService {
     Template getTemplateByKey(String key);
     boolean templateExists(String key);
-    void createTemplate(String key, String content);
+    Template createTemplate(String key, String content);
 }

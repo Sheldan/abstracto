@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.DynamicKeyLoader;
+import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -143,30 +143,6 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     @Override
     public boolean emoteExists(String name, AServer server) {
         return repository.existsByNameAndServerRef(name, server);
-    }
-
-    @Override
-    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated) {
-        AEmote emote = AEmote.builder()
-                .animated(animated)
-                .custom(true)
-                .emoteKey(emoteKey)
-                .emoteId(emoteId)
-                .name(name)
-                .build();
-        repository.save(emote);
-        return emote;
-    }
-
-    @Override
-    public AEmote createDefaultEmote(String name, String emoteKey) {
-        AEmote emote = AEmote.builder()
-                .custom(false)
-                .emoteKey(emoteKey)
-                .name(name)
-                .build();
-        repository.save(emote);
-        return emote;
     }
 
     private void validateEmoteName(String name)  {

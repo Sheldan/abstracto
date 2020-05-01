@@ -37,6 +37,7 @@ public class RoleListener extends ListenerAdapter {
     @Override
     @Transactional
     public void onRoleDelete(@Nonnull RoleDeleteEvent event) {
-        roleService.markDeleted(event.getRole());
+        AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
+        roleService.markDeleted(event.getRole(), server);
     }
 }

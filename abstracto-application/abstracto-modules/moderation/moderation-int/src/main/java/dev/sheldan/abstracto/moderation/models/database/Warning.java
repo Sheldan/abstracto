@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name="warning")
@@ -42,5 +43,22 @@ public class Warning {
     @Setter
     private Instant decayDate;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Warning warning = (Warning) o;
+        return Objects.equals(id, warning.id) &&
+                Objects.equals(warnedUser, warning.warnedUser) &&
+                Objects.equals(warningUser, warning.warningUser) &&
+                Objects.equals(reason, warning.reason) &&
+                Objects.equals(warnDate, warning.warnDate) &&
+                Objects.equals(decayed, warning.decayed) &&
+                Objects.equals(decayDate, warning.decayDate);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, warnedUser, warningUser, reason, warnDate, decayed, decayDate);
+    }
 }

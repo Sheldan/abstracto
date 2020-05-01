@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.exception.MuteException;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
@@ -48,7 +48,7 @@ public class MuteServiceBean implements MuteService {
     private RoleService roleService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private SchedulerService schedulerService;
@@ -83,13 +83,13 @@ public class MuteServiceBean implements MuteService {
     public Mute muteMember(Member memberToMute, Member mutingMember, String reason, Instant unmuteDate, Message message) {
         FullUser mutedUser = FullUser
                 .builder()
-                .aUserInAServer(userManagementService.loadUser(memberToMute))
+                .aUserInAServer(userInServerManagementService.loadUser(memberToMute))
                 .member(memberToMute)
                 .build();
 
         FullUser mutingUser = FullUser
                 .builder()
-                .aUserInAServer(userManagementService.loadUser(mutingMember))
+                .aUserInAServer(userInServerManagementService.loadUser(mutingMember))
                 .member(mutingMember)
                 .build();
         return muteUser(mutedUser, mutingUser, reason, unmuteDate, message);
@@ -264,6 +264,6 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public void completelyUnmuteUser(Member member) {
-        completelyUnmuteUser(userManagementService.loadUser(member));
+        completelyUnmuteUser(userInServerManagementService.loadUser(member));
     }
 }

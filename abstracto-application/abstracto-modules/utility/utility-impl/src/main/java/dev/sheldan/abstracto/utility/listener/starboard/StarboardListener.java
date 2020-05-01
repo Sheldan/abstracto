@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
@@ -51,7 +51,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     private StarboardPostReactorManagementService starboardPostReactorManagementService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private EmoteService emoteService;
@@ -81,7 +81,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
-                AUserInAServer author = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
+                AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
                 if(starboardPostOptional.isPresent()) {
                     StarboardPost starboardPost = starboardPostOptional.get();
                     starboardPost.setIgnored(false);

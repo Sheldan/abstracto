@@ -54,7 +54,6 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         }
         channelGroup.getChannels().add(channel);
         channel.getGroups().add(channelGroup);
-        channelGroupRepository.save(channelGroup);
         return channelGroup;
     }
 
@@ -66,7 +65,6 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         }
         channelGroup.getChannels().removeIf(channelInGroupPredicate);
         channel.getGroups().removeIf(channelGroup1 -> channelGroup1.getId().equals(channelGroup.getId()));
-        channelGroupRepository.save(channelGroup);
     }
 
     @Override

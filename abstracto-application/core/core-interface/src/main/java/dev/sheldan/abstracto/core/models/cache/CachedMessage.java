@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-public class CachedMessage {
+public class CachedMessage implements Serializable {
     private Long serverId;
     private Long channelId;
     private Long messageId;

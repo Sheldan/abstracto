@@ -19,6 +19,4 @@ public interface EmoteManagementService {
     AEmote setEmoteToDefaultEmote(String name, String emoteKey, Long serverId) ;
     boolean emoteExists(String name, Long serverId);
     boolean emoteExists(String name, AServer server);
-    AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated);
-    AEmote createDefaultEmote(String name, String emoteKey);
 }

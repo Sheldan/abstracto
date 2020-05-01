@@ -34,10 +34,10 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     }
 
     @Override
-    public void markAsDeleted(Long id) {
+    public AChannel markAsDeleted(Long id) {
         AChannel channel =  loadChannel(id);
         channel.setDeleted(true);
-        repository.save(channel);
+        return channel;
     }
 
     @Override

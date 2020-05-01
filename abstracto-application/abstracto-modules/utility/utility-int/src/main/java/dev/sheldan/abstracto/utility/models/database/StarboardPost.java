@@ -3,10 +3,12 @@ package dev.sheldan.abstracto.utility.models.database;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name="starboard_post")
@@ -15,6 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class StarboardPost {
 
     @Id
@@ -52,6 +56,7 @@ public class StarboardPost {
             orphanRemoval = true,
             cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name="postId")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<StarboardPostReaction> reactions;
 
     @Column
@@ -65,5 +70,27 @@ public class StarboardPost {
             return 0;
         }
         return this.reactions.size();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StarboardPost post = (StarboardPost) o;
+        return ignored == post.ignored &&
+                Objects.equals(id, post.id) &&
+                Objects.equals(author, post.author) &&
+                Objects.equals(starboardMessageId, post.starboardMessageId) &&
+                Objects.equals(postMessageId, post.postMessageId) &&
+                Objects.equals(starboardChannel, post.starboardChannel) &&
+                Objects.equals(sourceChanel, post.sourceChanel) &&
+                Objects.equals(reactionCount, post.reactionCount) &&
+                Objects.equals(reactions, post.reactions) &&
+                Objects.equals(starredDate, post.starredDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, author, starboardMessageId, postMessageId, starboardChannel, sourceChanel, reactionCount, reactions, starredDate, ignored);
     }
 }

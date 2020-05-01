@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
 
 import java.util.List;
@@ -20,4 +21,8 @@ public interface FeatureFlagService {
     boolean doesFeatureExist(FeatureConfig name);
     List<String> getFeaturesAsList();
     FeatureEnum getFeatureEnum(String key);
+    boolean getFeatureFlagValue(FeatureEnum key, Long serverId);
+    boolean getFeatureFlagValue(FeatureEnum key, AServer server);
+    AFeatureFlag updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue);
+    AFeatureFlag updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue);
 }

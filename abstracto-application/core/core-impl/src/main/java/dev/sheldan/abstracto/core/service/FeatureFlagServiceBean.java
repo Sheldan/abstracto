@@ -1,9 +1,12 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
+import dev.sheldan.abstracto.core.models.database.AFeature;
+import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -21,6 +24,9 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     private FeatureFlagManagementService managementService;
 
     @Autowired
+    private FeatureManagementService featureManagementService;
+
+    @Autowired
     private List<FeatureConfig> availableFeatures;
 
     @Autowired
@@ -29,12 +35,12 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Override
     public boolean isFeatureEnabled(FeatureConfig name, Long serverId) {
-        return managementService.getFeatureFlagValue(name.getFeature(), serverId);
+        return getFeatureFlagValue(name.getFeature(), serverId);
     }
 
     @Override
     public boolean isFeatureEnabled(FeatureConfig name, AServer server) {
-        return managementService.getFeatureFlagValue(name.getFeature(), server);
+        return getFeatureFlagValue(name.getFeature(), server);
     }
 
     @Override
@@ -49,7 +55,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
         if(!doesFeatureExist(name)) {
             throw new FeatureNotFoundException("Feature not found.", feature.getKey(), getFeaturesAsList());
         }
-        managementService.updateFeatureFlag(feature, server, true);
+        updateFeatureFlag(feature, server, true);
     }
 
     @Override
@@ -64,7 +70,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
         if(!doesFeatureExist(name)) {
             throw new FeatureNotFoundException("Feature not found.", feature.getKey(), getFeaturesAsList());
         }
-        managementService.updateFeatureFlag(feature, server, false);
+        updateFeatureFlag(feature, server, false);
     }
 
     @Override
@@ -114,5 +120,29 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
             return foundFeature.get().getFeature();
         }
         throw new AbstractoRunTimeException(String.format("Feature %s not found.", key));
+    }
+    @Override
+    public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return getFeatureFlagValue(key, server);
+    }
+
+    @Override
+    public boolean getFeatureFlagValue(FeatureEnum key, AServer server) {
+        AFeature feature = featureManagementService.getFeature(key.getKey());
+        AFeatureFlag featureFlag = managementService.getFeatureFlag(feature, server);
+        return featureFlag.isEnabled();
+    }
+
+    @Override
+    public AFeatureFlag updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return updateFeatureFlag(key, server, newValue);
+    }
+
+    @Override
+    public AFeatureFlag updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
+        AFeature feature = featureManagementService.getFeature(key.getKey());
+        return managementService.setFeatureFlagValue(feature, server, newValue);
     }
 }

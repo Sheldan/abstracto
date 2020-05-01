@@ -4,10 +4,17 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
+
+import javax.persistence.QueryHint;
 
 @Repository
 public interface UserInServerRepository extends JpaRepository<AUserInAServer, Long> {
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     AUserInAServer findByServerReferenceAndUserReference(AServer serverId, AUser userId);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByServerReferenceAndUserReference(AServer server, AUser user);
 }

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.repository.MuteRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
     private MuteRepository muteRepository;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Override
     public Mute createMute(AUserInAServer aUserInAServer, AUserInAServer mutingUser, String reason, Instant unmuteDate, AServerAChannelMessage origin) {
@@ -66,7 +66,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
 
     @Override
     public Mute getAMuteOf(Member userInAServer) {
-        return getAMuteOf(userManagementService.loadUser(userInAServer));
+        return getAMuteOf(userInServerManagementService.loadUser(userInAServer));
     }
 
     @Override

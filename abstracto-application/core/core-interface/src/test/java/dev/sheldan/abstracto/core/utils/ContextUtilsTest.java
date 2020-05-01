@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.commands.PingModel;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +34,7 @@ public class ContextUtilsTest {
     private ChannelManagementService channelManagementService;
 
     @Mock
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Mock
     private BotService botService;
@@ -45,7 +45,7 @@ public class ContextUtilsTest {
         when(botService.getServerChannelUser(eq(SERVER_ID), eq(CHANNEL_ID), eq(AUTHOR_ID))).thenReturn(build);
         AServer server = AServer.builder().id(SERVER_ID).build();
         AUserInAServer aUserInAServer = AUserInAServer.builder().userReference(AUser.builder().id(AUTHOR_ID).build()).serverReference(server).build();
-        when(userManagementService.loadUser(eq(SERVER_ID), eq(AUTHOR_ID))).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadUser(eq(SERVER_ID), eq(AUTHOR_ID))).thenReturn(aUserInAServer);
         AChannel channel = AChannel.builder().id(CHANNEL_ID).build();
         when(channelManagementService.loadChannel(eq(CHANNEL_ID))).thenReturn(channel);
     }

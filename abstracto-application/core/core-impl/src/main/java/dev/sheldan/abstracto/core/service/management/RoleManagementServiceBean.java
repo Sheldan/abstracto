@@ -24,7 +24,7 @@ public class RoleManagementServiceBean implements RoleManagementService {
     }
 
     @Override
-    public ARole findRole(Long id) {
+    public ARole findRole(Long id, AServer server) {
         return repository.getOne(id);
     }
 

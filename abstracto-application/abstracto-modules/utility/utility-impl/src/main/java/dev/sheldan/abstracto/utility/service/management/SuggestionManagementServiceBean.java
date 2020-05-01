@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -26,14 +26,14 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     private ChannelManagementService channelManagementService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private ServerManagementService serverManagementService;
 
     @Override
     public Suggestion createSuggestion(Member suggester, String text) {
-        AUserInAServer user = userManagementService.loadUser(suggester);
+        AUserInAServer user = userInServerManagementService.loadUser(suggester);
         return this.createSuggestion(user, text);
     }
 

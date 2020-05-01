@@ -3,11 +3,13 @@ package dev.sheldan.abstracto.experience.models.database;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a role which is given when the user reaches a certain level. These roles are configurable per server and
@@ -20,6 +22,8 @@ import java.util.List;
 @Table(name = "experience_role")
 @Getter
 @Setter
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AExperienceRole implements Serializable {
 
     /**
@@ -58,5 +62,23 @@ public class AExperienceRole implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @Builder.Default
     @JoinColumn(name = "experience_role_id")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AUserExperience> users = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AExperienceRole that = (AExperienceRole) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(level, that.level) &&
+                Objects.equals(roleServer, that.roleServer) &&
+                Objects.equals(role, that.role) &&
+                Objects.equals(users, that.users);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, level, roleServer, role, users);
+    }
 }

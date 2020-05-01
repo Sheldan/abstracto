@@ -36,8 +36,6 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
         log.trace("Message {} in channel {} in guild {} was deleted.", messageFromCache.getMessageId(), messageFromCache.getChannelId(), messageFromCache.getServerId());
         MessageDeletedLog logModel = (MessageDeletedLog) contextUtils.fromMessage(messageFromCache, MessageDeletedLog.class);
         logModel.setMessage(messageFromCache);
-        String simpleMessageUpdatedMessage = templateService.renderTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
-        postTargetService.sendTextInPostTarget(simpleMessageUpdatedMessage, DELETE_LOG_TARGET, messageFromCache.getServerId());
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
         postTargetService.sendEmbedInPostTarget(message, DELETE_LOG_TARGET, messageFromCache.getServerId());
         for (int i = 0; i < messageFromCache.getAttachmentUrls().size(); i++) {

@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -25,13 +24,13 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     private FeatureManagementService featureManagementService;
 
     @Override
-    public void createFeatureFlag(AFeature feature, Long serverId, Boolean newValue) {
+    public AFeatureFlag createFeatureFlag(AFeature feature, Long serverId, Boolean newValue) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        createFeatureFlag(feature, server, newValue);
+        return createFeatureFlag(feature, server, newValue);
     }
 
     @Override
-    public void createFeatureFlag(AFeature feature, AServer server, Boolean newValue) {
+    public AFeatureFlag createFeatureFlag(AFeature feature, AServer server, Boolean newValue) {
         AFeatureFlag featureFlag = AFeatureFlag
                 .builder()
                 .enabled(newValue)
@@ -39,52 +38,37 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
                 .server(server)
                 .build();
         repository.save(featureFlag);
+        return featureFlag;
     }
 
 
     @Override
-    public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        return getFeatureFlagValue(key, server);
-    }
-
-    @Override
-    public boolean getFeatureFlagValue(FeatureEnum key, AServer server) {
-        AFeature feature = featureManagementService.getFeature(key.getKey());
-        Optional<AFeatureFlag> featureFlag = getFeatureFlag(feature, server);
-        return featureFlag.isPresent() && featureFlag.get().isEnabled();
-    }
-
-    @Override
-    public void updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        updateFeatureFlag(key, server, newValue);
-    }
-
-    @Override
-    public void updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
-        AFeature feature = featureManagementService.getFeature(key.getKey());
-        Optional<AFeatureFlag> existing = getFeatureFlag(feature, server);
-        if(existing.isPresent()) {
-            AFeatureFlag flag = existing.get();
-            flag.setEnabled(newValue);
-            repository.save(flag);
-        }
-    }
-
-    @Override
-    public Optional<AFeatureFlag> getFeatureFlag(AFeature feature, Long serverId) {
+    public AFeatureFlag getFeatureFlag(AFeature feature, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return getFeatureFlag(feature, server);
     }
 
     @Override
-    public Optional<AFeatureFlag> getFeatureFlag(AFeature key, AServer server) {
-        return Optional.ofNullable(repository.findByServerAndFeature(server, key));
+    public AFeatureFlag getFeatureFlag(AFeature feature, AServer server) {
+        return repository.findByServerAndFeature(server, feature);
     }
 
     @Override
     public List<AFeatureFlag> getFeatureFlagsOfServer(AServer server) {
         return repository.findAllByServer(server);
+    }
+
+    @Override
+    public AFeatureFlag setFeatureFlagValue(AFeature feature, Long serverId, Boolean newValue) {
+        AFeatureFlag featureFlag = getFeatureFlag(feature, serverId);
+        featureFlag.setEnabled(newValue);
+        return featureFlag;
+    }
+
+    @Override
+    public AFeatureFlag setFeatureFlagValue(AFeature feature, AServer server, Boolean newValue) {
+        AFeatureFlag featureFlag = getFeatureFlag(feature, server);
+        featureFlag.setEnabled(newValue);
+        return featureFlag;
     }
 }

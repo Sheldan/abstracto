@@ -1,8 +1,10 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name="systemConfig")
@@ -10,6 +12,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AConfig {
 
     @Id
@@ -32,4 +36,21 @@ public class AConfig {
     @Getter
     @Setter
     private AServer server;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AConfig config = (AConfig) o;
+        return Objects.equals(Id, config.Id) &&
+                Objects.equals(name, config.name) &&
+                Objects.equals(stringValue, config.stringValue) &&
+                Objects.equals(doubleValue, config.doubleValue) &&
+                Objects.equals(server, config.server);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Id, name, stringValue, doubleValue, server);
+    }
 }

@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core;
+package dev.sheldan.abstracto.core.config;
 
 import lombok.Getter;
 import lombok.Setter;

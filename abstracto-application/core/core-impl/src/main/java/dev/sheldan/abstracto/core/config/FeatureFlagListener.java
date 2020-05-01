@@ -35,7 +35,7 @@ public class FeatureFlagListener implements ServerConfigListener {
             String featureKey = featureFlagKey.getFeature().getKey();
             AFeature feature = featureManagementService.getFeature(featureKey);
             boolean featureFlagValue = BooleanUtils.toBoolean(environment.getProperty("abstracto.features." + featureKey, "false"));
-            if(!service.getFeatureFlag(feature, server.getId()).isPresent()) {
+            if(service.getFeatureFlag(feature, server.getId()) == null) {
                 service.createFeatureFlag(feature, server.getId(), featureFlagValue);
             }
         });

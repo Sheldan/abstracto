@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.utils;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
@@ -23,7 +23,7 @@ public class ContextUtils {
     private ChannelManagementService channelManagementService;
 
     @Autowired
-    private UserManagementService userManagementService;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private BotService botService;
@@ -34,7 +34,7 @@ public class ContextUtils {
         try {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
-            AUserInAServer aUserInAServer = userManagementService.loadUser(message.getServerId(), message.getAuthorId());
+            AUserInAServer aUserInAServer = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
             return builder
                     .member(guildChannelMember.getMember())
                     .guild(guildChannelMember.getGuild())

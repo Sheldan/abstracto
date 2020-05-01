@@ -2,8 +2,10 @@ package dev.sheldan.abstracto.core.command.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "command")
@@ -11,6 +13,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ACommand {
     @Id
     @Column(name = "id")
@@ -31,4 +35,19 @@ public class ACommand {
     @JoinColumn(name = "feature_id", nullable = false)
     private AFeature feature;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ACommand aCommand = (ACommand) o;
+        return Objects.equals(id, aCommand.id) &&
+                Objects.equals(name, aCommand.name) &&
+                Objects.equals(module, aCommand.module) &&
+                Objects.equals(feature, aCommand.feature);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, module, feature);
+    }
 }

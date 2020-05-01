@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * Represents a role to be used for muting users on a certain server
@@ -40,4 +41,19 @@ public class MuteRole {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MuteRole muteRole = (MuteRole) o;
+        return Objects.equals(id, muteRole.id) &&
+                Objects.equals(roleServer, muteRole.roleServer) &&
+                Objects.equals(role, muteRole.role);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, roleServer, role);
+    }
 }

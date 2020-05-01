@@ -1,14 +1,18 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name="feature_flag")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AFeatureFlag {
 
     @Id
@@ -32,4 +36,20 @@ public class AFeatureFlag {
     @Getter
     @Setter
     private boolean enabled;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AFeatureFlag that = (AFeatureFlag) o;
+        return enabled == that.enabled &&
+                Objects.equals(id, that.id) &&
+                Objects.equals(server, that.server) &&
+                Objects.equals(feature, that.feature);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, server, feature, enabled);
+    }
 }
