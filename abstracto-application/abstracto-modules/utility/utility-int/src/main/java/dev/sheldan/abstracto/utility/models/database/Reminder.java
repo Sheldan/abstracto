@@ -56,6 +56,10 @@ public class Reminder {
     @Getter
     private boolean reminded;
 
+    @Getter
+    @Setter
+    private String jobTriggerKey;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

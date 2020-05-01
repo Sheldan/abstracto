@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
@@ -88,7 +89,9 @@ public class RemindServiceBean implements ReminderService {
             log.trace("Starting scheduled job to execute reminder.");
             JobDataMap parameters = new JobDataMap();
             parameters.putAsString("reminderId", reminder.getId());
-            schedulerService.executeJobWithParametersOnce("reminderJob", "utility", parameters, Date.from(reminder.getTargetDate()));
+            String triggerKey = schedulerService.executeJobWithParametersOnce("reminderJob", "utility", parameters, Date.from(reminder.getTargetDate()));
+            reminder.setJobTriggerKey(triggerKey);
+            reminderManagementService.saveReminder(reminder);
         }
     }
 
@@ -96,6 +99,9 @@ public class RemindServiceBean implements ReminderService {
     @Transactional
     public void executeReminder(Long reminderId)  {
         Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
+        if(reminderToRemindFor.isReminded()) {
+            return;
+        }
         AServer server = reminderToRemindFor.getServer();
         AChannel channel = reminderToRemindFor.getChannel();
         log.info("Executing reminder {}.", reminderId);
@@ -122,5 +128,19 @@ public class RemindServiceBean implements ReminderService {
             log.warn("Guild {} to remind user in did not exist anymore. Ignoring reminder {}.", server.getId(), reminderId);
         }
         reminderManagementService.setReminded(reminderToRemindFor);
+    }
+
+    @Override
+    public void unRemind(Long reminderId, AUserInAServer aUserInAServer) {
+        Reminder reminder = reminderManagementService.getReminderByAndByUserNotReminded(aUserInAServer, reminderId);
+        if(reminder != null) {
+            reminder.setReminded(true);
+            if(reminder.getJobTriggerKey() != null) {
+                schedulerService.stopTrigger(reminder.getJobTriggerKey());
+            }
+            reminderManagementService.saveReminder(reminder);
+        } else {
+            throw new AbstractoRunTimeException("Reminder does not exist, was already reminded or does not belong to you.");
+        }
     }
 }

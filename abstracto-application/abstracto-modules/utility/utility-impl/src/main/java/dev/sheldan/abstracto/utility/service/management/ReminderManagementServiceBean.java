@@ -45,8 +45,19 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
     }
 
     @Override
+    public Reminder saveReminder(Reminder reminder) {
+        return reminderRepository.save(reminder);
+    }
+
+    @Override
     public List<Reminder> getActiveRemindersForUser(AUserInAServer aUserInAServer) {
         return reminderRepository.getByRemindedUserAndRemindedFalse(aUserInAServer);
     }
+
+    @Override
+    public Reminder getReminderByAndByUserNotReminded(AUserInAServer aUserInAServer, Long reminderId) {
+        return reminderRepository.getByIdAndRemindedUserAndRemindedFalse(reminderId, aUserInAServer);
+    }
+
 
 }

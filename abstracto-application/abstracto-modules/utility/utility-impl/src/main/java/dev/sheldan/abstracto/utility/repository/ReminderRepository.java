@@ -14,4 +14,7 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<Reminder> getByRemindedUserAndRemindedFalse(AUserInAServer aUserInAServer);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    Reminder getByIdAndRemindedUserAndRemindedFalse(Long reminderId, AUserInAServer aUserInAServer);
 }

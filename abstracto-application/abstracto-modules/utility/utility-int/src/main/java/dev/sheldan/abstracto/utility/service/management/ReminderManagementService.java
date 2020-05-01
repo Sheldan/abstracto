@@ -11,5 +11,7 @@ public interface ReminderManagementService {
     Reminder createReminder(AServerAChannelAUser userToBeReminded, String text, Instant timeToBeRemindedAt, Long messageId);
     Reminder loadReminder(Long reminderId);
     void setReminded(Reminder reminder);
+    Reminder saveReminder(Reminder reminder);
     List<Reminder> getActiveRemindersForUser(AUserInAServer aUserInAServer);
+    Reminder getReminderByAndByUserNotReminded(AUserInAServer aUserInAServer, Long reminderId);
 }
