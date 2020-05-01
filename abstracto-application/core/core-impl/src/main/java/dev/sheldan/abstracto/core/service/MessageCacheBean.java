@@ -127,7 +127,10 @@ public class MessageCacheBean implements MessageCache {
                     .timeCreated(Instant.from(message.getTimeCreated()))
                     .attachmentUrls(attachmentUrls)
                     .build())
-        );
+        ).exceptionally(throwable -> {
+            log.error("Failed to load reactions for message {}. ", message.getId(), throwable);
+            return null;
+        });
     }
 
     private List<CachedReaction> getFutures(List<CompletableFuture<CachedReaction>> futures) {
@@ -153,7 +156,11 @@ public class MessageCacheBean implements MessageCache {
         users.forEachAsync(user -> {
             ausers.add(AUser.builder().id(user.getIdLong()).build());
             return false;
-        }).thenAccept(o -> future.complete(builder.build()));
+        }).thenAccept(o -> future.complete(builder.build()))
+        .exceptionally(throwable -> {
+            log.error("Failed to load reaction users.", throwable);
+            return null;
+        });
         builder.users(ausers);
         builder.emote(emoteService.buildAEmoteFromReaction(reaction.getReactionEmote()));
     }

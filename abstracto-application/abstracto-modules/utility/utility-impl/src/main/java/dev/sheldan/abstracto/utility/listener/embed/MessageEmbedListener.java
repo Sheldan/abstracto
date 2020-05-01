@@ -41,7 +41,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
             Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause, message);
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer)
                     .exceptionally(throwable -> {
-                        log.error("Error when embedding link.", throwable);
+                        log.error("Error when embedding link for message {}", message.getId(), throwable);
                         return null;
                     });
         }

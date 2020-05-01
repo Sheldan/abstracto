@@ -63,7 +63,13 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             future.thenAccept(reaction -> {
                 self.callAddedListeners(event, cachedMessage, reaction);
                 messageCache.putMessageInCache(cachedMessage);
+            }).exceptionally(throwable -> {
+                log.error("Failed to add reaction to message {} ", event.getMessageIdLong(), throwable);
+                return null;
             });
+        }).exceptionally(throwable -> {
+            log.error("Message retrieval {} from cache failed. ", event.getMessageIdLong(), throwable);
+            return null;
         });
     }
 
@@ -122,9 +128,15 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             messageCache.getCachedReactionFromReaction(future, event.getReaction());
             future.thenAccept(reaction ->
                 self.callRemoveListeners(event, cachedMessage, reaction)
-            );
+            ) .exceptionally(throwable -> {
+                log.error("Failed to retrieve cached reaction for message {} ", event.getMessageIdLong(), throwable);
+                return null;
+            });
 
             messageCache.putMessageInCache(cachedMessage);
+        }).exceptionally(throwable -> {
+            log.error("Message retrieval {} from cache failed. ", event.getMessageIdLong(), throwable);
+            return null;
         });
     }
 
@@ -152,6 +164,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             cachedMessage.getReactions().clear();
             messageCache.putMessageInCache(cachedMessage);
+        }) .exceptionally(throwable -> {
+            log.error("Message retrieval from cache failed for message {}", event.getMessageIdLong(), throwable);
+            return null;
         });
     }
 

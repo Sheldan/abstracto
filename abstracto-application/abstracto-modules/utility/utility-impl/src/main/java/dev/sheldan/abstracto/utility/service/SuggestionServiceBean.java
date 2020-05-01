@@ -71,6 +71,9 @@ public class SuggestionServiceBean implements SuggestionService {
                 } catch (InterruptedException | ExecutionException e) {
                     log.warn("Failed to post suggestion", e);
                 }
+            }) .exceptionally(throwable -> {
+                log.error("Failed to post suggestion {}", suggestion.getId(), throwable);
+                return null;
             });
         } else {
             log.warn("Guild {} or member {} was not found when creating suggestion.", member.getGuild().getIdLong(), member.getIdLong());

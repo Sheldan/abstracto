@@ -35,7 +35,12 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Transactional
     public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
         Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> self.executeListener(cachedMessage);
-        messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessageConsumer);
+        messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong())
+                .thenAccept(cachedMessageConsumer)
+                .exceptionally(throwable -> {
+                    log.error("Message retrieval {} from cache failed. ", event.getMessageIdLong(), throwable);
+                    return null;
+                });
     }
 
     @Transactional

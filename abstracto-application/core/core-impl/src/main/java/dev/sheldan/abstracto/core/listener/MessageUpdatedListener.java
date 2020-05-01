@@ -38,6 +38,9 @@ public class MessageUpdatedListener extends ListenerAdapter {
         messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getTextChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {
             self.executeListener(message, cachedMessage);
             messageCache.putMessageInCache(message);
+        }).exceptionally(throwable -> {
+            log.error("Message retrieval {} from cache failed. ", event.getMessage().getId(), throwable);
+            return null;
         });
 
     }

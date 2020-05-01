@@ -101,7 +101,10 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
                     .thenAccept(cachedMessage ->
                         self.embedLink(cachedMessage, target, reason, embeddingMessage)
-                    )
+                    ).exceptionally(throwable -> {
+                log.error("Message retrieval from cache failed for message {}.", messageEmbedLink.getMessageId(), throwable);
+                return null;
+            })
         );
     }
 
@@ -121,6 +124,10 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Failed to post message embed.", e);
             }
+        }).exceptionally(throwable -> {
+            log.error("Failed to send message for embedding the link for message {} in channel {} in server {}",
+                    cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), throwable);
+            return null;
         });
 
     }

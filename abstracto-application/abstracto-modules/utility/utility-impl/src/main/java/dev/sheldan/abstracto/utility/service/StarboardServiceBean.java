@@ -87,6 +87,9 @@ public class StarboardServiceBean implements StarboardService {
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Failed to post messages.", e);
             }
+        }) .exceptionally(throwable -> {
+            log.error("Failed to create starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId(), throwable);
+            return null;
         });
 
     }
@@ -125,6 +128,9 @@ public class StarboardServiceBean implements StarboardService {
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Failed to post starboard post.", e);
             }
+        }).exceptionally(throwable -> {
+            log.error("Failed to update starboard post {}.", post.getId(), throwable);
+            return null;
         });
     }
 

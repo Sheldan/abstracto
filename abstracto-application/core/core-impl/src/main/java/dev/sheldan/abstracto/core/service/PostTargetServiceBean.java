@@ -118,10 +118,16 @@ public class PostTargetServiceBean implements PostTargetService {
                     .queue(
                             existingMessage -> existingMessage
                                     .editMessage(messageToSend.getEmbeds().get(0))
-                                    .submit().thenAccept(message -> future.get(0).complete(message)),
+                                    .submit().thenAccept(message -> future.get(0).complete(message)).exceptionally(throwable -> {
+                                        log.error("Failed to edit message {}.", messageId, throwable);
+                                        return null;
+                                    }),
                             throwable ->
                                 sendEmbedInPostTarget(messageToSend, target).get(0)
-                                            .thenAccept(message -> future.get(0).complete(message))
+                                            .thenAccept(message -> future.get(0).complete(message)) .exceptionally(innerThrowable -> {
+                                    log.error("Failed to send message to create a message.", innerThrowable);
+                                    return null;
+                                })
                             );
         } else {
             textChannelForPostTarget
@@ -130,10 +136,16 @@ public class PostTargetServiceBean implements PostTargetService {
                             existingMessage -> existingMessage
                                     .editMessage(messageToSend.getMessage())
                                     .embed(messageToSend.getEmbeds().get(0))
-                                    .submit().thenAccept(message -> future.get(0).complete(message)),
+                                    .submit().thenAccept(message -> future.get(0).complete(message)).exceptionally(throwable -> {
+                                        log.error("Failed to edit message {}", messageId, throwable);
+                                        return null;
+                                    }),
                             throwable ->
                                 sendEmbedInPostTarget(messageToSend, target).get(0)
-                                            .thenAccept(message -> future.get(0).complete(message))
+                                            .thenAccept(message -> future.get(0).complete(message)).exceptionally(innerThrowable -> {
+                                    log.error("Failed to send message to create a message.", innerThrowable);
+                                    return null;
+                                })
                             );
         }
     }
