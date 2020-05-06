@@ -15,6 +15,7 @@ import java.util.List;
 public interface ModMailThreadRepository extends JpaRepository<ModMailThread, Long> {
     ModMailThread findByChannel(AChannel channel);
     List<ModMailThread> findByUser(AUserInAServer aUserInAServer);
+    ModMailThread findTopByUserOrderByClosedDesc(AUserInAServer aUserInAServer);
     ModMailThread findByUser_UserReferenceAndStateNot(AUser user, ModMailThreadState state);
     List<ModMailThread> findByServerAndState(AServer server, ModMailThreadState state);
     ModMailThread findByUserAndStateNot(AUserInAServer userInAServer, ModMailThreadState state);

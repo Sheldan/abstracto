@@ -31,9 +31,9 @@ public class InstantMethod implements TemplateMethodModelEx {
         }
 
         String formatString = ((SimpleScalar) arguments.get(1)).getAsString();
-        Instant duration = (Instant) wrappedObject;
+        Instant timeStamp = (Instant) wrappedObject;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatString)
                 .withZone(ZoneId.systemDefault());
-        return formatter.format(duration);
+        return formatter.format(timeStamp);
     }
 }

@@ -87,8 +87,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         CompletableFuture<TextChannel> textChannel = channelService.createTextChannel(user.getName() + user.getDiscriminator(), aUserInAServer.getAUserInAServer().getServerReference(), categoryId);
 
         textChannel.thenAccept(channel -> {
-            self.createThreadObject(channel, aUserInAServer);
-            self.sendWelcomeMessage(channel, aUserInAServer);
+            self.performModMailThreadSetup(aUserInAServer, channel);
         }).exceptionally(throwable -> {
             log.error("Failed to create mod mail thread", throwable);
             sendModMailFailure("modmail_exception_failed_to_create_mod_mail_thread",  aUserInAServer.getAUserInAServer(), null, feedBackChannel, throwable);
@@ -97,6 +96,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Transactional
+    public void performModMailThreadSetup(FullUser aUserInAServer, TextChannel channel) {
+        createThreadObject(channel, aUserInAServer);
+        sendModMailHeader(channel, aUserInAServer);
+    }
+
     public void createThreadObject(TextChannel channel, FullUser user) {
         AChannel channel2 = channelManagementService.createChannel(channel.getIdLong(), AChannelType.TEXT, user.getAUserInAServer().getServerReference());
         log.info("Creating mod mail thread in channel {} with db channel {}", channel.getIdLong(), channel2.getId());
@@ -162,12 +166,17 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         }
     }
 
-    @Override
-    public void sendWelcomeMessage(TextChannel channel, FullUser aUserInAServer) {
-        String text = templateService.renderTemplate("modmail_welcome_message", new Object());
-        channel.sendMessage(text).queue(message -> {}, throwable -> {
-            log.warn("Failed to send welcome message to user {}", aUserInAServer.getAUserInAServer().getUserReference().getId());
-        });
+
+    private void sendModMailHeader(TextChannel channel, FullUser aUserInAServer) {
+        ModMailThread latestThread = modMailThreadManagementService.getLatestModMailThread(aUserInAServer.getAUserInAServer());
+        List<ModMailThread> oldThreads = modMailThreadManagementService.getModMailThreadForUser(aUserInAServer.getAUserInAServer());
+        ModMailThreaderHeader header = ModMailThreaderHeader
+                .builder()
+                .threadUser(aUserInAServer)
+                .latestModMailThread(latestThread)
+                .pastModMailThreads((long)oldThreads.size())
+                .build();
+        channelService.sendTemplateInChannel("modmail_thread_header", header, channel);
     }
 
     @Override

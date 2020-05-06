@@ -54,6 +54,11 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     }
 
     @Override
+    public ModMailThread getLatestModMailThread(AUserInAServer aUserInAServer) {
+        return modMailThreadRepository.findTopByUserOrderByClosedDesc(aUserInAServer);
+    }
+
+    @Override
     public void createModMailThread(AUserInAServer userInAServer, AChannel channel) {
         ModMailThread thread = ModMailThread
                 .builder()

@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
-import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.List;
 
@@ -16,6 +15,7 @@ public interface ModMailThreadManagementService {
     ModMailThread getOpenModmailThreadForUser(AUserInAServer userInAServer);
     ModMailThread getOpenModmailThreadForUser(AUser user);
     List<ModMailThread> getModMailThreadForUser(AUserInAServer aUserInAServer);
+    ModMailThread getLatestModMailThread(AUserInAServer aUserInAServer);
     void createModMailThread(AUserInAServer userInAServer, AChannel channel);
     void setModMailThreadState(ModMailThread modMailThread, ModMailThreadState newState);
 
