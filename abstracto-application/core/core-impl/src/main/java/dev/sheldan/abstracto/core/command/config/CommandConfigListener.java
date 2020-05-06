@@ -26,9 +26,11 @@ public class CommandConfigListener implements ServerConfigListener {
     @Override
     public void updateServerConfig(AServer server) {
         commandList.forEach(command -> {
-            ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
-            if(!commandInServerManagementService.doesCommandExistInServer(aCommand, server)) {
-                commandInServerManagementService.crateCommandInServer(aCommand, server);
+            if(command.getConfiguration() != null) {
+                ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
+                if(!commandInServerManagementService.doesCommandExistInServer(aCommand, server)) {
+                    commandInServerManagementService.crateCommandInServer(aCommand, server);
+                }
             }
         });
     }

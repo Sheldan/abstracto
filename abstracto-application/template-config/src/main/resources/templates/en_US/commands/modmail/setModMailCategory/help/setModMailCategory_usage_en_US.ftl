@@ -1,0 +1,1 @@
+setModMailCategory <categoryId>

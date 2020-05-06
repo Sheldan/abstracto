@@ -43,15 +43,6 @@ public class AChannel implements SnowFlake {
     @Column
     private Boolean deleted;
 
-    public static AChannelType getAChannelType(ChannelType type) {
-        switch (type) {
-            case TEXT: return AChannelType.TEXT;
-            case PRIVATE: return AChannelType.DM;
-            case VOICE: return AChannelType.VOICE;
-            case CATEGORY: return AChannelType.CATEGORY;
-            default: return AChannelType.UNKOWN;
-        }
-    }
 
     @Override
     public boolean equals(Object o) {

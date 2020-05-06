@@ -25,7 +25,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
     public StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AUserInAServer starringUser, AServerAChannelMessage starboardPost) {
         StarboardPost post = StarboardPost
                 .builder()
-                .author(starredUser.getUserReference())
+                .author(starredUser)
                 .postMessageId(starredMessage.getMessageId())
                 .starboardMessageId(starboardPost.getMessageId())
                 .starboardChannel(starboardPost.getChannel())

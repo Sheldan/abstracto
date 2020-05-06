@@ -3,13 +3,11 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +31,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public void sendTextInAChannel(String text, TextChannel channel) {
+    public void sendTextInAChannel(String text, MessageChannel channel) {
         sendTextInAChannelFuture(text, channel);
     }
 
@@ -55,7 +53,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public CompletableFuture<Message> sendTextInAChannelFuture(String text, TextChannel channel) {
+    public CompletableFuture<Message> sendTextInAChannelFuture(String text, MessageChannel channel) {
         return channel.sendMessage(text).submit();
     }
 
@@ -77,7 +75,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, TextChannel channel) {
+    public CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, MessageChannel channel) {
         return channel.sendMessage(embed).submit();
     }
 
@@ -91,7 +89,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendMessageToEndInTextChannel(MessageToSend messageToSend, TextChannel textChannel) {
+    public List<CompletableFuture<Message>> sendMessageToEndInTextChannel(MessageToSend messageToSend, MessageChannel textChannel) {
         String messageText = messageToSend.getMessage();
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         if(StringUtils.isBlank(messageText)) {
@@ -130,7 +128,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public void editMessageInAChannel(MessageToSend messageToSend, TextChannel channel, Long messageId) {
+    public void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId) {
         MessageAction messageAction;
         if(!StringUtils.isBlank(messageToSend.getMessage())) {
             messageAction = channel.editMessageById(messageId, messageToSend.getMessage());
@@ -145,5 +143,19 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
         messageAction.queue();
+    }
+
+    @Override
+    public CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId) {
+        Optional<Guild> guildById = botService.getGuildById(server.getId());
+        if(guildById.isPresent()) {
+            Guild guild = guildById.get();
+            Category categoryById = guild.getCategoryById(categoryId);
+            if(categoryById != null) {
+                return categoryById.createTextChannel(name).submit();
+            }
+            return null;
+        }
+        return null;
     }
 }

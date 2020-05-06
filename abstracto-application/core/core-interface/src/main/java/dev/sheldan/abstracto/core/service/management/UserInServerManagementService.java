@@ -5,10 +5,13 @@ import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import net.dv8tion.jda.api.entities.Member;
 
+import java.util.List;
+
 public interface UserInServerManagementService {
     AUserInAServer loadUser(Long serverId, Long userId);
     AUserInAServer loadUser(AServer server, AUser user);
     AUserInAServer loadUser(Member member);
     AUserInAServer createUserInServer(Member member);
     AUserInAServer createUserInServer(Long guildId, Long userId);
+    List<AUserInAServer> getUserInAllServers(Long userId);
 }

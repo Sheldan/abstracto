@@ -33,6 +33,9 @@ public class CommandManager implements CommandRegistry {
     public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter) {
         Optional<Command> commandOptional = commands.stream().filter((Command o )-> {
             CommandConfiguration commandConfiguration = o.getConfiguration();
+            if(commandConfiguration == null) {
+                return false;
+            }
             if(!commandNameMatches(name, commandConfiguration)) {
                 return false;
             }
@@ -88,7 +91,8 @@ public class CommandManager implements CommandRegistry {
     public List<Command> getAllCommandsFromModule(ModuleInterface moduleInterface) {
         List<Command> commandsFromModule = new ArrayList<>();
         this.getAllCommands().forEach(command -> {
-            if(command.getConfiguration().getModule().equals(moduleInterface.getInfo().getName())){
+            CommandConfiguration configuration = command.getConfiguration();
+            if(configuration != null && configuration.getModule().equals(moduleInterface.getInfo().getName())){
                 commandsFromModule.add(command);
             }
         });

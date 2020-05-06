@@ -31,6 +31,10 @@ public class AConfig {
     @Setter
     private Double doubleValue;
 
+    @Column
+    @Setter
+    private Long longValue;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     @Getter

@@ -18,7 +18,8 @@
 
 
     <properties>
-        <jda.version>4.0.0_73</jda.version>
+        <jda.version>4.1.1_126</jda.version>
+        <jda.utilities.version>3.0.3</jda.utilities.version>
     </properties>
 
     <modules>

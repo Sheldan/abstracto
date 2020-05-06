@@ -11,10 +11,12 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class CommandServiceBean implements CommandService {
 
     @Autowired
@@ -32,6 +34,10 @@ public class CommandServiceBean implements CommandService {
     @Override
     public ACommand createCommand(String name, String moduleName, FeatureEnum featureEnum) {
         AModule module = moduleManagementService.getOrCreate(moduleName);
+        if(featureEnum == null) {
+            log.warn("Command {} in module {} has no feature.", name, moduleName);
+            return null;
+        }
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
         return commandManagementService.createCommand(name, module, feature);
     }

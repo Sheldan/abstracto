@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Slf4j
 public class UserInServerManagementServiceBean implements UserInServerManagementService {
@@ -54,5 +56,11 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
         AUserInAServer aUserInAServer = serverManagementService.addUserToServer(guildId, userId);
         userInServerRepository.save(aUserInAServer);
         return aUserInAServer;
+    }
+
+    @Override
+    public List<AUserInAServer> getUserInAllServers(Long userId) {
+        AUser user = userManagementService.loadUser(userId);
+        return userInServerRepository.findByUserReference(user);
     }
 }

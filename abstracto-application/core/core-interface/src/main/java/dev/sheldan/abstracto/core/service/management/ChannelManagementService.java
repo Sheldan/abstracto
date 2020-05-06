@@ -8,5 +8,6 @@ public interface ChannelManagementService {
     AChannel loadChannel(Long id);
     AChannel createChannel(Long id, AChannelType type, AServer server);
     AChannel markAsDeleted(Long id);
+    boolean channelExists(Long id);
     void removeChannel(Long id);
 }

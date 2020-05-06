@@ -38,6 +38,12 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>com.jagrosh</groupId>
+                <artifactId>jda-utilities-menu</artifactId>
+                <version>${jda.utilities.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.9</version>

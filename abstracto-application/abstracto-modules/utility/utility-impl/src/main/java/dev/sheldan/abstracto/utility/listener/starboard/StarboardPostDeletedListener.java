@@ -24,7 +24,8 @@ public class StarboardPostDeletedListener implements MessageDeletedListener {
         Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostId(messageBefore.getMessageId());
         if(byStarboardPostId.isPresent()) {
             StarboardPost post = byStarboardPostId.get();
-            log.info("Removing starboard post: message {}, channel {}, server {}, because the message was deleted", post.getPostMessageId(), post.getSourceChanel().getId(), post.getAuthor().getId());
+            log.info("Removing starboard post: message {}, channel {}, server {}, because the message was deleted",
+                    post.getPostMessageId(), post.getSourceChanel().getId(), post.getAuthor().getUserReference().getId());
             starboardPostManagementService.setStarboardPostIgnored(messageBefore.getMessageId(), true);
         }
     }

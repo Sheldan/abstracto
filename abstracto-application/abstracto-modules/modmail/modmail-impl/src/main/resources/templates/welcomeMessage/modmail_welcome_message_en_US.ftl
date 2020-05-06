@@ -1,0 +1,1 @@
+You opened a mod mail thread on the server reply in this channel to send messages to a staff only channel.

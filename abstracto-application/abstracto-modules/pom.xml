@@ -15,6 +15,7 @@
         <module>moderation</module>
         <module>utility</module>
         <module>experience-tracking</module>
+        <module>modmail</module>
     </modules>
 
 

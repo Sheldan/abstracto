@@ -22,6 +22,11 @@
             <artifactId>JDA</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.jagrosh</groupId>
+            <artifactId>jda-utilities-menu</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

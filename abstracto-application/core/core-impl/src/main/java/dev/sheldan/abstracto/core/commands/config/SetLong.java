@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class SetNumber extends AbstractConditionableCommand {
+public class SetLong extends AbstractConditionableCommand {
 
     @Autowired
     private ConfigService configService;
@@ -24,8 +24,8 @@ public class SetNumber extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String key = (String) commandContext.getParameters().getParameters().get(0);
-        Double value = (Double) commandContext.getParameters().getParameters().get(1);
-        configService.setDoubleValue(key, commandContext.getGuild().getIdLong(), value);
+        Long value = (Long) commandContext.getParameters().getParameters().get(1);
+        configService.setLongValue(key, commandContext.getGuild().getIdLong(), value);
 
         return CommandResult.fromSuccess();
     }
@@ -33,11 +33,11 @@ public class SetNumber extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter channelGroupName = Parameter.builder().name("key").type(String.class).description("The key to change.").build();
-        Parameter channelToAdd = Parameter.builder().name("value").type(Double.class).description("The numeric value to use for the config.").build();
+        Parameter channelToAdd = Parameter.builder().name("value").type(Long.class).description("The numeric value to use for the config.").build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("setNumber")
+                .name("setLong")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
                 .templated(true)

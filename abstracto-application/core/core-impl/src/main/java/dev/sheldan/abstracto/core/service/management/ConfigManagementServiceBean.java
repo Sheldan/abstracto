@@ -66,6 +66,19 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
+    public AConfig createConfig(Long serverId, String name, Long value) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        AConfig config = AConfig
+                .builder()
+                .longValue(value)
+                .server(server)
+                .name(name)
+                .build();
+        configRepository.save(config);
+        return config;
+    }
+
+    @Override
     public AConfig createIfNotExists(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
@@ -97,6 +110,13 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public AConfig setDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         config.setDoubleValue(value);
+        return config;
+    }
+
+    @Override
+    public AConfig setLongValue(Long serverId, String name, Long value) {
+        AConfig config = loadConfig(serverId, name);
+        config.setLongValue(value);
         return config;
     }
 

@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.command.models.TableLocks;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ChannelRepository;
+import dev.sheldan.abstracto.core.service.LockService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,9 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     @Autowired
     private ChannelRepository repository;
 
+    @Autowired
+    private LockService lockService;
+
     @Override
     public AChannel loadChannel(Long id) {
         return repository.getOne(id);
@@ -22,15 +27,20 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
 
     @Override
     public AChannel createChannel(Long id, AChannelType type, AServer server) {
-        log.info("Creating channel {} with type {}", id, type);
-        AChannel build = AChannel
-                .builder()
-                .id(id)
-                .type(type)
-                .server(server)
-                .deleted(false)
-                .build();
-        return repository.save(build);
+        lockService.lockTable(TableLocks.CHANNELS);
+        if(!channelExists(id)) {
+            log.info("Creating channel {} with type {}", id, type);
+            AChannel build = AChannel
+                    .builder()
+                    .id(id)
+                    .type(type)
+                    .server(server)
+                    .deleted(false)
+                    .build();
+            return repository.save(build);
+        } else {
+            return loadChannel(id);
+        }
     }
 
     @Override
@@ -38,6 +48,11 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
         AChannel channel =  loadChannel(id);
         channel.setDeleted(true);
         return channel;
+    }
+
+    @Override
+    public boolean channelExists(Long id) {
+        return repository.existsById(id);
     }
 
     @Override

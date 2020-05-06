@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -27,7 +27,7 @@ public class StarboardPost {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "poster", nullable = false)
-    private AUser author;
+    private AUserInAServer author;
 
     @Column
     private Long starboardMessageId;
