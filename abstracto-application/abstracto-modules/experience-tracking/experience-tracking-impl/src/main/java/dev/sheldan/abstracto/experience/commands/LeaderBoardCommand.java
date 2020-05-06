@@ -58,7 +58,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         leaderBoardModel.setUserExecuting(converter.fromLeaderBoardEntry(userRank));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADERBOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
-        channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
 
         return CommandResult.fromSuccess();
     }

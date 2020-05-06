@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface MessageCache {

@@ -113,7 +113,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     public void embedLink(CachedMessage cachedMessage, TextChannel target, AUserInAServer cause, Message embeddingMessage) {
         MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(embeddingMessage, cachedMessage);
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
-        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToEndInTextChannel(embed, target);
+        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
         log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
                 cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {

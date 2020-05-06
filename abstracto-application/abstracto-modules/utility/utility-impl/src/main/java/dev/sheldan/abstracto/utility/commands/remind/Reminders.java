@@ -38,7 +38,7 @@ public class Reminders extends AbstractConditionableCommand {
         RemindersModel model = (RemindersModel) ContextConverter.fromCommandContext(commandContext, RemindersModel.class);
         model.setReminders(activeReminders);
         MessageToSend messageToSend = templateService.renderEmbedTemplate("reminders_response", model);
-        channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

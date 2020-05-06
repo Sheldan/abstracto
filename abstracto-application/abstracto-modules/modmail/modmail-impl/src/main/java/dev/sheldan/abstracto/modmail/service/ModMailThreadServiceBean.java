@@ -5,13 +5,14 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.database.*;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
+import dev.sheldan.abstracto.modmail.models.template.ModMailExceptionModel;
 import dev.sheldan.abstracto.modmail.models.template.ModMailModeratorReplyModel;
 import dev.sheldan.abstracto.modmail.models.template.ModMailServerChooserModel;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
@@ -33,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 public class ModMailThreadServiceBean implements ModMailThreadService {
 
     public static final String MODMAIL_CATEGORY = "modmailCategory";
+    public static final String MODMAIL_LOG_POSTTARGET = "modmaillog";
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
 
@@ -56,6 +58,12 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Autowired
     private ModMailMessageManagementService modMailMessageManagementService;
+
+    @Autowired
+    private ModMailMessageService modMailMessageService;
+
+    @Autowired
+    private PostTargetService postTargetService;
 
     @Autowired
     private ModMailThreadServiceBean self;
@@ -147,7 +155,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     @Override
     public void sendWelcomeMessage(TextChannel channel, FullUser aUserInAServer) {
         String text = templateService.renderTemplate("modmail_welcome_message", new Object());
-        channel.sendMessage(text).queue();
+        channel.sendMessage(text).queue(message -> {}, throwable -> {
+            log.warn("Failed to send welcome message to user {}", aUserInAServer.getAUserInAServer().getUserReference().getId());
+        });
     }
 
     @Override
@@ -172,8 +182,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .postedMessage(message)
                 .threadUser(fullUser)
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message_embed", modMailUserReplyModel);
-        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToEndInTextChannel(messageToSend, textChannel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel);
+        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
         List<Message> messages = new ArrayList<>();
         completableFutures.forEach(messageCompletableFuture -> {
             try {
@@ -182,22 +192,104 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Error while executing future to retrieve reaction.", e);
             }
-            self.saveMessageIds(messages, modMailThread, modMailThread.getUser(), false);
+            self.saveMessageIds(messages, modMailThread, modMailThread.getUser(), false, false);
         });
     }
 
     @Override
-    public void relayMessageToDm(ModMailThread modMailThread, Message message, Boolean anonymous) {
+    public void relayMessageToDm(ModMailThread modMailThread, Message message, Boolean anonymous, MessageChannel feedBack) {
         User userById = botService.getInstance().getUserById(modMailThread.getUser().getUserReference().getId());
         if(userById != null) {
             userById.openPrivateChannel().queue(privateChannel -> {
-                self.sendReply(modMailThread, message, privateChannel, anonymous);
+                self.sendReply(modMailThread, message, privateChannel, anonymous, feedBack);
+            }, throwable -> {
+                log.warn("Failed to open private channel with user {}", userById.getIdLong());
             });
         }
     }
 
+    private void sendModMailFailure(String template, ModMailThread modMailThread, MessageChannel channel, Throwable throwable) {
+        try {
+            FullUser fullUser = FullUser
+                    .builder()
+                    .aUserInAServer(modMailThread.getUser())
+                    .member(botService.getMemberInServer(modMailThread.getUser()))
+                    .build();
+            ModMailExceptionModel modMailExceptionModel = ModMailExceptionModel
+                    .builder()
+                    .modMailThread(modMailThread)
+                    .user(fullUser)
+                    .throwable(throwable)
+                    .build();
+            channelService.sendTemplateInChannel(template, modMailExceptionModel, channel);
+        } catch (Exception e) {
+            log.error("Failed to notify about mod mail exception.", e);
+        }
+    }
+
+    @Override
+    public void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack) {
+        List<ModMailMessage> modMailMessages = modMailMessageManagementService.getMessagesOfThread(modMailThread);
+
+        List<CompletableFuture<Message>> messages = modMailMessageService.loadModMailMessages(modMailMessages);
+        for (int i = 0; i < messages.size(); i++) {
+            CompletableFuture<Message> messageCompletableFuture = messages.get(i);
+            Long messageId = modMailMessages.get(i).getMessageId();
+            messageCompletableFuture.exceptionally(throwable -> {
+                log.warn("Failed to load message {} in mod mail thread {}", messageId, modMailThread.getId());
+                return null;
+            });
+        }
+        CompletableFuture.allOf(messages.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+            handledRetrievedMessages(modMailThread, messages);
+        }).exceptionally(throwable -> {
+            log.warn("Failed to load some mod mail messages for mod mail thread {}. Still trying to post the ones we got.", modMailThread.getId(), throwable);
+            handledRetrievedMessages(modMailThread, messages);
+            return null;
+        });
+
+
+    }
+
+    private void handledRetrievedMessages(ModMailThread modMailThread, List<CompletableFuture<Message>> messages) {
+        List<Message> loadedMessages = new ArrayList<>();
+        messages.forEach(future -> {
+            try {
+                if(!future.isCompletedExceptionally()) {
+                    Message loadedMessage = future.get();
+                    if(loadedMessage != null) {
+                        loadedMessages.add(loadedMessage);
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Error while executing future to retrieve reaction.", e);
+            }
+        });
+        List<CompletableFuture<Message>> completableFutures = self.sendMessagesToPostTarget(modMailThread, loadedMessages);
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+            channelService.deleteTextChannel(modMailThread.getChannel()).thenAccept(o -> {
+                self.closeModMailThreadInDb(modMailThread);
+            });
+        });
+    }
+
     @Transactional
-    public void sendReply(ModMailThread modMailThread, Message message, PrivateChannel privateChannel, Boolean anonymous) {
+    public void closeModMailThreadInDb(ModMailThread modMailThread) {
+        modMailThreadManagementService.setModMailThreadState(modMailThread, ModMailThreadState.CLOSED);
+    }
+
+    @Transactional
+    public List<CompletableFuture<Message>> sendMessagesToPostTarget(ModMailThread modMailThread, List<Message> loadedMessages) {
+        List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
+        loadedMessages.forEach(message -> {
+            CompletableFuture<Message> logFuture = postTargetService.sendMessageInPostTarget(message, MODMAIL_LOG_POSTTARGET, modMailThread.getServer().getId());
+            messageFutures.add(logFuture);
+        });
+        return messageFutures;
+    }
+
+    @Transactional
+    public void sendReply(ModMailThread modMailThread, Message message, PrivateChannel privateChannel, Boolean anonymous, MessageChannel feedBack) {
         AUserInAServer moderator = userInServerManagementService.loadUser(message.getMember());
         Member userInGuild = botService.getMemberInServer(modMailThread.getUser());
         FullUser moderatorUser = FullUser
@@ -218,7 +310,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .moderator(moderatorUser)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_staff_message", modMailUserReplyModel);
-        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToEndInTextChannel(messageToSend, privateChannel);
+        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, privateChannel);
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             List<Message> messages = new ArrayList<>();
             completableFutures.forEach(messageCompletableFuture -> {
@@ -226,17 +318,21 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     Message messageToAdd = messageCompletableFuture.get();
                     messages.add(messageToAdd);
                 } catch (InterruptedException | ExecutionException e) {
-                    log.error("Error while executing send message to reply to user.", e);
+                    log.error("A future when sending the message to the user was interrupted.", e);
                 }
             });
-           self.saveMessageIds(messages, modMailThread, moderator, anonymous);
+           self.saveMessageIds(messages, modMailThread, moderator, anonymous, true);
+        }).exceptionally(throwable -> {
+            log.error("Failed to send message to user {}", modMailThread.getUser().getUserReference().getId());
+            sendModMailFailure("modmail_exception_cannot_message_user", modMailThread, feedBack, throwable);
+            return null;
         });
     }
 
     @Transactional
-    public void saveMessageIds(List<Message> messages, ModMailThread modMailThread, AUserInAServer author, Boolean anonymous) {
+    public void saveMessageIds(List<Message> messages, ModMailThread modMailThread, AUserInAServer author, Boolean anonymous, Boolean inDmChannel) {
         messages.forEach(message -> {
-            modMailMessageManagementService.addMessageToThread(modMailThread, message, author, false);
+            modMailMessageManagementService.addMessageToThread(modMailThread, message, author, anonymous, inDmChannel);
         });
     }
 }

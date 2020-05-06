@@ -59,7 +59,7 @@ public class Help implements Command {
             HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
             model.setModules(subModules);
             MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
-            channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+            channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         } else {
             String parameter = (String) parameters.get(0);
             if(moduleService.moduleExists(parameter)){
@@ -70,7 +70,7 @@ public class Help implements Command {
                 model.setModule(module);
                 model.setSubModules(subModules);
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model);
-                channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+                channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
             } else if(commandRegistry.commandExists(parameter)) {
                 Command command = commandRegistry.getCommandByName(parameter);
                 ACommand aCommand = commandManagementService.findCommandByName(parameter);
@@ -83,7 +83,7 @@ public class Help implements Command {
                 }
                 model.setCommand(command.getConfiguration());
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
-                channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+                channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
             }
         }
         return CommandResult.fromSuccess();

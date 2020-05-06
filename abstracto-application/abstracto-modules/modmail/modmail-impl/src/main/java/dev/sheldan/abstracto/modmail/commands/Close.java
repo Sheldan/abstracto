@@ -3,14 +3,20 @@ package dev.sheldan.abstracto.modmail.commands;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.modmail.commands.condition.RequiresModMailCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
+import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
+import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -19,14 +25,32 @@ public class Close extends AbstractConditionableCommand {
     @Autowired
     private RequiresModMailCondition requiresModMailCondition;
 
+    @Autowired
+    private ModMailThreadManagementService modMailThreadManagementService;
+
+    @Autowired
+    private ModMailThreadService modMailThreadService;
+
+
     @Override
+    @Transactional
     public CommandResult execute(CommandContext commandContext) {
-        return null;
+        ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
+        modMailThreadService.closeModMailThread(thread, commandContext.getChannel());
+        return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        return null;
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        return CommandConfiguration.builder()
+                .name("close")
+                .module(ModMailModuleInterface.MODMAIL)
+                .parameters(new ArrayList<>())
+                .help(helpInfo)
+                .templated(true)
+                .causesReaction(true)
+                .build();
     }
 
     @Override

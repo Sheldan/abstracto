@@ -52,7 +52,7 @@ public class Rank extends AbstractConditionableCommand {
         AUserExperience experienceObj = userRank.getExperience();
         rankModel.setExperienceToNextLevel(experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience()));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel);
-        channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
 
         return CommandResult.fromSuccess();
     }

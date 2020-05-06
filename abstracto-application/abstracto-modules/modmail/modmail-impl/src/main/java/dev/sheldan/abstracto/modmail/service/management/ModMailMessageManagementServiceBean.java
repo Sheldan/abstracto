@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class ModMailMessageManagementServiceBean implements ModMailMessageManagementService {
 
@@ -15,16 +17,22 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
     private ModMailMessageRepository modMailMessageRepository;
 
     @Override
-    public ModMailMessage addMessageToThread(ModMailThread modMailThread, Message message, AUserInAServer author, Boolean anonymous) {
+    public ModMailMessage addMessageToThread(ModMailThread modMailThread, Message message, AUserInAServer author, Boolean anonymous, Boolean dmChannel) {
         ModMailMessage modMailMessage = ModMailMessage
                 .builder()
                 .author(author)
                 .messageId(message.getIdLong())
+                .dmChannel(dmChannel)
                 .threadReference(modMailThread)
                 .anonymous(anonymous)
                 .build();
 
         modMailMessageRepository.save(modMailMessage);
         return modMailMessage;
+    }
+
+    @Override
+    public List<ModMailMessage> getMessagesOfThread(ModMailThread modMailThread) {
+        return modMailMessageRepository.findByThreadReference(modMailThread);
     }
 }

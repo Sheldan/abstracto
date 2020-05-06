@@ -6,13 +6,16 @@ import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,23 +28,26 @@ public class ChannelServiceBean implements ChannelService {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private TemplateService templateService;
+
     @Override
-    public void sendTextInAChannel(String text, AChannel channel) {
-        sendTextInAChannelFuture(text, channel);
+    public void sendTextToAChannelNoFuture(String text, AChannel channel) {
+        sendTextToAChannel(text, channel);
     }
 
     @Override
-    public void sendTextInAChannel(String text, MessageChannel channel) {
-        sendTextInAChannelFuture(text, channel);
+    public void sendTextToChannelNoFuture(String text, MessageChannel channel) {
+        sendTextToChannel(text, channel);
     }
 
     @Override
-    public CompletableFuture<Message> sendTextInAChannelFuture(String text, AChannel channel) {
+    public CompletableFuture<Message> sendTextToAChannel(String text, AChannel channel) {
         Guild guild = botService.getInstance().getGuildById(channel.getServer().getId());
         if (guild != null) {
             TextChannel textChannel = guild.getTextChannelById(channel.getId());
             if(textChannel != null) {
-                return sendTextInAChannelFuture(text, textChannel);
+                return sendTextToChannel(text, textChannel);
             } else {
                 log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
                 throw new ChannelException(String.format("Channel %s to post to not found.", channel.getId()));
@@ -53,17 +59,32 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public CompletableFuture<Message> sendTextInAChannelFuture(String text, MessageChannel channel) {
+    public CompletableFuture<Message> sendMessageToAChannel(Message message, AChannel channel) {
+        Optional<TextChannel> textChannelOpt = botService.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
+        if(textChannelOpt.isPresent()) {
+            TextChannel textChannel = textChannelOpt.get();
+            return sendMessageToChannel(message, textChannel);
+        }
+        throw new ChannelException(String.format("Channel %s in guild %s not found.", channel.getId(), channel.getServer().getId()));
+    }
+
+    @Override
+    public CompletableFuture<Message> sendMessageToChannel(Message message, MessageChannel channel) {
+        return channel.sendMessage(message).submit();
+    }
+
+    @Override
+    public CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel) {
         return channel.sendMessage(text).submit();
     }
 
     @Override
-    public CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, AChannel channel) {
+    public CompletableFuture<Message> sendEmbedToAChannel(MessageEmbed embed, AChannel channel) {
         Guild guild = botService.getInstance().getGuildById(channel.getServer().getId());
         if (guild != null) {
             TextChannel textChannel = guild.getTextChannelById(channel.getId());
             if(textChannel != null) {
-                return sendEmbedInAChannelFuture(embed, textChannel);
+                return sendEmbedToChannel(embed, textChannel);
             } else {
                 log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
                 throw new ChannelException(String.format("Channel %s to post to not found.", channel.getId()));
@@ -75,26 +96,26 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, MessageChannel channel) {
+    public CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel) {
         return channel.sendMessage(embed).submit();
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, AChannel channel) {
+    public List<CompletableFuture<Message>> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel) {
         Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
         if(textChannelFromServer.isPresent()) {
-            return sendMessageToEndInTextChannel(messageToSend, textChannelFromServer.get());
+            return sendMessageToSendToChannel(messageToSend, textChannelFromServer.get());
         }
         throw new ChannelException(String.format("Channel %s was not found.", channel.getId()));
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendMessageToEndInTextChannel(MessageToSend messageToSend, MessageChannel textChannel) {
+    public List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel) {
         String messageText = messageToSend.getMessage();
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         if(StringUtils.isBlank(messageText)) {
             messageToSend.getEmbeds().forEach(embed ->
-                futures.add(sendEmbedInAChannelFuture(embed, textChannel))
+                futures.add(sendEmbedToChannel(embed, textChannel))
             );
         } else  {
             MessageAction messageAction = textChannel.sendMessage(messageText);
@@ -102,7 +123,7 @@ public class ChannelServiceBean implements ChannelService {
                 CompletableFuture<Message> messageFuture = messageAction.embed(messageToSend.getEmbeds().get(0)).submit();
                 futures.add(messageFuture);
                 messageToSend.getEmbeds().stream().skip(1).forEach(embed ->
-                    futures.add(sendEmbedInAChannelFuture(embed, textChannel))
+                    futures.add(sendEmbedToChannel(embed, textChannel))
                 );
             } else {
                 futures.add(messageAction.submit());
@@ -143,6 +164,22 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
         messageAction.queue();
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteTextChannel(AChannel channel) {
+        TextChannel textChannelById = botService.getInstance().getTextChannelById(channel.getId());
+        if(textChannelById != null) {
+            return textChannelById.delete().submit();
+        }
+        throw new ChannelException(String.format("Failed to delete channel %s in server %s", channel.getId(), channel.getServer().getId()));
+    }
+
+    @Override
+    @Transactional
+    public List<CompletableFuture<Message>> sendTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model);
+        return sendMessageToSendToChannel(messageToSend, channel);
     }
 
     @Override

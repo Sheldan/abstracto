@@ -41,7 +41,7 @@ public class Disable extends AbstractConditionableCommand {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureFlagService.getAllFeatures());
             String response = templateService.renderTemplate("disable_features_response", model);
-            channelService.sendTextInAChannel(response, commandContext.getChannel());
+            channelService.sendTextToChannelNoFuture(response, commandContext.getChannel());
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
             FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(flagKey);

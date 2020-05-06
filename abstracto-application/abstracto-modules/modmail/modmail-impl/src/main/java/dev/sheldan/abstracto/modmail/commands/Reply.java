@@ -34,7 +34,7 @@ public class Reply extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.relayMessageToDm(thread, commandContext.getMessage(), false);
+        modMailThreadService.relayMessageToDm(thread, commandContext.getMessage(), false, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

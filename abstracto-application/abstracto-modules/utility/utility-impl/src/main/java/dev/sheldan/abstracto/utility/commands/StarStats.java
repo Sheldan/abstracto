@@ -38,7 +38,7 @@ public class StarStats extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         StarStatsModel result = starboardService.retrieveStarStats(commandContext.getGuild().getIdLong());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARSTATS_RESPONSE_TEMPLATE, result);
-        channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

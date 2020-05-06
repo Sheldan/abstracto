@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.EmoteException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -70,7 +73,7 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, AChannel channel) {
-        return channelService.sendMessageToEndInAChannel(messageToSend, channel).get(0);
+        return channelService.sendMessageToSendToAChannel(messageToSend, channel).get(0);
     }
 
     @Override
@@ -103,6 +106,6 @@ public class MessageServiceBean implements MessageService {
 
     @Transactional
     public void sendFeedbackAboutException(Throwable e, TextChannel feedbackChannel) {
-        channelService.sendTextInAChannel(String.format("Failed to send message: %s", e.getMessage()), feedbackChannel);
+        channelService.sendTextToChannelNoFuture(String.format("Failed to send message: %s", e.getMessage()), feedbackChannel);
     }
 }

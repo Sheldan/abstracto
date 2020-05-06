@@ -28,5 +28,7 @@ public class ModMailMessage {
     @JoinColumn(name = "threadReference", nullable = false)
     private ModMailThread threadReference;
 
+    private Boolean dmChannel;
+
     private Boolean anonymous;
 }

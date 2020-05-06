@@ -13,6 +13,8 @@ public interface PostTargetService {
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, PostTarget target);
     CompletableFuture<Message> sendTextInPostTarget(String text, String postTargetName, Long serverId);
     CompletableFuture<Message> sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId);
+    CompletableFuture<Message> sendMessageInPostTarget(Message message, String postTargetName,  Long serverId);
+    CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTarget target);
     List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId);
     List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
     List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target);

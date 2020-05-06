@@ -42,7 +42,7 @@ public class Features extends AbstractConditionableCommand {
         FeaturesModel featuresModel = (FeaturesModel) ContextConverter.fromCommandContext(commandContext, FeaturesModel.class);
         featuresModel.setFeatures(featureFlagConverter.fromFeatureFlags(features));
         MessageToSend messageToSend = templateService.renderEmbedTemplate("features_response", featuresModel);
-        channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

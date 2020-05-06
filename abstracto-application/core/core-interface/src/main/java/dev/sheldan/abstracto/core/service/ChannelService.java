@@ -13,17 +13,21 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface ChannelService {
-    void sendTextInAChannel(String text, AChannel channel);
-    void sendTextInAChannel(String text, MessageChannel channel);
-    CompletableFuture<Message> sendTextInAChannelFuture(String text, AChannel channel);
-    CompletableFuture<Message> sendTextInAChannelFuture(String text, MessageChannel channel);
-    CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, AChannel channel);
-    CompletableFuture<Message> sendEmbedInAChannelFuture(MessageEmbed embed, MessageChannel channel);
-    List<CompletableFuture<Message>> sendMessageToEndInAChannel(MessageToSend messageToSend, AChannel channel);
-    List<CompletableFuture<Message>> sendMessageToEndInTextChannel(MessageToSend messageToSend, MessageChannel textChannel);
+    void sendTextToAChannelNoFuture(String text, AChannel channel);
+    void sendTextToChannelNoFuture(String text, MessageChannel channel);
+    CompletableFuture<Message> sendTextToAChannel(String text, AChannel channel);
+    CompletableFuture<Message> sendMessageToAChannel(Message message, AChannel channel);
+    CompletableFuture<Message> sendMessageToChannel(Message message, MessageChannel channel);
+    CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel);
+    CompletableFuture<Message> sendEmbedToAChannel(MessageEmbed embed, AChannel channel);
+    CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel);
+    List<CompletableFuture<Message>> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel);
+    List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel);
     Optional<TextChannel> getTextChannelInGuild(Long serverId, Long channelId);
     void editMessageInAChannel(MessageToSend messageToSend, AChannel channel, Long messageId);
     void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId);
+    CompletableFuture<Void> deleteTextChannel(AChannel channel);
+    List<CompletableFuture<Message>> sendTemplateInChannel(String templateKey, Object model, MessageChannel channel);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
 }

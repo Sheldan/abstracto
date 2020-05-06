@@ -53,7 +53,7 @@ public class Contact extends AbstractConditionableCommand {
             ModMailThreadExistsModel model = (ModMailThreadExistsModel) ContextConverter.fromCommandContext(commandContext, ModMailThreadExistsModel.class);
             model.setExistingModMailThread(existingThread);
             MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_thread_already_exists", model);
-            channelService.sendMessageToEndInTextChannel(messageToSend, commandContext.getChannel());
+            channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         } else {
             FullUser fullUser = FullUser
                     .builder()

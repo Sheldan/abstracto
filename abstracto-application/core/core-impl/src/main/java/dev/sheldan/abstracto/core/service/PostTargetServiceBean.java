@@ -38,7 +38,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
-        return channelService.sendTextInAChannelFuture(text, target.getChannelReference());
+        return channelService.sendTextToAChannel(text, target.getChannelReference());
     }
 
     @Override
@@ -87,6 +87,17 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
+    public CompletableFuture<Message> sendMessageInPostTarget(Message message, String postTargetName, Long serverId) {
+        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        return sendMessageInPostTarget(message, postTarget);
+    }
+
+    @Override
+    public CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTarget target) {
+        return channelService.sendMessageToAChannel(message, target.getChannelReference());
+    }
+
+    @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(message, postTarget);
@@ -95,7 +106,7 @@ public class PostTargetServiceBean implements PostTargetService {
     @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        return channelService.sendMessageToEndInTextChannel(message, textChannelForPostTarget);
+        return channelService.sendMessageToSendToChannel(message, textChannelForPostTarget);
     }
 
     @Override

@@ -17,5 +17,6 @@ public interface ModMailThreadManagementService {
     ModMailThread getOpenModmailThreadForUser(AUser user);
     List<ModMailThread> getModMailThreadForUser(AUserInAServer aUserInAServer);
     void createModMailThread(AUserInAServer userInAServer, AChannel channel);
+    void setModMailThreadState(ModMailThread modMailThread, ModMailThreadState newState);
 
 }

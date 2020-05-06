@@ -34,7 +34,7 @@ public class AnonReply extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.relayMessageToDm(thread, commandContext.getMessage(), true);
+        modMailThreadService.relayMessageToDm(thread, commandContext.getMessage(), true, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

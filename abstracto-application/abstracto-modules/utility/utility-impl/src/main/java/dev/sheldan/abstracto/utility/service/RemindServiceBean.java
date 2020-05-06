@@ -71,7 +71,7 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, reminderModel.getMessage().getIdLong());
         reminderModel.setReminder(reminder);
         MessageToSend message = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, reminderModel);
-        channelService.sendMessageToEndInAChannel(message, reminderModel.getChannel());
+        channelService.sendMessageToSendToAChannel(message, reminderModel.getChannel());
         log.info("Creating reminder for user {} in guild {} due at {}.",
                 user.getUserReference().getId(), user.getServerReference().getId(), remindAt);
 
@@ -120,7 +120,7 @@ public class RemindServiceBean implements ReminderService {
                         .duration(Duration.between(reminderToRemindFor.getReminderDate(), reminderToRemindFor.getTargetDate()))
                         .build();
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
-                channelService.sendMessageToEndInTextChannel(messageToSend, channelToAnswerIn.get());
+                channelService.sendMessageToSendToChannel(messageToSend, channelToAnswerIn.get());
             } else {
                 log.warn("Channel {} in server {} to remind user did not exist anymore. Ignoring reminder {}", channel.getId(), server.getId(), reminderId);
             }

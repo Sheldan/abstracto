@@ -43,7 +43,7 @@ public class ListChannelGroups extends AbstractConditionableCommand {
         ListChannelGroupsModel template = (ListChannelGroupsModel) ContextConverter.fromCommandContext(commandContext, ListChannelGroupsModel.class);
         template.setGroups(convertAChannelGroupToChannelGroupChannel(channelGroups));
         MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template);
-        channelService.sendMessageToEndInTextChannel(response, commandContext.getChannel());
+        channelService.sendMessageToSendToChannel(response, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 
