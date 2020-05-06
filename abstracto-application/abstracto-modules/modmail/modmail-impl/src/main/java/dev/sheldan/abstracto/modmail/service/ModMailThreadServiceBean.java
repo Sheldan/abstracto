@@ -81,7 +81,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
 
     @Override
-    public void createModMailThreadForUser(FullUser aUserInAServer) {
+    public void createModMailThreadForUser(FullUser aUserInAServer, MessageChannel feedBackChannel) {
         Long categoryId = configService.getLongValue(MODMAIL_CATEGORY, aUserInAServer.getAUserInAServer().getServerReference().getId());
         User user = aUserInAServer.getMember().getUser();
         CompletableFuture<TextChannel> textChannel = channelService.createTextChannel(user.getName() + user.getDiscriminator(), aUserInAServer.getAUserInAServer().getServerReference(), categoryId);
@@ -89,6 +89,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         textChannel.thenAccept(channel -> {
             self.createThreadObject(channel, aUserInAServer);
             self.sendWelcomeMessage(channel, aUserInAServer);
+        }).exceptionally(throwable -> {
+            log.error("Failed to create mod mail thread", throwable);
+            sendModMailFailure("modmail_exception_failed_to_create_mod_mail_thread",  aUserInAServer.getAUserInAServer(), null, feedBackChannel, throwable);
+            return null;
         });
     }
 
@@ -150,7 +154,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
                         Member memberInServer = botService.getMemberInServer(chosenServer);
                         FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
-                        self.createModMailThreadForUser(fullUser);
+                        self.createModMailThreadForUser(fullUser, channel);
                         botService.getInstance().removeEventListener(waiter);
                     })
                     .build();
@@ -224,12 +228,12 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         }
     }
 
-    private void sendModMailFailure(String template, ModMailThread modMailThread, MessageChannel channel, Throwable throwable) {
+    private void sendModMailFailure(String template, AUserInAServer aUserInAServer,  ModMailThread modMailThread, MessageChannel channel, Throwable throwable) {
         try {
             FullUser fullUser = FullUser
                     .builder()
-                    .aUserInAServer(modMailThread.getUser())
-                    .member(botService.getMemberInServer(modMailThread.getUser()))
+                    .aUserInAServer(aUserInAServer)
+                    .member(botService.getMemberInServer(aUserInAServer))
                     .build();
             ModMailExceptionModel modMailExceptionModel = ModMailExceptionModel
                     .builder()
@@ -365,7 +369,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
            modMailThreadManagementService.setModMailThreadState(modMailThread, ModMailThreadState.MOD_REPLIED);
         }).exceptionally(throwable -> {
             log.error("Failed to send message to user {}", modMailThread.getUser().getUserReference().getId());
-            sendModMailFailure("modmail_exception_cannot_message_user", modMailThread, feedBack, throwable);
+            sendModMailFailure("modmail_exception_cannot_message_user", modMailThread.getUser(), modMailThread, feedBack, throwable);
             return null;
         });
     }

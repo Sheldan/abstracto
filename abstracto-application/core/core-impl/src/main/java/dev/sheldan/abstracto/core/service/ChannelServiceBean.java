@@ -191,8 +191,12 @@ public class ChannelServiceBean implements ChannelService {
             if(categoryById != null) {
                 return categoryById.createTextChannel(name).submit();
             }
-            return null;
+            CompletableFuture<TextChannel> objectCompletableFuture = new CompletableFuture<>();
+            objectCompletableFuture.completeExceptionally(new AbstractoRunTimeException("Mod mail category is not setup."));
+            return objectCompletableFuture;
         }
-        return null;
+        CompletableFuture<TextChannel> objectCompletableFuture = new CompletableFuture<>();
+        objectCompletableFuture.completeExceptionally(new AbstractoRunTimeException("Guild to create mod mail channel for was not found."));
+        return objectCompletableFuture;
     }
 }
