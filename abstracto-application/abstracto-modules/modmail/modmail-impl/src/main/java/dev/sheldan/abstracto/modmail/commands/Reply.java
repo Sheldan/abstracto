@@ -33,14 +33,16 @@ public class Reply extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        String text = parameters.size() == 1 ? (String) parameters.get(0) : "";
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.relayMessageToDm(thread, commandContext.getMessage(), false, commandContext.getChannel());
+        modMailThreadService.relayMessageToDm(thread, text, commandContext.getMessage(), false, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter responseText = Parameter.builder().name("text").type(String.class).description("The text to reply with").build();
+        Parameter responseText = Parameter.builder().name("text").type(String.class).remainder(true).optional(true).description("The text to reply with").build();
         List<Parameter> parameters = Arrays.asList(responseText);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

@@ -4,12 +4,10 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.PrivateMessageReceivedListener;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.modmail.config.ModMailFeature;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +26,6 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
 
     @Autowired
     private UserManagementService userManagementService;
-
-
-    @Autowired
-    private TemplateService templateService;
 
     @Override
     @Transactional

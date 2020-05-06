@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.Message;
 public class ModMailModeratorReplyModel {
     private FullUser threadUser;
     private FullUser moderator;
+    private String text;
     private Message postedMessage;
     private ModMailThread modMailThread;
 }

@@ -71,5 +71,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     @Override
     public void setModMailThreadState(ModMailThread modMailThread, ModMailThreadState newState) {
         modMailThread.setState(newState);
+        modMailThread.setUpdated(Instant.now());
+        modMailThreadRepository.save(modMailThread);
     }
 }

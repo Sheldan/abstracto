@@ -1,0 +1,1 @@
+A mod mail thread has been closed with the note '${note}'. There were ${messageCount} interactions with the user ${user}. It has been opened on ${startDate} and lasted ${duration}.

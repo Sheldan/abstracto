@@ -11,8 +11,8 @@
     "g": 0,
     "b": 255
   },
-  <#if postedMessage.contentRaw?has_content>
-    "description": "${postedMessage.contentRaw}"
+  <#if text?has_content>
+    "description": "${text}"
   </#if>
    <#if postedMessage.attachments?size gt 0>
    ,"imageUrl": "${postedMessage.attachments[0].proxyUrl}"

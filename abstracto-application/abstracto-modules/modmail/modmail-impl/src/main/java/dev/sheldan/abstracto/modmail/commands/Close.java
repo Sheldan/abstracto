@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -16,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -35,18 +36,22 @@ public class Close extends AbstractConditionableCommand {
     @Override
     @Transactional
     public CommandResult execute(CommandContext commandContext) {
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        String note = parameters.size() == 1 ? (String) parameters.get(0) : "no note";
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.closeModMailThread(thread, commandContext.getChannel());
+        modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
+        Parameter note = Parameter.builder().name("note").type(String.class).remainder(true).optional(true).build();
+        List<Parameter> parameters = Arrays.asList(note);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("close")
                 .module(ModMailModuleInterface.MODMAIL)
-                .parameters(new ArrayList<>())
+                .parameters(parameters)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

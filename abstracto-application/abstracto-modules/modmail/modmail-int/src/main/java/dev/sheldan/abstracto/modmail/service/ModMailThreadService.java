@@ -18,6 +18,6 @@ public interface ModMailThreadService {
     void createModMailPrompt(AUser user, MessageChannel messageChannel);
     void sendWelcomeMessage(TextChannel channel, FullUser aUserInAServer);
     void relayMessageToModMailThread(ModMailThread modMailThread, Message message);
-    void relayMessageToDm(ModMailThread modMailThread, Message message, Boolean anonymous, MessageChannel feedBack);
-    void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack);
+    void relayMessageToDm(ModMailThread modMailThread, String text, Message message, Boolean anonymous, MessageChannel feedBack);
+    void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note);
 }
