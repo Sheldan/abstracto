@@ -4,7 +4,6 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.ButtonMenu;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUser;
-import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -173,7 +172,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .postedMessage(message)
                 .threadUser(fullUser)
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_moderator_message", modMailUserReplyModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message_embed", modMailUserReplyModel);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToEndInTextChannel(messageToSend, textChannel);
         List<Message> messages = new ArrayList<>();
         completableFutures.forEach(messageCompletableFuture -> {
@@ -188,17 +187,17 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Override
-    public void relayMessageToDm(ModMailThread modMailThread, Message message) {
+    public void relayMessageToDm(ModMailThread modMailThread, Message message, Boolean anonymous) {
         User userById = botService.getInstance().getUserById(modMailThread.getUser().getUserReference().getId());
         if(userById != null) {
             userById.openPrivateChannel().queue(privateChannel -> {
-                self.sendReply(modMailThread, message, privateChannel);
+                self.sendReply(modMailThread, message, privateChannel, anonymous);
             });
         }
     }
 
     @Transactional
-    public void sendReply(ModMailThread modMailThread, Message message, PrivateChannel privateChannel) {
+    public void sendReply(ModMailThread modMailThread, Message message, PrivateChannel privateChannel, Boolean anonymous) {
         AUserInAServer moderator = userInServerManagementService.loadUser(message.getMember());
         Member userInGuild = botService.getMemberInServer(modMailThread.getUser());
         FullUser moderatorUser = FullUser
@@ -230,7 +229,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     log.error("Error while executing send message to reply to user.", e);
                 }
             });
-           self.saveMessageIds(messages, modMailThread, moderator, false);
+           self.saveMessageIds(messages, modMailThread, moderator, anonymous);
         });
     }
 
