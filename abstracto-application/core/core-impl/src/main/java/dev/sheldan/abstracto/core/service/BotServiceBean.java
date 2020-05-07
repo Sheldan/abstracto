@@ -150,6 +150,16 @@ public class BotServiceBean implements BotService {
     }
 
     @Override
+    public Member getBotInGuild(AServer server) {
+        Optional<Guild> guildOptional = getGuildById(server.getId());
+        if(guildOptional.isPresent()) {
+            Guild guild = guildOptional.get();
+            return guild.getMemberById(instance.getSelfUser().getId());
+        }
+        return null;
+    }
+
+    @Override
     public void shutdown() {
 
     }

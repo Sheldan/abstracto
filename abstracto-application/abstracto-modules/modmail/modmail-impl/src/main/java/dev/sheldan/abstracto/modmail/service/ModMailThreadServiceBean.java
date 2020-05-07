@@ -400,24 +400,25 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     public void sendReply(ModMailThread modMailThread, String text, Message message, PrivateChannel privateChannel, Boolean anonymous, MessageChannel feedBack) {
         AUserInAServer moderator = userInServerManagementService.loadUser(message.getMember());
         Member userInGuild = botService.getMemberInServer(modMailThread.getUser());
-        FullUser moderatorUser = FullUser
-                .builder()
-                .aUserInAServer(moderator)
-                .member(message.getMember())
-                .build();
+        Member moderatorMember = botService.getMemberInServer(moderator);
         FullUser fullThreadUser = FullUser
                 .builder()
                 .aUserInAServer(modMailThread.getUser())
                 .member(userInGuild)
                 .build();
-        ModMailModeratorReplyModel modMailUserReplyModel = ModMailModeratorReplyModel
+        ModMailModeratorReplyModel.ModMailModeratorReplyModelBuilder modMailModeratorReplyModelBuilder = ModMailModeratorReplyModel
                 .builder()
                 .text(text)
                 .modMailThread(modMailThread)
                 .postedMessage(message)
-                .threadUser(fullThreadUser)
-                .moderator(moderatorUser)
-                .build();
+                .anonymous(anonymous)
+                .threadUser(fullThreadUser);
+        if(anonymous) {
+            modMailModeratorReplyModelBuilder.moderator(botService.getBotInGuild(modMailThread.getServer()));
+        } else {
+            modMailModeratorReplyModelBuilder.moderator(moderatorMember);
+        }
+        ModMailModeratorReplyModel modMailUserReplyModel = modMailModeratorReplyModelBuilder.build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_staff_message", modMailUserReplyModel);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, privateChannel);
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {

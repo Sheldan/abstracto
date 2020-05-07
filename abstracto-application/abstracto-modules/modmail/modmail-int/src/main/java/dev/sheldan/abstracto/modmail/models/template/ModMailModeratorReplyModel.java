@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 
 @Getter
@@ -12,8 +13,9 @@ import net.dv8tion.jda.api.entities.Message;
 @Builder
 public class ModMailModeratorReplyModel {
     private FullUser threadUser;
-    private FullUser moderator;
+    private Member moderator;
     private String text;
     private Message postedMessage;
+    private Boolean anonymous;
     private ModMailThread modMailThread;
 }
