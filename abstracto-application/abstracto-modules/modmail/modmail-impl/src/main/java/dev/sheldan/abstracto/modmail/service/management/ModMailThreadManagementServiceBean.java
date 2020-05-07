@@ -29,6 +29,11 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     }
 
     @Override
+    public ModMailThread getById(Long modMailThreadId) {
+        return modMailThreadRepository.getOne(modMailThreadId);
+    }
+
+    @Override
     public ModMailThread getByChannel(AChannel channel) {
         return modMailThreadRepository.findByChannel(channel);
     }

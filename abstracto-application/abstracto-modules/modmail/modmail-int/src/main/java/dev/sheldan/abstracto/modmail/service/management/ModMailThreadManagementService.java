@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ModMailThreadManagementService {
     ModMailThread getByChannelId(Long channelId);
+    ModMailThread getById(Long modMailThreadId);
     ModMailThread getByChannel(AChannel channel);
     List<ModMailThread> getThreadByUserAndState(AUserInAServer userInAServer, ModMailThreadState state);
     ModMailThread getOpenModmailThreadForUser(AUserInAServer userInAServer);

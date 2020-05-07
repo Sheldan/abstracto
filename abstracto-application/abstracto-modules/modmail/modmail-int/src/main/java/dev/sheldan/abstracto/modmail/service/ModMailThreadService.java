@@ -17,5 +17,5 @@ public interface ModMailThreadService {
     void createModMailPrompt(AUser user, MessageChannel messageChannel);
     void relayMessageToModMailThread(ModMailThread modMailThread, Message message);
     void relayMessageToDm(ModMailThread modMailThread, String text, Message message, Boolean anonymous, MessageChannel feedBack);
-    void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note);
+    void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser);
 }

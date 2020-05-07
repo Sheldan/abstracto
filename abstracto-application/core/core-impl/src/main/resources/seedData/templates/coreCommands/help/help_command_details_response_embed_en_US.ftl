@@ -21,9 +21,8 @@
 <#if command.aliases?? && command.aliases?size gt 0>
 <#include "help_command_embed_command_aliases">: `${command.aliases?join("`, `")}`
 </#if>
-<#include "help_command_embed_command_description">:
 <#if restricted?? && restricted>
-<#include "help_command_embed_command_description"><#if allowedRoles??> <#list allowedRoles as allowedRole> ${allowedRole.asMention}<#sep><#include "help_command_embed_or"><#else><#include "help_command_embed_command_executable_by_nobody"></#list> </#if>
+<#include "help_command_embed_command_executable_by">:<#if allowedRoles??> <#list allowedRoles as allowedRole> ${allowedRole.asMention}<#sep><#include "help_command_embed_or"><#else><#include "help_command_embed_command_executable_by_nobody"></#list> </#if>
 <#if immuneRoles?? ><#include "help_command_embed_command_immune">: <#list immuneRoles as immuneRole> ${immuneRole.asMention}<#sep><#include "help_command_embed_or"><#else>None</#list> </#if>
 <#else>
 <#include "help_command_embed_command_not_restricted">

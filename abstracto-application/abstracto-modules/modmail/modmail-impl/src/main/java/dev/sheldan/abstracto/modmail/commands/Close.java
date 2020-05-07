@@ -43,7 +43,7 @@ public class Close extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note);
+        modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note, true);
         return CommandResult.fromSuccess();
     }
 
