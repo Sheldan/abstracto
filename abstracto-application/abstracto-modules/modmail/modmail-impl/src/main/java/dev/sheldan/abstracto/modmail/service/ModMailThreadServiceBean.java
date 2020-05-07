@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerService;
+import dev.sheldan.abstracto.modmail.config.ModMailFeature;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
@@ -72,6 +73,12 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     private UserInServerService userInServerService;
 
     @Autowired
+    private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private ModMailFeature modMailFeature;
+
+    @Autowired
     private ModMailThreadServiceBean self;
 
     private List<String> NUMBER_EMOJI = Arrays.asList("\u0031\u20e3", "\u0032\u20e3", "\u0033\u20e3",
@@ -130,39 +137,45 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             HashMap<String, AUserInAServer> choices = new HashMap<>();
             for (int i = 0; i < knownServers.size(); i++) {
                 AUserInAServer aUserInAServer = knownServers.get(i);
-                AServer serverReference = aUserInAServer.getServerReference();
-                FullGuild guild = FullGuild
-                        .builder()
-                        .guild(botService.getGuildByIdNullable(serverReference.getId()))
-                        .server(serverReference)
-                        .build();
-                String reactionEmote = NUMBER_EMOJI.get(i);
-                ServerChoice serverChoice = ServerChoice.builder().guild(guild).reactionEmote(reactionEmote).build();
-                choices.put(reactionEmote, aUserInAServer);
-                availableGuilds.add(serverChoice);
+                if(featureFlagService.isFeatureEnabled(modMailFeature, aUserInAServer.getServerReference())) {
+                    AServer serverReference = aUserInAServer.getServerReference();
+                    FullGuild guild = FullGuild
+                            .builder()
+                            .guild(botService.getGuildByIdNullable(serverReference.getId()))
+                            .server(serverReference)
+                            .build();
+                    String reactionEmote = NUMBER_EMOJI.get(i);
+                    ServerChoice serverChoice = ServerChoice.builder().guild(guild).reactionEmote(reactionEmote).build();
+                    choices.put(reactionEmote, aUserInAServer);
+                    availableGuilds.add(serverChoice);
+                }
             }
-            ModMailServerChooserModel modMailServerChooserModel = ModMailServerChooserModel
-                    .builder()
-                    .commonGuilds(availableGuilds)
-                    .build();
+            if(availableGuilds.size() > 0) {
+                ModMailServerChooserModel modMailServerChooserModel = ModMailServerChooserModel
+                        .builder()
+                        .commonGuilds(availableGuilds)
+                        .build();
+                String text = templateService.renderTemplate("modmail_modal_server_choice", modMailServerChooserModel);
+                // todo dont instantiate directly
+                EventWaiter waiter = new EventWaiter();
+                botService.getInstance().addEventListener(waiter);
+                ButtonMenu menu = new ButtonMenu.Builder()
+                        .setChoices(choices.keySet().toArray(new String[0]))
+                        .setEventWaiter(waiter)
+                        .setDescription(text)
+                        .setAction(reactionEmote -> {
+                            AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
+                            Member memberInServer = botService.getMemberInServer(chosenServer);
+                            FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
+                            self.createModMailThreadForUser(fullUser, channel);
+                            botService.getInstance().removeEventListener(waiter);
+                        })
+                        .build();
+                menu.display(channel);
+            } else {
+                channelService.sendTemplateInChannel("modmail_no_server_available", new Object(), channel);
+            }
 
-            String text = templateService.renderTemplate("modmail_modal_server_choice", modMailServerChooserModel);
-            // todo dont instantiate directly
-            EventWaiter waiter = new EventWaiter();
-            botService.getInstance().addEventListener(waiter);
-            ButtonMenu menu = new ButtonMenu.Builder()
-                    .setChoices(choices.keySet().toArray(new String[0]))
-                    .setEventWaiter(waiter)
-                    .setDescription(text)
-                    .setAction(reactionEmote -> {
-                        AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
-                        Member memberInServer = botService.getMemberInServer(chosenServer);
-                        FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
-                        self.createModMailThreadForUser(fullUser, channel);
-                        botService.getInstance().removeEventListener(waiter);
-                    })
-                    .build();
-            menu.display(channel);
         }
     }
 

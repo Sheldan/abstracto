@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,12 +33,15 @@ public class Close extends AbstractConditionableCommand {
     @Autowired
     private ModMailThreadService modMailThreadService;
 
+    @Autowired
+    private TemplateService templateService;
+
 
     @Override
     @Transactional
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
-        String note = parameters.size() == 1 ? (String) parameters.get(0) : "no note";
+        String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
         modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note);
         return CommandResult.fromSuccess();
