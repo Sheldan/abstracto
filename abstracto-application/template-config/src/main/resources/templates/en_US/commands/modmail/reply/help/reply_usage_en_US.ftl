@@ -1,1 +1,1 @@
-reply <message>
+reply [message]

@@ -1,1 +1,1 @@
-text
+Sends the given message to the user.

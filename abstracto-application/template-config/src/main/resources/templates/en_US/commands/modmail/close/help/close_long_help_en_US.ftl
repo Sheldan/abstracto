@@ -1,1 +1,1 @@
-text
+Closes the mod mail thread, which  means: logging the messages to mod mail log, deleting the channel the thread was in and notifying the use that the thread was closed.

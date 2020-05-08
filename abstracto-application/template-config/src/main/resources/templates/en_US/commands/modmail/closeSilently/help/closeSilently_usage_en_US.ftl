@@ -1,1 +1,1 @@
-closeSilenty [note]
+closeSilently [note]

@@ -1,1 +1,1 @@
-setModMailCategory <categoryId>
+anonReply [text]
