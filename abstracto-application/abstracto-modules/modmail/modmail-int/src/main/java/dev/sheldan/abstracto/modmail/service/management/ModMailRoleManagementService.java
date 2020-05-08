@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ModMailRoleManagementService {
     void addRoleToModMailRoles(ARole role, AServer server);
+    void removeRoleFromModMailRoles(ARole role, AServer server);
     List<ModMailRole> getRolesForServer(AServer server);
     boolean isRoleAlreadyAssigned(ARole role, AServer server);
 }

@@ -26,6 +26,11 @@ public class ModMailRoleManagementServiceBean implements ModMailRoleManagementSe
     }
 
     @Override
+    public void removeRoleFromModMailRoles(ARole role, AServer server) {
+        modMailRoleRepository.deleteByServerAndRole(server, role);
+    }
+
+    @Override
     public List<ModMailRole> getRolesForServer(AServer server) {
         return modMailRoleRepository.findByServer(server);
     }

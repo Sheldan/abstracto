@@ -97,5 +97,13 @@ public class CommandServiceBean implements CommandService {
         commandForServer.getAllowedRoles().removeIf(role1 -> role1.getId().equals(role.getId()));
     }
 
+    @Override
+    public void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role) {
+        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+        feature.getCommands().forEach(command -> {
+            this.disAllowCommandForRole(command, role);
+        });
+    }
+
 
 }

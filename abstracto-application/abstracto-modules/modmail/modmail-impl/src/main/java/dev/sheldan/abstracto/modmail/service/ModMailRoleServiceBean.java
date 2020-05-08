@@ -28,4 +28,10 @@ public class ModMailRoleServiceBean implements ModMailRoleService {
         }
         commandService.allowFeatureForRole(ModMailFeatures.MODMAIL, role);
     }
+
+    @Override
+    public void removeRoleFromModMailRoles(ARole role, AServer server) {
+        modMailRoleManagementService.removeRoleFromModMailRoles(role, server);
+        commandService.disAllowFeatureForRole(ModMailFeatures.MODMAIL, role);
+    }
 }

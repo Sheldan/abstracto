@@ -15,4 +15,5 @@ public interface CommandService {
     void restrictCommand(ACommand aCommand, AServer server);
     void unRestrictCommand(ACommand aCommand, AServer server);
     void disAllowCommandForRole(ACommand aCommand, ARole role);
+    void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role);
 }

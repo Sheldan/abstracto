@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface ModMailRoleRepository extends JpaRepository<ModMailRole, Long> {
     boolean existsByServerAndRole(AServer server, ARole role);
+    void deleteByServerAndRole(AServer server, ARole role);
 
     List<ModMailRole> findByServer(AServer server);
 }
