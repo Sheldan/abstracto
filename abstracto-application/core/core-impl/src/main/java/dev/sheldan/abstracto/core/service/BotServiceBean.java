@@ -111,6 +111,17 @@ public class BotServiceBean implements BotService {
     }
 
     @Override
+    public CompletableFuture<Void> deleteMessage(Long channelId, Long messageId) {
+        TextChannel textChannel = getInstance().getTextChannelById(channelId);
+        if(textChannel != null) {
+            return textChannel.deleteMessageById(messageId).submit();
+        } else {
+            log.warn("Could not find channel {} to delete message {} in.", channelId, messageId);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
     public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
         if(!emote.getCustom()) {
             return Optional.empty();

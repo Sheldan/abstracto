@@ -357,9 +357,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     list.getFutures().forEach(messageCompletableFuture -> {
                         try {
                             Message message = messageCompletableFuture.get();
-                            undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong()));
+                            undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getChannel().getIdLong(), message.getIdLong()));
                         } catch (InterruptedException | ExecutionException e) {
                             log.error("Failed to post logging messages.", e);
+                        }  catch (Exception e) {
+                            log.error("Failed to handle the mod mail log messages.", e);
                         }
                     });
                     self.afterSuccessfulLog(modMailThreadId, feedBack, notifyUser, undoActions);
@@ -463,6 +465,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Error while executing future to retrieve reaction.", e);
+            } catch (Exception e) {
+                log.error("Failed handle the loaded messages.", e);
             }
         });
         List<CompletableFuture<Message>> completableFutures = new ArrayList<>();
@@ -535,6 +539,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     messages.add(messageToAdd);
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("A future when sending the message to the user was interrupted.", e);
+                } catch (Exception e) {
+                    log.error("Failed to handle the send staff message.", e);
                 }
             });
            self.saveMessageIds(messages, modMailThread, moderator, anonymous, true);

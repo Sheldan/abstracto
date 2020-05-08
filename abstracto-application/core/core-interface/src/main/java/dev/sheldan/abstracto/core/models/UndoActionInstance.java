@@ -22,11 +22,11 @@ public class UndoActionInstance {
                 .build();
     }
 
-    public static UndoActionInstance getMessageDeleteAction(Long serverId, Long channelId, Long messageId) {
+    public static UndoActionInstance getMessageDeleteAction(Long channelId, Long messageId) {
         return UndoActionInstance
                 .builder()
                 .action(UndoAction.DELETE_MESSAGE)
-                .ids(Arrays.asList(serverId, channelId, messageId))
+                .ids(Arrays.asList(channelId, messageId))
                 .build();
     }
 }
