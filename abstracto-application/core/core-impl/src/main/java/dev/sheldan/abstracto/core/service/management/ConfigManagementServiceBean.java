@@ -88,6 +88,15 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
+    public AConfig createIfNotExists(Long serverId, String name, Long value) {
+        AConfig config = loadConfig(serverId, name);
+        if(config == null) {
+            return this.createConfig(serverId, name, value);
+        }
+        return config;
+    }
+
+    @Override
     public AConfig createIfNotExists(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {

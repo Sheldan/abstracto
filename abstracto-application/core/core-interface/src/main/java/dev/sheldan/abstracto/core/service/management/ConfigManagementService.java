@@ -9,6 +9,7 @@ public interface ConfigManagementService {
     AConfig createConfig(Long serverId, String name, Double value);
     AConfig createConfig(Long serverId, String name, Long value);
     AConfig createIfNotExists(Long serverId, String name, String value);
+    AConfig createIfNotExists(Long serverId, String name, Long value);
     AConfig createIfNotExists(Long serverId, String name, Double value);
     AConfig loadConfig(Long serverId, String name);
     boolean configExists(Long serverId, String name);
