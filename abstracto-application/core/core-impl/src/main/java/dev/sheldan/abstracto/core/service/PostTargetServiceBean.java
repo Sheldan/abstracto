@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -70,7 +71,7 @@ public class PostTargetServiceBean implements PostTargetService {
             return postTarget;
         } else {
             log.error("PostTarget {} in server {} was not found!", postTargetName, serverId);
-            throw new ChannelException(String.format("Incorrect post target configuration: Post target %s was not found.", postTargetName));
+            throw new PostTargetException(String.format("Incorrect post target configuration: Post target %s was not found.", postTargetName));
         }
     }
 

@@ -16,6 +16,5 @@ import javax.persistence.*;
 public class ALock {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 }

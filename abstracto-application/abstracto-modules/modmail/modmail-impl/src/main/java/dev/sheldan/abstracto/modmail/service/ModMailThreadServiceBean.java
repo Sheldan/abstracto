@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.modmail.service;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.ButtonMenu;
+import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.database.*;
@@ -306,7 +307,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Override
-    public void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser) {
+    public synchronized void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser) {
         List<ModMailMessage> modMailMessages = modMailThread.getMessages();
         List<CompletableFuture<Message>> messages = modMailMessageService.loadModMailMessages(modMailMessages);
         Long modMailThreadId = modMailThread.getId();
@@ -322,13 +323,21 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             if(throwable != null) {
                 log.warn("Failed to load some mod mail messages for mod mail thread {}. Still trying to post the ones we got.", modMailThreadId, throwable);
             }
-            self.logModMailThread(modMailThreadId, messages, note).thenRun(() -> {
-                self.afterSuccessfulLog(modMailThreadId, feedBack, notifyUser);
-            }).exceptionally(innerThrowable -> {
-                sendModMailFailure("modmail_exception_generic", modMailThread.getUser(), modMailThreadId, feedBack, innerThrowable);
-                log.error("Failed to log messages for mod mail thread {}.", modMailThreadId, innerThrowable);
-                return null;
-            });
+            try {
+                self.logModMailThread(modMailThreadId, messages, note).thenRun(() -> {
+                    self.afterSuccessfulLog(modMailThreadId, feedBack, notifyUser);
+                }).exceptionally(innerThrowable -> {
+                    sendModMailFailure("modmail_exception_generic", modMailThread.getUser(), modMailThreadId, feedBack, innerThrowable);
+                    log.error("Failed to log messages for mod mail thread {}.", modMailThreadId, innerThrowable);
+                    return null;
+                });
+            } catch (PostTargetException po) {
+                log.error("Failed to log mod mail messages", po);
+                sendModMailFailure("modmail_exception_post_target_not_defined", modMailThread.getUser(), modMailThreadId, feedBack, po);
+            } catch (Exception e) {
+                log.error("Failed to log mod mail messages", e);
+                sendModMailFailure("modmail_exception_generic", modMailThread.getUser(), modMailThreadId, feedBack, e);
+            }
         });
 
 
