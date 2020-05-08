@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Message;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -14,4 +16,5 @@ public class ModMailUserReplyModel {
     private FullUser threadUser;
     private Message postedMessage;
     private ModMailThread modMailThread;
+    private List<FullUser> subscribers;
 }

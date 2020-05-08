@@ -10,14 +10,12 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeature;
-import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
-import dev.sheldan.abstracto.modmail.models.database.ModMailRole;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
+import dev.sheldan.abstracto.modmail.models.database.*;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
 import dev.sheldan.abstracto.modmail.models.template.*;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailRoleManagementService;
+import dev.sheldan.abstracto.modmail.service.management.ModMailSubscriberManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -83,6 +81,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Autowired
     private ModMailRoleManagementService modMailRoleManagementService;
+
+    @Autowired
+    private ModMailSubscriberManagementService modMailSubscriberManagementService;
 
     @Autowired
     private ModMailThreadServiceBean self;
@@ -229,11 +230,23 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .aUserInAServer(modMailThread.getUser())
                 .member(botService.getMemberInServer(modMailThread.getUser()))
                 .build();
-        ModMailModeratorReplyModel modMailUserReplyModel = ModMailModeratorReplyModel
+
+        List<FullUser> subscribers = new ArrayList<>();
+        List<ModMailThreadSubscriber> subscriberList = modMailSubscriberManagementService.getSubscribersForThread(modMailThread);
+        subscriberList.forEach(modMailThreadSubscriber -> {
+            FullUser subscriber = FullUser
+                    .builder()
+                    .aUserInAServer(modMailThreadSubscriber.getSubscriber())
+                    .member(botService.getMemberInServer(modMailThreadSubscriber.getSubscriber()))
+                    .build();
+            subscribers.add(subscriber);
+        });
+        ModMailUserReplyModel modMailUserReplyModel = ModMailUserReplyModel
                 .builder()
                 .modMailThread(modMailThread)
                 .postedMessage(message)
                 .threadUser(fullUser)
+                .subscribers(subscribers)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);

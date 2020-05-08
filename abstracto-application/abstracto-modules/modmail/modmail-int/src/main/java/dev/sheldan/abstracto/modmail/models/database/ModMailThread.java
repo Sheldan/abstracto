@@ -55,6 +55,15 @@ public class ModMailThread {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ModMailMessage> messages = new ArrayList<>();
 
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true)
+    @JoinColumn(name = "modMailThread")
+    @Builder.Default
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    private List<ModMailThreadSubscriber> subscribers = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     @Column
     private ModMailThreadState state;

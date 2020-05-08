@@ -1,0 +1,1 @@
+Subscribes to the current mod mail thread and pings you whenever there is a new message from the user until you un-subscribe.
