@@ -23,13 +23,21 @@ public class UndoActionServiceBean implements UndoActionService {
     public void performActions(List<UndoActionInstance> actionsToPerform) {
         actionsToPerform.forEach(undoActionInstance -> {
             UndoAction action = undoActionInstance.getAction();
+            List<Long> ids = undoActionInstance.getIds();
             switch (action) {
                 case DELETE_CHANNEL:
-                    if(undoActionInstance.getIds().size() != 2) {
-                        throw new UndoActionException("Not the correct amount of ides provided for the channel deletion undo action");
+                    if(ids.size() != 2) {
+                        log.error("Not the correct amount of ids provided for the channel deletion undo action.");
+                        break;
                     }
-                    deleteChannel(undoActionInstance.getIds().get(0), undoActionInstance.getIds().get(1));
+                    deleteChannel(ids.get(0), ids.get(1));
                     break;
+                case DELETE_MESSAGE:
+                    if(ids.size() != 3) {
+                        log.error("Not the correct amount of ids provided for the message deletion undo action.");
+                        break;
+                    }
+                    botService.deleteMessage(ids.get(0), ids.get(1), ids.get(2));
             }
         });
     }
