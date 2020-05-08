@@ -1,0 +1,1 @@
+A new mod mail thread has been opened.

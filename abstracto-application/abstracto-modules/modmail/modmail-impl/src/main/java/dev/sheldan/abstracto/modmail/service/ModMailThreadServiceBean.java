@@ -11,11 +11,13 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.service.management.UserInServerService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeature;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
+import dev.sheldan.abstracto.modmail.models.database.ModMailRole;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
 import dev.sheldan.abstracto.modmail.models.template.*;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
+import dev.sheldan.abstracto.modmail.service.management.ModMailRoleManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -80,6 +82,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     private ModMailFeature modMailFeature;
 
     @Autowired
+    private ModMailRoleManagementService modMailRoleManagementService;
+
+    @Autowired
     private ModMailThreadServiceBean self;
 
     private List<String> NUMBER_EMOJI = Arrays.asList("\u0031\u20e3", "\u0032\u20e3", "\u0033\u20e3",
@@ -89,13 +94,13 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
 
     @Override
-    public void createModMailThreadForUser(FullUser aUserInAServer, MessageChannel feedBackChannel) {
+    public void createModMailThreadForUser(FullUser aUserInAServer, MessageChannel feedBackChannel, Boolean userInitiated) {
         Long categoryId = configService.getLongValue(MODMAIL_CATEGORY, aUserInAServer.getAUserInAServer().getServerReference().getId());
         User user = aUserInAServer.getMember().getUser();
         CompletableFuture<TextChannel> textChannel = channelService.createTextChannel(user.getName() + user.getDiscriminator(), aUserInAServer.getAUserInAServer().getServerReference(), categoryId);
 
         textChannel.thenAccept(channel -> {
-            self.performModMailThreadSetup(aUserInAServer, channel);
+            self.performModMailThreadSetup(aUserInAServer, channel, userInitiated);
         }).exceptionally(throwable -> {
             log.error("Failed to create mod mail thread", throwable);
             sendModMailFailure("modmail_exception_failed_to_create_mod_mail_thread",  aUserInAServer.getAUserInAServer(), null, feedBackChannel, throwable);
@@ -104,15 +109,30 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Transactional
-    public void performModMailThreadSetup(FullUser aUserInAServer, TextChannel channel) {
-        createThreadObject(channel, aUserInAServer);
+    public void performModMailThreadSetup(FullUser aUserInAServer, TextChannel channel, Boolean userInitiated) {
+        ModMailThread thread = createThreadObject(channel, aUserInAServer);
         sendModMailHeader(channel, aUserInAServer);
+        if(userInitiated) {
+            sendModMailNotification(aUserInAServer, thread);
+        }
     }
 
-    public void createThreadObject(TextChannel channel, FullUser user) {
+    private void sendModMailNotification(FullUser aUserInAServer, ModMailThread thread) {
+        List<ModMailRole> rolesToPing = modMailRoleManagementService.getRolesForServer(thread.getServer());
+        ModMailNotificationModel modMailNotificationModel = ModMailNotificationModel
+                .builder()
+                .modMailThread(thread)
+                .threadUser(aUserInAServer)
+                .roles(rolesToPing)
+                .build();
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel);
+        postTargetService.sendEmbedInPostTarget(messageToSend, "modmailping", thread.getServer().getId());
+    }
+
+    public ModMailThread createThreadObject(TextChannel channel, FullUser user) {
         AChannel channel2 = channelManagementService.createChannel(channel.getIdLong(), AChannelType.TEXT, user.getAUserInAServer().getServerReference());
         log.info("Creating mod mail thread in channel {} with db channel {}", channel.getIdLong(), channel2.getId());
-        modMailThreadManagementService.createModMailThread(user.getAUserInAServer(), channel2);
+        return modMailThreadManagementService.createModMailThread(user.getAUserInAServer(), channel2);
     }
 
     @Override
@@ -168,7 +188,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                             AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
                             Member memberInServer = botService.getMemberInServer(chosenServer);
                             FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
-                            self.createModMailThreadForUser(fullUser, channel);
+                            self.createModMailThreadForUser(fullUser, channel, true);
                             botService.getInstance().removeEventListener(waiter);
                         })
                         .build();
@@ -188,7 +208,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .builder()
                 .threadUser(aUserInAServer)
                 .latestModMailThread(latestThread)
-                .pastModMailThreads((long)oldThreads.size())
+                .pastModMailThreadCount((long)oldThreads.size())
                 .build();
         channelService.sendTemplateInChannel("modmail_thread_header", header, channel);
     }

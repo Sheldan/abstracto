@@ -46,4 +46,8 @@ public class ARole implements SnowFlake, Serializable {
     public int hashCode() {
         return Objects.hash(id, server, deleted);
     }
+
+    public String getAsMention() {
+        return "<@&" + getId() + '>';
+    }
 }

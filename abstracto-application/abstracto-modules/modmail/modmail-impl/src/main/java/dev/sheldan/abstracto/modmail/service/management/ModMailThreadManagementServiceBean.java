@@ -64,7 +64,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     }
 
     @Override
-    public void createModMailThread(AUserInAServer userInAServer, AChannel channel) {
+    public ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel) {
         ModMailThread thread = ModMailThread
                 .builder()
                 .channel(channel)
@@ -76,6 +76,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
                 .build();
 
         modMailThreadRepository.save(thread);
+        return thread;
     }
 
     @Override

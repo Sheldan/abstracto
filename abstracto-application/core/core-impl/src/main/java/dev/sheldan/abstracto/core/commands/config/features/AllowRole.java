@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,15 +38,16 @@ public class AllowRole extends AbstractConditionableCommand {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         if(featureManagementService.featureExists(name)) {
-            AFeature feature = featureManagementService.getFeature(name);
-            feature.getCommands().forEach(command ->
-                commandService.allowCommandForRole(command, role)
-            );
+            FeatureEnum featureEnum = featureFlagService.getFeatureEnum(name);
+            commandService.allowFeatureForRole(featureEnum, role);
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.allowCommandForRole(command, role);

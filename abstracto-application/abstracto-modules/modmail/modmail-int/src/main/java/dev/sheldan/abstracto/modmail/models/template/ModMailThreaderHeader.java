@@ -12,5 +12,5 @@ import lombok.Setter;
 public class ModMailThreaderHeader {
     private FullUser threadUser;
     private ModMailThread latestModMailThread;
-    private Long pastModMailThreads;
+    private Long pastModMailThreadCount;
 }

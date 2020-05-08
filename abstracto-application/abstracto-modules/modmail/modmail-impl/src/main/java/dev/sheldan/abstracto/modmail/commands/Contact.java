@@ -60,7 +60,7 @@ public class Contact extends AbstractConditionableCommand {
                     .aUserInAServer(user)
                     .member(targetUser)
                     .build();
-            modMailThreadService.createModMailThreadForUser(fullUser, commandContext.getChannel());
+            modMailThreadService.createModMailThreadForUser(fullUser, commandContext.getChannel(), false);
         }
         return CommandResult.fromSuccess();
     }

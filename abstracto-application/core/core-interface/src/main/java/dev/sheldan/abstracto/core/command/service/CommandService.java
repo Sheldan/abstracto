@@ -9,6 +9,7 @@ public interface CommandService {
     ACommand createCommand(String name, String moduleName, FeatureEnum featureEnum);
     Boolean doesCommandExist(String name);
     void allowCommandForRole(ACommand aCommand, ARole role);
+    void allowFeatureForRole(FeatureEnum featureEnum, ARole role);
     void makeRoleImmuneForCommand(ACommand aCommand, ARole role);
     void makeRoleAffectedByCommand(ACommand aCommand, ARole role);
     void restrictCommand(ACommand aCommand, AServer server);

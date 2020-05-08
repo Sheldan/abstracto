@@ -57,6 +57,14 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
+    public void allowFeatureForRole(FeatureEnum featureEnum, ARole role) {
+        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+        feature.getCommands().forEach(command -> {
+            this.allowCommandForRole(command, role);
+        });
+    }
+
+    @Override
     public void makeRoleImmuneForCommand(ACommand aCommand, ARole role) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
         if(commandForServer.getImmuneRoles().stream().noneMatch(role1 -> role1.getId().equals(role.getId()))) {
