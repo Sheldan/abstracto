@@ -1,6 +1,6 @@
 {
   "title": {
-      "title": "Modmail thread has been closed"
+      "title": "<#include "modmail_closing_notification_title">"
     },
   "color" : {
     "r": 200,
