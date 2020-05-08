@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -84,6 +85,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     private ModMailRoleManagementService modMailRoleManagementService;
 
     @Autowired
+    private UndoActionService undoActionService;
+
+    @Autowired
     private ModMailSubscriberManagementService modMailSubscriberManagementService;
 
     @Autowired
@@ -102,7 +106,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         CompletableFuture<TextChannel> textChannel = channelService.createTextChannel(user.getName() + user.getDiscriminator(), aUserInAServer.getAUserInAServer().getServerReference(), categoryId);
 
         textChannel.thenAccept(channel -> {
-            self.performModMailThreadSetup(aUserInAServer, channel, userInitiated);
+            List<UndoActionInstance> undoActions = new ArrayList<>();
+            undoActions.add(UndoActionInstance.getChannelDeleteAction(channel.getIdLong(), aUserInAServer.getAUserInAServer().getServerReference().getId()));
+            self.performModMailThreadSetup(aUserInAServer, channel, userInitiated, undoActions);
         }).exceptionally(throwable -> {
             log.error("Failed to create mod mail thread", throwable);
             sendModMailFailure("modmail_exception_failed_to_create_mod_mail_thread",  aUserInAServer.getAUserInAServer(), null, feedBackChannel, throwable);
@@ -111,15 +117,20 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Transactional
-    public void performModMailThreadSetup(FullUser aUserInAServer, TextChannel channel, Boolean userInitiated) {
-        ModMailThread thread = createThreadObject(channel, aUserInAServer);
-        sendModMailHeader(channel, aUserInAServer);
-        if(userInitiated) {
-            sendModMailNotification(aUserInAServer, thread);
+    public void performModMailThreadSetup(FullUser aUserInAServer, TextChannel channel, Boolean userInitiated, List<UndoActionInstance> undoActions) {
+        try {
+            ModMailThread thread = createThreadObject(channel, aUserInAServer);
+            sendModMailHeader(channel, aUserInAServer, undoActions);
+            if(userInitiated) {
+                sendModMailNotification(aUserInAServer, thread, undoActions);
+            }
+        } catch (Exception e) {
+            log.error("Failed to perform mod mail thread setup.", e);
+            undoActionService.performActions(undoActions);
         }
     }
 
-    private void sendModMailNotification(FullUser aUserInAServer, ModMailThread thread) {
+    private void sendModMailNotification(FullUser aUserInAServer, ModMailThread thread, List<UndoActionInstance> undoActions) {
         List<ModMailRole> rolesToPing = modMailRoleManagementService.getRolesForServer(thread.getServer());
         ModMailNotificationModel modMailNotificationModel = ModMailNotificationModel
                 .builder()
@@ -128,7 +139,13 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .roles(rolesToPing)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel);
-        postTargetService.sendEmbedInPostTarget(messageToSend, "modmailping", thread.getServer().getId());
+        List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, "modmailping", thread.getServer().getId());
+        CompletableFuture.allOf(modmailping.toArray(new CompletableFuture[0])).whenComplete((aVoid, throwable) -> {
+            if(throwable != null) {
+                log.error("Failed to send mod mail thread notification ping.", throwable);
+                undoActionService.performActions(undoActions);
+            }
+        });
     }
 
     public ModMailThread createThreadObject(TextChannel channel, FullUser user) {
@@ -203,7 +220,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
 
-    private void sendModMailHeader(TextChannel channel, FullUser aUserInAServer) {
+    private void sendModMailHeader(TextChannel channel, FullUser aUserInAServer, List<UndoActionInstance> undoActions) {
         ModMailThread latestThread = modMailThreadManagementService.getLatestModMailThread(aUserInAServer.getAUserInAServer());
         List<ModMailThread> oldThreads = modMailThreadManagementService.getModMailThreadForUser(aUserInAServer.getAUserInAServer());
         ModMailThreaderHeader header = ModMailThreaderHeader
@@ -212,7 +229,13 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .latestModMailThread(latestThread)
                 .pastModMailThreadCount((long)oldThreads.size())
                 .build();
-        channelService.sendTemplateInChannel("modmail_thread_header", header, channel);
+        List<CompletableFuture<Message>> messages = channelService.sendTemplateInChannel("modmail_thread_header", header, channel);
+        CompletableFuture.allOf(messages.toArray(new CompletableFuture[0])).whenComplete((aVoid, throwable)-> {
+            if(throwable != null) {
+                log.error("Failed to send mod mail header for for user {}.", aUserInAServer.getAUserInAServer().getUserReference().getId(), throwable);
+                undoActionService.performActions(undoActions);
+            }
+        });
     }
 
     @Override

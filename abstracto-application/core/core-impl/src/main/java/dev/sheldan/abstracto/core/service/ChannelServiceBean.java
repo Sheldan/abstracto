@@ -168,11 +168,16 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<Void> deleteTextChannel(AChannel channel) {
-        TextChannel textChannelById = botService.getInstance().getTextChannelById(channel.getId());
+       return deleteTextChannel(channel.getServer().getId(), channel.getId());
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId) {
+        TextChannel textChannelById = botService.getInstance().getTextChannelById(channelId);
         if(textChannelById != null) {
             return textChannelById.delete().submit();
         }
-        throw new ChannelException(String.format("Failed to delete channel %s in server %s", channel.getId(), channel.getServer().getId()));
+        throw new ChannelException(String.format("Failed to delete channel %s in server %s", channelId, serverId));
     }
 
     @Override
