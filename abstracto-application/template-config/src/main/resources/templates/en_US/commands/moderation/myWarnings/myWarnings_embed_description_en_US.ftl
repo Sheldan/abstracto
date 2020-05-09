@@ -1,0 +1,1 @@
+${userMention} has currently ${totalWarnCount} warnings in total.
