@@ -17,8 +17,15 @@ public interface WarnRepository extends JpaRepository<Warning, Long> {
     List<Warning> findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateLessThan(AServer server, Instant cutOffDate);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    List<Warning> findAllByWarnedUser_ServerReference(AServer server);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Long countByWarnedUser(AUserInAServer aUserInAServer);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Long countByWarnedUserAndDecayedFalse(AUserInAServer aUserInAServer);
+
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    List<Warning> findByWarnedUser(AUserInAServer aUserInAServer);
 }

@@ -29,10 +29,6 @@ public class TemplateServiceBean implements TemplateService {
     @Autowired
     private Gson gson;
 
-    @Override
-    public String renderTemplate(Template template) {
-        return null;
-    }
 
     private String getPageString(Integer count) {
         HashMap<String, Object> params = new HashMap<>();

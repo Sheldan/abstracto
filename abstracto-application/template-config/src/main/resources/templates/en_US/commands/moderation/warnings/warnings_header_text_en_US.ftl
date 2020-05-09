@@ -1,0 +1,1 @@
+Amount of warns ${warnCount}.
