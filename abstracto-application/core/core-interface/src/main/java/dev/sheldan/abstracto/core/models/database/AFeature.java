@@ -30,8 +30,7 @@ public class AFeature implements SnowFlake {
 
     @Getter
     @Setter
-    @OneToMany
-    @JoinColumn(name = "feature_id")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "module")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ACommand> commands;
 

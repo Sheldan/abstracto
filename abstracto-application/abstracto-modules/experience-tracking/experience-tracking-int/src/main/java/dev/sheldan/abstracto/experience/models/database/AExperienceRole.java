@@ -59,9 +59,8 @@ public class AExperienceRole implements Serializable {
     /**
      * Current list of {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} which were given this role.
      */
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "currentExperienceRole")
     @Builder.Default
-    @JoinColumn(name = "experience_role_id")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AUserExperience> users = new ArrayList<>();
 

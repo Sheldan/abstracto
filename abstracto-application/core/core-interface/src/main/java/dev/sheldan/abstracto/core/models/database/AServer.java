@@ -28,35 +28,35 @@ public class AServer implements SnowFlake, Serializable {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            orphanRemoval = true)
+            orphanRemoval = true,
+            mappedBy = "server")
     @Builder.Default
-    @JoinColumn(name = "role_server_id")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ARole> roles = new ArrayList<>();
 
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
+            orphanRemoval = true,
+            mappedBy = "server")
     @Builder.Default
-    @JoinColumn(name = "server_id")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AChannel> channels = new ArrayList<>();
 
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
+            orphanRemoval = true,
+            mappedBy = "server")
     @Builder.Default
-    @JoinColumn(name = "group_server")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AChannelGroup> channelGroups = new ArrayList<>();
 
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
-    @JoinColumn(name = "serverReference")
+            orphanRemoval = true,
+            mappedBy = "serverReference")
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AUserInAServer> users = new ArrayList<>();
@@ -64,8 +64,8 @@ public class AServer implements SnowFlake, Serializable {
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
-    @JoinColumn(name = "emote_server_id")
+            orphanRemoval = true,
+            mappedBy = "serverRef")
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AEmote> emotes = new ArrayList<>();

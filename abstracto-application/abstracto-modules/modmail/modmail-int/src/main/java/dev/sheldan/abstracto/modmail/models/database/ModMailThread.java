@@ -49,8 +49,8 @@ public class ModMailThread {
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
-    @JoinColumn(name = "threadReference")
+            orphanRemoval = true,
+            mappedBy = "threadReference")
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ModMailMessage> messages = new ArrayList<>();
@@ -58,8 +58,8 @@ public class ModMailThread {
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
-    @JoinColumn(name = "modMailThread")
+            orphanRemoval = true,
+            mappedBy = "threadReference")
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ModMailThreadSubscriber> subscribers = new ArrayList<>();

@@ -31,9 +31,8 @@ public class AModule {
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true)
+            orphanRemoval = true, mappedBy = "module")
     @Builder.Default
-    @JoinColumn(name = "module_id")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ACommand> commands = new ArrayList<>();
 
