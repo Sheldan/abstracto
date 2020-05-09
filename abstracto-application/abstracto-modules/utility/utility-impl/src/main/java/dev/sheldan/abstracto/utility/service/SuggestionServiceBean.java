@@ -56,6 +56,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Suggestion suggestion = suggestionManagementService.createSuggestion(member, text);
         suggestionLog.setSuggestion(suggestion);
         suggestionLog.setText(text);
+        Long suggestionId = suggestion.getId();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
         long guildId = member.getGuild().getIdLong();
         JDA instance = botService.getInstance();
@@ -63,16 +64,17 @@ public class SuggestionServiceBean implements SuggestionService {
         if(guildById != null) {
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId);
             CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+                Suggestion innerSuggestion = suggestionManagementService.getSuggestion(suggestionId);
                 try {
                     Message message = completableFutures.get(0).get();
-                    suggestionManagementService.setPostedMessage(suggestion, message);
+                    suggestionManagementService.setPostedMessage(innerSuggestion, message);
                     messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
                     messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
                 } catch (InterruptedException | ExecutionException e) {
                     log.warn("Failed to post suggestion", e);
                 }
             }) .exceptionally(throwable -> {
-                log.error("Failed to post suggestion {}", suggestion.getId(), throwable);
+                log.error("Failed to post suggestion {}", suggestionId, throwable);
                 return null;
             });
         } else {

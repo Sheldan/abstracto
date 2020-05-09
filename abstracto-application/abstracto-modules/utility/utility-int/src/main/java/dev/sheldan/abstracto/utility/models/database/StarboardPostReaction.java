@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.models.database;
 
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -24,10 +24,11 @@ public class StarboardPostReaction {
 
     @ManyToOne
     @JoinColumn(name = "reactorId", nullable = false)
-    private AUser reactor;
+    private AUserInAServer reactor;
 
     @OneToOne
-    @JoinColumn(name = "postId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
     private StarboardPost starboardPost;
 
     @Override

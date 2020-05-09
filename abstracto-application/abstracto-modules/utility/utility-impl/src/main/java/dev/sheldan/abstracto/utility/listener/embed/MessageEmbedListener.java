@@ -37,8 +37,11 @@ public class MessageEmbedListener implements MessageReceivedListener {
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         for (MessageEmbedLink messageEmbedLink : links) {
             messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
-            AUserInAServer cause = userInServerManagementService.loadUser(message.getMember());
-            Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause, message);
+            Long cause = userInServerManagementService.loadUser(message.getMember()).getUserInServerId();
+            Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> {
+                AUserInAServer userInAServer = userInServerManagementService.loadUser(cause);
+                messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), userInAServer , message);
+            };
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer)
                     .exceptionally(throwable -> {
                         log.error("Error when embedding link for message {}", message.getId(), throwable);

@@ -54,8 +54,8 @@ public class StarboardPost {
     @Getter
     @OneToMany(fetch = FetchType.LAZY,
             orphanRemoval = true,
-            cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name="postId")
+            cascade =  {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            mappedBy = "starboardPost")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<StarboardPostReaction> reactions;
 

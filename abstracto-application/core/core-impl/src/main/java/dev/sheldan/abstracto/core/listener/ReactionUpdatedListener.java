@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.EmoteUtils;
@@ -73,7 +72,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         });
     }
 
-    private void addReactionIfNotThere(CachedMessage message, CachedReaction reaction, AUser userReacting) {
+    private void addReactionIfNotThere(CachedMessage message, CachedReaction reaction, AUserInAServer userReacting) {
         Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 ->
             EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote())
         ).findAny();
@@ -81,28 +80,28 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             message.getReactions().add(reaction);
         } else {
             CachedReaction cachedReaction = existingReaction.get();
-            Optional<AUser> any = cachedReaction.getUsers().stream().filter(user -> user.getId().equals(userReacting.getId())).findAny();
+            Optional<Long> any = cachedReaction.getUserInServersIds().stream().filter(user -> user.equals(userReacting.getUserInServerId())).findAny();
             if(!any.isPresent()){
-                cachedReaction.getUsers().add(userReacting);
+                cachedReaction.getUserInServersIds().add(userReacting.getUserInServerId());
             }
         }
     }
 
-    private void removeReactionIfThere(CachedMessage message, CachedReaction reaction, AUser userReacting) {
+    private void removeReactionIfThere(CachedMessage message, CachedReaction reaction, AUserInAServer userReacting) {
         Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 ->
             EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote())
         ).findAny();
         if(existingReaction.isPresent()) {
             CachedReaction cachedReaction = existingReaction.get();
-            cachedReaction.getUsers().removeIf(user -> user.getId().equals(userReacting.getId()));
-            message.getReactions().removeIf(reaction1 -> reaction1.getUsers().isEmpty());
+            cachedReaction.getUserInServersIds().removeIf(user -> user.equals(userReacting.getUserInServerId()));
+            message.getReactions().removeIf(reaction1 -> reaction1.getUserInServersIds().isEmpty());
         }
     }
 
     @Transactional
     public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
         AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
-        addReactionIfNotThere(cachedMessage, reaction, userInAServer.getUserReference());
+        addReactionIfNotThere(cachedMessage, reaction, userInAServer);
         addedListenerList.forEach(reactedAddedListener -> {
             FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
@@ -143,7 +142,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     @Transactional
     public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
         AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
-        removeReactionIfThere(cachedMessage, reaction, userInAServer.getUserReference());
+        removeReactionIfThere(cachedMessage, reaction, userInAServer);
         reactionRemovedListener.forEach(reactionRemovedListener -> {
             FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {

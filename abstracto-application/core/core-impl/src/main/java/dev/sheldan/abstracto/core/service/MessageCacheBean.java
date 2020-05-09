@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.exception.ChannelException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.cache.*;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
@@ -37,6 +37,9 @@ public class MessageCacheBean implements MessageCache {
     private EmoteService emoteService;
 
     @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
+    @Autowired
     @Lazy
     // needs to be lazy, because of circular dependency
     private MessageCache self;
@@ -51,7 +54,8 @@ public class MessageCacheBean implements MessageCache {
     }
 
 
-    @CachePut(key = "#message.messageId")
+    @Override
+    @CachePut(key = "#message.messageId.toString()")
     public CompletableFuture<CachedMessage> putMessageInCache(CachedMessage message) {
         log.info("Adding cached message to cache");
         return CompletableFuture.completedFuture(message);
@@ -74,7 +78,6 @@ public class MessageCacheBean implements MessageCache {
         return cachedMessageCompletableFuture;
     }
 
-    @Async
     @Override
     public void loadMessage(CompletableFuture<CachedMessage> future, Long guildId, Long textChannelId, Long messageId) {
         Optional<Guild> guildOptional = botService.getGuildById(guildId);
@@ -97,7 +100,6 @@ public class MessageCacheBean implements MessageCache {
     }
 
     @Override
-    @Async
     public void buildCachedMessageFromMessage(CompletableFuture<CachedMessage> future, Message message) {
         List<String> attachmentUrls = new ArrayList<>();
         message.getAttachments().forEach(attachment ->
@@ -147,21 +149,22 @@ public class MessageCacheBean implements MessageCache {
     }
 
     @Override
-    @Async
     public void getCachedReactionFromReaction(CompletableFuture<CachedReaction> future, MessageReaction reaction) {
         ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
         CachedReaction.CachedReactionBuilder builder = CachedReaction.builder();
 
-        List<AUser> ausers = new ArrayList<>();
+        List<Long> ausers = new ArrayList<>();
         users.forEachAsync(user -> {
-            ausers.add(AUser.builder().id(user.getIdLong()).build());
+            if(reaction.getGuild() != null) {
+                ausers.add(userInServerManagementService.loadUser(reaction.getGuild().getIdLong(), user.getIdLong()).getUserInServerId());
+            }
             return false;
         }).thenAccept(o -> future.complete(builder.build()))
         .exceptionally(throwable -> {
             log.error("Failed to load reaction users.", throwable);
             return null;
         });
-        builder.users(ausers);
+        builder.userInServersIds(ausers);
         builder.emote(emoteService.buildAEmoteFromReaction(reaction.getReactionEmote()));
     }
 

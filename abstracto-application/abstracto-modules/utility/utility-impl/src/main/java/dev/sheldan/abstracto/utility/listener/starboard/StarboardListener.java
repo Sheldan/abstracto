@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
@@ -76,40 +75,43 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     private void updateStarboardPost(CachedMessage message, CachedReaction reaction, AUserInAServer userReacting, boolean adding)  {
         Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
         if(reaction != null) {
-            List<AUser> userExceptAuthor = getUsersExcept(reaction.getUsers(), message.getAuthorId());
+            AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
+            List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUserInServersIds(), author);
             Double starMinimum = getFromConfig("starLvl1", message.getServerId());
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
-                AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
                 if(starboardPostOptional.isPresent()) {
                     StarboardPost starboardPost = starboardPostOptional.get();
                     starboardPost.setIgnored(false);
                     starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor);
                     if(adding) {
                         log.trace("Adding reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
-                        starboardPostReactorManagementService.addReactor(starboardPost, userReacting.getUserReference());
+                        starboardPostReactorManagementService.addReactor(starboardPost, userReacting);
                     } else {
                         log.trace("Removing reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
-                        starboardPostReactorManagementService.removeReactor(starboardPost, userReacting.getUserReference());
+                        starboardPostReactorManagementService.removeReactor(starboardPost, userReacting);
                     }
                 } else {
                     log.info("Creating starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
                     starboardService.createStarboardPost(message, userExceptAuthor, userReacting, author);
                 }
             } else {
-                log.info("Removing starboard post for message {} in channel {} in server {}. It fell under the threshold {}", message.getMessageId(), message.getChannelId(), message.getServerId(), starMinimum);
-                starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
+                if(starboardPostOptional.isPresent()) {
+                    log.info("Removing starboard post for message {} in channel {} in server {}. It fell under the threshold {}", message.getMessageId(), message.getChannelId(), message.getServerId(), starMinimum);
+                    starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
+                }
             }
         } else {
-            log.info("Removing starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
-            starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
+            if(starboardPostOptional.isPresent()) {
+                log.info("Removing starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
+                starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
+            }
         }
     }
 
     private void completelyRemoveStarboardPost(StarboardPost starboardPost)  {
-        starboardPostReactorManagementService.removeReactors(starboardPost);
-        starboardService.removeStarboardPost(starboardPost);
+        starboardService.deleteStarboardMessagePost(starboardPost);
         starboardPostManagementService.removePost(starboardPost);
     }
 
@@ -127,7 +129,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
             log.trace("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), message.getMessageId());
             Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
-                updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);
+            updateStarboardPost(message, reactionOptional.orElse(null), userRemoving, false);
         }
     }
 
@@ -135,8 +137,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         return configManagementService.loadConfig(guildId, key).getDoubleValue();
     }
 
-    private List<AUser> getUsersExcept(List<AUser> users, Long userId) {
-        return users.stream().filter(user -> !user.getId().equals(userId)).collect(Collectors.toList());
+    private List<AUserInAServer> getUsersExcept(List<Long> users, AUserInAServer author) {
+        return users.stream().filter(user -> !user.equals(author.getUserInServerId())).map(aLong -> userInServerManagementService.loadUser(aLong)).collect(Collectors.toList());
     }
 
     @Override

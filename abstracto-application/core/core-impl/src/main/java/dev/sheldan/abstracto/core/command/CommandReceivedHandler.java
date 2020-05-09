@@ -29,7 +29,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +64,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private RoleManagementService roleManagementService;
 
     @Override
-    @Async
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if(!event.isFromGuild()) {

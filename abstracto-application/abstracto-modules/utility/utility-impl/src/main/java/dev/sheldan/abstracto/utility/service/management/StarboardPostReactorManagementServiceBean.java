@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
@@ -22,7 +22,7 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
     private StarStatsUserConverter converter;
 
     @Override
-    public void addReactor(StarboardPost post, AUser user) {
+    public void addReactor(StarboardPost post, AUserInAServer user) {
         StarboardPostReaction reactor = StarboardPostReaction
                 .builder()
                 .starboardPost(post)
@@ -32,7 +32,7 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
     }
 
     @Override
-    public void removeReactor(StarboardPost post, AUser user) {
+    public void removeReactor(StarboardPost post, AUserInAServer user) {
         repository.deleteByReactorAndStarboardPost(user, post);
     }
 

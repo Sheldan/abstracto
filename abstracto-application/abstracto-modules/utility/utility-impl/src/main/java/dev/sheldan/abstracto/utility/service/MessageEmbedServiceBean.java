@@ -97,15 +97,18 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Override
     public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, AUserInAServer reason, Message embeddingMessage) {
-        linksToEmbed.forEach(messageEmbedLink ->
+        linksToEmbed.forEach(messageEmbedLink -> {
+            Long userInServerId = reason.getUserInServerId();
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
-                    .thenAccept(cachedMessage ->
-                        self.embedLink(cachedMessage, target, reason, embeddingMessage)
+                    .thenAccept(cachedMessage -> {
+                        AUserInAServer cause = userInServerManagementService.loadUser(userInServerId);
+                        self.embedLink(cachedMessage, target, cause, embeddingMessage);
+                        }
                     ).exceptionally(throwable -> {
                 log.error("Message retrieval from cache failed for message {}.", messageEmbedLink.getMessageId(), throwable);
                 return null;
-            })
-        );
+            });
+        });
     }
 
     @Override
@@ -116,10 +119,11 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
         log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
                 cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
+        Long userInServerId = cause.getUserInServerId();
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             try {
                 Message createdMessage = completableFutures.get(0).get();
-                messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, cause);
+                messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, userInServerManagementService.loadUser(userInServerId));
                 messageService.addReactionToMessage(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage);
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Failed to post message embed.", e);

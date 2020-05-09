@@ -1,1 +1,1 @@
-${emote} ${count} ${channel} ID: ${messageId}",
+${emote} ${count} ${channelMention} ID: ${messageId}

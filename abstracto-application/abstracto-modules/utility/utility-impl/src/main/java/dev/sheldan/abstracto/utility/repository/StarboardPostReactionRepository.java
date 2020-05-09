@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.repository;
 
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +13,7 @@ import java.util.List;
 public interface StarboardPostReactionRepository extends JpaRepository<StarboardPostReaction, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    void deleteByReactorAndStarboardPost(AUser user, StarboardPost post);
+    void deleteByReactorAndStarboardPost(AUserInAServer user, StarboardPost post);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     void deleteByStarboardPost(StarboardPost post);
