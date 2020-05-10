@@ -30,7 +30,6 @@ public class PaginatorServiceBean implements PaginatorService {
     public Paginator createPaginatorFromTemplate(String templateKey, Object model, EventWaiter waiter) {
         String embedConfig = templateService.renderTemplate(templateKey + "_paginator", model);
         PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
-        botService.getInstance().addEventListener(waiter);
         List<String> items = configuration.getItems();
         int itemsPerPage = findAppropriateCountPerPage(items);
 
@@ -41,9 +40,9 @@ public class PaginatorServiceBean implements PaginatorService {
                 .setItems(configuration.getItems().toArray(new String[0]))
                 .useNumberedItems(ObjectUtils.defaultIfNull(configuration.getUseNumberedItems(), false))
                 .setEventWaiter(waiter)
+                .waitOnSinglePage(true)
                 .setTimeout(ObjectUtils.defaultIfNull(configuration.getTimeoutSeconds(), 120L), TimeUnit.SECONDS)
                 .setFinalAction(message -> {
-                    botService.getInstance().removeEventListener(waiter);
                     message.delete().queue();
                 })
                 .build();

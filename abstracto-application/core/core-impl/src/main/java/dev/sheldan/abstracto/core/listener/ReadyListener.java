@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.listener;
 
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.StartupServiceBean;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import net.dv8tion.jda.api.events.ReadyEvent;
@@ -22,11 +24,18 @@ public class ReadyListener extends ListenerAdapter {
     @Autowired
     private SchedulerService schedulerService;
 
+    @Autowired
+    private EventWaiter eventWaiter;
+
+    @Autowired
+    private BotService botService;
+
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
         if(synchronize){
             startup.synchronize();
         }
+        botService.getInstance().addEventListener(eventWaiter);
         schedulerService.startScheduler();
     }
 }

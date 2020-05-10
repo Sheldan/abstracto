@@ -92,6 +92,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     private ModMailSubscriberManagementService modMailSubscriberManagementService;
 
     @Autowired
+    private EventWaiter eventWaiter;
+
+    @Autowired
     private ModMailThreadServiceBean self;
 
     private List<String> NUMBER_EMOJI = Arrays.asList("\u0031\u20e3", "\u0032\u20e3", "\u0033\u20e3",
@@ -197,19 +200,15 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         .commonGuilds(availableGuilds)
                         .build();
                 String text = templateService.renderTemplate("modmail_modal_server_choice", modMailServerChooserModel);
-                // todo dont instantiate directly
-                EventWaiter waiter = new EventWaiter();
-                botService.getInstance().addEventListener(waiter);
                 ButtonMenu menu = new ButtonMenu.Builder()
                         .setChoices(choices.keySet().toArray(new String[0]))
-                        .setEventWaiter(waiter)
+                        .setEventWaiter(eventWaiter)
                         .setDescription(text)
                         .setAction(reactionEmote -> {
                             AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
                             Member memberInServer = botService.getMemberInServer(chosenServer);
                             FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
                             self.createModMailThreadForUser(fullUser, channel, true);
-                            botService.getInstance().removeEventListener(waiter);
                         })
                         .build();
                 menu.display(channel);

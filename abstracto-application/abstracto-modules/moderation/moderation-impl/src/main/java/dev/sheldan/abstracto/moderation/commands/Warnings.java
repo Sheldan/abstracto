@@ -51,6 +51,9 @@ public class Warnings extends AbstractConditionableCommand {
     @Autowired
     private PaginatorService paginatorService;
 
+    @Autowired
+    private EventWaiter eventWaiter;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Warning> warnsToDisplay;
@@ -65,7 +68,7 @@ public class Warnings extends AbstractConditionableCommand {
         WarningsModel model = (WarningsModel) ContextConverter.fromCommandContext(commandContext, WarningsModel.class);
         model.setWarnings(warnEntries);
 
-        Paginator paginator = paginatorService.createPaginatorFromTemplate("warnings_response", model, new EventWaiter());
+        Paginator paginator = paginatorService.createPaginatorFromTemplate("warnings_response", model, eventWaiter);
         paginator.display(commandContext.getChannel());
         return CommandResult.fromSuccess();
     }

@@ -23,11 +23,11 @@ public class ACommandInAServer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commandInServerId;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "commandReference", nullable = false)
     private ACommand commandReference;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "serverReference", nullable = false)
     private AServer serverReference;
 
