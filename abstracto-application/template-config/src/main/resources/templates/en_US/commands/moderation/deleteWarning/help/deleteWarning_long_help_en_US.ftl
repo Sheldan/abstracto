@@ -1,0 +1,1 @@
+Deletes one specific warning by id completely.

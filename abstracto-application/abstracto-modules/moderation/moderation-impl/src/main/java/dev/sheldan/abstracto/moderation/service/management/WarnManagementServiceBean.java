@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class WarnManagementServiceBean implements WarnManagementService {
@@ -52,6 +53,16 @@ public class WarnManagementServiceBean implements WarnManagementService {
     @Override
     public Long getActiveWarnsForUser(AUserInAServer aUserInAServer) {
         return warnRepository.countByWarnedUserAndDecayedFalse(aUserInAServer);
+    }
+
+    @Override
+    public Optional<Warning> findById(Long id) {
+        return warnRepository.findById(id);
+    }
+
+    @Override
+    public void deleteWarning(Warning  warning) {
+        warnRepository.delete(warning);
     }
 
 
