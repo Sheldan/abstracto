@@ -86,3 +86,13 @@ Make a role immune against a command::
 Enforce the role restrictions of commands::
 * Usage: `restrict <featureName|commandName>`
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
+
+==== What does it mean if a role is immune?
+A command can take a member as a target, for example `ban`. If a role is considered immune, this means, if the member which is the target of the command has the given role, this command will fail. Not all commands support this feature, but only the following:
+
+* Ban
+* Kick
+* Warn
+* Mute
+
+While a role can be made immune for any command, only these commands actually use this information.

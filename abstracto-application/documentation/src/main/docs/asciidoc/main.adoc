@@ -29,7 +29,6 @@ In order to change this you need to use the command `setConfig` with the provide
 Emotes:: The features have section of the keys of used emotes in the feature, you can change this emote with the `setEmote` command.
 
 == Features
-The following features are available, and they can be enabled/disabled with the command `enable`/`disable`.
 
 include::features/core.adoc[]
 
