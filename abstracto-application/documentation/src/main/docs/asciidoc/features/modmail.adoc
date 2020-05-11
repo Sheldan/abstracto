@@ -15,7 +15,6 @@ This feature enables users to contact the moderation of the server in a private 
 Feature key: `modmail`
 
 .Post targets
-`modmailLog`:: Will be used to log the interactions when a thread is closed.
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
 
 
@@ -56,3 +55,14 @@ Removing a role from the roles responsible for managing mod mail threads::
 Changing the category in which the text channels are created::
 * Usage: `setModMailCategory <categoryId>`
 * Description: Sets the category which Abstracto uses to create the text channels containing the mod mail threads. The existing threads will not be migrated automatically.
+
+
+[.lead]
+Mod mail thread logging
+
+This feature enables the logging of mod mail threads into a channel when they are closed. The individual log messages will have a mod mail header which contains some information about the thread.
+
+Feature key: `modmail_logging`
+
+.Post targets
+`modmailLog`:: Will be used to log the interactions when a thread is closed.

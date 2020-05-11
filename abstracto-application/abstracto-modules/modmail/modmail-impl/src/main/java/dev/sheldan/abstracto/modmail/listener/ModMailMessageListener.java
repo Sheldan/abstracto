@@ -41,6 +41,6 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
 
     @Override
     public FeatureEnum getFeature() {
-        return ModMailFeatures.MODMAIL;
+        return ModMailFeatures.MOD_MAIL;
     }
 }

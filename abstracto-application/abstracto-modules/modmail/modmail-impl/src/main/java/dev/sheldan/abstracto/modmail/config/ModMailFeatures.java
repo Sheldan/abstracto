@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.modmail.config;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 
 public enum ModMailFeatures implements FeatureEnum {
-    MODMAIL("modmail");
+    MOD_MAIL("modmail"), MOD_MAIL_LOGGING("modmail_logging");
 
     private String key;
 

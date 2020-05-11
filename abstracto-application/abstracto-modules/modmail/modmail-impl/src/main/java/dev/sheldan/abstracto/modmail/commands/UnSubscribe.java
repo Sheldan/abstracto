@@ -52,7 +52,7 @@ public class UnSubscribe extends AbstractConditionableCommand {
 
     @Override
     public FeatureEnum getFeature() {
-        return ModMailFeatures.MODMAIL;
+        return ModMailFeatures.MOD_MAIL;
     }
 
     @Override

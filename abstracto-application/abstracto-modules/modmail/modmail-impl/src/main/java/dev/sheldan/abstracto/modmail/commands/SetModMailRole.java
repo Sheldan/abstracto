@@ -48,6 +48,6 @@ public class SetModMailRole extends AbstractConditionableCommand {
 
     @Override
     public FeatureEnum getFeature() {
-        return ModMailFeatures.MODMAIL;
+        return ModMailFeatures.MOD_MAIL;
     }
 }

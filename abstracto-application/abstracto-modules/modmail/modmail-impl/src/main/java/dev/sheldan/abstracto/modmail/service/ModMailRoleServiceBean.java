@@ -26,12 +26,12 @@ public class ModMailRoleServiceBean implements ModMailRoleService {
         if(!modMailRoleManagementService.isRoleAlreadyAssigned(role, server)) {
             modMailRoleManagementService.addRoleToModMailRoles(role, server);
         }
-        commandService.allowFeatureForRole(ModMailFeatures.MODMAIL, role);
+        commandService.allowFeatureForRole(ModMailFeatures.MOD_MAIL, role);
     }
 
     @Override
     public void removeRoleFromModMailRoles(ARole role, AServer server) {
         modMailRoleManagementService.removeRoleFromModMailRoles(role, server);
-        commandService.disAllowFeatureForRole(ModMailFeatures.MODMAIL, role);
+        commandService.disAllowFeatureForRole(ModMailFeatures.MOD_MAIL, role);
     }
 }

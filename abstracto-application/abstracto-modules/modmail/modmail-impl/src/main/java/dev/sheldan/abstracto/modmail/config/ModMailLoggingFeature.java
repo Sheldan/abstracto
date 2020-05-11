@@ -9,18 +9,18 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class ModMailFeature implements FeatureConfig {
+public class ModMailLoggingFeature implements FeatureConfig {
 
     @Autowired
-    private ModMailLoggingFeature modMailLoggingFeature;
+    private ModMailFeature modMailFeature;
 
     @Override
     public FeatureEnum getFeature() {
-        return ModMailFeatures.MOD_MAIL;
+        return ModMailFeatures.MOD_MAIL_LOGGING;
     }
 
     @Override
-    public List<FeatureConfig> getDependantFeatures() {
-        return Arrays.asList(modMailLoggingFeature);
+    public List<FeatureConfig> getRequiredFeatures() {
+        return Arrays.asList(modMailFeature);
     }
 }

@@ -82,7 +82,7 @@ public class Contact extends AbstractConditionableCommand {
 
     @Override
     public FeatureEnum getFeature() {
-        return ModMailFeatures.MODMAIL;
+        return ModMailFeatures.MOD_MAIL;
     }
 
 }

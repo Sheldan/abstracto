@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.service.management.UserInServerService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.modmail.config.ModMailFeature;
+import dev.sheldan.abstracto.modmail.config.ModMailLoggingFeature;
 import dev.sheldan.abstracto.modmail.models.database.*;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
 import dev.sheldan.abstracto.modmail.models.template.*;
@@ -93,6 +94,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Autowired
     private EventWaiter eventWaiter;
+
+    @Autowired
+    private ModMailLoggingFeature modMailLoggingFeature;
+
 
     @Autowired
     private ModMailThreadServiceBean self;
@@ -336,51 +341,56 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         Long modMailThreadId = modMailThread.getId();
         log.info("Starting closing procedure for thread {}", modMailThread.getId());
         List<ModMailMessage> modMailMessages = modMailThread.getMessages();
-        List<CompletableFuture<Message>> messages = modMailMessageService.loadModMailMessages(modMailMessages);
-        log.trace("Loading {} mod mail thread messages.", messages.size());
-        for (int i = 0; i < messages.size(); i++) {
-            CompletableFuture<Message> messageCompletableFuture = messages.get(i);
-            Long messageId = modMailMessages.get(i).getMessageId();
-            messageCompletableFuture.exceptionally(throwable -> {
-                log.warn("Failed to load message {} in mod mail thread {}", messageId, modMailThreadId);
-                return null;
-            });
-        }
-        CompletableFuture.allOf(messages.toArray(new CompletableFuture[0])).whenComplete((avoid, throwable) -> {
-            ModMailThread innerModMailThread = modMailThreadManagementService.getById(modMailThreadId);
-            log.trace("Loaded {} mod mail thread messages", messages.size());
-            if(throwable != null) {
-                log.warn("Failed to load some mod mail messages for mod mail thread {}. Still trying to post the ones we got.", modMailThreadId, throwable);
-            }
-            try {
-                List<UndoActionInstance> undoActions = new ArrayList<>();
-                CompletableFutureList<Message> list = self.logModMailThread(modMailThreadId, messages, note);
-                list.getMainFuture().thenRun(() -> {
-                    list.getFutures().forEach(messageCompletableFuture -> {
-                        try {
-                            Message message = messageCompletableFuture.get();
-                            undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getChannel().getIdLong(), message.getIdLong()));
-                        } catch (InterruptedException | ExecutionException e) {
-                            log.error("Failed to post logging messages.", e);
-                        }  catch (Exception e) {
-                            log.error("Failed to handle the mod mail log messages.", e);
-                        }
-                    });
-                    self.afterSuccessfulLog(modMailThreadId, feedBack, notifyUser, undoActions);
-                });
-                    list.getMainFuture().exceptionally(innerThrowable -> {
-                    sendModMailFailure("modmail_exception_generic", innerModMailThread.getUser(), modMailThreadId, feedBack, innerThrowable);
-                    log.error("Failed to log messages for mod mail thread {}.", modMailThreadId, innerThrowable);
+        boolean loggingEnabled = featureFlagService.isFeatureEnabled(modMailLoggingFeature, modMailThread.getServer());
+        List<UndoActionInstance> undoActions = new ArrayList<>();
+        if(loggingEnabled) {
+            List<CompletableFuture<Message>> messages = modMailMessageService.loadModMailMessages(modMailMessages);
+            log.trace("Loading {} mod mail thread messages.", messages.size());
+            for (int i = 0; i < messages.size(); i++) {
+                CompletableFuture<Message> messageCompletableFuture = messages.get(i);
+                Long messageId = modMailMessages.get(i).getMessageId();
+                messageCompletableFuture.exceptionally(throwable -> {
+                    log.warn("Failed to load message {} in mod mail thread {}", messageId, modMailThreadId);
                     return null;
                 });
-            } catch (PostTargetException po) {
-                log.error("Failed to log mod mail messages", po);
-                sendModMailFailure("modmail_exception_post_target_not_defined", innerModMailThread.getUser(), modMailThreadId, feedBack, po);
-            } catch (Exception e) {
-                log.error("Failed to log mod mail messages", e);
-                sendModMailFailure("modmail_exception_generic", innerModMailThread.getUser(), modMailThreadId, feedBack, e);
             }
-        });
+            CompletableFuture.allOf(messages.toArray(new CompletableFuture[0])).whenComplete((avoid, throwable) -> {
+                ModMailThread innerModMailThread = modMailThreadManagementService.getById(modMailThreadId);
+                log.trace("Loaded {} mod mail thread messages", messages.size());
+                if(throwable != null) {
+                    log.warn("Failed to load some mod mail messages for mod mail thread {}. Still trying to post the ones we got.", modMailThreadId, throwable);
+                }
+                try {
+                    CompletableFutureList<Message> list = self.logModMailThread(modMailThreadId, messages, note);
+                    list.getMainFuture().thenRun(() -> {
+                        list.getFutures().forEach(messageCompletableFuture -> {
+                            try {
+                                Message message = messageCompletableFuture.get();
+                                undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getChannel().getIdLong(), message.getIdLong()));
+                            } catch (InterruptedException | ExecutionException e) {
+                                log.error("Failed to post logging messages.", e);
+                            }  catch (Exception e) {
+                                log.error("Failed to handle the mod mail log messages.", e);
+                            }
+                        });
+                        self.afterSuccessfulLog(modMailThreadId, feedBack, notifyUser, undoActions);
+                    });
+                        list.getMainFuture().exceptionally(innerThrowable -> {
+                        sendModMailFailure("modmail_exception_generic", innerModMailThread.getUser(), modMailThreadId, feedBack, innerThrowable);
+                        log.error("Failed to log messages for mod mail thread {}.", modMailThreadId, innerThrowable);
+                        return null;
+                    });
+                } catch (PostTargetException po) {
+                    log.error("Failed to log mod mail messages", po);
+                    sendModMailFailure("modmail_exception_post_target_not_defined", innerModMailThread.getUser(), modMailThreadId, feedBack, po);
+                } catch (Exception e) {
+                    log.error("Failed to log mod mail messages", e);
+                    sendModMailFailure("modmail_exception_generic", innerModMailThread.getUser(), modMailThreadId, feedBack, e);
+                }
+            });
+        } else {
+            self.afterSuccessfulLog(modMailThreadId, feedBack, notifyUser, undoActions);
+        }
 
 
     }
