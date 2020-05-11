@@ -1,1 +1,0 @@
-setNumber <configKey> <value>

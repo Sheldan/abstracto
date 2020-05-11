@@ -1,0 +1,1 @@
+Changes a value of the bots configuration

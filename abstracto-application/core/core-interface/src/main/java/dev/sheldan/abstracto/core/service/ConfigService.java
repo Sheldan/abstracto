@@ -8,6 +8,7 @@ public interface ConfigService {
     Long getLongValue(String name, Long serverId, Long defaultValue);
     void setDoubleValue(String name, Long serverId, Double value);
     void setLongValue(String name, Long serverId, Long value);
+    void setConfigValue(String name, Long serverId, String value);
     void setStringValue(String name, Long serverId, String value);
 
 }

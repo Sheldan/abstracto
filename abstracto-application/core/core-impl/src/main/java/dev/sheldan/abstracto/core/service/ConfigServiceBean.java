@@ -68,6 +68,23 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
+    public void setConfigValue(String name, Long serverId, String value) {
+        if(configManagementService.configExists(serverId, name)) {
+            AConfig existing = configManagementService.loadConfig(serverId, name);
+            if(existing.getDoubleValue() != null) {
+                setDoubleValue(name, serverId, Double.parseDouble(value));
+            } else if(existing.getLongValue() != null) {
+                setLongValue(name, serverId, Long.parseLong(value));
+            } else {
+                setStringValue(name, serverId, value);
+            }
+        } else {
+            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+        }
+
+    }
+
+    @Override
     public void setStringValue(String name, Long serverId, String value) {
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setStringValue(serverId, name, value);
