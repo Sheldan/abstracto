@@ -39,7 +39,7 @@ import java.util.concurrent.ExecutionException;
 public class ModMailThreadServiceBean implements ModMailThreadService {
 
     public static final String MODMAIL_CATEGORY = "modmailCategory";
-    public static final String MODMAIL_LOG_POSTTARGET = "modmaillog";
+    public static final String MODMAIL_LOG_POSTTARGET = "modmailLog";
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
 
@@ -143,7 +143,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .roles(rolesToPing)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel);
-        List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, "modmailping", thread.getServer().getId());
+        List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, "modmailPing", thread.getServer().getId());
         CompletableFuture.allOf(modmailping.toArray(new CompletableFuture[0])).whenComplete((aVoid, throwable) -> {
             if(throwable != null) {
                 log.error("Failed to send mod mail thread notification ping.", throwable);

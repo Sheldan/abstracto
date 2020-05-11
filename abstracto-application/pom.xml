@@ -21,6 +21,7 @@
         <module>abstracto-modules</module>
         <module>scheduling</module>
         <module>template-config</module>
+        <module>documentation</module>
     </modules>
 
 

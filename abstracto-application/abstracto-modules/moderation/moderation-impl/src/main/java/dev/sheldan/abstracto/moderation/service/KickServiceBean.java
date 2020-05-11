@@ -18,7 +18,7 @@ import java.util.Optional;
 public class KickServiceBean implements KickService {
 
     private static final String KICK_LOG_TEMPLATE = "kick_log";
-    private static final String WARN_LOG_TARGET = "warnLog";
+    private static final String KICK_LOG_TARGET = "kickLog";
     @Autowired
     private BotService botService;
 
@@ -43,6 +43,6 @@ public class KickServiceBean implements KickService {
 
     private void sendKickLog(KickLogModel kickLogModel)  {
         String warnLogMessage = templateService.renderTemplate(KICK_LOG_TEMPLATE, kickLogModel);
-        postTargetService.sendTextInPostTarget(warnLogMessage, WARN_LOG_TARGET, kickLogModel.getServer().getId());
+        postTargetService.sendTextInPostTarget(warnLogMessage, KICK_LOG_TARGET, kickLogModel.getServer().getId());
     }
 }

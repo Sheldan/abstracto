@@ -9,9 +9,6 @@
     "b": 255
   }
   <#assign userMention>${member.effectiveName}</#assign>
-  <#if serverUsesDecays>
   ,"description" :"<#include "myWarnings_with_decay_embed_description">"
-  <#else>
-  ,"description" :"<#include "myWarnings_embed_description">"
   </#if>
 }

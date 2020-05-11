@@ -1,0 +1,58 @@
+=== Mod mail feature
+
+This feature enables users to contact the moderation of the server in a private manner. This can be initiated by messaging the Abstracto bot.
+
+
+==== Workflow
+* User messages the Abstracto bot
+* If Abstracto is active in multiple servers with mod mail enabled, the user is prompted to which server he wants to open a mod mail thread for.
+* A channel in the mod mail category is created for the user and notification is sent that a new mod mail thread has been opened
+* User can send messages in the private channel and they get relayed to this created text channel.
+* Moderators can answer in the thread with the respective commands
+* Moderators close the thread
+* The interactions between the user and the moderators gets logged in the mod mail logging channel
+
+Feature key: `modmail`
+
+.Post targets
+`modmailLog`:: Will be used to log the interactions when a thread is closed.
+`modmailPing`:: Will be used to send the notification when a new thread is opened.
+
+
+.Emotes
+* used to indicate to the user that the message sent was processed `readReaction`
+
+.Commands
+Opening a mod mail thread for a user::
+* Usage: `contact <member>`
+* Description: Creates a new mod mail thread with the `member`. Does not send a notification about the new thread.
+Replying to a mod mail thread::
+* Usage `reply [text]`
+* Description: Sends `text` to the user if provided. `text` is optional, because its also possible to only send a picture.
+Replying anonymously to a mod mail thread::
+* Usage: `anonReply [text]`
+* Description: Sends `text` to the user without showing how is the author. Instead the avatar and name of Abstracto will be used.
+Enabling notifications of messages sent by the user::
+* Usage: `subscribe`
+* Description: Subscribes you to the current thread, and will ping you when a new message from the member arrives.
+Disabling notifications of messages sent by the user::
+* Usage: `unSubscribe`
+* Description: Removes your subscription from the current thread, and you will no longer be notified when a message from the member arrives.
+Closing the mod mail thread::
+* Usage: `close [note]`
+* Description: Closes the thread, deletes the text channel containing the thread and logs the interactions between the member and the moderators in the `modmailLog` post target.
+When closing a thread, a closing header with general information will be send and the note will be displayed there.
+When a thread is closed this way the user is notified of this.
+Closing the mod mail thread without notifying the user::
+* Usage: `closeSilently [note]`
+* Description: Closes the thread, deletes the text channel containing the thread and logs the interactions between the member and the moderators in the `modmailLog` post target.
+When closing a thread, a closing header with general information will be send and the note will be displayed there.
+Adding a role to the roles responsible for managing mod mail threads::
+* Usage: `setModMailRole <role>`
+* Description: Adds this role to the roles responsible for mod mail threads, which means: this role will be pinged when a new thread is created and this role is automatically added to the roles allowed to execute all commands related to mod mail.
+Removing a role from the roles responsible for managing mod mail threads::
+* Usage: `removeModMailRole <role>`
+* Description: Removes this role from the roles responsible for mod mail threads, which means: this role will no longer be pinged when a new thread is created and this role will also be removed from the roles allowed to execute all commands related to mod mail.
+Changing the category in which the text channels are created::
+* Usage: `setModMailCategory <categoryId>`
+* Description: Sets the category which Abstracto uses to create the text channels containing the mod mail threads. The existing threads will not be migrated automatically.

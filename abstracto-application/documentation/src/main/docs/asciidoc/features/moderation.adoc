@@ -1,0 +1,126 @@
+=== Moderation
+This feature is split into sub features and they can be enabled individually.
+
+* Moderation
+* Warnings
+** Warn decay
+* Logging
+* Muting
+
+[.lead]
+Moderation
+
+Feature key: `moderation`
+
+.Post targets
+`banLog`:: Will be used to send a log message containing information about the ban for both `ban` and `banId`. Will still ban if not setup.
+`kickLog`:: Will be used to send a log message containing information about the kick. Will still kick if not setup.
+
+.Commands
+Ban a member::
+* Usage: `ban <member> [reason]`
+* Description:
+Bans the given given `member` with the given optional `reason`. This sends a logging message to the `banLog` post target.
+Banning this way does not delete old messages of the member on the server. If the `reason` is not provided, a default reason is used.
+* Required bot permission: `BAN_MEMBERS`
+Ban a user by ID::
+* Usage: `banId <userId> [reason]`
+* Description: Bans the `user` by his id with the optional `reason`. . This command can be used in case the user is not part of the server anymore.
+This will also send a log message to `banLog` and not delete old messages.
+* Required bot permission: `BAN_MEMBERS`
+Kick a member::
+* Usage: `kick <member> [reason]`
+* Description: Kicks the `member` from the guild with the given `reason`. If the `reason` is not provided, a default reason is used.
+* Required bot permission: `KICK_MEMBERS`
+Change the slow mode in a channel::
+* Usage: `slowmode <duration> [channel]`
+* Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
+* Required bot permission: `MANAGE_CHANNEL` in the respective channel
+
+[.lead]
+Warning
+
+This feature can be used to warn specific users if they did something not allowed by the rules.
+
+Feature key: `warnings`
+
+.Post targets
+`warnLog`:: Will be used to send a log message containing information about the warn.
+`decayLog`:: Will be used when all the warnings are decayed by a command and logging has been selected.
+
+.Commands
+Warn a user::
+* Usage: `warn <member> [reason]`
+* Description: Warns the `member` with the given `reason` or a default one, if none is provided. This command sends a log message to the `warnLog` post
+target and notifies the member about the warn.
+Listing the warnings of users::
+* Usage: `warnings [member]`
+* Description: If no `member` is provided displays all the warnings on the server. If a `member` is provided, will only display the warnings of the user.
+This uses a paginated output, which means multiple pages in case there are more warnings to display. This will also display the date the warning was decayed if applicable.
+Showing your warnings::
+* Usage: `myWarnings`
+* Description: Displays the warnings of the user executing on the server. This will show both active and total warnings.
+Decaying all warnings regardless of the date::
+* Usage: `decayAllWarnings [writeLog]`
+* Description: This will cause all warnings of this server which are not decayed yet to be decayed instantly. If this command should log the decaying of the warnings
+the `writeLog` parameter needs to be `true`.
+Deleting a warning::
+* Usage: `deleteWarning <warnId>`
+* Description: Deletes the warning identified by `warnId` completely from the database.
+
+
+[.lead]
+Automatic warn decay
+
+This feature enables warnings to be decayed after a configurable amount of days. This feature directly depends on the feature `warnings`.
+
+Feature key: `warnDecay`
+
+.Relevant system configuration
+`decayDays` The amount of days after which a warning gets decayed. Default: 90
+
+.Post targets
+`decayLog`:: Will be used to send the log message containing the information in case a warning is decayed.
+
+.Commands
+Decaying all warnings if necessary::
+* Usage: `decayWarnings`
+* Description: Triggers the decay of the warnings instantly, which means, every not decayed warning on this server older than the configured amount of days will be decayed and the decay will be logged.
+
+[.lead]
+Muting
+
+This feature provides the capability to mute users, which effectively means it applies a role which prevents them from sending messages and speaking in voice chat.
+The role used to mute member will not be created and needs to be provided. There is no validation if the provided role actually mutes members.
+If the user leaves the guild and rejoins, the mute role will be re-applied.
+
+Feature key `muting`
+
+.Post targets
+`muteLog`:: Will be used to send the log message containing the information in case a member was muted and when the mute ended automatically.
+
+.Commands
+Muting a user::
+* Usage: `mute <member> <duration> [reason]`
+* Description: Applies the mute role to the given `member` for the given `duration`. If `reason` is not provided, a default reason will be used for logging in the `muteLog` post target.  This will automatically
+un-mute the user after the duration has passed. If the un-mute happens automatically, this will also be logged in the `muteLog` post target.
+This command sends a notification to the user about the mute and kicks the user from the voice channel, if any.
+Un-Muting a user::
+* Usage: `unMute <member>`
+* Description: Removes the mute role from the given member. This does *not* log the un-mute.
+Configuring which role to use for muting::
+* Usage: `setMuteRole <role>`
+* Description: Sets the  `role` to be used as the role when applying a mute. This role needs to be muting, which means, if you want it to be effective, this role needs to deny `MESSAGE_WRITE`. Abstracto does not validate nor require the role to actually mute.
+Only *one* role can be used as a mute role.
+
+[.lead]
+Logging
+
+This feature provides a range of utilities to monitor the server.
+The logging includes:
+
+Deleted message logging:: When a message is deleted, the content of the message and the possible attachments of said message will be logged. Post target `deleteLog`.
+Edited message logging:: When a message is edited, the previous content of the message and the new content of the message will be logged.
+This does not work if the message was sent before the bot was started. Post target `editLog`.
+Member joining logging:: When a member joins the guild, a message indicating this is send. Post target `joinLog`.
+Member leaving logging:: When a member leaves the guild, a message indicating this is send. Post target `leaveLog`.

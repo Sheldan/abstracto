@@ -1,0 +1,88 @@
+=== Abstracto core feature
+
+The core feature contains necessary commands in order for Abstracto to function and be configured.
+
+.Emotes
+* used as a reaction in case the command completed successfully `successReaction`
+* used as a reaction in case the command did not complete successfully `warnReaction`
+
+.Commands
+Help::
+* Usage: `help [module/command]`
+* Description: If no parameter is provided, this will list the currently available modules. If the provided parameter matches the name of a module, information about that module is displayed.
+This information includes a description and the available commands of this module. If the provided parameter matches a command name, information about this command is displayed.
+The module matching takes precedence over command matching.
+This information includes the a short description, a more detailed description, aliases (if any), parameters (if any), which roles are allowed to execute the command,
+or if it is not restricted and which roles are immune against the command.
+Changing emotes Abstracto uses::
+* Usage: `setEmote <key> <emote>`
+* Description: Sets the emote identified by `key` used by Abstracto on this server to `emote`.
+This allows both built in emotes and custom emotes, but the bot must be in the server of the custom emote in order to use them.
+Clearing the cache::
+* Usage: `clearCache`
+* Description: Clears the internal cache used by Abstrato. This is necessary if things in the databases were changed and need to be in effect immediately.
+Ping::
+* Usage: `ping`
+* Description: Prints the latency of Abstracto to the Discord servers.
+Echo::
+* Usage: `echo <text>`
+* Description: Echos `text` in the same channel this command as executed in.
+Changing the prefix::
+* Usage: `setPrefix <prefix>`
+* Description: Changes the prefix of the bot on this value to `prefix`. This can be one or multiple characters.
+Changing a post target::
+* Usage: `posttarget <key> <channel>`
+* Description: Changes the given post target identified by `key` to the given channel. All messages using this post target will be send to this channel from now on.
+Listing the features::
+* Usage: `features`
+* Description: Lists the available features and whether or not they are enabled in this server.
+Enabling a feature::
+* Usage: `enable <key>`
+* Description: Enables the feature identified by `key` in this server. If the feature dependents on other features, they will be enabled as well.
+Disabling a feature::
+* Usage: `disable <key>`
+* Description: Disables the feature identified by `key` in this server. If the feature is required for other features, they will be disabled as well.
+Creating a channel group::
+* Usage: `createChannelGroup <key>`
+* Description: Creates a new channel group identified by `key`.
+* Aliases: `+ChGroup`
+Adding a channel to a channel group::
+* Usage: `addToChannelGroup <groupName> <channel>`
+* Description: Adds the `channel` to the channel group identified by the `groupName`. It is not possible for a channel to be in a group twice.
+* Aliases: `addTChGrp`, `chGrpCh+`
+Removing a channel from a channel group::
+* Usage: `removeFromChannelGroup <groupName> <channel>`
+* Description: Removes the `channel` from the channel group identified by `groupName`.
+* Aliases: `rmChChgrp`, `chGrpCh-`
+Deleting a channel group::
+* Usage: `deleteChannelGroup <key>`
+* Description: Deletes the channel group identifies by `key`. This will also remove all associated channels from this group. This command fails, if the group is used in other features and referenced.
+* Aliases: `-ChGroup`
+Disabling a command in a group::
+* Usage: `disableCommand <commandName> <groupName>`
+* Description: Disables the command identified by `commandName` in the channel group `groupName`. A command is considered disabled in a specified channel, if the command is disabled in *all* the groups the channel is in.
+Enabling a command in a group::
+* Usage: `enableCommand <commandname> <groupName>`
+* Description: Enables the command identified by `commandName` in the channel group `groupName`. A command is considered enabled in a specified channel, if the command is enabled in *any* the groups the channel is in.
+Showing all available channel groups and the respective channels::
+* Usage: `listChannelGroups`
+* Description: Provides an overview of the currently available channel groups and which channels are in this channel group.
+* Aliases: `lsChGrp`
+Removing role restrictions from a command::
+* Usage: `allow <featureName|commandName>`
+* Description: Allows everyone to execute all commands in this `feature`/the `command`. Which means, any restrictions concerning which role is able to execute a certain command is ignored even if it still shows in the help output.
+Allowing a role to execute a command::
+* Usage: `allowRole  <featureName|commandName> <role>`
+* Description: Allows the provided `role` to execute all commands in the `feature`/the `command`. This command automatically restricts the commands, which means, if it was unrestricted before, after executing this command only the provided role can execute the command.
+Forbidding a role to execute a command::
+* Usage: `disAllowRole <featureName|commandName> <role>`
+* Description: Removes the `role` from the list of allowed roles for all commands in the `feature`/the `command`.
+Make a role affected by a command::
+* Usage: `makeAffected <featureName|commandName> <role>`
+* Description: Makes the role affected by all commands in the `feature`/the `command`.
+Make a role immune against a command::
+* Usage: `makeImmune <featureName|commandName> <role>`
+* Description: Makes the role immune from all commands in the `feature`/the `command`.
+Enforce the role restrictions of commands::
+* Usage: `restrict <featureName|commandName>`
+* Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.

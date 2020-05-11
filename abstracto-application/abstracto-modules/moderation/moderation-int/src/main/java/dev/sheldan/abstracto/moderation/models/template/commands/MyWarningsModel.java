@@ -9,7 +9,6 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 public class MyWarningsModel extends UserInitiatedServerContext {
-    private Boolean serverUsesDecays;
     private Long totalWarnCount;
     private Long currentWarnCount;
 }

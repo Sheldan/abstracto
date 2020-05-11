@@ -43,8 +43,6 @@ public class MyWarnings extends AbstractConditionableCommand {
         Long currentWarnCount = warnManagementService.getActiveWarnsForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
         model.setCurrentWarnCount(currentWarnCount);
         Long totalWarnCount = warnManagementService.getTotalWarnsForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
-        boolean userUsesDecay = featureFlagService.isFeatureEnabled(warningDecayFeature, commandContext.getUserInitiatedContext().getServer());
-        model.setServerUsesDecays(userUsesDecay);
         model.setTotalWarnCount(totalWarnCount);
         channelService.sendTemplateInChannel("myWarnings_response", model, commandContext.getChannel());
         return CommandResult.fromSuccess();

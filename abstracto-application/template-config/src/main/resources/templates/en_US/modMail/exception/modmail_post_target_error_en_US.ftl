@@ -1,1 +1,1 @@
-Post target `modmaillog` was not found.
+Post target `modmailLog` was not found.

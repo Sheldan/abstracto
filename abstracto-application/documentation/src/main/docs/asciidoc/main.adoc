@@ -1,0 +1,42 @@
+= Abstracto Discord Bot Documentation
+Sheldan https://github.com/Sheldan
+1.0, May 10, 2020
+:toc:
+:icons: font
+
+Abstracto is a feature rich Discord bot written in Java and uses JDA as the wrapper for the Discord API.
+This documentation is split into two parts: Technical documentation and user documentation.
+
+== User documentation
+
+== Glossary
+
+Post target:: Describes the channel where Abstracto will send specific messages to. For example, the command `ban` sends a message containing information about the ban to the `banLog` post target.
+Post targets can be configured with the command `posttarget` and once defined can only be switched to another channel.
+Decayed warnings:: Warnings have a decayed property, which means it can be marked as inactive, while the warning itself is not deleted.
+
+== General information
+
+Duration input:: This procedure is done when a command requires a duration as an input, for example `mute`.
+In order to define a duration: use a positive number followed by one of the following time units: `s`, `m`, `h`, `d` or `w` representing seconds, minutes, hours, days and weeks respectively.
+Weeks in this case are just a short hand for 7 days.
+Pagination navigation:: If a pagination is used for the output of a command you can navigate the pages with `◀️` and `▶️` and `⏹️` to close the pagination.
+Role as parameter:: Whenever a role is a parameter for a command, this can be done by either providing the role ID or mentioning the role.
+Channel groups:: This concept enables you to group channels together into channel groups and enact certain restrictions or features on this whole group.
+System configuration:: Some properties can be configured while the bot is running.
+In the respective features they are noted under `Relevant system configuration`.
+In order to change this you need to use the command `setConfig` with the provided key and the new desired value.
+Emotes:: The features have section of the keys of used emotes in the feature, you can change this emote with the `setEmote` command.
+
+== Features
+The following features are available, and they can be enabled/disabled with the command `enable`/`disable`.
+
+include::features/core.adoc[]
+
+include::features/moderation.adoc[]
+
+include::features/modmail.adoc[]
+
+include::features/experience.adoc[]
+
+include::features/utility.adoc[]

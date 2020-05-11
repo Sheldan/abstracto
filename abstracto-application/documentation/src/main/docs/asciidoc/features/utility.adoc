@@ -1,0 +1,112 @@
+=== Utility
+
+This feature is split into sub features:
+
+* Reminders
+* Starboard
+* Suggestions
+* Utility
+* Link embeds
+
+[.lead]
+Reminders
+
+Provides the ability to schedule reminders.
+
+Feature key: `remind`
+
+.Commands
+Create a reminder::
+* Usage: `remind <duration> <text>`
+* Description: Creates a reminder with `text` which will be triggered after `duration`. This command uses duration parsing. The reminder will ping when the duration has passed and provide
+the context of the reminder.
+Cancelling a reminder::
+* Usage `unRemind <reminderId>`
+* Description: Cancels this reminder reminder and will cause this reminder to not be executed.
+Listing all active reminders::
+* Usage: `reminders`
+* Description: Lists all the currently not yet executed reminders and information about each of them.
+
+
+[.lead]
+Starboard
+
+Provides the ability to track note worthy posts in a separate channel, identified by the post target `starboard`, because the pins within a channel are limited to 50.
+This feature works by users reacting to a message with the appropriate emote. By default this is `&#11088;`, but can be changed via the emote `star`.
+There is a configurable threshold a message needs to reach in order to be posted to starboard.
+The post in the starboard is continuously updated and depending on the current star count an associated emote is displayed.
+When the poster of the message reacts to the message with a star, this is not counted. When the post is deleted from the starboard, the original message cannot appear on the starboard again.
+
+Feature key: `starboard`
+
+.Emotes
+* to vote on posting something to starboard: `star`
+*  for the different level of starboard posts:
+** Level 1: `star1`
+** Level 2: `star2`
+** Level 3: `star3`
+** Level 4: `star4`
+* used as badges in the `starStats` command:
+** First place: `starboardBadge1`
+** Second place: `starboardBadge2`
+** Third place: `starboardBadge3`
+
+.Relevant system configuration
+`starLvl1` The amount of stars necessary to appear on the starboard. Default: 5
+
+`starLvl2` The amount of stars necessary in order for the level 2 emote to be used in the starboard post. Default: 8
+
+`starLvl3` The amount of stars necessary in order for the level 3 emote to be used in the starboard post. Default: 13
+
+`starLvl4` The amount of stars necessary in order for the level 4 emote to be used in the starboard post. Default: 17
+
+.Commands
+Showing starboard statistics::
+* Usage `starStats`
+* Description: Shows the most starred posts, the member with the most received stars and the members rewarding the most stars.
+
+[.lead]
+Suggestions
+
+This feature provides the ability for members to post suggestions containing text to the post target `suggestions`. These suggestions can then be accepted or denied by the moderators.
+
+Feature key: `suggestion`
+
+.Emotes
+* used for up-voting a suggestion: `suggestionYes`
+* used for down-voting a suggestion: `suggestionNo`
+
+.Commands
+Creating a suggestion::
+* Usage `suggest <text>`
+* Description: Posts the text to the `suggest` post target and places the emotes for up and down voting.
+Accepting a suggestion::
+* Usage `accept <suggestionId> [note]`
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `note` will be used in this re-post, if provided.
+Deny a suggestion::
+* Usage `deny <suggestionId> [note]`
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `note` will be used in this re-post, if provided.
+
+[.lead]
+Utility
+
+This feature provides some utility commands.
+
+Feature key: `utility`
+
+.Commands
+Retrieving the URL of an emote::
+* Usage `showEmote <emote>`
+* Description: Posts the name of the emote accompanied with the URL where the image of the emote is stored.
+
+.lead]
+Link embeds
+
+.Emotes
+* used to remove the embed of a link: `removeEmbed`
+
+This feature enables the automatic embedding of messages containing a message link.
+If a message contains a link to a discord message this will create an embed containing the the message content. This supports image attachments, but not videos or files.
+A reaction is placed on the embedded message can be used to delete this embed. Only the person posting the message link and the person being quoted can use this feature.
+
+Feature key: `link_embeds`
