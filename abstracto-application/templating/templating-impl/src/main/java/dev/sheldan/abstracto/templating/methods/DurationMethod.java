@@ -41,36 +41,17 @@ public class DurationMethod implements TemplateMethodModelEx {
         Duration duration = (Duration) wrappedObject;
         StringBuilder stringBuilder = new StringBuilder();
         // upgrading to java 9 makes this nicer
-        // todo refactor to use a single template, instead of multiple ones
+        HashMap<String, Object> parameters = new HashMap<>();
         long days = duration.toDays();
-        if(days > 0) {
-            stringBuilder.append(service.renderTemplate("day", getParam(days)));
-        }
+        parameters.put("days", days);
         long hours = duration.toHours() % 24;
-        if(hours > 0) {
-            stringBuilder.append(service.renderTemplate("hour", getParam(hours)));
-        }
+        parameters.put("hours", hours);
         long minutes = duration.toMinutes() % 60;
-        if(minutes > 0) {
-            stringBuilder.append(service.renderTemplate("minute", getParam(minutes)));
-        }
+        parameters.put("minutes", minutes);
 
         long seconds = duration.get(ChronoUnit.SECONDS) % 60;
-        if(seconds > 0) {
-            stringBuilder.append(service.renderTemplate("second", getParam(seconds)));
-        }
+        parameters.put("seconds", seconds);
 
-        return stringBuilder.toString();
-    }
-
-    /**
-     * Creates the parameter passed to the template for rendering the single time unit template.
-     * @param value
-     * @return
-     */
-    private HashMap<String, Object> getParam(Long value) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("amount", value);
-        return params;
+        return service.renderTemplateWithMap("duration_formatting", parameters);
     }
 }
