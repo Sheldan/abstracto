@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ChannelGroupManagementService {
     AChannelGroup createChannelGroup(String name, AServer server);
+    boolean doesChannelGroupExist(String name, AServer server);
     void deleteChannelGroup(String name, AServer server);
     AChannelGroup addChannelToChannelGroup(AChannelGroup channelGroup, AChannel channel);
     void removeChannelFromChannelGroup(AChannelGroup channelGroup, AChannel channel);

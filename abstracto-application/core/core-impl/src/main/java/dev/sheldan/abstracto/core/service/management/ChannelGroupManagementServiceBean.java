@@ -24,6 +24,9 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     @Override
     public AChannelGroup createChannelGroup(String name, AServer server) {
         name = name.toLowerCase();
+        if(doesChannelGroupExist(name, server)) {
+            throw new ChannelException("Channel group already exists.");
+        }
         AChannelGroup channelGroup = AChannelGroup
                 .builder()
                 .groupName(name)
@@ -31,6 +34,11 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
                 .build();
         channelGroupRepository.save(channelGroup);
         return channelGroup;
+    }
+
+    @Override
+    public boolean doesChannelGroupExist(String name, AServer server) {
+        return channelGroupRepository.existsByGroupNameAndServer(name, server);
     }
 
     @Override
