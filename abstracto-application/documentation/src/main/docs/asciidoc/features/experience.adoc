@@ -1,17 +1,17 @@
-=== Experience tracking feature
+=== Experience tracking
 
 This feature contains the ability to track experience of users on the server and award roles based on the level they reach.
 The experience is awarded once per minute and is calculated by asciimath:[`\text{rand}(\text{minExp}, \text{maxExp}) * \text{expScale}`].
 Only one role is awarded at a time and the past unlocked roles are not given to the members.
 
-.Relevant system configuration
+==== Relevant system configuration
 `minExp` The lower bound of the awarded base experience. Default: 10.
 
 `maxExp` The upper bound of the awarded base experience Default: 25.
 
 `expScale` The multiplier applied after the experience amount was determined. Default: 1.0.
 
-.Commands
+==== Commands
 Changing the experience scale of the server::
 * Usage: `expScale <value>`
 * Description: Changes the value of `expScale` on this server to `value`.

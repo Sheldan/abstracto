@@ -1,21 +1,10 @@
-=== Utility
-
-This feature is split into sub features:
-
-* Reminders
-* Starboard
-* Suggestions
-* Utility
-* Link embeds
-
-[.lead]
-Reminders
+=== Reminders
 
 Provides the ability to schedule reminders.
 
 Feature key: `remind`
 
-.Commands
+==== Commands
 Create a reminder::
 * Usage: `remind <duration> <text>`
 * Description: Creates a reminder with `text` which will be triggered after `duration`. This command uses duration parsing. The reminder will ping when the duration has passed and provide
@@ -28,8 +17,7 @@ Listing all active reminders::
 * Description: Lists all the currently not yet executed reminders and information about each of them.
 
 
-[.lead]
-Starboard
+=== Starboard
 
 Provides the ability to track note worthy posts in a separate channel, identified by the post target `starboard`, because the pins within a channel are limited to 50.
 This feature works by users reacting to a message with the appropriate emote. By default this is `&#11088;`, but can be changed via the emote `star`.
@@ -39,19 +27,19 @@ When the poster of the message reacts to the message with a star, this is not co
 
 Feature key: `starboard`
 
-.Emotes
+==== Emotes
 * to vote on posting something to starboard: `star`
 *  for the different level of starboard posts:
 ** Level 1: `star1`
 ** Level 2: `star2`
 ** Level 3: `star3`
 ** Level 4: `star4`
-* used as badges in the `starStats` command:
+* as badges in the `starStats` command:
 ** First place: `starboardBadge1`
 ** Second place: `starboardBadge2`
 ** Third place: `starboardBadge3`
 
-.Relevant system configuration
+==== Relevant system configuration
 `starLvl1` The amount of stars necessary to appear on the starboard. Default: 5
 
 `starLvl2` The amount of stars necessary in order for the level 2 emote to be used in the starboard post. Default: 8
@@ -60,23 +48,22 @@ Feature key: `starboard`
 
 `starLvl4` The amount of stars necessary in order for the level 4 emote to be used in the starboard post. Default: 17
 
-.Commands
+==== Commands
 Showing starboard statistics::
 * Usage `starStats`
 * Description: Shows the most starred posts, the member with the most received stars and the members rewarding the most stars.
 
-[.lead]
-Suggestions
+=== Suggestions
 
 This feature provides the ability for members to post suggestions containing text to the post target `suggestions`. These suggestions can then be accepted or denied by the moderators.
 
 Feature key: `suggestion`
 
-.Emotes
-* used for up-voting a suggestion: `suggestionYes`
-* used for down-voting a suggestion: `suggestionNo`
+==== Emotes
+* for up-voting a suggestion: `suggestionYes`
+* for down-voting a suggestion: `suggestionNo`
 
-.Commands
+==== Commands
 Creating a suggestion::
 * Usage `suggest <text>`
 * Description: Posts the text to the `suggest` post target and places the emotes for up and down voting.
@@ -87,23 +74,21 @@ Deny a suggestion::
 * Usage `deny <suggestionId> [note]`
 * Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `note` will be used in this re-post, if provided.
 
-[.lead]
-Utility
+=== Miscellaneous
 
 This feature provides some utility commands.
 
 Feature key: `utility`
 
-.Commands
+==== Commands
 Retrieving the URL of an emote::
 * Usage `showEmote <emote>`
 * Description: Posts the name of the emote accompanied with the URL where the image of the emote is stored.
 
-.lead]
-Link embeds
+=== Link embeds
 
-.Emotes
-* used to remove the embed of a link: `removeEmbed`
+==== Emotes
+* to remove the embed of a link: `removeEmbed`
 
 This feature enables the automatic embedding of messages containing a message link.
 If a message contains a link to a discord message this will create an embed containing the the message content. This supports image attachments, but not videos or files.

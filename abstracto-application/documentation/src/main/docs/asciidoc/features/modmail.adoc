@@ -1,4 +1,4 @@
-=== Mod mail feature
+=== Mod mail
 
 This feature enables users to contact the moderation of the server in a private manner. This can be initiated by messaging the Abstracto bot.
 
@@ -14,14 +14,14 @@ This feature enables users to contact the moderation of the server in a private 
 
 Feature key: `modmail`
 
-.Post targets
+==== Post targets
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
 
 
-.Emotes
-* used to indicate to the user that the message sent was processed `readReaction`
+==== Emotes
+* to indicate to the user that the message sent was processed `readReaction`
 
-.Commands
+==== Commands
 Opening a mod mail thread for a user::
 * Usage: `contact <member>`
 * Description: Creates a new mod mail thread with the `member`. Does not send a notification about the new thread.
@@ -57,12 +57,11 @@ Changing the category in which the text channels are created::
 * Description: Sets the category which Abstracto uses to create the text channels containing the mod mail threads. The existing threads will not be migrated automatically.
 
 
-[.lead]
-Mod mail thread logging
+=== Mod mail thread logging
 
 This feature enables the logging of mod mail threads into a channel when they are closed. The individual log messages will have a mod mail header which contains some information about the thread.
 
 Feature key: `modmail_logging`
 
-.Post targets
+==== Post targets
 `modmailLog`:: Will be used to log the interactions when a thread is closed.

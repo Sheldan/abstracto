@@ -1,12 +1,12 @@
-=== Abstracto core feature
+=== Core
 
 The core feature contains necessary commands in order for Abstracto to function and be configured.
 
-.Emotes
-* used as a reaction in case the command completed successfully `successReaction`
-* used as a reaction in case the command did not complete successfully `warnReaction`
+==== Emotes
+* as a reaction in case the command completed successfully `successReaction`
+* as a reaction in case the command did not complete successfully `warnReaction`
 
-.Commands
+==== Commands
 Help::
 * Usage: `help [module/command]`
 * Description: If no parameter is provided, this will list the currently available modules. If the provided parameter matches the name of a module, information about that module is displayed.
@@ -20,10 +20,10 @@ Changing the system configuration::
 Changing emotes Abstracto uses::
 * Usage: `setEmote <key> <emote>`
 * Description: Sets the emote identified by `key` used by Abstracto on this server to `emote`.
-This allows both built in emotes and custom emotes, but the bot must be in the server of the custom emote in order to use them.
+This allows both built in emotes and custom emotes, but Abstracto must be in the server of the custom emote in order to use them.
 Clearing the cache::
 * Usage: `clearCache`
-* Description: Clears the internal cache used by Abstrato. This is necessary if things in the databases were changed and need to be in effect immediately.
+* Description: Clears the internal cache used by Abstracto. This is necessary if things in the databases were changed and need to be in effect immediately.
 Ping::
 * Usage: `ping`
 * Description: Prints the latency of Abstracto to the Discord servers.
@@ -90,7 +90,7 @@ Enforce the role restrictions of commands::
 * Usage: `restrict <featureName|commandName>`
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
 
-==== What does it mean if a role is immune?
+.What does it mean if a role is immune?
 A command can take a member as a target, for example `ban`. If a role is considered immune, this means, if the member which is the target of the command has the given role, this command will fail. Not all commands support this feature, but only the following:
 
 * Ban

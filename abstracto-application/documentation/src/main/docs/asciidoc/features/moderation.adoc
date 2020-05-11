@@ -1,22 +1,12 @@
 === Moderation
-This feature is split into sub features and they can be enabled individually.
-
-* Moderation
-* Warnings
-** Warn decay
-* Logging
-* Muting
-
-[.lead]
-Moderation
 
 Feature key: `moderation`
 
-.Post targets
+==== Post targets
 `banLog`:: Will be used to send a log message containing information about the ban for both `ban` and `banId`. Will still ban if not setup.
 `kickLog`:: Will be used to send a log message containing information about the kick. Will still kick if not setup.
 
-.Commands
+==== Commands
 Ban a member::
 * Usage: `ban <member> [reason]`
 * Description:
@@ -37,18 +27,17 @@ Change the slow mode in a channel::
 * Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
 * Required bot permission: `MANAGE_CHANNEL` in the respective channel
 
-[.lead]
-Warning
+=== Warning
 
 This feature can be used to warn specific users if they did something not allowed by the rules.
 
 Feature key: `warnings`
 
-.Post targets
+==== Post targets
 `warnLog`:: Will be used to send a log message containing information about the warn.
 `decayLog`:: Will be used when all the warnings are decayed by a command and logging has been selected.
 
-.Commands
+==== Commands
 Warn a user::
 * Usage: `warn <member> [reason]`
 * Description: Warns the `member` with the given `reason` or a default one, if none is provided. This command sends a log message to the `warnLog` post
@@ -69,26 +58,24 @@ Deleting a warning::
 * Description: Deletes the warning identified by `warnId` completely from the database.
 
 
-[.lead]
-Automatic warn decay
+=== Automatic warn decay
 
 This feature enables warnings to be decayed after a configurable amount of days. This feature directly depends on the feature `warnings`.
 
 Feature key: `warnDecay`
 
-.Relevant system configuration
+==== Relevant system configuration
 `decayDays` The amount of days after which a warning gets decayed. Default: 90
 
-.Post targets
+==== Post targets
 `decayLog`:: Will be used to send the log message containing the information in case a warning is decayed.
 
-.Commands
+==== Commands
 Decaying all warnings if necessary::
 * Usage: `decayWarnings`
 * Description: Triggers the decay of the warnings instantly, which means, every not decayed warning on this server older than the configured amount of days will be decayed and the decay will be logged.
 
-[.lead]
-Muting
+=== Muting
 
 This feature provides the capability to mute users, which effectively means it applies a role which prevents them from sending messages and speaking in voice chat.
 The role used to mute member will not be created and needs to be provided. There is no validation if the provided role actually mutes members.
@@ -96,10 +83,10 @@ If the user leaves the guild and rejoins, the mute role will be re-applied.
 
 Feature key `muting`
 
-.Post targets
+==== Post targets
 `muteLog`:: Will be used to send the log message containing the information in case a member was muted and when the mute ended automatically.
 
-.Commands
+==== Commands
 Muting a user::
 * Usage: `mute <member> <duration> [reason]`
 * Description: Applies the mute role to the given `member` for the given `duration`. If `reason` is not provided, a default reason will be used for logging in the `muteLog` post target.  This will automatically
@@ -113,8 +100,7 @@ Configuring which role to use for muting::
 * Description: Sets the  `role` to be used as the role when applying a mute. This role needs to be muting, which means, if you want it to be effective, this role needs to deny `MESSAGE_WRITE`. Abstracto does not validate nor require the role to actually mute.
 Only *one* role can be used as a mute role.
 
-[.lead]
-Logging
+=== Logging
 
 This feature provides a range of utilities to monitor the server.
 The logging includes:
