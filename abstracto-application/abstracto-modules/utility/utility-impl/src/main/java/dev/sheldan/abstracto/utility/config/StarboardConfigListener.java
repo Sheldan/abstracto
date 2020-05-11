@@ -22,7 +22,7 @@ public class StarboardConfigListener implements ServerConfigListener {
         log.info("Creating starboard config for server {}", server.getId());
         for (int i = 0; i < starboardConfig.getLvl().size(); i++) {
             Integer value = starboardConfig.getLvl().get(i);
-            configManagementService.createIfNotExists(server.getId(), "starLvl" + ( i + 1 ), Double.valueOf(value));
+            configManagementService.createIfNotExists(server.getId(), "starLvl" + ( i + 1 ), Long.valueOf(value));
         }
     }
 }

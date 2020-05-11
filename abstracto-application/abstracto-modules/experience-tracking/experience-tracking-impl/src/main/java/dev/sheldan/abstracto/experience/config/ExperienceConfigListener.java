@@ -25,8 +25,8 @@ public class ExperienceConfigListener implements ServerConfigListener {
     @Override
     public void updateServerConfig(AServer server) {
         log.info("Setting up experience configuration for server {}.", server.getId());
-        service.createIfNotExists(server.getId(), "minExp", experienceConfig.getMinExp().doubleValue());
-        service.createIfNotExists(server.getId(), "maxExp", experienceConfig.getMaxExp().doubleValue());
+        service.createIfNotExists(server.getId(), "minExp", experienceConfig.getMinExp().longValue());
+        service.createIfNotExists(server.getId(), "maxExp", experienceConfig.getMaxExp().longValue());
         service.createIfNotExists(server.getId(), "expMultiplier", experienceConfig.getExpMultiplier().doubleValue());
     }
 }
