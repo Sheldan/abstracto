@@ -12,6 +12,9 @@ import org.springframework.ui.freemarker.FreeMarkerConfigurationFactory;
 import java.io.IOException;
 import java.util.Locale;
 
+/**
+ * Configuration bean used to provide the {@link Configuration} bean to the spring context.
+ */
 @org.springframework.context.annotation.Configuration
 public class FreemarkerConfiguration {
 
@@ -24,6 +27,12 @@ public class FreemarkerConfiguration {
     @Autowired
     private InstantMethod instantMethod;
 
+    /**
+     * Creates a {@link Configuration} bean with the appropriate configuration which includes:
+     * The correct compatibility version and the provided formatter methods to be used in the templates.
+     * The encoding of the templates is set to UTF-8.
+     * @return A configured {@link Configuration} bean according to the configuration
+     */
     @Bean
     public Configuration freeMarkerConfiguration() throws IOException, TemplateException {
         FreeMarkerConfigurationFactory factory = new FreeMarkerConfigurationFactory();

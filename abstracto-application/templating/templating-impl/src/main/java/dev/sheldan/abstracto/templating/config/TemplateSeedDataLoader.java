@@ -16,6 +16,10 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Loads the available templates from the class path and uploads them to the database, overriding existing templates in the process.
+ * This will load all *.ftl files at any level within a folder named 'templates' in the resources folder.
+ */
 @Component
 @Slf4j
 public class TemplateSeedDataLoader {
@@ -26,6 +30,10 @@ public class TemplateSeedDataLoader {
     @Autowired
     private TemplateManagementService service;
 
+    /**
+     * Is executed when the spring context is started, this will load all templates from the class path and
+     * store them in the database overriding the existing ones in the process.
+     */
     @EventListener
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
         log.info("Updating templates.");

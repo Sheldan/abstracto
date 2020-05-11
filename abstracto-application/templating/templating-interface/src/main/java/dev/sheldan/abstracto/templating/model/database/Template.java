@@ -10,6 +10,9 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * Represents the template stored in the database.
+ */
 @Builder
 @Entity
 @NoArgsConstructor
@@ -19,10 +22,16 @@ import java.util.Objects;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Template {
 
+    /**
+     * The globally unique key of the template
+     */
     @Id
     @Getter
     private String key;
 
+    /**
+     * The content of the template
+     */
     @Getter
     @Column(length = 4000)
     private String content;

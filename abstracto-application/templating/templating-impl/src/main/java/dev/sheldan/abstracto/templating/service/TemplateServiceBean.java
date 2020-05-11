@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Bean used to render a template, identified by a key, with the passed model.
+ */
 @Slf4j
 @Component
 public class TemplateServiceBean implements TemplateService {
@@ -30,12 +33,29 @@ public class TemplateServiceBean implements TemplateService {
     private Gson gson;
 
 
+    /**
+     * Formats the passed passed count with the embed used for formatting pages.
+     * @param count The index of the page you want formated.
+     * @return The rendered template as a string object
+     */
     private String getPageString(Integer count) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("count", count);
         return renderTemplateWithMap("embed_page_count", params);
     }
 
+    /**
+     * Retrieves the key which gets suffixed with '_embed' and this retrives the embed configuration. This configuration is then rendered
+     * and deserialized with GSON into a {@link EmbedConfiguration} object. This object is then rendered into a {@link MessageToSend} and returned.
+     * If the individual element do not fit in an embed, for example, if the field count is to high, another embed will be created in the {@link MessageToSend} object.
+     * If multiple embeds are necessary to provide what the {@link EmbedConfiguration} wanted, this method will automatically set the footer of the additional {@link MessageEmbed}
+     *  with a formatted page count.
+     * This method will to try its best to provided a message which can be handled by discord without rejecting it. Besides that, the content from the rendered template, will be passed
+     * into the {@link EmbedBuilder} directly.
+     * @param key The key of the embed template to be used for rendering.
+     * @param model The model providing the properties to be used for rendering
+     * @return The {@link MessageToSend} object which is properly split up in order to be send to discord.
+     */
     @Override
     public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
@@ -100,6 +120,12 @@ public class TemplateServiceBean implements TemplateService {
                 .build();
     }
 
+    /**
+     * Enlarges the passed list of builders, if the passed index is not yet available within the list.
+     * When a new builder is needed, this will automatically set the footer with a page indicator.
+     * @param builders The current list of {@link EmbedBuilder} builders used.
+     * @param neededIndex The desired index in the list which should be available for using.
+     */
     private void extendIfNecessary(List<EmbedBuilder> builders, double neededIndex) {
         if(neededIndex > builders.size() - 1) {
             for (int i = builders.size(); i < neededIndex + 1; i++) {
@@ -110,6 +136,12 @@ public class TemplateServiceBean implements TemplateService {
         }
     }
 
+    /**
+     * Renders the template identified by the key with the passed {@link HashMap}
+     * @param key The key of the template to be rendered.
+     * @param parameters The {@link HashMap} to be used as the parameters for the template
+     * @return The rendered template as a string
+     */
     @Override
     public String renderTemplateWithMap(String key, HashMap<String, Object> parameters) {
         try {
@@ -120,6 +152,12 @@ public class TemplateServiceBean implements TemplateService {
         }
     }
 
+    /**
+     * Renders the template identified by the key with the passed object as model
+     * @param key The key of the template to be rendered
+     * @param model The object containing the model to be used in the template
+     * @return The rendered template as a string
+     */
     @Override
     public String renderTemplate(String key, Object model) {
         try {
