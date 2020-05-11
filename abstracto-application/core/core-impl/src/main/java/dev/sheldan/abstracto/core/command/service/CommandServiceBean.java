@@ -1,5 +1,10 @@
 package dev.sheldan.abstracto.core.command.service;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
+import dev.sheldan.abstracto.core.command.condition.ConditionResult;
+import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.models.database.AModule;
@@ -14,6 +19,8 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Slf4j
@@ -103,6 +110,27 @@ public class CommandServiceBean implements CommandService {
         feature.getCommands().forEach(command -> {
             this.disAllowCommandForRole(command, role);
         });
+    }
+
+    public ConditionResult isCommandExecutable(Command command, CommandContext commandContext) {
+        if(command instanceof ConditionalCommand) {
+            ConditionalCommand castedCommand = (ConditionalCommand) command;
+            return checkConditions(commandContext, command, castedCommand.getConditions());
+        } else {
+            return ConditionResult.builder().result(true).build();
+        }
+    }
+
+    private ConditionResult checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
+        if(conditions != null) {
+            for (CommandCondition condition : conditions) {
+                ConditionResult conditionResult = condition.shouldExecute(commandContext, command);
+                if(!conditionResult.isResult()) {
+                    return conditionResult;
+                }
+            }
+        }
+        return ConditionResult.builder().result(true).build();
     }
 
 

@@ -27,7 +27,7 @@ public class DurationMethod implements TemplateMethodModelEx {
      * otherwise
      * @param arguments The parameters passed to this method, should be only a single duration.
      * @return The string representation of the {@link Duration} object
-     * @throws TemplateModelException
+     * @throws TemplateModelException In case the amount of parameters is not correct, or the first object was not a {@link Duration}
      */
     @Override
     public Object exec(List arguments) throws TemplateModelException {

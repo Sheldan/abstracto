@@ -1,13 +1,12 @@
 package dev.sheldan.abstracto.core.command;
 
-import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
-import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.ParameterTooLong;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -63,6 +62,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private CommandService commandService;
+
     @Override
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
@@ -89,17 +91,12 @@ public class CommandReceivedHandler extends ListenerAdapter {
             foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
             Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
+            ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
             CommandResult commandResult;
-            if(foundCommand instanceof ConditionalCommand) {
-                ConditionalCommand castedCommand = (ConditionalCommand) foundCommand;
-                ConditionResult conditionResult = checkConditions(commandContext, foundCommand, castedCommand.getConditions());
-                if(!conditionResult.isResult()) {
-                    commandResult = CommandResult.fromCondition(conditionResult);
-                } else {
-                    commandResult = self.executeCommand(foundCommand, commandContext);
-                }
-            } else {
+            if(conditionResult.isResult()) {
                 commandResult = self.executeCommand(foundCommand, commandContext);
+            } else {
+                commandResult = CommandResult.fromCondition(conditionResult);
             }
             for (PostCommandExecution postCommandExecution : executions) {
                 postCommandExecution.execute(commandContext, commandResult, foundCommand);
@@ -116,18 +113,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public CommandResult executeCommand(Command foundCommand, CommandContext commandContext) {
         return foundCommand.execute(commandContext);
-    }
-
-    public ConditionResult checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
-        if(conditions != null) {
-            for (CommandCondition condition : conditions) {
-                ConditionResult conditionResult = condition.shouldExecute(commandContext, command);
-                if(!conditionResult.isResult()) {
-                    return conditionResult;
-                }
-            }
-        }
-        return ConditionResult.builder().result(true).build();
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {

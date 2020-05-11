@@ -1,11 +1,16 @@
 package dev.sheldan.abstracto.core.commands.help;
 
 import dev.sheldan.abstracto.core.command.*;
+import dev.sheldan.abstracto.core.command.condition.CommandCondition;
+import dev.sheldan.abstracto.core.command.condition.ConditionResult;
+import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.CommandRegistry;
+import dev.sheldan.abstracto.core.command.service.CommandService;
+import dev.sheldan.abstracto.core.command.service.CommandServiceBean;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
@@ -21,6 +26,7 @@ import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,6 +56,9 @@ public class Help implements Command {
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private CommandService commandService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -65,6 +74,14 @@ public class Help implements Command {
             if(moduleService.moduleExists(parameter)){
                 ModuleInterface moduleInterface = moduleService.getModuleByName(parameter);
                 SingleLevelPackedModule module = moduleService.getPackedModule(moduleInterface);
+                List<Command> commands = module.getCommands();
+                List<Command> filteredCommands = new ArrayList<>();
+                commands.forEach(command -> {
+                    if(commandService.isCommandExecutable(command, commandContext).isResult()) {
+                        filteredCommands.add(command);
+                    }
+                });
+                module.setCommands(filteredCommands);
                 List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
                 HelpModuleDetailsModel model = (HelpModuleDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpModuleDetailsModel.class);
                 model.setModule(module);
