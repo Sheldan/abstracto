@@ -57,9 +57,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         }
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
         asyncMessageFromCache.thenAccept(cachedMessage -> {
-            CompletableFuture<CachedReaction> future = new CompletableFuture<>();
-            messageCache.getCachedReactionFromReaction(future, event.getReaction());
-            future.thenAccept(reaction -> {
+            messageCache.getCachedReactionFromReaction(event.getReaction()).thenAccept(reaction -> {
                 self.callAddedListeners(event, cachedMessage, reaction);
                 messageCache.putMessageInCache(cachedMessage);
             }).exceptionally(throwable -> {
@@ -123,9 +121,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         }
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
         asyncMessageFromCache.thenAccept(cachedMessage -> {
-            CompletableFuture<CachedReaction> future = new CompletableFuture<>();
-            messageCache.getCachedReactionFromReaction(future, event.getReaction());
-            future.thenAccept(reaction ->
+            messageCache.getCachedReactionFromReaction(event.getReaction()).thenAccept(reaction ->
                 self.callRemoveListeners(event, cachedMessage, reaction)
             ) .exceptionally(throwable -> {
                 log.error("Failed to retrieve cached reaction for message {} ", event.getMessageIdLong(), throwable);

@@ -208,7 +208,7 @@ public class StarboardServiceBean implements StarboardService {
 
     private String getAppropriateEmote(Long serverId, Integer starCount) {
         for(int i = starboardConfig.getLvl().size(); i > 0; i--) {
-            Double starMinimum = configService.getDoubleValue("starLvl" + i, serverId);
+            Long starMinimum = configService.getLongValue("starLvl" + i, serverId);
             if(starCount >= starMinimum) {
                 return emoteService.getUsableEmoteOrDefault(serverId, "star" + i);
             }

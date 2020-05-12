@@ -13,7 +13,7 @@ public interface MessageCache {
     CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId);
     CompletableFuture<CachedMessage> getMessageFromCache(Message message);
     CompletableFuture<CachedMessage> putMessageInCache(CachedMessage message);
-    void loadMessage(CompletableFuture<CachedMessage> future, Long guildId, Long textChannelId, Long messageId);
-    void getCachedReactionFromReaction(CompletableFuture<CachedReaction> future, MessageReaction reaction);
-    void buildCachedMessageFromMessage(CompletableFuture<CachedMessage> future, Message message);
+    CompletableFuture<CachedMessage> loadMessage(Long guildId, Long textChannelId, Long messageId);
+    CompletableFuture<CachedReaction> getCachedReactionFromReaction(MessageReaction reaction);
+    CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message);
 }

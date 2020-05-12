@@ -140,9 +140,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     public void handleExperienceGain(List<AServer> servers) {
         servers.forEach(serverExp -> {
             log.trace("Handling experience for server {}", serverExp.getId());
-            int minExp = configService.getDoubleValue("minExp", serverExp.getId()).intValue();
-            int maxExp = configService.getDoubleValue("maxExp", serverExp.getId()).intValue();
-            Integer multiplier = configService.getDoubleValue("expMultiplier", serverExp.getId()).intValue();
+            int minExp = configService.getLongValue("minExp", serverExp.getId()).intValue();
+            int maxExp = configService.getLongValue("maxExp", serverExp.getId()).intValue();
+            Double multiplier = configService.getDoubleValue("expMultiplier", serverExp.getId());
             PrimitiveIterator.OfInt iterator = new Random().ints(serverExp.getUsers().size(), minExp, maxExp + 1).iterator();
             List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
             levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
@@ -150,7 +150,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
             serverExp.getUsers().forEach(userInAServer -> {
                 Integer gainedExperience = iterator.next();
-                gainedExperience *= multiplier;
+                gainedExperience = (int) Math.floor(gainedExperience * multiplier);
                 log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
                 AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
                 updateUserlevel(aUserExperience, levels);

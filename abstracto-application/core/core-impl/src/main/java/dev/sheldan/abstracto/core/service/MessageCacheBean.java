@@ -53,9 +53,7 @@ public class MessageCacheBean implements MessageCache {
     @CachePut(key = "#message.id")
     public CompletableFuture<CachedMessage> putMessageInCache(Message message) {
         log.info("Adding message {} to cache", message.getId());
-        CompletableFuture<CachedMessage> future = new CompletableFuture<>();
-        self.buildCachedMessageFromMessage(future, message);
-        return future;
+        return self.buildCachedMessageFromMessage(message);
     }
 
 
@@ -78,20 +76,21 @@ public class MessageCacheBean implements MessageCache {
     public CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId) {
         log.info("Retrieving message with parameters");
 
-        CompletableFuture<CachedMessage> cachedMessageCompletableFuture = new CompletableFuture<>();
-        self.loadMessage(cachedMessageCompletableFuture, guildId, textChannelId, messageId);
-        return cachedMessageCompletableFuture;
+        return self.loadMessage(guildId, textChannelId, messageId);
     }
 
     @Override
-    public void loadMessage(CompletableFuture<CachedMessage> future, Long guildId, Long textChannelId, Long messageId) {
+    public CompletableFuture<CachedMessage> loadMessage(Long guildId, Long textChannelId, Long messageId) {
+        CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         Optional<Guild> guildOptional = botService.getGuildById(guildId);
         if(guildOptional.isPresent()) {
             Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServer(guildOptional.get(), textChannelId);
             if(textChannelByIdOptional.isPresent()) {
                 TextChannel textChannel = textChannelByIdOptional.get();
                 textChannel.retrieveMessageById(messageId).queue(message ->
-                    buildCachedMessageFromMessage(future, message)
+                        {
+                            buildCachedMessageFromMessage(message).thenAccept(future::complete);
+                        }
                 );
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
@@ -102,10 +101,13 @@ public class MessageCacheBean implements MessageCache {
             future.completeExceptionally(new GuildException(String.format("Not able to load message %s. Guild %s not found.", messageId, guildId)));
 
         }
+
+        return future;
     }
 
     @Override
-    public void buildCachedMessageFromMessage(CompletableFuture<CachedMessage> future, Message message) {
+    public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message) {
+        CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         List<String> attachmentUrls = new ArrayList<>();
         message.getAttachments().forEach(attachment ->
             attachmentUrls.add(attachment.getProxyUrl())
@@ -117,9 +119,7 @@ public class MessageCacheBean implements MessageCache {
 
         List<CompletableFuture<CachedReaction>> futures = new ArrayList<>();
         message.getReactions().forEach(messageReaction -> {
-            CompletableFuture<CachedReaction> future1 = new CompletableFuture<>();
-            self.getCachedReactionFromReaction(future1, messageReaction);
-            futures.add(future1);
+            futures.add(self.getCachedReactionFromReaction(messageReaction));
         });
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
@@ -138,6 +138,7 @@ public class MessageCacheBean implements MessageCache {
             log.error("Failed to load reactions for message {}. ", message.getId(), throwable);
             return null;
         });
+        return future;
     }
 
     private List<CachedReaction> getFutures(List<CompletableFuture<CachedReaction>> futures) {
@@ -154,7 +155,8 @@ public class MessageCacheBean implements MessageCache {
     }
 
     @Override
-    public void getCachedReactionFromReaction(CompletableFuture<CachedReaction> future, MessageReaction reaction) {
+    public CompletableFuture<CachedReaction> getCachedReactionFromReaction(MessageReaction reaction) {
+        CompletableFuture<CachedReaction> future = new CompletableFuture<>();
         ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
         CachedReaction.CachedReactionBuilder builder = CachedReaction.builder();
 
@@ -169,6 +171,7 @@ public class MessageCacheBean implements MessageCache {
         });
         builder.userInServersIds(ausers);
         builder.emote(emoteService.buildAEmoteFromReaction(reaction.getReactionEmote()));
+        return future;
     }
 
     @Transactional

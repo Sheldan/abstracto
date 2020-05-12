@@ -111,8 +111,8 @@ public class WarnServiceBean implements WarnService {
     @Override
     @Transactional
     public void decayWarningsForServer(AServer server) {
-        Double days = configService.getDoubleValue("decayDays", server.getId());
-        Instant cutOffDay = Instant.now().minus(days.longValue(), ChronoUnit.DAYS);
+        Long days = configService.getLongValue("decayDays", server.getId());
+        Instant cutOffDay = Instant.now().minus(days, ChronoUnit.DAYS);
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);
         decayWarnings(warningsToDecay);
         logDecayedWarnings(server, warningsToDecay);

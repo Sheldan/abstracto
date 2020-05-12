@@ -77,7 +77,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         if(reaction != null) {
             AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
             List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUserInServersIds(), author);
-            Double starMinimum = getFromConfig("starLvl1", message.getServerId());
+            Long starMinimum = getFromConfig("starLvl1", message.getServerId());
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
@@ -133,8 +133,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         }
     }
 
-    private Double getFromConfig(String key, Long guildId) {
-        return configManagementService.loadConfig(guildId, key).getDoubleValue();
+    private Long getFromConfig(String key, Long guildId) {
+        return configManagementService.loadConfig(guildId, key).getLongValue();
     }
 
     private List<AUserInAServer> getUsersExcept(List<Long> users, AUserInAServer author) {
