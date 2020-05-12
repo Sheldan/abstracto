@@ -9,6 +9,9 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * Table used to store mutes in order to track when the mute was cast and when it ended.
+ */
 @Entity
 @Table(name="mute")
 @Builder
@@ -18,37 +21,70 @@ import java.util.Objects;
 @Setter
 public class Mute {
 
+    /**
+     * The globally unique id of the mute.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * The {@link AUserInAServer} which was muted
+     */
     @ManyToOne
     @JoinColumn(name = "mutedUser", nullable = false)
     private AUserInAServer mutedUser;
 
+    /**
+     * The {@link AUserInAServer} which casted the mute
+     */
     @ManyToOne
     @JoinColumn(name = "mutingUser", nullable = false)
     private AUserInAServer mutingUser;
 
+    /**
+     * The reason of the mute which is stored
+     */
     private String reason;
 
+    /**
+     * The date when the mute was cast, and the start date
+     */
     private Instant muteDate;
 
+    /**
+     * The date at which this mute should be removed in the future
+     */
     private Instant muteTargetDate;
 
+    /**
+     * Whether or not the mute already ended, be it manually or when the time passed
+     */
     private Boolean muteEnded;
 
+    /**
+     * The message which contained the command which caused this mute
+     */
     @Column
     private Long messageId;
 
+    /**
+     * The {@link AServer} in which this mute was cast
+     */
     @ManyToOne
     @JoinColumn(name = "mutingServer", nullable = false)
     private AServer mutingServer;
 
+    /**
+     * The channel in which this mute was cast
+     */
     @ManyToOne
     @JoinColumn(name = "mutingChannel")
     private AChannel mutingChannel;
 
+    /**
+     * When the mute is scheduled to be un-done with quartz, this stores the quartz trigger in order to cancel it, if need be.
+     */
     private String triggerKey;
 
     @Override

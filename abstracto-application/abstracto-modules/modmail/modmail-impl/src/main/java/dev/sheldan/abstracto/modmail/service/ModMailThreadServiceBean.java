@@ -249,6 +249,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         if(textChannelFromServer.isPresent()) {
             TextChannel textChannel = textChannelFromServer.get();
             self.sendUserReply(textChannel, modMailThread, message);
+        } else {
+            // in this case there was no text channel on the server associated with the mod mail thread
+            // close the existing one, so the user can start a new one
+            message.getChannel().sendMessage(templateService.renderTemplate("modmail_failed_to_forward_message", new Object())).queue();
+            self.closeModMailThreadInDb(modMailThread.getId());
         }
     }
 

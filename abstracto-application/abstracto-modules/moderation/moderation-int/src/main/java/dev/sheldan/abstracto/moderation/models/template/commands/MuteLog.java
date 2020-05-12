@@ -11,16 +11,34 @@ import net.dv8tion.jda.api.entities.Message;
 import java.time.Duration;
 
 
+/**
+ * Used when rendering the notification when a member was muted. The template is: "mute_log_embed"
+ */
 @Getter
 @SuperBuilder
 @Setter
 public class MuteLog extends UserInitiatedServerContext {
-
+    /**
+     * The {@link Member} being muted
+     */
     private Member mutedUser;
+    /**
+     * The {@link Member} executing the mute
+     */
     private Member mutingUser;
+    /**
+     * The {@link Message} triggering the command to mute
+     */
     private Message message;
+    /**
+     * The persisted mute object from the database containing the information about the mute
+     */
     private Mute mute;
 
+    /**
+     * The {@link Duration} of the mute between the mute was cast and and the date it should end
+     * @return The {@link Duration} between start and target date
+     */
     public Duration getMuteDuration() {
         return Duration.between(mute.getMuteDate(), mute.getMuteTargetDate());
     }

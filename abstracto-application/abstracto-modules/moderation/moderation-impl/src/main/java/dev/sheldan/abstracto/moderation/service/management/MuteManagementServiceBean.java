@@ -24,18 +24,18 @@ public class MuteManagementServiceBean implements MuteManagementService {
     private UserInServerManagementService userInServerManagementService;
 
     @Override
-    public Mute createMute(AUserInAServer aUserInAServer, AUserInAServer mutingUser, String reason, Instant unmuteDate, AServerAChannelMessage origin) {
+    public Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unmuteDate, AServerAChannelMessage muteMessage) {
         log.trace("Creating mute for user {} executed by user {} in server {}, user will be unmuted at {}",
-                aUserInAServer.getUserReference().getId(), mutingUser.getUserReference().getId(), aUserInAServer.getServerReference().getId(), unmuteDate);
+                mutedUser.getUserReference().getId(), mutingUser.getUserReference().getId(), mutedUser.getServerReference().getId(), unmuteDate);
         Mute mute = Mute
                 .builder()
                 .muteDate(Instant.now())
-                .mutedUser(aUserInAServer)
+                .mutedUser(mutedUser)
                 .mutingUser(mutingUser)
                 .muteTargetDate(unmuteDate)
-                .mutingServer(aUserInAServer.getServerReference())
-                .mutingChannel(origin.getChannel())
-                .messageId(origin.getMessageId())
+                .mutingServer(mutedUser.getServerReference())
+                .mutingChannel(muteMessage.getChannel())
+                .messageId(muteMessage.getMessageId())
                 .reason(reason)
                 .muteEnded(false)
                 .build();
@@ -65,8 +65,8 @@ public class MuteManagementServiceBean implements MuteManagementService {
     }
 
     @Override
-    public Mute getAMuteOf(Member userInAServer) {
-        return getAMuteOf(userInServerManagementService.loadUser(userInAServer));
+    public Mute getAMuteOf(Member member) {
+        return getAMuteOf(userInServerManagementService.loadUser(member));
     }
 
     @Override

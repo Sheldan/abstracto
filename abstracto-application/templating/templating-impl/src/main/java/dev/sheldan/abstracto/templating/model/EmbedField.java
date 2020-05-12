@@ -10,11 +10,11 @@ import lombok.Setter;
 @Setter
 public class EmbedField {
     /**
-     * The name of the field to be set, must not be null or empty
+     * The name of the field to be set
      */
     private String name;
     /**
-     * The value of the field to be set, must not be null or empty
+     * The value of the field to be set
      */
     private String value;
     /**

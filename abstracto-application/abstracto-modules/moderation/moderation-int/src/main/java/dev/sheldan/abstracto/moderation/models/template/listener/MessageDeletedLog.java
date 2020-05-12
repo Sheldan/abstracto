@@ -6,7 +6,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Getter @Setter @SuperBuilder
+/**
+ * Used when rendering the log message when a message was deleted. The template is: "message_deleted_embed"
+ */
+@Getter
+@Setter
+@SuperBuilder
 public class MessageDeletedLog extends UserInitiatedServerContext {
+    /**
+     * A {@link CachedMessage} representing the deleted message
+     */
     private CachedMessage message;
 }

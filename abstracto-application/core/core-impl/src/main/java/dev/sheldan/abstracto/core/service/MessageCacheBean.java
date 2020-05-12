@@ -89,7 +89,13 @@ public class MessageCacheBean implements MessageCache {
                 TextChannel textChannel = textChannelByIdOptional.get();
                 textChannel.retrieveMessageById(messageId).queue(message ->
                         {
-                            buildCachedMessageFromMessage(message).thenAccept(future::complete);
+                            buildCachedMessageFromMessage(message)
+                                    .thenAccept(future::complete)
+                                    .exceptionally(throwable -> {
+                                        log.error("Failed to load message for caching.", throwable);
+                                        future.completeExceptionally(throwable);
+                                        return null;
+                                    });
                         }
                 );
             } else {

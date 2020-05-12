@@ -7,6 +7,9 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * A warning which was given a member with a special reason by a moderating member. This warning is bound to a server.
+ */
 @Entity
 @Table(name="warning")
 @Builder
@@ -14,31 +17,52 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Warning {
 
+    /**
+     * The globally unique id of this warning
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
     private Long id;
 
+    /**
+     * The {@link AUserInAServer} which was warned
+     */
     @Getter
     @ManyToOne
     @JoinColumn(name = "warnedUserId", nullable = false)
     private AUserInAServer warnedUser;
 
+    /**
+     * The {@link AUserInAServer} which gave the warning
+     */
     @Getter
     @ManyToOne
     @JoinColumn(name = "warningUserId", nullable = false)
     private AUserInAServer warningUser;
 
+    /**
+     * The reason why this warning was cast
+     */
     @Getter
     private String reason;
 
+    /**
+     * The date at which the warning was cast
+     */
     @Getter
     private Instant warnDate;
 
+    /**
+     * Whether or not the warning was already decayed and is not active anymore
+     */
     @Getter
     @Setter
     private Boolean decayed;
 
+    /**
+     * The date at which the warning was decayed
+     */
     @Getter
     @Setter
     private Instant decayDate;

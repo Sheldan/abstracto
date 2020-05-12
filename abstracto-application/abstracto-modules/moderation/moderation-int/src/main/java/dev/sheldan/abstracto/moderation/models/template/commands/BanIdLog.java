@@ -6,12 +6,26 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
 
+/**
+ * Used when rendering the notification when a member was banned by ID. The template is: "banid_log_embed"
+ */
 @Getter
 @SuperBuilder
 @Setter
 public class BanIdLog extends UserInitiatedServerContext {
+    /**
+     * The reason of the ban
+     */
     private String reason;
+
+    /**
+     * The member executing the ban
+     */
     private Member banningUser;
+
+    /**
+     * The Discord Snowflake of the user being banned.
+     */
     private Long bannedUserId;
 
 }
