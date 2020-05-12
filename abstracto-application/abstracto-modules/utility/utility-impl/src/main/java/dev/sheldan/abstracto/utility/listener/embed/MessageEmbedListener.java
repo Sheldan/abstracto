@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.utility.listener.embed;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
@@ -31,16 +30,18 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Autowired
     private MessageEmbedService messageEmbedService;
 
+    @Autowired
+    private MessageEmbedListener self;
+
     @Override
     public void execute(Message message) {
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         for (MessageEmbedLink messageEmbedLink : links) {
             messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
-            Long cause = userInServerManagementService.loadUser(message.getMember()).getUserInServerId();
+            Long userEmbeddingUserInServerId = userInServerManagementService.loadUser(message.getMember()).getUserInServerId();
             Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> {
-                AUserInAServer userInAServer = userInServerManagementService.loadUser(cause);
-                messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), userInAServer , message);
+                self.loadUserAndEmbed(message, userEmbeddingUserInServerId, cachedMessage);
             };
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer)
                     .exceptionally(throwable -> {
@@ -51,6 +52,10 @@ public class MessageEmbedListener implements MessageReceivedListener {
         if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
             message.delete().queue();
         }
+    }
+
+    public void loadUserAndEmbed(Message message, Long cause, CachedMessage cachedMessage) {
+        messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message);
     }
 
     @Override

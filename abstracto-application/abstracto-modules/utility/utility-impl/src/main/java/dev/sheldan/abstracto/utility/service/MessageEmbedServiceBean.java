@@ -96,13 +96,11 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     @Override
-    public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, AUserInAServer reason, Message embeddingMessage) {
+    public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
         linksToEmbed.forEach(messageEmbedLink -> {
-            Long userInServerId = reason.getUserInServerId();
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
                     .thenAccept(cachedMessage -> {
-                        AUserInAServer cause = userInServerManagementService.loadUser(userInServerId);
-                        self.embedLink(cachedMessage, target, cause, embeddingMessage);
+                        self.embedLink(cachedMessage, target, userEmbeddingUserInServerId, embeddingMessage);
                         }
                     ).exceptionally(throwable -> {
                 log.error("Message retrieval from cache failed for message {}.", messageEmbedLink.getMessageId(), throwable);
@@ -113,7 +111,8 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Override
     @Transactional
-    public void embedLink(CachedMessage cachedMessage, TextChannel target, AUserInAServer cause, Message embeddingMessage) {
+    public void embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
+        AUserInAServer cause = userInServerManagementService.loadUser(userEmbeddingUserInServerId);
         MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(embeddingMessage, cachedMessage);
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);

@@ -14,8 +14,8 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.time.Instant;
@@ -43,6 +43,11 @@ public class MessageCacheBean implements MessageCache {
     @Lazy
     // needs to be lazy, because of circular dependency
     private MessageCache self;
+
+    @Autowired
+    @Lazy
+    // needs to be lazy, because of circular dependency
+    private MessageCacheBean concreteSelf;
 
     @Override
     @CachePut(key = "#message.id")
@@ -155,9 +160,7 @@ public class MessageCacheBean implements MessageCache {
 
         List<Long> ausers = new ArrayList<>();
         users.forEachAsync(user -> {
-            if(reaction.getGuild() != null) {
-                ausers.add(userInServerManagementService.loadUser(reaction.getGuild().getIdLong(), user.getIdLong()).getUserInServerId());
-            }
+            concreteSelf.loadUser(reaction, ausers, user);
             return false;
         }).thenAccept(o -> future.complete(builder.build()))
         .exceptionally(throwable -> {
@@ -166,6 +169,13 @@ public class MessageCacheBean implements MessageCache {
         });
         builder.userInServersIds(ausers);
         builder.emote(emoteService.buildAEmoteFromReaction(reaction.getReactionEmote()));
+    }
+
+    @Transactional
+    public void loadUser(MessageReaction reaction, List<Long> ausers, User user) {
+        if(reaction.getGuild() != null) {
+            ausers.add(userInServerManagementService.loadUser(reaction.getGuild().getIdLong(), user.getIdLong()).getUserInServerId());
+        }
     }
 
     private CachedEmbed getCachedEmbedFromEmbed(MessageEmbed embed) {
