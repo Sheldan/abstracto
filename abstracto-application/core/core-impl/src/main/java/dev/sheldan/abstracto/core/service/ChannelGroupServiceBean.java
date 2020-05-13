@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
-import dev.sheldan.abstracto.core.command.exception.CommandException;
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
@@ -104,7 +104,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         }
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
-            throw new CommandException(String.format(COMMAND_NOT_FOUND, commandName));
+            throw new CommandNotFoundException();
         }
         channelGroupCommandManagementService.setCommandInGroupTo(command, channelGroup, false);
     }
@@ -118,7 +118,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         }
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
-            throw new CommandException(String.format(COMMAND_NOT_FOUND, commandName));
+            throw new CommandNotFoundException();
         }
         channelGroupCommandManagementService.setCommandInGroupTo(command, channelGroup, true);
     }
