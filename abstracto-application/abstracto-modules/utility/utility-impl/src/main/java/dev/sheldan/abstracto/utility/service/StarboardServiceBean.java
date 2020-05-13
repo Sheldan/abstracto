@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
@@ -103,8 +103,8 @@ public class StarboardServiceBean implements StarboardService {
 
     @Transactional
     public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
-        AUserInAServer innerStarredUser = userInServerManagementService.loadUser(starredUserId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Cannnot find user with id %s", starredUserId)));
-        AUserInAServer innerUserReacting = userInServerManagementService.loadUser(userReactingId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Cannnot find user with id %s", userReactingId)));
+        AUserInAServer innerStarredUser = userInServerManagementService.loadUser(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
+        AUserInAServer innerUserReacting = userInServerManagementService.loadUser(userReactingId).orElseThrow(() -> new UserInServerNotFoundException(userReactingId));
         try {
             AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId).orElseThrow(() -> new ChannelNotFoundException(starboardChannelId, message.getServerId()));
             Message message1 = completableFutures.get(0).get();
@@ -116,7 +116,7 @@ public class StarboardServiceBean implements StarboardService {
                     .build();
             StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, innerStarredUser, innerUserReacting, aServerAChannelMessage);
             userExceptAuthorIds.forEach(aLong -> {
-                AUserInAServer user = userInServerManagementService.loadUser(aLong).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find user with id %s", aLong)));
+                AUserInAServer user = userInServerManagementService.loadUser(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
                 starboardPostReactorManagementService.addReactor(starboardPost, user);
             });
         } catch (InterruptedException | ExecutionException e) {

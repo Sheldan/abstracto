@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
@@ -12,6 +11,7 @@ import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.utility.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ExecutedReminderModel;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
@@ -98,7 +98,7 @@ public class RemindServiceBean implements ReminderService {
     @Override
     @Transactional
     public void executeReminder(Long reminderId)  {
-        Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find reminder with id %s", reminderId)));
+        Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
         if(reminderToRemindFor.isReminded()) {
             return;
         }
@@ -140,7 +140,7 @@ public class RemindServiceBean implements ReminderService {
             }
             reminderManagementService.saveReminder(reminder);
         } else {
-            throw new AbstractoRunTimeException("Reminder does not exist, was already reminded or does not belong to you.");
+            throw new ReminderNotFoundException(reminderId);
         }
     }
 }

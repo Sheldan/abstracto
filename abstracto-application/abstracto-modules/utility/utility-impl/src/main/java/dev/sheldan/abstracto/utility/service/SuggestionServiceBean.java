@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -8,6 +7,7 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.utility.exception.SuggestionNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
@@ -65,7 +65,7 @@ public class SuggestionServiceBean implements SuggestionService {
         if(guildById != null) {
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId);
             CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
-                Suggestion innerSuggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find suggestion with id %s", suggestionId)));
+                Suggestion innerSuggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
                 try {
                     Message message = completableFutures.get(0).get();
                     suggestionManagementService.setPostedMessage(innerSuggestion, message);
@@ -85,7 +85,7 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public void acceptSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
-        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find suggestion with id %s", suggestionId)));
+        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
         updateSuggestion(text, suggestionLog, suggestion);
     }
@@ -130,7 +130,7 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public void rejectSuggestion(Long suggestionId, String text, SuggestionLog log) {
-        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find suggestion with id %s", suggestionId)));
+        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() ->  new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
         updateSuggestion(text, log, suggestion);
     }

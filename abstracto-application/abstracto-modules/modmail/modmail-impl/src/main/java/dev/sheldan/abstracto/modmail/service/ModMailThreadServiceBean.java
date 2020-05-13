@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.modmail.config.ModMailFeature;
 import dev.sheldan.abstracto.modmail.config.ModMailLoggingFeature;
+import dev.sheldan.abstracto.modmail.exception.ModMailThreadNotFoundException;
 import dev.sheldan.abstracto.modmail.models.database.*;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
 import dev.sheldan.abstracto.modmail.models.template.*;
@@ -309,7 +310,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 messageService.addReactionToMessage("readReaction", modMailThread.getServer().getId(), message);
             });
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
     }
 
@@ -348,7 +349,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 log.error("Failed to notify about mod mail exception.", e);
             }
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailTreadId));
+            throw new ModMailThreadNotFoundException(modMailTreadId);
         }
     }
 
@@ -406,7 +407,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         sendModMailFailure("modmail_exception_generic", innerModMailThread.getUser(), modMailThreadId, feedBack, e);
                     }
                 } else {
-                    throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+                    throw new ModMailThreadNotFoundException(modMailThreadId);
                 }
             });
         } else {
@@ -446,7 +447,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 undoActionService.performActions(undoActions);
             });
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
     }
 
@@ -476,7 +477,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 undoActionService.performActions(undoActions);
             }
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
 
     }
@@ -532,7 +533,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .futures(completableFutures)
                     .build();
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
     }
 
@@ -544,7 +545,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             log.info("Setting thread {} to closed in db.", modMailThread.getId());
             modMailThreadManagementService.setModMailThreadState(modMailThread, ModMailThreadState.CLOSED);
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
     }
 
@@ -594,7 +595,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 return null;
             });
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
 
     }
@@ -618,7 +619,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             self.saveMessageIds(messages, modMailThread, moderator, anonymous, true);
             modMailThreadManagementService.setModMailThreadState(modMailThread, ModMailThreadState.MOD_REPLIED);
         } else {
-            throw new AbstractoRunTimeException(String.format("Could not find mod mail thread with id %s", modMailThreadId));
+            throw new ModMailThreadNotFoundException(modMailThreadId);
         }
     }
 
