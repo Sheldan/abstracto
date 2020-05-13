@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,8 @@ public class SetExpRole extends AbstractConditionableCommand {
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private TemplateService templateService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
@@ -51,7 +54,7 @@ public class SetExpRole extends AbstractConditionableCommand {
             experienceRoleService.setRoleToLevel(role, level, server, commandContext.getUserInitiatedContext().getChannel());
             return CommandResult.fromSuccess();
         }
-       return CommandResult.fromError("Could not find role");
+       return CommandResult.fromError(templateService.renderTemplate("could_not_find_role", new Object()));
     }
 
     @Override

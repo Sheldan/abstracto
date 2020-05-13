@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +42,9 @@ public class AllowRole extends AbstractConditionableCommand {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+    @Autowired
+    private TemplateService templateService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
@@ -52,7 +56,7 @@ public class AllowRole extends AbstractConditionableCommand {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.allowCommandForRole(command, role);
         } else {
-            return CommandResult.fromError("No Feature/Command with that name");
+            return CommandResult.fromError(templateService.renderTemplate("no_feature_command_found", new Object()));
         }
         return CommandResult.fromSuccess();
     }

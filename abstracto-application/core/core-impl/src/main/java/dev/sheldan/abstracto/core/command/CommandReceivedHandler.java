@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -175,9 +176,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         }
                     } else if(param.getType().equals(ARole.class)) {
                         if(StringUtils.isNumeric(value)) {
-                            parsedParameters.add(roleManagementService.findRole(Long.parseLong(value), userInitiatedServerContext.getServer()));
+                            long roleId = Long.parseLong(value);
+                            parsedParameters.add(roleManagementService.findRole(roleId, userInitiatedServerContext.getServer()).orElseThrow(() -> new RoleNotFoundInDBException(roleId, message.getGuild().getIdLong())));
                         } else {
-                            parsedParameters.add(roleManagementService.findRole(roleIterator.next().getIdLong(), userInitiatedServerContext.getServer()));
+                            long roleId = roleIterator.next().getIdLong();
+                            parsedParameters.add(roleManagementService.findRole(roleId, userInitiatedServerContext.getServer()).orElseThrow(() -> new RoleNotFoundInDBException(roleId, message.getGuild().getIdLong())));
                         }
                     } else if(param.getType().equals(Boolean.class)) {
                         parsedParameters.add(Boolean.valueOf(value));

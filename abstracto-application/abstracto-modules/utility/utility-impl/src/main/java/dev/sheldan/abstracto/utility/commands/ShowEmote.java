@@ -30,7 +30,7 @@ public class ShowEmote extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Object emoteParameter = parameters.get(0);
         if(!(emoteParameter instanceof Emote)) {
-            return CommandResult.fromError("No custom emote found.");
+            return CommandResult.fromError(templateService.renderTemplate("no_custom_emote_found", new Object()));
         }
         Emote emote = (Emote) emoteParameter;
         ShowEmoteLog emoteLog = (ShowEmoteLog) ContextConverter.fromCommandContext(commandContext, ShowEmoteLog.class);
