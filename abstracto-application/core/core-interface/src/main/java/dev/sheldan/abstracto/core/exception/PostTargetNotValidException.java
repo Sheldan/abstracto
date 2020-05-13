@@ -3,14 +3,17 @@ package dev.sheldan.abstracto.core.exception;
 import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class PostTargetNotValidException extends AbstractoRunTimeException implements Templatable {
 
     private String postTargetKey;
+    private List<String> availableTargets;
 
-    public PostTargetNotValidException(String key) {
+    public PostTargetNotValidException(String key, List<String> available) {
         super("");
         this.postTargetKey = key;
+        this.availableTargets = available;
     }
 
     @Override
@@ -22,6 +25,7 @@ public class PostTargetNotValidException extends AbstractoRunTimeException imple
     public Object getTemplateModel() {
         HashMap<String, String> param = new HashMap<>();
         param.put("key", this.postTargetKey);
+        param.put("available", String.join(",", this.availableTargets));
         return param;
     }
 }

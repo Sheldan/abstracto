@@ -1,1 +1,1 @@
-The necessary parameters were not found. A '${class.simpleName}' was expected as '${parameterName}'. Consult help to see the correct syntax.
+<#assign expectedType>${class.simpleName}</#assign><#include "incorrect_parameters_text">

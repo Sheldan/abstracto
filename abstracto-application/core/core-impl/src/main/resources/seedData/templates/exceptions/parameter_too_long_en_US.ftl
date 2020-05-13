@@ -1,1 +1,1 @@
-The parameter ${parameterName} had a too large value: ${actualLength}. The maximum is: ${maximumLength}.
+<#include "parameter_too_long_text">

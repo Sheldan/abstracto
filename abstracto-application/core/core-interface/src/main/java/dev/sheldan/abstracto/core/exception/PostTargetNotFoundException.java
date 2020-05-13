@@ -8,12 +8,10 @@ import java.util.List;
 public class PostTargetNotFoundException extends AbstractoRunTimeException implements Templatable {
 
     private String postTargetKey;
-    private List<String> availableTargets;
 
-    public PostTargetNotFoundException(String key, List<String> available) {
+    public PostTargetNotFoundException(String key) {
         super("");
         this.postTargetKey = key;
-        this.availableTargets = available;
     }
 
     @Override
@@ -25,7 +23,6 @@ public class PostTargetNotFoundException extends AbstractoRunTimeException imple
     public Object getTemplateModel() {
         HashMap<String, String> param = new HashMap<>();
         param.put("key", this.postTargetKey);
-        param.put("available", String.join(",", this.availableTargets));
         return param;
     }
 }

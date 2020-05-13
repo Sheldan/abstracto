@@ -1,1 +1,1 @@
-The targeted user is immune against this command, because of the role: ${role.name}.
+<#assign roleName>${role.name}</#assign> <#include "immune_role_text">

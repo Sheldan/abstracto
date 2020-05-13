@@ -1,1 +1,1 @@
-Feature ${featureName} not available. The available features are: ${availableFeatures?join(", ")}
+<#assign availableFeatures>${availableFeatures?join(", ")}</#assign><#include "feature_not_found_text">

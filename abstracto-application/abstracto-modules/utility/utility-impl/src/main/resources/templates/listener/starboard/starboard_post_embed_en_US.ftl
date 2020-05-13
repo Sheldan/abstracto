@@ -4,7 +4,7 @@
     "name": "${author.effectiveName}",
     "avatar": "${author.user.effectiveAvatarUrl}"
   <#else>
-    "name": "${user.id?c} (Has left the server)"
+    "name": "${user.id?c} (<#include "user_left_server">)"
   </#if>
   },
   "color" : {

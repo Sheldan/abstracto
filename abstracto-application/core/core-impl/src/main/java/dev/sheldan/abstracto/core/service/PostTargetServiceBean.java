@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
@@ -70,7 +71,7 @@ public class PostTargetServiceBean implements PostTargetService {
             return postTarget;
         } else {
             log.error("PostTarget {} in server {} was not found!", postTargetName, serverId);
-            throw new PostTargetNotValidException(postTargetName);
+            throw new PostTargetNotFoundException(postTargetName);
         }
     }
 
@@ -171,7 +172,7 @@ public class PostTargetServiceBean implements PostTargetService {
     public void throwIfPostTargetIsNotDefined(String name, Long serverId) {
         PostTarget postTarget = postTargetManagement.getPostTarget(name, serverId);
         if(postTarget == null) {
-            throw new PostTargetNotValidException(name);
+            throw new PostTargetNotValidException(name, dynamicKeyLoader.getPostTargetsAsList());
         }
     }
 

@@ -1,1 +1,1 @@
-Command was not found.
+<#include "command_not_found_text">

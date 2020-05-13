@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.modmail.service;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.ButtonMenu;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
+import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
@@ -398,7 +398,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                             log.error("Failed to log messages for mod mail thread {}.", modMailThreadId, innerThrowable);
                             return null;
                         });
-                    } catch (PostTargetNotValidException po) {
+                    } catch (PostTargetNotFoundException po) {
                         log.error("Failed to log mod mail messages", po);
                         sendModMailFailure("modmail_exception_post_target_not_defined", innerModMailThread.getUser(), modMailThreadId, feedBack, po);
                     } catch (Exception e) {
