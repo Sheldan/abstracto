@@ -59,7 +59,7 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     public void createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, ReminderModel reminderModel) {
-        AChannel channel = channelManagementService.loadChannel(reminderModel.getChannel().getId());
+        AChannel channel = reminderModel.getChannel();
         AServerAChannelAUser aServerAChannelAUser = AServerAChannelAUser
                 .builder()
                 .user(user.getUserReference())
@@ -98,7 +98,7 @@ public class RemindServiceBean implements ReminderService {
     @Override
     @Transactional
     public void executeReminder(Long reminderId)  {
-        Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
+        Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find reminder with id %s", reminderId)));
         if(reminderToRemindFor.isReminded()) {
             return;
         }

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.modmail.service.management;
 
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ModMailThreadManagementServiceBean implements ModMailThreadManagementService {
@@ -24,13 +26,14 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
 
     @Override
     public ModMailThread getByChannelId(Long channelId) {
-        AChannel channel = channelManagementService.loadChannel(channelId);
+        Optional<AChannel> channelOpt = channelManagementService.loadChannel(channelId);
+        AChannel channel = channelOpt.orElseThrow(() -> new ChannelNotFoundException(channelId, 0L));
         return getByChannel(channel);
     }
 
     @Override
-    public ModMailThread getById(Long modMailThreadId) {
-        return modMailThreadRepository.getOne(modMailThreadId);
+    public Optional<ModMailThread> getById(Long modMailThreadId) {
+        return modMailThreadRepository.findById(modMailThreadId);
     }
 
     @Override

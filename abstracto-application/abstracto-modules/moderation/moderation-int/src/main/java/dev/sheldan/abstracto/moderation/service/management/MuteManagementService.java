@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Member;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Responsible for creating/updating/retrieving mutes in the database.
@@ -26,9 +27,9 @@ public interface MuteManagementService {
     /**
      * Finds the mute from the database by the given ID.
      * @param muteId The id of the mute to search for
-     * @return The found {@link Mute}, the first access fails, if the entity was not found
+     * @return An optional containing a {@link Mute} if the ID exists, and null otherwise
      */
-    Mute findMute(Long muteId);
+    Optional<Mute> findMute(Long muteId);
 
     /**
      * Saves the given mute to the database.

@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -33,6 +35,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -129,7 +132,9 @@ public class MuteServiceBean implements MuteService {
         applyMuteRole(userInServerBeingMuted);
         AServerAChannelMessage origin = null;
         if(message != null) {
-            AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
+            long channelId = message.getChannel().getIdLong();
+            Optional<AChannel> channelOpt = channelManagementService.loadChannel(channelId);
+            AChannel channel = channelOpt.orElseThrow(() -> new ChannelNotFoundException(channelId, userInServerBeingMuted.getServerReference().getId()));
             origin = AServerAChannelMessage
                     .builder()
                     .channel(channel)
@@ -213,7 +218,8 @@ public class MuteServiceBean implements MuteService {
     @Transactional
     public void unmuteUser(Mute mute) {
         AServer mutingServer = mute.getMutingServer();
-        Mute updatedMute = muteManagementService.findMute(mute.getId());
+        Optional<Mute> updatedMuteOpt = muteManagementService.findMute(mute.getId());
+        Mute updatedMute = updatedMuteOpt.orElseThrow(() -> new AbstractoRunTimeException(String.format("Cannot find mute with id %s", mute.getId())));
         // we do not store any reference to the instant unmutes (<=60sec), so we cannot cancel it
         // but if the person gets unmuted immediately, via command, this might still execute of the instant unmute
         // so we need to load the mute, and check if the mute was unmuted already, because the mute object we have at
@@ -248,8 +254,8 @@ public class MuteServiceBean implements MuteService {
     @Transactional
     public void endMute(Long muteId) {
         log.info("Unmuting the mute {}", muteId);
-        Mute mute = muteManagementService.findMute(muteId);
-        unmuteUser(mute);
+        Optional<Mute> mute = muteManagementService.findMute(muteId);
+        mute.ifPresent(this::unmuteUser);
     }
 
     @Override

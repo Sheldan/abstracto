@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +49,7 @@ public class ChannelServiceBean implements ChannelService {
                 return sendTextToChannel(text, textChannel);
             } else {
                 log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
-                throw new ChannelException(String.format("Channel %s to post to not found.", channel.getId()));
+                throw new ChannelNotFoundException(channel.getId(), channel.getServer().getId());
             }
         } else {
             log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
@@ -65,7 +64,7 @@ public class ChannelServiceBean implements ChannelService {
             TextChannel textChannel = textChannelOpt.get();
             return sendMessageToChannel(message, textChannel);
         }
-        throw new ChannelException(String.format("Channel %s in guild %s not found.", channel.getId(), channel.getServer().getId()));
+        throw new ChannelNotFoundException(channel.getId(), channel.getServer().getId());
     }
 
     @Override
@@ -87,7 +86,7 @@ public class ChannelServiceBean implements ChannelService {
                 return sendEmbedToChannel(embed, textChannel);
             } else {
                 log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
-                throw new ChannelException(String.format("Channel %s to post to not found.", channel.getId()));
+                throw new ChannelNotFoundException(channel.getId(), guild.getIdLong());
             }
         } else {
             log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
@@ -106,7 +105,7 @@ public class ChannelServiceBean implements ChannelService {
         if(textChannelFromServer.isPresent()) {
             return sendMessageToSendToChannel(messageToSend, textChannelFromServer.get());
         }
-        throw new ChannelException(String.format("Channel %s was not found.", channel.getId()));
+        throw new ChannelNotFoundException(channel.getId(), channel.getServer().getId());
     }
 
     @Override
@@ -144,7 +143,7 @@ public class ChannelServiceBean implements ChannelService {
             TextChannel textChannel = textChannelFromServer.get();
             editMessageInAChannel(messageToSend, textChannel, messageId);
         } else {
-            throw new ChannelException(String.format("Channel %s was not found.", channel.getId()));
+            throw new ChannelNotFoundException(channel.getId(), channel.getServer().getId());
         }
     }
 
@@ -177,7 +176,7 @@ public class ChannelServiceBean implements ChannelService {
         if(textChannelById != null) {
             return textChannelById.delete().submit();
         }
-        throw new ChannelException(String.format("Failed to delete channel %s in server %s", channelId, serverId));
+        throw new ChannelNotFoundException(channelId, serverId);
     }
 
     @Override

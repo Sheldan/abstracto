@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -29,7 +31,7 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public AServer loadOrCreate(Long id) {
         if(repository.existsById(id)) {
-            return repository.getOne(id);
+            return repository.findById(id).get();
         } else {
             return createServer(id);
         }
@@ -49,10 +51,11 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public AUserInAServer addUserToServer(Long serverId, Long userId) {
         log.info("Adding user {} to server {}", userId, serverId);
-        AServer server = repository.getOne(serverId);
+        Optional<AServer> server = repository.findById(serverId);
         AUser user = userManagementService.loadUser(userId);
-        AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(server).userReference(user).build();
-        server.getUsers().add(aUserInAServer);
+        AServer serverReference = server.orElseThrow(() -> new AbstractoRunTimeException(String.format("Cannnot find server %s", serverId)));
+        AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(serverReference).userReference(user).build();
+        serverReference.getUsers().add(aUserInAServer);
         return aUserInAServer;
     }
 

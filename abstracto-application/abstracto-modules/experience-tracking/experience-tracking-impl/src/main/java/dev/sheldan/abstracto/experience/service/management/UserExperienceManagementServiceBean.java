@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service.management;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
@@ -31,7 +32,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
 
     @Override
     public AUserExperience createUserInServer(AUserInAServer aUserInAServer) {
-        AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0);
+        AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
         return AUserExperience
                 .builder()
                 .experience(0L)
@@ -63,7 +64,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
             userExperience.setExperience(userExperience.getExperience() + experience);
             return userExperience;
         } else {
-            AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0);
+            AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
             return AUserExperience
                     .builder()
                     .experience(experience)

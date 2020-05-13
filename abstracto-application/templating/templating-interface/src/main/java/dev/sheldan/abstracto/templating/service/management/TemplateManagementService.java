@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.templating.service.management;
 
 import dev.sheldan.abstracto.templating.model.database.Template;
 
+import java.util.Optional;
+
 /**
  * Provides methods to access the stored templates.
  */
@@ -9,9 +11,9 @@ public interface TemplateManagementService {
     /**
      * Retrieves the template identified by the key.
      * @param key They template key to search for
-     * @return The {@link Template} identified by the key, if it exists.
+     * @return An {@link Optional} containing the {@link Template} if it exists, and null otherwise
      */
-    Template getTemplateByKey(String key);
+    Optional<Template> getTemplateByKey(String key);
 
     /**
      * Checks whether or not the template exists in the database.

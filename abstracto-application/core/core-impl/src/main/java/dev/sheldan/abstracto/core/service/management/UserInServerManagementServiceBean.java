@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -47,8 +48,8 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public AUserInAServer loadUser(Long userInServerId) {
-        return userInServerRepository.getOne(userInServerId);
+    public Optional<AUserInAServer> loadUser(Long userInServerId) {
+        return userInServerRepository.findById(userInServerId);
     }
 
     @Override

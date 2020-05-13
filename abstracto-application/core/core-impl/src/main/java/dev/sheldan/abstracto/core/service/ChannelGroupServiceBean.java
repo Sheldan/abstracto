@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.exception.CommandException;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -14,6 +15,8 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class ChannelGroupServiceBean implements ChannelGroupService {
@@ -50,13 +53,14 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
 
     @Override
     public void addChannelToChannelGroup(String channelGroupName, TextChannel textChannel) {
-        addChannelToChannelGroup(channelGroupName, textChannel.getIdLong());
+        addChannelToChannelGroup(channelGroupName, textChannel.getIdLong(), textChannel.getGuild().getIdLong());
     }
 
     @Override
-    public void addChannelToChannelGroup(String channelGroupName, Long channelId) {
-        AChannel aChannel = channelManagementService.loadChannel(channelId);
-        addChannelToChannelGroup(channelGroupName, aChannel);
+    public void addChannelToChannelGroup(String channelGroupName, Long channelId, Long serverId) {
+        Optional<AChannel> aChannel = channelManagementService.loadChannel(channelId);
+        AChannel channel = aChannel.orElseThrow(() -> new ChannelNotFoundException(channelId, serverId));
+        addChannelToChannelGroup(channelGroupName, channel);
     }
 
     @Override
@@ -71,13 +75,14 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
 
     @Override
     public void removeChannelFromChannelGroup(String channelGroupName, TextChannel textChannel) {
-        removeChannelFromChannelGroup(channelGroupName, textChannel.getIdLong());
+        removeChannelFromChannelGroup(channelGroupName, textChannel.getIdLong(), textChannel.getGuild().getIdLong());
     }
 
     @Override
-    public void removeChannelFromChannelGroup(String channelGroupName, Long channelId) {
-        AChannel aChannel = channelManagementService.loadChannel(channelId);
-        removeChannelFromChannelGroup(channelGroupName, aChannel);
+    public void removeChannelFromChannelGroup(String channelGroupName, Long channelId, Long serverId) {
+        Optional<AChannel> aChannel = channelManagementService.loadChannel(channelId);
+        AChannel channel = aChannel.orElseThrow(() -> new ChannelNotFoundException(channelId, serverId));
+        removeChannelFromChannelGroup(channelGroupName, channel);
     }
 
     @Override

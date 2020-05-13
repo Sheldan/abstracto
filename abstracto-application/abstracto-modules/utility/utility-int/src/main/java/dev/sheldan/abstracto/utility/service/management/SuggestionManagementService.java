@@ -6,10 +6,12 @@ import dev.sheldan.abstracto.utility.models.SuggestionState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 
+import java.util.Optional;
+
 public interface SuggestionManagementService {
     Suggestion createSuggestion(Member suggester, String text);
     Suggestion createSuggestion(AUserInAServer suggester, String text);
-    Suggestion getSuggestion(Long suggestionId);
+    Optional<Suggestion> getSuggestion(Long suggestionId);
     void setPostedMessage(Suggestion suggestion, Message message);
     void setSuggestionState(Suggestion suggestion, SuggestionState newState);
 }

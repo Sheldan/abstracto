@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
@@ -100,7 +100,7 @@ public class MessageCacheBean implements MessageCache {
                 );
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
-                future.completeExceptionally(new ChannelException(String.format("Not able to load message %s. Text channel %s not found in guild %s", messageId, textChannelId, guildId)));
+                future.completeExceptionally(new ChannelNotFoundException(textChannelId, guildId));
             }
         } else {
             log.error("Not able to load message {} in channel {} in guild {}. Guild not found.", messageId, textChannelId, guildId);

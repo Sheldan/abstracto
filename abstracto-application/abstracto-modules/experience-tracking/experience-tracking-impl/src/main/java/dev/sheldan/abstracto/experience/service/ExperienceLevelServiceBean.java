@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
 
     @Override
     public Long calculateExperienceToNextLevel(Integer level, Long currentExperience) {
-        AExperienceLevel nextLevel = experienceLevelManagementService.getLevel(level + 1);
+        AExperienceLevel nextLevel = experienceLevelManagementService.getLevel(level + 1).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", level)));
         return nextLevel.getExperienceNeeded() - currentExperience;
     }
 

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -44,8 +45,8 @@ public class MuteManagementServiceBean implements MuteManagementService {
     }
 
     @Override
-    public Mute findMute(Long muteId) {
-        return muteRepository.getOne(muteId);
+    public Optional<Mute> findMute(Long muteId) {
+        return muteRepository.findById(muteId);
     }
 
     @Override

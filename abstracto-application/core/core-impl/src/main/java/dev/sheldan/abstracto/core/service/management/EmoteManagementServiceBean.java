@@ -25,8 +25,8 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     private DynamicKeyLoader dynamicKeyLoader;
 
     @Override
-    public AEmote loadEmote(Long id) {
-        return repository.getOne(id);
+    public Optional<AEmote> loadEmote(Long id) {
+        return repository.findById(id);
     }
 
     @Override

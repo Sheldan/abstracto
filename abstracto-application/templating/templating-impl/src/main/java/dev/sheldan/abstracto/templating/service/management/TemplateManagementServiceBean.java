@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Optional;
 
 /**
  * ManagementService bean used to retrieve the templates by key from the database.
@@ -20,8 +21,8 @@ public class TemplateManagementServiceBean implements TemplateManagementService 
     private TemplateRepository repository;
 
     @Override
-    public Template getTemplateByKey(String key) {
-        return repository.getOne(key);
+    public Optional<Template> getTemplateByKey(String key) {
+        return repository.findById(key);
     }
 
     @Override

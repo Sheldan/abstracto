@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
-import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.PostTargetException;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
@@ -57,8 +57,7 @@ public class PostTargetServiceBean implements PostTargetService {
             } else {
                 log.error("Incorrect post target configuration: {} points to {} on server {}", target.getName(),
                         target.getChannelReference().getId(), target.getServerReference().getId());
-                throw new ChannelException(String.format("Incorrect post target configuration. The channel %s of target %s cannot be found",
-                        target.getChannelReference().getId(), target.getChannelReference().getId()));
+                throw new ChannelNotFoundException(target.getChannelReference().getId(), target.getServerReference().getId());
             }
         } else {
             throw new GuildException(String.format("Incorrect post target configuration. Guild %s cannot be found.", target.getServerReference().getId()));
@@ -172,7 +171,7 @@ public class PostTargetServiceBean implements PostTargetService {
     public void throwIfPostTargetIsNotDefined(String name, Long serverId) {
         PostTarget postTarget = postTargetManagement.getPostTarget(name, serverId);
         if(postTarget == null) {
-            throw new ChannelException(String.format("Post target %s is not defined.", name));
+            throw new PostTargetException(String.format("Post target %s is not defined.", name));
         }
     }
 

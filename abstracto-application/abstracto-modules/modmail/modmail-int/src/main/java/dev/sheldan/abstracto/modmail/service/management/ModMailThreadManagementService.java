@@ -7,10 +7,11 @@ import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ModMailThreadManagementService {
     ModMailThread getByChannelId(Long channelId);
-    ModMailThread getById(Long modMailThreadId);
+    Optional<ModMailThread> getById(Long modMailThreadId);
     ModMailThread getByChannel(AChannel channel);
     List<ModMailThread> getThreadByUserAndState(AUserInAServer userInAServer, ModMailThreadState state);
     ModMailThread getOpenModmailThreadForUser(AUserInAServer userInAServer);

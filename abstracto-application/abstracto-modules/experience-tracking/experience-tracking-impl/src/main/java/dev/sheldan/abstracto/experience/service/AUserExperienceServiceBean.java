@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -121,7 +122,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         Integer currentLevel = userExperience.getCurrentLevel() != null ? userExperience.getCurrentLevel().getLevel() : 0;
         if(!correctLevel.equals(currentLevel)) {
             log.info("User {} leveled from {} to {}", user.getUserReference().getId(), currentLevel, correctLevel);
-            userExperience.setCurrentLevel(experienceLevelManagementService.getLevel(correctLevel));
+            AExperienceLevel currentLevel1 = experienceLevelManagementService.getLevel(correctLevel)
+                    .orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", correctLevel)));
+            userExperience.setCurrentLevel(currentLevel1);
             return true;
         }
         return false;
@@ -289,13 +292,15 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         log.info("Retrieving rank for {}", userInAServer.getUserReference().getId());
         AUserExperience experience = userExperienceManagementService.findUserInServer(userInAServer);
         LeaderBoardEntryResult rankOfUserInServer = userExperienceManagementService.getRankOfUserInServer(experience);
+        AExperienceLevel currentLevel = experienceLevelManagementService.getLevel(rankOfUserInServer.getLevel())
+                .orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", rankOfUserInServer.getLevel())));
         AUserExperience aUserExperience = AUserExperience
                 .builder()
                 .experience(rankOfUserInServer.getExperience())
                 .user(userInAServer)
                 .messageCount(rankOfUserInServer.getMessageCount())
                 .id(userInAServer.getUserInServerId())
-                .currentLevel(experienceLevelManagementService.getLevel(rankOfUserInServer.getLevel()))
+                .currentLevel(currentLevel)
                 .build();
         return LeaderBoardEntry.builder().experience(aUserExperience).rank(rankOfUserInServer.getRank()).build();
     }

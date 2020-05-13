@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.entities.Emote;
 import java.util.Optional;
 
 public interface EmoteManagementService {
-    AEmote loadEmote(Long id);
+    Optional<AEmote> loadEmote(Long id);
     AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId) ;
     AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, AServer server) ;
     AEmote createDefaultEmote(String name, String emoteKey, Long serverId) ;

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ReminderManagementServiceBean implements ReminderManagementService {
@@ -34,8 +35,8 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
     }
 
     @Override
-    public Reminder loadReminder(Long reminderId) {
-        return reminderRepository.getOne(reminderId);
+    public Optional<Reminder> loadReminder(Long reminderId) {
+        return reminderRepository.findById(reminderId);
     }
 
     @Override

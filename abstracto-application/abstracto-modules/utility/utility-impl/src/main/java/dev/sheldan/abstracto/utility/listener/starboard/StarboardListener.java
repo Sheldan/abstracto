@@ -138,7 +138,10 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     }
 
     private List<AUserInAServer> getUsersExcept(List<Long> users, AUserInAServer author) {
-        return users.stream().filter(user -> !user.equals(author.getUserInServerId())).map(aLong -> userInServerManagementService.loadUser(aLong)).collect(Collectors.toList());
+        return users.stream().filter(user -> !user.equals(author.getUserInServerId())).map(aLong -> {
+            Optional<AUserInAServer> aUserInAServer = userInServerManagementService.loadUser(aLong);
+            return aUserInAServer.get();
+        }).collect(Collectors.toList());
     }
 
     @Override

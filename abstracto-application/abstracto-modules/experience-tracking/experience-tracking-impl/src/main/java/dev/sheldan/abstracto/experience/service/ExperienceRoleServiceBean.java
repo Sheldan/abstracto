@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -38,7 +39,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      */
     @Override
     public void setRoleToLevel(ARole role, Integer level, AServer server, AChannel feedbackChannel) {
-        AExperienceLevel experienceLevel = experienceLevelService.getLevel(level);
+        AExperienceLevel experienceLevel = experienceLevelService.getLevel(level).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", level)));
         unsetRole(role, server, feedbackChannel);
         experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServer(experienceLevel, server);
         experienceRoleManagementService.setLevelToRole(experienceLevel, role, server);

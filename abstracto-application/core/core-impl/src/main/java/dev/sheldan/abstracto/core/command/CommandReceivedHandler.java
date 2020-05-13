@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -116,12 +117,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
-        AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
+        Optional<AChannel> channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         AUserInAServer user = userInServerManagementService.loadUser(event.getMember());
+        AChannel channel1 = channel.orElseThrow(() -> new ChannelNotFoundException(event.getChannel().getIdLong(), event.getGuild().getIdLong()));
         return UserInitiatedServerContext
                 .builder()
-                .channel(channel)
+                .channel(channel1)
                 .server(server)
                 .member(event.getMember())
                 .aUserInAServer(user)

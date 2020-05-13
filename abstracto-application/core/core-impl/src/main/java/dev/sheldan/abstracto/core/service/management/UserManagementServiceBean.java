@@ -30,7 +30,7 @@ public class UserManagementServiceBean implements UserManagementService {
     @Override
     public AUser loadUser(Long userId) {
         if(userRepository.existsById(userId)) {
-            return userRepository.getOne(userId);
+            return userRepository.findById(userId).get();
         } else {
             return this.createUser(userId);
         }

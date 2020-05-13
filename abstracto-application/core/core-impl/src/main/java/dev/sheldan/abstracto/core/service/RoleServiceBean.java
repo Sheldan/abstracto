@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import org.aspectj.lang.annotation.Around;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,12 +67,9 @@ public class RoleServiceBean implements RoleService {
 
     @Override
     public void markDeleted(Long id, AServer server) {
-        ARole role = roleManagementService.findRole(id, server);
-        if(role != null) {
-            roleManagementService.markDeleted(role);
-        } else {
-            throw new RoleException(String.format("Cannot find role %s to mark as deleted.", id));
-        }
+        Optional<ARole> role = roleManagementService.findRole(id, server);
+        ARole role1 = role.orElseThrow(() -> new RoleException(String.format("Cannot find role %s to mark as deleted.", id)));
+        roleManagementService.markDeleted(role1);
     }
 
     @Override

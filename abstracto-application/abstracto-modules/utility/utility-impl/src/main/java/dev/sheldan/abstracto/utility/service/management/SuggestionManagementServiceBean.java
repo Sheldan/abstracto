@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.service.management;
 
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Component
 public class SuggestionManagementServiceBean implements SuggestionManagementService {
@@ -50,16 +52,21 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     }
 
     @Override
-    public Suggestion getSuggestion(Long suggestionId) {
-        return suggestionRepository.getOne(suggestionId);
+    public Optional<Suggestion> getSuggestion(Long suggestionId) {
+        return suggestionRepository.findById(suggestionId);
     }
 
 
     @Override
     public void setPostedMessage(Suggestion suggestion, Message message) {
         suggestion.setMessageId(message.getIdLong());
-        AChannel channel = channelManagementService.loadChannel(message.getTextChannel().getIdLong());
-        suggestion.setChannel(channel);
+        long channelId = message.getTextChannel().getIdLong();
+        Optional<AChannel> channelOptional = channelManagementService.loadChannel(channelId);
+        if(channelOptional.isPresent()) {
+            suggestion.setChannel(channelOptional.get());
+        } else {
+            throw new ChannelNotFoundException(channelId, suggestion.getServer().getId());
+        }
         AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
         suggestion.setServer(server);
         suggestionRepository.save(suggestion);

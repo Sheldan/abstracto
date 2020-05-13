@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Optional;
 
 /**
  * Loads the the template from the database to be used by Freemarker. This bean is also used when the templates within
@@ -37,12 +38,8 @@ public class DatabaseTemplateLoader implements TemplateLoader {
     @Override
     public long getLastModified(Object o) {
         Template casted = (Template) o;
-        Template templateByKey = templateManagementService.getTemplateByKey(casted.getKey());
-        if(templateByKey != null){
-            return templateByKey.getLastModified().getEpochSecond();
-        } else {
-            return Long.MAX_VALUE;
-        }
+        Optional<Template> templateByKey = templateManagementService.getTemplateByKey(casted.getKey());
+        return templateByKey.map(template -> template.getLastModified().getEpochSecond()).orElse(Long.MAX_VALUE);
     }
 
     /**

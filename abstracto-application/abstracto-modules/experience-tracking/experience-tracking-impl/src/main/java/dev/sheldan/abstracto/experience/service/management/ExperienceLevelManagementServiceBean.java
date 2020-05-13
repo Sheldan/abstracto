@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ExperienceLevelManagementServiceBean implements ExperienceLevelManagementService {
@@ -30,8 +31,8 @@ public class ExperienceLevelManagementServiceBean implements ExperienceLevelMana
     }
 
     @Override
-    public AExperienceLevel getLevel(Integer level) {
-        return experienceLevelRepository.getOne(level);
+    public Optional<AExperienceLevel> getLevel(Integer level) {
+        return experienceLevelRepository.findById(level);
     }
 
     @Override

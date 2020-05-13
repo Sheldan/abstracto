@@ -6,6 +6,8 @@ import dev.sheldan.abstracto.core.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class RoleManagementServiceBean implements RoleManagementService {
 
@@ -24,8 +26,8 @@ public class RoleManagementServiceBean implements RoleManagementService {
     }
 
     @Override
-    public ARole findRole(Long id, AServer server) {
-        return repository.getOne(id);
+    public Optional<ARole> findRole(Long id, AServer server) {
+        return repository.findById(id);
     }
 
     @Override

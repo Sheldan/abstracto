@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.BotService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class SlowModeServiceBean implements SlowModeService {
             TextChannel textChannel = textChannelOptional.get();
             this.setSlowMode(textChannel, duration);
         } else {
-            throw new ChannelException(String.format("Channel %s not found in guild %s", channel.getId(), channel.getServer().getId()));
+            throw new ChannelNotFoundException(channel.getId(), channel.getServer().getId());
         }
     }
 }

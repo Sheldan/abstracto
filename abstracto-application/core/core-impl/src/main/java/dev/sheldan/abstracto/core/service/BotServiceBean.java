@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -55,7 +55,7 @@ public class BotServiceBean implements BotService {
                 Member member = guild.getMemberById(userId);
                 return GuildChannelMember.builder().guild(guild).textChannel(textChannel).member(member).build();
             } else {
-                throw new ChannelException(String.format("Text channel %s not found in guild %s", channelId, serverId));
+                throw new ChannelNotFoundException(channelId, serverId);
             }
         }
         else {
