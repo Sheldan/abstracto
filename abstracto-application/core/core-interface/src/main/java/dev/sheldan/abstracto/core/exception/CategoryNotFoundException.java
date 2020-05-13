@@ -4,27 +4,30 @@ import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.HashMap;
 
-public class GuildException extends AbstractoRunTimeException implements Templatable {
+public class CategoryNotFoundException extends AbstractoRunTimeException implements Templatable {
+
+    private Long categoryId;
     private Long guildId;
 
-    public GuildException(String message, Long guildId) {
+    public CategoryNotFoundException(String message) {
         super(message);
-        this.guildId = guildId;
     }
 
-    public GuildException(Long guildId) {
+    public CategoryNotFoundException(Long categoryId, Long guildId) {
         super("");
+        this.categoryId = categoryId;
         this.guildId = guildId;
     }
 
     @Override
     public String getTemplateName() {
-        return "guild_not_found_exception";
+        return "category_not_found_exception";
     }
 
     @Override
     public Object getTemplateModel() {
         HashMap<String, Long> param = new HashMap<>();
+        param.put("categoryId", this.categoryId);
         param.put("guildId", this.guildId);
         return param;
     }

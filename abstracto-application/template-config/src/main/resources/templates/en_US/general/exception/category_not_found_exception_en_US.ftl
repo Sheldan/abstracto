@@ -1,0 +1,1 @@
+The category ${categoryId?c} was not found in guild ${guildId?c}.

@@ -50,7 +50,7 @@ public class BanServiceBean implements BanService {
             guildByIdOptional.get().ban(userId.toString(), 0, reason).queue();
         } else {
             log.warn("Guild {} not found. Not able to ban user {}", guildId, userId);
-            throw new GuildException(String.format("Guild %s not found. Not able to ban user %s", guildId, userId));
+            throw new GuildException(guildId);
         }
     }
 }

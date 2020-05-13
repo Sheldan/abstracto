@@ -61,7 +61,7 @@ public class PostTargetServiceBean implements PostTargetService {
                 throw new ChannelNotFoundException(target.getChannelReference().getId(), target.getServerReference().getId());
             }
         } else {
-            throw new GuildException(String.format("Incorrect post target configuration. Guild %s cannot be found.", target.getServerReference().getId()));
+            throw new GuildException(target.getServerReference().getId());
         }
     }
 

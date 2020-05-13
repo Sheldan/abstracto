@@ -104,8 +104,7 @@ public class MessageCacheBean implements MessageCache {
             }
         } else {
             log.error("Not able to load message {} in channel {} in guild {}. Guild not found.", messageId, textChannelId, guildId);
-            future.completeExceptionally(new GuildException(String.format("Not able to load message %s. Guild %s not found.", messageId, guildId)));
-
+            future.completeExceptionally(new GuildException(guildId));
         }
 
         return future;

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +53,7 @@ public class ServerManagementServiceBean implements ServerManagementService {
         log.info("Adding user {} to server {}", userId, serverId);
         Optional<AServer> server = repository.findById(serverId);
         AUser user = userManagementService.loadUser(userId);
-        AServer serverReference = server.orElseThrow(() -> new AbstractoRunTimeException(String.format("Cannnot find server %s", serverId)));
+        AServer serverReference = server.orElseThrow(() -> new GuildException(serverId));
         AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(serverReference).userReference(user).build();
         serverReference.getUsers().add(aUserInAServer);
         return aUserInAServer;

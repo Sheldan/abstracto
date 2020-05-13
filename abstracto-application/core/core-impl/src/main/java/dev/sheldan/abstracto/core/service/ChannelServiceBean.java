@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.CategoryNotFoundException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -53,7 +54,7 @@ public class ChannelServiceBean implements ChannelService {
             }
         } else {
             log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
-            throw new GuildException(String.format("Guild %s to post in channel %s was not found.", channel.getServer().getId(), channel.getId()));
+            throw new GuildException(channel.getServer().getId());
         }
     }
 
@@ -90,7 +91,7 @@ public class ChannelServiceBean implements ChannelService {
             }
         } else {
             log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
-            throw new GuildException(String.format("Guild %s to post in channel %s was not found.", channel.getServer().getId(), channel.getId()));
+            throw new GuildException(channel.getServer().getId());
         }
     }
 
@@ -195,12 +196,8 @@ public class ChannelServiceBean implements ChannelService {
             if(categoryById != null) {
                 return categoryById.createTextChannel(name).submit();
             }
-            CompletableFuture<TextChannel> objectCompletableFuture = new CompletableFuture<>();
-            objectCompletableFuture.completeExceptionally(new AbstractoRunTimeException("Mod mail category is not setup."));
-            return objectCompletableFuture;
+            throw new CategoryNotFoundException(categoryId, server.getId());
         }
-        CompletableFuture<TextChannel> objectCompletableFuture = new CompletableFuture<>();
-        objectCompletableFuture.completeExceptionally(new AbstractoRunTimeException("Guild to create mod mail channel for was not found."));
-        return objectCompletableFuture;
+        throw new GuildException(server.getId());
     }
 }

@@ -37,7 +37,7 @@ public class KickServiceBean implements KickService {
             this.sendKickLog(kickLogModel);
         } else {
             log.warn("Not able to kick. Guild {} not found.", kickLogModel.getGuild().getIdLong());
-            throw new GuildException(String.format("Not able to kick %s. Guild %s not found", kickLogModel.getMember().getIdLong(), kickLogModel.getGuild().getIdLong()));
+            throw new GuildException(kickLogModel.getGuild().getIdLong());
         }
     }
 

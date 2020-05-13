@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.core.utils;
 
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.DurationFormatException;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +16,7 @@ public class ParseUtils {
     }
 
     private static Pattern messageRegex = Pattern.compile("(?<number>\\d+)(?<unit>[ywdhms]+)");
+    private static List<String> validDuration = Arrays.asList("w", "d", "h", "m", "s");
 
     public static Duration parseDuration(String textToParseFrom) {
         Matcher matcher = ParseUtils.messageRegex.matcher(textToParseFrom);
@@ -30,11 +33,11 @@ public class ParseUtils {
                 case "h": start = start.plus(Duration.ofHours(parsed)); break;
                 case "m": start = start.plus(Duration.ofMinutes(parsed)); break;
                 case "s": start = start.plus(Duration.ofSeconds(parsed)); break;
-                default: throw new AbstractoRunTimeException(String.format("Invalid time format %s", unit));
+                default: throw new DurationFormatException(unit, validDuration);
             }
         }
         if(!rest.equals("")) {
-            throw new AbstractoRunTimeException(String.format("Invalid time format found: %s", rest));
+            throw new DurationFormatException(rest, validDuration);
         }
         return start;
     }

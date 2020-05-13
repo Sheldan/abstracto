@@ -1,0 +1,1 @@
+<#include "duration_invalid_time_format_exception_text">

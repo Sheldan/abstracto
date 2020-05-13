@@ -59,7 +59,7 @@ public class BotServiceBean implements BotService {
             }
         }
         else {
-            throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
+            throw new GuildException(serverId);
         }
     }
 
@@ -69,7 +69,7 @@ public class BotServiceBean implements BotService {
         if(guildById != null) {
             return guildById.getMemberById(memberId);
         } else {
-            throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
+            throw new GuildException(serverId);
         }
     }
 
@@ -79,7 +79,7 @@ public class BotServiceBean implements BotService {
         if(guildById != null) {
             return isUserInGuild(guildById, aUserInAServer);
         } else {
-            throw new GuildException(String.format(GUILD_NOT_FOUND, aUserInAServer.getServerReference().getId()));
+            throw new GuildException(aUserInAServer.getServerReference().getId());
         }
     }
 
@@ -132,7 +132,7 @@ public class BotServiceBean implements BotService {
             Emote emoteById = guild.getEmoteById(emote.getEmoteId());
             return Optional.ofNullable(emoteById);
         }
-        throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
+        throw new GuildException(serverId);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class BotServiceBean implements BotService {
             Guild guild = guildOptional.get();
             return Optional.ofNullable(guild.getTextChannelById(textChannelId));
         }
-        throw new GuildException(String.format(GUILD_NOT_FOUND, serverId));
+        throw new GuildException(GUILD_NOT_FOUND, serverId);
     }
 
     @Override

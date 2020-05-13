@@ -59,7 +59,7 @@ public class MessageServiceBean implements MessageService {
                 message.addReaction(defaultEmote).queue();}
         } else {
             log.error("Cannot add reaction, guild not found {}", serverId);
-            throw new GuildException(String.format("Cannot add reaction, guild %s not found.", serverId));
+            throw new GuildException(serverId);
         }
     }
 

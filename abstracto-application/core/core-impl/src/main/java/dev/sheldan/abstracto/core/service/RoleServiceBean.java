@@ -40,7 +40,7 @@ public class RoleServiceBean implements RoleService {
                 throw new RoleNotFoundInGuildException(role.getId(), aUserInAServer.getServerReference().getId());
             }
         } else {
-            throw new GuildException(String.format("Failed to load guild %s.", aUserInAServer.getServerReference().getId()));
+            throw new GuildException(aUserInAServer.getServerReference().getId());
         }
     }
 
@@ -56,7 +56,7 @@ public class RoleServiceBean implements RoleService {
                 throw new RoleNotFoundInGuildException(role.getId(), aUserInAServer.getServerReference().getId());
             }
         } else {
-            throw new GuildException(String.format("Failed to load guild %s.", aUserInAServer.getServerReference().getId()));
+            throw new GuildException(aUserInAServer.getServerReference().getId());
         }
     }
 
@@ -78,7 +78,7 @@ public class RoleServiceBean implements RoleService {
         if(guildById.isPresent()) {
             return guildById.get().getRoleById(role.getId());
         } else {
-            throw new GuildException(String.format("Failed to load guild %s.", role.getServer().getId()));
+            throw new GuildException(role.getServer().getId());
         }
     }
 
