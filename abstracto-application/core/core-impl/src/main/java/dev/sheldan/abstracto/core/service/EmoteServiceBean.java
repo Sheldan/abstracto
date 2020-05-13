@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
-import dev.sheldan.abstracto.core.exception.EmoteException;
+import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +79,7 @@ public class EmoteServiceBean implements EmoteService {
     @Override
     public void throwIfEmoteDoesNotExist(String emoteKey, Long serverId)  {
         if(!emoteManagementService.loadEmoteByName(emoteKey, serverId).isPresent()) {
-            throw new EmoteException(String.format("Emote %s not defined.", emoteKey));
+            throw new EmoteNotDefinedException(emoteKey);
         }
     }
 

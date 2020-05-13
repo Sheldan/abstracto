@@ -1,6 +1,6 @@
 {
   "title": {
-    "title": "Warnings have been decayed"
+    "title": "<#include "warnDecay_title">"
   },
   "color" : {
     "r": 200,

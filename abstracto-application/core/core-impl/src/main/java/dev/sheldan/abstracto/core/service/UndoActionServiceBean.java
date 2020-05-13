@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.UndoActionException;
 import dev.sheldan.abstracto.core.models.UndoAction;
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import lombok.extern.slf4j.Slf4j;

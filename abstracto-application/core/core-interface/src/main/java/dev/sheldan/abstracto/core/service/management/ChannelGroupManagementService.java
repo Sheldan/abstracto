@@ -14,5 +14,6 @@ public interface ChannelGroupManagementService {
     void removeChannelFromChannelGroup(AChannelGroup channelGroup, AChannel channel);
     AChannelGroup findByNameAndServer(String name, AServer server);
     List<AChannelGroup> findAllInServer(AServer server);
+    List<String> getAllAvailableAsString(AServer server);
     List<AChannelGroup> findAllInServer(Long serverId);
 }

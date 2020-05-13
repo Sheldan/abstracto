@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.exception.RoleException;
+import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -45,7 +45,7 @@ public class SetExpRole extends AbstractConditionableCommand {
             ARole role = roleOpt.get();
             AServer server = commandContext.getUserInitiatedContext().getServer();
             if(!roleService.isRoleInServer(role)) {
-                throw new RoleException("Role not found.");
+                throw new RoleNotFoundInGuildException(role.getId(), server.getId());
             }
             log.info("Setting role  {} to be used for level {} on server {}", roleId, level, server.getId());
             experienceRoleService.setRoleToLevel(role, level, server, commandContext.getUserInitiatedContext().getChannel());

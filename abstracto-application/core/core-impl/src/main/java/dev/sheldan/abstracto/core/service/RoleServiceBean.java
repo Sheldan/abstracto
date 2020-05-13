@@ -1,7 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.exception.RoleException;
+import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
+import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -10,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import org.aspectj.lang.annotation.Around;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +37,7 @@ public class RoleServiceBean implements RoleService {
             if(roleById != null) {
                 guild.addRoleToMember(aUserInAServer.getUserReference().getId(), roleById).queue();
             } else {
-                throw new RoleException(String.format("Failed to load role %s in guild %s", role.getId(), aUserInAServer.getServerReference().getId()));
+                throw new RoleNotFoundInGuildException(role.getId(), aUserInAServer.getServerReference().getId());
             }
         } else {
             throw new GuildException(String.format("Failed to load guild %s.", aUserInAServer.getServerReference().getId()));
@@ -53,7 +53,7 @@ public class RoleServiceBean implements RoleService {
             if(roleById != null) {
                 guild.removeRoleFromMember(aUserInAServer.getUserReference().getId(), roleById).queue();
             } else {
-                throw new RoleException(String.format("Failed to load role %s in guild %s", role.getId(), aUserInAServer.getServerReference().getId()));
+                throw new RoleNotFoundInGuildException(role.getId(), aUserInAServer.getServerReference().getId());
             }
         } else {
             throw new GuildException(String.format("Failed to load guild %s.", aUserInAServer.getServerReference().getId()));
@@ -68,7 +68,7 @@ public class RoleServiceBean implements RoleService {
     @Override
     public void markDeleted(Long id, AServer server) {
         Optional<ARole> role = roleManagementService.findRole(id, server);
-        ARole role1 = role.orElseThrow(() -> new RoleException(String.format("Cannot find role %s to mark as deleted.", id)));
+        ARole role1 = role.orElseThrow(() -> new RoleNotFoundInDBException(id, server.getId()));
         roleManagementService.markDeleted(role1);
     }
 

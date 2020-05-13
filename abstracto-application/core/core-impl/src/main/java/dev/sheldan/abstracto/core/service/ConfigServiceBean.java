@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ConfigurationException;
+import dev.sheldan.abstracto.core.exception.ConfigurationKeyNotFoundException;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class ConfigServiceBean implements ConfigService{
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setDoubleValue(serverId, name, value);
         } else {
-            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+            throw new ConfigurationKeyNotFoundException(name);
         }
     }
 
@@ -63,7 +63,7 @@ public class ConfigServiceBean implements ConfigService{
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setLongValue(serverId, name, value);
         } else {
-            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+            throw new ConfigurationKeyNotFoundException(name);
         }
     }
 
@@ -79,7 +79,7 @@ public class ConfigServiceBean implements ConfigService{
                 setStringValue(name, serverId, value);
             }
         } else {
-            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+            throw new ConfigurationKeyNotFoundException(name);
         }
 
     }
@@ -89,7 +89,7 @@ public class ConfigServiceBean implements ConfigService{
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setStringValue(serverId, name, value);
         } else {
-            throw new ConfigurationException(String.format("Key %s does not exist.", name));
+            throw new ConfigurationKeyNotFoundException(name);
         }
     }
 }

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
-import dev.sheldan.abstracto.core.exception.EmoteException;
+import dev.sheldan.abstracto.core.exception.EmoteNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.EmoteRepository;
@@ -148,7 +148,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     private void validateEmoteName(String name)  {
         List<String> possibleEmotes = dynamicKeyLoader.getEmoteNamesAsList();
         if(!possibleEmotes.contains(name)) {
-            throw new EmoteException("Emote `" + name + "` is not defined. Possible values are: " + String.join(", ", possibleEmotes));
+            throw new EmoteNotFoundException(name, possibleEmotes);
         }
     }
 }

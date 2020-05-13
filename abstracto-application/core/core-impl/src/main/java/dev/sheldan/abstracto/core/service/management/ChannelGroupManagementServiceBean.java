@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.command.exception.ChannelGroupException;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.command.exception.ChannelGroupExistsException;
+import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
 public class ChannelGroupManagementServiceBean implements ChannelGroupManagementService {
@@ -25,7 +26,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     public AChannelGroup createChannelGroup(String name, AServer server) {
         name = name.toLowerCase();
         if(doesChannelGroupExist(name, server)) {
-            throw new ChannelGroupException("Channel group already exists.");
+            throw new ChannelGroupExistsException(name);
         }
         AChannelGroup channelGroup = AChannelGroup
                 .builder()
@@ -46,7 +47,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         name = name.toLowerCase();
         AChannelGroup existing = findByNameAndServer(name, server);
         if(existing == null) {
-            throw new ChannelGroupException(String.format("Channel group %s does not exist", name));
+            throw new ChannelGroupNotFoundException(name, getAllAvailableAsString(server));
         }
         channelGroupRepository.delete(existing);
     }
@@ -54,11 +55,8 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     @Override
     public AChannelGroup addChannelToChannelGroup(AChannelGroup channelGroup, AChannel channel) {
         Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
-        if(channelGroup == null) {
-            throw new ChannelGroupException("Channel group was not found.");
-        }
         if(channelGroup.getChannels().stream().anyMatch(channelInGroupPredicate)) {
-            throw new ChannelGroupException(String.format("Channel %s is already part of group %s.", channel.getId(), channelGroup.getGroupName()));
+            throw new ChannelGroupExistsException(String.format("Channel %s is already part of group %s.", channel.getId(), channelGroup.getGroupName()));
         }
         channelGroup.getChannels().add(channel);
         channel.getGroups().add(channelGroup);
@@ -69,7 +67,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     public void removeChannelFromChannelGroup(AChannelGroup channelGroup, AChannel channel) {
         Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
         if(channelGroup.getChannels().stream().noneMatch(channelInGroupPredicate)) {
-            throw new ChannelGroupException(String.format("Channel %s is not part of group %s.", channel.getId(), channelGroup.getGroupName()));
+            throw new ChannelGroupExistsException(String.format("Channel %s is not part of group %s.", channel.getId(), channelGroup.getGroupName()));
         }
         channelGroup.getChannels().removeIf(channelInGroupPredicate);
         channel.getGroups().removeIf(channelGroup1 -> channelGroup1.getId().equals(channelGroup.getId()));
@@ -84,6 +82,11 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     @Override
     public List<AChannelGroup> findAllInServer(AServer server) {
         return channelGroupRepository.findByServer(server);
+    }
+
+    @Override
+    public List<String> getAllAvailableAsString(AServer server) {
+        return findAllInServer(server).stream().map(AChannelGroup::getGroupName).collect(Collectors.toList());
     }
 
     @Override

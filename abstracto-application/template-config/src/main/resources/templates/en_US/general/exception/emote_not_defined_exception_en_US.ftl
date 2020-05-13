@@ -1,0 +1,1 @@
+The emote ${emoteKey} was not defined for this server.

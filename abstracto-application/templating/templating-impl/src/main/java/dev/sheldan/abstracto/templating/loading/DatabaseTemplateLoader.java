@@ -32,7 +32,8 @@ public class DatabaseTemplateLoader implements TemplateLoader {
      */
     @Override
     public Object findTemplateSource(String s) throws IOException {
-        return templateManagementService.getTemplateByKey(s);
+        Optional<Template> templateByKey = templateManagementService.getTemplateByKey(s);
+        return templateByKey.orElseThrow(() -> new IOException(String.format("Failed to load template. %s", s)));
     }
 
     @Override

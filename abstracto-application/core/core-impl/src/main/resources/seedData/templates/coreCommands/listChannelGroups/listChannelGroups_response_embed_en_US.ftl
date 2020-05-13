@@ -15,10 +15,7 @@
         {
             "name": "${group.name}",
             "value": "
-            <#list group.channels as channel>
-                ${channel.discordChannel.asMention}
-                <#sep>,
-            </#list>
+            <#list group.channels as channel>${channel.discordChannel.asMention}<#sep>,</#list>
             "
         }<#sep>,
       <#else>

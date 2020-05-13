@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.command.exception.ChannelGroupException;
+import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
 import dev.sheldan.abstracto.core.command.exception.CommandException;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
@@ -68,7 +68,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(channel.getServer().getId());
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
+            throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
         }
         channelGroupManagementService.addChannelToChannelGroup(channelGroup, channel);
     }
@@ -90,7 +90,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(channel.getServer().getId());
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
+            throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
         }
         channelGroupManagementService.removeChannelFromChannelGroup(channelGroup, channel);
     }
@@ -100,7 +100,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
+            throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
         }
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
@@ -114,7 +114,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
         if(channelGroup == null) {
-            throw new ChannelGroupException(String.format(CHANNEL_GROUP_NOT_FOUND, channelGroupName));
+            throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
         }
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {

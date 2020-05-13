@@ -1,8 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.EmoteException;
+import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
 import dev.sheldan.abstracto.core.exception.GuildException;
-import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -52,7 +49,7 @@ public class MessageServiceBean implements MessageService {
                         message.addReaction(emoteById).queue();
                     } else {
                         log.error("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guild.getId());
-                        throw new EmoteException(String.format("Emote with key `%s` and id %s in guild %s was not found. Check whether or not the configured emote is available.", emoteKey, emote.getEmoteId(), guild.getIdLong()));
+                        throw new EmoteNotDefinedException(emoteKey);
                     }
                 } else {
                     message.addReaction(emote.getEmoteKey()).queue();
