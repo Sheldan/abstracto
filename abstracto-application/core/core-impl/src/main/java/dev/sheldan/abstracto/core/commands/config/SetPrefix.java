@@ -30,7 +30,7 @@ public class SetPrefix extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter newPrefixParameter = Parameter.builder().name("prefix").type(String.class).description("The new prefix to be used for this server.").build();
+        Parameter newPrefixParameter = Parameter.builder().name("prefix").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

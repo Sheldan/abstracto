@@ -37,7 +37,7 @@ public class ExpScale extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("scale").type(Double.class).build());
+        parameters.add(Parameter.builder().name("scale").templated(true).type(Double.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("expScale")

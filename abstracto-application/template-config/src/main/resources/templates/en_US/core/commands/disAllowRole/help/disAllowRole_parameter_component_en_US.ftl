@@ -1,0 +1,1 @@
+The command/feature the role should not be able to execute.

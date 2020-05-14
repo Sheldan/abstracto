@@ -1,0 +1,1 @@
+The channel which should be used as the post target.

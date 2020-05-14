@@ -38,7 +38,7 @@ public class Echo extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("input").type(String.class).remainder(true).build());
+        parameters.add(Parameter.builder().name("input").type(String.class).templated(true).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("echo")

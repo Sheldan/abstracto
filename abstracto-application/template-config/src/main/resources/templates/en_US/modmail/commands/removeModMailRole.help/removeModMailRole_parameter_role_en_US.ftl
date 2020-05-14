@@ -1,0 +1,1 @@
+The role to not be notified about new threads anymore.

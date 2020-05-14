@@ -31,7 +31,7 @@ public class SetModMailRole extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter categoryId = Parameter.builder().name("role").type(ARole.class).description("The role to be notified by new mod mail threads").build();
+        Parameter categoryId = Parameter.builder().name("role").type(ARole.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(categoryId);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<String> aliases = Arrays.asList("modMailRole");

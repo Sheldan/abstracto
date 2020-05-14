@@ -1,0 +1,1 @@
+The internal key of the emote

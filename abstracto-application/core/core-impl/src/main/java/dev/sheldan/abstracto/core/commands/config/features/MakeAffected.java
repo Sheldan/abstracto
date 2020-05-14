@@ -61,8 +61,8 @@ public class MakeAffected extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature name to make the role affected by.").build();
-        Parameter role = Parameter.builder().name("role").type(ARole.class).description("The role to make affected.").build();
+        Parameter featureName = Parameter.builder().name("component").type(String.class).templated(true).build();
+        Parameter role = Parameter.builder().name("role").type(ARole.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

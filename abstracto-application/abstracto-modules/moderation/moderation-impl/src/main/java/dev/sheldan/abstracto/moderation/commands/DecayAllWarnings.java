@@ -33,7 +33,7 @@ public class DecayAllWarnings extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        Parameter logWarnings = Parameter.builder().optional(true).name("writeLog").type(Boolean.class).build();
+        Parameter logWarnings = Parameter.builder().optional(true).name("writeLog").templated(true).type(Boolean.class).build();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         parameters.add(logWarnings);
         return CommandConfiguration.builder()

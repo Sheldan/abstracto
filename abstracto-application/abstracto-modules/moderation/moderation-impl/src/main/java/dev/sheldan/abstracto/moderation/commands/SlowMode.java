@@ -47,8 +47,8 @@ public class SlowMode extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("duration").type(String.class).optional(false).build());
-        parameters.add(Parameter.builder().name("channel").type(TextChannel.class).optional(true).build());
+        parameters.add(Parameter.builder().name("duration").type(String.class).templated(true).build());
+        parameters.add(Parameter.builder().name("channel").type(TextChannel.class).templated(true).optional(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("slowmode")

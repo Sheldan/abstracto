@@ -1,0 +1,1 @@
+The name of the channel group to which the channel should be added to.

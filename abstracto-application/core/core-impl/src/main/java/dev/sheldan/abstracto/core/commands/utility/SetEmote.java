@@ -40,8 +40,8 @@ public class SetEmote extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter emoteKey = Parameter.builder().name("emoteKey").type(String.class).description("The internal key of the emote").build();
-        Parameter emote = Parameter.builder().name("emote").type(net.dv8tion.jda.api.entities.Emote.class).description("The emote to be used").build();
+        Parameter emoteKey = Parameter.builder().name("emoteKey").type(String.class).templated(true).build();
+        Parameter emote = Parameter.builder().name("emote").type(net.dv8tion.jda.api.entities.Emote.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(emoteKey, emote);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

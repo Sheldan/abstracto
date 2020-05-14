@@ -59,7 +59,7 @@ public class Restrict extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature name to restrict.").build();
+        Parameter featureName = Parameter.builder().name("component").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(featureName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

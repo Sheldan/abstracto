@@ -1,0 +1,1 @@
+The command which should be enabled.

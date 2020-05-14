@@ -66,7 +66,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("page").optional(true).type(Integer.class).build());
+        parameters.add(Parameter.builder().name("page").optional(true).templated(true).type(Integer.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("leaderboard")

@@ -61,8 +61,8 @@ public class PostTarget extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).optional(true).description("The channel to post towards").build();
-        Parameter postTargetName = Parameter.builder().name("name").type(String.class).optional(true).description("The name of the post target to redirect").build();
+        Parameter postTargetName = Parameter.builder().name("name").type(String.class).optional(true).templated(true).build();
+        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).optional(true).templated(true).build();
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

@@ -12,4 +12,5 @@ public class Parameter {
     private boolean optional;
     private boolean remainder;
     private Integer maxLength;
+    private Boolean templated;
 }

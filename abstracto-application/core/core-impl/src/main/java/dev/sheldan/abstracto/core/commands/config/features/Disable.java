@@ -57,7 +57,7 @@ public class Disable extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("featureName").type(String.class).optional(true).description("The feature to disable.").build();
+        Parameter featureName = Parameter.builder().name("featureName").templated(true).type(String.class).optional(true).build();
         List<Parameter> parameters = Arrays.asList(featureName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

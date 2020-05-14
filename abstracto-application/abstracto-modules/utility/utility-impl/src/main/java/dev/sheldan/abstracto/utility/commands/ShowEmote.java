@@ -43,7 +43,7 @@ public class ShowEmote extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("emote").type(Emote.class).optional(false).build());
+        parameters.add(Parameter.builder().name("emote").type(Emote.class).templated(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("showEmote")

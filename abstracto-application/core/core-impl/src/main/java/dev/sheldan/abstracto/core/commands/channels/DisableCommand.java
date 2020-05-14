@@ -32,8 +32,8 @@ public class DisableCommand extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelGroupName = Parameter.builder().name("commandName").type(String.class).description("The name of the channel group to add the channel to.").build();
-        Parameter channelToAdd = Parameter.builder().name("channelGroup").type(String.class).description("The name of the channel group in which the command should be disabled.").build();
+        Parameter channelGroupName = Parameter.builder().name("commandName").type(String.class).templated(true).build();
+        Parameter channelToAdd = Parameter.builder().name("channelGroupName").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

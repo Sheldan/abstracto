@@ -59,7 +59,7 @@ public class Allow extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("feature|commandName").type(String.class).description("The command/feature name to allow for anyone to execute.").build();
+        Parameter featureName = Parameter.builder().name("component").templated(true).type(String.class).build();
         List<Parameter> parameters = Arrays.asList(featureName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

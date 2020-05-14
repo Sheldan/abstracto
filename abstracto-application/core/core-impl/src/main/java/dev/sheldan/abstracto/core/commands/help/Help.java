@@ -111,13 +111,13 @@ public class Help implements Command {
         Parameter moduleOrCommandName = Parameter.builder()
                 .name("name")
                 .optional(true)
-                .description("Name of module or command")
+                .templated(true)
                 .type(String.class)
                 .build();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("help")
-                .module("support")
+                .module(SupportModuleInterface.SUPPORT)
                 .parameters(Collections.singletonList(moduleOrCommandName))
                 .help(helpInfo)
                 .templated(true)

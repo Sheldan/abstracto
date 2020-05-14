@@ -44,11 +44,11 @@ public class Reminders extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        HelpInfo helpInfo = HelpInfo.builder().longHelp("Shows the current active reminders").usage("reminders").build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("reminders")
                 .module(UtilityModuleInterface.UTILITY)
-                .description("Shows the current active reminders")
+                .templated(true)
                 .causesReaction(true)
                 .help(helpInfo)
                 .build();

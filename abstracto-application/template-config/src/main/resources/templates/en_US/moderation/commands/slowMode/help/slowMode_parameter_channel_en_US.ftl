@@ -1,0 +1,1 @@
+The channel for which the slow mode should be set. If not provided, the current channel is changed.

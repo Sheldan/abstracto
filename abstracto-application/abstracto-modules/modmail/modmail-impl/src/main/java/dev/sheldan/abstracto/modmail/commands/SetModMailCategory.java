@@ -30,7 +30,7 @@ public class SetModMailCategory extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter categoryId = Parameter.builder().name("categoryId").type(Long.class).description("The category id to be used for modmail.").build();
+        Parameter categoryId = Parameter.builder().name("categoryId").type(Long.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(categoryId);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<String> aliases = Arrays.asList("modMailCat");

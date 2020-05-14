@@ -33,8 +33,8 @@ public class SetConfig extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter keyToChange = Parameter.builder().name("key").type(String.class).description("The key to change.").build();
-        Parameter valueToSet = Parameter.builder().name("value").type(String.class).description("The value to set the key to.").build();
+        Parameter keyToChange = Parameter.builder().name("key").type(String.class).templated(true).build();
+        Parameter valueToSet = Parameter.builder().name("value").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(keyToChange, valueToSet);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

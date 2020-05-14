@@ -31,7 +31,7 @@ public class RemoveModMailRole extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter categoryId = Parameter.builder().name("role").type(ARole.class).description("The role to not be notified about new threads.").build();
+        Parameter categoryId = Parameter.builder().name("role").type(ARole.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(categoryId);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<String> aliases = Arrays.asList("rmMmRole");

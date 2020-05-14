@@ -1,0 +1,1 @@
+The text you want to provide in the notification when accepting a suggestion.

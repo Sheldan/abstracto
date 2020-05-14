@@ -8,9 +8,11 @@ import org.springframework.stereotype.Component;
 public class SupportModuleInterface implements ModuleInterface {
 
 
+    public static final String SUPPORT = "support";
+
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name("support").description("Utilities for support").build();
+        return ModuleInfo.builder().name(SUPPORT).description("Utilities for support").build();
     }
 
     @Override

@@ -67,7 +67,7 @@ public class Contact extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter responseText = Parameter.builder().name("user").type(Member.class).description("The user to contact").build();
+        Parameter responseText = Parameter.builder().name("user").type(Member.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(responseText);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

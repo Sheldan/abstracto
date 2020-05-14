@@ -32,7 +32,7 @@
 <#include "help_command_embed_command_parameters">:
 <#if command.parameters??>
 <#list command.parameters as parameter>
-<#include "help_command_embed_command_description"> `${parameter.name}`: ${(parameter.description)!""}
+<#include "help_command_embed_command_description"> `${parameter.name}`: <#if parameter.templated?? && parameter.templated><#include "${command.name}_parameter_${parameter.name}"><#else>${(parameter.description)!""}</#if>
 <#include "help_command_embed_command_optional"><#sep>
 
 <#else>

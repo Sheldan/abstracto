@@ -30,7 +30,7 @@ public class DeleteChannelGroup extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelGroupName = Parameter.builder().name("name").type(String.class).description("The name of the channel group to delete.").build();
+        Parameter channelGroupName = Parameter.builder().name("name").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(channelGroupName);
         List<String> aliases = Arrays.asList("-ChGroup");
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();

@@ -36,8 +36,8 @@ public class Reject extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("suggestionId").type(Long.class).optional(false).build());
-        parameters.add(Parameter.builder().name("text").type(String.class).optional(true).remainder(true).build());
+        parameters.add(Parameter.builder().name("suggestionId").type(Long.class).templated(true).build());
+        parameters.add(Parameter.builder().name("text").type(String.class).optional(true).remainder(true).templated(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("reject")

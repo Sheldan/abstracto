@@ -1,0 +1,1 @@
+The page of the leader board you want to see.

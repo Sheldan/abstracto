@@ -48,8 +48,8 @@ public class Ban extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("user").type(Member.class).optional(false).build());
-        parameters.add(Parameter.builder().name("reason").type(String.class).optional(true).remainder(true).build());
+        parameters.add(Parameter.builder().name("user").templated(true).type(Member.class).build());
+        parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).optional(true).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("ban")

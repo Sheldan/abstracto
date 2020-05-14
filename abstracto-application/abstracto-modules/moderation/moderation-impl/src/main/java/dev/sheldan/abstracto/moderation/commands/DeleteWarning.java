@@ -40,7 +40,7 @@ public class DeleteWarning extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("warnId").type(Long.class).build());
+        parameters.add(Parameter.builder().name("warnId").templated(true).type(Long.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<String> aliases = Arrays.asList("delWarn");
         return CommandConfiguration.builder()

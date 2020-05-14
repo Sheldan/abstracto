@@ -36,7 +36,7 @@ public class Suggest extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("text").type(String.class).optional(false).remainder(true).build());
+        parameters.add(Parameter.builder().name("text").type(String.class).templated(true).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("suggest")

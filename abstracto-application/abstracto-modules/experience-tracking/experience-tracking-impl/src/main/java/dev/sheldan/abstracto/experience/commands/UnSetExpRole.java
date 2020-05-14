@@ -38,7 +38,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("role").type(ARole.class).build());
+        parameters.add(Parameter.builder().name("role").templated(true).type(ARole.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("unSetExpRole")

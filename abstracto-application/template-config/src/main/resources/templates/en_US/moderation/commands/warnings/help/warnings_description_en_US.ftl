@@ -1,0 +1,1 @@
+Lists the warnings on the server/of one specific user
