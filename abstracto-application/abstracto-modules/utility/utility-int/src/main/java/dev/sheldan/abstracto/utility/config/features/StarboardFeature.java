@@ -32,4 +32,9 @@ public class StarboardFeature implements FeatureConfig {
     public List<FeatureValidator> getAdditionalFeatureValidators() {
         return Arrays.asList(starboardFeatureValidator);
     }
+
+    @Override
+    public List<String> getRequiredEmotes() {
+        return Arrays.asList("star", "star1", "star2", "star3", "star4", "starboardBadge1", "starboardBadge2", "starboardBadge3");
+    }
 }

@@ -172,6 +172,9 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
         featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
             featureValidatorService.checkSystemConfig(s, server, featureValidationResult);
         });
+        featureConfig.getRequiredEmotes().forEach(s -> {
+            featureValidatorService.checkEmote(s, server, featureValidationResult);
+        });
         featureConfig.getAdditionalFeatureValidators().forEach(featureValidator -> {
             featureValidator.featureIsSetup(featureConfig, server, featureValidationResult);
         });

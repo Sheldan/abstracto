@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.template.commands.EchoModel;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;

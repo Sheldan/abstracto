@@ -38,11 +38,9 @@ public class MessageServiceBean implements MessageService {
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
         Optional<Guild> guildByIdOptional = botService.getGuildById(serverId);
-        Optional<AEmote> aEmote = emoteManagementService.loadEmoteByName(emoteKey, serverId);
+        AEmote emote = emoteService.getEmoteOrFakeEmote(emoteKey, serverId);
         if(guildByIdOptional.isPresent()) {
             Guild guild = guildByIdOptional.get();
-            if(aEmote.isPresent()) {
-                AEmote emote = aEmote.get();
                 if(emote.getCustom()) {
                     Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
                     if(emoteById != null) {
@@ -54,9 +52,6 @@ public class MessageServiceBean implements MessageService {
                 } else {
                     message.addReaction(emote.getEmoteKey()).queue();
                 }
-            } else {
-                String defaultEmote = emoteService.getDefaultEmote(emoteKey);
-                message.addReaction(defaultEmote).queue();}
         } else {
             log.error("Cannot add reaction, guild not found {}", serverId);
             throw new GuildException(serverId);

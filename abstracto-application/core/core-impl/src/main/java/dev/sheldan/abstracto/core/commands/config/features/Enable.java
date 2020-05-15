@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
 import dev.sheldan.abstracto.core.service.ChannelService;

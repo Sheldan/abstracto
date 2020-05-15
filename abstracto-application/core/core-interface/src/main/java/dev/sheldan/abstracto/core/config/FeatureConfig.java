@@ -16,4 +16,5 @@ public interface FeatureConfig {
     default List<PostTargetEnum> getRequiredPostTargets() { return Collections.emptyList();}
     default List<String> getRequiredSystemConfigKeys() { return Collections.emptyList();}
     default List<FeatureValidator> getAdditionalFeatureValidators() { return Collections.emptyList(); }
+    default List<String> getRequiredEmotes() { return Collections.emptyList(); }
 }

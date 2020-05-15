@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.converter.FeatureFlagConverter;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.template.commands.FeaturesModel;

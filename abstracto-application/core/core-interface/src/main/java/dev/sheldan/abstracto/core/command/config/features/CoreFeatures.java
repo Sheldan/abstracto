@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.config.features;
+package dev.sheldan.abstracto.core.command.config.features;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import lombok.Getter;

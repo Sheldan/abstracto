@@ -21,4 +21,9 @@ public class SuggestionFeature implements FeatureConfig {
     public List<PostTargetEnum> getRequiredPostTargets() {
         return Arrays.asList(SuggestionPostTarget.SUGGESTION);
     }
+
+    @Override
+    public List<String> getRequiredEmotes() {
+        return Arrays.asList("suggestionYes", "suggestionNo");
+    }
 }

@@ -39,4 +39,9 @@ public class ModMailFeature implements FeatureConfig {
     public List<FeatureValidator> getAdditionalFeatureValidators() {
         return Arrays.asList(modMailFeatureValidator);
     }
+
+    @Override
+    public List<String> getRequiredEmotes() {
+        return Arrays.asList("readReaction");
+    }
 }
