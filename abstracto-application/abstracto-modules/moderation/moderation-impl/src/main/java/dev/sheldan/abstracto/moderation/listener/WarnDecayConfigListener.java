@@ -18,6 +18,6 @@ public class WarnDecayConfigListener implements ServerConfigListener {
 
     @Override
     public void updateServerConfig(AServer server) {
-        configManagementService.createIfNotExists(server.getId(), "decayDays", decayDays.longValue());
+        configManagementService.createIfNotExists(server.getId(), "decayDays", decayDays);
     }
 }

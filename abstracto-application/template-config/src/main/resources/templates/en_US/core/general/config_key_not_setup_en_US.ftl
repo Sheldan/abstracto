@@ -1,1 +1,0 @@
-Post target ${error.templateModel['configKey']} is not set up.

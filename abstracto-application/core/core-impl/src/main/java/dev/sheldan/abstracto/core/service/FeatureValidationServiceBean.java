@@ -29,12 +29,14 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     }
 
     @Override
-    public void checkSystemConfig(String name, AServer server, FeatureValidationResult featureValidationResult) {
+    public boolean checkSystemConfig(String name, AServer server, FeatureValidationResult featureValidationResult) {
         if(!configService.configExists(server, name)) {
             SystemConfigValidationError validationError = SystemConfigValidationError.builder().configKey(name).build();
             featureValidationResult.setValidationResult(false);
             featureValidationResult.getValidationErrors().add(validationError);
+            return false;
         }
+        return true;
     }
 
 
