@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.listener.JoinListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -43,7 +44,7 @@ public class JoinLogger implements JoinListener {
         log.info("User {} joined server {}.", aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         HashMap<String, Object> parameters = getUserParameter(member.getUser());
         String text = templateService.renderTemplateWithMap(USER_JOIN_TEMPLATE, parameters);
-        postTargetService.sendTextInPostTarget(text, JOIN_LOG_TARGET, guild.getIdLong());
+        postTargetService.sendTextInPostTarget(text, LoggingPostTarget.JOIN_LOG, guild.getIdLong());
     }
 
     @Override

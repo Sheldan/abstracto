@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -19,7 +20,6 @@ public class BanServiceBean implements BanService {
 
     private static final String BAN_LOG_TEMPLATE = "ban_log";
     private static final String BAN_ID_LOG_TEMPLATE = "banid_log";
-    private static final String BAN_LOG_TARGET = "banLog";
     @Autowired
     private BotService botService;
 
@@ -33,14 +33,14 @@ public class BanServiceBean implements BanService {
     public void banMember(Member member, String reason, ServerContext banLog) {
         this.banUser(member.getGuild().getIdLong(), member.getIdLong(), reason);
         String warnLogMessage = templateService.renderTemplate(BAN_LOG_TEMPLATE, banLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, banLog.getServer().getId());
+        postTargetService.sendTextInPostTarget(warnLogMessage, ModerationPostTarget.BAN_LOG, banLog.getServer().getId());
     }
 
     @Override
     public void banMember(Long guildId, Long userId, String reason, ServerContext banIdLog) {
         banUser(guildId, userId, reason);
         String warnLogMessage = templateService.renderTemplate(BAN_ID_LOG_TEMPLATE, banIdLog);
-        postTargetService.sendTextInPostTarget(warnLogMessage, BAN_LOG_TARGET, guildId);
+        postTargetService.sendTextInPostTarget(warnLogMessage, ModerationPostTarget.BAN_LOG, guildId);
     }
 
     private void banUser(Long guildId, Long userId, String reason) {

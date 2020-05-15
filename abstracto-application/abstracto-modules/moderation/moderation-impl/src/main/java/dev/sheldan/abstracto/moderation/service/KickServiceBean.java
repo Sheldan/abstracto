@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import java.util.Optional;
 public class KickServiceBean implements KickService {
 
     private static final String KICK_LOG_TEMPLATE = "kick_log";
-    private static final String KICK_LOG_TARGET = "kickLog";
     @Autowired
     private BotService botService;
 
@@ -43,6 +43,6 @@ public class KickServiceBean implements KickService {
 
     private void sendKickLog(KickLogModel kickLogModel)  {
         String warnLogMessage = templateService.renderTemplate(KICK_LOG_TEMPLATE, kickLogModel);
-        postTargetService.sendTextInPostTarget(warnLogMessage, KICK_LOG_TARGET, kickLogModel.getServer().getId());
+        postTargetService.sendTextInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getServer().getId());
     }
 }

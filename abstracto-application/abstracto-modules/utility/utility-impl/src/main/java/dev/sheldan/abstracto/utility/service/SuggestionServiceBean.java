@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.utility.config.posttargets.SuggestionPostTarget;
 import dev.sheldan.abstracto.utility.exception.SuggestionNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
@@ -32,7 +33,6 @@ public class SuggestionServiceBean implements SuggestionService {
     public static final String SUGGESTION_LOG_TEMPLATE = "suggest_log";
     private static final String SUGGESTION_YES_EMOTE = "suggestionYes";
     private static final String SUGGESTION_NO_EMOTE = "suggestionNo";
-    public static final String SUGGESTIONS_TARGET = "suggestions";
 
     @Autowired
     private SuggestionManagementService suggestionManagementService;
@@ -63,7 +63,7 @@ public class SuggestionServiceBean implements SuggestionService {
         JDA instance = botService.getInstance();
         Guild guildById = instance.getGuildById(guildId);
         if(guildById != null) {
-            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, guildId);
+            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
             CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
                 Suggestion innerSuggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
                 try {
@@ -124,7 +124,7 @@ public class SuggestionServiceBean implements SuggestionService {
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
             MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
-            postTargetService.sendEmbedInPostTarget(messageToSend, SUGGESTIONS_TARGET, suggestionLog.getServer().getId());
+            postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, suggestionLog.getServer().getId());
         }
     }
 
@@ -137,6 +137,6 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public void validateSetup(Long serverId) {
-        postTargetService.throwIfPostTargetIsNotDefined(SUGGESTIONS_TARGET, serverId);
+        postTargetService.throwIfPostTargetIsNotDefined(SuggestionPostTarget.SUGGESTION, serverId);
     }
 }

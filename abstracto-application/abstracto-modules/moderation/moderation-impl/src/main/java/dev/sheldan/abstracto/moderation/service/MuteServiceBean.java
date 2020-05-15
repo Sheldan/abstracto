@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
 import dev.sheldan.abstracto.moderation.exception.MuteException;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
@@ -205,13 +206,13 @@ public class MuteServiceBean implements MuteService {
     private void sendMuteLog(MuteLog muteLogModel)  {
         log.trace("Sending mute log to the mute posttarget");
         MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel);
-        postTargetService.sendEmbedInPostTarget(message, MUTE_LOG_TARGET, muteLogModel.getServer().getId());
+        postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getServer().getId());
     }
 
     private void sendUnmuteLog(UnMuteLog muteLogModel)  {
         log.trace("Sending unmute log to the mute posttarget");
         MessageToSend message = templateService.renderEmbedTemplate(UNMUTE_LOG_TEMPLATE, muteLogModel);
-        postTargetService.sendEmbedInPostTarget(message, MUTE_LOG_TARGET, muteLogModel.getServer().getId());
+        postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getServer().getId());
     }
 
     @Override

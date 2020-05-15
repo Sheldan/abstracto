@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
+import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
@@ -65,30 +66,30 @@ public class PostTargetServiceBean implements PostTargetService {
         }
     }
 
-    private PostTarget getPostTarget(String postTargetName, Long serverId) {
-        PostTarget postTarget = postTargetManagement.getPostTarget(postTargetName, serverId);
+    private PostTarget getPostTarget(PostTargetEnum postTargetName, Long serverId) {
+        PostTarget postTarget = postTargetManagement.getPostTarget(postTargetName.getKey(), serverId);
         if(postTarget != null) {
             return postTarget;
         } else {
             log.error("PostTarget {} in server {} was not found!", postTargetName, serverId);
-            throw new PostTargetNotFoundException(postTargetName);
+            throw new PostTargetNotFoundException(postTargetName.getKey());
         }
     }
 
     @Override
-    public CompletableFuture<Message>  sendTextInPostTarget(String text, String postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+    public CompletableFuture<Message>  sendTextInPostTarget(String text, PostTargetEnum postTargetEnum, Long serverId)  {
+        PostTarget postTarget = this.getPostTarget(postTargetEnum, serverId);
         return this.sendTextInPostTarget(text, postTarget);
     }
 
     @Override
-    public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, String postTargetName, Long serverId)  {
+    public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTargetEnum postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(embed, postTarget);
     }
 
     @Override
-    public CompletableFuture<Message> sendMessageInPostTarget(Message message, String postTargetName, Long serverId) {
+    public CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTargetEnum postTargetName, Long serverId) {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return sendMessageInPostTarget(message, postTarget);
     }
@@ -99,7 +100,7 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, String postTargetName, Long serverId)  {
+    public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(message, postTarget);
     }
@@ -163,21 +164,21 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, String postTargetName, Long serverId, List<CompletableFuture<Message>> future)  {
+    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTargetName, Long serverId, List<CompletableFuture<Message>> future)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget, future);
     }
 
     @Override
-    public void throwIfPostTargetIsNotDefined(String name, Long serverId) {
-        PostTarget postTarget = postTargetManagement.getPostTarget(name, serverId);
+    public void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId) {
+        PostTarget postTarget = postTargetManagement.getPostTarget(name.getKey(), serverId);
         if(postTarget == null) {
-            throw new PostTargetNotValidException(name, dynamicKeyLoader.getPostTargetsAsList());
+            throw new PostTargetNotValidException(name.getKey(), dynamicKeyLoader.getPostTargetsAsList());
         }
     }
 
     @Override
-    public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, String postTargetName, Long serverId)  {
+    public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return editEmbedInPostTarget(messageId, message, postTarget);
     }

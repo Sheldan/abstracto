@@ -3,10 +3,11 @@ package dev.sheldan.abstracto.moderation.listener;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.ContextUtils;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedLog;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -37,13 +38,13 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
         MessageDeletedLog logModel = (MessageDeletedLog) contextUtils.fromMessage(messageFromCache, MessageDeletedLog.class);
         logModel.setMessage(messageFromCache);
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
-        postTargetService.sendEmbedInPostTarget(message, DELETE_LOG_TARGET, messageFromCache.getServerId());
+        postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
         for (int i = 0; i < messageFromCache.getAttachmentUrls().size(); i++) {
             MessageDeletedAttachmentLog log = (MessageDeletedAttachmentLog) contextUtils.fromMessage(messageFromCache, MessageDeletedAttachmentLog.class);
             log.setImageUrl(messageFromCache.getAttachmentUrls().get(i));
             log.setCounter(i + 1);
             MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log);
-            postTargetService.sendEmbedInPostTarget(attachmentEmbed, DELETE_LOG_TARGET, messageFromCache.getServerId());
+            postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
         }
     }
 

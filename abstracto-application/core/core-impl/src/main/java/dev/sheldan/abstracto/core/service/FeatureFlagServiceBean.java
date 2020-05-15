@@ -3,8 +3,10 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
+import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,6 +34,9 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Autowired
     private ServerManagementService serverManagementService;
+
+    @Autowired
+    private FeatureValidatorService featureValidatorService;
 
 
     @Override
@@ -121,6 +127,17 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
         }
         throw new AbstractoRunTimeException(String.format("Feature %s not found.", key));
     }
+
+    @Override
+    public PostTargetEnum getPostTargetEnumByKey(String key) {
+        Predicate<PostTargetEnum> postTargetComparison = postTargetEnum -> postTargetEnum.getKey().equals(key);
+        Optional<FeatureConfig> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getRequiredPostTargets().stream().anyMatch(postTargetComparison)).findAny();
+        if(foundFeature.isPresent()) {
+            return foundFeature.get().getRequiredPostTargets().stream().filter(postTargetComparison).findAny().get();
+        }
+        throw new AbstractoRunTimeException(String.format("Post target %s not found.", key));
+    }
+
     @Override
     public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
@@ -144,5 +161,20 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     public AFeatureFlag updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
         return managementService.setFeatureFlagValue(feature, server, newValue);
+    }
+
+    @Override
+    public FeatureValidationResult validateFeatureSetup(FeatureConfig featureConfig, AServer server) {
+        FeatureValidationResult featureValidationResult = FeatureValidationResult.validationSuccessful(featureConfig);
+        featureConfig.getRequiredPostTargets().forEach(s -> {
+            featureValidatorService.checkPostTarget(s, server, featureValidationResult);
+        });
+        featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
+            featureValidatorService.checkSystemConfig(s, server, featureValidationResult);
+        });
+        featureConfig.getAdditionalFeatureValidators().forEach(featureValidator -> {
+            featureValidator.featureIsSetup(featureConfig, server, featureValidationResult);
+        });
+        return featureValidationResult;
     }
 }

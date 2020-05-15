@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.StarboardConfig;
+import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsPost;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StarboardServiceBean implements StarboardService {
 
-    public static final String STARBOARD_POSTTARGET = "starboard";
     public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
 
     @Autowired
@@ -87,8 +87,8 @@ public class StarboardServiceBean implements StarboardService {
             userExceptAuthorIds.add(aUserInAServer.getUserInServerId());
         });
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
-        PostTarget starboard = postTargetManagement.getPostTarget(STARBOARD_POSTTARGET, message.getServerId());
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, STARBOARD_POSTTARGET, message.getServerId());
+        PostTarget starboard = postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), message.getServerId());
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardChannelId = starboard.getChannelReference().getId();
         Long starredUserId = starredUser.getUserInServerId();
         Long userReactingId = userReacting.getUserInServerId();
@@ -152,7 +152,7 @@ public class StarboardServiceBean implements StarboardService {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         futures.add(new CompletableFuture<>());
-        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, STARBOARD_POSTTARGET, message.getServerId(), futures);
+        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId(), futures);
         Long starboardPostId = post.getId();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             try {

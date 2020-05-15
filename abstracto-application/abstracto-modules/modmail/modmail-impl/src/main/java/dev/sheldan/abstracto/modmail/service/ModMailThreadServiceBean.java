@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.modmail.service;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.ButtonMenu;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUser;
@@ -15,6 +14,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.modmail.config.ModMailFeature;
 import dev.sheldan.abstracto.modmail.config.ModMailLoggingFeature;
+import dev.sheldan.abstracto.modmail.config.ModMailPostTargets;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadNotFoundException;
 import dev.sheldan.abstracto.modmail.models.database.*;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
@@ -42,7 +42,6 @@ import java.util.concurrent.ExecutionException;
 public class ModMailThreadServiceBean implements ModMailThreadService {
 
     public static final String MODMAIL_CATEGORY = "modmailCategory";
-    public static final String MODMAIL_LOG_POSTTARGET = "modmailLog";
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
 
@@ -150,7 +149,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .roles(rolesToPing)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel);
-        List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, "modmailPing", thread.getServer().getId());
+        List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, thread.getServer().getId());
         CompletableFuture.allOf(modmailping.toArray(new CompletableFuture[0])).whenComplete((aVoid, throwable) -> {
             if(throwable != null) {
                 log.error("Failed to send mod mail thread notification ping.", throwable);
@@ -523,7 +522,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .build();
             log.trace("Sending close header and individual mod mail messages to mod mail log target.");
             MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_header", headerModel);
-            List<CompletableFuture<Message>> closeHeaderFutures = postTargetService.sendEmbedInPostTarget(messageToSend, MODMAIL_LOG_POSTTARGET, modMailThread.getServer().getId());
+            List<CompletableFuture<Message>> closeHeaderFutures = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, modMailThread.getServer().getId());
             completableFutures.addAll(closeHeaderFutures);
             completableFutures.addAll(self.sendMessagesToPostTarget(modMailThread, loggedMessages));
             CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
@@ -553,7 +552,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
         loadedMessages.forEach(message -> {
             MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_logged_message", message);
-            List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, MODMAIL_LOG_POSTTARGET, modMailThread.getServer().getId());
+            List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, modMailThread.getServer().getId());
             messageFutures.addAll(logFuture);
         });
         return messageFutures;

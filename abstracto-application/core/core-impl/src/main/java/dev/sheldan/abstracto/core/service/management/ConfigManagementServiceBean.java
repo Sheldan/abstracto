@@ -112,7 +112,12 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
 
     @Override
     public boolean configExists(Long serverId, String name) {
-        return loadConfig(serverId, name) != null;
+        return configRepository.existsAConfigByServerIdAndName(serverId, name);
+    }
+
+    @Override
+    public boolean configExists(AServer server, String name) {
+        return configRepository.existsAConfigByServerAndName(server, name);
     }
 
     @Override

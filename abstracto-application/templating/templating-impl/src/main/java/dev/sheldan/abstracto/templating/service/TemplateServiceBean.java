@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.templating.service;
 
 import com.google.gson.Gson;
+import dev.sheldan.abstracto.templating.Templatable;
 import dev.sheldan.abstracto.templating.model.*;
 import dev.sheldan.abstracto.templating.model.database.Template;
 import freemarker.template.Configuration;
@@ -166,5 +167,10 @@ public class TemplateServiceBean implements TemplateService {
             log.warn("Failed to render template. ", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String renderTemplatable(Templatable templatable) {
+        return renderTemplate(templatable.getTemplateName(), templatable.getTemplateModel());
     }
 }

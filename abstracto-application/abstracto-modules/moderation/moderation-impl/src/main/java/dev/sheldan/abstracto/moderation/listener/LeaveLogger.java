@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.LeaveListener;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -21,7 +22,6 @@ import java.util.HashMap;
 public class LeaveLogger implements LeaveListener {
 
     private static final String USER_LEAVE_TEMPLATE = "user_leave";
-    private static final String LEAVE_LOG_TARGET = "leaveLog";
 
     @Autowired
     private TemplateService templateService;
@@ -42,7 +42,7 @@ public class LeaveLogger implements LeaveListener {
     public void execute(Member member, Guild guild) {
         log.info("User {} left server {}.", member.getUser().getId(), guild.getIdLong());
         String text = templateService.renderTemplateWithMap(USER_LEAVE_TEMPLATE, getUserParameter(member.getUser()));
-        postTargetService.sendTextInPostTarget(text, LEAVE_LOG_TARGET, guild.getIdLong());
+        postTargetService.sendTextInPostTarget(text, LoggingPostTarget.LEAVE_LOG, guild.getIdLong());
     }
 
     @Override

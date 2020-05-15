@@ -5,6 +5,8 @@ import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
+import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
 import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayWarning;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -31,8 +33,6 @@ import java.util.List;
 @Slf4j
 @Component
 public class WarnServiceBean implements WarnService {
-
-    public static final String WARN_LOG_TARGET = "warnLog";
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
@@ -144,7 +144,7 @@ public class WarnServiceBean implements WarnService {
                 .warnings(warnDecayWarnings)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("warn_decay_log", warnDecayLogModel);
-        postTargetService.sendEmbedInPostTarget(messageToSend, "decayLog", server.getId());
+        postTargetService.sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId());
     }
 
     @Override
@@ -158,6 +158,6 @@ public class WarnServiceBean implements WarnService {
 
     private void sendWarnLog(ServerContext warnLogModel)  {
         MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, warnLogModel);
-        postTargetService.sendEmbedInPostTarget(message, WARN_LOG_TARGET, warnLogModel.getServer().getId());
+        postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, warnLogModel.getServer().getId());
     }
 }

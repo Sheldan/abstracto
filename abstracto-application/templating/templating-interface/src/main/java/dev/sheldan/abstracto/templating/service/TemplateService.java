@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.templating.service;
 
+import dev.sheldan.abstracto.templating.Templatable;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 
 import java.util.HashMap;
@@ -32,4 +33,6 @@ public interface TemplateService {
      * @return The template rendered as string.
      */
     String renderTemplate(String key, Object model);
+
+    String renderTemplatable(Templatable templatable);
 }

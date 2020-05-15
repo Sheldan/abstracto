@@ -81,6 +81,17 @@ public class PostTargetManagementBean implements PostTargetManagement {
     }
 
     @Override
+    public Boolean postTargetExists(String name, AServer server) {
+        return postTargetRepository.existsByNameAndServerReference(name, server);
+    }
+
+    @Override
+    public Boolean postTargetExists(String name, Long serverId) {
+        AServer dbServer = serverManagementService.loadOrCreate(serverId);
+        return postTargetExists(name, dbServer);
+    }
+
+    @Override
     public PostTarget updatePostTarget(PostTarget target, AServer server, AChannel newTargetChannel) {
         target.setChannelReference(newTargetChannel);
         return target;

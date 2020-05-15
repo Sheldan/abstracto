@@ -14,4 +14,6 @@ public interface PostTargetRepository extends JpaRepository<PostTarget, Long> {
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     PostTarget findPostTargetByNameAndServerReference(String name, AServer server);
 
+    boolean existsByNameAndServerReference(String name, AServer server);
+
 }
