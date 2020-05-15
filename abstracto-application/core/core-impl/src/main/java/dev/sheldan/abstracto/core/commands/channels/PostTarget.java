@@ -64,7 +64,7 @@ public class PostTarget extends AbstractConditionableCommand {
         Parameter postTargetName = Parameter.builder().name("name").type(String.class).optional(true).templated(true).build();
         Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).optional(true).templated(true).build();
         List<Parameter> parameters = Arrays.asList(postTargetName, channel);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("posttarget")
                 .module(ChannelsModuleInterface.CHANNELS)

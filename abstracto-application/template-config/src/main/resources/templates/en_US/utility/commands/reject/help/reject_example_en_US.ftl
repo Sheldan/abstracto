@@ -1,0 +1,1 @@
+`deny 1 not okay` in order to reject the suggestion `1` with the reason `not okay`

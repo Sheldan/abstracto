@@ -14,9 +14,15 @@
 <#if command.help.templated>
 <#include "help_command_embed_command_usage">: `<#include "${command.name}_usage">`
 <#include "help_command_embed_command_detailed_help">: <#include "${command.name}_long_help">
+<#if command.help.hasExample>
+<#include "help_command_embed_command_example">: <#include "${command.name}_example">
+</#if>
 <#else>
 <#include "help_command_embed_command_usage">: `${command.help.usage}`
 <#include "help_command_embed_command_detailed_help">: ${command.help.longHelp}
+<#if command.help.hasExample>
+<#include "help_command_embed_command_example">:${command.help.example}
+</#if>
 </#if>
 <#if command.aliases?? && command.aliases?size gt 0>
 <#include "help_command_embed_command_aliases">: `${command.aliases?join("`, `")}`

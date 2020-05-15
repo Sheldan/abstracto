@@ -50,7 +50,7 @@ public class Warn extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").type(Member.class).templated(true).build());
         parameters.add(Parameter.builder().name("reason").type(String.class).templated(true).optional(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("warn")
                 .module(ModerationModule.MODERATION)

@@ -63,7 +63,7 @@ public class Enable extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         Parameter featureName = Parameter.builder().name("featureName").type(String.class).optional(true).templated(true).build();
         List<Parameter> parameters = Arrays.asList(featureName);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("enable")
                 .module(ConfigModuleInterface.CONFIG)

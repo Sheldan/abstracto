@@ -1,0 +1,1 @@
+`enable moderation` to enable the moderation feature

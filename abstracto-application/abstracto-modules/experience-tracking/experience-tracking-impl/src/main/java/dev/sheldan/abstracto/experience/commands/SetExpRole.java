@@ -62,7 +62,7 @@ public class SetExpRole extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("level").templated(true).type(Integer.class).build());
         parameters.add(Parameter.builder().name("role").templated(true).type(ARole.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("setExpRole")
                 .module(ExperienceModule.EXPERIENCE)

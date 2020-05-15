@@ -1,0 +1,1 @@
+`allowRole moderation @Staff` to allow the role `Staff` to execute all commands in the `moderation` feature (where @Staff is a role mention)

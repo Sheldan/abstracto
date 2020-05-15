@@ -30,6 +30,7 @@ Setting a role to be awarded at a certain level::
 this will cause to remove this assignment and recalculate the roles for all users previously having this role.
 This command will provide a status message indicating this process.
 This will not award this role to users which qualify for this, a `syncRoles` is necessary for this.
+* Example: `setExpRole 50 @HighLevel` in order to award the role `HighLevel` at level `50` (the @HighLevel is a role mention)
 
 Syncing the roles of the members with the configuration::
 * Usage: `syncRoles`

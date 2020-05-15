@@ -1,0 +1,1 @@
+`remind 1h2m3s text` in order to be reminded in 1 hour 2 minutes and 3 seconds with the reason `text`

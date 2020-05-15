@@ -17,6 +17,7 @@ or if it is not restricted and which roles are immune against the command.
 Changing the system configuration::
 * Usage `setConfig <key> <value>`
 * Description: Changes the value of this configuration identified by `key` to `value`. Some of these configurations have separate commands, but this works in general.
+* Example: `setConfig expMin 15` to set the minimum experience to 15
 Changing emotes Abstracto uses::
 * Usage: `setEmote <key> <emote>`
 * Description: Sets the emote identified by `key` used by Abstracto on this server to `emote`.
@@ -36,15 +37,18 @@ Changing the prefix::
 Changing a post target::
 * Usage: `posttarget <key> <channel>`
 * Description: Changes the given post target identified by `key` to the given channel. All messages using this post target will be send to this channel from now on.
+* Example: `posttarget banLog #general` to log the bans in the #general channel.
 Listing the features::
 * Usage: `features`
 * Description: Lists the available features and whether or not they are enabled in this server.
 Enabling a feature::
 * Usage: `enable <key>`
 * Description: Enables the feature identified by `key` in this server. If the feature dependents on other features, they will be enabled as well.
+* Example: `enable moderation` to enable the moderation feature
 Disabling a feature::
 * Usage: `disable <key>`
 * Description: Disables the feature identified by `key` in this server. If the feature is required for other features, they will be disabled as well.
+* Example: `disable moderation` to disable the moderation feature
 Creating a channel group::
 * Usage: `createChannelGroup <key>`
 * Description: Creates a new channel group identified by `key`.
@@ -53,10 +57,12 @@ Adding a channel to a channel group::
 * Usage: `addToChannelGroup <groupName> <channel>`
 * Description: Adds the `channel` to the channel group identified by the `groupName`. It is not possible for a channel to be in a group twice.
 * Aliases: `addTChGrp`, `chGrpCh+`
+* Example: `addToChannelGroup group1 #general` to add the channel #general to the group group1
 Removing a channel from a channel group::
 * Usage: `removeFromChannelGroup <groupName> <channel>`
 * Description: Removes the `channel` from the channel group identified by `groupName`.
 * Aliases: `rmChChgrp`, `chGrpCh-`
+* Example: `removeFromChannelGroup group1 #general` to remove the channel #general from the group `group1`
 Deleting a channel group::
 * Usage: `deleteChannelGroup <key>`
 * Description: Deletes the channel group identifies by `key`. This will also remove all associated channels from this group. This command fails, if the group is used in other features and referenced.
@@ -64,9 +70,11 @@ Deleting a channel group::
 Disabling a command in a group::
 * Usage: `disableCommand <commandName> <groupName>`
 * Description: Disables the command identified by `commandName` in the channel group `groupName`. A command is considered disabled in a specified channel, if the command is disabled in *all* the groups the channel is in.
+* Example: `disableCommand warn group1` to disable the command `warn` in the group `group1`
 Enabling a command in a group::
 * Usage: `enableCommand <commandname> <groupName>`
 * Description: Enables the command identified by `commandName` in the channel group `groupName`. A command is considered enabled in a specified channel, if the command is enabled in *any* the groups the channel is in.
+* Example: `enableCommand warn group1` to enable the command `warn` in the group `group1`
 Showing all available channel groups and the respective channels::
 * Usage: `listChannelGroups`
 * Description: Provides an overview of the currently available channel groups and which channels are in this channel group.
@@ -77,15 +85,19 @@ Removing role restrictions from a command::
 Allowing a role to execute a command::
 * Usage: `allowRole  <featureName|commandName> <role>`
 * Description: Allows the provided `role` to execute all commands in the `feature`/the `command`. This command automatically restricts the commands, which means, if it was unrestricted before, after executing this command only the provided role can execute the command.
+* Example: `allowRole moderation @Staff` to allow the role `Staff` to execute all commands in the `moderation` feature (where @Staff is a role mention)
 Forbidding a role to execute a command::
 * Usage: `disAllowRole <featureName|commandName> <role>`
 * Description: Removes the `role` from the list of allowed roles for all commands in the `feature`/the `command`.
+* Example: `disAllowRole moderation @Staff` to forbid the role `Staff` to execute all commands in the `moderation` feature (where @Staff is a role mention)
 Make a role affected by a command::
 * Usage: `makeAffected <featureName|commandName> <role>`
 * Description: Makes the role affected by all commands in the `feature`/the `command`.
+* Example: `makeAffected ban @Staff` in order so the role `Staff` can be banned via the command (where @Staff is a role mention)
 Make a role immune against a command::
 * Usage: `makeImmune <featureName|commandName> <role>`
 * Description: Makes the role immune from all commands in the `feature`/the `command`.
+* Example: `makeImmune ban @Staff` in order so the role `Staff` cannot be banned via the command (where @Staff is a role mention)
 Enforce the role restrictions of commands::
 * Usage: `restrict <featureName|commandName>`
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.

@@ -43,7 +43,7 @@ public class Remind extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("duration").type(Duration.class).templated(true).build());
         parameters.add(Parameter.builder().name("remindText").type(String.class).templated(true).maxLength(MessageEmbed.TEXT_MAX_LENGTH).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("remind")
                 .module(UtilityModuleInterface.UTILITY)

@@ -38,7 +38,7 @@ public class Accept extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("suggestionId").type(Long.class).templated(true).build());
         parameters.add(Parameter.builder().name("text").type(String.class).optional(true).remainder(true).templated(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("accept")
                 .module(UtilityModuleInterface.UTILITY)

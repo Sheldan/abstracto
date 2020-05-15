@@ -49,7 +49,7 @@ public class Kick extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").templated(true).type(Member.class).build());
         parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).optional(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("kick")
                 .module(ModerationModule.MODERATION)

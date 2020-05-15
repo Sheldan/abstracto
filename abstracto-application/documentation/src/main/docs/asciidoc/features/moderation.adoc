@@ -12,19 +12,23 @@ Ban a member::
 * Description:
 Bans the given given `member` with the given optional `reason`. This sends a logging message to the `banLog` post target.
 Banning this way does not delete old messages of the member on the server. If the `reason` is not provided, a default reason is used.
+* Example: `ban @Member bad` in order to ban `Member` with the reason `bad` (the @Member is a user mention)
 * Required bot permission: `BAN_MEMBERS`
 Ban a user by ID::
 * Usage: `banId <userId> [reason]`
 * Description: Bans the `user` by his id with the optional `reason`. . This command can be used in case the user is not part of the server anymore.
 This will also send a log message to `banLog` and not delete old messages.
+* Example: `banId 1234 bad` in order to ban the user with ID `1234` with the reason `bad`
 * Required bot permission: `BAN_MEMBERS`
 Kick a member::
 * Usage: `kick <member> [reason]`
 * Description: Kicks the `member` from the guild with the given `reason`. If the `reason` is not provided, a default reason is used.
+* Example: `kick @Member bad` in order to kick `Member` with the reason `bad` (the @Member is a user mention)
 * Required bot permission: `KICK_MEMBERS`
 Change the slow mode in a channel::
 * Usage: `slowmode <duration> [channel]`
 * Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
+* Example: `slowMode 1h2m3s #general` in order to set the slow mode in channel `general` to 1 hour 2 minutes and 3 seconds (the #general is a user mention)
 * Required bot permission: `MANAGE_CHANNEL` in the respective channel
 
 === Warning
@@ -42,6 +46,7 @@ Warn a user::
 * Usage: `warn <member> [reason]`
 * Description: Warns the `member` with the given `reason` or a default one, if none is provided. This command sends a log message to the `warnLog` post
 target and notifies the member about the warn.
+* Example: `warn @Member bad` in order to warn `Member` with the reason `bad` (the @Member is a user mention)
 Listing the warnings of users::
 * Usage: `warnings [member]`
 * Description: If no `member` is provided displays all the warnings on the server. If a `member` is provided, will only display the warnings of the user.
@@ -92,6 +97,7 @@ Muting a user::
 * Description: Applies the mute role to the given `member` for the given `duration`. If `reason` is not provided, a default reason will be used for logging in the `muteLog` post target.  This will automatically
 un-mute the user after the duration has passed. If the un-mute happens automatically, this will also be logged in the `muteLog` post target.
 This command sends a notification to the user about the mute and kicks the user from the voice channel, if any.
+* Example: `mute @Member 1h2m3s bad` in order to mute the member `Member` for 1 hour 2 minutes and 3 seconds with the reason `bad` (the @Member is a user mention)
 Un-Muting a user::
 * Usage: `unMute <member>`
 * Description: Removes the mute role from the given member. This does *not* log the un-mute.

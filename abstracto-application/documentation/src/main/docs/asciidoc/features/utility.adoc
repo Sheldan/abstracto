@@ -9,6 +9,7 @@ Create a reminder::
 * Usage: `remind <duration> <text>`
 * Description: Creates a reminder with `text` which will be triggered after `duration`. This command uses duration parsing. The reminder will ping when the duration has passed and provide
 the context of the reminder.
+* Example: `remind 1h2m3s text` in order to be reminded in 1 hour 2 minutes and 3 seconds with the reason `text`
 Cancelling a reminder::
 * Usage `unRemind <reminderId>`
 * Description: Cancels this reminder reminder and will cause this reminder to not be executed.
@@ -70,9 +71,11 @@ Creating a suggestion::
 Accepting a suggestion::
 * Usage `accept <suggestionId> [note]`
 * Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `note` will be used in this re-post, if provided.
-Deny a suggestion::
-* Usage `deny <suggestionId> [note]`
+* Example: `accept 1 okay` in order to accept the suggestion `1` with the reason `okay`
+Rejecting a suggestion::
+* Usage `reject <suggestionId> [note]`
 * Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `note` will be used in this re-post, if provided.
+* Example: `deny 1 not okay` in order to reject the suggestion `1` with the reason `not okay`
 
 === Miscellaneous
 

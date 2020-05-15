@@ -1,0 +1,1 @@
+`disableCommand warn group1` to disable the command `warn` in the group `group1`

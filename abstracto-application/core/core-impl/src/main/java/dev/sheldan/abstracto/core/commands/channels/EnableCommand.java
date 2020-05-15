@@ -35,7 +35,7 @@ public class EnableCommand extends AbstractConditionableCommand {
         Parameter channelGroupName = Parameter.builder().name("commandName").type(String.class).templated(true).build();
         Parameter channelToAdd = Parameter.builder().name("channelGroupName").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("enableCommand")
                 .module(ChannelsModuleInterface.CHANNELS)

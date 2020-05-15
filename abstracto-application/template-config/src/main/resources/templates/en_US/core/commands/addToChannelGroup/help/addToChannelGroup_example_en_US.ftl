@@ -1,0 +1,1 @@
+`addToChannelGroup group1 #general` to add the channel #general to the group group1

@@ -36,7 +36,7 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
         Parameter channelGroupName = Parameter.builder().name("name").type(String.class).templated(true).build();
         Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         List<String> aliases = Arrays.asList("addTChGrp", "chGrpCh+");
         return CommandConfiguration.builder()
                 .name("addToChannelGroup")

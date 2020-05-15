@@ -1,0 +1,1 @@
+`posttarget banLog #general` to log the bans in the #general channel.
