@@ -67,6 +67,23 @@ public class Warning {
     @Setter
     private Instant decayDate;
 
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

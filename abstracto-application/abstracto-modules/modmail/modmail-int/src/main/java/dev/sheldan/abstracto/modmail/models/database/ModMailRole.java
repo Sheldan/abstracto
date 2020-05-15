@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @Builder
 @Entity
@@ -29,4 +30,20 @@ public class ModMailRole {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modmail_role", nullable = false)
     private ARole role;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 }

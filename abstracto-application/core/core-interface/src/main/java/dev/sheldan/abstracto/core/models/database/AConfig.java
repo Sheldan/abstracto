@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -40,6 +41,22 @@ public class AConfig {
     @Getter
     @Setter
     private AServer server;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

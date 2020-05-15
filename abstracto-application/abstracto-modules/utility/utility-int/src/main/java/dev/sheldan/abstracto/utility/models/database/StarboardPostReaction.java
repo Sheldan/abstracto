@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -30,6 +31,14 @@ public class StarboardPostReaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private StarboardPost starboardPost;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

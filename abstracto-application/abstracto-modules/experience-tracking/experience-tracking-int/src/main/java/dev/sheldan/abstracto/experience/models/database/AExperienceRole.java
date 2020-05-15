@@ -7,6 +7,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,22 @@ public class AExperienceRole implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     /**
      * Current list of {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} which were given this role.

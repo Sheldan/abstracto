@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -41,6 +42,22 @@ public class MuteRole {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

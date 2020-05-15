@@ -37,11 +37,21 @@ public class ModMailThread {
     @JoinColumn(name = "modmail_thread_server", nullable = false)
     private AServer server;
 
-    @Column
+    @Column(name = "created")
     private Instant created;
 
-    @Column
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
     private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Column
     private Instant closed;

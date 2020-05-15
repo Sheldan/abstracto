@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -56,6 +57,14 @@ public class EmbeddedMessage {
     @Column
     @Id
     private Long embeddingMessageId;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

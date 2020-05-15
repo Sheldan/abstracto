@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +38,15 @@ public class AChannel implements SnowFlake {
     @Getter
     @Enumerated(EnumType.STRING)
     private AChannelType type;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
 
     @Getter
     @Setter

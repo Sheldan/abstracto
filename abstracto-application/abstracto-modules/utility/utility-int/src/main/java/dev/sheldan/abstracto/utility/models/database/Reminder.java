@@ -44,8 +44,21 @@ public class Reminder {
     @JoinColumn(name = "serverId", nullable = false)
     private AServer server;
 
-    @Getter
+    @Column(name = "created")
     private Instant reminderDate;
+
+    @PrePersist
+    private void onInsert() {
+        this.reminderDate = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Getter
     private Instant targetDate;

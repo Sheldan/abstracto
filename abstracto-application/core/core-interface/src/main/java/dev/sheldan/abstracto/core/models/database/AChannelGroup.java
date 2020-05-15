@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,6 +31,14 @@ public class AChannelGroup {
     @Setter
     @JoinColumn(name = "group_server", nullable = false)
     private AServer server;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
 
     @ManyToMany
     @JoinTable(

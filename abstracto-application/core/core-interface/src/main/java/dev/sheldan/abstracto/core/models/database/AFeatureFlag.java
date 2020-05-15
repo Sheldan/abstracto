@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -36,6 +37,22 @@ public class AFeatureFlag {
     @Getter
     @Setter
     private boolean enabled;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updateTimestamp;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updateTimestamp = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

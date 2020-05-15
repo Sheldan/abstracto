@@ -46,6 +46,22 @@ public class StarboardPost {
     @Transient
     private Integer reactionCount;
 
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
+
     @PostLoad
     private void onLoad() {
         this.reactionCount = this.reactions.size();

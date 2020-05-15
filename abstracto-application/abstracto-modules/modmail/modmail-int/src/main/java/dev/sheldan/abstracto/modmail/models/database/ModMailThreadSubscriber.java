@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @Builder
 @Entity
@@ -28,4 +29,13 @@ public class ModMailThreadSubscriber {
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "modMailThread", nullable = false)
     private ModMailThread threadReference;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
 }
