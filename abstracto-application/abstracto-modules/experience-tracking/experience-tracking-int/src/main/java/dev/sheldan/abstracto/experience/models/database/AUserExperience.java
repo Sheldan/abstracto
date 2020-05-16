@@ -46,6 +46,11 @@ public class AUserExperience implements Serializable {
     private Long messageCount;
 
     /**
+     * Whether or not the experience gain has been disabled for this user
+     */
+    private Boolean experienceGainDisabled;
+
+    /**
      * The {@link AExperienceLevel } which the user currently has.
      */
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

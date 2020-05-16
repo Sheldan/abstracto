@@ -37,6 +37,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
                 .builder()
                 .experience(0L)
                 .messageCount(0L)
+                .experienceGainDisabled(false)
                 .user(aUserInAServer)
                 .id(aUserInAServer.getUserInServerId())
                 .currentLevel(startingLevel)
@@ -60,8 +61,10 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
         Optional<AUserExperience> byId = repository.findById(user.getUserInServerId());
         if(byId.isPresent()) {
             AUserExperience userExperience = byId.get();
-            userExperience.setMessageCount(userExperience.getMessageCount() + messageCount);
-            userExperience.setExperience(userExperience.getExperience() + experience);
+            if(!userExperience.getExperienceGainDisabled()) {
+                userExperience.setMessageCount(userExperience.getMessageCount() + messageCount);
+                userExperience.setExperience(userExperience.getExperience() + experience);
+            }
             return userExperience;
         } else {
             AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));

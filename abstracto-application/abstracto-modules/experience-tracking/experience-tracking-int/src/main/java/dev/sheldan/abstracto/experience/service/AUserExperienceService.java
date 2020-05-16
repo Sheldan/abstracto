@@ -125,4 +125,7 @@ public interface AUserExperienceService {
      * @param toExecute The {@link Consumer} which should be executed on each element of the passed list
      */
     void executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Consumer<AUserExperience> toExecute);
+
+    void disableExperienceForUser(AUserInAServer userInAServer);
+    void enableExperienceForUser(AUserInAServer userInAServer);
 }

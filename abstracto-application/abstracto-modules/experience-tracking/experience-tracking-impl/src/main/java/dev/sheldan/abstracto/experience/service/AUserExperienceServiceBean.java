@@ -71,7 +71,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      */
     @Override
     public void addExperience(AUserInAServer userInAServer) {
-        log.trace("Adding experience for user {} in server {}", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         Long second = Instant.now().getEpochSecond() / 60;
         if(runtimeExperience.containsKey(second)) {
             List<AServer> existing = runtimeExperience.get(second);
@@ -156,9 +155,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 gainedExperience = (int) Math.floor(gainedExperience * multiplier);
                 log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
                 AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
-                updateUserlevel(aUserExperience, levels);
-                updateUserRole(aUserExperience, roles);
-                userExperienceManagementService.saveUser(aUserExperience);
+                if(!aUserExperience.getExperienceGainDisabled()) {
+                    updateUserlevel(aUserExperience, levels);
+                    updateUserRole(aUserExperience, roles);
+                    userExperienceManagementService.saveUser(aUserExperience);
+                } else {
+                    log.trace("Experience gain was disabled. User did not gain any experience.");
+                }
             });
         });
     }
@@ -246,6 +249,18 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         } catch (InterruptedException | ExecutionException e) {
             log.info("Failed to synchronize users.", e);
         }
+    }
+
+    @Override
+    public void disableExperienceForUser(AUserInAServer userInAServer) {
+        AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
+        userExperience.setExperienceGainDisabled(true);
+    }
+
+    @Override
+    public void enableExperienceForUser(AUserInAServer userInAServer) {
+        AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
+        userExperience.setExperienceGainDisabled(false);
     }
 
     private MessageToSend getUserSyncStatusUpdateModel(Integer current, Integer total) {
