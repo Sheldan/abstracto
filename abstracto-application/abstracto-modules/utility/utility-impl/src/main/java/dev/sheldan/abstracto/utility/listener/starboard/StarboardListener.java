@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.utility.listener.starboard;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
+import dev.sheldan.abstracto.core.listener.ReactionClearedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class StarboardListener implements ReactedAddedListener, ReactedRemovedListener {
+public class StarboardListener implements ReactedAddedListener, ReactedRemovedListener, ReactionClearedListener {
 
     public static final String STAR_EMOTE = "star";
 
@@ -147,5 +148,15 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     @Override
     public FeatureEnum getFeature() {
         return UtilityFeature.STARBOARD;
+    }
+
+    @Override
+    public void executeReactionCleared(CachedMessage message) {
+        Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
+
+        starboardPostOptional.ifPresent(starboardPost -> {
+            starboardPostReactorManagementService.removeReactors(starboardPost);
+            completelyRemoveStarboardPost(starboardPost);
+        });
     }
 }

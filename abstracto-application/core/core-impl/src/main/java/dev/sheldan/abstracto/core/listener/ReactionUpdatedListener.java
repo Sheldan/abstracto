@@ -39,6 +39,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     private List<ReactedAddedListener> addedListenerList;
 
     @Autowired
+    private List<ReactionClearedListener> clearedListenerList;
+
+    @Autowired
     private List<ReactedRemovedListener> reactionRemovedListener;
 
     @Autowired
@@ -156,6 +159,21 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         });
     }
 
+    @Transactional
+    public void callClearListeners(@Nonnull GuildMessageReactionRemoveAllEvent event, CachedMessage cachedMessage) {
+        clearedListenerList.forEach(reactionRemovedListener -> {
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
+            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
+                return;
+            }
+            try {
+                reactionRemovedListener.executeReactionCleared(cachedMessage);
+            } catch (AbstractoRunTimeException e) {
+                log.warn(String.format("Failed to execute reaction clear listener %s.", reactionRemovedListener.getClass().getName()), e);
+            }
+        });
+    }
+
     @Override
     @Transactional
     public void onGuildMessageReactionRemoveAll(@Nonnull GuildMessageReactionRemoveAllEvent event) {
@@ -163,6 +181,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             cachedMessage.getReactions().clear();
             messageCache.putMessageInCache(cachedMessage);
+            self.callClearListeners(event, cachedMessage);
         }) .exceptionally(throwable -> {
             log.error("Message retrieval from cache failed for message {}", event.getMessageIdLong(), throwable);
             return null;

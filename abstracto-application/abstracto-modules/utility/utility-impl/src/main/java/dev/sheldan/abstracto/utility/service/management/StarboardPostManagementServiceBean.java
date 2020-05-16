@@ -84,6 +84,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public void removePost(StarboardPost starboardPost) {
+        starboardPost.getReactions().clear();
         repository.delete(starboardPost);
     }
 

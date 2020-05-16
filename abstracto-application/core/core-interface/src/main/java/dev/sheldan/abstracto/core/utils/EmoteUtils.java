@@ -21,9 +21,10 @@ public class EmoteUtils {
             } else {
                 return false;
             }
-        } else {
+        } else if(reaction.isEmoji()){
             return reaction.getEmoji().equals(emote.getEmoteKey());
         }
+        return false;
     }
 
     public static Optional<CachedReaction> getReactionFromMessageByEmote(CachedMessage message, AEmote emote) {
