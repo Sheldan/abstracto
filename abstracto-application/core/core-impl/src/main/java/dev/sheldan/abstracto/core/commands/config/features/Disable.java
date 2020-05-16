@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ import java.util.List;
 
 @Component
 public class Disable extends AbstractConditionableCommand {
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
 
     @Autowired
     private FeatureFlagService featureFlagService;
@@ -39,12 +43,12 @@ public class Disable extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
-            model.setFeatures(featureFlagService.getAllFeatures());
+            model.setFeatures(featureConfigService.getAllFeatures());
             String response = templateService.renderTemplate("disable_features_response", model);
             channelService.sendTextToChannelNoFuture(response, commandContext.getChannel());
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(flagKey);
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
             featureFlagService.disableFeature(feature, commandContext.getGuild().getIdLong());
             if(feature.getDependantFeatures() != null) {
                 feature.getDependantFeatures().forEach(featureDisplay -> {

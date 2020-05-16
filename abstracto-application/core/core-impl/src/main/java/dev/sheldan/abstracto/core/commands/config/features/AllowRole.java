@@ -11,9 +11,11 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -39,7 +41,7 @@ public class AllowRole extends AbstractConditionableCommand {
     private RoleManagementService roleManagementService;
 
     @Autowired
-    private FeatureFlagService featureFlagService;
+    private FeatureConfigService featureFlagService;
 
     @Autowired
     private TemplateService templateService;

@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureFlagDisplay;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class FeatureFlagConverter {
 
     @Autowired
-    private FeatureFlagService featureFlagService;
+    private FeatureConfigService featureFlagService;
 
     public FeatureFlagDisplay fromAFeatureFlag(AFeatureFlag featureFlag) {
         FeatureEnum featureEnum = featureFlagService.getFeatureEnum(featureFlag.getFeature().getKey());

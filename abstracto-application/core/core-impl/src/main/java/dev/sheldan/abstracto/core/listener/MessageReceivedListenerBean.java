@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,9 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     private List<PrivateMessageReceivedListener> privateMessageReceivedListeners;
 
     @Autowired
+    private FeatureConfigService featureConfigService;
+
+    @Autowired
     private FeatureFlagService featureFlagService;
 
     @Autowired
@@ -38,7 +42,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
         messageCache.putMessageInCache(event.getMessage());
         listenerList.forEach(messageReceivedListener -> {
             try {
-                FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
+                FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
                 if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                     return;
                 }

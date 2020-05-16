@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.models.FeatureDisabledMessage;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,9 @@ public class FeatureEnabledCondition implements CommandCondition {
 
     @Autowired
     private TemplateService templateService;
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
 
     @Autowired
     private FeatureFlagService featureFlagService;
@@ -28,7 +32,7 @@ public class FeatureEnabledCondition implements CommandCondition {
             if(!featureFlagValue) {
                 FeatureDisabledMessage featureDisabledMessage = FeatureDisabledMessage
                         .builder()
-                        .featureConfig(featureFlagService.getFeatureDisplayForFeature(feature))
+                        .featureConfig(featureConfigService.getFeatureDisplayForFeature(feature))
                         .build();
                 reason = templateService.renderTemplate("feature_disabled_message", featureDisabledMessage);
             }

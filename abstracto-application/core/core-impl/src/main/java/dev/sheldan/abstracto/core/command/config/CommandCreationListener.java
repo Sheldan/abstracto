@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.command.config;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -24,7 +24,7 @@ public class CommandCreationListener {
     private CommandService commandService;
 
     @Autowired
-    private FeatureFlagService featureFlagService;
+    private FeatureConfigService featureFlagService;
 
     @Autowired
     private FeatureManagementService featureManagementService;

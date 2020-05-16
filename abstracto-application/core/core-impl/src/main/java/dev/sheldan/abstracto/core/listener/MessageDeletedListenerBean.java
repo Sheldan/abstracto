@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.listener;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,9 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     private MessageDeletedListenerBean self;
 
     @Autowired
+    private FeatureConfigService featureConfigService;
+
+    @Autowired
     private FeatureFlagService featureFlagService;
 
     @Override
@@ -46,7 +50,7 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Transactional
     public void executeListener(CachedMessage cachedMessage) {
         listener.forEach(messageDeletedListener -> {
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
                 return;
             }

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.listener;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -42,6 +43,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     @Autowired
     private ReactionUpdatedListener self;
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
 
     @Autowired
     private FeatureFlagService featureFlagService;
@@ -101,7 +105,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         addReactionIfNotThere(cachedMessage, reaction, userInAServer);
         addedListenerList.forEach(reactedAddedListener -> {
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }
@@ -140,7 +144,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
         AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         removeReactionIfThere(cachedMessage, reaction, userInAServer);
         reactionRemovedListener.forEach(reactionRemovedListener -> {
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ public class JoinListenerBean extends ListenerAdapter {
     private List<JoinListener> listenerList;
 
     @Autowired
+    private FeatureConfigService featureConfigService;
+
+    @Autowired
     private FeatureFlagService featureFlagService;
 
     @Autowired
@@ -32,7 +36,7 @@ public class JoinListenerBean extends ListenerAdapter {
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         listenerList.forEach(joinListener -> {
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(joinListener.getFeature());
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(joinListener.getFeature());
             if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;
             }

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.listener;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,9 @@ public class MessageUpdatedListener extends ListenerAdapter {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+    @Autowired
+    private FeatureConfigService featureConfigService;
+
     @Override
     public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
         Message message = event.getMessage();
@@ -48,7 +52,7 @@ public class MessageUpdatedListener extends ListenerAdapter {
     @Transactional
     public void executeListener(Message message, CachedMessage cachedMessage) {
         listener.forEach(messageTextUpdatedListener -> {
-            FeatureConfig feature = featureFlagService.getFeatureDisplayForFeature(messageTextUpdatedListener.getFeature());
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageTextUpdatedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, message.getGuild().getIdLong())) {
                 return;
             }

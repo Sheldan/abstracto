@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.modmail.config;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.service.FeatureValidator;
 import dev.sheldan.abstracto.modmail.validator.ModMailFeatureValidator;
@@ -43,5 +44,10 @@ public class ModMailFeature implements FeatureConfig {
     @Override
     public List<String> getRequiredEmotes() {
         return Arrays.asList("readReaction");
+    }
+
+    @Override
+    public List<FeatureMode> getAvailableModes() {
+        return Arrays.asList(ModMailMode.LOGGING, ModMailMode.NO_LOG);
     }
 }

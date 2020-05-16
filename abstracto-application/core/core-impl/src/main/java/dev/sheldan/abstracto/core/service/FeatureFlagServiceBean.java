@@ -30,14 +30,10 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     private FeatureManagementService featureManagementService;
 
     @Autowired
-    private List<FeatureConfig> availableFeatures;
+    private FeatureConfigService featureConfigService;
 
     @Autowired
     private ServerManagementService serverManagementService;
-
-    @Autowired
-    private FeatureValidatorService featureValidatorService;
-
 
     @Override
     public boolean isFeatureEnabled(FeatureConfig name, Long serverId) {
@@ -58,8 +54,8 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     @Override
     public void enableFeature(FeatureConfig name, AServer server) {
         FeatureEnum feature = name.getFeature();
-        if(!doesFeatureExist(name)) {
-            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), getFeaturesAsList());
+        if(!featureConfigService.doesFeatureExist(name)) {
+            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), featureConfigService.getFeaturesAsList());
         }
         updateFeatureFlag(feature, server, true);
     }
@@ -73,69 +69,10 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     @Override
     public void disableFeature(FeatureConfig name, AServer server) {
         FeatureEnum feature = name.getFeature();
-        if(!doesFeatureExist(name)) {
-            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), getFeaturesAsList());
+        if(!featureConfigService.doesFeatureExist(name)) {
+            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), featureConfigService.getFeaturesAsList());
         }
         updateFeatureFlag(feature, server, false);
-    }
-
-    @Override
-    public List<String> getAllFeatures() {
-        return availableFeatures
-                .stream()
-                .map(featureDisplay -> featureDisplay.getFeature().getKey())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<FeatureConfig> getAllFeatureConfigs() {
-        return availableFeatures;
-    }
-
-    @Override
-    public FeatureConfig getFeatureDisplayForFeature(FeatureEnum featureEnum) {
-        Optional<FeatureConfig> any = getAllFeatureConfigs().stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureEnum)).findAny();
-        if(any.isPresent()) {
-            return any.get();
-        }
-        throw new AbstractoRunTimeException(String.format("Feature %s not found in configuration", featureEnum.getKey()));
-    }
-
-    @Override
-    public FeatureConfig getFeatureDisplayForFeature(String key) {
-        return getFeatureDisplayForFeature(getFeatureEnum(key));
-    }
-
-    @Override
-    public boolean doesFeatureExist(FeatureConfig name) {
-        return availableFeatures.stream().anyMatch(featureDisplay -> featureDisplay.getFeature().equals(name.getFeature()));
-    }
-
-    @Override
-    public List<String> getFeaturesAsList() {
-        return availableFeatures
-                .stream()
-                .map(featureDisplay -> featureDisplay.getFeature().getKey())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public FeatureEnum getFeatureEnum(String key) {
-        Optional<FeatureConfig> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getFeature().getKey().equals(key)).findAny();
-        if(foundFeature.isPresent()) {
-            return foundFeature.get().getFeature();
-        }
-        throw new AbstractoRunTimeException(String.format("Feature %s not found.", key));
-    }
-
-    @Override
-    public PostTargetEnum getPostTargetEnumByKey(String key) {
-        Predicate<PostTargetEnum> postTargetComparison = postTargetEnum -> postTargetEnum.getKey().equals(key);
-        Optional<FeatureConfig> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getRequiredPostTargets().stream().anyMatch(postTargetComparison)).findAny();
-        if(foundFeature.isPresent()) {
-            return foundFeature.get().getRequiredPostTargets().stream().filter(postTargetComparison).findAny().get();
-        }
-        throw new AbstractoRunTimeException(String.format("Post target %s not found.", key));
     }
 
     @Override
@@ -161,23 +98,5 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     public AFeatureFlag updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
         return managementService.setFeatureFlagValue(feature, server, newValue);
-    }
-
-    @Override
-    public FeatureValidationResult validateFeatureSetup(FeatureConfig featureConfig, AServer server) {
-        FeatureValidationResult featureValidationResult = FeatureValidationResult.validationSuccessful(featureConfig);
-        featureConfig.getRequiredPostTargets().forEach(s -> {
-            featureValidatorService.checkPostTarget(s, server, featureValidationResult);
-        });
-        featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
-            featureValidatorService.checkSystemConfig(s, server, featureValidationResult);
-        });
-        featureConfig.getRequiredEmotes().forEach(s -> {
-            featureValidatorService.checkEmote(s, server, featureValidationResult);
-        });
-        featureConfig.getAdditionalFeatureValidators().forEach(featureValidator -> {
-            featureValidator.featureIsSetup(featureConfig, server, featureValidationResult);
-        });
-        return featureValidationResult;
     }
 }
