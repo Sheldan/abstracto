@@ -354,12 +354,17 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     public synchronized void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser) {
+        boolean loggingEnabled = featureFlagService.isFeatureEnabled(modMailLoggingFeature, modMailThread.getServer());
+       closeModMailThread(modMailThread, feedBack, note, notifyUser, loggingEnabled);
+    }
+
+    @Override
+    public void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser, Boolean logThread) {
         Long modMailThreadId = modMailThread.getId();
         log.info("Starting closing procedure for thread {}", modMailThread.getId());
         List<ModMailMessage> modMailMessages = modMailThread.getMessages();
-        boolean loggingEnabled = featureFlagService.isFeatureEnabled(modMailLoggingFeature, modMailThread.getServer());
         List<UndoActionInstance> undoActions = new ArrayList<>();
-        if(loggingEnabled) {
+        if(logThread) {
             List<CompletableFuture<Message>> messages = modMailMessageService.loadModMailMessages(modMailMessages);
             log.trace("Loading {} mod mail thread messages.", messages.size());
             for (int i = 0; i < messages.size(); i++) {

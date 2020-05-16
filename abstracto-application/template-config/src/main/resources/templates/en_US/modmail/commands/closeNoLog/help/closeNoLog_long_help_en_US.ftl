@@ -1,0 +1,1 @@
+Closes the mod mail thread, which means deleting the channel the thread was in. This command does not notify the user nor does it log the content of the thread.
