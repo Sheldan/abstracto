@@ -18,7 +18,7 @@
 
 
     <properties>
-        <jda.version>4.1.1_126</jda.version>
+        <jda.version>4.1.1_152</jda.version>
         <jda.utilities.version>3.0.3</jda.utilities.version>
         <asciidoctor.maven.plugin.version>2.0.0-RC.1</asciidoctor.maven.plugin.version>
         <asciidoctorj.pdf.version>1.5.3</asciidoctorj.pdf.version>

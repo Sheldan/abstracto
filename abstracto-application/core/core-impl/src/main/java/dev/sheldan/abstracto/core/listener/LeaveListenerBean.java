@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class LeaveListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMemberLeave(@Nonnull GuildMemberLeaveEvent event) {
+    public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
         listenerList.forEach(leaveListener -> {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(leaveListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {

@@ -26,14 +26,12 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class BotServiceBean implements BotService {
 
-    public static final String GUILD_NOT_FOUND = "Guild %s not found.";
     private JDA instance;
 
     @Override
     public void login() throws LoginException {
-        JDABuilder builder = new JDABuilder(System.getenv("TOKEN"));
+        JDABuilder builder = JDABuilder.createDefault(System.getenv("TOKEN"));
 
-        builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY));
         builder.setBulkDeleteSplittingEnabled(false);
 
         this.instance = builder.build();
@@ -147,7 +145,7 @@ public class BotServiceBean implements BotService {
             Guild guild = guildOptional.get();
             return Optional.ofNullable(guild.getTextChannelById(textChannelId));
         }
-        throw new GuildException(GUILD_NOT_FOUND, serverId);
+        throw new GuildException(serverId);
     }
 
     @Override
