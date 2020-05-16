@@ -29,7 +29,8 @@ System configuration:: Some properties can be configured while the bot is runnin
 In the respective features they are noted under `Relevant system configuration`.
 In order to change this you need to use the command `setConfig` with the provided key and the new desired value.
 Emotes:: The features have section of the keys of used emotes in the feature, you can change this emote with the `setEmote` command.
-
+Feature Modes:: Features can have different modes. This means, a feature behaves differently if the mode is changed. For example: `modmail` has two modes: `log` and `noLog`.
+In the mode `log` mod mail threads wil be logged into the post target `modmailLog` while in the other mode, this does not happen. This consideration of the modes does depend on the implementation of the features.
 == Features
 
 include::features/core.adoc[]

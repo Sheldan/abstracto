@@ -17,9 +17,10 @@ public interface FeatureConfigService {
     boolean doesFeatureExist(FeatureConfig name);
     boolean doesFeatureExist(String name);
     List<String> getFeaturesAsList();
+    List<String> getFeatureModesFromFeatureAsString(String featureName);
     FeatureEnum getFeatureEnum(String key);
     PostTargetEnum getPostTargetEnumByKey(String key);
     FeatureValidationResult validateFeatureSetup(FeatureConfig featureConfig, AServer server);
-    FeatureMode getFeatureModeByKey(String key);
+    FeatureMode getFeatureModeByKey(FeatureConfig featureConfig, String key);
     boolean isModeValid(String featureName, String modeName);
 }

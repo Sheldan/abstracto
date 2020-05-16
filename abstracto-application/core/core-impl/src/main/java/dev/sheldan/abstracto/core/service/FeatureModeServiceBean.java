@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.database.AFeature;
@@ -35,19 +36,22 @@ public class FeatureModeServiceBean implements FeatureModeService {
 
     @Override
     public AFeatureMode setModeForFeatureTo(AFeatureFlag flag, String newMode) {
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(newMode);
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(flag.getFeature().getKey());
+        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
         return setModeForFeatureTo(flag, featureMode);
     }
 
     @Override
     public AFeatureMode setModeForFeatureTo(FeatureEnum featureEnum, AServer server, String newMode) {
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(newMode);
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(featureEnum);
+        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
         return setModeForFeatureTo(featureEnum, server, featureMode);
     }
 
     @Override
     public AFeatureMode setModeForFeatureTo(AFeature feature, AServer server, String newMode) {
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(newMode);
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(feature.getKey());
+        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
         return setModeForFeatureTo(feature, server, featureMode);
     }
 
@@ -77,19 +81,22 @@ public class FeatureModeServiceBean implements FeatureModeService {
 
     @Override
     public AFeatureMode createMode(AFeatureFlag flag, String newMode) {
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(newMode);
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(flag.getFeature().getKey());
+        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
         return createMode(flag, featureMode);
     }
 
     @Override
     public AFeatureMode createMode(FeatureEnum featureEnum, AServer server, String newMode) {
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(newMode);
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(featureEnum);
+        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
         return createMode(featureEnum, server, featureMode);
     }
 
     @Override
     public AFeatureMode createMode(AFeature feature, AServer server, String newMode) {
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(newMode);
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(feature.getKey());
+        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
         return createMode(feature, server, featureMode);
     }
 

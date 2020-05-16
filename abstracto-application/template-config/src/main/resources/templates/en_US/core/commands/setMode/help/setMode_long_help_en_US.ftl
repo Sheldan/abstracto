@@ -1,0 +1,1 @@
+The features of the bot have different modes. These modes influence how the features behave. With this command you can change the mode of a certain feature in this guild.

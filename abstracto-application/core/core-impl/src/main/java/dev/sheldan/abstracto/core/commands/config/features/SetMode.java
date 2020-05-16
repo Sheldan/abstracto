@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,20 +35,15 @@ public class SetMode extends AbstractConditionableCommand {
     @Autowired
     private FeatureFlagManagementService featureFlagManagementService;
 
+    @Autowired
+    private TemplateService templateService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String featureName = (String) commandContext.getParameters().getParameters().get(0);
         String modeName = (String) commandContext.getParameters().getParameters().get(1);
 
-        if(featureConfigService.doesFeatureExist(featureName)) {
-            if(featureConfigService.isModeValid(featureName, modeName)) {
-                featureModeService.setModeForFeatureTo(featureName, commandContext.getUserInitiatedContext().getServer(), modeName);
-            } else {
-                return CommandResult.fromError("Mode not available");
-            }
-        } else {
-            return CommandResult.fromError("Feature does not exist");
-        }
+        featureModeService.setModeForFeatureTo(featureName, commandContext.getUserInitiatedContext().getServer(), modeName);
         return CommandResult.fromSuccess();
     }
 
