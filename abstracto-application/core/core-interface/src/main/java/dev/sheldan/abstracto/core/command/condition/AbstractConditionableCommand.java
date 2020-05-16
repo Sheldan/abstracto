@@ -22,9 +22,12 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
     @Autowired
     protected ImmuneUserCondition immuneUserCondition;
 
+    @Autowired
+    private FeatureModeCondition featureModeCondition;
+
 
     @Override
     public List<CommandCondition> getConditions() {
-        return new ArrayList<>(Arrays.asList(featureEnabledCondition, commandDisabledCondition, commandDisallowedCondition));
+        return new ArrayList<>(Arrays.asList(featureEnabledCondition, commandDisabledCondition, commandDisallowedCondition, featureModeCondition));
     }
 }

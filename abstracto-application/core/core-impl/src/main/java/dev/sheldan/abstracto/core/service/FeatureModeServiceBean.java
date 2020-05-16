@@ -117,5 +117,17 @@ public class FeatureModeServiceBean implements FeatureModeService {
         return featureModeManagementService.createMode(featureFlag, mode);
     }
 
+    @Override
+    public AFeatureMode getFeatureMode(FeatureEnum featureEnum, AServer server) {
+        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+        return getFeatureMode(feature, server);
+    }
+
+    @Override
+    public AFeatureMode getFeatureMode(AFeature feature, AServer server) {
+        AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(feature, server);
+        return featureModeManagementService.getModeForFeature(featureFlag);
+    }
+
 
 }

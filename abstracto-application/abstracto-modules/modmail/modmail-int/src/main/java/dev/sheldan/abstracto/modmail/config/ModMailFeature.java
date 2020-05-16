@@ -18,17 +18,9 @@ public class ModMailFeature implements FeatureConfig {
     @Autowired
     private ModMailFeatureValidator modMailFeatureValidator;
 
-    @Autowired
-    private ModMailLoggingFeature modMailLoggingFeature;
-
     @Override
     public FeatureEnum getFeature() {
         return ModMailFeatures.MOD_MAIL;
-    }
-
-    @Override
-    public List<FeatureConfig> getDependantFeatures() {
-        return Arrays.asList(modMailLoggingFeature);
     }
 
     @Override

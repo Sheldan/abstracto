@@ -12,9 +12,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
-import dev.sheldan.abstracto.modmail.config.ModMailFeature;
-import dev.sheldan.abstracto.modmail.config.ModMailLoggingFeature;
-import dev.sheldan.abstracto.modmail.config.ModMailPostTargets;
+import dev.sheldan.abstracto.modmail.config.*;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadNotFoundException;
 import dev.sheldan.abstracto.modmail.models.database.*;
 import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
@@ -97,7 +95,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     private EventWaiter eventWaiter;
 
     @Autowired
-    private ModMailLoggingFeature modMailLoggingFeature;
+    private FeatureModeService featureModeService;
 
 
     @Autowired
@@ -354,8 +352,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     public synchronized void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser) {
-        boolean loggingEnabled = featureFlagService.isFeatureEnabled(modMailLoggingFeature, modMailThread.getServer());
-       closeModMailThread(modMailThread, feedBack, note, notifyUser, loggingEnabled);
+        AFeatureMode aFeatureMode = featureModeService.getFeatureMode(ModMailFeatures.MOD_MAIL, modMailThread.getServer());
+        boolean loggingMode = aFeatureMode.getMode().equalsIgnoreCase(ModMailMode.LOGGING.getKey());
+       closeModMailThread(modMailThread, feedBack, note, notifyUser, loggingMode);
     }
 
     @Override

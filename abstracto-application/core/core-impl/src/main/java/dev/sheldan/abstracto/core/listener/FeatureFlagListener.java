@@ -49,12 +49,16 @@ public class FeatureFlagListener implements ServerConfigListener {
         featureFlagService.getAllFeatureConfigs().forEach((featureFlagKey) -> {
             String featureKey = featureFlagKey.getFeature().getKey();
             AFeature feature = featureManagementService.getFeature(featureKey);
-            FeaturePropertiesConfig featurePropertiesConfig = featureConfigLoader.getFeatures().get(featureKey);
-            if(service.getFeatureFlag(feature, server.getId()) == null) {
-                service.createFeatureFlag(feature, server.getId(), featurePropertiesConfig.getEnabled());
-            }
-            if(featurePropertiesConfig.getDefaultMode() != null && !featureModeManagementService.featureModeSet(feature, server)) {
-                featureModeService.createMode(feature, server, featurePropertiesConfig.getDefaultMode());
+            if(featureConfigLoader.getFeatures().containsKey(featureKey)) {
+                FeaturePropertiesConfig featurePropertiesConfig = featureConfigLoader.getFeatures().get(featureKey);
+                if(service.getFeatureFlag(feature, server.getId()) == null) {
+                    service.createFeatureFlag(feature, server.getId(), featurePropertiesConfig.getEnabled());
+                }
+                if(featurePropertiesConfig.getDefaultMode() != null && !featureModeManagementService.featureModeSet(feature, server)) {
+                    featureModeService.createMode(feature, server, featurePropertiesConfig.getDefaultMode());
+                }
+            } else {
+                log.warn("Feature {} was found as interface, but not in the properties configuration. It will not be setup.", featureKey);
             }
         });
     }

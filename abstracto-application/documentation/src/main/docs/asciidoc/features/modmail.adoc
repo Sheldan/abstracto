@@ -16,6 +16,11 @@ Feature key: `modmail`
 
 ==== Post targets
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
+`modmailLog`:: Will be used to log the interactions when a thread is closed.
+
+=== Modes
+`log`:: The messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands)
+`nogLog`:: The messages should not be logged into the `modmailLog` post target when the thread is closed.
 
 
 ==== Emotes
@@ -58,13 +63,13 @@ Closing the mod mail thread without notifying the user::
 * Usage: `closeSilently [note]`
 * Description: Closes the thread, deletes the text channel containing the thread and logs the interactions between the member and the moderators in the `modmailLog` post target. (only if `modmail_logging` is enabled)
 When closing a thread, a closing header with general information will be send and the note will be displayed there.
-
+Close a thread without logging
+* Usage: `closeNoLog`
+* Description: Closes the thread without notifying the user and without logging the messages.
+* Mode Restriction: This command is only available when mod mail is in the mode `log`.
 
 === Mod mail thread logging
 
-This feature enables the logging of mod mail threads into a channel when they are closed. The individual log messages will have a mod mail header which contains some information about the thread.
 
-Feature key: `modmail_logging`
 
 ==== Post targets
-`modmailLog`:: Will be used to log the interactions when a thread is closed.

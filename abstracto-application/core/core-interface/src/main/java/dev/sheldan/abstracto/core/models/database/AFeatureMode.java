@@ -28,6 +28,7 @@ public class AFeatureMode {
 
     @Column
     @Setter
+    @Getter
     private String mode;
 
     @Column(name = "created")

@@ -23,4 +23,7 @@ public interface FeatureModeService {
     AFeatureMode createMode(FeatureEnum featureEnum, AServer server, FeatureMode mode);
     AFeatureMode createMode(AFeature feature, AServer server, FeatureMode mode);
     AFeatureMode createMode(AFeatureFlag featureFlag, FeatureMode mode);
+
+    AFeatureMode getFeatureMode(FeatureEnum featureEnum, AServer server);
+    AFeatureMode getFeatureMode(AFeature feature, AServer server);
 }
