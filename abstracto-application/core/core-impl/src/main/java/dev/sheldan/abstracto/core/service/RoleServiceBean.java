@@ -88,6 +88,11 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
+    public boolean hasAnyOfTheRoles(Member member, List<ARole> roles) {
+        return member.getRoles().stream().anyMatch(role1 -> roles.stream().anyMatch(role -> role.getId() == role1.getIdLong()));
+    }
+
+    @Override
     public boolean memberHasRole(Member member, Role role) {
         return member.getRoles().stream().anyMatch(role1 -> role1.getIdLong() == role.getIdLong());
     }

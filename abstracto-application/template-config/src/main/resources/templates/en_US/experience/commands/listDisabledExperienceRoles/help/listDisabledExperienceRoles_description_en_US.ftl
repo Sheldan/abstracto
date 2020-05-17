@@ -1,0 +1,1 @@
+Lists the roles for which experience gain is disabled.

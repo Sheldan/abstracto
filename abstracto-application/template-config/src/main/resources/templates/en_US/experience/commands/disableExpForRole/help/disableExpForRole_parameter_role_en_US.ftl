@@ -1,0 +1,1 @@
+The role which should not gain any experience anymore

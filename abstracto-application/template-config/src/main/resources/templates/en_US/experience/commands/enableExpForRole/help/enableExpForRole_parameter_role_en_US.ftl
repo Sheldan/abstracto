@@ -1,0 +1,1 @@
+The role to re-enable experience gain for.

@@ -2,19 +2,18 @@ package dev.sheldan.abstracto.experience.service;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.RoleService;
-import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
+import dev.sheldan.abstracto.experience.models.database.*;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
-import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel;
+import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
@@ -31,6 +30,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -61,6 +61,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
     @Autowired
     private TemplateService templateService;
+
+    @Autowired
+    private DisabledExpRoleManagementService disabledExpRoleManagementService;
 
     @Autowired
     private BotService botService;
@@ -149,18 +152,25 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
             levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
             List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(serverExp);
+            List<ADisabledExpRole> disabledExpRoles = disabledExpRoleManagementService.getDisabledRolesForServer(serverExp);
+            List<ARole> disabledRoles = disabledExpRoles.stream().map(ADisabledExpRole::getRole).collect(Collectors.toList());
             roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
             serverExp.getUsers().forEach(userInAServer -> {
                 Integer gainedExperience = iterator.next();
                 gainedExperience = (int) Math.floor(gainedExperience * multiplier);
-                log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
-                AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
-                if(!aUserExperience.getExperienceGainDisabled()) {
-                    updateUserlevel(aUserExperience, levels);
-                    updateUserRole(aUserExperience, roles);
-                    userExperienceManagementService.saveUser(aUserExperience);
+                Member member = botService.getMemberInServer(userInAServer);
+                if(!roleService.hasAnyOfTheRoles(member, disabledRoles)) {
+                    log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
+                    AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
+                    if(!aUserExperience.getExperienceGainDisabled()) {
+                        updateUserlevel(aUserExperience, levels);
+                        updateUserRole(aUserExperience, roles);
+                        userExperienceManagementService.saveUser(aUserExperience);
+                    } else {
+                        log.trace("Experience gain was disabled. User did not gain any experience.");
+                    }
                 } else {
-                    log.trace("Experience gain was disabled. User did not gain any experience.");
+                    log.trace("User {} has a role which makes the user unable to gain experience.", userInAServer.getUserInServerId());
                 }
             });
         });

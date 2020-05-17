@@ -15,6 +15,7 @@ public interface RoleService {
     void markDeleted(Long id, AServer server);
     Role getRoleFromGuild(ARole role);
     List<Role> getRolesFromGuild(List<ARole> roles);
+    boolean hasAnyOfTheRoles(Member member, List<ARole> roles);
     boolean memberHasRole(Member member, Role role);
     boolean memberHasRole(Member member, ARole role);
     boolean isRoleInServer(ARole role);
