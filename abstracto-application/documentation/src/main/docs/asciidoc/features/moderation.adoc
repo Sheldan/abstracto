@@ -111,8 +111,30 @@ Only *one* role can be used as a mute role.
 This feature provides a range of utilities to monitor the server.
 The logging includes:
 
+Feature key `logging`
+
 Deleted message logging:: When a message is deleted, the content of the message and the possible attachments of said message will be logged. Post target `deleteLog`.
 Edited message logging:: When a message is edited, the previous content of the message and the new content of the message will be logged.
 This does not work if the message was sent before the bot was started. Post target `editLog`.
 Member joining logging:: When a member joins the guild, a message indicating this is send. Post target `joinLog`.
 Member leaving logging:: When a member leaves the guild, a message indicating this is send. Post target `leaveLog`.
+
+
+=== User notes
+
+Feature key `userNotes`
+
+This feature provides the ability to store specific notes for members in the database. These notes can then be retrieved and deleted and consist of only text.
+
+==== Commands
+Creating a user note::
+* Usage: `userNote <user> <text>`
+* Description: Creates a single user note for the specified user.
+
+Deleting a user note::
+* Usage: `deleteNote <id>`
+* Description: Deletes the user note identified by its ID. The ID can be retrieved by the command `userNotes`.
+
+Retrieving user notes::
+* Usage: `userNotes [user]`
+* Description: If `user` is not provided, this will list the user notes of the whole server, if `user` is provided, this will only list user notes from this particular `user`.
