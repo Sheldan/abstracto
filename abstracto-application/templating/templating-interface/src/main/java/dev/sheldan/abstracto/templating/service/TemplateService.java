@@ -33,6 +33,7 @@ public interface TemplateService {
      * @return The template rendered as string.
      */
     String renderTemplate(String key, Object model);
+    String renderSimpleTemplate(String key);
 
     String renderTemplatable(Templatable templatable);
 }

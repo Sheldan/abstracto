@@ -170,6 +170,11 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     @Override
+    public String renderSimpleTemplate(String key) {
+        return renderTemplate(key, new Object());
+    }
+
+    @Override
     public String renderTemplatable(Templatable templatable) {
         return renderTemplate(templatable.getTemplateName(), templatable.getTemplateModel());
     }
