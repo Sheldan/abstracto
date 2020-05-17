@@ -1,0 +1,1 @@
+https://mvnrepository.com/artifact/net.minidev/accessors-smart

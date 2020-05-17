@@ -1,0 +1,1 @@
+https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt/7.8.1

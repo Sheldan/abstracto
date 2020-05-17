@@ -1,0 +1,1 @@
+https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api/2.3.2

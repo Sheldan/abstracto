@@ -1,0 +1,1 @@
+https://mvnrepository.com/artifact/com.sun.xml.fastinfoset/FastInfoset/1.2.16

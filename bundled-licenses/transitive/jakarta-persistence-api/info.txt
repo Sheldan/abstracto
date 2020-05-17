@@ -1,0 +1,1 @@
+https://github.com/jakarta-ee/persistence-spec

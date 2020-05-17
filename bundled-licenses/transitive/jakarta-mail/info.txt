@@ -1,0 +1,1 @@
+https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api/1.6.4
