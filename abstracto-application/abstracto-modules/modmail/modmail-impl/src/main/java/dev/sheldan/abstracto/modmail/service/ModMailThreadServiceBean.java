@@ -39,6 +39,7 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class ModMailThreadServiceBean implements ModMailThreadService {
 
+    public static final String MODMAIL_CLOSING_MESSAGE_TEXT = "modMailClosingText";
     public static final String MODMAIL_CATEGORY = "modmailCategory";
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
@@ -129,19 +130,25 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         try {
             ModMailThread thread = createThreadObject(channel, aUserInAServer);
             sendModMailHeader(channel, aUserInAServer, undoActions);
+            CompletableFuture<Void> future;
             if(initialMessage != null){
-                self.sendUserReply(channel, thread, initialMessage);
+                future = self.sendUserReply(channel, thread, initialMessage);
+            } else {
+                future = CompletableFuture.completedFuture(null);
             }
-            if(userInitiated) {
-                sendModMailNotification(aUserInAServer, thread, undoActions);
-            }
+            future.thenAccept(aVoid -> {
+                if(userInitiated) {
+                    self.sendModMailNotification(aUserInAServer, thread, undoActions);
+                }
+            });
         } catch (Exception e) {
             log.error("Failed to perform mod mail thread setup.", e);
             undoActionService.performActions(undoActions);
         }
     }
 
-    private void sendModMailNotification(FullUser aUserInAServer, ModMailThread thread, List<UndoActionInstance> undoActions) {
+    @Transactional
+    public void sendModMailNotification(FullUser aUserInAServer, ModMailThread thread, List<UndoActionInstance> undoActions) {
         List<ModMailRole> rolesToPing = modMailRoleManagementService.getRolesForServer(thread.getServer());
         ModMailNotificationModel modMailNotificationModel = ModMailNotificationModel
                 .builder()
@@ -259,7 +266,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         }
     }
 
-    public void sendUserReply(TextChannel textChannel, ModMailThread modMailThread, Message message) {
+    public CompletableFuture<Void> sendUserReply(TextChannel textChannel, ModMailThread modMailThread, Message message) {
         Long modMailThreadId = modMailThread.getId();
         FullUser fullUser = FullUser
                 .builder()
@@ -286,7 +293,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
-        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+        return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             self.postProcessSendMessages(modMailThreadId, message, completableFutures);
         });
 
@@ -433,7 +440,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
                     if(notifyUser){
                         log.trace("Notifying user {}", user.getIdLong());
-                        messageFutures.addAll(channelService.sendTemplateInChannel("modmail_closing_user_message", new Object(), privateChannel));
+                        HashMap<String, String> closingMessage = new HashMap<>();
+                        String defaultValue = templateService.renderSimpleTemplate("modmail_closing_user_message_description");
+                        closingMessage.put("closingMessage", configService.getStringValue(MODMAIL_CLOSING_MESSAGE_TEXT, modMailThread.getServer().getId(), defaultValue));
+                        messageFutures.addAll(channelService.sendTemplateInChannel("modmail_closing_user_message", closingMessage , privateChannel));
                     } else {
                         log.trace("*Not* notifying user {}", user.getIdLong());
                         messageFutures.add(CompletableFuture.completedFuture(null));

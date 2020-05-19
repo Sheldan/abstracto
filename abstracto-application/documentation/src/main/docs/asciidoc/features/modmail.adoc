@@ -14,6 +14,10 @@ This feature enables users to contact the moderation of the server in a private 
 
 Feature key: `modmail`
 
+==== Relevant system configuration
+`modmailCategory`:: The category on the server which is used to hold the text channels representing the threads
+`modMailClosingText`::The text being used when notifying the user when a thread is closed.
+
 ==== Post targets
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
 `modmailLog`:: Will be used to log the interactions when a thread is closed.
@@ -68,8 +72,3 @@ Close a thread without logging
 * Description: Closes the thread without notifying the user and without logging the messages.
 * Mode Restriction: This command is only available when mod mail is in the mode `log`.
 
-=== Mod mail thread logging
-
-
-
-==== Post targets
