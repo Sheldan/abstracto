@@ -14,11 +14,15 @@ import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import static net.dv8tion.jda.api.requests.GatewayIntent.*;
 
 @Service
 @Slf4j
@@ -28,9 +32,12 @@ public class BotServiceBean implements BotService {
 
     @Override
     public void login() throws LoginException {
-        JDABuilder builder = JDABuilder.createDefault(System.getenv("TOKEN"));
+        JDABuilder builder = JDABuilder.create(System.getenv("TOKEN"), GatewayIntent.GUILD_MEMBERS, GUILD_VOICE_STATES,
+                GUILD_EMOJIS, GUILD_MEMBERS, GUILD_MESSAGE_REACTIONS, GUILD_MESSAGES,
+                GUILD_MESSAGE_REACTIONS, DIRECT_MESSAGE_REACTIONS, DIRECT_MESSAGES, GUILD_PRESENCES);
 
         builder.setBulkDeleteSplittingEnabled(false);
+        builder.setMemberCachePolicy(MemberCachePolicy.ALL);
 
         this.instance = builder.build();
     }

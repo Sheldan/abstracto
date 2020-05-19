@@ -108,7 +108,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
 
     @Override
-    public void createModMailThreadForUser(FullUser aUserInAServer, MessageChannel feedBackChannel, Boolean userInitiated) {
+    public void createModMailThreadForUser(FullUser aUserInAServer, Message initialMessage, MessageChannel feedBackChannel, Boolean userInitiated) {
         Long categoryId = configService.getLongValue(MODMAIL_CATEGORY, aUserInAServer.getAUserInAServer().getServerReference().getId());
         User user = aUserInAServer.getMember().getUser();
         CompletableFuture<TextChannel> textChannel = channelService.createTextChannel(user.getName() + user.getDiscriminator(), aUserInAServer.getAUserInAServer().getServerReference(), categoryId);
@@ -116,7 +116,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         textChannel.thenAccept(channel -> {
             List<UndoActionInstance> undoActions = new ArrayList<>();
             undoActions.add(UndoActionInstance.getChannelDeleteAction(aUserInAServer.getAUserInAServer().getServerReference().getId(), channel.getIdLong()));
-            self.performModMailThreadSetup(aUserInAServer, channel, userInitiated, undoActions);
+            self.performModMailThreadSetup(aUserInAServer, initialMessage, channel, userInitiated, undoActions);
         }).exceptionally(throwable -> {
             log.error("Failed to create mod mail thread", throwable);
             sendModMailFailure("modmail_exception_failed_to_create_mod_mail_thread",  aUserInAServer.getAUserInAServer(), null, feedBackChannel, throwable);
@@ -125,10 +125,13 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Transactional
-    public void performModMailThreadSetup(FullUser aUserInAServer, TextChannel channel, Boolean userInitiated, List<UndoActionInstance> undoActions) {
+    public void performModMailThreadSetup(FullUser aUserInAServer, Message initialMessage, TextChannel channel, Boolean userInitiated, List<UndoActionInstance> undoActions) {
         try {
             ModMailThread thread = createThreadObject(channel, aUserInAServer);
             sendModMailHeader(channel, aUserInAServer, undoActions);
+            if(initialMessage != null){
+                self.sendUserReply(channel, thread, initialMessage);
+            }
             if(userInitiated) {
                 sendModMailNotification(aUserInAServer, thread, undoActions);
             }
@@ -178,7 +181,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Override
-    public void createModMailPrompt(AUser user, MessageChannel channel) {
+    public void createModMailPrompt(AUser user, Message initialMessage) {
         List<AUserInAServer> knownServers = userInServerManagementService.getUserInAllServers(user.getId());
         if(knownServers.size() > 0) {
             List<ServerChoice> availableGuilds = new ArrayList<>();
@@ -212,12 +215,12 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                             AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
                             Member memberInServer = botService.getMemberInServer(chosenServer);
                             FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
-                            self.createModMailThreadForUser(fullUser, channel, true);
+                            self.createModMailThreadForUser(fullUser, initialMessage, initialMessage.getChannel(), true);
                         })
                         .build();
-                menu.display(channel);
+                menu.display(initialMessage.getChannel());
             } else {
-                channelService.sendTemplateInChannel("modmail_no_server_available", new Object(), channel);
+                channelService.sendTemplateInChannel("modmail_no_server_available", new Object(), initialMessage.getChannel());
             }
 
         }

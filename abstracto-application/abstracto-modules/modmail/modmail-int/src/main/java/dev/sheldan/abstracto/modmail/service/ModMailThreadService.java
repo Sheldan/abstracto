@@ -10,11 +10,11 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 
 public interface ModMailThreadService {
-    void createModMailThreadForUser(FullUser userInAServer, MessageChannel feedBackChannel, Boolean userInitiated);
+    void createModMailThreadForUser(FullUser userInAServer, Message initialMessage, MessageChannel feedBackChannel, Boolean userInitiated);
     boolean hasOpenThread(AUserInAServer aUserInAServer);
     boolean hasOpenThread(AUser user);
     void setModMailCategoryTo(AServer server, Long categoryId);
-    void createModMailPrompt(AUser user, MessageChannel messageChannel);
+    void createModMailPrompt(AUser user, Message initialMessage);
     void relayMessageToModMailThread(ModMailThread modMailThread, Message message);
     void relayMessageToDm(ModMailThread modMailThread, String text, Message message, Boolean anonymous, MessageChannel feedBack);
     void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, Boolean notifyUser);

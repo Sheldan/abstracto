@@ -35,7 +35,7 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
         if(existingThread != null) {
             modMailThreadService.relayMessageToModMailThread(existingThread, message);
         } else {
-            modMailThreadService.createModMailPrompt(user, message.getChannel());
+            modMailThreadService.createModMailPrompt(user, message);
         }
     }
 
