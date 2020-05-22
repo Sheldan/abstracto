@@ -92,4 +92,28 @@ public class ConfigServiceBean implements ConfigService{
             throw new ConfigurationKeyNotFoundException(name);
         }
     }
+
+    @Override
+    public boolean configIsFitting(String name, Long serverId, String value) {
+        try {
+            validateConfig(name, serverId, value);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void validateConfig(String name, Long serverId, String value) {
+        if(configManagementService.configExists(serverId, name)) {
+            AConfig existing = configManagementService.loadConfig(serverId, name);
+            if(existing.getDoubleValue() != null) {
+                Double.parseDouble(value);
+            } else if(existing.getLongValue() != null) {
+                Long.parseLong(value);
+            }
+        } else {
+            throw new ConfigurationKeyNotFoundException(name);
+        }
+    }
 }

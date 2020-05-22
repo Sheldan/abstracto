@@ -25,7 +25,7 @@ public class ModMailFeature implements FeatureConfig {
 
     @Override
     public List<PostTargetEnum> getRequiredPostTargets() {
-        return Arrays.asList(ModMailPostTargets.MOD_MAIL_PING);
+        return Arrays.asList(ModMailPostTargets.MOD_MAIL_PING, ModMailPostTargets.MOD_MAIL_LOG);
     }
 
     @Override
@@ -41,5 +41,10 @@ public class ModMailFeature implements FeatureConfig {
     @Override
     public List<FeatureMode> getAvailableModes() {
         return Arrays.asList(ModMailMode.LOGGING, ModMailMode.NO_LOG);
+    }
+
+    @Override
+    public List<String> getRequiredSystemConfigKeys() {
+        return Arrays.asList("modMailClosingText");
     }
 }

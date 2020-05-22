@@ -1,0 +1,1 @@
+The channel in which kicks should be logged to.

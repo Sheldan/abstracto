@@ -1,0 +1,1 @@
+The channel in which deleted messages should be logged to.

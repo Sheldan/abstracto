@@ -1,0 +1,1 @@
+The channel where mutes should be logged to. Un-mutes will also be in this channel.

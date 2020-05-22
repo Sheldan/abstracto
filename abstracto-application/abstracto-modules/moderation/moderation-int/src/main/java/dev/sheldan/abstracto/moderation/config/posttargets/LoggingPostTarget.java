@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum  LoggingPostTarget implements PostTargetEnum {
-    LEAVE_LOG("muteLog"), JOIN_LOG("joinLog"), DELETE_LOG("deleteLog"), EDIT_LOG("editLog");
+    LEAVE_LOG("leaveLog"), JOIN_LOG("joinLog"), DELETE_LOG("deleteLog"), EDIT_LOG("editLog");
 
     private String key;
 

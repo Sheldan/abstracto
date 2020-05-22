@@ -227,7 +227,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         .build();
                 menu.display(initialMessage.getChannel());
             } else {
-                channelService.sendTemplateInChannel("modmail_no_server_available", new Object(), initialMessage.getChannel());
+                channelService.sendEmbedTemplateInChannel("modmail_no_server_available", new Object(), initialMessage.getChannel());
             }
 
         }
@@ -243,7 +243,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .latestModMailThread(latestThread)
                 .pastModMailThreadCount((long)oldThreads.size())
                 .build();
-        List<CompletableFuture<Message>> messages = channelService.sendTemplateInChannel("modmail_thread_header", header, channel);
+        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInChannel("modmail_thread_header", header, channel);
         CompletableFuture.allOf(messages.toArray(new CompletableFuture[0])).whenComplete((aVoid, throwable)-> {
             if(throwable != null) {
                 log.error("Failed to send mod mail header for for user {}.", aUserInAServer.getAUserInAServer().getUserReference().getId(), throwable);
@@ -351,7 +351,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         .user(fullUser)
                         .throwable(throwable)
                         .build();
-                channelService.sendTemplateInChannel(template, modMailExceptionModel, channel);
+                channelService.sendEmbedTemplateInChannel(template, modMailExceptionModel, channel);
             } catch (Exception e) {
                 log.error("Failed to notify about mod mail exception.", e);
             }
@@ -443,7 +443,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         HashMap<String, String> closingMessage = new HashMap<>();
                         String defaultValue = templateService.renderSimpleTemplate("modmail_closing_user_message_description");
                         closingMessage.put("closingMessage", configService.getStringValue(MODMAIL_CLOSING_MESSAGE_TEXT, modMailThread.getServer().getId(), defaultValue));
-                        messageFutures.addAll(channelService.sendTemplateInChannel("modmail_closing_user_message", closingMessage , privateChannel));
+                        messageFutures.addAll(channelService.sendEmbedTemplateInChannel("modmail_closing_user_message", closingMessage , privateChannel));
                     } else {
                         log.trace("*Not* notifying user {}", user.getIdLong());
                         messageFutures.add(CompletableFuture.completedFuture(null));

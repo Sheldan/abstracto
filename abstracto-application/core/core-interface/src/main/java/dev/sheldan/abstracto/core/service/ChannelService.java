@@ -28,7 +28,7 @@ public interface ChannelService {
     void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
-    List<CompletableFuture<Message>> sendTemplateInChannel(String templateKey, Object model, MessageChannel channel);
+    List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
 }

@@ -1,0 +1,1 @@
+The maximum of experience given randomly. Default: 25

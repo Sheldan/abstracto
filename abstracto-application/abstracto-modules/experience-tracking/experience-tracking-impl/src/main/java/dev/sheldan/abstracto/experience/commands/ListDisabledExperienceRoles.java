@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.FullRole;
-import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
@@ -46,7 +45,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                     .build();
             disabledExperienceRolesModel.getRoles().add(role);
         });
-        channelService.sendTemplateInChannel("list_disabled_experience_roles", disabledExperienceRolesModel, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel("list_disabled_experience_roles", disabledExperienceRolesModel, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

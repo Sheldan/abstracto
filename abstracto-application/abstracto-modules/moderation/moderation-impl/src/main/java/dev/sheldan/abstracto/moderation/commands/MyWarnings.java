@@ -44,7 +44,7 @@ public class MyWarnings extends AbstractConditionableCommand {
         model.setCurrentWarnCount(currentWarnCount);
         Long totalWarnCount = warnManagementService.getTotalWarnsForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
         model.setTotalWarnCount(totalWarnCount);
-        channelService.sendTemplateInChannel("myWarnings_response", model, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel("myWarnings_response", model, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

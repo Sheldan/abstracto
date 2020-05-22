@@ -182,7 +182,7 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     @Transactional
-    public List<CompletableFuture<Message>> sendTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
+    public List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model);
         return sendMessageToSendToChannel(messageToSend, channel);
     }

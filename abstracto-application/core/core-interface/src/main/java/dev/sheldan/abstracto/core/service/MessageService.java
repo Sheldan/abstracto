@@ -7,10 +7,13 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface MessageService {
     void addReactionToMessage(String emoteKey, Long serverId, Message message);
+    CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message);
+    List<CompletableFuture<Void>> addReactionsToMessageWithFuture(List<String> emoteKeys, Long serverId, Message message);
     CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, AChannel channel);
     void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend);

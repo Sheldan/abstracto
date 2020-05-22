@@ -10,5 +10,7 @@ public interface ConfigService {
     void setLongValue(String name, Long serverId, Long value);
     void setConfigValue(String name, Long serverId, String value);
     void setStringValue(String name, Long serverId, String value);
+    boolean configIsFitting(String name, Long serverId, String value);
+    void validateConfig(String name, Long serverId, String value);
 
 }

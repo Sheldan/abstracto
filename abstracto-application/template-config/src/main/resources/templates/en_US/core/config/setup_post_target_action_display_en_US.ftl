@@ -1,0 +1,1 @@
+Post target ${postTargetKey} will be set to channel ${channel}.

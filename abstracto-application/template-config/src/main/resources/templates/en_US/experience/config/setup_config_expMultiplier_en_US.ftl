@@ -1,0 +1,1 @@
+The value each gained experience is multiplied by. Default 1.0

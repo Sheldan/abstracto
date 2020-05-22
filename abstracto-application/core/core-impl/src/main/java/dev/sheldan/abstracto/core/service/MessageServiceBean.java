@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,26 +39,41 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
+        addReactionToMessageWithFuture(emoteKey, serverId, message);
+    }
+
+    @Override
+    public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message) {
         Optional<Guild> guildByIdOptional = botService.getGuildById(serverId);
         AEmote emote = emoteService.getEmoteOrFakeEmote(emoteKey, serverId);
         if(guildByIdOptional.isPresent()) {
             Guild guild = guildByIdOptional.get();
-                if(emote.getCustom()) {
-                    Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
-                    if(emoteById != null) {
-                        message.addReaction(emoteById).queue();
-                    } else {
-                        log.error("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guild.getId());
-                        throw new EmoteNotDefinedException(emoteKey);
-                    }
+            if(emote.getCustom()) {
+                Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+                if(emoteById != null) {
+                    return message.addReaction(emoteById).submit();
                 } else {
-                    message.addReaction(emote.getEmoteKey()).queue();
+                    log.error("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guild.getId());
+                    throw new EmoteNotDefinedException(emoteKey);
                 }
+            } else {
+                return message.addReaction(emote.getEmoteKey()).submit();
+            }
         } else {
             log.error("Cannot add reaction, guild not found {}", serverId);
             throw new GuildException(serverId);
         }
     }
+
+    @Override
+    public List<CompletableFuture<Void>> addReactionsToMessageWithFuture(List<String> emoteKeys, Long serverId, Message message) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        emoteKeys.forEach(s -> {
+            futures.add(addReactionToMessageWithFuture(s, serverId, message));
+        });
+        return futures;
+    }
+
 
     @Override
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {

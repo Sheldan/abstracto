@@ -63,7 +63,7 @@ public class UserNotes extends AbstractConditionableCommand {
             userNotes = userNoteManagementService.loadNotesForServer(commandContext.getUserInitiatedContext().getServer());
         }
         model.setUserNotes(userNotesConverter.fromNotes(userNotes));
-        channelService.sendTemplateInChannel("user_notes_response", model, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel("user_notes_response", model, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

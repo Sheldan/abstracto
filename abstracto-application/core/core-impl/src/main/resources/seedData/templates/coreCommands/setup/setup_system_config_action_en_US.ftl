@@ -1,0 +1,1 @@
+<#assign configKey>${param.configKey}</#assign><#assign newValue>${param.newValue}</#assign><#include "setup_system_config_action_display">
