@@ -1,1 +1,1 @@
-The minimum experience given randomly. Default: 10
+The minimum experience given randomly. Default: ${defaultValue}

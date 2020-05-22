@@ -7,7 +7,9 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,36 +40,53 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
     @Autowired
     private PostTargetSetupStep self;
 
+    @Autowired
+    private TemplateService templateService;
+
     @Override
-    public CompletableFuture<List<DelayedActionConfig>> execute(AServerChannelUserId user, SetupStepParameter parameter) {
+    public CompletableFuture<SetupStepResult> execute(AServerChannelUserId user, SetupStepParameter parameter) {
         PostTargetStepParameter systemConfigStepParameter = (PostTargetStepParameter) parameter;
         String messageTemplateKey = "setup_posttarget_" + systemConfigStepParameter.getPostTargetKey();
+        String messageText = templateService.renderSimpleTemplate(messageTemplateKey);
         Optional<AChannel> channel = channelManagementService.loadChannel(user.getChannelId());
-        CompletableFuture<List<DelayedActionConfig>> future = new CompletableFuture<>();
+        CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
         if(channel.isPresent()) {
             Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
             Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
                 try {
-                    if(event.getMessage().getMentionedChannels().size() == 0) {
-                        future.completeExceptionally(new RuntimeException());
+
+                    SetupStepResult result;
+                    Message message = event.getMessage();
+                    if(checkForExit(message)) {
+                        result = SetupStepResult.fromCancelled();
+                    } else {
+                        if(message.getMentionedChannels().size() == 0) {
+                            future.completeExceptionally(new RuntimeException());
+                        }
+                        TextChannel textChannel = message.getMentionedChannels().get(0);
+                        PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig
+                                .builder()
+                                .postTargetKey(systemConfigStepParameter.getPostTargetKey())
+                                .serverId(user.getGuildId())
+                                .textChannel(textChannel)
+                                .channelId(textChannel.getIdLong())
+                                .build();
+                        List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
+                        result = SetupStepResult
+                                .builder()
+                                .result(SetupStepResultType.SUCCESS)
+                                .delayedActionConfigList(delayedSteps)
+                                .build();
                     }
-                    TextChannel textChannel = event.getMessage().getMentionedChannels().get(0);
-                    PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig
-                            .builder()
-                            .postTargetKey(systemConfigStepParameter.getPostTargetKey())
-                            .serverId(user.getGuildId())
-                            .textChannel(textChannel)
-                            .channelId(textChannel.getIdLong())
-                            .build();
-                    List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
-                    future.complete(delayedSteps);
+
+                    future.complete(result);
                 } catch (Exception e) {
                     log.error("Failed to handle post target step.", e);
                     future.completeExceptionally(e);
                 }
             };
-            interactiveService.createMessageWithResponse(messageTemplateKey, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);
+            interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);
         } else {
             future.completeExceptionally(new ChannelNotFoundException(user.getGuildId(), user.getChannelId()));
         }

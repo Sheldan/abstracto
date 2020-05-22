@@ -8,15 +8,12 @@ import dev.sheldan.abstracto.core.models.template.commands.SetupSummaryModel;
 import dev.sheldan.abstracto.core.service.DelayedActionService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +42,7 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
     private SetupSummaryStep self;
 
     @Override
-    public CompletableFuture<List<DelayedActionConfig>> execute(AServerChannelUserId user, SetupStepParameter generalParameter) {
+    public CompletableFuture<SetupStepResult> execute(AServerChannelUserId user, SetupStepParameter generalParameter) {
         SetupSummaryStepParameter parameter = (SetupSummaryStepParameter) generalParameter;
         SetupSummaryModel model = SetupSummaryModel
                 .builder()
@@ -53,21 +50,29 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
                 .build();
         String messageToSend = templateService.renderTemplate("setup_confirmation", model);
         Optional<AChannel> channel = channelManagementService.loadChannel(user.getChannelId());
-        CompletableFuture<List<DelayedActionConfig>> future = new CompletableFuture<>();
+        CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
         if(channel.isPresent()) {
             Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
             Consumer<Void> confirmation = (Void none) -> {
                 try {
                     self.executeDelayedSteps(parameter);
-                    future.complete(null);
+                    SetupStepResult result = SetupStepResult
+                            .builder()
+                            .result(SetupStepResultType.SUCCESS)
+                            .build();
+                    future.complete(result);
                 } catch (Exception e) {
                     future.completeExceptionally(e);
                 }
             };
 
             Consumer<Void> denial = (Void none) -> {
-               log.info("Stopped wizard.");
+                SetupStepResult result = SetupStepResult
+                        .builder()
+                        .result(SetupStepResultType.CANCELLED)
+                        .build();
+                future.complete(result);
             };
             interactiveService.createMessageWithConfirmation(messageToSend, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), confirmation, denial, finalAction);
         } else {

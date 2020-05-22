@@ -51,9 +51,8 @@ public class InteractiveServiceBean implements InteractiveService {
     private BotService botService;
 
     @Override
-    public void createMessageWithResponse(String templateKey, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction) {
-        String message = templateService.renderSimpleTemplate(templateKey);
-        channelService.sendTextToAChannel(message, channel);
+    public void createMessageWithResponse(String messageText, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction) {
+        channelService.sendTextToAChannel(messageText, channel);
         eventWaiter.waitForEvent(MessageReceivedEvent.class, event -> {
             if(event != null) {
                 return event.getAuthor().getIdLong() == responder.getUserReference().getId() && event.getMessage().getIdLong() != messageId;

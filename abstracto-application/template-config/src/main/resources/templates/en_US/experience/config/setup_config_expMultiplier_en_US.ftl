@@ -1,1 +1,1 @@
-The value each gained experience is multiplied by. Default 1.0
+The value each gained experience is multiplied by. Default: ${defaultValue}

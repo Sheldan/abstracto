@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.interactive;
 
+import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.template.commands.SystemConfigActionModel;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.Setter;
 public class SystemConfigDelayedActionConfig implements DelayedActionConfig {
     private String configKey;
     private Long serverId;
-    private String value;
+    private AConfig value;
 
     @Override
     public String getTemplateName() {
@@ -23,7 +24,7 @@ public class SystemConfigDelayedActionConfig implements DelayedActionConfig {
         return SystemConfigActionModel
                 .builder()
                 .configKey(this.configKey)
-                .newValue(this.value)
+                .newValue(value.getValueAsString())
                 .build();
     }
 }

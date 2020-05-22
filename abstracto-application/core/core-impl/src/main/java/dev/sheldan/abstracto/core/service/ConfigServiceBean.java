@@ -85,6 +85,17 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
+    public void setConfigValue(String name, Long serverId, AConfig value) {
+        if(value.getDoubleValue() != null) {
+            setDoubleValue(name, serverId, value.getDoubleValue());
+        } else if(value.getLongValue() != null) {
+            setLongValue(name, serverId, value.getLongValue());
+        } else {
+            setStringValue(name, serverId, value.getStringValue());
+        }
+    }
+
+    @Override
     public void setStringValue(String name, Long serverId, String value) {
         if(configManagementService.configExists(serverId, name)) {
             configManagementService.setStringValue(serverId, name, value);
@@ -96,7 +107,7 @@ public class ConfigServiceBean implements ConfigService{
     @Override
     public boolean configIsFitting(String name, Long serverId, String value) {
         try {
-            validateConfig(name, serverId, value);
+            getFakeConfigForValue(name, serverId, value);
             return true;
         } catch (Exception e) {
             return false;
@@ -104,14 +115,18 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
-    public void validateConfig(String name, Long serverId, String value) {
+    public AConfig getFakeConfigForValue(String name, Long serverId, String value) {
         if(configManagementService.configExists(serverId, name)) {
+            AConfig newConfig = AConfig.builder().name(value).build();
             AConfig existing = configManagementService.loadConfig(serverId, name);
             if(existing.getDoubleValue() != null) {
-                Double.parseDouble(value);
+                newConfig.setDoubleValue(Double.parseDouble(value));
             } else if(existing.getLongValue() != null) {
-                Long.parseLong(value);
+                newConfig.setLongValue(Long.parseLong(value));
+            } else {
+                newConfig.setStringValue(value);
             }
+            return newConfig;
         } else {
             throw new ConfigurationKeyNotFoundException(name);
         }

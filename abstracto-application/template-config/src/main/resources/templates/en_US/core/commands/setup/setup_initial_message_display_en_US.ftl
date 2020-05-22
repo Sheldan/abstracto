@@ -1,0 +1,1 @@
+Starting setup of feature ${featureName}. Type 'exit' to stop or 'default' to keep the proposed default value.

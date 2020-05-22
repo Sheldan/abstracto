@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.template.commands.SetupCompletedNotificationModel;
+import dev.sheldan.abstracto.core.models.template.commands.SetupInitialMessageModel;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -68,7 +69,17 @@ public class SetupServiceBean implements SetupService {
                 setupExecution.setNextStep(steps.get(i + 1));
             }
         }
-        executeSetup(featureConfig, steps, user, new ArrayList<>());
+
+        SetupInitialMessageModel setupInitialMessageModel = SetupInitialMessageModel
+                .builder()
+                .featureConfig(featureConfig)
+                .build();
+        Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(user.getGuildId(), user.getChannelId());
+        textChannelInGuild.ifPresent(textChannel -> {
+            String text = templateService.renderTemplate("setup_initial_message", setupInitialMessageModel);
+            channelService.sendTextToChannel(text, textChannel);
+            executeSetup(featureConfig, steps, user, new ArrayList<>());
+        });
 
     }
 
@@ -79,12 +90,17 @@ public class SetupServiceBean implements SetupService {
 
     private void executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
         execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(aVoid -> {
-            delayedActionConfigs.addAll(aVoid);
-            if(execution.getNextStep() != null) {
-                executeStep(aUserInAServer, execution.getNextStep(), delayedActionConfigs, featureConfig);
+            if(aVoid.getResult().equals(SetupStepResultType.SUCCESS)) {
+                delayedActionConfigs.addAll(aVoid.getDelayedActionConfigList());
+                if(execution.getNextStep() != null) {
+                    executeStep(aUserInAServer, execution.getNextStep(), delayedActionConfigs, featureConfig);
+                } else {
+                    self.executePostSetupSteps(delayedActionConfigs, aUserInAServer, execution.getParameter().getPreviousMessageId(), featureConfig);
+                }
             } else {
-                self.executePostSetupSteps(delayedActionConfigs, aUserInAServer, execution.getParameter().getPreviousMessageId(), featureConfig);
+                self.notifyAboutCancellation(aUserInAServer, featureConfig);
             }
+
         }).exceptionally(throwable -> {
             executeStep(aUserInAServer, execution, delayedActionConfigs, featureConfig);
             return null;
@@ -105,13 +121,21 @@ public class SetupServiceBean implements SetupService {
 
     @Transactional
     public void notifyAboutCompletion(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
-        String templateName = "setup_completion_notification";
+        notifyUserWithTemplate(aServerChannelUserId, featureConfig, "setup_completion_notification");
+    }
+
+    private void notifyUserWithTemplate(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig, String templateName) {
         SetupCompletedNotificationModel model = SetupCompletedNotificationModel
                 .builder()
-                .completedFeature(featureConfig)
+                .featureConfig(featureConfig)
                 .build();
         String text = templateService.renderTemplate(templateName, model);
         Optional<TextChannel> textChannel = channelService.getTextChannelInGuild(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
         textChannel.ifPresent(channel -> channelService.sendTextToChannel(text, channel));
+    }
+
+    @Transactional
+    public void notifyAboutCancellation(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
+        notifyUserWithTemplate(aServerChannelUserId, featureConfig, "setup_cancellation_notification");
     }
 }

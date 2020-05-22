@@ -1,0 +1,1 @@
+Setup for ${featureName} has been cancelled.

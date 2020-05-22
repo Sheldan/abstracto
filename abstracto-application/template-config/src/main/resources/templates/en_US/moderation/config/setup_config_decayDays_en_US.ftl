@@ -1,1 +1,1 @@
-The amount of days after which a warning is decayed.
+The amount of days after which a warning is decayed. Default: ${defaultValue}

@@ -8,6 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class SetupCompletedNotificationModel {
+public class SetupInitialMessageModel {
     private FeatureConfig featureConfig;
 }

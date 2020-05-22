@@ -1,1 +1,1 @@
-${featureName} has been successfully setup.
+Setup for ${featureName} has been completed successfully.
