@@ -1,1 +1,1 @@
-The channel where guild leavers should be logged to.
+The channel where guild leavers should be logged to. Currently: ${currentTarget}

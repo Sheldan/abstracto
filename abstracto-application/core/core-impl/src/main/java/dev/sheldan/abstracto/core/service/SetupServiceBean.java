@@ -62,6 +62,14 @@ public class SetupServiceBean implements SetupService {
                     .build();
             steps.add(execution);
         });
+        featureConfig.getCustomSetupSteps().forEach(setupStep -> {
+            SetupExecution execution = SetupExecution
+                    .builder()
+                    .step(setupStep)
+                    .parameter(EmptySetupParameter.builder().build())
+                    .build();
+            steps.add(execution);
+        });
         for (int i = 0; i < steps.size(); i++) {
             SetupExecution setupExecution = steps.get(i);
             setupExecution.getParameter().setPreviousMessageId(initialMessageId);

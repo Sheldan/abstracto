@@ -1,1 +1,1 @@
-The channel where warnings should be logged to.
+The channel where warnings should be logged to. Currently: ${currentTarget}

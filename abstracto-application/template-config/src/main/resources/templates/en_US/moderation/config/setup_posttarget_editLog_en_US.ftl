@@ -1,1 +1,1 @@
-The channel in which edited messages should be logged to.
+The channel in which edited messages should be logged to. Currently: ${currentTarget}

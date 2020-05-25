@@ -1,0 +1,1 @@
+<#assign currentTarget><#if currentTextChannel?has_content>${currentTextChannel.asMention}<#else><#include "setup_post_target_no_channel_set"></#if></#assign><#include "setup_posttarget_${postTargetKey}">

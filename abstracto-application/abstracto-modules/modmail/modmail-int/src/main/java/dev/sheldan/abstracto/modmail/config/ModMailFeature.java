@@ -4,7 +4,9 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
+import dev.sheldan.abstracto.core.interactive.SetupStep;
 import dev.sheldan.abstracto.core.service.FeatureValidator;
+import dev.sheldan.abstracto.modmail.setup.ModMailCategorySetup;
 import dev.sheldan.abstracto.modmail.validator.ModMailFeatureValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,9 @@ public class ModMailFeature implements FeatureConfig {
 
     @Autowired
     private ModMailFeatureValidator modMailFeatureValidator;
+
+    @Autowired
+    private ModMailCategorySetup modMailCategorySetup;
 
     @Override
     public FeatureEnum getFeature() {
@@ -46,5 +51,10 @@ public class ModMailFeature implements FeatureConfig {
     @Override
     public List<String> getRequiredSystemConfigKeys() {
         return Arrays.asList("modMailClosingText");
+    }
+
+    @Override
+    public List<SetupStep> getCustomSetupSteps() {
+        return Arrays.asList(modMailCategorySetup);
     }
 }

@@ -35,16 +35,20 @@ public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
             boolean checkSucceeded = featureValidatorService.checkSystemConfig(ModMailThreadServiceBean.MODMAIL_CATEGORY, server, validationResult);
             if(checkSucceeded) {
                 Long modMailCategory = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, server.getId());
-                Category categoryById = guild.getCategoryById(modMailCategory);
-                if(categoryById == null) {
-                    validationResult.setValidationResult(false);
-                    ModMailCategoryValidationError newError = ModMailCategoryValidationError
-                            .builder()
-                            .currentCategoryId(modMailCategory)
-                            .build();
-                    validationResult.getValidationErrors().add(newError);
-                }
+                validateModMailCategory(validationResult, guild, modMailCategory);
             }
+        }
+    }
+
+    public void validateModMailCategory(FeatureValidationResult validationResult, Guild guild, Long modMailCategory) {
+        Category categoryById = guild.getCategoryById(modMailCategory);
+        if(categoryById == null) {
+            validationResult.setValidationResult(false);
+            ModMailCategoryValidationError newError = ModMailCategoryValidationError
+                    .builder()
+                    .currentCategoryId(modMailCategory)
+                    .build();
+            validationResult.getValidationErrors().add(newError);
         }
     }
 }
