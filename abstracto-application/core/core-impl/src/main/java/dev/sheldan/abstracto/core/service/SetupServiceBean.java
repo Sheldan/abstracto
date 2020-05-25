@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.template.commands.SetupCompletedNotificationModel;
 import dev.sheldan.abstracto.core.models.template.commands.SetupInitialMessageModel;
+import dev.sheldan.abstracto.templating.Templatable;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -41,6 +42,9 @@ public class SetupServiceBean implements SetupService {
 
     @Autowired
     private TemplateService templateService;
+
+    @Autowired
+    private BotService botService;
 
     @Override
     public void performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
@@ -110,9 +114,20 @@ public class SetupServiceBean implements SetupService {
             }
 
         }).exceptionally(throwable -> {
+            showExceptionMessage(throwable.getCause(), aUserInAServer);
             executeStep(aUserInAServer, execution, delayedActionConfigs, featureConfig);
             return null;
         });
+    }
+
+    @Transactional
+    public void showExceptionMessage(Throwable throwable, AServerChannelUserId aServerChannelUserId) {
+        if(throwable instanceof Templatable) {
+            Templatable exception = (Templatable) throwable;
+            String text = templateService.renderTemplate(exception.getTemplateName(), exception.getTemplateModel());
+            Optional<TextChannel> channelOptional = botService.getTextChannelFromServer(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
+            channelOptional.ifPresent(channel -> channelService.sendTextToChannel(text, channel));
+        }
     }
 
     @Transactional
