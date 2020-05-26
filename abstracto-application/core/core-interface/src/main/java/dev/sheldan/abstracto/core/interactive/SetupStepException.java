@@ -5,14 +5,14 @@ import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.HashMap;
 
-public class PostTargetStepException extends AbstractoRunTimeException implements Templatable {
-    public PostTargetStepException(Throwable cause) {
-        super("", cause);
+public class SetupStepException extends AbstractoRunTimeException implements Templatable {
+    public SetupStepException(Throwable throwable) {
+        super("", throwable);
     }
 
     @Override
     public String getTemplateName() {
-        return "setup_post_target_exception";
+        return "setup_step_exception";
     }
 
     @Override

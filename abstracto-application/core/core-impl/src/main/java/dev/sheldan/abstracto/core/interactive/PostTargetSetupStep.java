@@ -105,7 +105,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                     future.complete(result);
                 } catch (Exception e) {
                     log.error("Failed to handle post target step.", e);
-                    future.completeExceptionally(new PostTargetStepException(e));
+                    future.completeExceptionally(new SetupStepException(e));
                 }
             };
             interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);

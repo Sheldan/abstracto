@@ -95,7 +95,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
                     future.complete(result);
                 } catch (Exception e) {
                     log.warn("Failed to handle system config. Retrying..", e);
-                    future.completeExceptionally(new SystemConfigStepException(e));
+                    future.completeExceptionally(new SetupStepException(e));
                 }
             };
             interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);

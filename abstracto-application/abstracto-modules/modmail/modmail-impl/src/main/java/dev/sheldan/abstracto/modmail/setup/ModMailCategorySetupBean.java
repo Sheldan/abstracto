@@ -109,7 +109,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                                     .delayedActionConfigList(delayedSteps)
                                     .build();
                         } else {
-                            throw new AbstractoRunTimeException("Category id does not conform.");
+                            throw new InvalidCategoryException();
                         }
 
                     }
@@ -117,7 +117,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                     future.complete(result);
                 } catch (Exception e) {
                     log.error("Failed to handle post target step.", e);
-                    future.completeExceptionally(e);
+                    future.completeExceptionally(new SetupStepException(e));
                 }
             };
             interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);
