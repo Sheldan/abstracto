@@ -28,6 +28,9 @@ public class SchedulerStartupService {
     @Autowired
     private SchedulerJobConverter schedulerJobConverter;
 
+    /**
+     * Loads the job definitions from the property file and schedules them, if the job does not exist yet.
+     */
     @EventListener
     @Transactional
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {

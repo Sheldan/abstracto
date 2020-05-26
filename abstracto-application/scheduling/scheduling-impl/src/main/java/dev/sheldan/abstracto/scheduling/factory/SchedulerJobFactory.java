@@ -6,6 +6,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
+/**
+ * Factory extension to make it possible to auto wire jobbeans
+ */
 public class SchedulerJobFactory extends SpringBeanJobFactory implements ApplicationContextAware {
 
     private AutowireCapableBeanFactory beanFactory;

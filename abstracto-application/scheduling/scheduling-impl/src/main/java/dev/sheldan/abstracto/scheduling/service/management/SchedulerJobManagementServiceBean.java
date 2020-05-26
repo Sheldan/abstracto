@@ -16,6 +16,7 @@ public class SchedulerJobManagementServiceBean {
     private SchedulerJobRepository repository;
 
     public SchedulerJob createOrUpdate(SchedulerJob job) {
+        // TODO add group to job search
         if(repository.existsByName(job.getName())) {
             SchedulerJob byName = repository.findByName(job.getName());
             byName.setActive(job.isActive());

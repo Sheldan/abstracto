@@ -57,6 +57,8 @@ public class SchedulerServiceBean implements SchedulerService {
                 boolean recurringJob = isRecurringJob(schedulerJob);
                 jobDetail = scheduleCreator.createJob((Class<? extends QuartzJobBean>) Class.forName(schedulerJob.getClazz()),
                         !recurringJob, context, schedulerJob.getName(), schedulerJob.getGroupName(), schedulerJob.isRecovery());
+                // if its a cron job, we can schedule it directly, otherwise we just make the scheduler aware of its existance
+                // and trigger it later
                 if(recurringJob) {
                     Trigger trigger = scheduleCreator.createBasicCronTrigger(new Date(),
                             schedulerJob.getCronExpression());
@@ -95,11 +97,11 @@ public class SchedulerServiceBean implements SchedulerService {
     }
 
     @Override
-    public boolean unScheduleJob(String jobName) {
+    public boolean unScheduleJob(String triggerKey) {
         try {
-            return schedulerFactoryBean.getScheduler().unscheduleJob(new TriggerKey(jobName));
+            return schedulerFactoryBean.getScheduler().unscheduleJob(new TriggerKey(triggerKey));
         } catch (SchedulerException e) {
-            log.error("Failed to un-schedule job - {}", jobName, e);
+            log.error("Failed to un-schedule job - {}", triggerKey, e);
             return false;
         }
     }
@@ -153,18 +155,6 @@ public class SchedulerServiceBean implements SchedulerService {
         try {
             schedulerFactoryBean.getScheduler().scheduleJob(onceOnlyTriggerForJob);
             return onceOnlyTriggerForJob.getKey().getName();
-        } catch (SchedulerException e) {
-            log.error("Failed to start new job - {}", name, e);
-            return null;
-        }
-    }
-
-    @Override
-    public String startCronJobWithParameters(String name, String group, JobDataMap dataMap, String cronExpression) {
-        Trigger cronTrigger = scheduleCreator.createBasicCronTrigger(name, group, new Date(), cronExpression, dataMap);
-        try {
-            schedulerFactoryBean.getScheduler().scheduleJob(cronTrigger);
-            return cronTrigger.getKey().getName();
         } catch (SchedulerException e) {
             log.error("Failed to start new job - {}", name, e);
             return null;

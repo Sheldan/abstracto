@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class SchedulerJobConverter {
 
+    /**
+     * Converts a {@link SchedulerJobProperties} instance to a usable {@link SchedulerJob} instance
+     * @param properties The instance directly coming from a property file
+     * @return A instanc eof {@link SchedulerJob} which represents an instance from the database
+     */
     public SchedulerJob fromJobProperties(SchedulerJobProperties properties) {
         return SchedulerJob
                 .builder()

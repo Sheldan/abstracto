@@ -11,6 +11,9 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import javax.sql.DataSource;
 import java.util.Properties;
 
+/**
+ * Bean responsible to setup the scheduler factory, because we need a custom data source and the quartz support needs to be aware of the application context.
+ */
 @Configuration
 public class SchedulerConfig {
 
@@ -34,6 +37,8 @@ public class SchedulerConfig {
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
         factory.setOverwriteExistingJobs(true);
         factory.setDataSource(dataSource);
+        // we should not startup automatically, because some jobs rely on discord
+        // and they fail if the web socket connection is not yet established
         factory.setAutoStartup(false);
         factory.setQuartzProperties(properties);
         factory.setJobFactory(jobFactory);
