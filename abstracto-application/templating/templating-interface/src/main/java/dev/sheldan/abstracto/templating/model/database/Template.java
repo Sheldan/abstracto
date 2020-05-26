@@ -42,6 +42,9 @@ public class Template {
     @Getter
     private Instant lastModified;
 
+    /**
+     * The time this template was created in the database
+     */
     @Column(name = "created")
     private Instant created;
 
@@ -50,6 +53,9 @@ public class Template {
         this.created = Instant.now();
     }
 
+    /**
+     * The time this template was updated in the database, only works when using the bot, does not work with triggers.
+     */
     @Column(name = "updated")
     private Instant updated;
 

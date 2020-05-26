@@ -33,7 +33,19 @@ public interface TemplateService {
      * @return The template rendered as string.
      */
     String renderTemplate(String key, Object model);
+
+    /**
+     * Renders the template without considering any model to be used. If a property is used in the given template, this will throw an exception.
+     * This is just a quick way to render templates, which do not *need* a model.
+     * @param key The key of the template to be rendered
+     * @return The template rendered as string
+     */
     String renderSimpleTemplate(String key);
 
+    /**
+     * Renders the given {@link Templatable} object, which means it retrieves the template key and renders the given template key with the given model.
+     * @param templatable The {@link Templatable} object to be rendered
+     * @return The template rendered as string
+     */
     String renderTemplatable(Templatable templatable);
 }

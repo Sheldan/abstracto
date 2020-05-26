@@ -33,7 +33,6 @@ public class TemplateServiceBean implements TemplateService {
     @Autowired
     private Gson gson;
 
-
     /**
      * Formats the passed passed count with the embed used for formatting pages.
      * @param count The index of the page you want formated.
@@ -169,11 +168,21 @@ public class TemplateServiceBean implements TemplateService {
         }
     }
 
+    /**
+     * Renders a simple template identified by key without any model. This will cause exceptions in case there are references to a model in the provided template.
+     * @param key The key of the template to be rendered
+     * @return The rendered template as a string
+     */
     @Override
     public String renderSimpleTemplate(String key) {
         return renderTemplate(key, new Object());
     }
 
+    /**
+     * Renders the {@link Templatable} object using the template key and the model and returns it as a string.
+     * @param templatable The {@link Templatable} object to be rendered
+     * @return The rendered {@link Templatable} as a string
+     */
     @Override
     public String renderTemplatable(Templatable templatable) {
         return renderTemplate(templatable.getTemplateName(), templatable.getTemplateModel());
