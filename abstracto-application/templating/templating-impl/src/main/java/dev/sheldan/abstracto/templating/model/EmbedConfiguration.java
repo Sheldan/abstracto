@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.templating.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@Builder
 public class EmbedConfiguration {
     /**
      * The {@link EmbedAuthor} object holding the configuration for the author of the {@link net.dv8tion.jda.api.entities.MessageEmbed}

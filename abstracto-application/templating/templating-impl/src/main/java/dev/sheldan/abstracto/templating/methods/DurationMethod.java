@@ -34,7 +34,11 @@ public class DurationMethod implements TemplateMethodModelEx {
         if (arguments.size() != 1) {
             throw new TemplateModelException("Incorrect parameters passed.");
         }
-        Object wrappedObject = ((StringModel) arguments.get(0)).getWrappedObject();
+        Object o = arguments.get(0);
+        if(!(o instanceof StringModel)) {
+            throw new TemplateModelException("Passed object was not a StringModel.");
+        }
+        Object wrappedObject = ((StringModel) o).getWrappedObject();
         if(!(wrappedObject instanceof Duration)) {
             throw new TemplateModelException("Passed argument was not a duration object");
         }
