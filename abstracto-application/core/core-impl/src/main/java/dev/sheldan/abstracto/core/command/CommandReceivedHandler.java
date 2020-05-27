@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.MemberNotFoundException;
 import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -165,7 +166,15 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     } else if(param.getType().equals(TextChannel.class)){
                         parsedParameters.add(channelIterator.next());
                     } else if(param.getType().equals(Member.class)) {
-                        parsedParameters.add(memberIterator.next());
+                        if(StringUtils.isNumeric(value)) {
+                            Member memberById = message.getGuild().getMemberById(Long.parseLong(value));
+                            if(memberById == null) {
+                                throw new MemberNotFoundException();
+                            }
+                            parsedParameters.add(memberById);
+                        } else {
+                            parsedParameters.add(memberIterator.next());
+                        }
                     } else if(param.getType().equals(Emote.class)) {
                         // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
                         // the second one shadows the first one, and there are too little parameters to go of
