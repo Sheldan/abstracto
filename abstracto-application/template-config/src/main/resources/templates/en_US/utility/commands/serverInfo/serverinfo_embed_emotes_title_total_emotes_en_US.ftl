@@ -1,0 +1,1 @@
+(Total emotes ${count})

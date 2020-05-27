@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.templating.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@Builder
 public class EmbedField {
     /**
      * The name of the field to be set

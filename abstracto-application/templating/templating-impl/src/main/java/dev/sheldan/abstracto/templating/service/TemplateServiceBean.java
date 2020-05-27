@@ -90,6 +90,15 @@ public class TemplateServiceBean implements TemplateService {
             firstBuilder.setFooter(footer.getText(), footer.getIcon());
         }
         if(configuration.getFields() != null) {
+            for (int i = 0; i < configuration.getFields().size(); i++) {
+                EmbedField field = configuration.getFields().get(i);
+                if(field.getValue().length() > 1024) {
+                    String substring = field.getValue().substring(1024);
+                    field.setValue(field.getValue().substring(0, 1024));
+                    EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
+                    configuration.getFields().add(i + 1, secondPart);
+                }
+            }
             double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;
             extendIfNecessary(embedBuilders, neededIndex);
             for (int i = 0; i < configuration.getFields().size(); i++) {

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.templating.config;
 import dev.sheldan.abstracto.templating.loading.DatabaseTemplateLoader;
 import dev.sheldan.abstracto.templating.methods.DurationMethod;
 import dev.sheldan.abstracto.templating.methods.InstantMethod;
+import dev.sheldan.abstracto.templating.methods.SafeFieldIterations;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class FreemarkerConfiguration {
     @Autowired
     private InstantMethod instantMethod;
 
+    @Autowired
+    private SafeFieldIterations safeFieldIterations;
+
     /**
      * Creates a {@link Configuration} bean with the appropriate configuration which includes:
      * The correct compatibility version and the provided formatter methods to be used in the templates.
@@ -40,6 +44,7 @@ public class FreemarkerConfiguration {
         Configuration configuration = factory.createConfiguration();
         configuration.setSharedVariable("fmtDuration", durationMethod);
         configuration.setSharedVariable("formatInstant", instantMethod);
+        configuration.setSharedVariable("safeFieldLength", safeFieldIterations);
         configuration.setEncoding(Locale.getDefault(), "utf-8");
         // needed to support default methods in interfaces
         configuration.setIncompatibleImprovements(Configuration.VERSION_2_3_29);

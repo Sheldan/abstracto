@@ -39,7 +39,6 @@ public class DurationMethod implements TemplateMethodModelEx {
             throw new TemplateModelException("Passed argument was not a duration object");
         }
         Duration duration = (Duration) wrappedObject;
-        StringBuilder stringBuilder = new StringBuilder();
         // upgrading to java 9 makes this nicer
         HashMap<String, Object> parameters = new HashMap<>();
         long days = duration.toDays();
