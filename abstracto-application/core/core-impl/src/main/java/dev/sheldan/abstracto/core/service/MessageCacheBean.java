@@ -154,6 +154,7 @@ public class MessageCacheBean implements MessageCache {
                 reactions.add(cachedReaction);
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Error while executing future to retrieve reaction.", e);
+                Thread.currentThread().interrupt();
             }
         });
         return reactions;

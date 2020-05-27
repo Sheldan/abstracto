@@ -90,27 +90,7 @@ public class TemplateServiceBean implements TemplateService {
             firstBuilder.setFooter(footer.getText(), footer.getIcon());
         }
         if(configuration.getFields() != null) {
-            for (int i = 0; i < configuration.getFields().size(); i++) {
-                EmbedField field = configuration.getFields().get(i);
-                if(field != null && field.getValue() != null) {
-                    if(field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
-                        String substring = field.getValue().substring(MessageEmbed.VALUE_MAX_LENGTH);
-                        field.setValue(field.getValue().substring(0, MessageEmbed.VALUE_MAX_LENGTH));
-                        EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
-                        configuration.getFields().add(i + 1, secondPart);
-                    }
-                } else {
-                    log.warn("Field {} in template {} is null.", i, key);
-                }
-            }
-            double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;
-            extendIfNecessary(embedBuilders, neededIndex);
-            for (int i = 0; i < configuration.getFields().size(); i++) {
-                double currentPart = Math.floor(i / 25D);
-                EmbedField embedField = configuration.getFields().get(i);
-                Boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
-                embedBuilders.get((int) currentPart).addField(embedField.getName(), embedField.getValue(), inline);
-            }
+            createFieldsForEmbed(key, embedBuilders, configuration);
         }
         firstBuilder.setTimestamp(configuration.getTimeStamp());
 
@@ -131,6 +111,30 @@ public class TemplateServiceBean implements TemplateService {
                 .embeds(embeds)
                 .message(configuration.getAdditionalMessage())
                 .build();
+    }
+
+    private void createFieldsForEmbed(String key, List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
+        for (int i = 0; i < configuration.getFields().size(); i++) {
+            EmbedField field = configuration.getFields().get(i);
+            if(field != null && field.getValue() != null) {
+                if(field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
+                    String substring = field.getValue().substring(MessageEmbed.VALUE_MAX_LENGTH);
+                    field.setValue(field.getValue().substring(0, MessageEmbed.VALUE_MAX_LENGTH));
+                    EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
+                    configuration.getFields().add(i + 1, secondPart);
+                }
+            } else {
+                log.warn("Field {} in template {} is null.", i, key);
+            }
+        }
+        double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;
+        extendIfNecessary(embedBuilders, neededIndex);
+        for (int i = 0; i < configuration.getFields().size(); i++) {
+            double currentPart = Math.floor(i / 25D);
+            EmbedField embedField = configuration.getFields().get(i);
+            Boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
+            embedBuilders.get((int) currentPart).addField(embedField.getName(), embedField.getValue(), inline);
+        }
     }
 
     /**

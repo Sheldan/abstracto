@@ -121,6 +121,7 @@ public class StarboardServiceBean implements StarboardService {
             });
         } catch (InterruptedException | ExecutionException e) {
             log.error("Failed to post messages.", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -162,6 +163,7 @@ public class StarboardServiceBean implements StarboardService {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Failed to post starboard post.", e);
+                Thread.currentThread().interrupt();
             }
         }).exceptionally(throwable -> {
             log.error("Failed to update starboard post {}.", post.getId(), throwable);

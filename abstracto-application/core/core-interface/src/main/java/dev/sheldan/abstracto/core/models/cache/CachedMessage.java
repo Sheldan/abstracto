@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class CachedMessage implements Serializable {
+public class CachedMessage {
     private Long serverId;
     private Long channelId;
     private Long messageId;

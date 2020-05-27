@@ -258,6 +258,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
         } catch (InterruptedException | ExecutionException e) {
             log.info("Failed to synchronize users.", e);
+            Thread.currentThread().interrupt();
         }
     }
 

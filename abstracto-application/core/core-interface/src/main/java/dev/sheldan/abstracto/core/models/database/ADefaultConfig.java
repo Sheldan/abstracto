@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
@@ -11,7 +12,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class ADefaultConfig {
+public class ADefaultConfig implements Serializable {
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;

@@ -56,6 +56,6 @@ public class DatabaseTemplateLoader implements TemplateLoader {
 
     @Override
     public void closeTemplateSource(Object o) throws IOException {
-
+        // do nothing for now
     }
 }

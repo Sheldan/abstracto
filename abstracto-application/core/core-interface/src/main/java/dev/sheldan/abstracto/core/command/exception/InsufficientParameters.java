@@ -10,7 +10,7 @@ import java.util.HashMap;
 @Getter
 public class InsufficientParameters extends AbstractoRunTimeException implements Templatable {
 
-    private final Command command;
+    private final transient Command command;
     private final String parameterName;
 
     public InsufficientParameters(String s, Command command, String parameterName) {

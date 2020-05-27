@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +17,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AFeature implements SnowFlake {
+public class AFeature implements SnowFlake, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

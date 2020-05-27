@@ -132,6 +132,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                     });
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("Failed to post message embed.", e);
+                    Thread.currentThread().interrupt();
                 }
             }).exceptionally(throwable -> {
                 log.error("Failed to send message for embedding the link for message {} in channel {} in server {}",

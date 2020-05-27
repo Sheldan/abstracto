@@ -32,5 +32,4 @@ public interface BotService {
     Optional<Guild> getGuildById(Long serverId);
     Guild getGuildByIdNullable(Long serverId);
     Member getBotInGuild(AServer server);
-    void shutdown();
 }

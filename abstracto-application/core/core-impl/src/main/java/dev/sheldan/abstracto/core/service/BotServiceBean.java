@@ -177,9 +177,4 @@ public class BotServiceBean implements BotService {
         }
         return null;
     }
-
-    @Override
-    public void shutdown() {
-
-    }
 }

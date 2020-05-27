@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
@@ -13,7 +14,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AFeatureMode {
+public class AFeatureMode implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter

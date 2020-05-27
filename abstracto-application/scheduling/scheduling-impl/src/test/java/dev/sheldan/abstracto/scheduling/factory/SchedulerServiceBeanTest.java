@@ -31,8 +31,8 @@ import static org.quartz.TriggerBuilder.*;
 public class SchedulerServiceBeanTest {
 
     public static final String JOB_CLASS = "dev.sheldan.abstracto.scheduling.factory.TestJob";
-    public static final String JOB_NAME = "jobName";
     public static final String GROUP_NAME = "groupName";
+    public static final String JOB_NAME = "jobName";
 
     @InjectMocks
     private SchedulerServiceBean classToTest;
@@ -65,7 +65,7 @@ public class SchedulerServiceBeanTest {
     public void testStartingAllJobs() throws SchedulerException {
         when(schedulerJobManagementServiceBean.findAll()).thenReturn(allCronJobsActive());
         classToTest.startScheduledJobs();
-        verify(scheduler, times(2)).checkExists(eq(new JobKey("jobName", "groupName")));
+        verify(scheduler, times(2)).checkExists(eq(new JobKey(JOB_NAME, GROUP_NAME)));
         verify(scheduler, times(2)).addJob(any(JobDetail.class), eq(true));
     }
 
@@ -73,7 +73,7 @@ public class SchedulerServiceBeanTest {
     public void testStartSomeJobs() throws SchedulerException {
         when(schedulerJobManagementServiceBean.findAll()).thenReturn(someCronJobsActive());
         classToTest.startScheduledJobs();
-        verify(scheduler, times(1)).checkExists(eq(new JobKey("jobName", "groupName")));
+        verify(scheduler, times(1)).checkExists(eq(new JobKey(JOB_NAME, GROUP_NAME)));
         verify(scheduler, times(1)).addJob(any(JobDetail.class), eq(true));
     }
 
@@ -81,14 +81,14 @@ public class SchedulerServiceBeanTest {
     public void testInvalidClass() throws SchedulerException {
         when(schedulerJobManagementServiceBean.findAll()).thenReturn(Arrays.asList(SchedulerJob.builder().active(true).cronExpression("*").clazz("invalidJob").groupName(GROUP_NAME).name(JOB_NAME).build()));
         classToTest.startScheduledJobs();
-        verify(scheduler, times(0)).checkExists(eq(new JobKey("jobName", "groupName")));
+        verify(scheduler, times(0)).checkExists(eq(new JobKey(JOB_NAME, GROUP_NAME)));
         verify(scheduler, times(0)).addJob(any(JobDetail.class), eq(true));
     }
 
     @Test
     public void scheduleSingleJob() throws SchedulerException {
         classToTest.scheduleJob(activeJobCronJob());
-        verify(scheduler, times(1)).checkExists(eq(new JobKey("jobName", "groupName")));
+        verify(scheduler, times(1)).checkExists(eq(new JobKey(JOB_NAME, GROUP_NAME)));
         verify(scheduler, times(1)).addJob(any(JobDetail.class), eq(true));
     }
 

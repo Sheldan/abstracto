@@ -73,6 +73,7 @@ public class SuggestionServiceBean implements SuggestionService {
                     messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
                 } catch (InterruptedException | ExecutionException e) {
                     log.warn("Failed to post suggestion", e);
+                    Thread.currentThread().interrupt();
                 }
             }) .exceptionally(throwable -> {
                 log.error("Failed to post suggestion {}", suggestionId, throwable);

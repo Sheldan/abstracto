@@ -42,7 +42,8 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
                     .build();
             return repository.save(build);
         } else {
-            return loadChannel(id).get();
+            Optional<AChannel> channelOptional = loadChannel(id);
+            return channelOptional.orElse(null);
         }
     }
 

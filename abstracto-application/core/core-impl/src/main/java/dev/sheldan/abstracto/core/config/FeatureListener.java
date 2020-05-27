@@ -21,6 +21,6 @@ public class FeatureListener {
 
     @EventListener
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
-
+        // Do nothing yet, because of a race condition between features and commands
     }
 }

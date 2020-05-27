@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class PostTarget {
+public class PostTarget implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
