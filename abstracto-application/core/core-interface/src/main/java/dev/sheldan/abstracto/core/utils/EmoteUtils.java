@@ -32,10 +32,10 @@ public class EmoteUtils {
     }
 
     public static boolean compareAEmote(AEmote a, AEmote b) {
-        if(a.getCustom() && b.getCustom()) {
+        if(Boolean.TRUE.equals(a.getCustom()) && Boolean.TRUE.equals(b.getCustom())) {
             return a.getEmoteId().equals(b.getEmoteId());
         } else {
-            if(!a.getCustom() && !b.getCustom()) {
+            if(Boolean.FALSE.equals(a.getCustom()) && Boolean.FALSE.equals(b.getCustom())) {
                 return a.getEmoteKey().equals(b.getEmoteKey());
             } else {
                 return false;

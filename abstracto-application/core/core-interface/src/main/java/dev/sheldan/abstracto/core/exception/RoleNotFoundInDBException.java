@@ -6,8 +6,8 @@ import java.util.HashMap;
 
 public class RoleNotFoundInDBException extends AbstractoRunTimeException implements Templatable {
 
-    private Long roleId;
-    private Long serverId;
+    private final Long roleId;
+    private final Long serverId;
 
     public RoleNotFoundInDBException(Long roleId, Long serverId) {
         super("");

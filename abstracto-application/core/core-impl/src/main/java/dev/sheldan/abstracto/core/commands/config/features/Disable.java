@@ -51,9 +51,9 @@ public class Disable extends AbstractConditionableCommand {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
             featureFlagService.disableFeature(feature, commandContext.getGuild().getIdLong());
             if(feature.getDependantFeatures() != null) {
-                feature.getDependantFeatures().forEach(featureDisplay -> {
-                    featureFlagService.disableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer());
-                });
+                feature.getDependantFeatures().forEach(featureDisplay ->
+                    featureFlagService.disableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer())
+                );
             }
         }
         return CommandResult.fromSuccess();

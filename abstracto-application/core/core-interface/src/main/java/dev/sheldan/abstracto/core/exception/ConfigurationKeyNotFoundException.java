@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class ConfigurationKeyNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private String key;
+    private final String key;
 
     public ConfigurationKeyNotFoundException(String key) {
         super("");

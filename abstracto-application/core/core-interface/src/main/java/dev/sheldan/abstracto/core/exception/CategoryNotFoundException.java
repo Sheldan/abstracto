@@ -6,12 +6,8 @@ import java.util.HashMap;
 
 public class CategoryNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private Long categoryId;
-    private Long guildId;
-
-    public CategoryNotFoundException(String message) {
-        super(message);
-    }
+    private final Long categoryId;
+    private final Long guildId;
 
     public CategoryNotFoundException(Long categoryId, Long guildId) {
         super("");

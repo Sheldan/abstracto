@@ -148,7 +148,7 @@ public class WarnServiceBean implements WarnService {
     }
 
     @Override
-    public void decayAllWarningsForServer(AServer server, Boolean logWarnings) {
+    public void decayAllWarningsForServer(AServer server, boolean logWarnings) {
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, Instant.now());
         decayWarnings(warningsToDecay);
         if(logWarnings) {

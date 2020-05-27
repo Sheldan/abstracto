@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.core.interactive;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.ButtonMenu;
-import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -14,16 +13,12 @@ import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -100,7 +95,7 @@ public class InteractiveServiceBean implements InteractiveService {
 
     private void addEmoteToBuilder(String key, Consumer<Void> consumer, Long serverId, ButtonMenu.Builder builder, HashMap<String, Consumer<Void>> actions) {
         AEmote emoteOrFakeEmote = emoteService.getEmoteOrFakeEmote(key, serverId);
-        if(emoteOrFakeEmote.getCustom()){
+        if(Boolean.TRUE.equals(emoteOrFakeEmote.getCustom())){
             Optional<Emote> emote = botService.getEmote(serverId, emoteOrFakeEmote);
             emote.ifPresent(emote1 -> {
                 builder.addChoice(emote1);

@@ -20,7 +20,7 @@ public class AEmote implements Serializable {
 
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer Id;
+    private Integer id;
 
     @Column
     private String name;
@@ -66,7 +66,7 @@ public class AEmote implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AEmote emote = (AEmote) o;
-        return Objects.equals(Id, emote.Id) &&
+        return Objects.equals(id, emote.id) &&
                 Objects.equals(name, emote.name) &&
                 Objects.equals(emoteKey, emote.emoteKey) &&
                 Objects.equals(emoteId, emote.emoteId) &&
@@ -77,6 +77,6 @@ public class AEmote implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(Id, name, emoteKey, emoteId, animated, custom, serverRef);
+        return Objects.hash(id, name, emoteKey, emoteId, animated, custom, serverRef);
     }
 }

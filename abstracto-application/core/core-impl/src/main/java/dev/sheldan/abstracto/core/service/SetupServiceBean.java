@@ -137,9 +137,7 @@ public class SetupServiceBean implements SetupService {
                 .delayedActionList(delayedActionConfigs)
                 .previousMessageId(initialMessage)
                 .build();
-        setupSummaryStep.execute(user, parameter).thenAccept(ignored -> {
-            self.notifyAboutCompletion(user, featureConfig);
-        });
+        setupSummaryStep.execute(user, parameter).thenAccept(ignored -> self.notifyAboutCompletion(user, featureConfig));
     }
 
     @Transactional

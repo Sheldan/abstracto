@@ -25,7 +25,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
 
     @Override
     public List<CompletableFuture<Message>> loadModMailMessages(List<ModMailMessage> modMailMessages) {
-        if(modMailMessages.size() == 0) {
+        if(modMailMessages.isEmpty()) {
             return new ArrayList<>();
         }
         ModMailThread thread = modMailMessages.get(0).getThreadReference();
@@ -34,7 +34,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
             ServerChannelMessage.ServerChannelMessageBuilder serverChannelMessageBuilder = ServerChannelMessage
                     .builder()
                     .messageId(modMailMessage.getMessageId());
-            if(!modMailMessage.getDmChannel()) {
+            if(Boolean.FALSE.equals(modMailMessage.getDmChannel())) {
                 serverChannelMessageBuilder
                         .channelId(modMailMessage.getThreadReference().getChannel().getId())
                         .serverId(modMailMessage.getThreadReference().getServer().getId());
@@ -42,9 +42,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
             messageIds.add(serverChannelMessageBuilder.build());
         });
         List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
-        modMailMessages.forEach(modMailMessage -> {
-            messageFutures.add(new CompletableFuture<>());
-        });
+        modMailMessages.forEach(modMailMessage -> messageFutures.add(new CompletableFuture<>()));
         Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(thread.getServer().getId(), thread.getChannel().getId());
         if(textChannelFromServer.isPresent()) {
             TextChannel modMailThread = textChannelFromServer.get();
@@ -52,16 +50,12 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                 Iterator<CompletableFuture<Message>> iterator = messageFutures.iterator();
                 messageIds.forEach(serverChannelMessage -> {
                     if(serverChannelMessage.getChannelId() == null){
-                        privateChannel.retrieveMessageById(serverChannelMessage.getMessageId()).queue(message -> {
-                            iterator.next().complete(message);
-                        }, throwable -> {
+                        privateChannel.retrieveMessageById(serverChannelMessage.getMessageId()).queue(message -> iterator.next().complete(message), throwable -> {
                             log.info("Failed to load message in private channel with user {}", thread.getUser().getUserReference().getId());
                             iterator.next().complete(null);
                         });
                     } else {
-                        modMailThread.retrieveMessageById(serverChannelMessage.getMessageId()).queue(message -> {
-                            iterator.next().complete(message);
-                        }, throwable -> {
+                        modMailThread.retrieveMessageById(serverChannelMessage.getMessageId()).queue(message -> iterator.next().complete(message), throwable -> {
                             log.info("Failed to load message {} in thread {}", serverChannelMessage.getMessageId(), modMailThread.getIdLong());
                             iterator.next().complete(null);
                         });

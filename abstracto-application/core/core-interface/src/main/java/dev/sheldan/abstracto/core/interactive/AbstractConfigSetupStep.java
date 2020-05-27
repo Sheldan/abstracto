@@ -27,9 +27,7 @@ public abstract class AbstractConfigSetupStep implements SetupStep {
 
 
     protected Runnable getTimeoutRunnable(Long serverId, Long channelId) {
-        return () -> {
-            interactiveUtils.sendTimeoutMessage(serverId, channelId);
-        };
+        return () -> interactiveUtils.sendTimeoutMessage(serverId, channelId);
     }
 
     protected boolean checkForExit(Message message) {

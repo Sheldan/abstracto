@@ -23,26 +23,24 @@ public class UndoActionServiceBean implements UndoActionService {
         actionsToPerform.forEach(undoActionInstance -> {
             UndoAction action = undoActionInstance.getAction();
             List<Long> ids = undoActionInstance.getIds();
-            switch (action) {
-                case DELETE_CHANNEL:
-                    if(ids.size() != 2) {
-                        log.error("Not the correct amount of ids provided for the channel deletion undo action.");
-                        break;
-                    }
-                    deleteChannel(ids.get(0), ids.get(1));
-                    break;
-                case DELETE_MESSAGE:
-                    if(ids.size() != 2) {
-                        log.error("Not the correct amount of ids provided for the message deletion undo action.");
-                        break;
-                    }
-                    botService.deleteMessage(ids.get(0), ids.get(1));
+            if(action.equals(UndoAction.DELETE_CHANNEL)) {
+                if(ids.size() != 2) {
+                    log.error("Not the correct amount of ids provided for the channel deletion undo action.");
+                    return;
+                }
+                deleteChannel(ids.get(0), ids.get(1));
+            } else if(action.equals(UndoAction.DELETE_MESSAGE)) {
+                if(ids.size() != 2) {
+                    log.error("Not the correct amount of ids provided for the message deletion undo action.");
+                    return;
+                }
+                botService.deleteMessage(ids.get(0), ids.get(1));
             }
         });
     }
 
     private void deleteChannel(Long serverId, Long channelId) {
-        channelService.deleteTextChannel(serverId, channelId).exceptionally((throwable) -> {
+        channelService.deleteTextChannel(serverId, channelId).exceptionally(throwable -> {
             log.error("Failed to execute undo action channel delete for channel {} in server {}", channelId, serverId, throwable);
             return null;
         });

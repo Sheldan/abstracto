@@ -21,9 +21,6 @@ import java.util.Optional;
 @Component
 public class ChannelGroupServiceBean implements ChannelGroupService {
 
-    private static final String CHANNEL_GROUP_NOT_FOUND = "Channel group %s was not found.";
-    private static final String COMMAND_NOT_FOUND = "Command %s not found.";
-
     @Autowired
     private ChannelGroupManagementService channelGroupManagementService;
 

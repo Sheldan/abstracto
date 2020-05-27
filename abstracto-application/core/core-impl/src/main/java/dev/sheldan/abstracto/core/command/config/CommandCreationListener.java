@@ -33,7 +33,7 @@ public class CommandCreationListener {
     @EventListener
     @Transactional
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
-        featureFlagService.getAllFeatureConfigs().forEach((featureFlagKey) -> {
+        featureFlagService.getAllFeatureConfigs().forEach(featureFlagKey -> {
             String featureKey = featureFlagKey.getFeature().getKey();
             if(!featureManagementService.featureExists(featureKey)) {
                 featureManagementService.createFeature(featureKey);
@@ -44,7 +44,7 @@ public class CommandCreationListener {
                 log.warn("Command {} has null configuration.", command);
                 return;
             }
-            if(!commandService.doesCommandExist(command.getConfiguration().getName())) {
+            if(commandService.doesCommandExist(command.getConfiguration().getName())) {
                 commandService.createCommand(command.getConfiguration().getName(), command.getConfiguration().getModule(), command.getFeature());
             }
         });

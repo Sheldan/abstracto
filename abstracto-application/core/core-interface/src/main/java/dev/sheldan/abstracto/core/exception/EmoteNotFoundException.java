@@ -7,8 +7,8 @@ import java.util.List;
 
 public class EmoteNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private String emoteKey;
-    private List<String> available;
+    private final String emoteKey;
+    private final List<String> available;
 
     public EmoteNotFoundException(String key, List<String> availableEmotes) {
         super("");

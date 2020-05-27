@@ -3,11 +3,10 @@ package dev.sheldan.abstracto.core.exception;
 import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class PostTargetNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private String postTargetKey;
+    private final String postTargetKey;
 
     public PostTargetNotFoundException(String key) {
         super("");

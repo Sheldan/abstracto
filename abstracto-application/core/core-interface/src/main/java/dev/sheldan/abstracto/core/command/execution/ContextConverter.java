@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.execution;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +31,6 @@ public class ContextConverter {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);
         }
-        throw new RuntimeException("Failed to create model from context");
+        throw new AbstractoRunTimeException("Failed to create model from context");
     }
 }

@@ -15,11 +15,11 @@ public class DelayedActionServiceBean implements DelayedActionService {
 
     @Override
     public void executeDelayedActions(List<DelayedActionConfig> delayedActionConfigList) {
-        delayedActionConfigList.forEach(delayedActionConfig -> {
+        delayedActionConfigList.forEach(delayedActionConfig ->
             delayedActions.stream()
                     .filter(delayedAction -> delayedAction.handles(delayedActionConfig))
                     .findFirst()
-                    .ifPresent(delayedAction -> delayedAction.execute(delayedActionConfig));
-        });
+                    .ifPresent(delayedAction -> delayedAction.execute(delayedActionConfig))
+        );
     }
 }

@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class MessageDeleteLogListener implements MessageDeletedListener {
 
-    private static final String DELETE_LOG_TARGET = "deleteLog";
     private static final String MESSAGE_DELETED_TEMPLATE = "message_deleted";
     private static final String MESSAGE_DELETED_ATTACHMENT_TEMPLATE = "message_deleted_attachment";
 

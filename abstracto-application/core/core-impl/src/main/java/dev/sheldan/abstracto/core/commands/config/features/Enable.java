@@ -50,7 +50,7 @@ public class Enable extends AbstractConditionableCommand {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
             FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, commandContext.getUserInitiatedContext().getServer());
-            if(!featureSetup.getValidationResult()) {
+            if(Boolean.FALSE.equals(featureSetup.getValidationResult())) {
                 channelService.sendTextToChannelNoFuture(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
             }
             featureFlagService.enableFeature(feature, commandContext.getUserInitiatedContext().getServer());

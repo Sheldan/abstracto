@@ -8,5 +8,5 @@ public interface CommandManagementService {
     ACommand createCommand(String name, String moduleName, String featureName);
     ACommand createCommand(String name, AModule moduleName, AFeature feature);
     ACommand findCommandByName(String name);
-    Boolean doesCommandExist(String name);
+    boolean doesCommandExist(String name);
 }

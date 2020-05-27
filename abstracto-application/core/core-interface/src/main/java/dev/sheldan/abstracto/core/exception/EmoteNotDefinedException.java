@@ -3,11 +3,10 @@ package dev.sheldan.abstracto.core.exception;
 import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class EmoteNotDefinedException extends AbstractoRunTimeException implements Templatable {
 
-    private String emoteKey;
+    private final String emoteKey;
 
     public EmoteNotDefinedException(String key) {
         super("");

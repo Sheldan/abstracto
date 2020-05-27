@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.modmail.setup;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
@@ -94,7 +93,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                         Guild guild = botService.getGuildByIdNullable(user.getGuildId());
                         FeatureValidationResult featureValidationResult = FeatureValidationResult.builder().validationResult(true).build();
                         modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);
-                        if(featureValidationResult.getValidationResult()) {
+                        if(Boolean.FALSE.equals(featureValidationResult.getValidationResult())) {
                             AConfig fakeValue = configService.getFakeConfigForValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId(), messageContent);
                             ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
                                     .builder()
@@ -128,9 +127,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
     }
 
     protected Runnable getTimeoutRunnable(Long serverId, Long channelId) {
-        return () -> {
-            interactiveUtils.sendTimeoutMessage(serverId, channelId);
-        };
+        return () -> interactiveUtils.sendTimeoutMessage(serverId, channelId);
     }
 
     protected boolean checkForExit(Message message) {

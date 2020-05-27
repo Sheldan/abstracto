@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.templating.Templatable;
 import java.util.HashMap;
 
 public class GuildException extends AbstractoRunTimeException implements Templatable {
-    private Long guildId;
+    private final Long guildId;
 
     public GuildException(String message, Long guildId) {
         super(message);

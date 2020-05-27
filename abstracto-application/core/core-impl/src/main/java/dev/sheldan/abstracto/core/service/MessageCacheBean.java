@@ -88,15 +88,15 @@ public class MessageCacheBean implements MessageCache {
             if(textChannelByIdOptional.isPresent()) {
                 TextChannel textChannel = textChannelByIdOptional.get();
                 textChannel.retrieveMessageById(messageId).queue(message ->
-                        {
+
                             buildCachedMessageFromMessage(message)
                                     .thenAccept(future::complete)
                                     .exceptionally(throwable -> {
                                         log.error("Failed to load message for caching.", throwable);
                                         future.completeExceptionally(throwable);
                                         return null;
-                                    });
-                        }
+                                    })
+
                 );
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
@@ -123,9 +123,7 @@ public class MessageCacheBean implements MessageCache {
         );
 
         List<CompletableFuture<CachedReaction>> futures = new ArrayList<>();
-        message.getReactions().forEach(messageReaction -> {
-            futures.add(self.getCachedReactionFromReaction(messageReaction));
-        });
+        message.getReactions().forEach(messageReaction -> futures.add(self.getCachedReactionFromReaction(messageReaction)));
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
         future.complete(CachedMessage.builder()

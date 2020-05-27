@@ -20,7 +20,7 @@ public class AConfig implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer Id;
+    private Integer id;
 
     @Column
     private String name;
@@ -75,7 +75,7 @@ public class AConfig implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AConfig config = (AConfig) o;
-        return Objects.equals(Id, config.Id) &&
+        return Objects.equals(id, config.id) &&
                 Objects.equals(name, config.name) &&
                 Objects.equals(stringValue, config.stringValue) &&
                 Objects.equals(doubleValue, config.doubleValue) &&
@@ -84,6 +84,6 @@ public class AConfig implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(Id, name, stringValue, doubleValue, server);
+        return Objects.hash(id, name, stringValue, doubleValue, server);
     }
 }

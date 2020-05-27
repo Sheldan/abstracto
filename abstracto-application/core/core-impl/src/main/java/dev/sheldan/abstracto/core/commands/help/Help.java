@@ -89,7 +89,7 @@ public class Help implements Command {
                 ACommand aCommand = commandManagementService.findCommandByName(parameter);
                 ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getUserInitiatedContext().getServer());
                 HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
-                if(aCommandInAServer.getRestricted()) {
+                if(Boolean.TRUE.equals(aCommandInAServer.getRestricted())) {
                     model.setImmuneRoles(roleService.getRolesFromGuild(aCommandInAServer.getImmuneRoles()));
                     model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
                     model.setRestricted(true);

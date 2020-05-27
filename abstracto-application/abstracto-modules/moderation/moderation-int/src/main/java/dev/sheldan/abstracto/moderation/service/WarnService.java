@@ -15,5 +15,5 @@ public interface WarnService {
     Warning warnUser(FullUser warnedUser, FullUser warningUser, String reason, TextChannel feedbackChannel);
     void warnUserWithLog(Member warnedMember, Member warningMember, String reason, WarnLog warnLog, TextChannel feedbackChannel);
     void decayWarningsForServer(AServer server);
-    void decayAllWarningsForServer(AServer server, Boolean logWarnings);
+    void decayAllWarningsForServer(AServer server, boolean logWarnings);
 }

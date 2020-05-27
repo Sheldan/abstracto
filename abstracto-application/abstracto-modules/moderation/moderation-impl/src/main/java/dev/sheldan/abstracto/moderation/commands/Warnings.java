@@ -55,7 +55,7 @@ public class Warnings extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Warning> warnsToDisplay;
-        if(commandContext.getParameters().getParameters().size() > 0) {
+        if(!commandContext.getParameters().getParameters().isEmpty()) {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);
             warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadUser(member));
         } else {

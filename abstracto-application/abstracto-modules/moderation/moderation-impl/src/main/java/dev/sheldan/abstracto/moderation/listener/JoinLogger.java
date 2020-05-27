@@ -23,7 +23,6 @@ import java.util.HashMap;
 public class JoinLogger implements JoinListener {
 
     private static final String USER_JOIN_TEMPLATE = "user_join";
-    private static final String JOIN_LOG_TARGET = "joinLog";
 
     @Autowired
     private TemplateService templateService;

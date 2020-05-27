@@ -1,14 +1,11 @@
 package dev.sheldan.abstracto.core.models;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.templating.Templatable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

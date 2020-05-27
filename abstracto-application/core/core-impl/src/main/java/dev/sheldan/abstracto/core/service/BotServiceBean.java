@@ -131,7 +131,7 @@ public class BotServiceBean implements BotService {
 
     @Override
     public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
-        if(!emote.getCustom()) {
+        if(Boolean.FALSE.equals(emote.getCustom())) {
             return Optional.empty();
         }
         Optional<Guild> guildById = getGuildById(serverId);

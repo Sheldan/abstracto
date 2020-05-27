@@ -33,7 +33,7 @@ public class CommandDisallowedCondition implements CommandCondition {
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         ACommand aCommand = commandService.findCommandByName(command.getConfiguration().getName());
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, context.getUserInitiatedContext().getServer());
-        if(!commandForServer.getRestricted()) {
+        if(Boolean.FALSE.equals(commandForServer.getRestricted())) {
             return ConditionResult.builder().result(true).build();
         }
         for (ARole role : commandForServer.getAllowedRoles()) {

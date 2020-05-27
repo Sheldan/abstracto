@@ -61,7 +61,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
         Optional<AUserExperience> byId = repository.findById(user.getUserInServerId());
         if(byId.isPresent()) {
             AUserExperience userExperience = byId.get();
-            if(!userExperience.getExperienceGainDisabled()) {
+            if(Boolean.FALSE.equals(userExperience.getExperienceGainDisabled())) {
                 userExperience.setMessageCount(userExperience.getMessageCount() + messageCount);
                 userExperience.setExperience(userExperience.getExperience() + experience);
             }

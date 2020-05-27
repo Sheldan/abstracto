@@ -48,7 +48,7 @@ public class MessageServiceBean implements MessageService {
         AEmote emote = emoteService.getEmoteOrFakeEmote(emoteKey, serverId);
         if(guildByIdOptional.isPresent()) {
             Guild guild = guildByIdOptional.get();
-            if(emote.getCustom()) {
+            if(Boolean.TRUE.equals(emote.getCustom())) {
                 Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
                 if(emoteById != null) {
                     return message.addReaction(emoteById).submit();
@@ -68,9 +68,7 @@ public class MessageServiceBean implements MessageService {
     @Override
     public List<CompletableFuture<Void>> addReactionsToMessageWithFuture(List<String> emoteKeys, Long serverId, Message message) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        emoteKeys.forEach(s -> {
-            futures.add(addReactionToMessageWithFuture(s, serverId, message));
-        });
+        emoteKeys.forEach(s -> futures.add(addReactionToMessageWithFuture(s, serverId, message)));
         return futures;
     }
 

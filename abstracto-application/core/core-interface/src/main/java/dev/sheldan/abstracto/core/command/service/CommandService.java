@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 
 public interface CommandService {
     ACommand createCommand(String name, String moduleName, FeatureEnum featureEnum);
-    Boolean doesCommandExist(String name);
+    boolean doesCommandExist(String name);
     void allowCommandForRole(ACommand aCommand, ARole role);
     void allowFeatureForRole(FeatureEnum featureEnum, ARole role);
     void makeRoleImmuneForCommand(ACommand aCommand, ARole role);

@@ -83,18 +83,16 @@ public class StarboardServiceBean implements StarboardService {
     public void createStarboardPost(CachedMessage message, List<AUserInAServer> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         List<Long> userExceptAuthorIds = new ArrayList<>();
-        userExceptAuthor.forEach(aUserInAServer -> {
-            userExceptAuthorIds.add(aUserInAServer.getUserInServerId());
-        });
+        userExceptAuthor.forEach(aUserInAServer -> userExceptAuthorIds.add(aUserInAServer.getUserInServerId()));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
         PostTarget starboard = postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), message.getServerId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardChannelId = starboard.getChannelReference().getId();
         Long starredUserId = starredUser.getUserInServerId();
         Long userReactingId = userReacting.getUserInServerId();
-        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
-            self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId, userReactingId);
-        }) .exceptionally(throwable -> {
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
+            self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId, userReactingId)
+        ) .exceptionally(throwable -> {
             log.error("Failed to create starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId(), throwable);
             return null;
         });

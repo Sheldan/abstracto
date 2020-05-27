@@ -44,7 +44,7 @@ public class CommandManagementServiceBean implements CommandManagementService {
     }
 
     @Override
-    public Boolean doesCommandExist(String name) {
+    public boolean doesCommandExist(String name) {
         return findCommandByName(name) != null;
     }
 

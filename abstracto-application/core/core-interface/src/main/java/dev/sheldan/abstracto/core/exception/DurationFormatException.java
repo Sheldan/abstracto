@@ -7,8 +7,8 @@ import java.util.List;
 
 public class DurationFormatException extends AbstractoRunTimeException implements Templatable {
 
-    private String invalidFormat;
-    private List<String> validFormats;
+    private final String invalidFormat;
+    private final List<String> validFormats;
 
     public DurationFormatException(String wrongFormat, List<String> validFormats) {
         super("");

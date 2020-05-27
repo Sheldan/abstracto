@@ -98,16 +98,15 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Override
     public void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
-        linksToEmbed.forEach(messageEmbedLink -> {
+        linksToEmbed.forEach(messageEmbedLink ->
             messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
-                    .thenAccept(cachedMessage -> {
-                        self.embedLink(cachedMessage, target, userEmbeddingUserInServerId, embeddingMessage);
-                        }
+                    .thenAccept(cachedMessage -> self.embedLink(cachedMessage, target, userEmbeddingUserInServerId, embeddingMessage)
+
                     ).exceptionally(throwable -> {
                 log.error("Message retrieval from cache failed for message {}.", messageEmbedLink.getMessageId(), throwable);
                 return null;
-            });
-        });
+            })
+        );
     }
 
     @Override

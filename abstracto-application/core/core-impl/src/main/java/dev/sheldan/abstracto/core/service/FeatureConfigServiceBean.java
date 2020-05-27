@@ -91,7 +91,8 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
         Predicate<PostTargetEnum> postTargetComparison = postTargetEnum -> postTargetEnum.getKey().equalsIgnoreCase(key);
         Optional<FeatureConfig> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getRequiredPostTargets().stream().anyMatch(postTargetComparison)).findAny();
         if(foundFeature.isPresent()) {
-            return foundFeature.get().getRequiredPostTargets().stream().filter(postTargetComparison).findAny().get();
+            Optional<PostTargetEnum> any = foundFeature.get().getRequiredPostTargets().stream().filter(postTargetComparison).findAny();
+            return any.orElse(null);
         }
         throw new AbstractoRunTimeException(String.format("Post target %s not found.", key));
     }
@@ -99,18 +100,18 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
     @Override
     public FeatureValidationResult validateFeatureSetup(FeatureConfig featureConfig, AServer server) {
         FeatureValidationResult featureValidationResult = FeatureValidationResult.validationSuccessful(featureConfig);
-        featureConfig.getRequiredPostTargets().forEach(s -> {
-            featureValidatorService.checkPostTarget(s, server, featureValidationResult);
-        });
-        featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
-            featureValidatorService.checkSystemConfig(s, server, featureValidationResult);
-        });
-        featureConfig.getRequiredEmotes().forEach(s -> {
-            featureValidatorService.checkEmote(s, server, featureValidationResult);
-        });
-        featureConfig.getAdditionalFeatureValidators().forEach(featureValidator -> {
-            featureValidator.featureIsSetup(featureConfig, server, featureValidationResult);
-        });
+        featureConfig.getRequiredPostTargets().forEach(s ->
+            featureValidatorService.checkPostTarget(s, server, featureValidationResult)
+        );
+        featureConfig.getRequiredSystemConfigKeys().forEach(s ->
+            featureValidatorService.checkSystemConfig(s, server, featureValidationResult)
+        );
+        featureConfig.getRequiredEmotes().forEach(s ->
+            featureValidatorService.checkEmote(s, server, featureValidationResult)
+        );
+        featureConfig.getAdditionalFeatureValidators().forEach(featureValidator ->
+            featureValidator.featureIsSetup(featureConfig, server, featureValidationResult)
+        );
         return featureValidationResult;
     }
 

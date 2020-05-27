@@ -7,8 +7,8 @@ import java.util.List;
 
 public class PostTargetNotValidException extends AbstractoRunTimeException implements Templatable {
 
-    private String postTargetKey;
-    private List<String> availableTargets;
+    private final String postTargetKey;
+    private final List<String> availableTargets;
 
     public PostTargetNotValidException(String key, List<String> available) {
         super("");

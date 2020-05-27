@@ -22,8 +22,6 @@ public class InteractiveUtils {
     public void sendTimeoutMessage(Long serverId, Long channelId) {
         String s = templateService.renderSimpleTemplate("setup_configuration_timeout");
         Optional<TextChannel> channelOptional = channelService.getTextChannelInGuild(serverId, channelId);
-        channelOptional.ifPresent(channel -> {
-            channelService.sendTextToChannelNoFuture(s, channel);
-        });
+        channelOptional.ifPresent(channel -> channelService.sendTextToChannelNoFuture(s, channel));
     }
 }

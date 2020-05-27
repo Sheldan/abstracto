@@ -12,6 +12,6 @@ public interface PostTargetManagement {
     PostTarget getPostTarget(String name, AServer server);
     PostTarget getPostTarget(String name, Long serverId);
     Boolean postTargetExists(String name, AServer server);
-    Boolean postTargetExists(String name, Long serverId);
+    boolean postTargetExists(String name, Long serverId);
     PostTarget updatePostTarget(PostTarget target, AServer server, AChannel newTargetChannel);
 }

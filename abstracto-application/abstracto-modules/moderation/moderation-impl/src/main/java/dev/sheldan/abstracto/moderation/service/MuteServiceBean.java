@@ -80,7 +80,6 @@ public class MuteServiceBean implements MuteService {
 
     private static final String MUTE_LOG_TEMPLATE = "mute_log";
     private static final String UNMUTE_LOG_TEMPLATE = "unmute_log";
-    private static final String MUTE_LOG_TARGET = "muteLog";
     private static final String MUTE_NOTIFICATION_TEMPLATE = "mute_notification";
 
     @Override
@@ -225,7 +224,7 @@ public class MuteServiceBean implements MuteService {
         // but if the person gets unmuted immediately, via command, this might still execute of the instant unmute
         // so we need to load the mute, and check if the mute was unmuted already, because the mute object we have at
         // hand was loaded earlier, and does not reflect the true state
-        if(updatedMute.getMuteEnded()) {
+        if(Boolean.TRUE.equals(updatedMute.getMuteEnded())) {
             log.info("Mute {} has ended already, {} does not need to be unmuted anymore.", mute.getId(), mute.getMutedUser().getUserReference().getId());
             return;
         }

@@ -42,9 +42,7 @@ public class PaginatorServiceBean implements PaginatorService {
                 .setEventWaiter(waiter)
                 .waitOnSinglePage(true)
                 .setTimeout(ObjectUtils.defaultIfNull(configuration.getTimeoutSeconds(), 120L), TimeUnit.SECONDS)
-                .setFinalAction(message -> {
-                    message.delete().queue();
-                })
+                .setFinalAction(message -> message.delete().queue())
                 .build();
     }
 

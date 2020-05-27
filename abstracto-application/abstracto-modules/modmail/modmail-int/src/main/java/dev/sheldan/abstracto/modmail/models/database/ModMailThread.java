@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.modmail.models.database;
 
 import dev.sheldan.abstracto.core.models.database.*;
 import lombok.*;
-import net.dv8tion.jda.api.entities.ChannelType;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;

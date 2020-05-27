@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class ModMailThreadNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private Long modMailThreadId;
+    private final Long modMailThreadId;
 
     public ModMailThreadNotFoundException(Long modMailThreadId) {
         super("");

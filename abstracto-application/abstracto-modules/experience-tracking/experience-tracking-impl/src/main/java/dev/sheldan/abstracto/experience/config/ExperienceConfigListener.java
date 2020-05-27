@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.experience.config;
 
 import dev.sheldan.abstracto.core.listener.ServerConfigListener;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -15,7 +15,7 @@ import java.time.Instant;
 public class ADefaultConfig implements Serializable {
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer Id;
+    private Integer id;
 
     @Column
     private String name;

@@ -162,7 +162,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 if(!roleService.hasAnyOfTheRoles(member, disabledRoles)) {
                     log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
                     AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
-                    if(!aUserExperience.getExperienceGainDisabled()) {
+                    if(Boolean.FALSE.equals(aUserExperience.getExperienceGainDisabled())) {
                         updateUserlevel(aUserExperience, levels);
                         updateUserRole(aUserExperience, roles);
                         userExperienceManagementService.saveUser(aUserExperience);

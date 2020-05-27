@@ -6,12 +6,8 @@ import java.util.HashMap;
 
 public class ChannelNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private Long channelId;
-    private Long guildId;
-
-    public ChannelNotFoundException(String message) {
-        super(message);
-    }
+    private final Long channelId;
+    private final Long guildId;
 
     public ChannelNotFoundException(Long channelId, Long guildId) {
         super("");

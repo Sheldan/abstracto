@@ -86,7 +86,7 @@ public class PostTargetManagementBean implements PostTargetManagement {
     }
 
     @Override
-    public Boolean postTargetExists(String name, Long serverId) {
+    public boolean postTargetExists(String name, Long serverId) {
         AServer dbServer = serverManagementService.loadOrCreate(serverId);
         return postTargetExists(name, dbServer);
     }

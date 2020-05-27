@@ -6,8 +6,8 @@ import java.util.HashMap;
 
 public class RoleNotFoundInGuildException extends AbstractoRunTimeException implements Templatable {
 
-    private Long roleId;
-    private Long serverId;
+    private final Long roleId;
+    private final Long serverId;
 
     public RoleNotFoundInGuildException(Long roleId, Long serverId) {
         super("");

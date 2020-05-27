@@ -42,7 +42,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     private List<ReactionClearedListener> clearedListenerList;
 
     @Autowired
-    private List<ReactedRemovedListener> reactionRemovedListener;
+    private List<ReactedRemovedListener> reactionRemovedListeners;
 
     @Autowired
     private ReactionUpdatedListener self;
@@ -63,15 +63,15 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             return;
         }
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
-        asyncMessageFromCache.thenAccept(cachedMessage -> {
+        asyncMessageFromCache.thenAccept(cachedMessage ->
             messageCache.getCachedReactionFromReaction(event.getReaction()).thenAccept(reaction -> {
                 self.callAddedListeners(event, cachedMessage, reaction);
                 messageCache.putMessageInCache(cachedMessage);
             }).exceptionally(throwable -> {
                 log.error("Failed to add reaction to message {} ", event.getMessageIdLong(), throwable);
                 return null;
-            });
-        }).exceptionally(throwable -> {
+            })
+        ).exceptionally(throwable -> {
             log.error("Message retrieval {} from cache failed. ", event.getMessageIdLong(), throwable);
             return null;
         });
@@ -146,7 +146,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReaction reaction) {
         AUserInAServer userInAServer = userInServerManagementService.loadUser(event.getGuild().getIdLong(), event.getUserIdLong());
         removeReactionIfThere(cachedMessage, reaction, userInAServer);
-        reactionRemovedListener.forEach(reactionRemovedListener -> {
+        reactionRemovedListeners.forEach(reactionRemovedListener -> {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                 return;

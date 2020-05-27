@@ -50,7 +50,7 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
-    public Boolean doesCommandExist(String name) {
+    public boolean doesCommandExist(String name) {
         return commandManagementService.doesCommandExist(name);
     }
 
@@ -66,9 +66,7 @@ public class CommandServiceBean implements CommandService {
     @Override
     public void allowFeatureForRole(FeatureEnum featureEnum, ARole role) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
-        feature.getCommands().forEach(command -> {
-            this.allowCommandForRole(command, role);
-        });
+        feature.getCommands().forEach(command -> this.allowCommandForRole(command, role));
     }
 
     @Override
@@ -107,9 +105,7 @@ public class CommandServiceBean implements CommandService {
     @Override
     public void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
-        feature.getCommands().forEach(command -> {
-            this.disAllowCommandForRole(command, role);
-        });
+        feature.getCommands().forEach(command -> this.disAllowCommandForRole(command, role));
     }
 
     public ConditionResult isCommandExecutable(Command command, CommandContext commandContext) {

@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class UserInServerNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private Long userInServerId;
+    private final Long userInServerId;
 
     public UserInServerNotFoundException(Long userInServerId) {
         super("");
