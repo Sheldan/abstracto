@@ -24,6 +24,8 @@
         <asciidoctorj.pdf.version>1.5.3</asciidoctorj.pdf.version>
         <asciidoctorj.version>2.3.0</asciidoctorj.version>
         <jruby.version>9.2.11.1</jruby.version>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
 
     <modules>

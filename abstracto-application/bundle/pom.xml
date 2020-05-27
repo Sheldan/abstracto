@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>dev.sheldan.abstracto</groupId>
+        <artifactId>abstracto-application</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>bundle</artifactId>
+    <packaging>pom</packaging>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>dev.sheldan.abstracto.core</groupId>
+                <artifactId>core-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.sheldan.abstracto.templating</groupId>
+                <artifactId>templating-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.templating</groupId>
+                <artifactId>template-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- modules containing commands -->
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>moderation-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>modmail-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>utility-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>experience-tracking-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.scheduling</groupId>
+                <artifactId>scheduling-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
