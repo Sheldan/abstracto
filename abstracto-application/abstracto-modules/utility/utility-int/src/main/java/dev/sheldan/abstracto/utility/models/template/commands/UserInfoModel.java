@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.utility.models.template.commands.userinfo;
+package dev.sheldan.abstracto.utility.models.template.commands;
 
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.Getter;

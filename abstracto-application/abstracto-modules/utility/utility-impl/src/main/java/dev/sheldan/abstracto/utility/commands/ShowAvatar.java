@@ -9,50 +9,30 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
-import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
+import dev.sheldan.abstracto.utility.models.template.commands.ShowAvatarModel;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class UserInfo extends AbstractConditionableCommand {
+public class ShowAvatar extends AbstractConditionableCommand {
 
     @Autowired
     private ChannelService channelService;
-
-    @Autowired
-    private BotService botService;
-
-    @Autowired
-    private UserInfo self;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
-        UserInfoModel model = (UserInfoModel) ContextConverter.fromCommandContext(commandContext, UserInfoModel.class);
-        if(!memberToShow.hasTimeJoined()) {
-            botService.forceReloadMember(memberToShow).thenAccept(member -> {
-                model.setMemberInfo(member);
-                self.sendResponse(commandContext, model);
-            });
-        } else {
-            model.setMemberInfo(memberToShow);
-            self.sendResponse(commandContext, model);
-        }
+        ShowAvatarModel model = (ShowAvatarModel) ContextConverter.fromCommandContext(commandContext, ShowAvatarModel.class);
+        model.setMemberInfo(memberToShow);
+        channelService.sendEmbedTemplateInChannel("showAvatar_response", model, commandContext.getChannel());
         return CommandResult.fromSuccess();
-    }
-
-    @Transactional
-    public void sendResponse(CommandContext commandContext, UserInfoModel model) {
-        channelService.sendEmbedTemplateInChannel("userInfo_response", model, commandContext.getChannel());
     }
 
     @Override
@@ -61,7 +41,7 @@ public class UserInfo extends AbstractConditionableCommand {
         parameters.add(Parameter.builder().type(Member.class).name("member").templated(true).optional(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("userInfo")
+                .name("showAvatar")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .causesReaction(false)
