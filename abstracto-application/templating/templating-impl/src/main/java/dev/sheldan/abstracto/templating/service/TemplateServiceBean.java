@@ -92,11 +92,15 @@ public class TemplateServiceBean implements TemplateService {
         if(configuration.getFields() != null) {
             for (int i = 0; i < configuration.getFields().size(); i++) {
                 EmbedField field = configuration.getFields().get(i);
-                if(field.getValue().length() > 1024) {
-                    String substring = field.getValue().substring(1024);
-                    field.setValue(field.getValue().substring(0, 1024));
-                    EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
-                    configuration.getFields().add(i + 1, secondPart);
+                if(field != null && field.getValue() != null) {
+                    if(field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
+                        String substring = field.getValue().substring(MessageEmbed.VALUE_MAX_LENGTH);
+                        field.setValue(field.getValue().substring(0, MessageEmbed.VALUE_MAX_LENGTH));
+                        EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
+                        configuration.getFields().add(i + 1, secondPart);
+                    }
+                } else {
+                    log.warn("Field {} in template {} is null.", i, key);
                 }
             }
             double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;

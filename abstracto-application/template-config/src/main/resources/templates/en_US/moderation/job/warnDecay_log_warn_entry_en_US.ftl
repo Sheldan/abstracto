@@ -1,1 +1,1 @@
-${warnedUser} was warned on ${formatInstant(warning.warning.warnDate, "yyyy-MM-dd HH:mm:ss")} with reason `${warning.warning.reason}` by ${warningUser}
+${warnedUser} was warned on ${formatDate(warning.warning.warnDate, "yyyy-MM-dd HH:mm:ss")} with reason `${warning.warning.reason}` by ${warningUser}

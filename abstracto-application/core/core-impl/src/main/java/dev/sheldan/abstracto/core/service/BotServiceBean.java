@@ -125,6 +125,11 @@ public class BotServiceBean implements BotService {
     }
 
     @Override
+    public CompletableFuture<Member> forceReloadMember(Member member) {
+        return member.getGuild().retrieveMember(member.getUser()).submit();
+    }
+
+    @Override
     public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
         if(!emote.getCustom()) {
             return Optional.empty();

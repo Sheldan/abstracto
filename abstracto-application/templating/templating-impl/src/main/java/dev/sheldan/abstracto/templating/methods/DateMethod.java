@@ -9,24 +9,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Formats the passed {@link Instant} object with the given Formatter. The format will be directly passed to {@link DateTimeFormatter}.
+ * Formats the passed {@link Instant} or  {@link OffsetDateTime} object with the given Formatter. The format will be directly passed to {@link DateTimeFormatter}.
  */
 @Component
-public class InstantMethod implements TemplateMethodModelEx {
+public class DateMethod implements TemplateMethodModelEx {
 
     @Autowired
     private TemplateService service;
 
     /**
      * Renders the given {@link Instant} object with the given String. Internally {@link DateTimeFormatter} will be used.
-     * @param arguments The list of arguments, first element must be an {@link Instant} and the second one must be a {@link String}.
+     * @param arguments The list of arguments, first element must be an {@link Instant} or {@link OffsetDateTime} and the second one must be a {@link String}.
      * @return The formatted {@link Instant} as a string.
-     * @throws TemplateModelException If there are less or more arguments in the list and if the first element is not a {@link Instant}.
+     * @throws TemplateModelException If there are less or more arguments in the list and if the first element is not a {@link Instant} of {@link OffsetDateTime}
      */
     @Override
     public Object exec(List arguments) throws TemplateModelException {
@@ -34,14 +35,21 @@ public class InstantMethod implements TemplateMethodModelEx {
             throw new TemplateModelException("Incorrect parameters passed.");
         }
         Object wrappedObject = ((StringModel) arguments.get(0)).getWrappedObject();
-        if(!(wrappedObject instanceof Instant)) {
+        boolean isOffsetDateTime = wrappedObject instanceof OffsetDateTime;
+        boolean isInstant = wrappedObject instanceof Instant;
+        if(!isInstant && !isOffsetDateTime) {
             throw new TemplateModelException("Passed argument was not a instant object");
         }
 
         String formatString = ((SimpleScalar) arguments.get(1)).getAsString();
-        Instant timeStamp = (Instant) wrappedObject;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatString)
                 .withZone(ZoneId.systemDefault());
-        return formatter.format(timeStamp);
+        if(isInstant) {
+            Instant timeStamp = (Instant) wrappedObject;
+            return formatter.format(timeStamp);
+        } else {
+            OffsetDateTime offsetDateTime = (OffsetDateTime) wrappedObject;
+            return formatter.format(offsetDateTime);
+        }
     }
 }

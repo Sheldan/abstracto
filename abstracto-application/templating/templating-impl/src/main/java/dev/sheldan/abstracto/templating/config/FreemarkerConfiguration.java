@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.templating.config;
 
 import dev.sheldan.abstracto.templating.loading.DatabaseTemplateLoader;
 import dev.sheldan.abstracto.templating.methods.DurationMethod;
-import dev.sheldan.abstracto.templating.methods.InstantMethod;
+import dev.sheldan.abstracto.templating.methods.DateMethod;
 import dev.sheldan.abstracto.templating.methods.SafeFieldIterations;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
@@ -26,7 +26,7 @@ public class FreemarkerConfiguration {
     private DurationMethod durationMethod;
 
     @Autowired
-    private InstantMethod instantMethod;
+    private DateMethod instantMethod;
 
     @Autowired
     private SafeFieldIterations safeFieldIterations;
@@ -43,7 +43,7 @@ public class FreemarkerConfiguration {
         factory.setPreTemplateLoaders(templateLoader);
         Configuration configuration = factory.createConfiguration();
         configuration.setSharedVariable("fmtDuration", durationMethod);
-        configuration.setSharedVariable("formatInstant", instantMethod);
+        configuration.setSharedVariable("formatDate", instantMethod);
         configuration.setSharedVariable("safeFieldLength", safeFieldIterations);
         configuration.setEncoding(Locale.getDefault(), "utf-8");
         // needed to support default methods in interfaces

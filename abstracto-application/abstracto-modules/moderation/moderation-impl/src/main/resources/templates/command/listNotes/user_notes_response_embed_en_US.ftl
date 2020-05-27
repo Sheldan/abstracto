@@ -25,7 +25,7 @@
   <#assign user>${note.fullUser.member.asMention}</#assign>
   <#assign noteText>${note.note.note}</#assign>
   <#assign noteId>${note.note.id}</#assign>
-  <#assign date>${formatInstant(note.note.created, "yyyy-MM-dd HH:mm:ss")}</#assign>
+  <#assign date>${formatDate(note.note.created, "yyyy-MM-dd HH:mm:ss")}</#assign>
   <#include "user_notes_note_entry"><#else><#include "user_notes_no_notes">
   </#list>"
 }

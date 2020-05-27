@@ -25,6 +25,7 @@ public interface BotService {
     Member getMemberInServer(AServer server, AUser member);
     CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Void> deleteMessage(Long channelId, Long messageId);
+    CompletableFuture<Member> forceReloadMember(Member member);
     Optional<Emote> getEmote(Long serverId, AEmote emote);
     Optional<TextChannel> getTextChannelFromServer(Guild serverId, Long textChannelId);
     Optional<TextChannel> getTextChannelFromServer(Long serverId, Long textChannelId);
