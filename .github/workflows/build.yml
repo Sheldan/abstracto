@@ -5,7 +5,9 @@ name: Execute build and Sonar
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - feature/**
   pull_request:
     branches: [ master ]
 
