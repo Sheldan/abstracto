@@ -2,18 +2,20 @@ package dev.sheldan.abstracto.templating.service;
 
 import com.google.gson.Gson;
 import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.templating.exception.TemplatingException;
 import dev.sheldan.abstracto.templating.model.*;
 import freemarker.template.Configuration;
+import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +91,7 @@ public class TemplateServiceBean implements TemplateService {
             firstBuilder.setFooter(footer.getText(), footer.getIcon());
         }
         if(embedConfiguration.getFields() != null) {
-            createFieldsForEmbed(key, embedBuilders, embedConfiguration);
+            createFieldsForEmbed(embedBuilders, embedConfiguration);
         }
         firstBuilder.setTimestamp(embedConfiguration.getTimeStamp());
 
@@ -112,18 +114,14 @@ public class TemplateServiceBean implements TemplateService {
                 .build();
     }
 
-    private void createFieldsForEmbed(String key, List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
+    private void createFieldsForEmbed(List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
         for (int i = 0; i < configuration.getFields().size(); i++) {
             EmbedField field = configuration.getFields().get(i);
-            if(field != null && field.getValue() != null) {
-                if(field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
-                    String substring = field.getValue().substring(MessageEmbed.VALUE_MAX_LENGTH);
-                    field.setValue(field.getValue().substring(0, MessageEmbed.VALUE_MAX_LENGTH));
-                    EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
-                    configuration.getFields().add(i + 1, secondPart);
-                }
-            } else {
-                log.warn("Field {} in template {} is null.", i, key);
+            if(field != null && field.getValue() != null && field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
+                String substring = field.getValue().substring(MessageEmbed.VALUE_MAX_LENGTH);
+                field.setValue(field.getValue().substring(0, MessageEmbed.VALUE_MAX_LENGTH));
+                EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
+                configuration.getFields().add(i + 1, secondPart);
             }
         }
         double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;
@@ -161,10 +159,10 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public String renderTemplateWithMap(String key, HashMap<String, Object> parameters) {
         try {
-            return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), parameters);
+            return renderTemplateToString(key, parameters);
         } catch (IOException | TemplateException e) {
             log.warn("Failed to render template. ", e);
-            throw new RuntimeException(e);
+            throw new TemplatingException(e);
         }
     }
 
@@ -177,11 +175,26 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public String renderTemplate(String key, Object model) {
         try {
-            return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(key), model);
+            return renderTemplateToString(key, model);
         } catch (IOException | TemplateException e) {
             log.warn("Failed to render template. ", e);
-            throw new RuntimeException(e);
+            throw new TemplatingException(e);
         }
+    }
+
+    /**
+     * Loads the given key as a template, and renders it, returns the result as a String
+     * @param key The key of the template to render
+     * @param model The parameters which are given to the template
+     * @return The rendered template in a String
+     * @throws freemarker.template.TemplateNotFoundException In case the template could not be found
+     * @throws TemplateException In case the rendering failed
+     */
+    private String renderTemplateToString(String key, Object model) throws IOException, TemplateException {
+        StringWriter result = new StringWriter();
+        Template template = configuration.getTemplate(key);
+        template.process(model, result);
+        return result.toString();
     }
 
     /**

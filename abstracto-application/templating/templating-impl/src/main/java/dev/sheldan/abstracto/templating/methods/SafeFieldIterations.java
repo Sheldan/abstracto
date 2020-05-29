@@ -20,15 +20,38 @@ public class SafeFieldIterations implements TemplateMethodModelEx {
 
     @Override
     public Object exec(List arguments) throws TemplateModelException {
-        List wrappedObject = (List) ((DefaultListAdapter) arguments.get(0)).getWrappedObject();
-        String appliedTemplate = ((SimpleScalar) arguments.get(1)).getAsString();
-        String nameTemplate = ((SimpleScalar) arguments.get(2)).getAsString();
-        String inline = ((SimpleScalar) arguments.get(3)).getAsString();
+        if(arguments.size() != 4) {
+            throw new TemplateModelException("Incorrect amount of parameters.");
+        }
+        Object adapterObject = arguments.get(0);
+        if(!(adapterObject instanceof DefaultListAdapter)) {
+            throw new TemplateModelException("Passed object was not a DefaultListAdapter.");
+        }
+        Object wrappedList = ((DefaultListAdapter) adapterObject).getWrappedObject();
+        if(!(wrappedList instanceof List)) {
+            throw new TemplateModelException("Passed object was not a List.");
+        }
+        List wrappedObject = (List) wrappedList;
+        Object templateParameter = arguments.get(1);
+        if(!(templateParameter instanceof SimpleScalar)) {
+            throw new TemplateModelException("Passed object for template was not a SimpleScalar.");
+        }
+        String appliedTemplate = ((SimpleScalar) templateParameter).getAsString();
+        Object fieldNameTemplateParameter = arguments.get(2);
+        if(!(fieldNameTemplateParameter instanceof SimpleScalar)) {
+            throw new TemplateModelException("Passed object for field name template was not a SimpleScalar.");
+        }
+        String fieldNameTemplate = ((SimpleScalar) fieldNameTemplateParameter).getAsString();
+        Object inlineParameter = arguments.get(3);
+        if(!(inlineParameter instanceof SimpleScalar)) {
+            throw new TemplateModelException("Passed object for inline was not a SimpleScalar.");
+        }
+        String inline = ((SimpleScalar) inlineParameter).getAsString();
 
 
         List<StringBuilder> result = new ArrayList<>();
         StringBuilder currentBuilder = new StringBuilder();
-        String firstEmbedTitle = service.renderTemplateWithMap(nameTemplate, getEmbedCountParameters(1, wrappedObject));
+        String firstEmbedTitle = service.renderTemplateWithMap(fieldNameTemplate, getEmbedCountParameters(1, wrappedObject));
         currentBuilder.append(newFieldHeader(firstEmbedTitle, inline));
         String finalClosingString = "\"}";
         String closingString = finalClosingString + ",";
@@ -42,7 +65,7 @@ public class SafeFieldIterations implements TemplateMethodModelEx {
                 result.add(currentBuilder);
                 currentBuilder = new StringBuilder();
                 splitFieldCounts += 1;
-                String renderedName = service.renderTemplateWithMap(nameTemplate, getEmbedCountParameters(splitFieldCounts, wrappedObject));
+                String renderedName = service.renderTemplateWithMap(fieldNameTemplate, getEmbedCountParameters(splitFieldCounts, wrappedObject));
                 currentBuilder.append(newFieldHeader(renderedName, inline));
             }
             currentBuilder.append(s);
@@ -54,14 +77,14 @@ public class SafeFieldIterations implements TemplateMethodModelEx {
         for (StringBuilder innerBuilder: result) {
             bigBuilder.append(innerBuilder.toString());
         }
-        return bigBuilder;
+        return bigBuilder.toString();
     }
 
     private String newFieldHeader(String name, String inline) {
         return String.format("{ \"name\": \"%s\", \"inline\": \"%s\", \"value\": \"", name, inline);
     }
 
-    private HashMap<String, Object> getEmbedCountParameters(Integer count, List objects) {
+    private HashMap<String, Object> getEmbedCountParameters(Integer count, List<? extends Object> objects) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("count", count);
         parameters.put("list", objects);

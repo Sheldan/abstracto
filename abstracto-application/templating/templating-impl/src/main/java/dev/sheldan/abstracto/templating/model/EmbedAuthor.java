@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.templating.model;
 
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@Builder
 public class EmbedAuthor {
     /**
      * The name used in the {@link net.dv8tion.jda.api.entities.MessageEmbed} author

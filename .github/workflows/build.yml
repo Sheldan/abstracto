@@ -36,3 +36,4 @@ jobs:
        -Dsonar.projectKey=abstracto-abstracto
        -Dsonar.java.binaries=**/target/classes
        -Dsonar.coverage.jacoco.xmlReportPaths=abstracto-application/coverage/target/site/jacoco-aggregate/jacoco.xml
+       -Dsonar.coverage.exclusions=**/*Test.java
