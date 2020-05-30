@@ -15,7 +15,6 @@ import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardModel;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
-import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +33,6 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     private AUserExperienceService userExperienceService;
 
     @Autowired
-    private UserExperienceManagementService userExperienceManagementService;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
@@ -48,9 +44,10 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         // parameter is optional, in case its not present, we default to the 0th page
-        Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 0;
+        Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 1;
         LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
         LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.fromCommandContext(commandContext, LeaderBoardModel.class);
         leaderBoardModel.setUserExperiences(converter.fromLeaderBoard(leaderBoard));

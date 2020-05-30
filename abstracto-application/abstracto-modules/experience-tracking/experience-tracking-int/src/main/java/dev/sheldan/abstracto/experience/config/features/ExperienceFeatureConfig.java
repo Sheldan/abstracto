@@ -10,6 +10,10 @@ import java.util.List;
 @Component
 public class ExperienceFeatureConfig implements FeatureConfig {
 
+    public static final String MIN_EXP_KEY = "minExp";
+    public static final String MAX_EXP_KEY = "maxExp";
+    public static final String EXP_MULTIPLIER_KEY = "expMultiplier";
+
     @Override
     public FeatureEnum getFeature() {
         return ExperienceFeature.EXPERIENCE;
@@ -17,6 +21,6 @@ public class ExperienceFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList("expMultiplier", "minExp", "maxExp");
+        return Arrays.asList(EXP_MULTIPLIER_KEY, MIN_EXP_KEY, MAX_EXP_KEY);
     }
 }

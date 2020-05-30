@@ -94,16 +94,11 @@ public class AServer implements SnowFlake, Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         AServer aServer = (AServer) o;
         return Objects.equals(id, aServer.id) &&
-                Objects.equals(name, aServer.name) &&
-                Objects.equals(roles, aServer.roles) &&
-                Objects.equals(channels, aServer.channels) &&
-                Objects.equals(channelGroups, aServer.channelGroups) &&
-                Objects.equals(users, aServer.users) &&
-                Objects.equals(emotes, aServer.emotes);
+                Objects.equals(name, aServer.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, roles, channels, channelGroups, users, emotes);
+        return Objects.hash(id, name);
     }
 }

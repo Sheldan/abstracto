@@ -1,5 +1,9 @@
 package dev.sheldan.abstracto.core.command.condition;
 
+import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,5 +33,36 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
     @Override
     public List<CommandCondition> getConditions() {
         return new ArrayList<>(Arrays.asList(featureEnabledCondition, commandDisabledCondition, commandDisallowedCondition, featureModeCondition));
+    }
+
+    protected void checkParameters(CommandContext context) {
+        List<Parameter> parameters = getConfiguration().getParameters();
+        for (int i = 0; i < parameters.size(); i++) {
+            Parameter parameter = parameters.get(i);
+            Class desiredType = parameter.getType();
+            if(!parameter.isOptional()) {
+                checkMandatoryExp(context, i, parameter, desiredType);
+            } else {
+                checkOptionalParameter(context, i, parameter, desiredType);
+            }
+        }
+    }
+
+    private void checkOptionalParameter(CommandContext context, int i, Parameter parameter, Class desiredType) {
+        if(context.getParameters() != null && context.getParameters().getParameters() != null && context.getParameters().getParameters().size() >= i) {
+            boolean parameterIsPresent = i < context.getParameters().getParameters().size();
+            if(parameterIsPresent && !desiredType.isInstance(context.getParameters().getParameters().get(i))) {
+                throw new IncorrectParameter(this, desiredType, parameter.getName());
+            }
+        }
+    }
+
+    private void checkMandatoryExp(CommandContext context, int i, Parameter parameter, Class desiredType) {
+        if(context.getParameters() == null || context.getParameters().getParameters() == null || context.getParameters().getParameters().isEmpty() || i >= context.getParameters().getParameters().size()) {
+            throw new InsufficientParameters(this, parameter.getName());
+        }
+        if(!desiredType.isInstance(context.getParameters().getParameters().get(i))) {
+            throw new IncorrectParameter(this, desiredType, parameter.getName());
+        }
     }
 }

@@ -20,4 +20,12 @@ public interface ExperienceLevelService {
      * @return The amount of experience required necessary to get to one level higher as currently.
      */
     Long calculateExperienceToNextLevel(Integer level, Long currentExperience);
+
+    /**
+     * Calculates the required experience to reach this level. This calculated experience is relative, in the sense
+     * the returned experience is the increment from the experience requirement from the level before.
+     * @param level The level to calculate the experience amount for
+     * @return The needed experience to reach this level, if the user already has the level below the passed one
+     */
+    Long calculateExperienceForLevel(Integer level);
 }

@@ -90,8 +90,8 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     }
 
     @Override
-    public void saveUser(AUserExperience userExperience) {
-        repository.save(userExperience);
+    public AUserExperience saveUser(AUserExperience userExperience) {
+        return repository.save(userExperience);
     }
 }
 

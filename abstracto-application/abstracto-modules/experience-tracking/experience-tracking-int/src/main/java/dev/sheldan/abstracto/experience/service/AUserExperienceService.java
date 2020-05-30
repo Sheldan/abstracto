@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -27,20 +27,21 @@ public interface AUserExperienceService {
     void addExperience(AUserInAServer userInAServer);
 
     /**
-     * The current representation of the run time epxerience. Basically a HashMap of minutes to a list of {@link AServer}
+     * The current representation of the run time experience. Basically a HashMap of minutes to a list of {@link AServer}
      * containing a list of {@link AUserInAServer} which should gain experience in the minute used as key in the HashMap
      * @return
      */
-    HashMap<Long, List<AServer>> getRuntimeExperience();
+    Map<Long, List<AServer>> getRuntimeExperience();
 
     /**
      * Calculates the appropriate level of the given {@link AUserExperience} according to the given {@link AExperienceLevel}
      * configuration.
      * @param experience The {@link AUserExperience} to calculate the level for
-     * @param levels The list of {@link AExperienceLevel} representing the level configuration
+     * @param levels The list of {@link AExperienceLevel} representing the level configuration, this must include the initial level 0
+     *               This level will be taken as the initial value, and if no other level qualifies, this will be taken. The levels must be ordered.
      * @return The appropriate level of {@link AUserExperience} according to the provided {@link AExperienceLevel} configuration
      */
-    Integer calculateLevel(AUserExperience experience, List<AExperienceLevel> levels);
+    AExperienceLevel calculateLevel(AUserExperience experience, List<AExperienceLevel> levels);
 
     /**
      * Increases the experience of the provided {@link AUserExperience} object and and calculates the new level according
@@ -49,7 +50,7 @@ public interface AUserExperienceService {
      * @param levels The list of {@link AExperienceLevel} to be used as level configuration
      * @return Whether or not the user changed level
      */
-    boolean updateUserlevel(AUserExperience userExperience, List<AExperienceLevel> levels);
+    boolean updateUserLevel(AUserExperience userExperience, List<AExperienceLevel> levels);
 
     /**
      * Iterates through the given list of {@link AServer} and increases the experience of the users contained in the

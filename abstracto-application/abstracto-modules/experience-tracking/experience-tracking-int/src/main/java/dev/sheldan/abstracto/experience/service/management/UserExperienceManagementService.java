@@ -63,6 +63,7 @@ public interface UserExperienceManagementService {
     /**
      * Persists the {@link AUserExperience} in the database. Required when creating it
      * @param userExperience The {@link AUserExperience} to persist
+     * @return The persisted {@link AUserExperience} instance
      */
-    void saveUser(AUserExperience userExperience);
+    AUserExperience saveUser(AUserExperience userExperience);
 }

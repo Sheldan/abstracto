@@ -36,8 +36,8 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     }
 
     @Override
-    public AExperienceRole getRoleInServer(ARole role, AServer server) {
-        return experienceRoleRepository.findByRoleServerAndRole(server, role);
+    public AExperienceRole getRoleInServer(ARole role) {
+        return experienceRoleRepository.findByRole(role);
     }
 
     @Override
@@ -46,18 +46,19 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     }
 
     @Override
-    public void setLevelToRole(AExperienceLevel level, ARole role, AServer server) {
-        AExperienceRole byRoleServerAndRole = experienceRoleRepository.findByRoleServerAndRole(server, role);
+    public AExperienceRole setLevelToRole(AExperienceLevel level, ARole role) {
+        AExperienceRole byRoleServerAndRole = experienceRoleRepository.findByRole(role);
         if(byRoleServerAndRole != null) {
             byRoleServerAndRole.setLevel(level);
         } else {
             byRoleServerAndRole = AExperienceRole
                     .builder()
                     .level(level)
-                    .roleServer(server)
+                    .roleServer(role.getServer())
                     .role(role)
                     .build();
+            byRoleServerAndRole = experienceRoleRepository.save(byRoleServerAndRole);
         }
-        experienceRoleRepository.save(byRoleServerAndRole);
+        return byRoleServerAndRole;
     }
 }

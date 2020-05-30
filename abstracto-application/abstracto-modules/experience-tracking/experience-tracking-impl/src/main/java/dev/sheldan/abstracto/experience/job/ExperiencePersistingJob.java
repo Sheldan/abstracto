@@ -12,7 +12,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 
@@ -32,7 +32,7 @@ public class ExperiencePersistingJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        HashMap<Long, List<AServer>> runtimeExperience = userExperienceService.getRuntimeExperience();
+        Map<Long, List<AServer>> runtimeExperience = userExperienceService.getRuntimeExperience();
         log.info("Running experience persisting job.");
         Long pastMinute = (Instant.now().getEpochSecond() / 60) - 1;
         if(runtimeExperience.containsKey(pastMinute)) {

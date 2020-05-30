@@ -208,7 +208,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         }
                     }
                 } catch (NoSuchElementException e) {
-                    throw new IncorrectParameter("The passed parameters did not have the correct type.", command, param.getType(), param.getName());
+                    throw new IncorrectParameter(command, param.getType(), param.getName());
                 }
             }
 

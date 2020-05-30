@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 
 @Builder
 @Getter
+@Setter
 public class CommandContext {
     private TextChannel channel;
     private Guild guild;

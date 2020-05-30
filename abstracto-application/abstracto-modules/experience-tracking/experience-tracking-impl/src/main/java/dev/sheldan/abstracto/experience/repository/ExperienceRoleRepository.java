@@ -18,12 +18,11 @@ import java.util.List;
 public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole, Long> {
     /**
      * Finds the {@link AExperienceRole} of the given {@link AServer} and {@link ARole}
-     * @param server The {@link AServer} to retrieve the {@link AExperienceRole} for
      * @param role The {@link ARole} to filter for
      * @return The {@link AExperienceRole} found or null if the query did not return any results
      */
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    AExperienceRole findByRoleServerAndRole(AServer server, ARole role);
+    AExperienceRole findByRole(ARole role);
 
     /**
      * Finds a list of {@link AExperienceRole} (if there are multiple ones, because of misconfiguration) of the given

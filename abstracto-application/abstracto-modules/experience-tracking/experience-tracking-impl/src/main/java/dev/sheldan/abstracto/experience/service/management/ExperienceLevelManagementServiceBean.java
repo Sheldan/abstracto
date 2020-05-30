@@ -21,8 +21,7 @@ public class ExperienceLevelManagementServiceBean implements ExperienceLevelMana
                 .experienceNeeded(neededExperience)
                 .level(level)
                 .build();
-        experienceLevelRepository.save(experienceLevel);
-        return experienceLevel;
+        return experienceLevelRepository.save(experienceLevel);
     }
 
     @Override

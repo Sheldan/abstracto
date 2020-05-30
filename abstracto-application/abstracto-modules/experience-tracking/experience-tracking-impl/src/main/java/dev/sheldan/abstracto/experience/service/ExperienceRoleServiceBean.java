@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -35,14 +34,13 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      * in the given {@link AServer}
      * @param role The {@link ARole} to set the level to
      * @param level The level the {@link ARole} should be awareded at
-     * @param server The {@link AServer} for which this configuration should be done
      */
     @Override
-    public void setRoleToLevel(ARole role, Integer level, AServer server, AChannel feedbackChannel) {
-        AExperienceLevel experienceLevel = experienceLevelService.getLevel(level).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", level)));
-        unsetRole(role, server, feedbackChannel);
-        experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServer(experienceLevel, server);
-        experienceRoleManagementService.setLevelToRole(experienceLevel, role, server);
+    public void setRoleToLevel(ARole role, Integer level, AChannel feedbackChannel) {
+        AExperienceLevel experienceLevel = experienceLevelService.getLevel(level).orElseThrow(() -> new IllegalArgumentException(String.format("Could not find level %s", level)));
+        unsetRole(role, feedbackChannel);
+        experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServer(experienceLevel, role.getServer());
+        experienceRoleManagementService.setLevelToRole(experienceLevel, role);
     }
 
     /**
@@ -50,15 +48,14 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      * {@link net.dv8tion.jda.api.entities.Role}.
      * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}
      *             configuration
-     * @param server The {@link AServer} for which the {@link ARole} should be removed from the configuration
      */
     @Override
-    public void unsetRole(ARole role, AServer server, AChannel feedbackChannel) {
-        AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(role, server);
+    public void unsetRole(ARole role, AChannel feedbackChannel) {
+        AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(role);
         if(roleInServer != null) {
             if(!roleInServer.getUsers().isEmpty()) {
                 log.info("Recalculating the roles for {} users, because their current role was removed from experience tracking.", roleInServer.getUsers().size());
-                List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+                List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(role.getServer());
                 roles.removeIf(role1 -> role1.getId().equals(roleInServer.getId()));
 
                 userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), feedbackChannel,
@@ -93,7 +90,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     @Override
     public AExperienceLevel getLevelOfNextRole(AExperienceLevel startLevel, AServer server) {
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
-        roles = roles.stream().filter(role -> role.getLevel().getLevel() < startLevel.getLevel()).collect(Collectors.toList());
+        roles = roles.stream().filter(role -> role.getLevel().getLevel() > startLevel.getLevel()).collect(Collectors.toList());
         roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
         AExperienceRole aExperienceRole = roles.stream().findFirst().orElse(null);
         return aExperienceRole != null ? aExperienceRole.getLevel() : AExperienceLevel.builder().level(200).build();

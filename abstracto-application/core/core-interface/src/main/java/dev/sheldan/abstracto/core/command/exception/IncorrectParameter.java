@@ -12,8 +12,8 @@ public class IncorrectParameter extends AbstractoRunTimeException implements Tem
     private final String parameterName;
     private final Class clazz;
 
-    public IncorrectParameter(String s, Command command, Class expected, String parameterName) {
-        super(s);
+    public IncorrectParameter(Command command, Class expected, String parameterName) {
+        super("");
         this.command = command;
         this.parameterName = parameterName;
         this.clazz = expected;

@@ -23,7 +23,7 @@ public class ExperienceConfig {
     /**
      * The default multiplier from the properties file. This is used, when the bot joins a new guild.
      */
-    private Integer expMultiplier;
+    private Double expMultiplier;
 
     /**
      * The defaul maxLevel from the properties file. This configuration applies globally, as the amount of levels does not depend on the server.

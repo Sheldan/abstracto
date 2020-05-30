@@ -45,7 +45,7 @@ public class CommandManager implements CommandRegistry {
                 boolean hasRemainderParameter = commandConfiguration.getParameters().stream().anyMatch(Parameter::isRemainder);
                 if(unParsedCommandParameter.getParameters().size() < commandConfiguration.getNecessaryParameterCount()) {
                     String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
-                    throw new InsufficientParameters("Insufficient parameters", o, nextParameterName);
+                    throw new InsufficientParameters(o, nextParameterName);
                 }
                 parameterFit = paramCountFits || hasRemainderParameter;
             } else {

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -9,6 +8,7 @@ import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.experience.config.features.ExperienceFeatureConfig;
 import dev.sheldan.abstracto.experience.models.database.*;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AUserExperienceServiceBean implements AUserExperienceService {
 
-    private HashMap<Long, List<AServer>> runtimeExperience = new HashMap<>();
 
     @Autowired
     private UserExperienceManagementService userExperienceManagementService;
@@ -68,6 +67,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private RunTimeExperienceService runTimeExperienceService;
+
     /**
      * Creates the user in the runtime experience, if the user was not in yet. Also creates an entry for the minute, if necessary.
      * @param userInAServer The {@link AUserInAServer} to be added to the list of users gaining experience
@@ -75,6 +77,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Override
     public void addExperience(AUserInAServer userInAServer) {
         Long second = Instant.now().getEpochSecond() / 60;
+        Map<Long, List<AServer>> runtimeExperience = runTimeExperienceService.getRuntimeExperience();
         if(runtimeExperience.containsKey(second)) {
             List<AServer> existing = runtimeExperience.get(second);
             existing.forEach(server -> {
@@ -94,39 +97,40 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     }
 
     @Override
-    public HashMap<Long, List<AServer>> getRuntimeExperience() {
-        return runtimeExperience;
+    public Map<Long, List<AServer>> getRuntimeExperience() {
+        return runTimeExperienceService.getRuntimeExperience();
     }
+
 
     /**
      * Calculates the level of the given {@link AUserExperience} accoring to the given {@link AExperienceLevel} list
      * @param experience The {@link AUserExperience} to calculate the level for
-     * @param levels The list of {@link AExperienceLevel} representing the level configuration
+     * @param levels The list of {@link AExperienceLevel} representing the level configuration, this must include the initial level 0
+     *      *               This level will be taken as the initial value, and if no other level qualifies, this will be taken.
+     *               The levels must be ordered.
      * @return The appropriate level according to the level config
      */
     @Override
-    public Integer calculateLevel(AUserExperience experience, List<AExperienceLevel> levels) {
+    public AExperienceLevel calculateLevel(AUserExperience experience, List<AExperienceLevel> levels) {
         AExperienceLevel lastLevel = levels.get(0);
         for (AExperienceLevel level : levels) {
             if(level.getExperienceNeeded() >= experience.getExperience()) {
-                return lastLevel.getLevel();
+                return lastLevel;
             } else {
                 lastLevel = level;
             }
         }
-        return lastLevel.getLevel();
+        return lastLevel;
     }
 
     @Override
-    public boolean updateUserlevel(AUserExperience userExperience, List<AExperienceLevel> levels) {
+    public boolean updateUserLevel(AUserExperience userExperience, List<AExperienceLevel> levels) {
         AUserInAServer user = userExperience.getUser();
-        Integer correctLevel = calculateLevel(userExperience, levels);
+        AExperienceLevel correctLevel = calculateLevel(userExperience, levels);
         Integer currentLevel = userExperience.getCurrentLevel() != null ? userExperience.getCurrentLevel().getLevel() : 0;
-        if(!correctLevel.equals(currentLevel)) {
-            log.info("User {} leveled from {} to {}", user.getUserReference().getId(), currentLevel, correctLevel);
-            AExperienceLevel currentLevel1 = experienceLevelManagementService.getLevel(correctLevel)
-                    .orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", correctLevel)));
-            userExperience.setCurrentLevel(currentLevel1);
+        if(!correctLevel.getLevel().equals(currentLevel)) {
+            log.info("User {} leveled from {} to {}", user.getUserReference().getId(), currentLevel, correctLevel.getLevel());
+            userExperience.setCurrentLevel(correctLevel);
             return true;
         }
         return false;
@@ -145,9 +149,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     public void handleExperienceGain(List<AServer> servers) {
         servers.forEach(serverExp -> {
             log.trace("Handling experience for server {}", serverExp.getId());
-            int minExp = configService.getLongValue("minExp", serverExp.getId()).intValue();
-            int maxExp = configService.getLongValue("maxExp", serverExp.getId()).intValue();
-            Double multiplier = configService.getDoubleValue("expMultiplier", serverExp.getId());
+            int minExp = configService.getLongValue(ExperienceFeatureConfig.MIN_EXP_KEY, serverExp.getId()).intValue();
+            int maxExp = configService.getLongValue(ExperienceFeatureConfig.MAX_EXP_KEY, serverExp.getId()).intValue();
+            Double multiplier = configService.getDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverExp.getId());
             PrimitiveIterator.OfInt iterator = new Random().ints(serverExp.getUsers().size(), minExp, maxExp + 1).iterator();
             List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
             levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
@@ -163,7 +167,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                     log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
                     AUserExperience aUserExperience = userExperienceManagementService.incrementExpForUser(userInAServer, gainedExperience.longValue(), 1L);
                     if(Boolean.FALSE.equals(aUserExperience.getExperienceGainDisabled())) {
-                        updateUserlevel(aUserExperience, levels);
+                        updateUserLevel(aUserExperience, levels);
                         updateUserRole(aUserExperience, roles);
                         userExperienceManagementService.saveUser(aUserExperience);
                     } else {
@@ -299,11 +303,16 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      */
     @Override
     public LeaderBoard findLeaderBoardData(AServer server, Integer page) {
-        List<AUserExperience> experiences = userExperienceManagementService.findLeaderboardUsersPaginated(server, page * 10, (page +1) * 10);
+        if(page <= 0) {
+            throw new IllegalArgumentException("Page needs to be >= 1");
+        }
+        page--;
+        int pageSize = 10;
+        List<AUserExperience> experiences = userExperienceManagementService.findLeaderboardUsersPaginated(server, page * pageSize, (page + 1) * pageSize);
         List<LeaderBoardEntry> entries = new ArrayList<>();
         for (int i = 0; i < experiences.size(); i++) {
             AUserExperience userExperience = experiences.get(i);
-            entries.add(LeaderBoardEntry.builder().experience(userExperience).rank(i + 1).build());
+            entries.add(LeaderBoardEntry.builder().experience(userExperience).rank((page * pageSize) + i + 1).build());
         }
         return LeaderBoard.builder().entries(entries).build();
     }
@@ -316,19 +325,15 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {
         log.info("Retrieving rank for {}", userInAServer.getUserReference().getId());
-        AUserExperience experience = userExperienceManagementService.findUserInServer(userInAServer);
-        LeaderBoardEntryResult rankOfUserInServer = userExperienceManagementService.getRankOfUserInServer(experience);
-        AExperienceLevel currentLevel = experienceLevelManagementService.getLevel(rankOfUserInServer.getLevel())
-                .orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", rankOfUserInServer.getLevel())));
-        AUserExperience aUserExperience = AUserExperience
-                .builder()
-                .experience(rankOfUserInServer.getExperience())
-                .user(userInAServer)
-                .messageCount(rankOfUserInServer.getMessageCount())
-                .id(userInAServer.getUserInServerId())
-                .currentLevel(currentLevel)
-                .build();
-        return LeaderBoardEntry.builder().experience(aUserExperience).rank(rankOfUserInServer.getRank()).build();
+        AUserExperience aUserExperience = userExperienceManagementService.findUserInServer(userInAServer);
+        Integer rank = 0;
+        if(aUserExperience != null) {
+            LeaderBoardEntryResult rankOfUserInServer = userExperienceManagementService.getRankOfUserInServer(aUserExperience);
+            if(rankOfUserInServer != null) {
+                rank = rankOfUserInServer.getRank();
+            }
+        }
+        return LeaderBoardEntry.builder().experience(aUserExperience).rank(rank).build();
     }
 
 }

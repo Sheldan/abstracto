@@ -41,11 +41,12 @@ public class Rank extends AbstractConditionableCommand {
     private ExperienceLevelService experienceLevelService;
 
     @Autowired
-    protected ChannelService channelService;
+    private ChannelService channelService;
 
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         RankModel rankModel = (RankModel) ContextConverter.fromCommandContext(commandContext, RankModel.class);
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         rankModel.setRankUser(converter.fromLeaderBoardEntry(userRank));

@@ -13,8 +13,8 @@ public class InsufficientParameters extends AbstractoRunTimeException implements
     private final transient Command command;
     private final String parameterName;
 
-    public InsufficientParameters(String s, Command command, String parameterName) {
-        super(s);
+    public InsufficientParameters(Command command, String parameterName) {
+        super("");
         this.command = command;
         this.parameterName = parameterName;
     }

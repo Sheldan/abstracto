@@ -11,17 +11,14 @@ import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.RoleService;
-import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -31,30 +28,20 @@ public class SetExpRole extends AbstractConditionableCommand {
     private ExperienceRoleService experienceRoleService;
 
     @Autowired
-    private RoleManagementService roleManagementService;
-
-    @Autowired
     private RoleService roleService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
-        Long roleId = (Long) commandContext.getParameters().getParameters().get(1);
-        Optional<ARole> roleOpt = roleManagementService.findRole(roleId, commandContext.getUserInitiatedContext().getServer());
-        if(roleOpt.isPresent()) {
-            ARole role = roleOpt.get();
-            AServer server = commandContext.getUserInitiatedContext().getServer();
-            if(!roleService.isRoleInServer(role)) {
-                throw new RoleNotFoundInGuildException(role.getId(), server.getId());
-            }
-            log.info("Setting role  {} to be used for level {} on server {}", roleId, level, server.getId());
-            experienceRoleService.setRoleToLevel(role, level, server, commandContext.getUserInitiatedContext().getChannel());
-            return CommandResult.fromSuccess();
+        ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
+        AServer server = commandContext.getUserInitiatedContext().getServer();
+        if(!roleService.isRoleInServer(role)) {
+            throw new RoleNotFoundInGuildException(role.getId(), server.getId());
         }
-       return CommandResult.fromError(templateService.renderTemplate("could_not_find_role", new Object()));
+        log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, server.getId());
+        experienceRoleService.setRoleToLevel(role, level, commandContext.getUserInitiatedContext().getChannel());
+        return CommandResult.fromSuccess();
     }
 
     @Override

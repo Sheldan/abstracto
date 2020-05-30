@@ -41,7 +41,10 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
      * @param level The level to calculate the experience amount for
      * @return The needed experience to reach this level, if the user already has the level below the passed one
      */
-    private Long calculateExperienceForLevel(Integer level) {
+    public Long calculateExperienceForLevel(Integer level) {
+        if(level < 0) {
+            throw new IllegalArgumentException("Level should not be less to 0.");
+        }
         return 5L * (level * level) + 50 * level + 100;
     }
 

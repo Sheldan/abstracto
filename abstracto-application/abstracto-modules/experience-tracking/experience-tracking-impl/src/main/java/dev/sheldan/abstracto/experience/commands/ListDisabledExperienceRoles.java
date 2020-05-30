@@ -35,6 +35,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<ADisabledExpRole> disabledRolesForServer = disabledExpRoleManagementService.getDisabledRolesForServer(commandContext.getUserInitiatedContext().getServer());
         DisabledExperienceRolesModel disabledExperienceRolesModel = (DisabledExperienceRolesModel) ContextConverter.fromCommandContext(commandContext, DisabledExperienceRolesModel.class);
         disabledRolesForServer.forEach(aDisabledExpRole -> {

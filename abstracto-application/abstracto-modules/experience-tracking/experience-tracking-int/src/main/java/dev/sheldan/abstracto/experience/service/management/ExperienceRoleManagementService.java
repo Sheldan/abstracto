@@ -19,9 +19,9 @@ public interface ExperienceRoleManagementService {
      * the new level.
      * @param level The {@link AExperienceLevel} to set the role for
      * @param role The {@link ARole} to set to
-     * @param server The {@link AServer} in which this should happen.
+     * @return the created or updated {@link AExperienceRole}
      */
-    void setLevelToRole(AExperienceLevel level, ARole role, AServer server);
+    AExperienceRole setLevelToRole(AExperienceLevel level, ARole role);
 
     /**
      * Deletes *all* (if there are multiple by some chance) roles which were set to be given at the provided {@link AExperienceLevel} in the {@link AServer}
@@ -39,10 +39,9 @@ public interface ExperienceRoleManagementService {
     /**
      * Retrieves the {@link AExperienceRole} which uses the given {@link ARole} in the {@link AServer}
      * @param role The {@link ARole} to search for
-     * @param server The {@link AServer} in which to search in
-     * @return
+     * @return the {@link AExperienceRole} which uses the given {@link ARole}
      */
-    AExperienceRole getRoleInServer(ARole role, AServer server);
+    AExperienceRole getRoleInServer(ARole role);
 
     /**
      * Retrives all {@link AExperienceRole} configured in the given {@link AServer}

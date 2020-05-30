@@ -22,8 +22,7 @@ public class DisabledExpRoleManagementServiceBean implements DisabledExpRoleMana
                 .role(role)
                 .build();
 
-        disabledExpRoleRepository.save(newRole);
-        return newRole;
+        return disabledExpRoleRepository.save(newRole);
     }
 
     @Override

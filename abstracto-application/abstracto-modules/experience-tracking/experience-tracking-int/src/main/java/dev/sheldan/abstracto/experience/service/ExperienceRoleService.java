@@ -17,18 +17,16 @@ public interface ExperienceRoleService {
      * Creates an {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole} according to the given
      * parameters
      * @param role The {@link ARole} to set the level to
-     * @param level The level the {@link ARole} should be awareded at
-     * @param server The {@link AServer} for which this configuration should be done
+     * @param level The level the {@link ARole} should be awarded at
      */
-    void setRoleToLevel(ARole role, Integer level, AServer server, AChannel channel);
+    void setRoleToLevel(ARole role, Integer level, AChannel channel);
 
     /**
      * Removes the role from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole} configuration
      * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}
      *             configuration
-     * @param server The {@link AServer} for which the {@link ARole} should be removed from the configuration
      */
-    void unsetRole(ARole role, AServer server, AChannel feedbackChannel);
+    void unsetRole(ARole role, AChannel feedbackChannel);
 
     /**
      * Calculates the appropriate {@link AExperienceRole} based on the provided list of {@link AExperienceRole}

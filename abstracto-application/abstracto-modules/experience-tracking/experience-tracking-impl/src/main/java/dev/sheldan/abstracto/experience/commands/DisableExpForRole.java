@@ -24,7 +24,9 @@ public class DisableExpForRole extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
+        checkParameters(commandContext);
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        ARole role = (ARole) parameters.get(0);
         if(!disabledExpRoleManagementService.isExperienceDisabledForRole(role)) {
             disabledExpRoleManagementService.setRoleToBeDisabledForExp(role);
         }

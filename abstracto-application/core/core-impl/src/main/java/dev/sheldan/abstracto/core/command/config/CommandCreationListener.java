@@ -44,7 +44,7 @@ public class CommandCreationListener {
                 log.warn("Command {} has null configuration.", command);
                 return;
             }
-            if(commandService.doesCommandExist(command.getConfiguration().getName())) {
+            if(!commandService.doesCommandExist(command.getConfiguration().getName())) {
                 commandService.createCommand(command.getConfiguration().getName(), command.getConfiguration().getModule(), command.getFeature());
             }
         });
