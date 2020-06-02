@@ -3,8 +3,8 @@
 The core feature contains necessary commands in order for Abstracto to function and be configured.
 
 ==== Emotes
-* as a reaction in case the command completed successfully `successReaction`
-* as a reaction in case the command did not complete successfully `warnReaction`
+* reaction emote in case the command completed successfully `successReaction`
+* reaction emote in case the command did not complete successfully `warnReaction`
 
 ==== Commands
 Help::
@@ -57,7 +57,7 @@ Adding a channel to a channel group::
 * Usage: `addToChannelGroup <groupName> <channel>`
 * Description: Adds the `channel` to the channel group identified by the `groupName`. It is not possible for a channel to be in a group twice.
 * Aliases: `addTChGrp`, `chGrpCh+`
-* Example: `addToChannelGroup group1 #general` to add the channel #general to the group group1
+* Example: `addToChannelGroup group1 #general` to add the channel #general to the group `group1`
 Removing a channel from a channel group::
 * Usage: `removeFromChannelGroup <groupName> <channel>`
 * Description: Removes the `channel` from the channel group identified by `groupName`.
@@ -65,14 +65,14 @@ Removing a channel from a channel group::
 * Example: `removeFromChannelGroup group1 #general` to remove the channel #general from the group `group1`
 Deleting a channel group::
 * Usage: `deleteChannelGroup <key>`
-* Description: Deletes the channel group identifies by `key`. This will also remove all associated channels from this group. This command fails, if the group is used in other features and referenced.
+* Description: Deletes the channel group identified by `key`. This will also remove all associated channels from this group. This command fails, if the group is used in other features and referenced.
 * Aliases: `-ChGroup`
 Disabling a command in a group::
 * Usage: `disableCommand <commandName> <groupName>`
 * Description: Disables the command identified by `commandName` in the channel group `groupName`. A command is considered disabled in a specified channel, if the command is disabled in *all* the groups the channel is in.
 * Example: `disableCommand warn group1` to disable the command `warn` in the group `group1`
 Enabling a command in a group::
-* Usage: `enableCommand <commandname> <groupName>`
+* Usage: `enableCommand <commandName> <groupName>`
 * Description: Enables the command identified by `commandName` in the channel group `groupName`. A command is considered enabled in a specified channel, if the command is enabled in *any* the groups the channel is in.
 * Example: `enableCommand warn group1` to enable the command `warn` in the group `group1`
 Showing all available channel groups and the respective channels::
@@ -101,9 +101,12 @@ Make a role immune against a command::
 Enforce the role restrictions of commands::
 * Usage: `restrict <featureName|commandName>`
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
-Changing the mode of a feature:
+Changing the mode of a feature::
 * Usage: `setMode <featureName> <newMode>`
 * Description: Changes the mode of feature `featureName` to `newMode`.
+Setting up a feature with an interactive wizard::
+Usage: `setup <featureName>`
+* Description: Starts an interactive wizard to configure the necessary properties and post targets of a feature. Also includes custom steps. Closes with a summary page to see all changes.
 
 
 .What does it mean if a role is immune?

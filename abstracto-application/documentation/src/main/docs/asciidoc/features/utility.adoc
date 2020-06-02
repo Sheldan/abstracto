@@ -88,6 +88,18 @@ Retrieving the URL of an emote::
 * Usage `showEmote <emote>`
 * Description: Posts the name of the emote accompanied with the URL where the image of the emote is stored.
 
+Displaying the avatar or a member::
+* Usage: `showAvatar [member]`
+* Description: Displays the avatar of the given member accompanied with a URL to access it directly. If no member is provided, the member executing will be used.
+
+Displaying information about members::
+* Usage: `userInfo [member]`
+* Description: Displays information about a member including: username, ID, activity, nickname (if any), date joined the server and date registered on discord.
+
+Displaying information about server::
+* Usage: `serverInfo`
+Description: Displays information about the server including: ID, server name, owner, member count, creation date, role count, server features and custom emotes of the server.
+
 === Link embeds
 
 ==== Emotes

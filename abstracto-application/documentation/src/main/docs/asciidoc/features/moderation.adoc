@@ -29,7 +29,6 @@ Change the slow mode in a channel::
 * Usage: `slowmode <duration> [channel]`
 * Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
 * Example: `slowMode 1h2m3s #general` in order to set the slow mode in channel `general` to 1 hour 2 minutes and 3 seconds (the #general is a user mention)
-* Required bot permission: `MANAGE_CHANNEL` in the respective channel
 
 === Warning
 
@@ -53,7 +52,7 @@ Listing the warnings of users::
 This uses a paginated output, which means multiple pages in case there are more warnings to display. This will also display the date the warning was decayed if applicable.
 Showing your warnings::
 * Usage: `myWarnings`
-* Description: Displays the warnings of the user executing on the server. This will show both active and total warnings.
+* Description: Displays the amount of warnings of the user executing on the server. This will show both active and total warnings.
 Decaying all warnings regardless of the date::
 * Usage: `decayAllWarnings [writeLog]`
 * Description: This will cause all warnings of this server which are not decayed yet to be decayed instantly. If this command should log the decaying of the warnings

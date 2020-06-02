@@ -2,6 +2,10 @@
 
 This feature enables users to contact the moderation of the server in a private manner. This can be initiated by messaging the Abstracto bot.
 
+Feature key: `modmail`
+
+==== Necessary bot permissions
+`MANAGE_CHANNEL` to create the channels representing the mod mail threads
 
 ==== Workflow
 * User messages the Abstracto bot
@@ -12,8 +16,6 @@ This feature enables users to contact the moderation of the server in a private 
 * Moderators close the thread
 * The interactions between the user and the moderators gets logged in the mod mail logging channel
 
-Feature key: `modmail`
-
 ==== Relevant system configuration
 `modmailCategory`:: The category on the server which is used to hold the text channels representing the threads
 `modMailClosingText`::The text being used when notifying the user when a thread is closed.
@@ -22,7 +24,7 @@ Feature key: `modmail`
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
 `modmailLog`:: Will be used to log the interactions when a thread is closed.
 
-=== Modes
+==== Modes
 `log`:: The messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands)
 `nogLog`:: The messages should not be logged into the `modmailLog` post target when the thread is closed.
 

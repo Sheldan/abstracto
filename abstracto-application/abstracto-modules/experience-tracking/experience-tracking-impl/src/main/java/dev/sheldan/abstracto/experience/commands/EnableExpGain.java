@@ -39,7 +39,7 @@ public class EnableExpGain extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("user").templated(true).type(Member.class).build());
+        parameters.add(Parameter.builder().name("member").templated(true).type(Member.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("enableExpGain")

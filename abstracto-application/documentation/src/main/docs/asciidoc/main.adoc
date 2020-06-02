@@ -14,7 +14,7 @@ This documentation is split into two parts: Technical documentation and user doc
 == Glossary
 
 Post target:: Describes the channel where Abstracto will send specific messages to. For example, the command `ban` sends a message containing information about the ban to the `banLog` post target.
-Post targets can be configured with the command `posttarget` and once defined can only be switched to another channel.
+Post targets can be configured with the command `posttarget` and once defined can only be switched to another channel. The bot needs `MESSAGE_WRITE` in the channel in order to send the messages.
 Decayed warnings:: Warnings have a decayed property, which means it can be marked as inactive, while the warning itself is not deleted.
 
 == General information
@@ -30,7 +30,8 @@ In the respective features they are noted under `Relevant system configuration`.
 In order to change this you need to use the command `setConfig` with the provided key and the new desired value.
 Emotes:: The features have section of the keys of used emotes in the feature, you can change this emote with the `setEmote` command.
 Feature Modes:: Features can have different modes. This means, a feature behaves differently if the mode is changed. For example: `modmail` has two modes: `log` and `noLog`.
-In the mode `log` mod mail threads wil be logged into the post target `modmailLog` while in the other mode, this does not happen. This consideration of the modes does depend on the implementation of the features.
+In the mode `log` mod mail threads will be logged into the post target `modmailLog` while in the `noLog` mode, this does not happen. This consideration of the modes does depend on the implementation of the features.
+
 == Features
 
 include::features/core.adoc[]

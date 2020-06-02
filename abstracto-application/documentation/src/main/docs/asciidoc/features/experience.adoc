@@ -4,6 +4,9 @@ This feature contains the ability to track experience of users on the server and
 The experience is awarded once per minute and is calculated by asciimath:[`\text{rand}(\text{minExp}, \text{maxExp}) * \text{expScale}`].
 Only one role is awarded at a time and the past unlocked roles are not given to the members.
 
+==== Necessary bot permissions
+`MANAGE_ROLES` in order to award members with roles
+
 ==== Relevant system configuration
 `minExp` The lower bound of the awarded base experience. Default: 10.
 
@@ -42,3 +45,25 @@ Remove a role from being awarded at a certain level::
 * Usage: `unSetExpRole <role>`
 * Description: Removes this role from the experience tracking, removes the role from all members previously owning it and recalculates their new role according to the configuration.
 This will provide a status update message displaying the process.
+
+Disable experience gain for a certain role::
+* Usage: `disableExpForRole <role>`
+* Description: Disables any experience gain for members with this role. They will not gain any experience until the role is removed or it is possible for the role to gain experience again.
+If a member has *any* role of the ones for which experience is disabled, the member will not gain experience.
+
+Enable experience gain for a certain role::
+* Usage: `enableExpForRole <role>`
+* Description: Enables experience gain for members with this role again.
+
+List roles for which experience gain is disabled::
+* Usage: `listDisabledExperienceRoles`
+* Description: Lists the roles for which experience gain is disabled on this server.
+* Aliases: `lsDisEpRoles`
+
+Disable experience gain for specific member::
+* Usage: `disableExpGain <member>`
+* Description: Disables the ability to gain experience for this certain member.
+
+Enable experience gain for specific member::
+* Usage: `enableExpGain <member>`
+* Description: Enables the ability to gain experience for this certain member.

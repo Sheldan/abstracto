@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -54,11 +55,13 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        List<String> aliases = Arrays.asList("lsDisEpRoles");
         return CommandConfiguration.builder()
                 .name("listDisabledExperienceRoles")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
                 .causesReaction(true)
+                .aliases(aliases)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
