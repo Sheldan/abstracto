@@ -1,13 +1,14 @@
 = Abstracto Discord Bot Documentation
-Sheldan https://github.com/Sheldan
-1.0, May 10, 2020
+Sheldan https://github.com/Sheldan/abstracto
 :toc:
 :toclevels: 5
 :sectnums:
+:title-page:
 
 :sectnumlevels: 5
 :icons: font
 
+== Description
 Abstracto is a feature rich Discord bot written in Java and uses JDA as the wrapper for the Discord API.
 This documentation is split into two parts: Technical documentation and user documentation.
 

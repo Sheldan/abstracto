@@ -1,4 +1,4 @@
-name: Publish package to GitHub Packages
+name: Publish package to GitHub Packages and deploy documentation to GitHub pages
 on:
   release:
     types: [created]
@@ -7,11 +7,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - name: Set up Java for publishing to GitHub Packages
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Load current version
+        id: version
+        run: echo "::set-output name=version::$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)"
       - name: Publish to GitHub Packages
-        run: mvn -f abstracto-application/pom.xml -B deploy
+        run: mvn -B deploy -P documentation -Dmaven.wagon.http.pool=false -DskipTests=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install SSH Client
+        uses: webfactory/ssh-agent@v0.3.0
+        with:
+          ssh-private-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+      - name: Deploy documentation to GitHub pages
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          REPOSITORY_NAME: Sheldan/abstracto-docs
+          TARGET_FOLDER: docs/${{ steps.version.outputs.version }}
+          BRANCH: master
+          SSH: true
+          FOLDER: abstracto-application/documentation/target/generated-docs

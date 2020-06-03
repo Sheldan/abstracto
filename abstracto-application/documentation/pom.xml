@@ -44,6 +44,8 @@
                             <sourceDirectory>src/main/docs/asciidoc</sourceDirectory>
                             <sourceDocumentName>main.adoc</sourceDocumentName>
                             <attributes>
+                                <revnumber>${project.version}</revnumber>
+                                <revdate>${maven.build.timestamp}</revdate>
                             </attributes>
                         </configuration>
                         <executions>
@@ -56,6 +58,7 @@
                                 <configuration>
                                     <backend>pdf</backend>
                                     <sourceHighlighter>coderay</sourceHighlighter>
+                                    <outputFile>documentation.pdf</outputFile>
                                     <attributes>
                                         <icons>font</icons>
                                         <pagenums/>
@@ -72,6 +75,7 @@
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
+                                    <outputFile>index.html</outputFile>
                                     <sourceDirectory>src/main/docs/asciidoc</sourceDirectory>
                                     <backend>html</backend>
                                     <doctype>book</doctype>

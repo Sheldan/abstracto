@@ -27,13 +27,9 @@
         <module>coverage</module>
     </modules>
 
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/Sheldan/abstracto</url>
-        </repository>
-    </distributionManagement>
+    <properties>
+        <maven.build.timestamp.format>yyyy/MM/dd HH:mm</maven.build.timestamp.format>
+    </properties>
 
     <build>
 
