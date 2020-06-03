@@ -19,6 +19,14 @@ public interface TemplateService {
     MessageToSend renderEmbedTemplate(String key, Object model);
 
     /**
+     * Renders the given template directly into a {@link MessageToSend} but the template only represents a text message.
+     * @param key The key of the string template to be rendered.
+     * @param model The model used to render the template
+     * @return A {@link MessageToSend} instance only containing the string property.
+     */
+    MessageToSend renderTemplateToMessageToSend(String key, Object model);
+
+    /**
      * Renders the template identified by the key with the given {@link HashMap} used as model and returns the value as a string
      * @param key The key of the template to be rendered.
      * @param parameters The {@link HashMap} to be used as the parameters for the template

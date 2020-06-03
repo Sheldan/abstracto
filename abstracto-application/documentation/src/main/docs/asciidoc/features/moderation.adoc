@@ -29,6 +29,11 @@ Change the slow mode in a channel::
 * Usage: `slowmode <duration> [channel]`
 * Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
 * Example: `slowMode 1h2m3s #general` in order to set the slow mode in channel `general` to 1 hour 2 minutes and 3 seconds (the #general is a user mention)
+Purging messages in a channel::
+* Usage: `purge <messageCount> [member]`
+* Description: Deletes the last `messageCount` messages in the current channel. If a `member` is provided as parameter, only the messages by this member
+will be deleted. The deletion of this messages will *not* be logged by the logging mechanism. The messages to be deleted need to be from within the last 2 weeks, but there is no limit on how much messages can be deleted besides that.
+While the command is ongoing, a status update message will be shown indicating how far the command is. This message will be deleted after the command is done.
 
 === Warning
 

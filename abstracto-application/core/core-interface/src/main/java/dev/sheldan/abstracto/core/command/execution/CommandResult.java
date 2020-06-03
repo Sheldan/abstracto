@@ -19,6 +19,10 @@ public class CommandResult {
         return CommandResult.builder().result(ResultState.SUCCESSFUL).build();
     }
 
+    public static CommandResult fromSelfDestruct() {
+        return CommandResult.builder().result(ResultState.SELF_DESTRUCT).build();
+    }
+
     public static CommandResult fromError(String message){
         return CommandResult.builder().result(ResultState.ERROR).message(message).build();
     }

@@ -1,0 +1,1 @@
+<#include "purge_status_update_message">

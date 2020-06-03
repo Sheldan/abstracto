@@ -114,6 +114,11 @@ public class TemplateServiceBean implements TemplateService {
                 .build();
     }
 
+    @Override
+    public MessageToSend renderTemplateToMessageToSend(String key, Object model) {
+        return MessageToSend.builder().message(renderTemplate(key, model)).build();
+    }
+
     private void createFieldsForEmbed(List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
         for (int i = 0; i < configuration.getFields().size(); i++) {
             EmbedField field = configuration.getFields().get(i);

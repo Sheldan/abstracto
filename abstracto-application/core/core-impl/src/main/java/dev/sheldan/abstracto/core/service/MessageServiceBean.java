@@ -84,7 +84,22 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, MessageChannel channel) {
+        return channelService.sendMessageToSendToChannel(messageToSend, channel).get(0);
+    }
+
+    @Override
+    public CompletableFuture<Long> createStatusMessageId(MessageToSend messageToSend, MessageChannel channel) {
+        return channelService.sendMessageToSendToChannel(messageToSend, channel).get(0).thenApply(ISnowflake::getIdLong);
+    }
+
+    @Override
     public void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend) {
+        channelService.editMessageInAChannel(messageToSend, channel, messageId);
+    }
+
+    @Override
+    public void updateStatusMessage(MessageChannel channel, Long messageId, MessageToSend messageToSend) {
         channelService.editMessageInAChannel(messageToSend, channel, messageId);
     }
 
