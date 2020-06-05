@@ -31,4 +31,5 @@ public interface ChannelService {
     List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
+    Optional<TextChannel> getChannelFromAChannel(AChannel channel);
 }

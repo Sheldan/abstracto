@@ -7,7 +7,12 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.template.commands.PostTargetDisplayModel;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetErrorModel;
+import dev.sheldan.abstracto.core.models.template.commands.PostTargetModelEntry;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -18,14 +23,16 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
-public class PostTarget extends AbstractConditionableCommand {
+public class PostTargetCommand extends AbstractConditionableCommand {
 
-    public static final String POST_TARGET_NO_TARGET_TEMPLATE = "posttarget_no_target";
+    public static final String POST_TARGET_SHOW_TARGETS = "posttarget_show_targets";
     public static final String POST_TARGET_INVALID_TARGET_TEMPLATE = "posttarget_invalid_target";
 
     @Autowired
@@ -37,13 +44,32 @@ public class PostTarget extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
-            PostTargetErrorModel postTargetErrorModel = (PostTargetErrorModel) ContextConverter.fromCommandContext(commandContext, PostTargetErrorModel.class);
-            postTargetErrorModel.setValidPostTargets(postTargetService.getAvailablePostTargets());
-            String errorMessage = templateService.renderTemplate(POST_TARGET_NO_TARGET_TEMPLATE, postTargetErrorModel);
-            return CommandResult.fromError(errorMessage);
+            PostTargetDisplayModel posttargetDisplayModel = (PostTargetDisplayModel) ContextConverter.fromCommandContext(commandContext, PostTargetDisplayModel.class);
+            AServer server = commandContext.getUserInitiatedContext().getServer();
+            List<PostTarget> postTargets = postTargetService.getPostTargets(server);
+            posttargetDisplayModel.setPostTargets(new ArrayList<>());
+            List<PostTargetModelEntry> postTargetEntries = posttargetDisplayModel.getPostTargets();
+            postTargets.forEach(target -> {
+                Optional<TextChannel> channelFromAChannel = channelService.getChannelFromAChannel(target.getChannelReference());
+                PostTargetModelEntry targetEntry = PostTargetModelEntry.builder().channel(channelFromAChannel.orElse(null)).postTarget(target).build();
+                postTargetEntries.add(targetEntry);
+            });
+            List<String> postTargetConfigs = postTargetService.getPostTargetsOfEnabledFeatures(server);
+            postTargetConfigs.forEach(postTargetName -> {
+                if(postTargetEntries.stream().noneMatch(postTargetModelEntry -> postTargetModelEntry.getPostTarget().getName().equalsIgnoreCase(postTargetName))) {
+                    PostTarget fakeEntry = PostTarget.builder().name(postTargetName).build();
+                    PostTargetModelEntry postTargetEntry = PostTargetModelEntry.builder().postTarget(fakeEntry).build();
+                    postTargetEntries.add(postTargetEntry);
+                }
+            });
+            channelService.sendEmbedTemplateInChannel(POST_TARGET_SHOW_TARGETS, posttargetDisplayModel, commandContext.getChannel());
+            return CommandResult.fromSuccess();
         }
         String targetName = (String) commandContext.getParameters().getParameters().get(0);
         if(!postTargetService.validPostTarget(targetName)) {

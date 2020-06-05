@@ -1,1 +1,0 @@
-<#include "posttarget_available_post_targets">: ${validPostTargets?join(", ")}.

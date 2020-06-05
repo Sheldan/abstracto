@@ -37,6 +37,7 @@ Changing the prefix::
 Changing a post target::
 * Usage: `posttarget <key> <channel>`
 * Description: Changes the given post target identified by `key` to the given channel. All messages using this post target will be send to this channel from now on.
+If neither `key` nor `channel` is given, this will print the currently available post targets and the channels they point to, if set.
 * Example: `posttarget banLog #general` to log the bans in the #general channel.
 Listing the features::
 * Usage: `features`

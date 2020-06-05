@@ -1,11 +1,13 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -18,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +41,12 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Autowired
     private ChannelService channelService;
+
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
@@ -190,7 +199,24 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
+    public List<PostTarget> getPostTargets(AServer server) {
+        return postTargetManagement.getPostTargetsInServer(server);
+    }
+
+    @Override
     public List<String> getAvailablePostTargets() {
         return dynamicKeyLoader.getPostTargetsAsList();
+    }
+
+    @Override
+    public List<String> getPostTargetsOfEnabledFeatures(AServer server) {
+        List<String> postTargets = new ArrayList<>();
+        List<FeatureConfig> allFeatureConfigs = featureConfigService.getAllFeatureConfigs();
+        allFeatureConfigs.forEach(featureConfig -> {
+            if(featureFlagService.isFeatureEnabled(featureConfig, server)) {
+                featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> postTargets.add(postTargetEnum.getKey()));
+            }
+        });
+        return postTargets;
     }
 }

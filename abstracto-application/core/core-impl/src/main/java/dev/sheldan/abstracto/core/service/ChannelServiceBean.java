@@ -200,4 +200,9 @@ public class ChannelServiceBean implements ChannelService {
         }
         throw new GuildException(server.getId());
     }
+
+    @Override
+    public Optional<TextChannel> getChannelFromAChannel(AChannel channel) {
+        return botService.getTextChannelFromServer(channel.getServer().getId(), channel.getId());
+    }
 }

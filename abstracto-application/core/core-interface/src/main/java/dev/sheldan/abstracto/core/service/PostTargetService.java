@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,5 +25,7 @@ public interface PostTargetService {
     void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTarget, Long serverId, List<CompletableFuture<Message>> future);
     void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId);
     boolean validPostTarget(String name);
+    List<PostTarget> getPostTargets(AServer server);
     List<String> getAvailablePostTargets();
+    List<String> getPostTargetsOfEnabledFeatures(AServer server);
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
+import java.util.List;
 
 @Repository
 public interface PostTargetRepository extends JpaRepository<PostTarget, Long> {
@@ -15,5 +16,7 @@ public interface PostTargetRepository extends JpaRepository<PostTarget, Long> {
     PostTarget findPostTargetByNameAndServerReference(String name, AServer server);
 
     boolean existsByNameAndServerReference(String name, AServer server);
+
+    List<PostTarget> findByServerReference(AServer server);
 
 }

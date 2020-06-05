@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -95,6 +96,11 @@ public class PostTargetManagementBean implements PostTargetManagement {
     public PostTarget updatePostTarget(PostTarget target, AServer server, AChannel newTargetChannel) {
         target.setChannelReference(newTargetChannel);
         return target;
+    }
+
+    @Override
+    public List<PostTarget> getPostTargetsInServer(AServer server) {
+        return postTargetRepository.findByServerReference(server);
     }
 
 }
