@@ -4,9 +4,11 @@ import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
 
+@Repository
 public interface ConfigRepository extends JpaRepository<AConfig, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))

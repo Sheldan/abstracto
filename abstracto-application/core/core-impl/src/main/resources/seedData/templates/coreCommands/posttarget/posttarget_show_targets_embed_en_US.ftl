@@ -1,6 +1,6 @@
 {
   "title": {
-    "title": "<#include "posttarget_embed_title">""
+    "title": "<#include "posttarget_embed_title">"
   },
   "color" : {
     "r": 200,

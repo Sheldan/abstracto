@@ -72,6 +72,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
                     .builder()
                     .experience(experience)
                     .messageCount(messageCount)
+                    .experienceGainDisabled(false)
                     .user(user)
                     .id(user.getUserInServerId())
                     .currentLevel(startingLevel)
