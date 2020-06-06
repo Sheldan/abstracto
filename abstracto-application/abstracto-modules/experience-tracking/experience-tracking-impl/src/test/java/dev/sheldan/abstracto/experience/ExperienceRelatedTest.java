@@ -23,17 +23,17 @@ public abstract class ExperienceRelatedTest {
         return experiences;
     }
 
-    protected AUserExperience getUserExperienceObject(AServer server, int i) {
-        AUserInAServer userObject = MockUtils.getUserObject((long)i, server);
+    protected AUserExperience getUserExperienceObject(AServer server, long i) {
+        AUserInAServer userObject = MockUtils.getUserObject(i, server);
         AExperienceLevel level = AExperienceLevel
                 .builder()
-                .level(i)
-                .experienceNeeded((long) i * 100)
+                .level((int)i)
+                .experienceNeeded(i * 100)
                 .build();
         return AUserExperience
                 .builder()
                 .user(userObject)
-                .experience((long) i)
+                .experience(i)
                 .currentLevel(level)
                 .build();
     }

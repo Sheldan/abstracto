@@ -18,6 +18,9 @@ public interface StarboardPostRepository extends JpaRepository<StarboardPost, Lo
     StarboardPost findByStarboardMessageId(Long messageId);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    boolean existsByStarboardMessageId(Long messageId);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<StarboardPost> findByStarboardChannelServerId(Long serverId);
 
 }

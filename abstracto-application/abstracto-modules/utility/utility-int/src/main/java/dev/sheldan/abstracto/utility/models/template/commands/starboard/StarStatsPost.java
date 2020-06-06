@@ -1,8 +1,6 @@
 package dev.sheldan.abstracto.utility.models.template.commands.starboard;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
-import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,16 +16,5 @@ public class StarStatsPost {
 
     public String getMessageUrl() {
         return MessageUtils.buildMessageUrl(serverId ,channelId, messageId);
-    }
-
-    public static StarStatsPost fromStarboardPost(StarboardPost starboardPost) {
-        AChannel channel = starboardPost.getStarboardChannel();
-        return StarStatsPost
-                .builder()
-                .serverId(channel.getServer().getId())
-                .channelId(channel.getId())
-                .messageId(starboardPost.getPostMessageId())
-                .starCount(starboardPost.getReactions().size())
-                .build();
     }
 }

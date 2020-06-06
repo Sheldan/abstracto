@@ -20,7 +20,8 @@ public class StarboardFeatureValidatorService implements StarboardFeatureValidat
 
     @Override
     public void featureIsSetup(FeatureConfig featureConfig, AServer server, FeatureValidationResult validationResult) {
-        for(int i = starboardConfig.getLvl().size(); i > 0; i--) {
+        int levelAmount = starboardConfig.getLvl().size();
+        for(int i = 1; i <= levelAmount; i++) {
             featureValidatorService.checkSystemConfig("starLvl" + i, server, validationResult);
         }
     }

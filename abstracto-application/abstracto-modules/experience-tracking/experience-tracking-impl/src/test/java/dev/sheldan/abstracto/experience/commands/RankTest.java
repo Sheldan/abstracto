@@ -14,7 +14,6 @@ import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -45,14 +44,11 @@ public class RankTest {
     @Mock
     private ChannelService channelService;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test
     public void testRankExecution() {
         int currentLevelValue = 50;
         long currentExperience = 50L;
-        CommandContext context = CommandTestUtilities.getNoParameters(jda);
+        CommandContext context = CommandTestUtilities.getNoParameters();
         AExperienceLevel currentLevel = AExperienceLevel.builder().level(currentLevelValue).build();
         AUserExperience aUserExperience = AUserExperience.builder().experience(currentExperience).currentLevel(currentLevel).build();
         LeaderBoardEntry leaderBoardEntry = LeaderBoardEntry.builder().experience(aUserExperience).build();

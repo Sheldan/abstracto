@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -93,4 +95,37 @@ public class EmoteServiceBean implements EmoteService {
     public String getDefaultEmote(String emoteKey) {
         return keyLoader.getDefaultEmotes().get(emoteKey);
     }
+
+    @Override
+    public boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote, Emote actualEmoteInGuild) {
+        if(reaction.isEmote() && storedEmote.getCustom()) {
+            if(actualEmoteInGuild != null) {
+                return actualEmoteInGuild.equals(reaction.getEmote());
+            } else {
+                return false;
+            }
+        } else if(reaction.isEmoji()){
+            return reaction.getEmoji().equals(storedEmote.getEmoteKey());
+        }
+        return false;
+    }
+
+    @Override
+    public Optional<CachedReaction> getReactionFromMessageByEmote(CachedMessage message, AEmote emote) {
+        return message.getReactions().stream().filter(reaction -> compareAEmote(reaction.getEmote(), emote)).findFirst();
+    }
+
+    @Override
+    public boolean compareAEmote(AEmote a, AEmote b) {
+        if(Boolean.TRUE.equals(a.getCustom()) && Boolean.TRUE.equals(b.getCustom())) {
+            return a.getEmoteId().equals(b.getEmoteId());
+        } else {
+            if(Boolean.FALSE.equals(a.getCustom()) && Boolean.FALSE.equals(b.getCustom())) {
+                return a.getEmoteKey().equals(b.getEmoteKey());
+            } else {
+                return false;
+            }
+        }
+    }
+
 }

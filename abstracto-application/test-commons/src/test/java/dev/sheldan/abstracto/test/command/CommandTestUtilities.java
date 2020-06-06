@@ -9,11 +9,12 @@ import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.test.MockUtils;
-import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.GuildImpl;
-import net.dv8tion.jda.internal.entities.MemberImpl;
-import net.dv8tion.jda.internal.entities.TextChannelImpl;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.junit.Assert;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,32 +26,32 @@ public class CommandTestUtilities {
 
     }
 
-    public static void executeNoParametersTest(Command com, JDAImpl jda) {
-        CommandContext context = CommandTestUtilities.getNoParameters(jda);
+    public static void executeNoParametersTest(Command com) {
+        CommandContext context = CommandTestUtilities.getNoParameters();
         com.execute(context);
     }
 
-    public static void executeWrongParametersTest(Command com, JDAImpl jda) {
-        executeWrongParametersTest(com, jda, "");
+    public static void executeWrongParametersTest(Command com) {
+        executeWrongParametersTest(com, new ArrayList<>());
     }
 
-    public static void executeWrongParametersTest(Command com, JDAImpl jda, Object value) {
-        CommandContext context = CommandTestUtilities.getWithParameters(jda, Arrays.asList(value));
+    public static void executeWrongParametersTest(Command com, Object value) {
+        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(value));
         com.execute(context);
     }
 
-    public static CommandContext getNoParameters(JDAImpl jda) {
+    public static CommandContext getNoParameters() {
         AServer server = MockUtils.getServer();
         AUserInAServer author = MockUtils.getUserObject(3L, server);
         CommandContext context = CommandContext
                 .builder()
                 .build();
-        GuildImpl guild = MockUtils.getGuild(server, jda);
+        Guild guild = Mockito.mock(Guild.class);
         context.setGuild(guild);
-        MemberImpl member = MockUtils.getMockedMember(server, author, jda);
+        Member member = Mockito.mock(Member.class);
         context.setAuthor(member);
         long channelId = 4L;
-        TextChannelImpl mockedTextChannel = MockUtils.getMockedTextChannel(channelId, guild);
+        TextChannel mockedTextChannel = Mockito.mock(TextChannel.class);
         UserInitiatedServerContext userInitiatedContext = UserInitiatedServerContext
                 .builder()
                 .server(server)
@@ -62,15 +63,14 @@ public class CommandTestUtilities {
                 .messageChannel(mockedTextChannel)
                 .build();
         context.setUserInitiatedContext(userInitiatedContext);
-        context.setJda(jda);
         context.setChannel(mockedTextChannel);
         context.setParameters(Parameters.builder().parameters(new ArrayList<>()).build());
-        context.setMessage(MockUtils.buildMockedMessage(3L, "text", member));
+        context.setMessage(Mockito.mock(Message.class));
         return context;
     }
 
-    public static CommandContext getWithParameters(JDAImpl jda, List<Object> parameters) {
-        CommandContext context = getNoParameters(jda);
+    public static CommandContext getWithParameters(List<Object> parameters) {
+        CommandContext context = getNoParameters();
         context.getParameters().getParameters().addAll(parameters);
         return context;
     }

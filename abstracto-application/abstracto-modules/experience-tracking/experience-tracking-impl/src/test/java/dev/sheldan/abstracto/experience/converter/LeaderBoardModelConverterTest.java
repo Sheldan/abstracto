@@ -8,13 +8,14 @@ import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.test.MockUtils;
-import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.MemberImpl;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -30,9 +31,6 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
 
     @Mock
     private BotService botService;
-
-    @Mock
-    private JDAImpl jda;
 
     @Test
     public void testFromLeaderBoard() {
@@ -58,9 +56,13 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
     @Test
     public void testFromEntry() {
         AServer server = MockUtils.getServer();
-        AUserExperience experience = getUserExperienceObject(server, 3);
+        Long userId = 3L;
+        AUserExperience experience = getUserExperienceObject(server, userId);
         LeaderBoardEntry entry = LeaderBoardEntry.builder().experience(experience).rank(1).build();
-        MemberImpl member = MockUtils.getMockedMember(server, experience.getUser(), jda);
+        Member member = Mockito.mock(Member.class);
+        User user = Mockito.mock(User.class);
+        when(user.getIdLong()).thenReturn(userId);
+        when(member.getUser()).thenReturn(user);
         when(botService.getMemberInServer(server.getId(), experience.getUser().getUserReference().getId())).thenReturn(member);
         LeaderBoardEntryModel leaderBoardEntryModel = testUnit.fromLeaderBoardEntry(entry);
         Assert.assertEquals(1, leaderBoardEntryModel.getRank().intValue());

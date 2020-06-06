@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
@@ -45,6 +44,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
                 .builder()
                 .state(SuggestionState.NEW)
                 .suggester(suggester)
+                .server(suggester.getServerReference())
                 .suggestionDate(Instant.now())
                 .build();
         suggestionRepository.save(suggestion);
@@ -59,16 +59,14 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
 
     @Override
     public void setPostedMessage(Suggestion suggestion, Message message) {
-        suggestion.setMessageId(message.getIdLong());
-        long channelId = message.getTextChannel().getIdLong();
+        long channelId = message.getChannel().getIdLong();
         Optional<AChannel> channelOptional = channelManagementService.loadChannel(channelId);
         if(channelOptional.isPresent()) {
             suggestion.setChannel(channelOptional.get());
         } else {
             throw new ChannelNotFoundException(channelId, suggestion.getServer().getId());
         }
-        AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
-        suggestion.setServer(server);
+        suggestion.setMessageId(message.getIdLong());
         suggestionRepository.save(suggestion);
     }
 

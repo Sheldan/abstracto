@@ -1,10 +1,14 @@
 package dev.sheldan.abstracto.utility.service.management;
 
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.utility.exception.CrossServerEmbedException;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.repository.EmbeddedMessageRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +29,22 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
     @Transactional
-    public void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer cause) {
-        AServer embeddedServer = AServer.builder().id(embeddedMessage.getServerId()).build();
-        AChannel embeddedChannel = AChannel.builder().id(embeddedMessage.getChannelId()).build();
-        AServer embeddingServer = AServer.builder().id(messageContainingEmbed.getGuild().getIdLong()).build();
-        AChannel embeddingChannel = AChannel.builder().id(messageContainingEmbed.getTextChannel().getIdLong()).build();
+    public void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer embeddingUser) {
+        AServer embeddedServer = serverManagementService.loadOrCreate(embeddedMessage.getServerId());
+        AServer embeddingServer = serverManagementService.loadOrCreate(messageContainingEmbed.getGuild().getIdLong());
+        if(!embeddedServer.getId().equals(embeddingServer.getId())) {
+            throw new CrossServerEmbedException(String.format("Message %s is not from server %s", embeddedMessage.getMessageUrl(), embeddingServer.getId()));
+        }
+        AChannel embeddingChannel = channelManagementService.loadChannel(messageContainingEmbed.getChannel().getIdLong()).orElseThrow(() -> new ChannelNotFoundException(messageContainingEmbed.getChannel().getIdLong(), messageContainingEmbed.getGuild().getIdLong()));
+        AChannel embeddedChannel = channelManagementService.loadChannel(embeddedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(embeddedMessage.getChannelId(), embeddedMessage.getServerId()));
         AUserInAServer embeddedAuthor = userInServerManagementService.loadUser(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
         EmbeddedMessage messageEmbedPost = EmbeddedMessage
                 .builder()
@@ -42,7 +55,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
                 .embeddingChannel(embeddingChannel)
                 .embeddingMessageId(messageContainingEmbed.getIdLong())
                 .embeddedUser(embeddedAuthor)
-                .embeddingUser(cause)
+                .embeddingUser(embeddingUser)
                 .build();
 
         embeddedMessageRepository.save(messageEmbedPost);
@@ -54,14 +67,9 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
     }
 
     @Override
+    @Transactional
     public void deleteEmbeddedMessage(EmbeddedMessage embeddedMessage) {
        embeddedMessageRepository.delete(embeddedMessage);
-    }
-
-    @Override
-    @Transactional
-    public void deleteEmbeddedMessageTransactional(EmbeddedMessage embeddedMessage) {
-        this.deleteEmbeddedMessage(embeddedMessage);
     }
 
 }

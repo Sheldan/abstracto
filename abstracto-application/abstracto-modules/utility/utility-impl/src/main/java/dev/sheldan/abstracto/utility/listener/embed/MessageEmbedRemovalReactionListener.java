@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
@@ -47,7 +46,7 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
         MessageReaction.ReactionEmote reactionEmote = reaction.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         log.trace("Removing embed in message {} in channel {} in server {} because of a user reaction.", message.getMessageId(), message.getChannelId(), message.getServerId());
-        if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
             if(embeddedMessageOptional.isPresent()) {
                 EmbeddedMessage embeddedMessage = embeddedMessageOptional.get();
@@ -57,7 +56,7 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
                 ) {
                     messageService.deleteMessageInChannelInServer(message.getServerId(), message.getChannelId(), message.getMessageId()).thenAccept(aVoid ->{
                         Optional<EmbeddedMessage> innerOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
-                        innerOptional.ifPresent(value -> messageEmbedPostManagementService.deleteEmbeddedMessageTransactional(value));
+                        innerOptional.ifPresent(value -> messageEmbedPostManagementService.deleteEmbeddedMessage(value));
                     });
                 }
 

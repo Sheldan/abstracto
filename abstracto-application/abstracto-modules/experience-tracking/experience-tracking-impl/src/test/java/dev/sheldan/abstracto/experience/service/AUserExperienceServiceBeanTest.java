@@ -21,15 +21,12 @@ import dev.sheldan.abstracto.experience.service.management.UserExperienceManagem
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.MockUtils;
-import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.*;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.*;
@@ -73,9 +70,6 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
 
     @Mock
     private BotService botService;
-
-    @Mock
-    private JDAImpl jda;
 
     @Mock
     private RunTimeExperienceService runTimeExperienceService;
@@ -159,7 +153,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         levels.add(AExperienceLevel.builder().level(4).experienceNeeded(400L).build());
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AExperienceRole previousExperienceRole = experienceRoles.get(3);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 401L, 3, previousExperienceRole, false);
@@ -183,7 +177,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 101L, 1, null, false);
 
@@ -202,7 +196,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, null, false);
 
@@ -221,7 +215,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, experienceRoles.get(0), false);
 
@@ -243,7 +237,6 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MockUtils.getMockedMember(serverToUse, userToUse, jda);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, experienceRoles.get(0), true);
 
         testUnit.handleExperienceGain(servers);
@@ -262,7 +255,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, experienceRoles.get(0), false);
         when(botService.getMemberInServer(userToUse)).thenReturn(jdaMember);
         when(roleService.hasAnyOfTheRoles(eq(jdaMember), anyList())).thenReturn(true);
@@ -282,7 +275,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 101L, 1, experienceRoles.get(1), false);
         when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(experienceRoles.get(1));
@@ -311,7 +304,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
             List<AExperienceRole> experienceRoles = getExperienceRoles(levels, aServer);
             mockSimpleServer(levels, experienceRoles, aServer);
             AUserInAServer userToUse = aServer.getUsers().get(0);
-            MemberImpl jdaMember = MockUtils.getMockedMember(aServer, userToUse, jda);
+            Member jdaMember = Mockito.mock(Member.class);
             when(botService.getMemberInServer(aServer, userToUse.getUserReference())).thenReturn(jdaMember);
             AExperienceRole role = experienceRoles.get(experienceRoleIndices.get(i));
             AUserExperience newUserExperience = mockServerWithSingleUser(levels, aServer, experienceValues, level, role, false);
@@ -450,9 +443,9 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AUserExperience> experiences = Arrays.asList(experience, experience2);
 
         List<AUserInAServer> users = experiences.stream().map(AUserExperience::getUser).collect(Collectors.toList());
-        MemberImpl firstMember = MockUtils.getMockedMember(server, users.get(0), jda);
+        Member firstMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(server, users.get(0).getUserReference())).thenReturn(firstMember);
-        MemberImpl secondMember = MockUtils.getMockedMember(server, users.get(1), jda);
+        Member secondMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(server, users.get(1).getUserReference())).thenReturn(secondMember);
         experience.setCurrentExperienceRole(firstPreviousRole);
         experience2.setCurrentExperienceRole(secondPreviousRole);
@@ -547,7 +540,8 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         MessageToSend statusMessage = MessageToSend.builder().message("text").build();
         when(templateService.renderEmbedTemplate(eq("user_sync_status_message"), any(UserSyncStatusModel.class))).thenReturn(statusMessage);
         long messageId = 5L;
-        ReceivedMessage statusMessageJDA = MockUtils.buildMockedMessage(messageId, "text", null);
+        Message statusMessageJDA = Mockito.mock(Message.class);
+        when(statusMessageJDA.getIdLong()).thenReturn(messageId);
         when(messageService.createStatusMessage(statusMessage, channel)).thenReturn(CompletableFuture.completedFuture(statusMessageJDA));
         testUnit.syncUserRolesWithFeedback(server, channel);
         verify(messageService, times(messageCount)).updateStatusMessage(channel, messageId, statusMessage);
@@ -559,7 +553,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AUserExperience> experiences = Arrays.asList(experience);
 
         List<AUserInAServer> users = experiences.stream().map(AUserExperience::getUser).collect(Collectors.toList());
-        MemberImpl firstMember = MockUtils.getMockedMember(server, users.get(0), jda);
+        Member firstMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(server, users.get(0).getUserReference())).thenReturn(firstMember);
         experience.setCurrentExperienceRole(previousRole);
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(usedExperienceRoles);
@@ -605,7 +599,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
 
     private AExperienceRole testRoleRelatedScenario(boolean shouldHaveRole, List<AExperienceLevel> levels, List<AServer> servers, AServer serverToUse, List<AExperienceRole> experienceRoles, AUserInAServer userToUse, AExperienceRole previousExperienceRole) {
         mockSimpleServer(levels, experienceRoles, serverToUse);
-        MemberImpl jdaMember = MockUtils.getMockedMember(serverToUse, userToUse, jda);
+        Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 301L, 1, previousExperienceRole, false);
 

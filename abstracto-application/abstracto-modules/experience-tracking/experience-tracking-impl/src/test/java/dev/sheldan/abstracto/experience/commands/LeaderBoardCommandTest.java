@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -43,22 +42,19 @@ public class LeaderBoardCommandTest {
     @Mock
     private LeaderBoardModelConverter converter;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test(expected = IncorrectParameter.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit, jda);
+        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test
     public void testLeaderBoardWithNoParameter() {
-        testLeaderBoardCommand(CommandTestUtilities.getNoParameters(jda), 1);
+        testLeaderBoardCommand(CommandTestUtilities.getNoParameters(), 1);
     }
 
     @Test
     public void testLeaderBoardWithPageParameter() {
-        testLeaderBoardCommand(CommandTestUtilities.getWithParameters(jda, Arrays.asList(5)), 5);
+        testLeaderBoardCommand(CommandTestUtilities.getWithParameters(Arrays.asList(5)), 5);
     }
 
     private void testLeaderBoardCommand(CommandContext context, int expectedPage) {

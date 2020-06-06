@@ -132,22 +132,23 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, List<CompletableFuture<Message>> future)  {
+    public List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target)  {
+        List<CompletableFuture<Message>> futures = new ArrayList<>();
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+        CompletableFuture<Message> messageEditFuture = new CompletableFuture<>();
+        futures.add(messageEditFuture);
         if(StringUtils.isBlank(messageToSend.getMessage().trim())) {
             textChannelForPostTarget
                     .retrieveMessageById(messageId)
                     .queue(
                             existingMessage -> existingMessage
                                     .editMessage(messageToSend.getEmbeds().get(0))
-                                    .submit().thenAccept(message -> future.get(0).complete(message)).exceptionally(throwable -> {
-                                        log.error("Failed to edit message {}.", messageId, throwable);
-                                        return null;
-                                    }),
+                                    .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally),
                             throwable ->
                                 sendEmbedInPostTarget(messageToSend, target).get(0)
-                                            .thenAccept(message -> future.get(0).complete(message)) .exceptionally(innerThrowable -> {
+                                            .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
                                     log.error("Failed to send message to create a message.", innerThrowable);
+                                    messageEditFuture.completeExceptionally(innerThrowable);
                                     return null;
                                 })
                             );
@@ -158,24 +159,24 @@ public class PostTargetServiceBean implements PostTargetService {
                             existingMessage -> existingMessage
                                     .editMessage(messageToSend.getMessage())
                                     .embed(messageToSend.getEmbeds().get(0))
-                                    .submit().thenAccept(message -> future.get(0).complete(message)).exceptionally(throwable -> {
-                                        log.error("Failed to edit message {}", messageId, throwable);
-                                        return null;
-                                    }),
+                                    .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally),
                             throwable ->
                                 sendEmbedInPostTarget(messageToSend, target).get(0)
-                                            .thenAccept(message -> future.get(0).complete(message)).exceptionally(innerThrowable -> {
+                                        .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
                                     log.error("Failed to send message to create a message.", innerThrowable);
+                                    messageEditFuture.completeExceptionally(innerThrowable);
                                     return null;
                                 })
                             );
         }
+
+        return futures;
     }
 
     @Override
-    public void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTargetName, Long serverId, List<CompletableFuture<Message>> future)  {
+    public List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
-        this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget, future);
+        return this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget);
     }
 
     @Override

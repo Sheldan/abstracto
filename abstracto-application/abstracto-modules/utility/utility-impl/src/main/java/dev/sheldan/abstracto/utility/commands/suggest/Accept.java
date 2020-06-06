@@ -24,7 +24,7 @@ public class Accept extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        suggestionService.validateSetup(commandContext.getGuild().getIdLong());
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";

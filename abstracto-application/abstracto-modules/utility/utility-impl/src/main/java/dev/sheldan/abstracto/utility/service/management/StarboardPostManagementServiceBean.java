@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.utility.service.management;
 
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.repository.StarboardPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +23,20 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
     @Autowired
     private StarboardPostRepository repository;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
-    public StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AUserInAServer starringUser, AServerAChannelMessage starboardPost) {
+    public StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AServerAChannelMessage starboardPost) {
+        AChannel build = channelManagementService.loadChannel(starredMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(starredMessage.getChannelId(), starredMessage.getServerId()));
         StarboardPost post = StarboardPost
                 .builder()
                 .author(starredUser)
                 .postMessageId(starredMessage.getMessageId())
+                .sourceChanel(build)
+                .ignored(false)
                 .starboardMessageId(starboardPost.getMessageId())
                 .starboardChannel(starboardPost.getChannel())
-                .sourceChanel(AChannel.builder().id(starredMessage.getChannelId()).build())
                 .starredDate(Instant.now())
                 .build();
         repository.save(post);
@@ -79,7 +86,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public boolean isStarboardPost(Long messageId) {
-        return repository.findByStarboardMessageId(messageId) != null;
+        return repository.existsByStarboardMessageId(messageId);
     }
 
     @Override

@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -28,17 +27,14 @@ public class EnableExpForRoleTest {
     @Mock
     private DisabledExpRoleManagementService disabledExpRoleManagementService;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test(expected = InsufficientParameters.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit, jda);
+        CommandTestUtilities.executeNoParametersTest(testUnit);
     }
 
     @Test(expected = IncorrectParameter.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit, jda);
+        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test
@@ -53,7 +49,7 @@ public class EnableExpForRoleTest {
 
     private void executeEnableExpForRoleTest(boolean value, int wantedNumberOfInvocations) {
         ARole disabledRole = MockUtils.getRole(1L, MockUtils.getServer());
-        CommandContext context = CommandTestUtilities.getWithParameters(jda, Arrays.asList(disabledRole));
+        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(disabledRole));
         when(disabledExpRoleManagementService.isExperienceDisabledForRole(disabledRole)).thenReturn(value);
         CommandResult result = testUnit.execute(context);
         verify(disabledExpRoleManagementService, times(wantedNumberOfInvocations)).removeRoleToBeDisabledForExp(disabledRole);

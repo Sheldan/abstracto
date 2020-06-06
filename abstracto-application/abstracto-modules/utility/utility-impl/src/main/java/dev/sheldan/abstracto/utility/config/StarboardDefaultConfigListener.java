@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.config;
 
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
+import dev.sheldan.abstracto.utility.service.StarboardServiceBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -19,9 +20,10 @@ public class StarboardDefaultConfigListener {
     @EventListener
     @Transactional
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
-        for (int i = 0; i < starboardConfig.getLvl().size(); i++) {
+        int levels = starboardConfig.getLvl().size();
+        for (int i = 0; i < levels; i++) {
             Integer value = starboardConfig.getLvl().get(i);
-            defaultConfigManagementService.createDefaultConfig("starLvl" + ( i + 1 ), Long.valueOf(value));
+            defaultConfigManagementService.createDefaultConfig(StarboardServiceBean.STAR_LVL_CONFIG_PREFIX + ( i + 1 ), Long.valueOf(value));
         }
     }
 }

@@ -22,16 +22,18 @@ import java.util.List;
 @Component
 public class ShowAvatar extends AbstractConditionableCommand {
 
+    public static final String SHOW_AVATAR_RESPONSE_TEMPLATE = "showAvatar_response";
     @Autowired
     private ChannelService channelService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
         ShowAvatarModel model = (ShowAvatarModel) ContextConverter.fromCommandContext(commandContext, ShowAvatarModel.class);
         model.setMemberInfo(memberToShow);
-        channelService.sendEmbedTemplateInChannel("showAvatar_response", model, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

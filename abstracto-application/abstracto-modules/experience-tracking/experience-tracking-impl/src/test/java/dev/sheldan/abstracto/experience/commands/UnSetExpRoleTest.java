@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,22 +28,19 @@ public class UnSetExpRoleTest {
     @Mock
     private ExperienceRoleService experienceRoleService;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test(expected = InsufficientParameters.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit, jda);
+        CommandTestUtilities.executeNoParametersTest(testUnit);
     }
 
     @Test(expected = IncorrectParameter.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit, jda);
+        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test
     public void setUnSetExpRole() {
-        CommandContext noParameters = CommandTestUtilities.getNoParameters(jda);
+        CommandContext noParameters = CommandTestUtilities.getNoParameters();
         ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(changedRole));
         CommandResult result = testUnit.execute(context);

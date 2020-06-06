@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -33,34 +32,31 @@ public class SetExpRoleTest {
     @Mock
     private RoleService roleService;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test(expected = InsufficientParameters.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit, jda);
+        CommandTestUtilities.executeNoParametersTest(testUnit);
     }
 
     @Test(expected = InsufficientParameters.class)
     public void testRoleMissing() {
-        CommandContext context = CommandTestUtilities.getWithParameters(jda, Arrays.asList(4));
+        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(4));
         testUnit.execute(context);
     }
 
     @Test(expected = IncorrectParameter.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit, jda);
+        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test(expected = IncorrectParameter.class)
     public void testLevelProvidedButNotRole() {
-        CommandContext context = CommandTestUtilities.getWithParameters(jda, Arrays.asList(4, ""));
+        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(4, ""));
         testUnit.execute(context);
     }
 
     @Test
     public void setExpRole() {
-        CommandContext noParameters = CommandTestUtilities.getNoParameters(jda);
+        CommandContext noParameters = CommandTestUtilities.getNoParameters();
         ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
         Integer levelToSetTo = 4;
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));
@@ -72,7 +68,7 @@ public class SetExpRoleTest {
 
     @Test(expected = RoleNotFoundInGuildException.class)
     public void setExpRoleNotExistingOnServer() {
-        CommandContext noParameters = CommandTestUtilities.getNoParameters(jda);
+        CommandContext noParameters = CommandTestUtilities.getNoParameters();
         ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
         Integer levelToSetTo = 4;
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));

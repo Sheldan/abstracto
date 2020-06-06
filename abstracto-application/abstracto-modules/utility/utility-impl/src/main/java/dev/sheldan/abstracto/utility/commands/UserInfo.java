@@ -35,8 +35,9 @@ public class UserInfo extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
-        Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
+        Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getAuthor();
         UserInfoModel model = (UserInfoModel) ContextConverter.fromCommandContext(commandContext, UserInfoModel.class);
         if(!memberToShow.hasTimeJoined()) {
             botService.forceReloadMember(memberToShow).thenAccept(member -> {

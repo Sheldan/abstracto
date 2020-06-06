@@ -8,9 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.service.StarboardService;
@@ -29,16 +27,12 @@ public class StarStats extends AbstractConditionableCommand {
     private StarboardService starboardService;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private ChannelService channelService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         StarStatsModel result = starboardService.retrieveStarStats(commandContext.getGuild().getIdLong());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(STARSTATS_RESPONSE_TEMPLATE, result);
-        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, result, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

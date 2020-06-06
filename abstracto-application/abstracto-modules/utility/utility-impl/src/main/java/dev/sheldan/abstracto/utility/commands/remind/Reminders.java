@@ -9,8 +9,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.RemindersModel;
@@ -23,22 +21,20 @@ import java.util.List;
 @Component
 public class Reminders extends AbstractConditionableCommand {
 
+    public static final String REMINDERS_RESPONSE_TEMPLATE = "reminders_response";
     @Autowired
     private ReminderManagementService reminderManagementService;
 
     @Autowired
     private ChannelService channelService;
 
-    @Autowired
-    private TemplateService templateService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
         RemindersModel model = (RemindersModel) ContextConverter.fromCommandContext(commandContext, RemindersModel.class);
         model.setReminders(activeReminders);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("reminders_response", model);
-        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel(REMINDERS_RESPONSE_TEMPLATE, model, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

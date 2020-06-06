@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class MessageEmbedServiceBean implements MessageEmbedService {
 
-    private Pattern messageRegex = Pattern.compile("(?<whole>https://discordapp.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+");
+    private Pattern messageRegex = Pattern.compile("(?<whole>https://discord(?:app)?.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+");
 
     public static final String MESSAGE_EMBED_TEMPLATE = "message_embed";
     public static final String REMOVAL_EMOTE = "removeEmbed";
@@ -138,9 +138,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                         cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), throwable);
                 return null;
             });
+        } else {
+            log.warn("User {} which was not found in database wanted to embed link in message {}.", userEmbeddingUserInServerId, embeddingMessage.getJumpUrl());
         }
-
-
     }
 
     private MessageEmbeddedModel buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
@@ -149,10 +149,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         AUserInAServer user = userInServerManagementService.loadUser(message.getMember());
         Member author = botService.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
         Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
-        TextChannel sourceChannel = null;
-        if(textChannelFromServer.isPresent()) {
-            sourceChannel = textChannelFromServer.get();
-        }
+        TextChannel sourceChannel = textChannelFromServer.orElse(null);
         AChannel channel = channelOpt.orElseThrow(() -> new ChannelNotFoundException(message.getChannel().getIdLong(), server.getId()));
         return MessageEmbeddedModel
                 .builder()

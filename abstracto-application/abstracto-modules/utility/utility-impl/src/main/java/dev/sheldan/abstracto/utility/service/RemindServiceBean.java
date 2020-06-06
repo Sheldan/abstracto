@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
@@ -14,11 +15,11 @@ import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ExecutedReminderModel;
-import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 import dev.sheldan.abstracto.utility.service.management.ReminderManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,6 @@ import java.util.concurrent.*;
 @Slf4j
 public class RemindServiceBean implements ReminderService {
 
-    public static final String REMINDER_EMBED_KEY = "remind_response";
     @Autowired
     private ReminderManagementService reminderManagementService;
 
@@ -58,8 +58,8 @@ public class RemindServiceBean implements ReminderService {
     private ChannelService channelService;
 
     @Override
-    public void createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, ReminderModel reminderModel) {
-        AChannel channel = reminderModel.getChannel();
+    public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Message message) {
+        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong()).orElseThrow(() -> new ChannelNotFoundException(message.getChannel().getIdLong(), message.getGuild().getIdLong()));
         AServerAChannelAUser aServerAChannelAUser = AServerAChannelAUser
                 .builder()
                 .user(user.getUserReference())
@@ -68,15 +68,13 @@ public class RemindServiceBean implements ReminderService {
                 .channel(channel)
                 .build();
         Instant remindAt = Instant.now().plusNanos(remindIn.toNanos());
-        Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, reminderModel.getMessage().getIdLong());
-        reminderModel.setReminder(reminder);
-        MessageToSend message = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, reminderModel);
-        channelService.sendMessageToSendToAChannel(message, reminderModel.getChannel());
+        Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, message.getIdLong());
         log.info("Creating reminder for user {} in guild {} due at {}.",
                 user.getUserReference().getId(), user.getServerReference().getId(), remindAt);
 
         if(remindIn.getSeconds() < 60) {
             log.trace("Directly scheduling the reminder, because it was below the threshold.");
+            // TODO make a bean out of this
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> {
                 try {
@@ -93,6 +91,7 @@ public class RemindServiceBean implements ReminderService {
             reminder.setJobTriggerKey(triggerKey);
             reminderManagementService.saveReminder(reminder);
         }
+        return reminder;
     }
 
     @Override
@@ -112,7 +111,7 @@ public class RemindServiceBean implements ReminderService {
             if(channelToAnswerIn.isPresent()) {
                 AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();
                 Member memberInServer = botService.getMemberInServer(server.getId(), userReference.getId());
-                log.trace("Reminding user {}", memberInServer.getUser().getIdLong());
+                log.trace("Reminding user {}", userReference.getId());
                 ExecutedReminderModel build = ExecutedReminderModel
                         .builder()
                         .reminder(reminderToRemindFor)
@@ -132,15 +131,10 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     public void unRemind(Long reminderId, AUserInAServer aUserInAServer) {
-        Reminder reminder = reminderManagementService.getReminderByAndByUserNotReminded(aUserInAServer, reminderId);
-        if(reminder != null) {
-            reminder.setReminded(true);
-            if(reminder.getJobTriggerKey() != null) {
-                schedulerService.stopTrigger(reminder.getJobTriggerKey());
-            }
-            reminderManagementService.saveReminder(reminder);
-        } else {
-            throw new ReminderNotFoundException(reminderId);
+        Reminder reminder = reminderManagementService.getReminderByAndByUserNotReminded(aUserInAServer, reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
+        reminder.setReminded(true);
+        if(reminder.getJobTriggerKey() != null) {
+            schedulerService.stopTrigger(reminder.getJobTriggerKey());
         }
     }
 }

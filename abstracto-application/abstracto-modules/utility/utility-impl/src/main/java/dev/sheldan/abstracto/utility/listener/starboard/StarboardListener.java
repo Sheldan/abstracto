@@ -12,7 +12,6 @@ import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.service.StarboardService;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 public class StarboardListener implements ReactedAddedListener, ReactedRemovedListener, ReactionClearedListener {
 
     public static final String STAR_EMOTE = "star";
+    public static final String FIRST_LEVEL_THRESHOLD_KEY = "starLvl1";
 
     @Autowired
     private BotService botService;
@@ -66,9 +67,9 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
-        if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             log.trace("User {} in server {} reacted with star to put a message {} on starboard.", userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), message.getMessageId());
-            Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
+            Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
                 handleStarboardPostChange(message, reactionOptional.orElse(null), userAdding, true);
         }
     }
@@ -78,7 +79,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         if(reaction != null) {
             AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
             List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUserInServersIds(), author);
-            Long starMinimum = getFromConfig("starLvl1", message.getServerId());
+            Long starMinimum = getFromConfig(FIRST_LEVEL_THRESHOLD_KEY, message.getServerId());
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
@@ -129,10 +130,10 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
-        if(EmoteUtils.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
             log.trace("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), message.getMessageId());
-            Optional<CachedReaction> reactionOptional = EmoteUtils.getReactionFromMessageByEmote(message, aEmote);
+            Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
             handleStarboardPostChange(message, reactionOptional.orElse(null), userRemoving, false);
         }
     }
@@ -144,8 +145,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
     private List<AUserInAServer> getUsersExcept(List<Long> users, AUserInAServer author) {
         return users.stream().filter(user -> !user.equals(author.getUserInServerId())).map(aLong -> {
             Optional<AUserInAServer> aUserInAServer = userInServerManagementService.loadUser(aLong);
-            return aUserInAServer.get();
-        }).collect(Collectors.toList());
+            return aUserInAServer.orElse(null);
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override

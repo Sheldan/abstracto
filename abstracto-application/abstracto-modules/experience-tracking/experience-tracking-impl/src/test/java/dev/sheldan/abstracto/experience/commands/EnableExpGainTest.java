@@ -10,11 +10,11 @@ import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -33,24 +33,21 @@ public class EnableExpGainTest {
     @Mock
     private UserInServerManagementService userInServerManagementService;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test(expected = InsufficientParameters.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit, jda);
+        CommandTestUtilities.executeNoParametersTest(testUnit);
     }
 
     @Test(expected = IncorrectParameter.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit, jda);
+        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test
     public void testEnableExpForMember() {
-        CommandContext noParameters = CommandTestUtilities.getNoParameters(jda);
+        CommandContext noParameters = CommandTestUtilities.getNoParameters();
         AUserInAServer parameterUser = MockUtils.getUserObject(4L, noParameters.getUserInitiatedContext().getServer());
-        Member member = MockUtils.getMockedMember(noParameters.getUserInitiatedContext().getServer(), parameterUser, jda);
+        Member member = Mockito.mock(Member.class);
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(member));
         when(userInServerManagementService.loadUser(member)).thenReturn(parameterUser);
         CommandResult result = testUnit.execute(context);

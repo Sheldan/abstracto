@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class StarboardServiceBean implements StarboardService {
 
     public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
+    public static final String STAR_LVL_CONFIG_PREFIX = "starLvl";
 
     @Autowired
     private BotService botService;
@@ -102,7 +103,6 @@ public class StarboardServiceBean implements StarboardService {
     @Transactional
     public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
         AUserInAServer innerStarredUser = userInServerManagementService.loadUser(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
-        AUserInAServer innerUserReacting = userInServerManagementService.loadUser(userReactingId).orElseThrow(() -> new UserInServerNotFoundException(userReactingId));
         try {
             AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId).orElseThrow(() -> new ChannelNotFoundException(starboardChannelId, message.getServerId()));
             Message message1 = completableFutures.get(0).get();
@@ -112,7 +112,10 @@ public class StarboardServiceBean implements StarboardService {
                     .channel(starboardChannel)
                     .server(starboardChannel.getServer())
                     .build();
-            StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, innerStarredUser, innerUserReacting, aServerAChannelMessage);
+            StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, innerStarredUser, aServerAChannelMessage);
+            if(userExceptAuthorIds.isEmpty()) {
+                log.warn("There are no user ids except the author for the reactions in post {} in guild {} for message {} in channel {}.", starboardPost.getId(), message.getChannelId(), message.getMessageId(), message.getChannelId());
+            }
             userExceptAuthorIds.forEach(aLong -> {
                 AUserInAServer user = userInServerManagementService.loadUser(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
                 starboardPostReactorManagementService.addReactor(starboardPost, user);
@@ -149,9 +152,7 @@ public class StarboardServiceBean implements StarboardService {
     public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUserInAServer> userExceptAuthor)  {
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
-        List<CompletableFuture<Message>> futures = new ArrayList<>();
-        futures.add(new CompletableFuture<>());
-        postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId(), futures);
+        List<CompletableFuture<Message>> futures = postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardPostId = post.getId();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
             try {
@@ -180,7 +181,7 @@ public class StarboardServiceBean implements StarboardService {
         int count = 3;
         List<StarboardPost> starboardPosts = starboardPostManagementService.retrieveTopPosts(serverId, count);
         List<StarStatsUser> topStarGivers = starboardPostReactorManagementService.retrieveTopStarGiver(serverId, count);
-        List<StarStatsPost> starStatsPosts = starboardPosts.stream().map(StarStatsPost::fromStarboardPost).collect(Collectors.toList());
+        List<StarStatsPost> starStatsPosts = starboardPosts.stream().map(this::fromStarboardPost).collect(Collectors.toList());
         List<StarStatsUser> topStarReceiver = starboardPostReactorManagementService.retrieveTopStarReceiver(serverId, count);
         Integer postCount = starboardPostManagementService.getPostCount(serverId);
         Integer reactionCount = starboardPostReactorManagementService.getStarCount(serverId);
@@ -200,6 +201,17 @@ public class StarboardServiceBean implements StarboardService {
                 .build();
     }
 
+    public StarStatsPost fromStarboardPost(StarboardPost starboardPost) {
+        AChannel channel = starboardPost.getStarboardChannel();
+        return StarStatsPost
+                .builder()
+                .serverId(channel.getServer().getId())
+                .channelId(channel.getId())
+                .messageId(starboardPost.getPostMessageId())
+                .starCount(starboardPost.getReactions().size())
+                .build();
+    }
+
     private String getStarboardRankingEmote(Long serverId, Integer position) {
         return emoteService.getUsableEmoteOrDefault(serverId, buildBadgeName(position));
     }
@@ -209,8 +221,9 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     private String getAppropriateEmote(Long serverId, Integer starCount) {
-        for(int i = starboardConfig.getLvl().size(); i > 0; i--) {
-            Long starMinimum = configService.getLongValue("starLvl" + i, serverId);
+        int maxLevels = starboardConfig.getLvl().size();
+        for(int i = maxLevels; i > 0; i--) {
+            Long starMinimum = configService.getLongValue(STAR_LVL_CONFIG_PREFIX + i, serverId);
             if(starCount >= starMinimum) {
                 return emoteService.getUsableEmoteOrDefault(serverId, "star" + i);
             }

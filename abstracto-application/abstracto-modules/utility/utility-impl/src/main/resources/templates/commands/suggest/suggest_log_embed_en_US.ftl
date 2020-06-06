@@ -1,7 +1,11 @@
 {
   "author": {
+    <#if suggester?has_content>
     "name": "${suggester.effectiveName}",
     "avatar":  "${suggester.user.effectiveAvatarUrl}"
+    <#else>
+    "name": "${suggesterUser.userReference.id}"
+    </#if>
   },
   "color" : {
     "r": 200,

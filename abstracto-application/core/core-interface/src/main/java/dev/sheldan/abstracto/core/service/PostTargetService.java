@@ -21,8 +21,8 @@ public interface PostTargetService {
     List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target);
     List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target);
     List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId);
-    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target, List<CompletableFuture<Message>> future);
-    void editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTarget, Long serverId, List<CompletableFuture<Message>> future);
+    List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target);
+    List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTarget, Long serverId);
     void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId);
     boolean validPostTarget(String name);
     List<PostTarget> getPostTargets(AServer server);

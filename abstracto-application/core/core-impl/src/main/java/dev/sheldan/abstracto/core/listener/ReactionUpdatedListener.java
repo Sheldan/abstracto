@@ -2,15 +2,11 @@ package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.FeatureConfigService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.MessageCache;
-import dev.sheldan.abstracto.core.utils.EmoteUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveAllEvent;
@@ -56,6 +52,9 @@ public class ReactionUpdatedListener extends ListenerAdapter {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private EmoteService emoteService;
+
     @Override
     @Transactional
     public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
@@ -79,7 +78,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     private void addReactionIfNotThere(CachedMessage message, CachedReaction reaction, AUserInAServer userReacting) {
         Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 ->
-            EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote())
+                emoteService.compareAEmote(reaction1.getEmote(), reaction.getEmote())
         ).findAny();
         if(!existingReaction.isPresent()) {
             message.getReactions().add(reaction);
@@ -94,7 +93,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
 
     private void removeReactionIfThere(CachedMessage message, CachedReaction reaction, AUserInAServer userReacting) {
         Optional<CachedReaction> existingReaction = message.getReactions().stream().filter(reaction1 ->
-            EmoteUtils.compareAEmote(reaction1.getEmote(), reaction.getEmote())
+            emoteService.compareAEmote(reaction1.getEmote(), reaction.getEmote())
         ).findAny();
         if(existingReaction.isPresent()) {
             CachedReaction cachedReaction = existingReaction.get();

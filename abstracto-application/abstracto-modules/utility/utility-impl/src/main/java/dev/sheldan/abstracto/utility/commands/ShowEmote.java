@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowEmoteLog;
 import net.dv8tion.jda.api.entities.Emote;
@@ -20,23 +20,19 @@ import java.util.List;
 @Component
 public class ShowEmote extends AbstractConditionableCommand {
 
-    private static final String SHOW_EMOTE_RESPONSE_TEMPLATE = "showEmote_response";
+    public static final String SHOW_EMOTE_RESPONSE_TEMPLATE = "showEmote_response";
 
     @Autowired
-    private TemplateService templateService;
+    private ChannelService channelService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
-        Object emoteParameter = parameters.get(0);
-        if(!(emoteParameter instanceof Emote)) {
-            return CommandResult.fromError(templateService.renderTemplate("no_custom_emote_found", new Object()));
-        }
-        Emote emote = (Emote) emoteParameter;
+        Emote emoteParameter = (Emote) parameters.get(0);
         ShowEmoteLog emoteLog = (ShowEmoteLog) ContextConverter.fromCommandContext(commandContext, ShowEmoteLog.class);
-        emoteLog.setEmote(emote);
-        String message = templateService.renderTemplate(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog);
-        commandContext.getChannel().sendMessage(message).queue();
+        emoteLog.setEmote(emoteParameter);
+        channelService.sendEmbedTemplateInChannel(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

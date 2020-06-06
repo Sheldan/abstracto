@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StarboardPostManagementService {
-    StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AUserInAServer starringUser, AServerAChannelMessage starboardPost);
+    StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AServerAChannelMessage starboardPost);
     void setStarboardPostMessageId(StarboardPost post, Long messageId);
     List<StarboardPost> retrieveTopPosts(Long serverId, Integer count);
     List<StarboardPost> retrieveAllPosts(Long serverId);

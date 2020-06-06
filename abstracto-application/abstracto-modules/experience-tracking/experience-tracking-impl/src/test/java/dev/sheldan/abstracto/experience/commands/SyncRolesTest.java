@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
-import net.dv8tion.jda.internal.JDAImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -24,12 +23,9 @@ public class SyncRolesTest {
     @Mock
     private AUserExperienceService userExperienceService;
 
-    @Mock
-    private JDAImpl jda;
-
     @Test
     public void executeCommand() {
-        CommandContext context = CommandTestUtilities.getNoParameters(jda);
+        CommandContext context = CommandTestUtilities.getNoParameters();
         CommandResult result = testUnit.execute(context);
         AServer server = context.getUserInitiatedContext().getServer();
         AChannel channel = context.getUserInitiatedContext().getChannel();

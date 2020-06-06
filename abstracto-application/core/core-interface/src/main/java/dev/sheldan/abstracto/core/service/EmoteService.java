@@ -1,8 +1,12 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.MessageReaction;
+
+import java.util.Optional;
 
 public interface EmoteService {
     boolean isEmoteUsableByBot(Emote emote);
@@ -13,4 +17,7 @@ public interface EmoteService {
     void throwIfEmoteDoesNotExist(String emoteKey, Long serverId);
     AEmote getEmoteOrFakeEmote(String emoteKey, Long serverId);
     String getDefaultEmote(String emoteKey);
+    boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote, Emote actualEmoteInGuild);
+    Optional<CachedReaction> getReactionFromMessageByEmote(CachedMessage message, AEmote emote);
+    boolean compareAEmote(AEmote a, AEmote b);
 }

@@ -8,7 +8,9 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
+import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 import dev.sheldan.abstracto.utility.service.ReminderService;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -22,11 +24,17 @@ import java.util.List;
 @Component
 public class Remind extends AbstractConditionableCommand {
 
+    public static final String REMINDER_EMBED_KEY = "remind_response";
+
     @Autowired
     private ReminderService remindService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Duration remindTime = (Duration) parameters.get(0);
         String text = (String) parameters.get(1);
@@ -34,7 +42,10 @@ public class Remind extends AbstractConditionableCommand {
         ReminderModel remindModel = (ReminderModel) ContextConverter.fromCommandContext(commandContext, ReminderModel.class);
         remindModel.setMessage(commandContext.getMessage());
         remindModel.setRemindText(text);
-        remindService.createReminderInForUser(aUserInAServer, text, remindTime, remindModel);
+        Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());
+        remindModel.setReminder(createdReminder);
+
+        channelService.sendEmbedTemplateInChannel(REMINDER_EMBED_KEY, remindModel, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 
