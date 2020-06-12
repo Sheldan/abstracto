@@ -14,6 +14,11 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
     @Autowired
     private ExperienceLevelManagementService experienceLevelManagementService;
 
+    /**
+     * Creates experience level if it does not yet exist.
+     * @param level The level to create
+     * @param experienceNeeded The total amount of experience needed to reach the given level
+     */
     private void createExperienceLevel(Integer level, Long experienceNeeded) {
         if(!experienceLevelManagementService.levelExists(level)) {
             log.trace("Creating new experience level {} with experience needed {}.", level, experienceNeeded);
@@ -41,6 +46,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
      * @param level The level to calculate the experience amount for
      * @return The needed experience to reach this level, if the user already has the level below the passed one
      */
+    @Override
     public Long calculateExperienceForLevel(Integer level) {
         if(level < 0) {
             throw new IllegalArgumentException("Level should not be less to 0.");

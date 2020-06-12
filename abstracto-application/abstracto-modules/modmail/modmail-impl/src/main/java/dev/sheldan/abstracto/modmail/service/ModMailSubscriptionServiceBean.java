@@ -19,7 +19,7 @@ public class ModMailSubscriptionServiceBean implements ModMailSubscriptionServic
         if(!modMailSubscriberManagementService.isSubscribedToThread(aUserInAServer, modMailThread)){
             modMailSubscriberManagementService.createSubscriber(aUserInAServer, modMailThread);
         } else {
-            throw new AlreadySubscribedException("The user is already subscribed to the thread.");
+            throw new AlreadySubscribedException();
         }
     }
 
@@ -28,7 +28,7 @@ public class ModMailSubscriptionServiceBean implements ModMailSubscriptionServic
         if(modMailSubscriberManagementService.isSubscribedToThread(aUserInAServer, modMailThread)){
             modMailSubscriberManagementService.removeSubscriber(aUserInAServer, modMailThread);
         } else {
-            throw new NotSubscribedException("The user is not subscribed to the thread.");
+            throw new NotSubscribedException();
         }
     }
 }

@@ -103,7 +103,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
 
     /**
-     * Calculates the level of the given {@link AUserExperience} accoring to the given {@link AExperienceLevel} list
+     * Calculates the level of the given {@link AUserExperience} according to the given {@link AExperienceLevel} list
      * @param experience The {@link AUserExperience} to calculate the level for
      * @param levels The list of {@link AExperienceLevel} representing the level configuration, this must include the initial level 0
      *      *               This level will be taken as the initial value, and if no other level qualifies, this will be taken.
@@ -243,6 +243,12 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         executeActionOnUserExperiencesWithFeedBack(aUserExperiences, channel, (AUserExperience experience) -> updateUserRole(experience, roles));
     }
 
+    /**
+     * Executes the given {@link Consumer} on each of the experiences and provides feedback in the given AChannel in the form of a status message
+     * @param experiences The list of {@link AUserExperience} to be working on
+     * @param channel The {@link AChannel} used to provide feedback to the user
+     * @param toExecute The {@link Consumer} which should be executed on each element of the passed list
+     */
     @Override
     public void executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Consumer<AUserExperience> toExecute) {
         MessageToSend status = getUserSyncStatusUpdateModel(0, experiences.size());
@@ -308,7 +314,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         }
         page--;
         int pageSize = 10;
-        List<AUserExperience> experiences = userExperienceManagementService.findLeaderboardUsersPaginated(server, page * pageSize, (page + 1) * pageSize);
+        List<AUserExperience> experiences = userExperienceManagementService.findLeaderBoardUsersPaginated(server, page * pageSize, (page + 1) * pageSize);
         List<LeaderBoardEntry> entries = new ArrayList<>();
         for (int i = 0; i < experiences.size(); i++) {
             AUserExperience userExperience = experiences.get(i);

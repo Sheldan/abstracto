@@ -10,6 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean.MODMAIL_CLOSING_MESSAGE_TEXT;
 
+/**
+ * This listener is executed when the Spring context starts up and is used to set some default values related
+ * to mod mail.
+ */
 @Component
 public class ModMailDefaultConfigListener {
 

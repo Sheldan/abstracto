@@ -28,12 +28,14 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         if(modMailMessages.isEmpty()) {
             return new ArrayList<>();
         }
+        // all message must be from the same thread
         ModMailThread thread = modMailMessages.get(0).getThreadReference();
         List<ServerChannelMessage> messageIds = new ArrayList<>();
         modMailMessages.forEach(modMailMessage -> {
             ServerChannelMessage.ServerChannelMessageBuilder serverChannelMessageBuilder = ServerChannelMessage
                     .builder()
                     .messageId(modMailMessage.getMessageId());
+            // if its not from a private chat, we need to set the server and channel ID in order to fetch the data
             if(Boolean.FALSE.equals(modMailMessage.getDmChannel())) {
                 serverChannelMessageBuilder
                         .channelId(modMailMessage.getThreadReference().getChannel().getId())
@@ -42,6 +44,10 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
             messageIds.add(serverChannelMessageBuilder.build());
         });
         List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
+        // add the place holder futures, which are then resolved one by one
+        // because we cannot directly fetch the messages, in case they are in a private channel
+        // the opening of a private channel is a rest operation it itself, so we need
+        // to create the promises here already, else the list is empty for example
         modMailMessages.forEach(modMailMessage -> messageFutures.add(new CompletableFuture<>()));
         Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(thread.getServer().getId(), thread.getChannel().getId());
         if(textChannelFromServer.isPresent()) {
@@ -49,6 +55,8 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
             botService.getInstance().openPrivateChannelById(thread.getUser().getUserReference().getId()).queue(privateChannel -> {
                 Iterator<CompletableFuture<Message>> iterator = messageFutures.iterator();
                 messageIds.forEach(serverChannelMessage -> {
+                    // TODO fix out of order promises
+                    // depending what the source of the message is, we need to fetch the message from the correct channel
                     if(serverChannelMessage.getChannelId() == null){
                         privateChannel.retrieveMessageById(serverChannelMessage.getMessageId()).queue(message -> iterator.next().complete(message), throwable -> {
                             log.info("Failed to load message in private channel with user {}", thread.getUser().getUserReference().getId());

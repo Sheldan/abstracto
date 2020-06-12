@@ -39,6 +39,8 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
 
     /**
      * This returns the {@link LeaderBoardEntryResult} object containing the information about the rank of a user in a server.
+     * This query selects all the experience entries and returns the one associated with the provided user.
+     * We need to select all of them, in order to find the rank of the member in the server
      * @param id The {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} id to search for
      * @return the {@link LeaderBoardEntryResult} of this {@link dev.sheldan.abstracto.core.models.database.AUserInAServer}
      * containing rank and experience information
@@ -50,6 +52,6 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
             ") " +
             "SELECT rank.id as \"id\", rank.experience as \"experience\", rank.message_count as \"messageCount\", rank.level_id as \"level\", rank.row_number as \"rank\"    " +
             "FROM user_experience_ranked rank " +
-            "where rank.id = :userInServerId", nativeQuery = true)
+            "WHERE rank.id = :userInServerId", nativeQuery = true)
     LeaderBoardEntryResult getRankOfUserInServer(@Param("userInServerId") Long id);
 }

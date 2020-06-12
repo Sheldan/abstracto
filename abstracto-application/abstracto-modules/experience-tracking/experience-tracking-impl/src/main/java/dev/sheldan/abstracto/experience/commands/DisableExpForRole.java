@@ -16,6 +16,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to add a role to the roles for which experience has been disabled.
+ */
 @Component
 public class DisableExpForRole extends AbstractConditionableCommand {
 

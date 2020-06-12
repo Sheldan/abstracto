@@ -6,7 +6,7 @@ import lombok.Setter;
 
 /**
  * Object containing the status update information when the user executes the
- * command responsible for synchronizing the users with their experience roles. This is a very barebones
+ * command responsible for synchronizing the users with their experience roles. This is a very small
  * object as it only contains the current count and the total amount.
  */
 @Getter

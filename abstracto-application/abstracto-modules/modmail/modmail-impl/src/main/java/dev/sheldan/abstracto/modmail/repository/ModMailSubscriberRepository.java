@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository to manage the stored {@link ModMailThreadSubscriber} instances
+ */
 @Repository
 public interface ModMailSubscriberRepository extends JpaRepository<ModMailThreadSubscriber, Long> {
     List<ModMailThreadSubscriber> findByThreadReference(ModMailThread thread);

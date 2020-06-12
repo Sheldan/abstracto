@@ -26,7 +26,8 @@ public class ExperienceConfig {
     private Double expMultiplier;
 
     /**
-     * The defaul maxLevel from the properties file. This configuration applies globally, as the amount of levels does not depend on the server.
+     * The default maxLevel from the properties file. This configuration applies globally, as the amount of levels does not depend on the server.
+     * This is only used once, when creating the {@link dev.sheldan.abstracto.experience.models.database.AExperienceLevel} once
      */
     private Integer maxLvl;
 }

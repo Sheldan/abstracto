@@ -24,6 +24,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shows the experience gain information of the top 10 users in the server, or if a page number is provided as a parameter, only the members which are on this page.
+ */
 @Component
 @Slf4j
 public class LeaderBoardCommand extends AbstractConditionableCommand {

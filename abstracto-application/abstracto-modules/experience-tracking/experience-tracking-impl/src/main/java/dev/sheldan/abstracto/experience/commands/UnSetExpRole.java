@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to remove a role from the roles to be awarded at certain levels. If there are users with this role currently, their role
+ * will be recalculated, and this will be shown with an status update message.
+ */
 @Component
 public class UnSetExpRole extends AbstractConditionableCommand {
 

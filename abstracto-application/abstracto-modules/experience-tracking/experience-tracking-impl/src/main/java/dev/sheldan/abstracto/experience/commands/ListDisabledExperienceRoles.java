@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Creates an embed containing the roles for which the experience gain has been disabled.
+ */
 @Component
 public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
 

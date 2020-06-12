@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command to enable experience again for a member
+ */
 @Component
 public class EnableExpGain extends AbstractConditionableCommand {
 

@@ -19,7 +19,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     private ExperienceRoleRepository experienceRoleRepository;
 
     /**
-     * Removes all assignments of roles for the given level
+     * Removes *all* assignments of roles for the given level
      * @param level The level to remove the roles for
      * @param server The server in which this should happen
      */
@@ -45,6 +45,12 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
         return experienceRoleRepository.findByRoleServer(server);
     }
 
+    /**
+     * Creates a new role if nothing is found, and if its found the experience role will be set to the given level.
+     * @param level The {@link AExperienceLevel} to set the role for
+     * @param role The {@link ARole} to set to
+     * @return The created/updated {@link AExperienceRole}
+     */
     @Override
     public AExperienceRole setLevelToRole(AExperienceLevel level, ARole role) {
         AExperienceRole byRoleServerAndRole = experienceRoleRepository.findByRole(role);

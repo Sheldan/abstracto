@@ -20,6 +20,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to define which commands are to be awarded at which level
+ */
 @Component
 @Slf4j
 public class SetExpRole extends AbstractConditionableCommand {

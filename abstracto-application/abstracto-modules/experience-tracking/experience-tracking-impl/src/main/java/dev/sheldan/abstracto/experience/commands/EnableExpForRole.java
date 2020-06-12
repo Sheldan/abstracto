@@ -16,6 +16,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to remove a role from the list of roles for which experience is disabled
+ */
 @Component
 public class EnableExpForRole extends AbstractConditionableCommand {
 

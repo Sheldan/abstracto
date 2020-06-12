@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.modmail.commands.condition.RequiresModMailCondition;
+import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
@@ -21,11 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Closes the mod mail thread: logs the messages to the log post target, if the feature has the appropriate
+ * {@link dev.sheldan.abstracto.core.config.FeatureMode}, deletes the {@link net.dv8tion.jda.api.entities.MessageChannel}.
+ * This command takes an optional parameter, the note, which will be replaced with a default value, if not present
+ */
 @Component
 public class Close extends AbstractConditionableCommand {
 
     @Autowired
-    private RequiresModMailCondition requiresModMailCondition;
+    private ModMailContextCondition requiresModMailCondition;
 
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
@@ -41,6 +46,7 @@ public class Close extends AbstractConditionableCommand {
     @Transactional
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
+        // the default value of the note is configurable via template
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
         modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note, true);

@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository to manage the stored {@link ModMailMessage} instances
+ */
 @Repository
 public interface ModMailMessageRepository extends JpaRepository<ModMailMessage, Long> {
     List<ModMailMessage> findByThreadReference(ModMailThread modMailThread);

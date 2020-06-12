@@ -9,12 +9,28 @@ import net.dv8tion.jda.api.entities.Message;
 
 import java.util.List;
 
+/**
+ * Model used to render the response by the user to the mod mail thread channel.
+ */
 @Getter
 @Setter
 @Builder
 public class ModMailUserReplyModel {
+    /**
+     * The {@link FullUser} from which the message is and whose mod mail thread it is
+     */
     private FullUser threadUser;
+    /**
+     * The {@link Message} which was posted, which contains all the possible information
+     */
     private Message postedMessage;
+    /**
+     * The {@link ModMailThread} for which the {@link Message} was a reply for
+     */
     private ModMailThread modMailThread;
+    /**
+     * List of {@link FullUser} which are registered as subscribers for a particular mod mail thread and will be pinged
+     * when the user sends a new message
+     */
     private List<FullUser> subscribers;
 }

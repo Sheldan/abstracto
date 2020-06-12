@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
-import dev.sheldan.abstracto.core.models.EmoteMissingValidationError;
+import dev.sheldan.abstracto.core.models.EmoteMissingValidationErrorModel;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
-import dev.sheldan.abstracto.core.models.PostTargetValidationError;
-import dev.sheldan.abstracto.core.models.SystemConfigValidationError;
+import dev.sheldan.abstracto.core.models.PostTargetValidationErrorModel;
+import dev.sheldan.abstracto.core.models.SystemConfigValidationErrorModel;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
@@ -38,18 +38,18 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     @Override
     public void checkPostTarget(PostTargetEnum name, AServer server, FeatureValidationResult featureValidationResult) {
         if(!postTargetManagement.postTargetExists(name.getKey(), server)) {
-            PostTargetValidationError validationError = PostTargetValidationError.builder().postTargetName(name.getKey()).build();
+            PostTargetValidationErrorModel validationError = PostTargetValidationErrorModel.builder().postTargetName(name.getKey()).build();
             featureValidationResult.setValidationResult(false);
-            featureValidationResult.getValidationErrors().add(validationError);
+            featureValidationResult.getValidationErrorModels().add(validationError);
         }
     }
 
     @Override
     public boolean checkSystemConfig(String name, AServer server, FeatureValidationResult featureValidationResult) {
         if(!configService.configExists(server, name)) {
-            SystemConfigValidationError validationError = SystemConfigValidationError.builder().configKey(name).build();
+            SystemConfigValidationErrorModel validationError = SystemConfigValidationErrorModel.builder().configKey(name).build();
             featureValidationResult.setValidationResult(false);
-            featureValidationResult.getValidationErrors().add(validationError);
+            featureValidationResult.getValidationErrorModels().add(validationError);
             return false;
         }
         return true;
@@ -79,9 +79,9 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     }
 
     private void rejectEmote(String emoteKey, FeatureValidationResult featureValidationResult) {
-        EmoteMissingValidationError validationError = EmoteMissingValidationError.builder().emoteKey(emoteKey).build();
+        EmoteMissingValidationErrorModel validationError = EmoteMissingValidationErrorModel.builder().emoteKey(emoteKey).build();
         featureValidationResult.setValidationResult(false);
-        featureValidationResult.getValidationErrors().add(validationError);
+        featureValidationResult.getValidationErrorModels().add(validationError);
     }
 
 

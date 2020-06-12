@@ -7,7 +7,25 @@ import net.dv8tion.jda.api.entities.Message;
 
 import java.util.List;
 
+/**
+ * Management service to handle the creation and retrieval of {@link ModMailMessage} instances from the database
+ */
 public interface ModMailMessageManagementService {
+    /**
+     * Creates an instance of {@link ModMailMessage}, attaches it to the given {@link ModMailThread} and returns the created instance
+     * @param modMailThread The {@link ModMailThread} the message should be attached to
+     * @param message The {@link Message} which should be attached to the {@link ModMailThread}
+     * @param author The {@link AUserInAServer} who authored the {@link Message} originally
+     * @param anonymous Whether or not the message was sent anonymous (only possible by staff members)
+     * @param dmChannel Whether or not the message originated from the user, and therefore in an direct message channel
+     * @return
+     */
     ModMailMessage addMessageToThread(ModMailThread modMailThread, Message message, AUserInAServer author, Boolean anonymous, Boolean dmChannel);
+
+    /**
+     * Retrieves all messages which were sent in a {@link ModMailThread}
+     * @param modMailThread The {@link ModMailThread} to retrieve the messages for
+     * @return A list of {@link ModMailMessage} which were sent in the given thread
+     */
     List<ModMailMessage> getMessagesOfThread(ModMailThread modMailThread);
 }

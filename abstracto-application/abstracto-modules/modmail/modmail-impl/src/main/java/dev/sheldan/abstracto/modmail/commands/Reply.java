@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.modmail.commands.condition.RequiresModMailCondition;
+import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
@@ -19,11 +19,14 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Sends the reply from the staff member to the user, and shows the actual author in the created embed.
+ */
 @Component
 public class Reply extends AbstractConditionableCommand {
 
     @Autowired
-    private RequiresModMailCondition requiresModMailCondition;
+    private ModMailContextCondition requiresModMailCondition;
 
     @Autowired
     private ModMailThreadService modMailThreadService;

@@ -47,13 +47,23 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     }
 
     @Override
-    public ModMailThread getOpenModmailThreadForUser(AUserInAServer userInAServer) {
+    public ModMailThread getOpenModMailThreadForUser(AUserInAServer userInAServer) {
         return modMailThreadRepository.findByUserAndStateNot(userInAServer, ModMailThreadState.CLOSED);
     }
 
     @Override
-    public ModMailThread getOpenModmailThreadForUser(AUser user) {
+    public boolean hasOpenModMailThreadForUser(AUserInAServer userInAServer) {
+        return modMailThreadRepository.existsByUserAndStateNot(userInAServer, ModMailThreadState.CLOSED);
+    }
+
+    @Override
+    public List<ModMailThread> getOpenModMailThreadsForUser(AUser user) {
         return modMailThreadRepository.findByUser_UserReferenceAndStateNot(user, ModMailThreadState.CLOSED);
+    }
+
+    @Override
+    public boolean hasOpenModMailThread(AUser user) {
+        return modMailThreadRepository.existsByUser_UserReferenceAndStateNot(user, ModMailThreadState.CLOSED);
     }
 
     @Override
@@ -66,6 +76,12 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
         return modMailThreadRepository.findTopByUserOrderByClosedDesc(aUserInAServer);
     }
 
+    /**
+     * The status of the created instance is INITIAL.
+     * @param userInAServer The {@link AUserInAServer} for which the thread was created for
+     * @param channel An instance of {@link AChannel} in which the conversation with the member is handled
+     * @return the created {@link ModMailThread} instance
+     */
     @Override
     public ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel) {
         ModMailThread thread = ModMailThread

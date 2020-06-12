@@ -36,5 +36,13 @@ public interface ExperienceRoleService {
      */
     AExperienceRole calculateRole(AUserExperience userExperience, List<AExperienceRole> roles);
 
+    /**
+     * Calculates the level at which the next role for a given level is available.
+     * For example, if the given {@link AExperienceLevel} is 5, and a a {@link AExperienceRole} is awarded at 8, but none in between, this method will return
+     * the {@link AExperienceLevel} 8.
+     * @param startLevel The {@link AExperienceLevel} to start off at
+     * @param server The {@link AServer} to use for the {@link AExperienceRole} configuration
+     * @return The next {@link AExperienceLevel} a {@link AExperienceRole} is awarded at, this will be null if there are no roles or there is no further role to reach
+     */
     AExperienceLevel getLevelOfNextRole(AExperienceLevel startLevel, AServer server);
 }

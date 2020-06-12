@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.modmail.commands.condition.RequiresModMailCondition;
+import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailSubscriptionService;
@@ -18,11 +18,16 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * This command subscribes the member executing this command to the {@link ModMailThread} in which the command was executed in.
+ * In case the member is already subscribed an error message is displayed.
+ */
 @Component
 public class Subscribe extends AbstractConditionableCommand {
 
     @Autowired
-    private RequiresModMailCondition requiresModMailCondition;
+    private ModMailContextCondition requiresModMailCondition;
 
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;

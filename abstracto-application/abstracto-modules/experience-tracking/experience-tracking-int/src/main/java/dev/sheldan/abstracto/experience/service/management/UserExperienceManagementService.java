@@ -51,7 +51,7 @@ public interface UserExperienceManagementService {
      * @param end The end index for which to return a sublist of {@link AUserExperience} elements for
      * @return A list desc ordered by {@link AUserExperience.experience} only containing the elements between {@code start} and @{code end}
      */
-    List<AUserExperience> findLeaderboardUsersPaginated(AServer server, Integer start, Integer end);
+    List<AUserExperience> findLeaderBoardUsersPaginated(AServer server, Integer start, Integer end);
 
     /**
      * Returns the {@link LeaderBoardEntryResult} of the given {@link AUserExperience}.

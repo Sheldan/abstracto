@@ -30,6 +30,11 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
         return byId.orElseGet(() -> createUserInServer(aUserInAServer));
     }
 
+    /**
+     * Initializes the {@link AUserExperience} with default values the following: 0 experience, 0 messages and experience gain enabled
+     * @param aUserInAServer The {@link AUserInAServer} to create the {@link AUserExperience} object for.
+     * @return The created/changed {@link AUserExperience} object
+     */
     @Override
     public AUserExperience createUserInServer(AUserInAServer aUserInAServer) {
         AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
@@ -81,7 +86,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     }
 
     @Override
-    public List<AUserExperience> findLeaderboardUsersPaginated(AServer aServer, Integer start, Integer end) {
+    public List<AUserExperience> findLeaderBoardUsersPaginated(AServer aServer, Integer start, Integer end) {
         return repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(aServer, PageRequest.of(start, end));
     }
 

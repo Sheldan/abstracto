@@ -15,6 +15,10 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This command is used to change the category used to create new mod mail threads. This does not migrate the
+ * existing mod mail threads.
+ */
 @Component
 public class SetModMailCategory extends AbstractConditionableCommand {
 
@@ -24,7 +28,7 @@ public class SetModMailCategory extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Long categoryId = (Long) commandContext.getParameters().getParameters().get(0);
-        modMailThreadService.setModMailCategoryTo(commandContext.getUserInitiatedContext().getServer(), categoryId);
+        modMailThreadService.setModMailCategoryTo(commandContext.getGuild(), categoryId);
         return CommandResult.fromSuccess();
     }
 

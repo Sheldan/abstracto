@@ -9,19 +9,20 @@ import java.util.HashMap;
 @Getter
 @Setter
 @Builder
-public class SystemConfigValidationError implements ValidationError {
+public class EmoteMissingValidationErrorModel implements ValidationErrorModel {
 
-    private String configKey;
+    private String emoteKey;
 
     @Override
     public String getTemplateName() {
-        return "config_key_not_setup";
+        return "emote_not_setup";
     }
 
     @Override
     public Object getTemplateModel() {
         HashMap<String, String> params = new HashMap<>();
-        params.put("configKey", configKey);
+        params.put("emoteKey", emoteKey);
         return params;
     }
 }
+

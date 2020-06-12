@@ -9,19 +9,19 @@ import java.util.HashMap;
 @Getter
 @Setter
 @Builder
-public class PostTargetValidationError implements ValidationError {
+public class SystemConfigValidationErrorModel implements ValidationErrorModel {
 
-    private String postTargetName;
+    private String configKey;
 
     @Override
     public String getTemplateName() {
-        return "post_target_not_setup";
+        return "config_key_not_setup";
     }
 
     @Override
     public Object getTemplateModel() {
         HashMap<String, String> params = new HashMap<>();
-        params.put("postTargetKey", postTargetName);
+        params.put("configKey", configKey);
         return params;
     }
 }

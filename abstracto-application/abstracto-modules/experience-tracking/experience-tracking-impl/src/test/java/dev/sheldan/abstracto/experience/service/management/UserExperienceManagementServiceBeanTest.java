@@ -87,10 +87,10 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
         int startIndex = 11;
         List<AUserExperience> userExperiences = getUserExperiences();
         when(repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(server, PageRequest.of(startIndex, endIndex))).thenReturn(userExperiences);
-        List<AUserExperience> leaderboardUsersPaginated = testUnit.findLeaderboardUsersPaginated(server, startIndex, endIndex);
-        Assert.assertEquals(userExperiences.size(), leaderboardUsersPaginated.size());
+        List<AUserExperience> leaderBoardUsersPaginated = testUnit.findLeaderBoardUsersPaginated(server, startIndex, endIndex);
+        Assert.assertEquals(userExperiences.size(), leaderBoardUsersPaginated.size());
         for (int i = 0; i < userExperiences.size(); i++) {
-            Assert.assertEquals(userExperiences.get(i).getExperience(), leaderboardUsersPaginated.get(i).getExperience());
+            Assert.assertEquals(userExperiences.get(i).getExperience(), leaderBoardUsersPaginated.get(i).getExperience());
         }
     }
 

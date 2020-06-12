@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Converter used to conver from {@link LeaderBoard} to a list of {@link LeaderBoardEntryModel}
+ * Converter used to convert from {@link LeaderBoard} to a list of {@link LeaderBoardEntryModel}
  */
 @Component
 public class LeaderBoardModelConverter {
@@ -23,10 +23,10 @@ public class LeaderBoardModelConverter {
 
     /**
      * Converts the complete {@link LeaderBoard} into a list of {@link LeaderBoardEntryModel} which contain additional
-     * information available for rendering the leaderboard ({@link Member} reference)
+     * information available for rendering the leader board ({@link Member} reference and more)
      * @param leaderBoard The {@link LeaderBoard} object to be converted
      * @return The list of {@link LeaderBoardEntryModel} which contain the fully fledged information provided to the
-     * leaderboard template
+     * leader board template
      */
     public List<LeaderBoardEntryModel> fromLeaderBoard(LeaderBoard leaderBoard) {
         List<LeaderBoardEntryModel> models = new ArrayList<>();

@@ -44,7 +44,7 @@ public interface AUserExperienceService {
     AExperienceLevel calculateLevel(AUserExperience experience, List<AExperienceLevel> levels);
 
     /**
-     * Increases the experience of the provided {@link AUserExperience} object and and calculates the new level according
+     * Calculates the new level of the provided {@link AUserExperience} according
      * to the provided list of {@link AExperienceLevel} used as level configuration
      * @param userExperience The {@link AUserExperience} to increase the experience for
      * @param levels The list of {@link AExperienceLevel} to be used as level configuration
@@ -127,6 +127,15 @@ public interface AUserExperienceService {
      */
     void executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Consumer<AUserExperience> toExecute);
 
+    /**
+     * Disables the experience gain for a user directly. This sets the `experienceGainDisabled` on the respective {@link AUserExperience} object to true
+     * @param userInAServer The {@link AUserInAServer} to disable experience gain for
+     */
     void disableExperienceForUser(AUserInAServer userInAServer);
+
+    /**
+     * Enables the experience gain for a user directly. This sets the `experienceGainDisabled` on the respective {@link AUserExperience} object to false
+     * @param userInAServer The {@link AUserInAServer} to enable experience for
+     */
     void enableExperienceForUser(AUserInAServer userInAServer);
 }

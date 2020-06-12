@@ -11,13 +11,18 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository to manage the stored {@link ModMailThread} instances
+ */
 @Repository
 public interface ModMailThreadRepository extends JpaRepository<ModMailThread, Long> {
     ModMailThread findByChannel(AChannel channel);
     List<ModMailThread> findByUser(AUserInAServer aUserInAServer);
     ModMailThread findTopByUserOrderByClosedDesc(AUserInAServer aUserInAServer);
-    ModMailThread findByUser_UserReferenceAndStateNot(AUser user, ModMailThreadState state);
+    List<ModMailThread> findByUser_UserReferenceAndStateNot(AUser user, ModMailThreadState state);
+    boolean existsByUser_UserReferenceAndStateNot(AUser user, ModMailThreadState state);
     List<ModMailThread> findByServerAndState(AServer server, ModMailThreadState state);
     ModMailThread findByUserAndStateNot(AUserInAServer userInAServer, ModMailThreadState state);
+    boolean existsByUserAndStateNot(AUserInAServer userInAServer, ModMailThreadState state);
     List<ModMailThread> findByUserAndState(AUserInAServer userInAServer, ModMailThreadState state);
 }

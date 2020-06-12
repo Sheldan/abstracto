@@ -26,6 +26,10 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This command is used to create a thread with a member directly. If a thread already exists, this will post a link to
+ * the {@link net.dv8tion.jda.api.entities.MessageChannel}
+ */
 @Component
 public class Contact extends AbstractConditionableCommand {
 
@@ -39,21 +43,19 @@ public class Contact extends AbstractConditionableCommand {
     private UserInServerManagementService userManagementService;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private ChannelService channelService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Member targetUser = (Member) commandContext.getParameters().getParameters().get(0);
         AUserInAServer user = userManagementService.loadUser(targetUser);
-        ModMailThread existingThread = modMailThreadManagementService.getOpenModmailThreadForUser(user);
-        if(existingThread != null) {
+        // if this AUserInAServer already has an open thread, we should instead post a message
+        // containing a link to the channel, instead of opening a new one
+        if(modMailThreadManagementService.hasOpenModMailThreadForUser(user)) {
             ModMailThreadExistsModel model = (ModMailThreadExistsModel) ContextConverter.fromCommandContext(commandContext, ModMailThreadExistsModel.class);
+            ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
             model.setExistingModMailThread(existingThread);
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_thread_already_exists", model);
-            channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+            channelService.sendEmbedTemplateInChannel("modmail_thread_already_exists", model, commandContext.getChannel());
         } else {
             FullUser fullUser = FullUser
                     .builder()

@@ -9,20 +9,19 @@ import java.util.HashMap;
 @Getter
 @Setter
 @Builder
-public class EmoteMissingValidationError implements ValidationError {
+public class PostTargetValidationErrorModel implements ValidationErrorModel {
 
-    private String emoteKey;
+    private String postTargetName;
 
     @Override
     public String getTemplateName() {
-        return "emote_not_setup";
+        return "post_target_not_setup";
     }
 
     @Override
     public Object getTemplateModel() {
         HashMap<String, String> params = new HashMap<>();
-        params.put("emoteKey", emoteKey);
+        params.put("postTargetKey", postTargetName);
         return params;
     }
 }
-

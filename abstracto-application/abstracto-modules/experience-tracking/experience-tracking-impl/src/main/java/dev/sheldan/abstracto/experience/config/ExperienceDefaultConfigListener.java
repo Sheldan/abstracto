@@ -8,7 +8,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-
+/**
+ * Bean used to define the default values for the required configuration in the experience module.
+ * This {@link dev.sheldan.abstracto.core.models.database.ADefaultConfig} is used, when a config key in a module is set to the default value
+ * This service only creates a value if no one is previously there.
+ */
 @Component
 public class ExperienceDefaultConfigListener {
 

@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.modmail.commands.condition.RequiresModMailCondition;
+import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.config.ModMailMode;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -21,11 +21,16 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This command closes a mod mail thread without logging the closing and the contents of the {@link ModMailThread}.
+ * This command is only available if the server has the {@link dev.sheldan.abstracto.modmail.config.ModMailFeature}
+ * in the 'LOGGING' mode, because else the normal close command behaves the same way.
+ */
 @Component
 public class CloseNoLog extends AbstractConditionableCommand {
 
     @Autowired
-    private RequiresModMailCondition requiresModMailCondition;
+    private ModMailContextCondition requiresModMailCondition;
 
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
@@ -39,6 +44,7 @@ public class CloseNoLog extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
+        // we dont have a note, therefore we cant pass any, the method handles this accordingly
         modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), null, false, false);
         return CommandResult.fromSuccess();
     }
@@ -67,6 +73,9 @@ public class CloseNoLog extends AbstractConditionableCommand {
         return conditions;
     }
 
+    /**
+     * This command is only available in the LOGGING mod mail feature mode
+     */
     @Override
     public List<FeatureMode> getFeatureModeLimitations() {
         return Arrays.asList(ModMailMode.LOGGING);

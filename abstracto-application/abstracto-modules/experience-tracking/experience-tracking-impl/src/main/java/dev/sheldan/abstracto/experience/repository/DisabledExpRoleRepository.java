@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository to manage the access to the table managed by {@link ADisabledExpRole}
+ */
 @Repository
 public interface DisabledExpRoleRepository extends JpaRepository<ADisabledExpRole, Long> {
     boolean existsByRole(ARole role);

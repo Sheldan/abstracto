@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
@@ -61,6 +60,19 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
     @Autowired
     private BotService botService;
 
+    /**
+     * This setup method loads the existing mod mail category (if anything) and populates the model used to render the prompt.
+     * This method will then render the prompt and wait for the users input, if the provided input was a valid
+     * category ID in the current server, this method returns the proper result. If anything else is put in (except the input
+     * triggering a cancellation) this this method will jump back to this step and prompt the user again.
+     * @param user The {@link AServerChannelUserId} context required in order to execute the step. This is needed
+     *             to check if the returned message is from the same user and to see for which server
+     *             we need to change the mod mail category for
+     * @param parameter This is a parameter which contains the previous message triggering the setup step.
+     *                  This is necessary, because sometimes the {@link Message} executing the setup was also triggering
+     *                  the first {@link SetupStep}, so, if we are aware of it, we can ignore it
+     * @return A {@link CompletableFuture} containing the {@link SetupStepResult}. This might be cancelled or successful.
+     */
     @Override
     public CompletableFuture<SetupStepResult> execute(AServerChannelUserId user, SetupStepParameter parameter) {
         String messageTemplateKey = "setup_modmail_category_message";
@@ -78,6 +90,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
 
+        // very odd case, if the channel the command was executed in, was not found in the database.
         if(channel.isPresent()) {
             Runnable finalAction = getTimeoutRunnable(user.getGuildId(), user.getChannelId());
             Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
@@ -85,21 +98,23 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
 
                     SetupStepResult result;
                     Message message = event.getMessage();
+                    // this checks whether or not the user wanted to cancel the setup
                     if(checkForExit(message)) {
                         result = SetupStepResult.fromCancelled();
                     } else {
                         String messageContent = event.getMessage().getContentRaw();
+                        // directly parse the long from the message, for *now*, only the category ID is supported
                         Long categoryId = Long.parseLong(messageContent);
                         Guild guild = botService.getGuildByIdNullable(user.getGuildId());
                         FeatureValidationResult featureValidationResult = FeatureValidationResult.builder().validationResult(true).build();
+                        // directly validate whether or not the given category ID is a valid value
                         modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);
-                        if(Boolean.FALSE.equals(featureValidationResult.getValidationResult())) {
-                            AConfig fakeValue = configService.getFakeConfigForValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId(), messageContent);
+                        if(Boolean.TRUE.equals(featureValidationResult.getValidationResult())) {
                             ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
                                     .builder()
                                     .serverId(user.getGuildId())
                                     .category(guild.getCategoryById(categoryId))
-                                    .value(fakeValue)
+                                    .categoryId(categoryId)
                                     .build();
                             List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
                             result = SetupStepResult
@@ -108,6 +123,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                                     .delayedActionConfigList(delayedSteps)
                                     .build();
                         } else {
+                            // exceptions this exception is used to effectively fail the setup step
                             throw new InvalidCategoryException();
                         }
 
@@ -115,7 +131,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
 
                     future.complete(result);
                 } catch (Exception e) {
-                    log.error("Failed to handle post target step.", e);
+                    log.error("Failed to handle mod mail category step.", e);
                     future.completeExceptionally(new SetupStepException(e));
                 }
             };

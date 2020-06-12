@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.modmail.commands.condition.RequiresModMailCondition;
+import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
@@ -19,11 +19,15 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Sends the reply from the staff member to the user, but marks the reply as anonymous. The original author is still
+ * tracked internally.
+ */
 @Component
 public class AnonReply extends AbstractConditionableCommand {
 
     @Autowired
-    private RequiresModMailCondition requiresModMailCondition;
+    private ModMailContextCondition requiresModMailCondition;
 
     @Autowired
     private ModMailThreadService modMailThreadService;
@@ -34,6 +38,7 @@ public class AnonReply extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
+        // text is optional, for example if only an attachment is sent
         String text = parameters.size() == 1 ? (String) parameters.get(0) : "";
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
         modMailThreadService.relayMessageToDm(thread, text, commandContext.getMessage(), true, commandContext.getChannel());

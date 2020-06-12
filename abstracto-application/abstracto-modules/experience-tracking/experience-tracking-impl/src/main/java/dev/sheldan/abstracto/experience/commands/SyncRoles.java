@@ -17,6 +17,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to synchronize the actual awarded roles which what is defined to be awarded in the database.
+ * This also calculates the appropriate role for each user and then awards the role, while removing the previously awarded role.
+ * The synchronization is usually a longer process, and there is a status message to see how far this progress is.
+ *
+ */
 @Component
 @Slf4j
 public class SyncRoles extends AbstractConditionableCommand {

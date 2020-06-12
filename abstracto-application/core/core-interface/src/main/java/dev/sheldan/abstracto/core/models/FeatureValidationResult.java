@@ -18,7 +18,7 @@ public class FeatureValidationResult implements Templatable {
     private FeatureConfig feature;
     private Boolean validationResult;
     @Builder.Default
-    private List<ValidationError> validationErrors = new ArrayList<>();
+    private List<ValidationErrorModel> validationErrorModels = new ArrayList<>();
 
     public static FeatureValidationResult validationSuccessful(FeatureConfig featureConfig) {
         return FeatureValidationResult
@@ -37,7 +37,7 @@ public class FeatureValidationResult implements Templatable {
     public Object getTemplateModel() {
         HashMap<String, Object> params = new HashMap<>();
         params.put("featureTemplate", this.feature.getFeature().getKey() + "_feature");
-        params.put("errors", this.validationErrors);
+        params.put("errors", this.validationErrorModels);
         return params;
     }
 }

@@ -6,6 +6,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
+/**
+ * A role for which the experience gain in a particular server has been disabled.
+ */
 @Builder
 @Entity
 @NoArgsConstructor

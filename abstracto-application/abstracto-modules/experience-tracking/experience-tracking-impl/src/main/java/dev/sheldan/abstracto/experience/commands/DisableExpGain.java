@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to disable the experience gain for a specific member
+ */
 @Component
 public class DisableExpGain extends AbstractConditionableCommand {
 

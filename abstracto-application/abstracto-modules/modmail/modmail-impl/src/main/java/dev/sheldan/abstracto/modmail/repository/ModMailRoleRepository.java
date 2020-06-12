@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository to manage the stored {@link ModMailRole} instances
+ */
 @Repository
 public interface ModMailRoleRepository extends JpaRepository<ModMailRole, Long> {
     boolean existsByServerAndRole(AServer server, ARole role);

@@ -16,6 +16,11 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This command is used to add roles to the roles being pinged when a new mod mail thread is opened.
+ * The method this command uses automatically adds the mentioned roles to the roles which are allowed to execute
+ * the mod mail related commands.
+ */
 @Component
 public class SetModMailRole extends AbstractConditionableCommand {
 
@@ -25,7 +30,7 @@ public class SetModMailRole extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
-        modMailRoleService.addRoleToModMailRoles(role, commandContext.getUserInitiatedContext().getServer());
+        modMailRoleService.addRoleToModMailRoles(role);
         return CommandResult.fromSuccess();
     }
 

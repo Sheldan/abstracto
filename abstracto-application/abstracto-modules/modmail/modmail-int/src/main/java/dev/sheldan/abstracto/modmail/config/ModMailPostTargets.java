@@ -5,7 +5,14 @@ import lombok.Getter;
 
 @Getter
 public enum  ModMailPostTargets implements PostTargetEnum {
-    MOD_MAIL_PING("modmailPing"), MOD_MAIL_LOG("modmailLog");
+    /**
+     * The channel to be used for notifying the users about new mod mail threads
+     */
+    MOD_MAIL_PING("modmailPing"),
+    /**
+     * The channel to be used to log the contents of closed  mod mail threads
+     */
+    MOD_MAIL_LOG("modmailLog");
 
     private String key;
 

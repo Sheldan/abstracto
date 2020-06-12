@@ -16,6 +16,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to change the experience multiplier on the server.
+ */
 @Component
 @Slf4j
 public class ExpScale extends AbstractConditionableCommand {

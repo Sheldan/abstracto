@@ -583,7 +583,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     private void executeLeaderBoardTest(AServer server, Integer page) {
         int pageSize = 10;
         List<AUserExperience> experiences = getUserExperiences(pageSize, server);
-        when(userExperienceManagementService.findLeaderboardUsersPaginated(server, (page - 1) * pageSize, page * pageSize)).thenReturn(experiences);
+        when(userExperienceManagementService.findLeaderBoardUsersPaginated(server, (page - 1) * pageSize, page * pageSize)).thenReturn(experiences);
         LeaderBoard leaderBoardData = testUnit.findLeaderBoardData(server, page);
         page--;
         List<LeaderBoardEntry> entries = leaderBoardData.getEntries();

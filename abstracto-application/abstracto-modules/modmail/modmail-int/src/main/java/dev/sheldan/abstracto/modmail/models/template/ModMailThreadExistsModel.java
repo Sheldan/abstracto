@@ -7,6 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * This model is used to notify a staff member that there is already a mod mail thread open for the user
+ * and provide a link to the channel associated with the user.
+ */
 @Getter
 @Setter
 @SuperBuilder

@@ -16,6 +16,11 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This command is used to remove a role from the roles to be notified when a new {@link dev.sheldan.abstracto.modmail.models.database.ModMailThread}
+ * is opened. The method this command executes also automatically dis-allows all mod mail related {@link dev.sheldan.abstracto.core.command.Command}
+ * for this role.
+ */
 @Component
 public class RemoveModMailRole extends AbstractConditionableCommand {
 
@@ -25,7 +30,7 @@ public class RemoveModMailRole extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
-        modMailRoleService.removeRoleFromModMailRoles(role, commandContext.getUserInitiatedContext().getServer());
+        modMailRoleService.removeRoleFromModMailRoles(role);
         return CommandResult.fromSuccess();
     }
 

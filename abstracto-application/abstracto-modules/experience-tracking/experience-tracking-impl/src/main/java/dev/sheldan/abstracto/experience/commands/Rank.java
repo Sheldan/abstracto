@@ -24,6 +24,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to show an embed containing information about the experience amount, level and message count of a ember on a server
+ */
 @Component
 public class Rank extends AbstractConditionableCommand {
 

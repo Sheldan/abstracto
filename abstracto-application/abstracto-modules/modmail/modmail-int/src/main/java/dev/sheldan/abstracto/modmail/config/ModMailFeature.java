@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * General instance of {@link FeatureConfig} to establish the mod mail feature
+ */
 @Component
 public class ModMailFeature implements FeatureConfig {
 

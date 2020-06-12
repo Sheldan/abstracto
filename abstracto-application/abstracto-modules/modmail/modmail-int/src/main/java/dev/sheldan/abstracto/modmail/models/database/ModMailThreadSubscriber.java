@@ -7,6 +7,10 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.time.Instant;
 
+/**
+ * This able contains the staff users which subscribed to a certain mod mail thread and will get notified of new messages
+ * in a mod mail thread
+ */
 @Builder
 @Entity
 @NoArgsConstructor
@@ -22,10 +26,16 @@ public class ModMailThreadSubscriber {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long subscriberId;
 
+    /**
+     * The staff member which is subscribed
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modmail_message_subscriber", nullable = false)
     private AUserInAServer subscriber;
 
+    /**
+     * The thread for which the member is subscribed to
+     */
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "modMailThread", nullable = false)
     private ModMailThread threadReference;
