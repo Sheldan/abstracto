@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
+@Table(name = "user_in_server")
 @Getter
 @Builder
 @Setter

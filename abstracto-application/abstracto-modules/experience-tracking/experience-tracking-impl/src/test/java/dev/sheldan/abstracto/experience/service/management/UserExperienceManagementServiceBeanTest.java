@@ -97,12 +97,14 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
     @Test
     public void testLoadRankOfUser() {
         long experienceValue = 2L;
-        AUserExperience experience = AUserExperience.builder().experience(experienceValue).id(3L).build();
+        AServer server = MockUtils.getServer();
+        AUserInAServer user = MockUtils.getUserObject(6L, server);
+        AUserExperience experience = AUserExperience.builder().experience(experienceValue).user(user).id(3L).build();
         LeaderBoardEntryTestImpl leaderBoardEntryTest = LeaderBoardEntryTestImpl
                 .builder()
                 .experience(experienceValue)
                 .build();
-        when(repository.getRankOfUserInServer(experience.getId())).thenReturn(leaderBoardEntryTest);
+        when(repository.getRankOfUserInServer(experience.getId(), server.getId())).thenReturn(leaderBoardEntryTest);
         LeaderBoardEntryResult rankOfUserInServer = testUnit.getRankOfUserInServer(experience);
         Assert.assertEquals(experienceValue, rankOfUserInServer.getExperience().longValue());
     }
