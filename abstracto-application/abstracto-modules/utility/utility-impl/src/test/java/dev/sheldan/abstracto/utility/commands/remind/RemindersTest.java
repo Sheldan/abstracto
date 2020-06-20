@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.utility.commands.remind;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.RemindersModel;
@@ -50,5 +51,10 @@ public class RemindersTest {
         Assert.assertEquals(secondReminder, usedModel.getReminders().get(1));
         Assert.assertEquals(reminders.size(), usedModel.getReminders().size());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 
 import java.time.Duration;
 
@@ -26,10 +25,6 @@ public class MuteLog extends UserInitiatedServerContext {
      * The {@link Member} executing the mute
      */
     private Member mutingUser;
-    /**
-     * The {@link Message} triggering the command to mute
-     */
-    private Message message;
     /**
      * The persisted mute object from the database containing the information about the mute
      */

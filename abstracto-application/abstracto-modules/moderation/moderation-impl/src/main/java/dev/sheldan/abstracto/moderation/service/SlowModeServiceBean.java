@@ -29,7 +29,7 @@ public class SlowModeServiceBean implements SlowModeService {
     }
 
     @Override
-    public void disableSlowMOde(TextChannel channel) {
+    public void disableSlowMode(TextChannel channel) {
         setSlowMode(channel, Duration.ZERO);
     }
 

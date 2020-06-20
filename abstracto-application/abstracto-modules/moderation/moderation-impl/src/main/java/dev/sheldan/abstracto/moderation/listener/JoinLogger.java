@@ -11,18 +11,16 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 
 @Service
 @Slf4j
 public class JoinLogger implements JoinListener {
 
-    private static final String USER_JOIN_TEMPLATE = "user_join";
+    public static final String USER_JOIN_TEMPLATE = "user_join";
 
     @Autowired
     private TemplateService templateService;
@@ -31,8 +29,7 @@ public class JoinLogger implements JoinListener {
     private PostTargetService postTargetService;
 
 
-    @NotNull
-    private HashMap<String, Object> getUserParameter(@Nonnull User user) {
+    private HashMap<String, Object> getUserParameter(User user) {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("user", user);
         return parameters;

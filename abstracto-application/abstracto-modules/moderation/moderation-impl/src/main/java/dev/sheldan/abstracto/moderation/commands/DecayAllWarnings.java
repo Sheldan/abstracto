@@ -24,6 +24,7 @@ public class DecayAllWarnings extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         boolean logWarnings = !parameters.isEmpty() ? (Boolean) parameters.get(0) : Boolean.FALSE;
         warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer(), logWarnings);

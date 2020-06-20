@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
@@ -20,7 +19,6 @@ import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnEntry;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarningsModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,14 +29,9 @@ import java.util.List;
 @Component
 public class Warnings extends AbstractConditionableCommand {
 
-    @Autowired
-    private BotService botService;
-
+    public static final String WARNINGS_RESPONSE_TEMPLATE = "warnings_response";
     @Autowired
     private WarnManagementService warnManagementService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
@@ -54,6 +47,7 @@ public class Warnings extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Warning> warnsToDisplay;
         if(!commandContext.getParameters().getParameters().isEmpty()) {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);
@@ -66,7 +60,7 @@ public class Warnings extends AbstractConditionableCommand {
         WarningsModel model = (WarningsModel) ContextConverter.fromCommandContext(commandContext, WarningsModel.class);
         model.setWarnings(warnEntries);
 
-        Paginator paginator = paginatorService.createPaginatorFromTemplate("warnings_response", model, eventWaiter);
+        Paginator paginator = paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, eventWaiter);
         paginator.display(commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
@@ -74,7 +68,7 @@ public class Warnings extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("user").type(Member.class).optional(true).build());
+        parameters.add(Parameter.builder().name("user").type(Member.class).templated(true).optional(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("warnings")

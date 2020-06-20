@@ -26,11 +26,10 @@ public class MuteManagementServiceBean implements MuteManagementService {
 
     @Override
     public Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unmuteDate, AServerAChannelMessage muteMessage) {
-        log.trace("Creating mute for user {} executed by user {} in server {}, user will be unmuted at {}",
+        log.trace("Creating mute for user {} executed by user {} in server {}, user will be un-muted at {}",
                 mutedUser.getUserReference().getId(), mutingUser.getUserReference().getId(), mutedUser.getServerReference().getId(), unmuteDate);
         Mute mute = Mute
                 .builder()
-                .muteDate(Instant.now())
                 .mutedUser(mutedUser)
                 .mutingUser(mutingUser)
                 .muteTargetDate(unmuteDate)
@@ -58,6 +57,11 @@ public class MuteManagementServiceBean implements MuteManagementService {
     @Override
     public boolean hasActiveMute(AUserInAServer userInAServer) {
         return muteRepository.existsByMutedUserAndMuteEndedFalse(userInAServer);
+    }
+
+    @Override
+    public boolean hasActiveMute(Member member) {
+        return muteRepository.existsByMutedUserAndMuteEndedFalse(userInServerManagementService.loadUser(member));
     }
 
     @Override

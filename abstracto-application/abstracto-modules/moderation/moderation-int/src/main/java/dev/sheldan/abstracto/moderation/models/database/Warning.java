@@ -29,6 +29,7 @@ public class Warning {
      * The {@link AUserInAServer} which was warned
      */
     @Getter
+    @Setter
     @ManyToOne
     @JoinColumn(name = "warnedUserId", nullable = false)
     private AUserInAServer warnedUser;
@@ -37,6 +38,7 @@ public class Warning {
      * The {@link AUserInAServer} which gave the warning
      */
     @Getter
+    @Setter
     @ManyToOne
     @JoinColumn(name = "warningUserId", nullable = false)
     private AUserInAServer warningUser;
@@ -45,12 +47,14 @@ public class Warning {
      * The reason why this warning was cast
      */
     @Getter
+    @Setter
     private String reason;
 
     /**
      * The date at which the warning was cast
      */
     @Getter
+    @Setter
     private Instant warnDate;
 
     /**

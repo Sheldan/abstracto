@@ -9,8 +9,11 @@ public class Parameter {
     private String name;
     private Class type;
     private String description;
-    private boolean optional;
-    private boolean remainder;
+    @Builder.Default
+    private boolean optional = false;
+    @Builder.Default
+    private boolean remainder = false;
     private Integer maxLength;
-    private Boolean templated;
+    @Builder.Default
+    private Boolean templated = false;
 }

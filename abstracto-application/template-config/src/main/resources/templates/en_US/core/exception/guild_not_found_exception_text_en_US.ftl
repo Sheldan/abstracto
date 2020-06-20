@@ -1,1 +1,1 @@
-Guild ${id} was not found.
+Guild ${guildId} was not found.

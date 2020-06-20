@@ -21,7 +21,7 @@ import java.util.HashMap;
 @Slf4j
 public class LeaveLogger implements LeaveListener {
 
-    private static final String USER_LEAVE_TEMPLATE = "user_leave";
+    public static final String USER_LEAVE_TEMPLATE = "user_leave";
 
     @Autowired
     private TemplateService templateService;

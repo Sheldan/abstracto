@@ -13,6 +13,7 @@ import java.util.List;
 @Component
 public class WarningDecayFeature implements FeatureConfig {
 
+    public static final String DECAY_DAYS_KEY = "decayDays";
     @Autowired
     private WarningFeature warningFeature;
 
@@ -24,7 +25,7 @@ public class WarningDecayFeature implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList("decayDays");
+        return Arrays.asList(DECAY_DAYS_KEY);
     }
 
     @Override

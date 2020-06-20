@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
+import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
+import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
@@ -19,8 +21,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class MessageDeleteLogListener implements MessageDeletedListener {
 
-    private static final String MESSAGE_DELETED_TEMPLATE = "message_deleted";
-    private static final String MESSAGE_DELETED_ATTACHMENT_TEMPLATE = "message_deleted_attachment";
+    public static final String MESSAGE_DELETED_TEMPLATE = "message_deleted";
+    public static final String MESSAGE_DELETED_ATTACHMENT_TEMPLATE = "message_deleted_attachment";
 
     @Autowired
     private ContextUtils contextUtils;
@@ -32,18 +34,38 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
     private PostTargetService postTargetService;
 
     @Override
-    public void execute(CachedMessage messageFromCache) {
+    public void execute(CachedMessage messageFromCache, AServerAChannelAUser authorUser, GuildChannelMember authorMember) {
         log.trace("Message {} in channel {} in guild {} was deleted.", messageFromCache.getMessageId(), messageFromCache.getChannelId(), messageFromCache.getServerId());
-        MessageDeletedLog logModel = (MessageDeletedLog) contextUtils.fromMessage(messageFromCache, MessageDeletedLog.class);
-        logModel.setMessage(messageFromCache);
+        MessageDeletedLog logModel = MessageDeletedLog
+                .builder()
+                .cachedMessage(messageFromCache)
+                .server(authorUser.getGuild())
+                .channel(authorUser.getChannel())
+                .user(authorUser.getUser())
+                .aUserInAServer(authorUser.getAUserInAServer())
+                .guild(authorMember.getGuild())
+                .messageChannel(authorMember.getTextChannel())
+                .member(authorMember.getMember())
+                .build();
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
         postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
-        for (int i = 0; i < messageFromCache.getAttachmentUrls().size(); i++) {
-            MessageDeletedAttachmentLog log = (MessageDeletedAttachmentLog) contextUtils.fromMessage(messageFromCache, MessageDeletedAttachmentLog.class);
-            log.setImageUrl(messageFromCache.getAttachmentUrls().get(i));
-            log.setCounter(i + 1);
-            MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log);
-            postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
+        if(messageFromCache.getAttachmentUrls() != null){
+            for (int i = 0; i < messageFromCache.getAttachmentUrls().size(); i++) {
+                MessageDeletedAttachmentLog log = MessageDeletedAttachmentLog
+                        .builder()
+                        .imageUrl(messageFromCache.getAttachmentUrls().get(i))
+                        .counter(i + 1)
+                        .server(authorUser.getGuild())
+                        .channel(authorUser.getChannel())
+                        .user(authorUser.getUser())
+                        .aUserInAServer(authorUser.getAUserInAServer())
+                        .guild(authorMember.getGuild())
+                        .messageChannel(authorMember.getTextChannel())
+                        .member(authorMember.getMember())
+                        .build();
+                MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log);
+                postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
+            }
         }
     }
 

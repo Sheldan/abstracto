@@ -33,6 +33,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.mockito.Mockito.*;
 
@@ -68,6 +69,9 @@ public class RemindServiceBeanTest {
 
     @Mock
     private TextChannel channel;
+
+    @Mock
+    private ScheduledExecutorService instantReminderScheduler;
 
     @Before
     public void setup() {

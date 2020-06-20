@@ -25,6 +25,7 @@ public class SetMuteRole extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         muteRoleManagementService.setMuteRoleForServer(commandContext.getUserInitiatedContext().getServer(), role);
         return CommandResult.fromSuccess();

@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.experience.models.database.ADisabledExpRole;
 import dev.sheldan.abstracto.experience.models.templates.DisabledExperienceRolesModel;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,5 +62,10 @@ public class ListDisabledExperienceRolesTest {
         verify(roleService, times(2)).getRoleFromGuild(any(ARole.class));
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
                 any(DisabledExperienceRolesModel.class), eq(context.getChannel()));
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

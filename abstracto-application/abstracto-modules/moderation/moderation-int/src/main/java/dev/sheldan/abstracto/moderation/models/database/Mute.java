@@ -93,6 +93,7 @@ public class Mute {
     @PrePersist
     private void onInsert() {
         this.created = Instant.now();
+        this.muteDate = Instant.now();
     }
 
     @Column(name = "updated")

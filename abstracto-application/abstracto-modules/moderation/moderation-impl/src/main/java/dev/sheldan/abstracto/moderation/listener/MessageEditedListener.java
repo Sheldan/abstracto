@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class MessageEditedListener implements MessageTextUpdatedListener {
 
-    private static final String MESSAGE_EDITED_TEMPLATE = "message_edited";
+    public static final String MESSAGE_EDITED_TEMPLATE = "message_edited";
 
     @Autowired
     private TemplateService templateService;
@@ -35,13 +35,14 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
             return;
         }
         log.trace("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), messageBefore.getServerId());
-        MessageEditedLog log = MessageEditedLog.
-                builder().
-                messageAfter(messageAfter)
+        MessageEditedLog log = MessageEditedLog
+                .builder()
+                .messageAfter(messageAfter)
                 .messageBefore(messageBefore)
                 .messageChannel(messageAfter.getTextChannel())
                 .guild(messageAfter.getGuild())
-                .member(messageAfter.getMember()).build();
+                .member(messageAfter.getMember())
+                .build();
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log);
         postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, messageBefore.getServerId());
     }

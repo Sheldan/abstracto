@@ -11,5 +11,6 @@ public class HelpInfo {
     private String example;
     @Builder.Default
     private boolean hasExample = false;
-    private boolean templated;
+    @Builder.Default
+    private boolean templated = false;
 }

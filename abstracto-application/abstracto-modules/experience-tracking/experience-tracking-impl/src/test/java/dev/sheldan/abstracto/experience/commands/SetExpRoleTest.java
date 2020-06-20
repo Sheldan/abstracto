@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,5 +75,10 @@ public class SetExpRoleTest {
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));
         when(roleService.isRoleInServer(changedRole)).thenReturn(false);
         testUnit.execute(context);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

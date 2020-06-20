@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.service.ReminderService;
 import org.junit.Test;
@@ -42,5 +43,10 @@ public class UnRemindTest {
         CommandResult result = testUnit.execute(withParameters);
         verify(reminderService, times(1)).unRemind(reminderId, withParameters.getUserInitiatedContext().getAUserInAServer());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

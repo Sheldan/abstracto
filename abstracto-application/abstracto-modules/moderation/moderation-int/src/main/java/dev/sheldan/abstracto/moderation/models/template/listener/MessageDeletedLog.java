@@ -16,5 +16,5 @@ public class MessageDeletedLog extends UserInitiatedServerContext {
     /**
      * A {@link CachedMessage} representing the deleted message
      */
-    private CachedMessage message;
+    private CachedMessage cachedMessage;
 }

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.FullUser;
@@ -23,12 +22,10 @@ import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +34,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -76,17 +72,21 @@ public class MuteServiceBean implements MuteService {
     private MuteService self;
 
     @Autowired
+    @Qualifier("unmuteScheduler")
+    private ScheduledExecutorService unMuteScheduler;
+
+    @Autowired
     private ChannelManagementService channelManagementService;
 
-    private static final String MUTE_LOG_TEMPLATE = "mute_log";
-    private static final String UNMUTE_LOG_TEMPLATE = "unmute_log";
-    private static final String MUTE_NOTIFICATION_TEMPLATE = "mute_notification";
+    public static final String MUTE_LOG_TEMPLATE = "mute_log";
+    public static final String UNMUTE_LOG_TEMPLATE = "unmute_log";
+    public static final String MUTE_NOTIFICATION_TEMPLATE = "mute_notification";
 
     @Override
     public Mute muteMember(Member memberToMute, Member mutingMember, String reason, Instant unmuteDate, Message message) {
         FullUser mutedUser = FullUser
                 .builder()
-                .aUserInAServer(userInServerManagementService.loadUser(memberToMute))
+                    .aUserInAServer(userInServerManagementService.loadUser(memberToMute))
                 .member(memberToMute)
                 .build();
 
@@ -99,7 +99,7 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
-    public Mute muteMember(AUserInAServer userBeingMuted, AUserInAServer userMuting, String reason, Instant unmuteDate, Message message) {
+    public Mute muteAUserInAServer(AUserInAServer userBeingMuted, AUserInAServer userMuting, String reason, Instant unmuteDate, Message message) {
         FullUser mutedUser = FullUser
                 .builder()
                 .aUserInAServer(userBeingMuted)
@@ -116,20 +116,44 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public Mute muteUser(FullUser userBeingMuted, FullUser userMuting, String reason, Instant unmuteDate, Message message) {
+        AServer serverBeingMutedIn = userBeingMuted.getAUserInAServer().getServerReference();
+        if(!muteRoleManagementService.muteRoleForServerExists(serverBeingMutedIn)) {
+            log.error("Mute role for server {} has not been setup.", serverBeingMutedIn.getId());
+            throw new MuteException("Mute role for server has not been setup");
+        }
         Member memberBeingMuted = userBeingMuted.getMember();
-        log.info("User {} mutes {} until {}",
+        log.info("User {} mutes user {} until {}",
                 memberBeingMuted.getIdLong(), userMuting.getMember().getIdLong(), unmuteDate);
         if(message != null) {
             log.trace("because of message {} in channel {} in server {}", message.getId(), message.getChannel().getId(), message.getGuild().getId());
         } else {
             log.trace("This mute was not triggered by a message.");
         }
-        if(!muteRoleManagementService.muteRoleForServerExists(userBeingMuted.getAUserInAServer().getServerReference())) {
-            log.error("Mute role for server {} has not been setup.", userBeingMuted.getAUserInAServer().getServerReference().getId());
-            throw new MuteException("Mute role for server has not been setup");
-        }
+
         AUserInAServer userInServerBeingMuted = userBeingMuted.getAUserInAServer();
         applyMuteRole(userInServerBeingMuted);
+        Mute mute = createMuteObject(userMuting, reason, unmuteDate, message, userInServerBeingMuted);
+        Guild guild = memberBeingMuted.getGuild();
+        if(memberBeingMuted.getVoiceState() != null && memberBeingMuted.getVoiceState().getChannel() != null) {
+            guild.kickVoiceMember(memberBeingMuted).queue();
+        }
+        sendMuteNotification(message, memberBeingMuted, mute, guild);
+
+        String triggerKey = startUnmuteJobFor(unmuteDate, mute);
+        mute.setTriggerKey(triggerKey);
+        muteManagementService.saveMute(mute);
+        return mute;
+    }
+
+    private void sendMuteNotification(Message message, Member memberBeingMuted, Mute mute, Guild guild) {
+        log.trace("Notifying the user about the mute.");
+        MuteNotification muteNotification = MuteNotification.builder().mute(mute).serverName(guild.getName()).build();
+        String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification);
+        MessageChannel textChannel = message != null ? message.getChannel() : null;
+        messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage, textChannel);
+    }
+
+    private Mute createMuteObject(FullUser userMuting, String reason, Instant unmuteDate, Message message, AUserInAServer userInServerBeingMuted) {
         AServerAChannelMessage origin = null;
         if(message != null) {
             long channelId = message.getChannel().getIdLong();
@@ -142,21 +166,7 @@ public class MuteServiceBean implements MuteService {
                     .messageId(message.getIdLong())
                     .build();
         }
-        Mute mute = muteManagementService.createMute(userInServerBeingMuted, userMuting.getAUserInAServer(), reason, unmuteDate, origin);
-        Guild guild = memberBeingMuted.getGuild();
-        if(memberBeingMuted.getVoiceState() != null && memberBeingMuted.getVoiceState().getChannel() != null) {
-            guild.kickVoiceMember(memberBeingMuted).queue();
-        }
-        log.trace("Notifying the user about the mute.");
-        MuteNotification muteNotification = MuteNotification.builder().mute(mute).serverName(guild.getName()).build();
-        String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification);
-        TextChannel textChannel = message != null ? message.getTextChannel() : null;
-        messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage, textChannel);
-
-        String triggerKey = startUnmuteJobFor(unmuteDate, mute);
-        mute.setTriggerKey(triggerKey);
-        muteManagementService.saveMute(mute);
-        return mute;
+        return muteManagementService.createMute(userInServerBeingMuted, userMuting.getAUserInAServer(), reason, unmuteDate, origin);
     }
 
     @Override
@@ -170,10 +180,9 @@ public class MuteServiceBean implements MuteService {
         Duration muteDuration = Duration.between(Instant.now(), unmuteDate);
         if(muteDuration.getSeconds() < 60) {
             log.trace("Directly scheduling the unmute, because it was below the threshold.");
-            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-            scheduler.schedule(() -> {
+            unMuteScheduler.schedule(() -> {
                 try {
-                    self.unmuteUser(mute);
+                    self.endMute(mute.getId());
                 } catch (Exception exception) {
                     log.error("Failed to remind immediately.", exception);
                 }
@@ -217,18 +226,12 @@ public class MuteServiceBean implements MuteService {
     @Override
     @Transactional
     public void unmuteUser(Mute mute) {
-        AServer mutingServer = mute.getMutingServer();
-        Optional<Mute> updatedMuteOpt = muteManagementService.findMute(mute.getId());
-        Mute updatedMute = updatedMuteOpt.orElseThrow(() -> new AbstractoRunTimeException(String.format("Cannot find mute with id %s", mute.getId())));
-        // we do not store any reference to the instant unmutes (<=60sec), so we cannot cancel it
-        // but if the person gets unmuted immediately, via command, this might still execute of the instant unmute
-        // so we need to load the mute, and check if the mute was unmuted already, because the mute object we have at
-        // hand was loaded earlier, and does not reflect the true state
-        if(Boolean.TRUE.equals(updatedMute.getMuteEnded())) {
-            log.info("Mute {} has ended already, {} does not need to be unmuted anymore.", mute.getId(), mute.getMutedUser().getUserReference().getId());
+        if(Boolean.TRUE.equals(mute.getMuteEnded())) {
+            log.info("Mute {} has ended already, user {} does not need to be unmuted anymore.", mute.getId(), mute.getMutedUser().getUserReference().getId());
             return;
         }
-        log.info("Unmuting {} in server {}", mutingServer.getId(), mute.getMutedUser().getUserReference().getId());
+        AServer mutingServer = mute.getMutingServer();
+        log.info("Unmuting {} in server {}", mute.getMutedUser().getUserReference().getId(), mutingServer.getId());
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
         log.trace("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
         Guild guild = botService.getGuildByIdNullable(mute.getMutingServer().getId());
@@ -259,7 +262,7 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
-    public void completelyUnmuteUser(AUserInAServer aUserInAServer) {
+    public void completelyUnMuteUser(AUserInAServer aUserInAServer) {
         List<Mute> allMutesOfUser = muteManagementService.getAllMutesOf(aUserInAServer);
         allMutesOfUser.forEach(mute -> {
             mute.setMuteEnded(true);
@@ -269,7 +272,7 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
-    public void completelyUnmuteUser(Member member) {
-        completelyUnmuteUser(userInServerManagementService.loadUser(member));
+    public void completelyUnMuteMember(Member member) {
+        completelyUnMuteUser(userInServerManagementService.loadUser(member));
     }
 }

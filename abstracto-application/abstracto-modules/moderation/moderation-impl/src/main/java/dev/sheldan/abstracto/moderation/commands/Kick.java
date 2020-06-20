@@ -22,6 +22,7 @@ import java.util.List;
 @Component
 public class Kick extends AbstractConditionableCommand {
 
+    public static final String KICK_DEFAULT_REASON_TEMPLATE = "kick_default_reason";
     @Autowired
     private TemplateService templateService;
 
@@ -30,10 +31,10 @@ public class Kick extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
-        String defaultReason = templateService.renderTemplateWithMap("ban_default_reason", null);
+        String defaultReason = templateService.renderSimpleTemplate(KICK_DEFAULT_REASON_TEMPLATE);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
         KickLogModel kickLogModel = (KickLogModel) ContextConverter.fromCommandContext(commandContext, KickLogModel.class);

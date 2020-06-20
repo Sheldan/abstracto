@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowEmoteLog;
 import net.dv8tion.jda.api.entities.Emote;
@@ -61,6 +62,11 @@ public class ShowEmoteTest {
         CommandTestUtilities.checkSuccessfulCompletion(result);
         ShowEmoteLog usedLog = emoteLogArgumentCaptor.getValue();
         Assert.assertEquals(emote, usedLog.getEmote());
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 
 }

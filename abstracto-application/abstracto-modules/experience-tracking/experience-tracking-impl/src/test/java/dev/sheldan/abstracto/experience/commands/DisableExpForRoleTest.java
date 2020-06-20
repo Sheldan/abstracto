@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,5 +55,10 @@ public class DisableExpForRoleTest {
         CommandResult result = testUnit.execute(context);
         verify(disabledExpRoleManagementService, times(wantedNumberOfInvocations)).setRoleToBeDisabledForExp(disabledRole);
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.experience.models.templates.LeaderBoardModel;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,5 +71,10 @@ public class LeaderBoardCommandTest {
         CommandResult result = testUnit.execute(context);
         verify(channelService, times(1)).sendMessageToSendToChannel(messageToSend, context.getChannel());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

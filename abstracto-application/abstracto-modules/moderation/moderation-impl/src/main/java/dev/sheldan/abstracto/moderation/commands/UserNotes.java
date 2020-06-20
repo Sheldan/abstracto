@@ -28,6 +28,7 @@ import java.util.List;
 
 @Component
 public class UserNotes extends AbstractConditionableCommand {
+    public static final String USER_NOTES_RESPONSE_TEMPLATE = "user_notes_response";
     @Autowired
     private UserNoteManagementService userNoteManagementService;
 
@@ -45,6 +46,7 @@ public class UserNotes extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         List<UserNote> userNotes;
 
@@ -63,7 +65,7 @@ public class UserNotes extends AbstractConditionableCommand {
             userNotes = userNoteManagementService.loadNotesForServer(commandContext.getUserInitiatedContext().getServer());
         }
         model.setUserNotes(userNotesConverter.fromNotes(userNotes));
-        channelService.sendEmbedTemplateInChannel("user_notes_response", model, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

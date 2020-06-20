@@ -2,10 +2,17 @@ package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
+import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -35,6 +42,18 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
+    @Autowired
+    private BotService botService;
+
     @Override
     @Transactional
     public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
@@ -49,13 +68,27 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
 
     @Transactional
     public void executeListener(CachedMessage cachedMessage) {
+        // TODO maybe lazy load, when there is actually a listener which has its feature enabled
+        AServerAChannelAUser authorUser = AServerAChannelAUser
+                .builder()
+                .guild(serverManagementService.loadOrCreate(cachedMessage.getServerId()))
+                .channel(channelManagementService.loadChannel(cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getServerId(), cachedMessage.getChannelId())))
+                .aUserInAServer(userInServerManagementService.loadUser(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
+                .build();
+
+        GuildChannelMember authorMember = GuildChannelMember
+                .builder()
+                .guild(botService.getGuildByIdNullable(cachedMessage.getServerId()))
+                .textChannel(botService.getTextChannelFromServer(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getServerId(), cachedMessage.getChannelId())))
+                .member(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
+                .build();
         listener.forEach(messageDeletedListener -> {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
             if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
                 return;
             }
             try {
-                messageDeletedListener.execute(cachedMessage);
+                messageDeletedListener.execute(cachedMessage, authorUser, authorMember);
             } catch (AbstractoRunTimeException e) {
                 log.error("Listener {} failed with exception:", messageDeletedListener.getClass().getName(), e);
             }

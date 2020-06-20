@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
+import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
+import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -11,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
@@ -34,7 +37,9 @@ public class StarboardPostDeletedListenerTest {
                 .builder()
                 .messageId(messageId)
                 .build();
-        testUnit.execute(cachedMessage);
+        AServerAChannelAUser user = Mockito.mock(AServerAChannelAUser.class);
+        GuildChannelMember member = Mockito.mock(GuildChannelMember.class);
+        testUnit.execute(cachedMessage, user, member);
         verify( starboardPostManagementService, times(0)).setStarboardPostIgnored(messageId, true);
     }
 
@@ -50,7 +55,9 @@ public class StarboardPostDeletedListenerTest {
                 .builder()
                 .messageId(messageId)
                 .build();
-        testUnit.execute(cachedMessage);
+        AServerAChannelAUser user = Mockito.mock(AServerAChannelAUser.class);
+        GuildChannelMember member = Mockito.mock(GuildChannelMember.class);
+        testUnit.execute(cachedMessage, user, member);
         verify( starboardPostManagementService, times(1)).setStarboardPostIgnored(messageId, true);
     }
 

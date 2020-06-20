@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowAvatarModel;
 import net.dv8tion.jda.api.entities.Member;
@@ -53,6 +54,11 @@ public class ShowAvatarTest {
         ShowAvatarModel usedModel = argumentCaptor.getValue();
         Assert.assertEquals(target, usedModel.getMemberInfo());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 
 }

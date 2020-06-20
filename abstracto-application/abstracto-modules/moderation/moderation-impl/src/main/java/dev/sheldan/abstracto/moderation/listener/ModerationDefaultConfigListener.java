@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
+import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -20,6 +21,6 @@ public class ModerationDefaultConfigListener {
     @EventListener
     @Transactional
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
-        defaultConfigManagementService.createDefaultConfig("decayDays", decayDays);
+        defaultConfigManagementService.createDefaultConfig(WarningDecayFeature.DECAY_DAYS_KEY, decayDays);
     }
 }

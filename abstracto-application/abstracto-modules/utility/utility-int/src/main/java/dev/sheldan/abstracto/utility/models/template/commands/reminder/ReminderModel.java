@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.utility.models.database.Reminder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import net.dv8tion.jda.api.entities.Message;
 
 @Getter
 @Setter
@@ -13,5 +12,4 @@ import net.dv8tion.jda.api.entities.Message;
 public class ReminderModel extends UserInitiatedServerContext {
     private String remindText;
     private Reminder reminder;
-    private Message message;
 }

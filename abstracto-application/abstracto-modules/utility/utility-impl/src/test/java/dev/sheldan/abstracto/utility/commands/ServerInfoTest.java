@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.utility.commands;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.serverinfo.ServerInfoModel;
 import org.junit.Test;
@@ -28,6 +29,11 @@ public class ServerInfoTest {
         CommandResult result = testUnit.execute(context);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq("serverinfo_response"), any(ServerInfoModel.class), eq(context.getChannel()));
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 
 }

@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
@@ -21,6 +20,6 @@ public interface MessageService {
     CompletableFuture<Long> createStatusMessageId(MessageToSend messageToSend, MessageChannel channel);
     void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend);
     void updateStatusMessage(MessageChannel channel, Long messageId, MessageToSend messageToSend);
-    void sendMessageToUser(AUserInAServer userInAServer, String text, TextChannel feedbackChannel);
-    void sendMessageToUser(User user, String text, TextChannel feedbackChannel);
+    void sendMessageToUser(AUserInAServer userInAServer, String text, MessageChannel feedbackChannel);
+    void sendMessageToUser(User user, String text, MessageChannel feedbackChannel);
 }

@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,5 +32,10 @@ public class SyncRolesTest {
         AChannel channel = context.getUserInitiatedContext().getChannel();
         verify(userExperienceService, times(1)).syncUserRolesWithFeedback(server, channel);
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

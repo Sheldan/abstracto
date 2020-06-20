@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.FullUser;
-import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
@@ -55,11 +55,11 @@ public class WarnServiceBean implements WarnService {
     @Autowired
     private ConfigService configService;
 
-    private static final String WARN_LOG_TEMPLATE = "warn_log";
-    private static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
+    public static final String WARN_LOG_TEMPLATE = "warn_log";
+    public static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
 
     @Override
-    public Warning warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, TextChannel feedbackChannel)  {
+    public Warning warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, MessageChannel feedbackChannel)  {
         FullUser warnedUser = FullUser
                 .builder()
                 .aUserInAServer(warnedAUserInAServer)
@@ -71,11 +71,11 @@ public class WarnServiceBean implements WarnService {
                 .aUserInAServer(warningAUserInAServer)
                 .member(botService.getMemberInServer(warningAUserInAServer))
                 .build();
-       return warnUser(warnedUser, warningUser, reason, feedbackChannel);
+       return warnFullUser(warnedUser, warningUser, reason, feedbackChannel);
     }
 
     @Override
-    public Warning warnUser(Member warnedMember, Member warningMember, String reason, TextChannel feedbackChannel) {
+    public Warning warnMember(Member warnedMember, Member warningMember, String reason, MessageChannel feedbackChannel) {
         FullUser warnedUser = FullUser
                 .builder()
                 .aUserInAServer(userInServerManagementService.loadUser(warnedMember))
@@ -87,13 +87,13 @@ public class WarnServiceBean implements WarnService {
                 .aUserInAServer(userInServerManagementService.loadUser(warningMember))
                 .member(warningMember)
                 .build();
-        return warnUser(warnedUser, warningUser, reason, feedbackChannel);
+        return warnFullUser(warnedUser, warningUser, reason, feedbackChannel);
     }
 
     @Override
-    public Warning warnUser(FullUser warnedMember, FullUser warningMember, String reason, TextChannel feedbackChannel)  {
+    public Warning warnFullUser(FullUser warnedMember, FullUser warningMember, String reason, MessageChannel feedbackChannel)  {
         Guild guild = warnedMember.getMember().getGuild();
-        log.info("User {} is warning {} in server {} because of {}", warnedMember.getMember().getId(), warningMember.getMember().getId(), guild.getIdLong(), reason);
+        log.info("User {} is warning {} in server {}", warnedMember.getMember().getId(), warningMember.getMember().getId(), guild.getIdLong());
         Warning warning = warnManagementService.createWarning(warnedMember.getAUserInAServer(), warningMember.getAUserInAServer(), reason);
         WarnNotification warnNotification = WarnNotification.builder().warning(warning).serverName(guild.getName()).build();
         String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification);
@@ -102,16 +102,17 @@ public class WarnServiceBean implements WarnService {
     }
 
     @Override
-    public void warnUserWithLog(Member warnedMember, Member warningMember, String reason, WarnLog warnLog, TextChannel feedbackChannel) {
-        Warning warning = warnUser(warnedMember, warningMember, reason, feedbackChannel);
+    public Warning warnUserWithLog(Member warnedMember, Member warningMember, String reason, WarnLog warnLog, MessageChannel feedbackChannel) {
+        Warning warning = warnMember(warnedMember, warningMember, reason, feedbackChannel);
         warnLog.setWarning(warning);
         this.sendWarnLog(warnLog);
+        return warning;
     }
 
     @Override
     @Transactional
     public void decayWarningsForServer(AServer server) {
-        Long days = configService.getLongValue("decayDays", server.getId());
+        Long days = configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId());
         Instant cutOffDay = Instant.now().minus(days, ChronoUnit.DAYS);
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);
         decayWarnings(warningsToDecay);
@@ -120,10 +121,13 @@ public class WarnServiceBean implements WarnService {
 
     private void decayWarnings(List<Warning> warningsToDecay) {
         Instant now = Instant.now();
-        warningsToDecay.forEach(warning -> {
-            warning.setDecayDate(now);
-            warning.setDecayed(true);
-        });
+        warningsToDecay.forEach(warning -> decayWarning(warning, now));
+    }
+
+    @Override
+    public void decayWarning(Warning warning, Instant now) {
+        warning.setDecayDate(now);
+        warning.setDecayed(true);
     }
 
     private void logDecayedWarnings(AServer server, List<Warning> warningsToDecay) {
@@ -156,7 +160,7 @@ public class WarnServiceBean implements WarnService {
         }
     }
 
-    private void sendWarnLog(ServerContext warnLogModel)  {
+    private void sendWarnLog(WarnLog warnLogModel)  {
         MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, warnLogModel);
         postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, warnLogModel.getServer().getId());
     }

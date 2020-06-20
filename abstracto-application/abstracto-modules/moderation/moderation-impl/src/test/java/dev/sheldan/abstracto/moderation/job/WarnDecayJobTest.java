@@ -1,0 +1,100 @@
+package dev.sheldan.abstracto.moderation.job;
+
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.service.WarnService;
+import dev.sheldan.abstracto.test.MockUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.JobExecutionException;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
+
+
+@RunWith(MockitoJUnitRunner.class)
+public class WarnDecayJobTest {
+
+    @InjectMocks
+    private WarnDecayJob testUnit;
+
+    @Mock
+    private ServerManagementService serverManagementService;
+
+    @Mock
+    private FeatureFlagService featureFlagService;
+
+    @Mock
+    private WarningDecayFeature warningDecayFeature;
+
+    @Mock
+    private WarnService warnService;
+
+    private AServer firstServer;
+    private AServer secondServer;
+
+    @Before
+    public void setup() {
+        this.firstServer = MockUtils.getServer(1L);
+        this.secondServer = MockUtils.getServer(2L);
+    }
+
+    @Test
+    public void executeJobForNoServers() throws JobExecutionException {
+        when(serverManagementService.getAllServers()).thenReturn(Collections.emptyList());
+        testUnit.executeInternal(null);
+        verify(featureFlagService, times(0)).isFeatureEnabled(eq(warningDecayFeature), any(AServer.class));
+        verify(warnService, times(0)).decayWarningsForServer(any(AServer.class));
+    }
+
+    @Test
+    public void executeJobForAEnabledServer() throws JobExecutionException {
+        when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer));
+        when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(true);
+        testUnit.executeInternal(null);
+        verify(warnService, times(1)).decayWarningsForServer(eq(firstServer));
+    }
+
+    @Test
+    public void executeJobForADisabledServer() throws JobExecutionException {
+        when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer));
+        when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(false);
+        testUnit.executeInternal(null);
+        verify(warnService, times(0)).decayWarningsForServer(eq(firstServer));
+    }
+
+    @Test
+    public void executeJobForMixedServers() throws JobExecutionException {
+        when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer, secondServer));
+        when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(true);
+        when(featureFlagService.isFeatureEnabled(warningDecayFeature, secondServer)).thenReturn(false);
+        testUnit.executeInternal(null);
+        verify(warnService, times(1)).decayWarningsForServer(eq(firstServer));
+    }
+
+    @Test
+    public void executeJobForMultipleEnabledServers() throws JobExecutionException {
+        when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer, secondServer));
+        when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(true);
+        when(featureFlagService.isFeatureEnabled(warningDecayFeature, secondServer)).thenReturn(true);
+        testUnit.executeInternal(null);
+        ArgumentCaptor<AServer> serverCaptor = ArgumentCaptor.forClass(AServer.class);
+        verify(warnService, times(2)).decayWarningsForServer(serverCaptor.capture());
+        List<AServer> capturedServers = serverCaptor.getAllValues();
+        Assert.assertEquals(2, capturedServers.size());
+        Assert.assertEquals(firstServer, capturedServers.get(0));
+        Assert.assertEquals(secondServer, capturedServers.get(1));
+    }
+
+}

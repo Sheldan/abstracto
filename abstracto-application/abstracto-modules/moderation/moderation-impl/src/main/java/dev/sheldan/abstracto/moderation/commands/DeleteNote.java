@@ -20,6 +20,7 @@ import java.util.List;
 @Component
 public class DeleteNote extends AbstractConditionableCommand {
 
+    public static final String NOTE_NOT_FOUND_EXCEPTION_TEMPLATE = "note_not_found_exception";
     @Autowired
     private UserNoteManagementService userNoteManagementService;
 
@@ -28,11 +29,12 @@ public class DeleteNote extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         Long id = (Long) commandContext.getParameters().getParameters().get(0);
         if(userNoteManagementService.noteExists(id)) {
            userNoteManagementService.deleteNote(id);
         } else {
-            return CommandResult.fromError(templateService.renderSimpleTemplate("note_not_found_exception"));
+            return CommandResult.fromError(templateService.renderSimpleTemplate(NOTE_NOT_FOUND_EXCEPTION_TEMPLATE));
         }
         return CommandResult.fromSuccess();
     }

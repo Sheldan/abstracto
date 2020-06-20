@@ -1,0 +1,1 @@
+Kicked user

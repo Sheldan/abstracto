@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.moderation.converter;
 
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +12,6 @@ import java.util.List;
 
 @Component
 public class WarnEntryConverter {
-
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private BotService botService;

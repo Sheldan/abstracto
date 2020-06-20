@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
 import dev.sheldan.abstracto.utility.service.SuggestionService;
@@ -47,5 +48,10 @@ public class RejectTest {
         CommandResult result = testUnit.execute(context);
         verify(suggestionService, times(1)).rejectSuggestion(eq(suggestionId), eq(text), any(SuggestionLog.class));
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

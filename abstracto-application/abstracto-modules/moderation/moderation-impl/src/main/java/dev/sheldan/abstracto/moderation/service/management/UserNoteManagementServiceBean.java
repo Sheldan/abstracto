@@ -15,7 +15,6 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     @Autowired
     private UserNoteRepository userNoteRepository;
 
-
     @Override
     public UserNote createUserNote(AUserInAServer aUserInAServer, String note) {
         UserNote newNote = UserNote

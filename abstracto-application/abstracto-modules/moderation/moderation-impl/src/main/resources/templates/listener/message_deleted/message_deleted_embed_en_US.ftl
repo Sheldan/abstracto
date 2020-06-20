@@ -12,11 +12,11 @@
   "fields": [
     {
       "name": "<#include "messageDeleted_original_message_field_title">",
-      "value": "${message.content}"
+      "value": "${cachedMessage.content}"
     },
     {
         "name": "<#include "messageDeleted_message_link_field_title">",
-        "value": "[${messageChannel.name}](${message.messageUrl})"
+        "value": "[${messageChannel.name}](${cachedMessage.messageUrl})"
     }
   ]
 }

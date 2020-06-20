@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;
@@ -55,4 +56,8 @@ public class DisableExpGainTest {
         CommandTestUtilities.checkSuccessfulCompletion(result);
     }
 
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
 }

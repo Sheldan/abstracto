@@ -40,7 +40,6 @@ public class Remind extends AbstractConditionableCommand {
         String text = (String) parameters.get(1);
         AUserInAServer aUserInAServer = commandContext.getUserInitiatedContext().getAUserInAServer();
         ReminderModel remindModel = (ReminderModel) ContextConverter.fromCommandContext(commandContext, ReminderModel.class);
-        remindModel.setMessage(commandContext.getMessage());
         remindModel.setRemindText(text);
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());
         remindModel.setReminder(createdReminder);

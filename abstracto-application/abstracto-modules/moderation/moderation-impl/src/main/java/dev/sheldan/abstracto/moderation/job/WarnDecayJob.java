@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.moderation.job;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
 import dev.sheldan.abstracto.moderation.service.WarnService;
@@ -26,9 +25,6 @@ public class WarnDecayJob extends QuartzJobBean {
 
     @Autowired
     private ServerManagementService serverManagementService;
-
-    @Autowired
-    private FeatureFlagManagementService featureFlagManagementService;
 
     @Autowired
     private FeatureFlagService featureFlagService;

@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
 import net.dv8tion.jda.api.entities.Member;
@@ -90,5 +91,10 @@ public class UserInfoTest {
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
         Assert.assertEquals(loadedAuthor, usedModel.getMemberInfo());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

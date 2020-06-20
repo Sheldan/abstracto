@@ -24,6 +24,7 @@ import java.util.List;
 @Slf4j
 public class Ban extends AbstractConditionableCommand {
 
+    public static final String BAN_DEFAULT_REASON_TEMPLATE = "ban_default_reason";
     @Autowired
     private BanService banService;
 
@@ -32,9 +33,10 @@ public class Ban extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
-        String defaultReason = templateService.renderTemplateWithMap("ban_default_reason", null);
+        String defaultReason = templateService.renderSimpleTemplate(BAN_DEFAULT_REASON_TEMPLATE);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
         BanLog banLogModel = (BanLog) ContextConverter.fromCommandContext(commandContext, BanLog.class);

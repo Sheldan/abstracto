@@ -42,10 +42,10 @@ public class MuteRoleManagementServiceBean implements MuteRoleManagementService 
     @Override
     public MuteRole setMuteRoleForServer(AServer server, ARole role) {
         log.info("Setting muted role for server {} to role {}", server.getId(), role.getId());
-        MuteRole existing = retrieveMuteRoleForServer(server);
-        if(existing == null) {
+        if(!muteRoleForServerExists(server)) {
             return createMuteRoleForServer(server, role);
         } else {
+            MuteRole existing = retrieveMuteRoleForServer(server);
             log.trace("Updating mute role for server {} to be role {} instead.", server.getId(), role.getId());
             existing.setRole(role);
             return existing;
@@ -54,6 +54,6 @@ public class MuteRoleManagementServiceBean implements MuteRoleManagementService 
 
     @Override
     public boolean muteRoleForServerExists(AServer server) {
-        return retrieveMuteRoleForServer(server) != null;
+        return muteRoleRepository.existsByRoleServer(server);
     }
 }

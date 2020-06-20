@@ -9,10 +9,8 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
 import dev.sheldan.abstracto.moderation.models.template.commands.MyWarningsModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +23,12 @@ import java.util.List;
 @Component
 public class MyWarnings extends AbstractConditionableCommand {
 
+    public static final String MY_WARNINGS_RESPONSE_EMBED_TEMPLATE = "myWarnings_response";
     @Autowired
     private ChannelService channelService;
 
     @Autowired
     private WarnManagementService warnManagementService;
-
-    @Autowired
-    private FeatureFlagService featureFlagService;
-
-    @Autowired
-    private WarningDecayFeature warningDecayFeature;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
@@ -44,7 +37,7 @@ public class MyWarnings extends AbstractConditionableCommand {
         model.setCurrentWarnCount(currentWarnCount);
         Long totalWarnCount = warnManagementService.getTotalWarnsForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
         model.setTotalWarnCount(totalWarnCount);
-        channelService.sendEmbedTemplateInChannel("myWarnings_response", model, commandContext.getChannel());
+        channelService.sendEmbedTemplateInChannel(MY_WARNINGS_RESPONSE_EMBED_TEMPLATE, model, commandContext.getChannel());
         return CommandResult.fromSuccess();
     }
 

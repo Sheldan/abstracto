@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +43,10 @@ public class ExpScaleTest {
         CommandResult result = testUnit.execute(context);
         CommandTestUtilities.checkSuccessfulCompletion(result);
         verify(configService, times(1)).setDoubleValue(ExpScale.EXP_MULTIPLIER_KEY, context.getGuild().getIdLong(), newScale);
+    }
 
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,5 +47,10 @@ public class UnSetExpRoleTest {
         CommandResult result = testUnit.execute(context);
         CommandTestUtilities.checkSuccessfulCompletion(result);
         verify(experienceRoleService, times(1)).unsetRole(changedRole, context.getUserInitiatedContext().getChannel());
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 }

@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 import dev.sheldan.abstracto.utility.service.ReminderService;
@@ -65,6 +66,11 @@ public class RemindTest {
         Assert.assertEquals(reminderText, reminderModel.getRemindText());
         Assert.assertEquals(withParameters.getMessage(), reminderModel.getMessage());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 
 }

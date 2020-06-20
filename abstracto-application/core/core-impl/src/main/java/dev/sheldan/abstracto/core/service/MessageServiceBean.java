@@ -104,13 +104,13 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public void sendMessageToUser(AUserInAServer userInAServer, String text, TextChannel feedbackChannel) {
+    public void sendMessageToUser(AUserInAServer userInAServer, String text, MessageChannel feedbackChannel) {
         Member memberInServer = botService.getMemberInServer(userInAServer);
         sendMessageToUser(memberInServer.getUser(), text, feedbackChannel);
     }
 
     @Override
-    public void sendMessageToUser(User user, String text, TextChannel feedbackChannel) {
+    public void sendMessageToUser(User user, String text, MessageChannel feedbackChannel) {
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
 
         user.openPrivateChannel().queue(privateChannel ->
@@ -127,7 +127,7 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Transactional
-    public void sendFeedbackAboutException(Throwable e, TextChannel feedbackChannel) {
+    public void sendFeedbackAboutException(Throwable e, MessageChannel feedbackChannel) {
         channelService.sendTextToChannelNoFuture(String.format("Failed to send message: %s", e.getMessage()), feedbackChannel);
     }
 }

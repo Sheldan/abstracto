@@ -46,6 +46,13 @@ public interface MuteManagementService {
     boolean hasActiveMute(AUserInAServer userInAServer);
 
     /**
+     * Returns if the given {@link AUserInAServer} has an active mute which has not yet been ended yet.
+     * @param member The {@link Member} to check for
+     * @return Whether or not the userInAServer has an active mute
+     */
+    boolean hasActiveMute(Member member);
+
+    /**
      * Returns any active {@link Mute} of this {@link AUserInAServer} in the database
      * @param userInAServer The {@link AUserInAServer} to search a mute for
      * @return The found {@link Mute}, and null if none was found

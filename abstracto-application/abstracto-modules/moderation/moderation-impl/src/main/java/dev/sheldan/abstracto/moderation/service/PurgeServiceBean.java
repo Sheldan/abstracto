@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,9 +36,8 @@ public class PurgeServiceBean implements PurgeService {
         return purgeMessages(amountToDelete, channel, startId, purgedMember, amountToDelete, 0, 0L);
     }
 
-    @NotNull
     private CompletableFuture<Void> purgeMessages(Integer amountToDelete, TextChannel channel, Long startId, Member purgedMember, Integer totalCount, Integer currentCount, Long statusMessageId) {
-        CompletableFuture<Void> deletionFuture = new CompletableFuture<>();
+
         int toDeleteInThisIteration;
         int messageLimit = 100;
         if(amountToDelete >= messageLimit){
@@ -51,8 +49,9 @@ public class PurgeServiceBean implements PurgeService {
         CompletableFuture<MessageHistory> historyFuture = channel.getHistoryBefore(startId, toDeleteInThisIteration).submit();
         CompletableFuture<Long> statusMessageFuture = getOrCreatedStatusMessage(channel, totalCount, statusMessageId);
 
-        CompletableFuture<Void> coreFuture = CompletableFuture.allOf(historyFuture, statusMessageFuture);
-        coreFuture.thenAccept(voidParam -> {
+        CompletableFuture<Void> deletionFuture = new CompletableFuture<>();
+        CompletableFuture<Void> retrievalFuture = CompletableFuture.allOf(historyFuture, statusMessageFuture);
+        retrievalFuture.thenAccept(voidParam -> {
             try {
                 List<Message> retrievedHistory = historyFuture.get().getRetrievedHistory();
                 List<Message> messagesToDeleteNow = filterMessagesToDelete(retrievedHistory, purgedMember);
@@ -70,7 +69,7 @@ public class PurgeServiceBean implements PurgeService {
                 if (messagesToDeleteNow.size() > 1) {
                     bulkDeleteMessages(channel, deletionFuture, messagesToDeleteNow, consumer);
                 } else if (messagesToDeleteNow.size() == 1) {
-                    messagesToDeleteNow.get(0).delete().queue(consumer, deletionFuture::completeExceptionally);
+                    latestMessage.delete().queue(consumer, deletionFuture::completeExceptionally);
                 }
 
             } catch (Exception e) {
@@ -82,7 +81,7 @@ public class PurgeServiceBean implements PurgeService {
             return null;
         });
 
-        return CompletableFuture.allOf(coreFuture, deletionFuture);
+        return CompletableFuture.allOf(retrievalFuture, deletionFuture);
     }
 
     private void bulkDeleteMessages(TextChannel channel, CompletableFuture<Void> deletionFuture, List<Message> messagesToDeleteNow, Consumer<Void> consumer) {
@@ -127,8 +126,13 @@ public class PurgeServiceBean implements PurgeService {
     private Consumer<Void> deletionConsumer(Integer amountToDelete, TextChannel channel, Member purgedMember, Integer totalCount, Integer currentCount, CompletableFuture<Void> deletionFuture, Long currentStatusMessageId, Message earliestMessage) {
         return aVoid -> {
             if (amountToDelete > 1) {
-                purgeMessages(amountToDelete, channel, earliestMessage.getIdLong(), purgedMember, totalCount, currentCount, currentStatusMessageId).thenAccept(aVoid1 ->
-                    deletionFuture.complete(null)
+                purgeMessages(amountToDelete, channel, earliestMessage.getIdLong(), purgedMember, totalCount, currentCount, currentStatusMessageId).whenComplete((avoid, throwable) -> {
+                            if (throwable != null) {
+                                deletionFuture.completeExceptionally(throwable);
+                            } else {
+                                deletionFuture.complete(null);
+                            }
+                        }
                 );
             } else {
                 channel.deleteMessageById(currentStatusMessageId).queueAfter(5, TimeUnit.SECONDS);

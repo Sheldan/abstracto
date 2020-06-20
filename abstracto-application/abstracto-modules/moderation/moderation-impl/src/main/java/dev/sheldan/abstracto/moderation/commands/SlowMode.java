@@ -27,6 +27,7 @@ public class SlowMode extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         TextChannel channel;
         String durationString = (String) commandContext.getParameters().getParameters().get(0);
         Duration duration;

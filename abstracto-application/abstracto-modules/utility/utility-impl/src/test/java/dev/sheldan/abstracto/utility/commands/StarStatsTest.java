@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.utility.commands;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.service.StarboardService;
@@ -35,6 +36,11 @@ public class StarStatsTest {
         CommandResult result = testUnit.execute(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(StarStats.STARSTATS_RESPONSE_TEMPLATE, starStatsModel, noParameters.getChannel());
         CommandTestUtilities.checkSuccessfulCompletion(result);
+    }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 
 }

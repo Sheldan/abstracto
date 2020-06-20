@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.utility.listener.starboard;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
+import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
+import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
@@ -20,7 +22,7 @@ public class StarboardPostDeletedListener implements MessageDeletedListener {
     private StarboardPostManagementService starboardPostManagementService;
 
     @Override
-    public void execute(CachedMessage messageBefore) {
+    public void execute(CachedMessage messageBefore, AServerAChannelAUser authorUser, GuildChannelMember authorMember) {
         Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostId(messageBefore.getMessageId());
         if(byStarboardPostId.isPresent()) {
             StarboardPost post = byStarboardPostId.get();

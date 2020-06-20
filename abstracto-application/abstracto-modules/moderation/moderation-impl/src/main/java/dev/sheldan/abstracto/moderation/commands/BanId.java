@@ -28,15 +28,16 @@ public class BanId extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
+        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long userId = (Long) parameters.get(0);
-        String defaultReason = templateService.renderTemplateWithMap("ban_default_reason", null);
+        String defaultReason = templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
         BanIdLog banLogModel = (BanIdLog) ContextConverter.fromCommandContext(commandContext, BanIdLog.class);
         banLogModel.setBannedUserId(userId);
         banLogModel.setBanningUser(commandContext.getAuthor());
         banLogModel.setReason(reason);
-        banService.banMember(userId, commandContext.getGuild().getIdLong(), reason, banLogModel);
+        banService.banMember(commandContext.getGuild().getIdLong(), userId, reason, banLogModel);
 
         return CommandResult.fromSuccess();
     }

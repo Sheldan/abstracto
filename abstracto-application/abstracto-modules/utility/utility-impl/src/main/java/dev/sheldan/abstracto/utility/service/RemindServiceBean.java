@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,10 @@ public class RemindServiceBean implements ReminderService {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    @Qualifier("reminderScheduler")
+    private ScheduledExecutorService instantReminderScheduler;
+
     @Override
     public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Message message) {
         AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong()).orElseThrow(() -> new ChannelNotFoundException(message.getChannel().getIdLong(), message.getGuild().getIdLong()));
@@ -74,9 +79,7 @@ public class RemindServiceBean implements ReminderService {
 
         if(remindIn.getSeconds() < 60) {
             log.trace("Directly scheduling the reminder, because it was below the threshold.");
-            // TODO make a bean out of this
-            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-            scheduler.schedule(() -> {
+            instantReminderScheduler.schedule(() -> {
                 try {
                     self.executeReminder(reminder.getId());
                 } catch (Exception exception) {
