@@ -131,7 +131,7 @@ public class SafeFieldIterationsTest {
     }
 
     public List<Object> twoListEntryParameter() {
-        return Arrays.asList(DefaultListAdapter.adapt(Arrays.asList("testing", "othertext"), getWrapper()), new SimpleScalar(TEMPLATE_KEY), new SimpleScalar(FIELD_NAME_TEMPLATE), new SimpleScalar(INLINE_VALUE));
+        return Arrays.asList(DefaultListAdapter.adapt(Arrays.asList("testing", "otherText"), getWrapper()), new SimpleScalar(TEMPLATE_KEY), new SimpleScalar(FIELD_NAME_TEMPLATE), new SimpleScalar(INLINE_VALUE));
     }
 
     private DefaultObjectWrapper getWrapper() {

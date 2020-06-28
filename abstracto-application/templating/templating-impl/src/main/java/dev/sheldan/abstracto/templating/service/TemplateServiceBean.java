@@ -36,7 +36,7 @@ public class TemplateServiceBean implements TemplateService {
 
     /**
      * Formats the passed passed count with the embed used for formatting pages.
-     * @param count The index of the page you want formated.
+     * @param count The index of the page you want formatted.
      * @return The rendered template as a string object
      */
     private String getPageString(Integer count) {
@@ -46,8 +46,8 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     /**
-     * Retrieves the key which gets suffixed with '_embed' and this retrives the embed configuration. This configuration is then rendered
-     * and deserialized with GSON into a {@link EmbedConfiguration} object. This object is then rendered into a {@link MessageToSend} and returned.
+     * Retrieves the key which gets suffixed with '_embed' and this retrieves the embed configuration. This configuration is then rendered
+     * and de-serialized with GSON into a {@link EmbedConfiguration} object. This object is then rendered into a {@link MessageToSend} and returned.
      * If the individual element do not fit in an embed, for example, if the field count is to high, another embed will be created in the {@link MessageToSend} object.
      * If multiple embeds are necessary to provide what the {@link EmbedConfiguration} wanted, this method will automatically set the footer of the additional {@link MessageEmbed}
      *  with a formatted page count.

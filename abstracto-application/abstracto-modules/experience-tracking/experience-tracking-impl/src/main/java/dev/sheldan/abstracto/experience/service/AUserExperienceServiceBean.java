@@ -302,10 +302,10 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     }
 
     /**
-     * Retrieves the leaderboard data for the given page of the given server
-     * @param server The {@link AServer} to retrieve the leaderboard for
-     * @param page The desired page on the leaderboard. The pagesize is 10
-     * @return The {@link LeaderBoard} containing all necessary information concerning the leaderboard
+     * Retrieves the leader board data for the given page of the given server
+     * @param server The {@link AServer} to retrieve the leader board for
+     * @param page The desired page on the leader board. The page size is 10
+     * @return The {@link LeaderBoard} containing all necessary information concerning the leader board
      */
     @Override
     public LeaderBoard findLeaderBoardData(AServer server, Integer page) {
@@ -326,7 +326,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     /**
      * Builds an {@link AUserExperience} and loads the appropriate rank of the passed {@link AUserInAServer}
      * @param userInAServer The {@link AUserInAServer} to retrieve the {@link LeaderBoardEntry} for
-     * @return The {@link LeaderBoardEntry} representing one single row in the leaderboard
+     * @return The {@link LeaderBoardEntry} representing one single row in the leader board
      */
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {

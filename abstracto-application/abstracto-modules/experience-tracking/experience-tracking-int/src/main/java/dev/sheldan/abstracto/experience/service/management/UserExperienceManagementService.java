@@ -39,7 +39,7 @@ public interface UserExperienceManagementService {
      * are not changed.
      * @param user The {@link AUserInAServer} to increase the experience for
      * @param experience The experience amount to increase by
-     * @param messageCount The amount of messags to increase the count by
+     * @param messageCount The amount of messages to increase the count by
      * @return The changed/creates {@link AUserExperience} object containing the values.
      */
     AUserExperience incrementExpForUser(AUserInAServer user, Long experience, Long messageCount);

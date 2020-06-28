@@ -21,7 +21,7 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
 
     /**
      * Finds all {@link AUserExperience} of the given {@link AServer}
-     * @param server The {@link AServer} to retriev ethe {@link AUserExperience} for
+     * @param server The {@link AServer} to retrieve ethe {@link AUserExperience} for
      * @return A complete list of {@link AUserExperience} of the given {@link AServer}
      */
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
@@ -30,7 +30,7 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
     /**
      * Retrieves the {@link AUserExperience} ordered by experience, and applies the {@link Pageable} to only filter out certain pages.
      * @param server The {@link AServer} to retrieve the {@link AUserExperience} information for
-     * @param pageable A {@link Pageable} object to indicate the pages which should be retrieved, pagesize is 10
+     * @param pageable A {@link Pageable} object to indicate the pages which should be retrieved, page size is 10
      * @return A list of {@link AUserExperience} of the given {@link AServer} ordered by the experience of the users, paginated by the given
      * configuration
      */

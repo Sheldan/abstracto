@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import static dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean.MODMAIL_CLOSING_MESSAGE_TEXT;
 
 /**
- * This listener is used to used to set the initial values of some server specific values, so we dont need to fall
+ * This listener is used to used to set the initial values of some server specific values, so we don't need to fall
  * back to the default values. The values might not be functional, for example mod mail category id, but their existence
  * makes things easier
  */

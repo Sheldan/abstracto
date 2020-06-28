@@ -152,8 +152,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * this method is responsible for creating the instance in the database, sending the header in the newly created text channel and forwarding the initial message
      * by the user (if any), after this is complete, this method executes the method to perform the mod mail notification.
      * @param aUserInAServer The {@link FullUser} for which a {@link ModMailThread} is being created
-     * @param initialMessage The {@link Message} which was sent by the user to open a thread, this is null, if the thread was oepend via a command
-     * @param channel The created {@link TextChannel} in which the mod mail thread is dealth with
+     * @param initialMessage The {@link Message} which was sent by the user to open a thread, this is null, if the thread was opened via a command
+     * @param channel The created {@link TextChannel} in which the mod mail thread is dealt with
      * @param userInitiated Whether or not the thread was initiated by a member
      * @param undoActions The list of actions to undo, in case an exception occurs
      */
@@ -229,7 +229,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     @Override
     public void createModMailPrompt(AUser user, Message initialMessage) {
         List<AUserInAServer> knownServers = userInServerManagementService.getUserInAllServers(user.getId());
-        // do nothing if we dont know the user
+        // do nothing if we don't know the user
         if(!knownServers.isEmpty()) {
             List<ServerChoice> availableGuilds = new ArrayList<>();
             HashMap<String, AUserInAServer> choices = new HashMap<>();

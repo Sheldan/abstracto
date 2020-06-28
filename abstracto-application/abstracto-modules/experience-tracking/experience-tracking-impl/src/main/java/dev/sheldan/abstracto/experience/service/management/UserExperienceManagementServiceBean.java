@@ -58,7 +58,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
      * Creates or updates the {@link AUserExperience} object. Does not change the level or the role.
      * @param user The {@link AUserInAServer} to increase the experience for
      * @param experience The experience amount to increase by
-     * @param messageCount The amount of messags to increase the count by
+     * @param messageCount The amount of messages to increase the count by
      * @return The created/changed {@link AUserExperience} object
      */
     @Override

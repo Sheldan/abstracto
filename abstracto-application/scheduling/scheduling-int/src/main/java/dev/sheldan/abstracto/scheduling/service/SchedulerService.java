@@ -26,7 +26,7 @@ public interface SchedulerService {
 
     /**
      * Removes a job from the scheduler.
-     * @param triggerKey The key of the trigger to unschedule
+     * @param triggerKey The key of the trigger to unSchedule
      * @return if the job was found and unscheduled
      */
     boolean unScheduleJob(String triggerKey);

@@ -185,14 +185,14 @@ public class MuteServiceBeanTest {
     @Test
     public void testCancelUnMuteJob() {
         Mute mute = Mute.builder().triggerKey(TRIGGER).build();
-        testUnit.cancelUnmuteJob(mute);
+        testUnit.cancelUnMuteJob(mute);
         verify(schedulerService, times(1)).stopTrigger(TRIGGER);
     }
 
     @Test
     public void testCancelNotExistingJob() {
         Mute mute = Mute.builder().build();
-        testUnit.cancelUnmuteJob(mute);
+        testUnit.cancelUnMuteJob(mute);
         verify(schedulerService, times(0)).stopTrigger(anyString());
     }
 
@@ -235,7 +235,7 @@ public class MuteServiceBeanTest {
         Mute mute = Mockito.mock(Mute.class);
         when(mute.getMuteEnded()).thenReturn(true);
         when(mute.getMutedUser()).thenReturn(userBeingMuted);
-        testUnit.unmuteUser(mute);
+        testUnit.unMuteUser(mute);
         verifyNoUnMuteHappened();
     }
 
@@ -319,7 +319,7 @@ public class MuteServiceBeanTest {
         when(mute.getMutingServer()).thenReturn(server);
         setupUnMuteMocks(stillInGuild);
 
-        testUnit.unmuteUser(mute);
+        testUnit.unMuteUser(mute);
 
         verifyUnMute(roleRemovals);
     }
@@ -329,7 +329,7 @@ public class MuteServiceBeanTest {
         when(botService.getGuildByIdNullable(server.getId())).thenReturn(guild);
         when(botService.isUserInGuild(guild, userBeingMuted)).thenReturn(stillInGuild);
         when(botService.getMemberInServer(userBeingMuted)).thenReturn(memberBeingMuted);
-        when(templateService.renderEmbedTemplate(eq(MuteServiceBean.UNMUTE_LOG_TEMPLATE), any(UnMuteLog.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(MuteServiceBean.UN_MUTE_LOG_TEMPLATE), any(UnMuteLog.class))).thenReturn(messageToSend);
     }
 
     private void verifyUnMute(int roleRemovals) {

@@ -31,7 +31,7 @@ import java.util.List;
 @Slf4j
 public class LeaderBoardCommand extends AbstractConditionableCommand {
 
-    public static final String LEADERBOARD_POST_EMBED_TEMPLATE = "leaderboard_post";
+    public static final String LEADER_BOARD_POST_EMBED_TEMPLATE = "leaderboard_post";
     @Autowired
     private AUserExperienceService userExperienceService;
 
@@ -57,7 +57,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
 
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         leaderBoardModel.setUserExecuting(converter.fromLeaderBoardEntry(userRank));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADERBOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
         channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
 
         return CommandResult.fromSuccess();

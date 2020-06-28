@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * ManagementService bean used to retrieve the templates by key from the database.
- * This class uses the {@link TemplateRepository} bean to laod the {@link Template} objects.
+ * This class uses the {@link TemplateRepository} bean to load the {@link Template} objects.
  */
 @Component
 @Slf4j

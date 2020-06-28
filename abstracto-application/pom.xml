@@ -50,8 +50,8 @@
 
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm</maven.build.timestamp.format>
-        <jda.version>4.1.1_155</jda.version>
-        <jda.utilities.version>3.0.3</jda.utilities.version>
+        <jda.version>4.1.1_167</jda.version>
+        <jda.utilities.version>3.0.4</jda.utilities.version>
         <asciidoctor.maven.plugin.version>2.0.0-RC.1</asciidoctor.maven.plugin.version>
         <asciidoctorj.pdf.version>1.5.3</asciidoctorj.pdf.version>
         <asciidoctorj.version>2.3.0</asciidoctorj.version>
@@ -166,7 +166,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

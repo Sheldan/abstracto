@@ -49,8 +49,8 @@ public class UnMuteTest {
         Mute mute = Mute.builder().build();
         when(muteManagementService.getAMuteOf(memberToUnMute)).thenReturn(mute);
         CommandResult result = testUnit.execute(parameters);
-        verify(muteService, times(1)).unmuteUser(mute);
-        verify(muteService, times(1)).cancelUnmuteJob(mute);
+        verify(muteService, times(1)).unMuteUser(mute);
+        verify(muteService, times(1)).cancelUnMuteJob(mute);
         verify(muteService, times(1)).completelyUnMuteMember(memberToUnMute);
         CommandTestUtilities.checkSuccessfulCompletion(result);
     }

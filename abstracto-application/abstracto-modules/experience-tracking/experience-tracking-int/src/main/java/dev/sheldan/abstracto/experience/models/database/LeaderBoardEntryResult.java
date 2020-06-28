@@ -29,7 +29,7 @@ public interface LeaderBoardEntryResult {
     Long getMessageCount();
 
     /**
-     * The current position of the {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} in the leaderboard
+     * The current position of the {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} in the leader board
      * ordered by experience count
      */
     Integer getRank();

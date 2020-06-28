@@ -67,7 +67,7 @@ public class LeaderBoardCommandTest {
         LeaderBoardEntryModel leaderBoardEntryModel = LeaderBoardEntryModel.builder().build();
         when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(leaderBoardEntryModel);
         MessageToSend messageToSend = MessageToSend.builder().build();
-        when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADERBOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADER_BOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class))).thenReturn(messageToSend);
         CommandResult result = testUnit.execute(context);
         verify(channelService, times(1)).sendMessageToSendToChannel(messageToSend, context.getChannel());
         CommandTestUtilities.checkSuccessfulCompletion(result);

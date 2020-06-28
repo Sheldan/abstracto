@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * This command can be used to close the mod mail thread without sending a 'closing' message to the user.
- * This behaves the same way as the default close commmand otherwise
+ * This behaves the same way as the default close command otherwise
  */
 @Component
 public class CloseSilently extends AbstractConditionableCommand {

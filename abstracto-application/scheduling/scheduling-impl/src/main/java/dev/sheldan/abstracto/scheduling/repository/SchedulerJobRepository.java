@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.QueryHint;
 
 /**
- * Repository repsonsible to access the stored job configuration in the database
+ * Repository responsible to access the stored job configuration in the database
  */
 @Repository
 public interface SchedulerJobRepository extends JpaRepository<SchedulerJob, Long> {

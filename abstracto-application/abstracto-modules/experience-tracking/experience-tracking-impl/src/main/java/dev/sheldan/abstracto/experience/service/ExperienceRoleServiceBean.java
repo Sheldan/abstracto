@@ -30,10 +30,10 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     private AUserExperienceService userExperienceService;
 
     /**
-     * Unsets the current configuration for the passed level, and sets the {@link ARole} to be used for this level
+     * UnSets the current configuration for the passed level, and sets the {@link ARole} to be used for this level
      * in the given {@link AServer}
      * @param role The {@link ARole} to set the level to
-     * @param level The level the {@link ARole} should be awareded at
+     * @param level The level the {@link ARole} should be awarded at
      */
     @Override
     public void setRoleToLevel(ARole role, Integer level, AChannel feedbackChannel) {

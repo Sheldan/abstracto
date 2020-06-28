@@ -8,7 +8,7 @@ import lombok.Setter;
 
 /**
  * This model is used to render any exception happening when executing a command within a {@link ModMailThread}
- * and this command failing in any capacity. This model is used to render multiple templates (for differnet kinds of
+ * and this command failing in any capacity. This model is used to render multiple templates (for different kinds of
  * exceptions), all of which might use the information or not.
  */
 @Getter

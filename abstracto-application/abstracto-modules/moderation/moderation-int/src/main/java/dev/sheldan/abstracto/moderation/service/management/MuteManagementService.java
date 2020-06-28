@@ -18,11 +18,11 @@ public interface MuteManagementService {
      * @param mutedUser The member which is being muted
      * @param mutingUser The member which mutes
      * @param reason The reason why this user is getting muted
-     * @param unmuteDate The date at which the mute should end
+     * @param unMuteDate The date at which the mute should end
      * @param muteMessage The message containing the command which caused the mute
      * @return The created mute object containing the mute ID
      */
-    Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unmuteDate, AServerAChannelMessage muteMessage);
+    Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage);
 
     /**
      * Finds the mute from the database by the given ID.
@@ -60,7 +60,7 @@ public interface MuteManagementService {
     Mute getAMuteOf(AUserInAServer userInAServer);
 
     /**
-     * Returns any active {@link Mute} of this {@link Member} in the databaes
+     * Returns any active {@link Mute} of this {@link Member} in the database
      * @param member The {@link Member} to search a mute for
      * @return The found {@link Mute}, and null if none was found
      */
@@ -68,7 +68,7 @@ public interface MuteManagementService {
 
     /**
      * Retrieves all active mutes of the given {@link AUserInAServer} in a collection
-     * @param aUserInAServer The {@link AUserInAServer} to search the actie mutes for
+     * @param aUserInAServer The {@link AUserInAServer} to search the active mutes for
      * @return A collection of {@link Mute} objects of the user which are active
      */
     List<Mute> getAllMutesOf(AUserInAServer aUserInAServer);

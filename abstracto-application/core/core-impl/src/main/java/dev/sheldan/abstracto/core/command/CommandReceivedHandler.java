@@ -89,10 +89,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
         try {
             String contentStripped = event.getMessage().getContentStripped();
             List<String> parameters = Arrays.asList(contentStripped.split(" "));
-            UnParsedCommandParameter unparsedParameter = new UnParsedCommandParameter(contentStripped);
+            UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
             String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
-            foundCommand = commandManager.findCommandByParameters(commandName, unparsedParameter);
-            Parameters parsedParameters = getParsedParameters(unparsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
+            foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter);
+            Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
             CommandResult commandResult;

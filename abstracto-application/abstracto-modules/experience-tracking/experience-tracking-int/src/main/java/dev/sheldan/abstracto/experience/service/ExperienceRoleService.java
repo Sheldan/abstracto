@@ -32,7 +32,7 @@ public interface ExperienceRoleService {
      * Calculates the appropriate {@link AExperienceRole} based on the provided list of {@link AExperienceRole}
      * @param userExperience The {@link AUserExperience} containing the level to calculate the {@link AExperienceRole}
      * @param roles The role configuration to be used when calculating the appropriate {@link AExperienceRole}
-     * @return The best matching {@link AExperienceRole} accordign to the experience in the provided {@link AUserExperience}
+     * @return The best matching {@link AExperienceRole} according to the experience in the provided {@link AUserExperience}
      */
     AExperienceRole calculateRole(AUserExperience userExperience, List<AExperienceRole> roles);
 

@@ -164,24 +164,24 @@ public class MessageCacheBean implements MessageCache {
         ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
         CachedReaction.CachedReactionBuilder builder = CachedReaction.builder();
 
-        List<Long> ausers = new ArrayList<>();
+        List<Long> aUsers = new ArrayList<>();
         users.forEachAsync(user -> {
-            concreteSelf.loadUser(reaction, ausers, user);
+            concreteSelf.loadUser(reaction, aUsers, user);
             return false;
         }).thenAccept(o -> future.complete(builder.build()))
         .exceptionally(throwable -> {
             log.error("Failed to load reaction users.", throwable);
             return null;
         });
-        builder.userInServersIds(ausers);
+        builder.userInServersIds(aUsers);
         builder.emote(emoteService.buildAEmoteFromReaction(reaction.getReactionEmote()));
         return future;
     }
 
     @Transactional
-    public void loadUser(MessageReaction reaction, List<Long> ausers, User user) {
+    public void loadUser(MessageReaction reaction, List<Long> aUsers, User user) {
         if(reaction.getGuild() != null) {
-            ausers.add(userInServerManagementService.loadUser(reaction.getGuild().getIdLong(), user.getIdLong()).getUserInServerId());
+            aUsers.add(userInServerManagementService.loadUser(reaction.getGuild().getIdLong(), user.getIdLong()).getUserInServerId());
         }
     }
 

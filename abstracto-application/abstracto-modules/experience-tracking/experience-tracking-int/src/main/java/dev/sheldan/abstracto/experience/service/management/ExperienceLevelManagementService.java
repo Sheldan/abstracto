@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface ExperienceLevelManagementService {
     /**
      * Creates the level referenced by the level and the needed experience in the database.
-     * @param level The unique level this level should reprsent.
+     * @param level The unique level this level should represent.
      * @param neededExperience The total amount of experience required to reach this level.
      * @return A newly created {@link AExperienceLevel} instance.
      */

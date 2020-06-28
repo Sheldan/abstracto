@@ -42,8 +42,8 @@ public class UnMute extends AbstractConditionableCommand {
             return CommandResult.fromError(templateService.renderSimpleTemplate(NO_ACTIVE_MUTE));
         }
         Mute mute = muteManagementService.getAMuteOf(member);
-        muteService.unmuteUser(mute);
-        muteService.cancelUnmuteJob(mute);
+        muteService.unMuteUser(mute);
+        muteService.cancelUnMuteJob(mute);
         muteService.completelyUnMuteMember(member);
         return CommandResult.fromSuccess();
     }

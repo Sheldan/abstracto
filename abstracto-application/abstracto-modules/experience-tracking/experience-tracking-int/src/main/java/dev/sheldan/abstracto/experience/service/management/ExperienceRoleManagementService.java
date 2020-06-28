@@ -44,7 +44,7 @@ public interface ExperienceRoleManagementService {
     AExperienceRole getRoleInServer(ARole role);
 
     /**
-     * Retrives all {@link AExperienceRole} configured in the given {@link AServer}
+     * Retrieves all {@link AExperienceRole} configured in the given {@link AServer}
      * @param server The server to retrieve the list of {@link AExperienceRole} for
      * @return A list of {@link AExperienceRole} which are currently configured for the {@link AServer}
      */

@@ -48,7 +48,7 @@ public class EmbedConfiguration {
      */
     private EmbedFooter footer;
     /**
-     * Thhe {@link OffsetDateTime} object used as the time stamp in the {@link net.dv8tion.jda.api.entities.MessageEmbed}
+     * The {@link OffsetDateTime} object used as the time stamp in the {@link net.dv8tion.jda.api.entities.MessageEmbed}
      */
     private OffsetDateTime timeStamp;
     /**
