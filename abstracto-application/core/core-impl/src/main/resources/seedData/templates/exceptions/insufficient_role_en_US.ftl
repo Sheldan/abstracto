@@ -1,1 +1,0 @@
-<#assign roles><#list allowedRoles as role>${role.name}<#sep>,<#else>None configured.</#list></#assign><#include "insufficient_role_text">

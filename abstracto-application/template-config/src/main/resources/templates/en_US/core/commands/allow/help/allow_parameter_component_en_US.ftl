@@ -1,1 +1,0 @@
-The command/feature name to allow for anyone to execute

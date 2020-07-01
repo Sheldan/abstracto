@@ -6,7 +6,7 @@
 [![GitHub license](https://img.shields.io/github/license/Sheldan/abstracto)](https://github.com/Sheldan/abstracto/blob/master/LICENSE)
 
 
-Abastracto represents a framework to be used as a basis for a Discord bot. It uses [JDA](https://github.com/DV8FromTheWorld/JDA/) as an API wrapper underneath
+Abstracto represents a framework to be used as a basis for a Discord bot. It uses [JDA](https://github.com/DV8FromTheWorld/JDA/) as an API wrapper underneath
 and provides an extensive tool set to create new commands and a wide range of commands out of the box.
 
 This repository does not provide the full functionality in order to start a discord bot, because it requires a Main class. 

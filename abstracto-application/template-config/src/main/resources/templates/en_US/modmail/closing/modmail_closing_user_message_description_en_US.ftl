@@ -1,1 +1,0 @@
-Mod mail thread has been closed. If you have any questions please do not hesitate to contact us again.

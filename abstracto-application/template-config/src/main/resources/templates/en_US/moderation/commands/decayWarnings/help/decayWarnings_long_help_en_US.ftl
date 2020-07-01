@@ -1,1 +1,0 @@
-Causes the warnings older than the configured threshold in days to be decayed. They are still stored but there is an indication, that they are now longer active.

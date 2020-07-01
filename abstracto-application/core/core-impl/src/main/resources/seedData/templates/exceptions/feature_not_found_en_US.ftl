@@ -1,1 +1,0 @@
-<#assign availableFeatures>${availableFeatures?join(", ")}</#assign><#include "feature_not_found_text">

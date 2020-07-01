@@ -1,1 +1,0 @@
-Scheduled reminder ${id} to remind you of [this](${messageUrl})

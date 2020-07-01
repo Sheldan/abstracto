@@ -1,1 +1,0 @@
-Prints the time in milliseconds of the last heartbeat request.

@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-@Entity
+@Entity(name = "command_in_server")
 @Getter
 @Builder
 @Setter

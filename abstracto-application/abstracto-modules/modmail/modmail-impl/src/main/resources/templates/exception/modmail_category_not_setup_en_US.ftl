@@ -1,1 +1,0 @@
-<#assign categoryId>${(error.templateModel['categoryId'])!"0"}</#assign><#include "modmail_category_not_setup_text">

@@ -1,1 +1,0 @@
-<#assign additionalInfo><#if count gt 1>${count}<#else><#assign count>${list?size}</#assign><#include "serverinfo_embed_emotes_title_total_emotes"></#if></#assign><#include "serverinfo_embed_emotes_field_title_message">

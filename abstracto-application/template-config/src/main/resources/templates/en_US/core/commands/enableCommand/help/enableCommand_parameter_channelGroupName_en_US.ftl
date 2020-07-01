@@ -1,1 +1,0 @@
-The name of the channel group in which the command should be enabled.

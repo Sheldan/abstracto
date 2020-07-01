@@ -1,1 +1,0 @@
-addToChannelGroup <name> <channel>

@@ -1,0 +1,24 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="disabled_experience_roles-table">
+        <createTable tableName="disabled_experience_roles">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="disabled_experience_roles_pkey"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="disabled_experience_roles-fk_disabled_experience_role_role">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="disabled_experience_roles" constraintName="fk_disabled_experience_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

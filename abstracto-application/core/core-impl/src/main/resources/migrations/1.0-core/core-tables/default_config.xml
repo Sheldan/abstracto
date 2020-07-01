@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="default_config-table">
+        <createTable tableName="default_config">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="default_config_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="double_value" type="FLOAT8"/>
+            <column name="long_value" type="BIGINT"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="string_value" type="VARCHAR(255)"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

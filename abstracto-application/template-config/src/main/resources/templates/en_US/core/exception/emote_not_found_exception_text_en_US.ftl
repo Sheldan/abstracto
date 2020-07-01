@@ -1,1 +1,0 @@
-The emote ${emoteKey} was not found. The available emotes are: ${available}

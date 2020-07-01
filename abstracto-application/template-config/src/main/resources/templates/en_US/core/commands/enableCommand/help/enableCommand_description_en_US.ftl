@@ -1,1 +1,0 @@
-Enables a command in a channel group.

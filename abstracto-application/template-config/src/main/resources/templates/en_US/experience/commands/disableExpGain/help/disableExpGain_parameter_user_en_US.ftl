@@ -1,1 +1,0 @@
-The user to disable experience gain for.

@@ -1,0 +1,29 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="emote-table">
+        <createTable tableName="emote">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="emote_pkey"/>
+            </column>
+            <column name="animated" type="BOOLEAN"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="custom" type="BOOLEAN"/>
+            <column name="emote_id" type="BIGINT"/>
+            <column name="emote_key" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="emote_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="emote-fk_emote_server">
+        <addForeignKeyConstraint baseColumnNames="emote_server_id" baseTableName="emote" constraintName="fk_emote_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

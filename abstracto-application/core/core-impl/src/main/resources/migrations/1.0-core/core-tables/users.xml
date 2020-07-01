@@ -1,0 +1,40 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="users-table">
+        <createTable tableName="auser">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="users_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="user_in_server-table">
+        <createTable tableName="user_in_server">
+            <column autoIncrement="true" name="user_in_server_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="user_in_server_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="server_reference" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_reference" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="user_in_server-fk_auser_user">
+        <addForeignKeyConstraint baseColumnNames="user_reference" baseTableName="user_in_server" constraintName="fk_auser_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="auser" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="user_in_server-fk_user_server">
+        <addForeignKeyConstraint baseColumnNames="server_reference" baseTableName="user_in_server" constraintName="fk_user_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

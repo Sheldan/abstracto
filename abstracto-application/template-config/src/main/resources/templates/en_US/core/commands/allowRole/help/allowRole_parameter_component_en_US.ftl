@@ -1,1 +1,0 @@
-The command/feature the role should be able to execute.

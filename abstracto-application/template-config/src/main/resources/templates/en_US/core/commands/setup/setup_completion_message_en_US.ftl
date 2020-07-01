@@ -1,1 +1,0 @@
-Setup for ${featureName} has been completed successfully.

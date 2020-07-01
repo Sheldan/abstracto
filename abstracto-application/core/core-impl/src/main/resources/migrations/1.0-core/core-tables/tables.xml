@@ -1,0 +1,27 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <include file="server.xml" relativeToChangelogFile="true"/>
+    <include file="channel.xml" relativeToChangelogFile="true"/>
+    <include file="default_post_target.xml" relativeToChangelogFile="true"/>
+    <include file="post_target.xml" relativeToChangelogFile="true"/>
+    <include file="default_config.xml" relativeToChangelogFile="true"/>
+    <include file="default_emote.xml" relativeToChangelogFile="true"/>
+    <include file="emote.xml" relativeToChangelogFile="true"/>
+    <include file="feature.xml" relativeToChangelogFile="true"/>
+    <include file="role.xml" relativeToChangelogFile="true"/>
+    <include file="module.xml" relativeToChangelogFile="true"/>
+    <include file="command.xml" relativeToChangelogFile="true"/>
+    <include file="channel_group.xml" relativeToChangelogFile="true"/>
+    <include file="default_feature_flag.xml" relativeToChangelogFile="true"/>
+    <include file="feature_flag.xml" relativeToChangelogFile="true"/>
+    <include file="feature_mode.xml" relativeToChangelogFile="true"/>
+    <include file="lock.xml" relativeToChangelogFile="true"/>
+    <include file="system_config.xml" relativeToChangelogFile="true"/>
+    <include file="users.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

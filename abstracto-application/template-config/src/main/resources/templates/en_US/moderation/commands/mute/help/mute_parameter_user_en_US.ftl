@@ -1,1 +1,0 @@
-The user which should be muted.

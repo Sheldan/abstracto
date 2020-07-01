@@ -1,1 +1,0 @@
-Decays all currently active warnings

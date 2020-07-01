@@ -1,1 +1,0 @@
-The slowmode in channel ${channel.name} has been set to ${channel.slowMode} seconds.

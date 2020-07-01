@@ -1,0 +1,85 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-table">
+        <createTable tableName="qrtz_fired_triggers">
+            <column name="sched_name" type="VARCHAR(120)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_fired_triggers_pkey"/>
+            </column>
+            <column name="entry_id" type="VARCHAR(95)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_fired_triggers_pkey"/>
+            </column>
+            <column name="trigger_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trigger_group" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instance_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fired_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sched_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="job_name" type="VARCHAR(200)"/>
+            <column name="job_group" type="VARCHAR(200)"/>
+            <column name="is_nonconcurrent" type="BOOLEAN"/>
+            <column name="requests_recovery" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-index1">
+        <createIndex indexName="idx_qrtz_ft_inst_job_req_rcvry" tableName="qrtz_fired_triggers">
+            <column name="sched_name"/>
+            <column name="instance_name"/>
+            <column name="requests_recovery"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-index2">
+        <createIndex indexName="idx_qrtz_ft_j_g" tableName="qrtz_fired_triggers">
+            <column name="sched_name"/>
+            <column name="job_name"/>
+            <column name="job_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-index3">
+        <createIndex indexName="idx_qrtz_ft_jg" tableName="qrtz_fired_triggers">
+            <column name="sched_name"/>
+            <column name="job_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-index4">
+        <createIndex indexName="idx_qrtz_ft_t_g" tableName="qrtz_fired_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_name"/>
+            <column name="trigger_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-index5">
+        <createIndex indexName="idx_qrtz_ft_tg" tableName="qrtz_fired_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_fired_triggers-index6">
+        <createIndex indexName="idx_qrtz_ft_trig_inst_name" tableName="qrtz_fired_triggers">
+            <column name="sched_name"/>
+            <column name="instance_name"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

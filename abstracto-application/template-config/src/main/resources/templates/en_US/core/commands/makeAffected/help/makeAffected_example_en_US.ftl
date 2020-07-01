@@ -1,1 +1,0 @@
-`makeAffected ban @Staff` in order so the role `Staff` can be banned via the command (where @Staff is a role mention)

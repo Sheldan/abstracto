@@ -1,1 +1,0 @@
-Shows all user notes/user notes from a user

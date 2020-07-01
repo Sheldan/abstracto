@@ -1,1 +1,0 @@
-The name of the post target which should be directed to the channel.

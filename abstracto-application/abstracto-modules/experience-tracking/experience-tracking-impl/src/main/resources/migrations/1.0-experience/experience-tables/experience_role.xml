@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="experience_role-table">
+        <createTable tableName="experience_role">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="experience_role_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="level_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="experience_role-fk_experience_role_level">
+        <addForeignKeyConstraint baseColumnNames="level_id" baseTableName="experience_role" constraintName="fk_experience_role_level" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="level" referencedTableName="experience_level" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="experience_role-fk_experience_role_role">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="experience_role" constraintName="fk_experience_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="experience_role-fk_experience_role_server">
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="experience_role" constraintName="fk_experience_role_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

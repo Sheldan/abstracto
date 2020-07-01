@@ -1,1 +1,0 @@
-Disables the experience gain for one specific user. This user will not gain experience and will not gain ranks.

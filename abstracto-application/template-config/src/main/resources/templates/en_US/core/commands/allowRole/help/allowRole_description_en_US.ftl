@@ -1,1 +1,0 @@
-Allows the given role to execute the commands in the given feature or the command.

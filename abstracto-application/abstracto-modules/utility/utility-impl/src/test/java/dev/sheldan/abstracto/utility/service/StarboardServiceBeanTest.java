@@ -4,21 +4,18 @@ import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.MockUtils;
-import dev.sheldan.abstracto.utility.config.StarboardConfig;
 import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
@@ -68,10 +65,10 @@ public class StarboardServiceBeanTest {
     private StarboardPostManagementService starboardPostManagementService;
 
     @Mock
-    private StarboardConfig starboardConfig;
+    private StarboardPostReactorManagementService starboardPostReactorManagementService;
 
     @Mock
-    private StarboardPostReactorManagementService starboardPostReactorManagementService;
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Mock
     private PostTargetManagement postTargetManagement;
@@ -129,7 +126,9 @@ public class StarboardServiceBeanTest {
         when(postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), server.getId())).thenReturn(postTarget);
         List<CompletableFuture<Message>> futures = Arrays.asList(CompletableFuture.completedFuture(sendPost));
         when(postTargetService.sendEmbedInPostTarget(postMessage, StarboardPostTarget.STARBOARD, server.getId())).thenReturn(futures);
-        when(starboardConfig.getLvl()).thenReturn(Arrays.asList(1,2));
+        ADefaultConfig config = ADefaultConfig.builder().longValue(3L).build();
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
+        when(configService.getLongValue("starLvl3", server.getId())).thenReturn(3L);
         when(configService.getLongValue("starLvl2", server.getId())).thenReturn(2L);
         when(emoteService.getUsableEmoteOrDefault(server.getId(), "star2")).thenReturn("b");
         testUnit.createStarboardPost(message, userExceptAuthor, userReacting, starredUser);
@@ -192,6 +191,8 @@ public class StarboardServiceBeanTest {
         when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
         when(postTargetService.editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, server.getId())).thenReturn(Arrays.asList(CompletableFuture.completedFuture(sendPost)));
         when(sendPost.getIdLong()).thenReturn(newPostId);
+        ADefaultConfig config = ADefaultConfig.builder().longValue(4L).build();
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
         testUnit.updateStarboardPost(post, message, userExceptAuthor);

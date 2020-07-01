@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-@Table(name="feature_modes")
+@Table(name="feature_mode")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

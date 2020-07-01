@@ -1,1 +1,0 @@
-The command which should be disabled.

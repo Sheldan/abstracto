@@ -1,1 +1,0 @@
-The member to ban from the server.

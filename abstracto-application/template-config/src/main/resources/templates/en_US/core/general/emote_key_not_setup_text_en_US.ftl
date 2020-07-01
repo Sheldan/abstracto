@@ -1,1 +1,0 @@
-Emote `${emoteKey}` is not set up.

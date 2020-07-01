@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <include file="qrtz_job_details.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_triggers.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_blob_triggers.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_calendars.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_cron_triggers.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_fired_triggers.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_locks.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_paused_trigger_grps.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_scheduler_state.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_simple_triggers.xml" relativeToChangelogFile="true"/>
+    <include file="qrtz_simprop_triggers.xml" relativeToChangelogFile="true"/>
+    <include file="scheduler_job.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

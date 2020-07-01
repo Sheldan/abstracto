@@ -1,1 +1,0 @@
-`ban @Member bad` in order to ban `Member` with the reason `bad` (the @Member is a user mention)

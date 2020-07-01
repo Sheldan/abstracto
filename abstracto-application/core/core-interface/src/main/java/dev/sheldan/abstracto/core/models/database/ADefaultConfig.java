@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-@Table(name="default_configs")
+@Table(name="default_config")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

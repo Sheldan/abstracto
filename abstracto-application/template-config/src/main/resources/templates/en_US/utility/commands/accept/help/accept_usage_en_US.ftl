@@ -1,1 +1,0 @@
-accept <suggestionId> [reason]

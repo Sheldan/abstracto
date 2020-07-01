@@ -1,1 +1,0 @@
-Changes the emotes used by the bot

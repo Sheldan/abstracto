@@ -1,1 +1,0 @@
-Enables a feature in the server.

@@ -1,1 +1,0 @@
-`enableCommand warn group1` to enable the command `warn` in the group `group1`

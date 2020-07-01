@@ -1,1 +1,0 @@
-The channel to remove from the channel group.

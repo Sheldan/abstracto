@@ -1,1 +1,0 @@
-<#include "posttarget_invalid_post_target_response"> <#include "posttarget_no_target">

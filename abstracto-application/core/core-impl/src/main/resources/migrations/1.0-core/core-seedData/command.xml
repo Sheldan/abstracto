@@ -1,0 +1,179 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="coreFeature" value="(SELECT id FROM feature WHERE key = 'core')"/>
+    <property name="helpModule" value="(SELECT id FROM module WHERE name = 'support')"/>
+    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="channelsModule" value="(SELECT id FROM module WHERE name = 'channels')"/>
+    <property name="configModule" value="(SELECT id FROM module WHERE name = 'config')"/>
+    <property name="today" value="(SELECT NOW())"/>
+    <changeSet  author="Sheldan"  id="core-help-commands">
+        <insert tableName="command">
+            <column name="name" value="help"/>
+            <column name="module_id" valueComputed="${helpModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet author="Sheldan" id="core-utility-commands" >
+        <insert tableName="command">
+            <column name="name" value="ping"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="echo"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setEmote"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet author="Sheldan" id="core-channels-commands" >
+        <insert tableName="command">
+            <column name="name" value="addToChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="createChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="deleteChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disableCommand"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="enableCommand"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="listChannelGroups"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="posttarget"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeFromChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet author="Sheldan" id="core-config-commands" >
+        <insert tableName="command">
+            <column name="name" value="clearCache"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setConfig"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setPrefix"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setup"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="allow"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="allowRole"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disable"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disAllowRole"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="enable"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="features"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="makeAffected"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="makeImmune"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="restrict"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setMode"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

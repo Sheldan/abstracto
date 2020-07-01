@@ -1,1 +1,0 @@
-The channel in which guild joins should be logged to. Currently: ${currentTarget}

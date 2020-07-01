@@ -6,6 +6,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -35,6 +36,22 @@ public class ACommand implements Serializable {
     @ManyToOne
     @JoinColumn(name = "feature_id", nullable = false)
     private AFeature feature;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

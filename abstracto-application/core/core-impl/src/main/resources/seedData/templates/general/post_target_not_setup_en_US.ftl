@@ -1,1 +1,0 @@
-<#assign postTargetKey>${error.templateModel['postTargetKey']}</#assign><#include "post_target_not_setup_text">

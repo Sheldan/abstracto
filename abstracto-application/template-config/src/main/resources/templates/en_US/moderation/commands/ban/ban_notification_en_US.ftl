@@ -1,1 +1,0 @@
-You were banned from the server ${serverName} for the following reason: ${warning.reason}.

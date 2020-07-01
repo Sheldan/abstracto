@@ -1,0 +1,67 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="today" value="(SELECT NOW())"/>
+    <changeSet author="Sheldan" id="utility_default_emote-insert">
+       <insert tableName="default_emote">
+           <column name="emote_key" value="suggestionYes"/>
+           <column name="name" value="⬆"/>
+           <column name="created" valueComputed="${today}"/>
+       </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="suggestionNo"/>
+            <column name="name" value="⬇️"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="star"/>
+            <column name="name" value="⭐"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="star1"/>
+            <column name="name" value="⭐"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="star2"/>
+            <column name="name" value="🌟"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="star3"/>
+            <column name="name" value="💫"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="star4"/>
+            <column name="name" value="🌠"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="starboardBadge1"/>
+            <column name="name" value="🥇"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="starboardBadge2"/>
+            <column name="name" value="🥈"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="starboardBadge3"/>
+            <column name="name" value="🥉"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="removeEmbed"/>
+            <column name="name" value="🗑"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

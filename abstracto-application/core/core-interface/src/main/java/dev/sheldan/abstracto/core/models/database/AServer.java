@@ -25,8 +25,6 @@ public class AServer implements SnowFlake, Serializable {
     @Column(name = "id")
     private Long id;
 
-    private String name;
-
     @Column(name = "created")
     private Instant created;
 
@@ -93,12 +91,11 @@ public class AServer implements SnowFlake, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AServer aServer = (AServer) o;
-        return Objects.equals(id, aServer.id) &&
-                Objects.equals(name, aServer.name);
+        return Objects.equals(id, aServer.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id);
     }
 }

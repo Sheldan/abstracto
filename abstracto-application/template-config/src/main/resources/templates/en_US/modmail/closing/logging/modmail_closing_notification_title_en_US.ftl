@@ -1,1 +1,0 @@
-Mod mail thread has been closed

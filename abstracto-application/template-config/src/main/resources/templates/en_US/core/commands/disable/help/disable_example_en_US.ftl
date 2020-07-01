@@ -1,1 +1,0 @@
-`disable moderation` to disable the moderation feature

@@ -1,1 +1,0 @@
-Failed to forward message. Existing mod mail thread has been deleted. Send another message to start a new one.

@@ -1,1 +1,0 @@
-${currentlyDeleted} out of ${totalToDelete} messages deleted.

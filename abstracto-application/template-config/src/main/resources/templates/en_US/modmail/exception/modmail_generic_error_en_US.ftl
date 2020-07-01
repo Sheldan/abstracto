@@ -1,1 +1,0 @@
-Generic mod mail failure. Check the logs.

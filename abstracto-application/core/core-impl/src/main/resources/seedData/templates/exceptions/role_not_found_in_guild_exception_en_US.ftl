@@ -1,1 +1,0 @@
-<#include "role_not_found_in_guild_exception_text">

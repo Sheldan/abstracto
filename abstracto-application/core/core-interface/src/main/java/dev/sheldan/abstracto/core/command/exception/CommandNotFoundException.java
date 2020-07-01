@@ -7,6 +7,9 @@ public class CommandNotFoundException extends AbstractoRunTimeException implemen
     public CommandNotFoundException() {
         super("");
     }
+    public CommandNotFoundException(String text) {
+        super(text);
+    }
 
     @Override
     public String getTemplateName() {

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.utility.service;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -14,7 +15,6 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.utility.config.StarboardConfig;
 import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
@@ -43,6 +43,7 @@ public class StarboardServiceBean implements StarboardService {
 
     public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
     public static final String STAR_LVL_CONFIG_PREFIX = "starLvl";
+    public static final String STAR_LEVELS_CONFIG_KEY = "starLvls";
 
     @Autowired
     private BotService botService;
@@ -60,9 +61,6 @@ public class StarboardServiceBean implements StarboardService {
     private StarboardPostManagementService starboardPostManagementService;
 
     @Autowired
-    private StarboardConfig starboardConfig;
-
-    @Autowired
     private StarboardPostReactorManagementService starboardPostReactorManagementService;
 
     @Autowired
@@ -76,6 +74,9 @@ public class StarboardServiceBean implements StarboardService {
 
     @Autowired
     private EmoteService emoteService;
+
+    @Autowired
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Autowired
     private StarboardServiceBean self;
@@ -221,7 +222,7 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     private String getAppropriateEmote(Long serverId, Integer starCount) {
-        int maxLevels = starboardConfig.getLvl().size();
+        int maxLevels = defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY).getLongValue().intValue();
         for(int i = maxLevels; i > 0; i--) {
             Long starMinimum = configService.getLongValue(STAR_LVL_CONFIG_PREFIX + i, serverId);
             if(starCount >= starMinimum) {

@@ -1,1 +1,0 @@
-Shows the URL and the name of the given emote.

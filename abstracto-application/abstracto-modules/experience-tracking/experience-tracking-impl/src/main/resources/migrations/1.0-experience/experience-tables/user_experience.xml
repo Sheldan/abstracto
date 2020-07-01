@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="user_experience-table">
+        <createTable tableName="user_experience">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="user_experience_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="experience" type="BIGINT"/>
+            <column name="experience_gain_disabled" type="BOOLEAN"/>
+            <column name="message_count" type="BIGINT"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="experience_role_id" type="BIGINT"/>
+            <column name="level_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="user_experience-fk_user_experience_level">
+        <addForeignKeyConstraint baseColumnNames="level_id" baseTableName="user_experience" constraintName="fk_user_experience_level" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="level" referencedTableName="experience_level" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="user_experience-fk_user_experience_role">
+        <addForeignKeyConstraint baseColumnNames="experience_role_id" baseTableName="user_experience" constraintName="fk_user_experience_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="experience_role" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

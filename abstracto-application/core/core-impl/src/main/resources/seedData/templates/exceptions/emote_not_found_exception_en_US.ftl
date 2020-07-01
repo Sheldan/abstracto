@@ -1,1 +1,0 @@
-<#include "emote_not_found_exception_text">

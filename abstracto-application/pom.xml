@@ -22,8 +22,8 @@
         <module>templating</module>
         <module>abstracto-modules</module>
         <module>scheduling</module>
-        <module>template-config</module>
         <module>documentation</module>
+        <module>installer</module>
         <module>bundle</module>
         <module>coverage</module>
     </modules>

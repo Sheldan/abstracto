@@ -1,1 +1,0 @@
-The maximum of experience given randomly. Default: ${defaultValue}

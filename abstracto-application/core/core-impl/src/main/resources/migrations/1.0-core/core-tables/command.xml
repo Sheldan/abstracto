@@ -1,0 +1,83 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="command-table">
+        <createTable tableName="command">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="command_pkey"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="feature_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="module_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server-table">
+        <createTable tableName="command_in_server">
+            <column autoIncrement="true" name="command_in_server_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="command_in_server_pkey"/>
+            </column>
+            <column name="restricted" type="BOOLEAN"/>
+            <column name="command_reference" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_reference" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server_immune_roles-table">
+        <createTable tableName="command_in_server_immune_roles">
+            <column name="command_in_server_command_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="immune_roles_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server_allowed_roles-table">
+        <createTable tableName="command_in_server_allowed_roles">
+            <column name="command_in_server_command_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allowed_roles_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="command-fk_command_feature">
+        <addForeignKeyConstraint baseColumnNames="feature_id" baseTableName="command" constraintName="fk_command_feature" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="feature" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server-command_in_server_immune_roles">
+        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_immune_roles" constraintName="fk_command_immune_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server-command_in_server_allowed_roles">
+        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_command_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server_immune_roles-command_in_server_allowed_roles">
+        <addForeignKeyConstraint baseColumnNames="allowed_roles_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_role_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command-fk_command_module">
+        <addForeignKeyConstraint baseColumnNames="module_id" baseTableName="command" constraintName="fk_command_module" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="module" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server-fk_command_command">
+        <addForeignKeyConstraint baseColumnNames="command_reference" baseTableName="command_in_server" constraintName="fk_command_command" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="command" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server_allowed_roles-fk_immune_role_role">
+        <addForeignKeyConstraint baseColumnNames="immune_roles_id" baseTableName="command_in_server_immune_roles" constraintName="fk_immune_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="command_in_server-fk_command_server">
+        <addForeignKeyConstraint baseColumnNames="server_reference" baseTableName="command_in_server" constraintName="fk_command_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

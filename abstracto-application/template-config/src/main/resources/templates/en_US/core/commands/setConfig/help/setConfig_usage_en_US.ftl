@@ -1,1 +1,0 @@
-setConfig <configKey> <value>

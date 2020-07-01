@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name="user_notes")
+@Table(name="user_note")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

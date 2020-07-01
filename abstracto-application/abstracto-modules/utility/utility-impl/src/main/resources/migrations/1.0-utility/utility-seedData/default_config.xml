@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="today" value="(SELECT NOW())"/>
+    <changeSet  author="Sheldan"  id="starLevels-insert">
+        <insert tableName="default_config">
+            <column name="name"  value="starLvl1"/>
+            <column name="long_value"  value="5"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_config">
+            <column name="name"  value="starLvl2"/>
+            <column name="long_value"  value="8"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_config">
+            <column name="name"  value="starLvl3"/>
+            <column name="long_value"  value="13"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_config">
+            <column name="name"  value="starLvl4"/>
+            <column name="long_value"  value="17"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_config">
+            <column name="name"  value="starLvls"/>
+            <column name="long_value"  value="4"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

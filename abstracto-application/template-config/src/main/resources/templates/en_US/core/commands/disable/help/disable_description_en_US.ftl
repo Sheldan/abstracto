@@ -1,1 +1,0 @@
-Completely disables a feature for the server.

@@ -1,1 +1,0 @@
-The role to be notified by new mod mail threads.

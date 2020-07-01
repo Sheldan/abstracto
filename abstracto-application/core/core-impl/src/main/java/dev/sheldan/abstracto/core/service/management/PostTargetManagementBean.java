@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -29,15 +28,15 @@ public class PostTargetManagementBean implements PostTargetManagement {
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private DynamicKeyLoader dynamicKeyLoader;
+    private PostTargetService postTargetService;
 
     @Autowired
-    private PostTargetService postTargetService;
+    private DefaultPostTargetManagementService defaultPostTargetManagementService;
 
     @Override
     public PostTarget createPostTarget(String name, AServer server, AChannel targetChannel) {
         if(!postTargetService.validPostTarget(name)) {
-            throw new PostTargetNotValidException(name, dynamicKeyLoader.getPostTargetsAsList());
+            throw new PostTargetNotValidException(name, defaultPostTargetManagementService.getDefaultPostTargetKeys());
         }
         log.info("Creating post target {} pointing towards {}", name, targetChannel);
         PostTarget build = PostTarget.builder().name(name).channelReference(targetChannel).serverReference(server).build();

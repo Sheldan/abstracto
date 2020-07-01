@@ -79,7 +79,7 @@ public class Mute {
      * The channel in which this mute was cast
      */
     @ManyToOne
-    @JoinColumn(name = "mutingChannel")
+    @JoinColumn(name = "mutingChannel", nullable = false)
     private AChannel mutingChannel;
 
     /**

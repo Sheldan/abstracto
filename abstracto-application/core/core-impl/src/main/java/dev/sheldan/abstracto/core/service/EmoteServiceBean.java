@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.service.management.DefaultEmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
@@ -26,7 +26,7 @@ public class EmoteServiceBean implements EmoteService {
     private EmoteManagementService emoteManagementService;
 
     @Autowired
-    private DynamicKeyLoader keyLoader;
+    private DefaultEmoteManagementService defaultEmoteManagementService;
 
     @Override
     public boolean isEmoteUsableByBot(Emote emote) {
@@ -93,7 +93,7 @@ public class EmoteServiceBean implements EmoteService {
 
     @Override
     public String getDefaultEmote(String emoteKey) {
-        return keyLoader.getDefaultEmotes().get(emoteKey);
+        return defaultEmoteManagementService.getDefaultEmote(emoteKey).getName();
     }
 
     @Override

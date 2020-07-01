@@ -1,1 +1,0 @@
-You lack the necessary role to execute this command. One of the following is needed: ${roles}

@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="qrtz_paused_trigger_grps-table">
+        <createTable tableName="qrtz_paused_trigger_grps">
+            <column name="sched_name" type="VARCHAR(120)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_paused_trigger_grps_pkey"/>
+            </column>
+            <column name="trigger_group" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_paused_trigger_grps_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

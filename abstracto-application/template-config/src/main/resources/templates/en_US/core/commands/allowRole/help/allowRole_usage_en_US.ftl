@@ -1,1 +1,0 @@
-allowRole <command/feature> <role>

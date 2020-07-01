@@ -1,1 +1,0 @@
-Sets the category under which *new* mod mail threads are being created. Does not change the position of the old ones.

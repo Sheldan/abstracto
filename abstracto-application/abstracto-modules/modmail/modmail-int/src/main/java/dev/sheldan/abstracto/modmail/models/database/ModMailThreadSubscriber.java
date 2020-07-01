@@ -15,7 +15,7 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_subscribers")
+@Table(name = "modmail_subscriber")
 @Cacheable
 @Getter
 @Setter
@@ -30,7 +30,7 @@ public class ModMailThreadSubscriber {
      * The staff member which is subscribed
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_message_subscriber", nullable = false)
+    @JoinColumn(name = "modmail_thread_subscriber", nullable = false)
     private AUserInAServer subscriber;
 
     /**

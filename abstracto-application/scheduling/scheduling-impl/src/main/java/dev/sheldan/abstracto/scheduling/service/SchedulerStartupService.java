@@ -1,8 +1,5 @@
 package dev.sheldan.abstracto.scheduling.service;
 
-import dev.sheldan.abstracto.scheduling.config.JobConfigLoader;
-import dev.sheldan.abstracto.scheduling.factory.SchedulerJobConverter;
-import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
 import dev.sheldan.abstracto.scheduling.service.management.SchedulerJobManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +17,17 @@ public class SchedulerStartupService {
     private SchedulerService schedulerService;
 
     @Autowired
-    private JobConfigLoader jobConfigLoader;
-
-    @Autowired
     private SchedulerJobManagementServiceBean schedulerJobManagementServiceBean;
 
-    @Autowired
-    private SchedulerJobConverter schedulerJobConverter;
-
     /**
-     * Loads the job definitions from the property file and schedules them, if the job does not exist yet.
+     * Loads the job definitions from the database and schedules them, if the job does not exist yet.
      */
     @EventListener
     @Transactional
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
-        jobConfigLoader.getJobs().forEach((s, schedulerJob) -> {
-            SchedulerJob job = schedulerJobConverter.fromJobProperties(schedulerJob);
-            if(!schedulerJobManagementServiceBean.doesJobExist(job) || !schedulerJobManagementServiceBean.isJobDefinitionTheSame(job)) {
-                schedulerJobManagementServiceBean.createOrUpdate(job);
+        schedulerJobManagementServiceBean.findAll().forEach((schedulerJob) -> {
+            if(!schedulerJobManagementServiceBean.doesJobExist(schedulerJob) || !schedulerJobManagementServiceBean.isJobDefinitionTheSame(schedulerJob)) {
+                schedulerJobManagementServiceBean.createOrUpdate(schedulerJob);
             }
         });
         schedulerService.startScheduledJobs();

@@ -1,1 +1,0 @@
-<#include "category_not_found_exception_text">

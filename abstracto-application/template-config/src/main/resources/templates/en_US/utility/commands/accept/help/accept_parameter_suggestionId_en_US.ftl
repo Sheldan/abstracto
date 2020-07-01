@@ -1,1 +1,0 @@
-The ID of the suggestion you want to accept.

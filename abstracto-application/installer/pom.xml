@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>dev.sheldan.abstracto</groupId>
+        <artifactId>abstracto-application</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>installer</artifactId>
+    <packaging>pom</packaging>
+
+    <profiles>
+        <profile>
+            <id>deployment-docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.33.0</version>
+                        <configuration>
+                            <pushRegistry>docker.pkg.github.com/sheldan/abstracto</pushRegistry>
+                            <images>
+                                <image>
+                                    <name>deployment-container:latest</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/src/main/docker</contextDir>
+                                        <assembly>
+                                            <name>resources</name>
+                                            <descriptor>docker.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+
+    </profiles>
+</project>

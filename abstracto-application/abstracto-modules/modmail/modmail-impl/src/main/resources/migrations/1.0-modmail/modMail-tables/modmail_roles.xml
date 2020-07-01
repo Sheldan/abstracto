@@ -1,0 +1,30 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="modmail_roles-table">
+        <createTable tableName="modmail_roles">
+            <column autoIncrement="true" name="mod_mail_role_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_roles_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="modmail_role" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modmail_role_server" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="modmail_roles-fk_modmail_role_role">
+        <addForeignKeyConstraint baseColumnNames="modmail_role" baseTableName="modmail_roles" constraintName="fk_modmail_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="modmail_roles-fk_modmail_role_server">
+        <addForeignKeyConstraint baseColumnNames="modmail_role_server" baseTableName="modmail_roles" constraintName="fk_modmail_role_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

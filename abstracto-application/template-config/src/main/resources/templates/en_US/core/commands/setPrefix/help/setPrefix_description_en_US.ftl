@@ -1,1 +1,0 @@
-Changes the prefix of the bot

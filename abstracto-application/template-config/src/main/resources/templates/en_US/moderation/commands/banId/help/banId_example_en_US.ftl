@@ -1,1 +1,0 @@
-`banId 1234 bad` in order to ban the user with ID `1234` with the reason `bad`

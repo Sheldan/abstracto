@@ -1,0 +1,31 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="modmail_messages-table">
+        <createTable tableName="modmail_messages">
+            <column name="message_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_messages_pkey"/>
+            </column>
+            <column name="anonymous" type="BOOLEAN"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="dm_channel" type="BOOLEAN"/>
+            <column name="modmail_message_author" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thread_reference" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="modmail_messages-fk_modmail_message_thread">
+        <addForeignKeyConstraint baseColumnNames="thread_reference" baseTableName="modmail_messages" constraintName="fk_modmail_message_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="modmail_thread" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="modmail_messages-fk_modmail_message_author">
+        <addForeignKeyConstraint baseColumnNames="modmail_message_author" baseTableName="modmail_messages" constraintName="fk_modmail_message_author" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,1 +1,0 @@
-Invalid time format: ${format}. Valid formats are ${valid}. Beware to not use a space between the number and the unit.

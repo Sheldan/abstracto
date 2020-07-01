@@ -1,0 +1,133 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="qrtz_triggers-table">
+        <createTable tableName="qrtz_triggers">
+            <column name="sched_name" type="VARCHAR(120)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_triggers_pkey"/>
+            </column>
+            <column name="trigger_name" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_triggers_pkey"/>
+            </column>
+            <column name="trigger_group" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_triggers_pkey"/>
+            </column>
+            <column name="job_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="job_group" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(250)"/>
+            <column name="next_fire_time" type="BIGINT"/>
+            <column name="prev_fire_time" type="BIGINT"/>
+            <column name="priority" type="INTEGER"/>
+            <column name="trigger_state" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trigger_type" type="VARCHAR(8)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="BIGINT"/>
+            <column name="calendar_name" type="VARCHAR(200)"/>
+            <column name="misfire_instr" type="SMALLINT"/>
+            <column name="job_data" type="BYTEA"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="qrtz_triggers-qrtz_triggers_sched_name_job_name_job_group_fkey">
+        <addForeignKeyConstraint baseColumnNames="sched_name,job_name,job_group" baseTableName="qrtz_triggers" constraintName="qrtz_triggers_sched_name_job_name_job_group_fkey" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="sched_name,job_name,job_group" referencedTableName="qrtz_job_details" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="qrtz_triggers-index1">
+        <createIndex indexName="idx_qrtz_t_c" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="calendar_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index2">
+        <createIndex indexName="idx_qrtz_t_g" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index3">
+        <createIndex indexName="idx_qrtz_t_j" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="job_name"/>
+            <column name="job_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index4">
+        <createIndex indexName="idx_qrtz_t_jg" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="job_group"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index5">
+        <createIndex indexName="idx_qrtz_t_n_g_state" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_group"/>
+            <column name="trigger_state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index6">
+        <createIndex indexName="idx_qrtz_t_n_state" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_name"/>
+            <column name="trigger_group"/>
+            <column name="trigger_state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index7">
+        <createIndex indexName="idx_qrtz_t_next_fire_time" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="next_fire_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index8">
+        <createIndex indexName="idx_qrtz_t_nft_misfire" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="misfire_instr"/>
+            <column name="next_fire_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index9">
+        <createIndex indexName="idx_qrtz_t_nft_st" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_state"/>
+            <column name="next_fire_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index10">
+        <createIndex indexName="idx_qrtz_t_nft_st_misfire" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="misfire_instr"/>
+            <column name="next_fire_time"/>
+            <column name="trigger_state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index11">
+        <createIndex indexName="idx_qrtz_t_nft_st_misfire_grp" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="misfire_instr"/>
+            <column name="next_fire_time"/>
+            <column name="trigger_group"/>
+            <column name="trigger_state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Sheldan" id="qrtz_triggers-index12">
+        <createIndex indexName="idx_qrtz_t_state" tableName="qrtz_triggers">
+            <column name="sched_name"/>
+            <column name="trigger_state"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

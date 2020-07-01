@@ -38,11 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>dev.sheldan.abstracto.templating</groupId>
-            <artifactId>template-config</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>dev.sheldan.abstracto.modules</groupId>
             <artifactId>moderation-impl</artifactId>
         </dependency>

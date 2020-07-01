@@ -1,0 +1,31 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="modmail_subscriber-table">
+        <createTable tableName="modmail_subscriber">
+            <column autoIncrement="true" name="subscriber_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_subscriber_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="modmail_thread_subscriber" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mod_mail_thread" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="modmail_subscriber-fk_modmail_thread_subscriber_user">
+        <addForeignKeyConstraint baseColumnNames="modmail_thread_subscriber" baseTableName="modmail_subscriber" constraintName="fk_modmail_thread_subscriber_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="modmail_subscriber-fk_modmail_thread_thread">
+        <addForeignKeyConstraint baseColumnNames="mod_mail_thread" baseTableName="modmail_subscriber" constraintName="fk_modmail_thread_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="modmail_thread" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

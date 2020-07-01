@@ -1,1 +1,0 @@
-The reason why the user should be kicked for.

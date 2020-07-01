@@ -8,6 +8,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,22 @@ public class AModule implements Serializable {
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ACommand> commands = new ArrayList<>();
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

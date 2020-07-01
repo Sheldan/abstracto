@@ -1,1 +1,0 @@
-Feature has been disabled. Necessary feature is: ${featureName}, you can enable it by executing `enable ${featureKey}`.

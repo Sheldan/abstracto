@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.exception.EmoteNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -22,7 +21,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private DynamicKeyLoader dynamicKeyLoader;
+    private DefaultEmoteManagementService defaultEmoteManagementService;
 
     @Override
     public Optional<AEmote> loadEmote(Long id) {
@@ -146,7 +145,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     private void validateEmoteName(String name)  {
-        List<String> possibleEmotes = dynamicKeyLoader.getEmoteNamesAsList();
+        List<String> possibleEmotes = defaultEmoteManagementService.getDefaultEmoteNames();
         if(!possibleEmotes.contains(name)) {
             throw new EmoteNotFoundException(name, possibleEmotes);
         }

@@ -1,1 +1,0 @@
-Forbids a role to use a command.

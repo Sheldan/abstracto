@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +21,15 @@ import java.util.Optional;
 @Service
 public class CommandManager implements CommandRegistry {
 
+    public static final String PREFIX = "prefix";
     @Autowired
     private List<Command> commands;
 
     @Autowired
     private ConfigService configService;
 
-    @Value("${abstracto.prefix}")
-    private String defaultPrefix;
+    @Autowired
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Override
     public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter) {
@@ -101,7 +103,7 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public boolean isCommand(Message message) {
-        return message.getContentRaw().startsWith(configService.getStringValue("prefix", message.getGuild().getIdLong(), defaultPrefix));
+        return message.getContentRaw().startsWith(configService.getStringValue(PREFIX, message.getGuild().getIdLong(), defaultConfigManagementService.getDefaultConfig(PREFIX).getStringValue()));
     }
 
     @Override
@@ -116,6 +118,6 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public String getCommandName(String input, Long serverId) {
-        return input.replaceFirst(configService.getStringValue("prefix", serverId, defaultPrefix), "");
+        return input.replaceFirst(configService.getStringValue(PREFIX, serverId, defaultConfigManagementService.getDefaultConfig(PREFIX).getStringValue()), "");
     }
 }

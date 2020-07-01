@@ -1,1 +1,0 @@
-The command/feature name to make the role immune for.

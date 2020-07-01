@@ -1,1 +1,0 @@
-Help - Command ${command.name} details

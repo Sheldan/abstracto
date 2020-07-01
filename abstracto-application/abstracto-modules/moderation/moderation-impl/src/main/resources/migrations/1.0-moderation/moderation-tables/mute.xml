@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="mute-table">
+        <createTable tableName="mute">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mute_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="reason" type="VARCHAR(255)"/>
+            <column name="trigger_key" type="VARCHAR(255)"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="mute_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="mute_target_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="muted_user" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="muting_channel" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="muting_server" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mute_ended" type="BOOLEAN"/>
+            <column name="message_id" type="BIGINT"/>
+            <column name="muting_user" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="mute-fk_mute_channel">
+        <addForeignKeyConstraint baseColumnNames="muting_channel" baseTableName="mute" constraintName="fk_mute_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="mute-fk_mute_muting_user">
+        <addForeignKeyConstraint baseColumnNames="muting_user" baseTableName="mute" constraintName="fk_mute_muting_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="mute-fk_mute_muted_user">
+        <addForeignKeyConstraint baseColumnNames="muted_user" baseTableName="mute" constraintName="fk_mute_muted_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="mute-fk_mute_muting_server">
+        <addForeignKeyConstraint baseColumnNames="muting_server" baseTableName="mute" constraintName="fk_mute_muting_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,1 +1,0 @@
-<#assign featureName><#include "${featureConfig.feature.key}_feature"></#assign><#assign featureKey>${featureConfig.feature.key}</#assign><#include "feature_disabled_text">

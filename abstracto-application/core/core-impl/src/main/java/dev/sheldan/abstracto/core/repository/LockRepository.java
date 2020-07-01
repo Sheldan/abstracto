@@ -14,5 +14,5 @@ public interface LockRepository extends JpaRepository<ALock, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from ALock a where a.id = :id")
-    ALock findArticleForRead(@Param("id") Long id);
+    ALock findALockForRead(@Param("id") Long id);
 }

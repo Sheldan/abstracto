@@ -1,1 +1,0 @@
-Mutes a user

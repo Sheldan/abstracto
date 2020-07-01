@@ -1,1 +1,0 @@
-<#assign postTargetKey>${param.postTargetKey}</#assign><#assign channel>${param.channel.asMention}</#assign><#include "setup_post_target_action_display">

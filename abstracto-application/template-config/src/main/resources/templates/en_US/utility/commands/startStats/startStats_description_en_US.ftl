@@ -1,1 +1,0 @@
-${starredMessages} starred messages with ${totalStars} stars in total

@@ -1,1 +1,0 @@
-The bot uses certain when doing certain actions. This command can be used to redefine these emotes.

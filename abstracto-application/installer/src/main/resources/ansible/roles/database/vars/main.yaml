@@ -1,0 +1,19 @@
+custom_template_artifacts: []
+liquibase_artifacts: []
+
+db_credentials:
+  host: "{{ lookup('env','DB_HOST') }}"
+  port: "{{ lookup('env','DB_PORT') }}"
+  database: "{{ lookup('env','DB_NAME') }}"
+  user: "{{ lookup('env','DB_USER') }}"
+  password: "{{ lookup('env','DB_PASS') }}"
+
+liquibase_path: "{{ lookup('env','LIQUIBASE_PATH') }}"
+postgres_driver_path: "{{ lookup('env','POSTGRES_DRIVER_PATH') }}"
+
+installer_base_dir: "/tmp/installer"
+
+execute_liquibase_input: yes
+execute_templates_input: yes
+execute_liquibase: "{{ True if (execute_liquibase_input | bool) else False }}"
+execute_templates: "{{ True if (execute_templates_input | bool) else False }}"

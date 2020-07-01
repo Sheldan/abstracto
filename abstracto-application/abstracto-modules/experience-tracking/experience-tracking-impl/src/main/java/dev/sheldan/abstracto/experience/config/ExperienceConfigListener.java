@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.config;
 import dev.sheldan.abstracto.core.listener.ServerConfigListener;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeatureConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class ExperienceConfigListener implements ServerConfigListener {
 
 
     @Autowired
-    private ExperienceConfig experienceConfig;
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Autowired
     private ConfigManagementService service;
@@ -25,8 +26,8 @@ public class ExperienceConfigListener implements ServerConfigListener {
     @Override
     public void updateServerConfig(AServer server) {
         log.info("Setting up experience configuration for server {}.", server.getId());
-        service.createIfNotExists(server.getId(), ExperienceFeatureConfig.MIN_EXP_KEY, experienceConfig.getMinExp().longValue());
-        service.createIfNotExists(server.getId(), ExperienceFeatureConfig.MAX_EXP_KEY, experienceConfig.getMaxExp().longValue());
-        service.createIfNotExists(server.getId(), ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, experienceConfig.getExpMultiplier());
+        service.createIfNotExists(server.getId(), ExperienceFeatureConfig.MIN_EXP_KEY, defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.MIN_EXP_KEY).getLongValue());
+        service.createIfNotExists(server.getId(), ExperienceFeatureConfig.MAX_EXP_KEY, defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.MAX_EXP_KEY).getLongValue());
+        service.createIfNotExists(server.getId(), ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY).getDoubleValue());
     }
 }

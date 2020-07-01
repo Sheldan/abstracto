@@ -17,7 +17,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_threads")
+@Table(name = "modmail_thread")
 @Cacheable
 @Getter
 @Setter

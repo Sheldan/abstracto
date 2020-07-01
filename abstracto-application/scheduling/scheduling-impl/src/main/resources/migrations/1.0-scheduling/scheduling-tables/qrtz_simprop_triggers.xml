@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="qrtz_simprop_triggers-table">
+        <createTable tableName="qrtz_simprop_triggers">
+            <column name="sched_name" type="VARCHAR(120)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_simprop_triggers_pkey"/>
+            </column>
+            <column name="trigger_name" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_simprop_triggers_pkey"/>
+            </column>
+            <column name="trigger_group" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_simprop_triggers_pkey"/>
+            </column>
+            <column name="str_prop_1" type="VARCHAR(512)"/>
+            <column name="str_prop_2" type="VARCHAR(512)"/>
+            <column name="str_prop_3" type="VARCHAR(512)"/>
+            <column name="int_prop_1" type="INTEGER"/>
+            <column name="int_prop_2" type="INTEGER"/>
+            <column name="long_prop_1" type="BIGINT"/>
+            <column name="long_prop_2" type="BIGINT"/>
+            <column name="dec_prop_1" type="numeric(13, 4)"/>
+            <column name="dec_prop_2" type="numeric(13, 4)"/>
+            <column name="bool_prop_1" type="BOOLEAN"/>
+            <column name="bool_prop_2" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="qrtz_simprop_triggers-qrtz_simprop_triggers_sched_name_trigger_name_trigger_grou_fkey">
+        <addForeignKeyConstraint baseColumnNames="sched_name,trigger_name,trigger_group" baseTableName="qrtz_simprop_triggers" constraintName="qrtz_simprop_triggers_sched_name_trigger_name_trigger_grou_fkey" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="sched_name,trigger_name,trigger_group" referencedTableName="qrtz_triggers" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,1 +1,0 @@
-setMode <feature> <newMode>

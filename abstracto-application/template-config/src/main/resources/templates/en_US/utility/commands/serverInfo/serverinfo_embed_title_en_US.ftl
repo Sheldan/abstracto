@@ -1,1 +1,0 @@
-Server info of ${name}

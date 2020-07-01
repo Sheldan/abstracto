@@ -1,1 +1,0 @@
-User has left the server

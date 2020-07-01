@@ -1,1 +1,0 @@
-Used to configure the mute role on this server.

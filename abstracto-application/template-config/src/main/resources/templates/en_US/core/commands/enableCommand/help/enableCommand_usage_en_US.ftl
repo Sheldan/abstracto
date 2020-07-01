@@ -1,1 +1,0 @@
-enableCommand <commandName> <channelGroupName>

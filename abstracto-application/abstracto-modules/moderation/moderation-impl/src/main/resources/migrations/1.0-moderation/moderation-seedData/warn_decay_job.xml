@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet  author="Sheldan"  id="warn-decay-job-insert">
+        <insert tableName="scheduler_job">
+            <column name="name" value="warnDecayJob"/>
+            <column name="group_name" value="moderation"/>
+            <column name="clazz" value="dev.sheldan.abstracto.moderation.job.WarnDecayJob"/>
+            <column name="active" value="true"/>
+            <column name="cron_expression" value="0 0 * * * ?"/>
+            <column name="recovery" value="false"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

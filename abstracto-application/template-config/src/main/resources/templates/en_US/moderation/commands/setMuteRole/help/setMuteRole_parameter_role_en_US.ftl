@@ -1,1 +1,0 @@
-The role which should be used to mute user.

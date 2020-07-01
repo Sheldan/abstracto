@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.utility.validator;
 
+import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.test.MockUtils;
-import dev.sheldan.abstracto.utility.config.StarboardConfig;
+import dev.sheldan.abstracto.utility.service.StarboardServiceBean;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,27 +27,29 @@ public class StarboardFeatureValidatorServiceTest {
     private StarboardFeatureValidatorService testUnit;
 
     @Mock
-    private StarboardConfig starboardConfig;
+    private FeatureValidatorService featureValidatorService;
 
     @Mock
-    private FeatureValidatorService featureValidatorService;
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Captor
     private ArgumentCaptor<String> configKeyCaptor;
 
     @Test
     public void testStarboardFeatureConfig() {
-        List<Integer> definedLevels = Arrays.asList(1, 2, 3);
-        when(starboardConfig.getLvl()).thenReturn(definedLevels);
         AServer server = MockUtils.getServer();
+        int levelCount = 4;
+        ADefaultConfig config = ADefaultConfig.builder().longValue((long)levelCount).build();
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
+
         testUnit.featureIsSetup(null, server, null);
-        verify(featureValidatorService, times(definedLevels.size())).checkSystemConfig(configKeyCaptor.capture(), eq(server), any());
+        verify(featureValidatorService, times(levelCount)).checkSystemConfig(configKeyCaptor.capture(), eq(server), any());
         List<String> allValues = configKeyCaptor.getAllValues();
         for (int i = 0; i < allValues.size(); i++) {
             String key = allValues.get(i);
-            Assert.assertEquals("starLvl"+ ( i + 1 ), key);
+            Assert.assertEquals("starLvl" + ( i + 1 ), key);
         }
-        Assert.assertEquals(definedLevels.size(), allValues.size());
+        Assert.assertEquals(levelCount, allValues.size());
     }
 
 }

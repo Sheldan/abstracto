@@ -1,1 +1,0 @@
-This warning was decayed on ${decayDate}.

@@ -1,1 +1,0 @@
-The channel in which where bans should be logged to. Currently: ${currentTarget}

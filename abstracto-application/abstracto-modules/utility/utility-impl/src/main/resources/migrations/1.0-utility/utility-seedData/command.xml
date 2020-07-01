@@ -1,0 +1,92 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="remindFeature" value="(SELECT id FROM feature WHERE key = 'remind')"/>
+    <property name="starboardFeature" value="(SELECT id FROM feature WHERE key = 'starboard')"/>
+    <property name="suggestionFeature" value="(SELECT id FROM feature WHERE key = 'suggestion')"/>
+    <property name="utilityFeature" value="(SELECT id FROM feature WHERE key = 'utility')"/>
+    <property name="today" value="(SELECT NOW())"/>
+
+    <changeSet  author="Sheldan"  id="utility_remind-commands">
+        <insert tableName="command">
+            <column name="name" value="remind"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="reminders"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="unRemind"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet  author="Sheldan"  id="utility_starboard-commands">
+        <insert tableName="command">
+            <column name="name" value="starStats"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet  author="Sheldan"  id="utility_suggestion-commands">
+        <insert tableName="command">
+            <column name="name" value="accept"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="reject"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="suggest"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet  author="Sheldan"  id="utility_utility-commands">
+        <insert tableName="command">
+            <column name="name" value="serverInfo"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="showEmote"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="userInfo"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="showAvatar"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+
+
+</databaseChangeLog>

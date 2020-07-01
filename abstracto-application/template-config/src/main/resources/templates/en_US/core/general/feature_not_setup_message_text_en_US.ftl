@@ -1,1 +1,0 @@
-Feature ${featureKey} not properly setup. The feature is enabled regardless. You need to configure the missing properties in order for it to function properly.

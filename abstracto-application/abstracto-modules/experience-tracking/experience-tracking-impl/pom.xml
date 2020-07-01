@@ -11,6 +11,28 @@
 
     <artifactId>experience-tracking-impl</artifactId>
 
+    <build>
+        <plugins>
+            <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <descriptors>
+                    <descriptor>src/main/assembly/liquibase.xml</descriptor>
+                </descriptors>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>make-assembly</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>dev.sheldan.abstracto.modules</groupId>
@@ -25,6 +47,7 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
 </project>

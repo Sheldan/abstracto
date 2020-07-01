@@ -1,1 +1,0 @@
-The ID of the reminder you want to cancel.

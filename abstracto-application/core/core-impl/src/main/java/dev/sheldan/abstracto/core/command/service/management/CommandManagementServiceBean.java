@@ -1,11 +1,14 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.AModule;
 import dev.sheldan.abstracto.core.command.repository.CommandRepository;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class CommandManagementServiceBean implements CommandManagementService {
@@ -39,13 +42,18 @@ public class CommandManagementServiceBean implements CommandManagementService {
     }
 
     @Override
+    public Optional<ACommand> findCommandByNameOptional(String name) {
+        return commandRepository.findByNameIgnoreCase(name.toLowerCase());
+    }
+
+    @Override
     public ACommand findCommandByName(String name) {
-        return commandRepository.findByName(name.toLowerCase());
+        return findCommandByNameOptional(name).orElseThrow(() -> new CommandNotFoundException(String.format("Command %s was not found.", name)));
     }
 
     @Override
     public boolean doesCommandExist(String name) {
-        return commandRepository.existsByName(name.toLowerCase());
+        return commandRepository.existsByNameIgnoreCase(name.toLowerCase());
     }
 
 }

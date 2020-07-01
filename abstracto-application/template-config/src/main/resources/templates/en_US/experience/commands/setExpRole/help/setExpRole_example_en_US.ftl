@@ -1,1 +1,0 @@
-`setExpRole 50 @HighLevel` in order to award the role `HighLevel` at level `50` (the @HighLevel is a role mention)

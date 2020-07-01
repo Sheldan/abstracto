@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -42,7 +43,7 @@ public class Echo extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("echo")
-                .module("utility")
+                .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .causesReaction(false)
                 .parameters(parameters)

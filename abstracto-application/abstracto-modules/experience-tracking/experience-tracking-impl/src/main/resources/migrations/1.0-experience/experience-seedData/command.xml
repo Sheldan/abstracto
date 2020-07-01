@@ -1,0 +1,81 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="experienceModule" value="(SELECT id FROM module WHERE name = 'experience')"/>
+    <property name="experienceFeature" value="(SELECT id FROM feature WHERE key = 'experience')"/>
+    <property name="today" value="(SELECT NOW())"/>
+    <changeSet  author="Sheldan"  id="experience-commands">
+        <insert tableName="command">
+            <column name="name" value="disableExpForRole"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disableExpGain"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="enableExpForRole"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="enableExpGain"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="expScale"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="leaderboard"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="listDisabledExperienceRoles"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="rank"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setExpRole"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="syncExpRoles"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="unSetExpRole"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

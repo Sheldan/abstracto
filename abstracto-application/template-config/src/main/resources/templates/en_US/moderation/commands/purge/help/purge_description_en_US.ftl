@@ -1,1 +1,0 @@
-Deletes the last n messages in the channel

@@ -7,6 +7,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +35,22 @@ public class AFeature implements SnowFlake, Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "feature")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ACommand> commands;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @PrePersist
+    private void onInsert() {
+        this.created = Instant.now();
+    }
+
+    @Column(name = "updated")
+    private Instant updated;
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = Instant.now();
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -47,12 +47,10 @@ public class AChannel implements SnowFlake, Serializable {
         this.created = Instant.now();
     }
 
-
     @Getter
     @Setter
     @Column
     private Boolean deleted;
-
 
     @Override
     public boolean equals(Object o) {

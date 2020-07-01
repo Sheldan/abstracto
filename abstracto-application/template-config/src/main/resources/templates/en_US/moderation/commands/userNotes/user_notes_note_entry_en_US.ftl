@@ -1,1 +1,0 @@
-${user} has note ${noteId} with text ${noteText} on ${date}

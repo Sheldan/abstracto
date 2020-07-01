@@ -1,1 +1,0 @@
-`mute @Member 1h2m3s bad` in order to mute the member `Member` for 1 hour 2 minutes and 3 seconds with the reason `bad` (the @Member is a user mention)

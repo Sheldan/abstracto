@@ -1,2 +1,0 @@
-Guides you through an interactive wizard where post targets, system configs and other necessary configurations for a feature are setup.
-At the end you have the possibility to review the changes, before applying them.

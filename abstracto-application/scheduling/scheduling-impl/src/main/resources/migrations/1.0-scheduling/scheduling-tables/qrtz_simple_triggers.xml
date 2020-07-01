@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="qrtz_simple_triggers-table">
+        <createTable tableName="qrtz_simple_triggers">
+            <column name="sched_name" type="VARCHAR(120)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_simple_triggers_pkey"/>
+            </column>
+            <column name="trigger_name" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_simple_triggers_pkey"/>
+            </column>
+            <column name="trigger_group" type="VARCHAR(200)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="qrtz_simple_triggers_pkey"/>
+            </column>
+            <column name="repeat_count" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="repeat_interval" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="times_triggered" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="qrtz_simple_triggers-qrtz_simple_triggers_sched_name_trigger_name_trigger_group_fkey">
+        <addForeignKeyConstraint baseColumnNames="sched_name,trigger_name,trigger_group" baseTableName="qrtz_simple_triggers" constraintName="qrtz_simple_triggers_sched_name_trigger_name_trigger_group_fkey" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="sched_name,trigger_name,trigger_group" referencedTableName="qrtz_triggers" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

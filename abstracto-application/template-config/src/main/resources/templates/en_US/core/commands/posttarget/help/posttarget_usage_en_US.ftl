@@ -1,1 +1,0 @@
-posttarget <target> <channel>

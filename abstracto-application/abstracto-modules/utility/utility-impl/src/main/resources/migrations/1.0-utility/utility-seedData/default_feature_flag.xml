@@ -1,0 +1,42 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="starboardFeature" value="(SELECT id FROM feature WHERE key = 'starboard')"/>
+    <property name="remindFeature" value="(SELECT id FROM feature WHERE key = 'remind')"/>
+    <property name="suggestionFeature" value="(SELECT id FROM feature WHERE key = 'suggestion')"/>
+    <property name="utilityFeature" value="(SELECT id FROM feature WHERE key = 'utility')"/>
+    <property name="linkEmbedFeature" value="(SELECT id FROM feature WHERE key = 'link_embeds')"/>
+    <property name="today" value="(SELECT NOW())"/>
+    <changeSet author="Sheldan"  id="utility_default_feature_flag-insertion">
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${starboardFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${remindFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${suggestionFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${utilityFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${linkEmbedFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

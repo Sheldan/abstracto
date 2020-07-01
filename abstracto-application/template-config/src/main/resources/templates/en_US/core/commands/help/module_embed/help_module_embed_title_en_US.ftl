@@ -1,1 +1,0 @@
-Help - Module ${name} details

@@ -1,1 +1,0 @@
-makeImmune <feature/command> <role>

@@ -1,1 +1,0 @@
-decayAllWarnings [true/false]

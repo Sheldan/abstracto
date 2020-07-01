@@ -1,1 +1,0 @@
-Un-mutes the user immediately.

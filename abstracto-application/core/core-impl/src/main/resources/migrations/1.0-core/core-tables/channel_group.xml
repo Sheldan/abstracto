@@ -1,0 +1,60 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="channel_group-table">
+        <createTable tableName="channel_group">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="channel_group_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="group_name" type="VARCHAR(255)"/>
+            <column name="group_server" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_in_group-table">
+        <createTable tableName="channel_in_group">
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_group_command-table">
+        <createTable tableName="channel_group_command">
+            <column autoIncrement="true" name="command_in_group_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="channel_group_command_pkey"/>
+            </column>
+            <column name="enabled" type="BOOLEAN"/>
+            <column name="command_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_in_group-fk_channel_in_group_channel">
+        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="channel_in_group" constraintName="fk_channel_in_group_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_group_command-fk_channel_group_command_channel_group">
+        <addForeignKeyConstraint baseColumnNames="group_id" baseTableName="channel_group_command" constraintName="fk_channel_group_command_channel_group" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel_group" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_in_group-fk_channel_in_group_group">
+        <addForeignKeyConstraint baseColumnNames="group_id" baseTableName="channel_in_group" constraintName="fk_channel_in_group_group" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel_group" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_group-fk_channel_group_server">
+        <addForeignKeyConstraint baseColumnNames="group_server" baseTableName="channel_group" constraintName="fk_channel_group_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_group_command-fk_channel_group_command_command">
+        <addForeignKeyConstraint baseColumnNames="command_id" baseTableName="channel_group_command" constraintName="fk_channel_group_command_command" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="command" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

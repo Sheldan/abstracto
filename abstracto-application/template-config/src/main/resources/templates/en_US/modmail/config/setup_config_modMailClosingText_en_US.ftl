@@ -1,1 +1,0 @@
-The text to close mod mail threads with. Default: `${defaultValue}`

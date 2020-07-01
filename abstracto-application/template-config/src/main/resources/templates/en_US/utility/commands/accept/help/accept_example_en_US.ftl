@@ -1,1 +1,0 @@
-`accept 1 okay` in order to accept the suggestion `1` with the reason `okay`

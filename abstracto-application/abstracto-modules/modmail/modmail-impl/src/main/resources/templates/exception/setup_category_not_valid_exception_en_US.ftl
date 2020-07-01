@@ -1,1 +1,0 @@
-<#include "setup_category_not_valid_exception_message">

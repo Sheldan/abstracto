@@ -1,1 +1,0 @@
-Rejects the given suggestion.

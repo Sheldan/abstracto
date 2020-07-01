@@ -1,1 +1,0 @@
-`makeImmune ban @Staff` in order so the role `Staff` cannot be banned via the command (where @Staff is a role mention)

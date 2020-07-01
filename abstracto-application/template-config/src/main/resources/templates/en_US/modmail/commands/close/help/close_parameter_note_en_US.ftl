@@ -1,1 +1,0 @@
-The note with which this mod mail thread is being closed.

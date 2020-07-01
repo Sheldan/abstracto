@@ -1,1 +1,0 @@
-Cancels the given reminder.

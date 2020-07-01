@@ -1,1 +1,0 @@
-Removes the mentioned channel from the channel group identified by the name.

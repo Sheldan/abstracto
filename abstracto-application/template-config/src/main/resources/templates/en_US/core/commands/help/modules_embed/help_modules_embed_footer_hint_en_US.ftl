@@ -1,1 +1,0 @@
-Use 'help <module name>' for a list of commands of this module.

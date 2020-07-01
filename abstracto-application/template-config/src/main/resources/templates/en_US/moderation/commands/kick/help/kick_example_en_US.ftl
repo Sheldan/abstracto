@@ -1,1 +1,0 @@
-`kick @Member bad` in order to kick `Member` with the reason `bad` (the @Member is a user mention)

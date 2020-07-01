@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.utility.config;
 
+import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.utility.service.StarboardServiceBean;
 import org.junit.Assert;
@@ -25,10 +27,10 @@ public class StarboardConfigListenerTest {
     private StarboardConfigListener testUnit;
 
     @Mock
-    private StarboardConfig starboardConfig;
+    private ConfigManagementService configManagementService;
 
     @Mock
-    private ConfigManagementService configManagementService;
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Captor
     private ArgumentCaptor<String> configKeyCaptor;
@@ -36,15 +38,20 @@ public class StarboardConfigListenerTest {
     @Test
     public void testUpdateServerConfig() {
         AServer server = MockUtils.getServer();
-        List<Integer> levels = Arrays.asList(1, 2, 3);
-        when(starboardConfig.getLvl()).thenReturn(levels);
+        int numberOfLevels = 4;
+        ADefaultConfig config = ADefaultConfig.builder().longValue((long)numberOfLevels).build();
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LVL_CONFIG_PREFIX + 1)).thenReturn(config);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LVL_CONFIG_PREFIX + 2)).thenReturn(config);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LVL_CONFIG_PREFIX + 3)).thenReturn(config);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LVL_CONFIG_PREFIX + 4)).thenReturn(config);
         testUnit.updateServerConfig(server);
-        verify(configManagementService, times(levels.size())).createIfNotExists(eq(server.getId()), configKeyCaptor.capture(), anyLong());
+        verify(configManagementService, times(numberOfLevels)).createIfNotExists(eq(server.getId()), configKeyCaptor.capture(), anyLong());
         List<String> keys = configKeyCaptor.getAllValues();
-        for (int i = 0; i < levels.size(); i++) {
+        for (int i = 0; i < numberOfLevels; i++) {
             Assert.assertEquals(StarboardServiceBean.STAR_LVL_CONFIG_PREFIX + (i + 1), keys.get(i));
         }
-        Assert.assertEquals(levels.size(), keys.size());
+        Assert.assertEquals(numberOfLevels, keys.size());
     }
 
 }

@@ -1,1 +1,0 @@
-User notes for user ${user}

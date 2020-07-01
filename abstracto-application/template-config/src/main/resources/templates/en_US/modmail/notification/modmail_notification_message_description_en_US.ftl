@@ -1,1 +1,0 @@
-The thread concerns ${user}.

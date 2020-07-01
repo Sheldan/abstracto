@@ -1,1 +1,0 @@
-<#assign availableModes>${availableModes?join(", ")}</#assign><#include "feature_mode_not_found_text">

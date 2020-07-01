@@ -1,1 +1,0 @@
-removeFromChannelGroup <name> <channel>

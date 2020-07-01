@@ -1,1 +1,0 @@
-The new prefix to be used for this server.

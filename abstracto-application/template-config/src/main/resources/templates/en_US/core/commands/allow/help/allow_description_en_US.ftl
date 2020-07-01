@@ -1,1 +1,0 @@
-Allows the command or feature to be executed by everyone regardless of role.

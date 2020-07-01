@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.config.DynamicKeyLoader;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
@@ -8,6 +7,7 @@ import dev.sheldan.abstracto.core.exception.GuildException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.DefaultPostTargetManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -37,9 +37,6 @@ public class PostTargetServiceBean implements PostTargetService {
     private BotService botService;
 
     @Autowired
-    private DynamicKeyLoader dynamicKeyLoader;
-
-    @Autowired
     private ChannelService channelService;
 
     @Autowired
@@ -47,6 +44,9 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Autowired
     private FeatureConfigService featureConfigService;
+
+    @Autowired
+    private DefaultPostTargetManagementService defaultPostTargetManagementService;
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
@@ -183,7 +183,7 @@ public class PostTargetServiceBean implements PostTargetService {
     public void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId) {
         PostTarget postTarget = postTargetManagement.getPostTarget(name.getKey(), serverId);
         if(postTarget == null) {
-            throw new PostTargetNotValidException(name.getKey(), dynamicKeyLoader.getPostTargetsAsList());
+            throw new PostTargetNotValidException(name.getKey(), defaultPostTargetManagementService.getDefaultPostTargetKeys());
         }
     }
 
@@ -195,7 +195,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public boolean validPostTarget(String name) {
-        List<String> possiblePostTargets = dynamicKeyLoader.getPostTargetsAsList();
+        List<String> possiblePostTargets = defaultPostTargetManagementService.getDefaultPostTargetKeys();
         return possiblePostTargets.contains(name);
     }
 
@@ -206,7 +206,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public List<String> getAvailablePostTargets() {
-        return dynamicKeyLoader.getPostTargetsAsList();
+        return defaultPostTargetManagementService.getDefaultPostTargetKeys();
     }
 
     @Override

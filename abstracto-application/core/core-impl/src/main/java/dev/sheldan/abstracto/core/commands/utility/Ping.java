@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -34,7 +35,7 @@ public class Ping implements Command {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("ping")
-                .module("utility")
+                .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .help(helpInfo)
                 .causesReaction(false)

@@ -1,1 +1,0 @@
-User in server ${userInServerId} was not found.

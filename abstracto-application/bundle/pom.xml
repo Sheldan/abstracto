@@ -23,13 +23,6 @@
                 <artifactId>templating-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>dev.sheldan.abstracto.templating</groupId>
-                <artifactId>template-config</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <!-- modules containing commands -->
 
             <dependency>
@@ -61,6 +54,7 @@
                 <artifactId>scheduling-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
