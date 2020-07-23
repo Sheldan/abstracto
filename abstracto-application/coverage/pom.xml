@@ -58,6 +58,11 @@
         </dependency>
 
         <dependency>
+            <groupId>dev.sheldan.abstracto.modules</groupId>
+            <artifactId>assignable-roles-impl</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>dev.sheldan.abstracto.scheduling</groupId>
             <artifactId>scheduling-impl</artifactId>
         </dependency>

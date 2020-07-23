@@ -15,9 +15,10 @@ public interface EmoteService {
     String getEmoteAsMention(AEmote emote, Long serverId);
     String getUsableEmoteOrDefault(Long serverId, String name);
     void throwIfEmoteDoesNotExist(String emoteKey, Long serverId);
-    AEmote getEmoteOrFakeEmote(String emoteKey, Long serverId);
+    AEmote getEmoteOrDefaultEmote(String emoteKey, Long serverId);
     String getDefaultEmote(String emoteKey);
-    boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote, Emote actualEmoteInGuild);
+    boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote);
     Optional<CachedReaction> getReactionFromMessageByEmote(CachedMessage message, AEmote emote);
     boolean compareAEmote(AEmote a, AEmote b);
+    AEmote getFakeEmote(Object object);
 }

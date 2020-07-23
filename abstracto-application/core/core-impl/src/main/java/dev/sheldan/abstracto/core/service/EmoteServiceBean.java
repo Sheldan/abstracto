@@ -86,7 +86,7 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public AEmote getEmoteOrFakeEmote(String emoteKey, Long serverId) {
+    public AEmote getEmoteOrDefaultEmote(String emoteKey, Long serverId) {
         Optional<AEmote> emoteOptional = emoteManagementService.loadEmoteByName(emoteKey, serverId);
         return emoteOptional.orElseGet(() -> AEmote.builder().emoteKey(getDefaultEmote(emoteKey)).custom(false).name(emoteKey).build());
     }
@@ -97,13 +97,9 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote, Emote actualEmoteInGuild) {
+    public boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote) {
         if(reaction.isEmote() && storedEmote.getCustom()) {
-            if(actualEmoteInGuild != null) {
-                return actualEmoteInGuild.equals(reaction.getEmote());
-            } else {
-                return false;
-            }
+            return reaction.getEmote().getIdLong() == storedEmote.getEmoteId();
         } else if(reaction.isEmoji()){
             return reaction.getEmoji().equals(storedEmote.getEmoteKey());
         }
@@ -126,6 +122,18 @@ public class EmoteServiceBean implements EmoteService {
                 return false;
             }
         }
+    }
+
+    @Override
+    public AEmote getFakeEmote(Object object) {
+        if(object instanceof Emote) {
+            Emote emote = (Emote) object;
+            return AEmote.builder().fake(true).emoteKey(emote.getName()).custom(true).animated(emote.isAnimated()).emoteId(emote.getIdLong()).build();
+        } else if(object instanceof String) {
+            String emoteText = (String) object;
+            return AEmote.builder().fake(true).custom(false).emoteKey(emoteText).build();
+        }
+        throw new IllegalArgumentException("Not possible to convert given object to AEmote.");
     }
 
 }

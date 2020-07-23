@@ -49,7 +49,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         // the opening of a private channel is a rest operation it itself, so we need
         // to create the promises here already, else the list is empty for example
         modMailMessages.forEach(modMailMessage -> messageFutures.add(new CompletableFuture<>()));
-        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(thread.getServer().getId(), thread.getChannel().getId());
+        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServerOptional(thread.getServer().getId(), thread.getChannel().getId());
         if(textChannelFromServer.isPresent()) {
             TextChannel modMailThread = textChannelFromServer.get();
             botService.getInstance().openPrivateChannelById(thread.getUser().getUserReference().getId()).queue(privateChannel -> {

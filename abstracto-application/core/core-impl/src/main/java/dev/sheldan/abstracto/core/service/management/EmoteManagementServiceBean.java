@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.exception.EmoteNotFoundException;
+import dev.sheldan.abstracto.core.exception.EmoteNotFoundInDbException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.EmoteRepository;
@@ -24,22 +25,41 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     private DefaultEmoteManagementService defaultEmoteManagementService;
 
     @Override
-    public Optional<AEmote> loadEmote(Long id) {
+    public Optional<AEmote> loadEmoteOptional(Integer id) {
         return repository.findById(id);
     }
 
     @Override
-    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId)  {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        return this.createCustomEmote(name, emoteKey, emoteId, animated, server);
+    public AEmote loadEmote(Integer id) {
+        return loadEmoteOptional(id).orElseThrow(() -> new EmoteNotFoundInDbException(id));
     }
 
     @Override
-    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, AServer server)  {
-        validateEmoteName(name);
+    public Optional<AEmote> loadEmote(Long id) {
+        return repository.findByEmoteId(id);
+    }
+
+    @Override
+    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId, boolean validateName)  {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return this.createCustomEmote(name, emoteKey, emoteId, animated, server, validateName);
+    }
+
+    @Override
+    public AEmote createCustomEmote(String name, AEmote fakeEmote, Long serverId, boolean validateName) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return this.createCustomEmote(name, fakeEmote.getEmoteKey(), fakeEmote.getEmoteId(), fakeEmote.getAnimated(), server, validateName);
+    }
+
+    @Override
+    public AEmote createCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, AServer server, boolean validateName)  {
+        if(validateName) {
+            validateEmoteName(name);
+        }
         AEmote emoteToCreate = AEmote
                 .builder()
                 .custom(true)
+                .changeable(true)
                 .name(name)
                 .animated(animated)
                 .emoteId(emoteId)
@@ -51,17 +71,20 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote createDefaultEmote(String name, String emoteKey, Long serverId)  {
+    public AEmote createDefaultEmote(String name, String emoteKey, Long serverId, boolean validateName)  {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        return createDefaultEmote(name, emoteKey, server);
+        return createDefaultEmote(name, emoteKey, server, validateName);
     }
 
     @Override
-    public AEmote createDefaultEmote(String name, String emoteKey, AServer server)  {
-        validateEmoteName(name);
+    public AEmote createDefaultEmote(String name, String emoteKey, AServer server, boolean validateName)  {
+        if(validateName) {
+            validateEmoteName(name);
+        }
         AEmote emoteToCreate = AEmote
                 .builder()
                 .custom(false)
+                .changeable(true)
                 .name(name)
                 .emoteKey(emoteKey)
                 .serverRef(server)
@@ -87,7 +110,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         AEmote emote;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, server);
         if(!emoteOptional.isPresent()) {
-            emote = this.createCustomEmote(name, emoteKey, emoteId, animated, server);
+            emote = this.createCustomEmote(name, emoteKey, emoteId, animated, server, true);
         } else {
             emote = emoteOptional.get();
             emote.setEmoteKey(emoteKey);
@@ -105,7 +128,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         AEmote emoteBeingSet;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
         if(!emoteOptional.isPresent()) {
-            emoteBeingSet = this.createCustomEmote(name, emote.getName(), emote.getIdLong(), emote.isAnimated(), server);
+            emoteBeingSet = this.createCustomEmote(name, emote.getName(), emote.getIdLong(), emote.isAnimated(), server, true);
         } else {
             emoteBeingSet = emoteOptional.get();
             emoteBeingSet.setCustom(true);
@@ -123,7 +146,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         AEmote emoteBeingSet;
         Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
         if(!emoteOptional.isPresent()) {
-            emoteBeingSet = this.createDefaultEmote(name, emoteKey, server);
+            emoteBeingSet = this.createDefaultEmote(name, emoteKey, server, true);
         } else {
             emoteBeingSet = emoteOptional.get();
             emoteBeingSet.setEmoteKey(emoteKey);
@@ -134,9 +157,47 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
+    public AEmote setEmoteToAEmote(String name, AEmote emote, Long serverId) {
+        Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
+        if(!emoteOptional.isPresent()) {
+            return createEmote(name, emote, serverId, true);
+        } else {
+            AEmote emoteBeingSet = emoteOptional.get();
+            if(emote.getCustom()) {
+                emoteBeingSet.setCustom(emote.getCustom());
+                emoteBeingSet.setEmoteId(emote.getEmoteId());
+                emoteBeingSet.setEmoteKey(emote.getEmoteKey());
+            } else {
+                emoteBeingSet.setCustom(false);
+                emoteBeingSet.setEmoteKey(emote.getEmoteKey());
+            }
+            return emoteBeingSet;
+        }
+    }
+
+    @Override
+    public AEmote createEmote(String name, AEmote emote, Long serverId, boolean validateName) {
+        if(emote.getCustom()) {
+            return this.createCustomEmote(name, emote, serverId, validateName);
+        } else {
+            return this.createDefaultEmote(name, emote.getEmoteKey(), serverId, validateName);
+        }
+    }
+
+    @Override
     public boolean emoteExists(String name, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return emoteExists(name, server);
+    }
+
+    @Override
+    public boolean emoteExists(Long emoteId) {
+        return repository.existsByEmoteId(emoteId);
+    }
+
+    @Override
+    public void deleteEmote(AEmote aEmote) {
+        repository.delete(aEmote);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.RoleRepository;
@@ -26,8 +27,13 @@ public class RoleManagementServiceBean implements RoleManagementService {
     }
 
     @Override
-    public Optional<ARole> findRole(Long id, AServer server) {
+    public Optional<ARole> findRoleOptional(Long id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public ARole findRole(Long id) {
+        return findRoleOptional(id).orElseThrow(() -> new RoleNotFoundInDBException(id));
     }
 
     @Override

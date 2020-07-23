@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -60,12 +59,8 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     @Override
     public void setPostedMessage(Suggestion suggestion, Message message) {
         long channelId = message.getChannel().getIdLong();
-        Optional<AChannel> channelOptional = channelManagementService.loadChannel(channelId);
-        if(channelOptional.isPresent()) {
-            suggestion.setChannel(channelOptional.get());
-        } else {
-            throw new ChannelNotFoundException(channelId, suggestion.getServer().getId());
-        }
+        AChannel channel = channelManagementService.loadChannel(channelId);
+        suggestion.setChannel(channel);
         suggestion.setMessageId(message.getIdLong());
         suggestionRepository.save(suggestion);
     }

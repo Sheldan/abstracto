@@ -81,12 +81,13 @@ public class StartupServiceBean implements Startup {
 
     }
 
+    // TODO mark deleted roles ad deleted, use intersect for that
     private void synchronizeRolesOf(Guild guild, AServer existingAServer){
         List<Role> existingRoles = guild.getRoles();
         List<ARole> knownARoles = existingAServer.getRoles();
         Set<Long> knownRolesId = SnowflakeUtils.getOwnItemsIds(knownARoles);
         Set<Long> availableRoles = SnowflakeUtils.getSnowflakeIds(existingRoles);
-        Set<Long> newRoles = SetUtils.disjunction(availableRoles, knownRolesId);
+        Set<Long> newRoles = SetUtils.difference(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
             ARole newRole = roleManagementService.createRole(aLong, existingAServer);
             log.trace("Adding new role: {}", aLong);

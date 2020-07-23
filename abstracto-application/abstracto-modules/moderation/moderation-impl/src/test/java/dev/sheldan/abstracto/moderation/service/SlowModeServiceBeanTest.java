@@ -58,7 +58,7 @@ public class SlowModeServiceBeanTest {
         when(channelManager.setSlowmode(anyInt())).thenReturn(returnedManager);
         when(channel.getGuild()).thenReturn(guild);
         when(channel.getManager()).thenReturn(channelManager);
-        when(botService.getTextChannelFromServer(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
+        when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
         testUnit.setSlowMode(aChannel, duration);
         verify(channelManager, times(1)).setSlowmode((int)duration.getSeconds());
     }
@@ -84,7 +84,7 @@ public class SlowModeServiceBeanTest {
         AServer server = MockUtils.getServer();
         AChannel aChannel = MockUtils.getTextChannel(server, 5L);
         Duration duration = Duration.ofMinutes(5);
-        when(botService.getTextChannelFromServer(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
+        when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
         testUnit.setSlowMode(aChannel, duration);
     }
 }

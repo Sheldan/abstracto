@@ -24,8 +24,13 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     private LockService lockService;
 
     @Override
-    public Optional<AChannel> loadChannel(Long id) {
+    public Optional<AChannel> loadChannelOptional(Long id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public AChannel loadChannel(Long id) {
+        return loadChannelOptional(id).orElseThrow(() -> new ChannelNotFoundException(id));
     }
 
     @Override
@@ -42,15 +47,14 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
                     .build();
             return repository.save(build);
         } else {
-            Optional<AChannel> channelOptional = loadChannel(id);
+            Optional<AChannel> channelOptional = loadChannelOptional(id);
             return channelOptional.orElse(null);
         }
     }
 
     @Override
     public AChannel markAsDeleted(Long id) {
-        Optional<AChannel> channelOptional = loadChannel(id);
-        AChannel channel = channelOptional.orElseThrow(() -> new ChannelNotFoundException(id, 0L));
+        AChannel channel = loadChannel(id);
         channel.setDeleted(true);
         return channel;
     }

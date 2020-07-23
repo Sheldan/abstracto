@@ -347,7 +347,7 @@ public class MuteServiceBeanTest {
         when(cause.getChannel()).thenReturn(channel);
         when(muteRoleManagementService.muteRoleForServerExists(server)).thenReturn(true);
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
-        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(Optional.of(aChannel));
+        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(aChannel);
         Mute createdMute = Mute.builder().id(muteId).build();
         when(muteManagementService.createMute(eq(userBeingMuted), eq(userMuting), eq(REASON), eq(unMuteDate), any(AServerAChannelMessage.class))).thenReturn(createdMute);
         when(templateService.renderTemplate(eq(MuteServiceBean.MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class))).thenReturn(NOTIFICATION_TEXT);

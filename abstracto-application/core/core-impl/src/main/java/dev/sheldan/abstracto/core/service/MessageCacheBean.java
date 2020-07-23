@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
-import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.cache.*;
@@ -84,7 +84,7 @@ public class MessageCacheBean implements MessageCache {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         Optional<Guild> guildOptional = botService.getGuildById(guildId);
         if(guildOptional.isPresent()) {
-            Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServer(guildOptional.get(), textChannelId);
+            Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServerOptional(guildOptional.get(), textChannelId);
             if(textChannelByIdOptional.isPresent()) {
                 TextChannel textChannel = textChannelByIdOptional.get();
                 textChannel.retrieveMessageById(messageId).queue(message ->
@@ -100,11 +100,11 @@ public class MessageCacheBean implements MessageCache {
                 );
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
-                future.completeExceptionally(new ChannelNotFoundException(textChannelId, guildId));
+                future.completeExceptionally(new ChannelNotFoundException(textChannelId));
             }
         } else {
             log.error("Not able to load message {} in channel {} in guild {}. Guild not found.", messageId, textChannelId, guildId);
-            future.completeExceptionally(new GuildException(guildId));
+            future.completeExceptionally(new GuildNotFoundException(guildId));
         }
 
         return future;

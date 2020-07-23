@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.interactive;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AConfig;
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -61,47 +59,43 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
                 .build();
         String messageTemplateKey = "setup_system_config_message";
         String messageText =  templateService.renderTemplate(messageTemplateKey, model);
-        Optional<AChannel> channel = channelManagementService.loadChannel(user.getChannelId());
+        AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
-        if(channel.isPresent()) {
-            Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
-            Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
-                try {
-                    SetupStepResult result;
-                    Message message = event.getMessage();
-                    if(checkForExit(message)) {
-                        result = SetupStepResult.fromCancelled();
+        Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
+        Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
+            try {
+                SetupStepResult result;
+                Message message = event.getMessage();
+                if(checkForExit(message)) {
+                    result = SetupStepResult.fromCancelled();
+                } else {
+                    AConfig config;
+                    if(checkForKeep(message)) {
+                        config = self.loadDefaultConfig(systemConfigStepParameter);
                     } else {
-                        AConfig config;
-                        if(checkForKeep(message)) {
-                            config = self.loadDefaultConfig(systemConfigStepParameter);
-                        } else {
-                            config = self.checkValidity(user, systemConfigStepParameter, event);
-                        }
-                        SystemConfigDelayedActionConfig build = SystemConfigDelayedActionConfig
-                                .builder()
-                                .configKey(systemConfigStepParameter.getConfigKey())
-                                .serverId(user.getGuildId())
-                                .value(config)
-                                .build();
-                        List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
-                        result = SetupStepResult
-                                .builder()
-                                .result(SetupStepResultType.SUCCESS)
-                                .delayedActionConfigList(delayedSteps)
-                                .build();
+                        config = self.checkValidity(user, systemConfigStepParameter, event);
                     }
-                    future.complete(result);
-                } catch (Exception e) {
-                    log.warn("Failed to handle system config. Retrying..", e);
-                    future.completeExceptionally(new SetupStepException(e));
+                    SystemConfigDelayedActionConfig build = SystemConfigDelayedActionConfig
+                            .builder()
+                            .configKey(systemConfigStepParameter.getConfigKey())
+                            .serverId(user.getGuildId())
+                            .value(config)
+                            .build();
+                    List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
+                    result = SetupStepResult
+                            .builder()
+                            .result(SetupStepResultType.SUCCESS)
+                            .delayedActionConfigList(delayedSteps)
+                            .build();
                 }
-            };
-            interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);
-        } else {
-            future.completeExceptionally(new ChannelNotFoundException(user.getGuildId(), user.getChannelId()));
-        }
+                future.complete(result);
+            } catch (Exception e) {
+                log.warn("Failed to handle system config. Retrying..", e);
+                future.completeExceptionally(new SetupStepException(e));
+            }
+        };
+        interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel, parameter.getPreviousMessageId(), configAction, finalAction);
         return future;
     }
 

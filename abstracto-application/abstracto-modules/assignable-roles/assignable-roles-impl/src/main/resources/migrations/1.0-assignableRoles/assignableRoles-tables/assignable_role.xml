@@ -1,0 +1,50 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="assignable_role-table">
+        <createTable tableName="assignable_role">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="assignable_role_pkey"/>
+            </column>
+            <column name="emote_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignable_place_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignable_role_place_post_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="required_level" type="INTEGER"/>
+            <column name="position" type="INTEGER"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="assignable_role-fk_assignable_role_emote">
+        <addForeignKeyConstraint baseColumnNames="emote_id" baseTableName="assignable_role" constraintName="fk_assignable_role_emote" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="emote" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="assignable_role-fk_assignable_role_role">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="assignable_role" constraintName="fk_assignable_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="assignable_role-fk_assignable_role_place">
+        <addForeignKeyConstraint baseColumnNames="assignable_place_id" baseTableName="assignable_role" constraintName="fk_assignable_role_place" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role_place" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="assignable_role-fk_assignable_role_post">
+        <addForeignKeyConstraint baseColumnNames="assignable_role_place_post_id" baseTableName="assignable_role" constraintName="fk_assignable_role_post" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role_place_post" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -7,22 +7,20 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
 import dev.sheldan.abstracto.core.command.exception.ParameterTooLong;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
+import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.MemberNotFoundException;
 import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
-import dev.sheldan.abstracto.core.models.database.ARole;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.FullEmote;
+import dev.sheldan.abstracto.core.models.FullRole;
+import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.management.*;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
@@ -32,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -68,6 +65,18 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private CommandService commandService;
 
+    @Autowired
+    private EmoteService emoteService;
+
+    @Autowired
+    private ExceptionService exceptionService;
+
+    @Autowired
+    private EmoteManagementService emoteManagementService;
+
+    @Autowired
+    private RoleService roleService;
+
     @Override
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
@@ -85,47 +94,84 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .message(event.getMessage())
                 .jda(event.getJDA())
                 .userInitiatedContext(userInitiatedContext);
-        Command foundCommand = null;
+        final Command foundCommand;
         try {
             String contentStripped = event.getMessage().getContentStripped();
             List<String> parameters = Arrays.asList(contentStripped.split(" "));
             UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
             String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
             foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter);
-            Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
-            CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
-            ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
-            CommandResult commandResult;
-            if(conditionResult.isResult()) {
-                commandResult = self.executeCommand(foundCommand, commandContext);
-            } else {
-                commandResult = CommandResult.fromCondition(conditionResult);
-            }
-            for (PostCommandExecution postCommandExecution : executions) {
-                postCommandExecution.execute(commandContext, commandResult, foundCommand);
-            }
+            tryToExecuteFoundCommand(event, userInitiatedContext, commandContextBuilder, foundCommand, unParsedParameter);
+
         } catch (Exception e) {
+            log.error("Exception when preparing command.", e);
             CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
             CommandContext commandContext = commandContextBuilder.build();
-            for (PostCommandExecution postCommandExecution : executions) {
-                postCommandExecution.execute(commandContext, commandResult, foundCommand);
-            }
+            self.executePostCommandListener(null, commandContext, commandResult);
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void tryToExecuteFoundCommand(@Nonnull MessageReceivedEvent event, UserInitiatedServerContext userInitiatedContext, CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
+        try {
+            Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
+            CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
+            ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
+            CommandResult commandResult = null;
+            if(conditionResult.isResult()) {
+                if(foundCommand.getConfiguration().isAsync()) {
+                    foundCommand.executeAsync(commandContext).thenAccept(result ->
+                        executePostCommandListener(foundCommand, commandContext, result)
+                    ).exceptionally(throwable -> {
+                        log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
+                        UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
+                        CommandContext rebuildContext = CommandContext.builder()
+                                .author(event.getMember())
+                                .guild(event.getGuild())
+                                .channel(event.getTextChannel())
+                                .message(event.getMessage())
+                                .jda(event.getJDA())
+                                .userInitiatedContext(rebuildUserContext)
+                                .parameters(parsedParameters).build();
+                        CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
+                        self.executePostCommandListener(foundCommand, rebuildContext, failedResult);
+                        return null;
+                    });
+                } else {
+                    commandResult = self.executeCommand(foundCommand, commandContext);
+                }
+            } else {
+                commandResult = CommandResult.fromCondition(conditionResult);
+            }
+            if(commandResult != null) {
+                self.executePostCommandListener(foundCommand, commandContext, commandResult);
+            }
+        } catch (Exception e) {
+            log.error("Exception when executing command.", e);
+            CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
+            CommandContext commandContext = commandContextBuilder.build();
+            self.executePostCommandListener(foundCommand, commandContext, commandResult);
+        }
+    }
+
+    @Transactional
+    public void executePostCommandListener(Command foundCommand, CommandContext commandContext, CommandResult result) {
+        for (PostCommandExecution postCommandExecution : executions) {
+            postCommandExecution.execute(commandContext, result, foundCommand);
+        }
+    }
+
+    @Transactional
     public CommandResult executeCommand(Command foundCommand, CommandContext commandContext) {
         return foundCommand.execute(commandContext);
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
-        Optional<AChannel> channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
+        AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         AUserInAServer user = userInServerManagementService.loadUser(event.getMember());
-        AChannel channel1 = channel.orElseThrow(() -> new ChannelNotFoundException(event.getChannel().getIdLong(), event.getGuild().getIdLong()));
         return UserInitiatedServerContext
                 .builder()
-                .channel(channel1)
+                .channel(channel)
                 .server(server)
                 .member(event.getMember())
                 .aUserInAServer(user)
@@ -141,9 +187,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
             return Parameters.builder().parameters(parsedParameters).build();
         }
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
-        Iterator<Emote> emoteIterator = message.getEmotes().iterator();
+        Iterator<Emote> emoteIterator = message.getEmotesBag().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
-        Iterator<Role> roleIterator = message.getMentionedRoles().iterator();
+        Iterator<Role> roleIterator = message.getMentionedRolesBag().iterator();
         Parameter param = command.getConfiguration().getParameters().get(0);
         boolean reminderActive = false;
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
@@ -175,21 +221,69 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         } else {
                             parsedParameters.add(memberIterator.next());
                         }
-                    } else if(param.getType().equals(Emote.class)) {
+                    } else if(param.getType().equals(FullEmote.class)) {
                         // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
                         // the second one shadows the first one, and there are too little parameters to go of
                         if (emoteIterator.hasNext()) {
-                            parsedParameters.add(emoteIterator.next());
+                            try {
+                                Long emoteId = Long.parseLong(value);
+                                if(emoteManagementService.emoteExists(emoteId)) {
+                                    AEmote aEmote = AEmote.builder().emoteId(emoteId).custom(true).build();
+                                    FullEmote emote = FullEmote.builder().fakeEmote(aEmote).build();
+                                    parsedParameters.add(emote);
+                                }
+                            } catch (Exception ex) {
+                                Emote actualEmote = emoteIterator.next();
+                                AEmote fakeEmote = emoteService.getFakeEmote(actualEmote);
+                                FullEmote emote = FullEmote.builder().fakeEmote(fakeEmote).emote(actualEmote).build();
+                                parsedParameters.add(emote);
+                            }
                         } else {
-                            parsedParameters.add(value);
+                            try {
+                                Long emoteId = Long.parseLong(value);
+                                if(emoteManagementService.emoteExists(emoteId)) {
+                                    // we do not need to load the actual emote, as there is no guarantee that it exists anyway
+                                    // there might be multiple emotes with the same emoteId, so we dont have any gain to fetch any of them
+                                    AEmote aEmote = AEmote.builder().emoteId(emoteId).custom(true).build();
+                                    FullEmote emote = FullEmote.builder().fakeEmote(aEmote).build();
+                                    parsedParameters.add(emote);
+                                }
+                            } catch (Exception ex) {
+                                AEmote fakeEmote = emoteService.getFakeEmote(value);
+                                FullEmote emote = FullEmote.builder().fakeEmote(fakeEmote).build();
+                                parsedParameters.add(emote);
+                            }
                         }
+                    } else if(param.getType().equals(AEmote.class)) {
+                        // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
+                        // the second one shadows the first one, and there are too little parameters to go of
+                        if (emoteIterator.hasNext()) {
+                            parsedParameters.add(emoteService.getFakeEmote(emoteIterator.next()));
+                        } else {
+                            parsedParameters.add(emoteService.getFakeEmote(value));
+                        }
+                    } else if(CommandParameterKey.class.isAssignableFrom(param.getType())) {
+                        CommandParameterKey cast = (CommandParameterKey) CommandParameterKey.getEnumFromKey(param.getType(), value);
+                        parsedParameters.add(cast);
+                    } else if(param.getType().equals(FullRole.class)) {
+                        ARole aRole;
+                        if(StringUtils.isNumeric(value)) {
+                            long roleId = Long.parseLong(value);
+                            aRole = roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId));
+                        } else {
+                            long roleId = roleIterator.next().getIdLong();
+                            aRole = roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId));
+                        }
+                        Role role = roleService.getRoleFromGuild(aRole);
+                        FullRole fullRole = FullRole.builder().role(aRole).serverRole(role).build();
+                        parsedParameters.add(fullRole);
                     } else if(param.getType().equals(ARole.class)) {
                         if(StringUtils.isNumeric(value)) {
                             long roleId = Long.parseLong(value);
-                            parsedParameters.add(roleManagementService.findRole(roleId, userInitiatedServerContext.getServer()).orElseThrow(() -> new RoleNotFoundInDBException(roleId, message.getGuild().getIdLong())));
+                            parsedParameters.add(roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId)));
                         } else {
                             long roleId = roleIterator.next().getIdLong();
-                            parsedParameters.add(roleManagementService.findRole(roleId, userInitiatedServerContext.getServer()).orElseThrow(() -> new RoleNotFoundInDBException(roleId, message.getGuild().getIdLong())));
+                            parsedParameters.add(roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId)));
                         }
                     } else if(param.getType().equals(Boolean.class)) {
                         parsedParameters.add(Boolean.valueOf(value));
@@ -209,6 +303,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     }
                 } catch (NoSuchElementException e) {
                     throw new IncorrectParameter(command, param.getType(), param.getName());
+                } catch (IllegalArgumentException e) {
+
                 }
             }
 

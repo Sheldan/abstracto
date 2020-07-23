@@ -203,10 +203,10 @@ public class MessageEmbedServiceBeanTest {
         when(embeddingMessage.getChannel()).thenReturn(textChannel);
         when(userInServerManagementService.loadUser(embeddingMember)).thenReturn(embeddingUser);
         when(userInServerManagementService.loadUser(userEmbeddingUserInServerId)).thenReturn(Optional.of(embeddingUser));
-        when(channelManagementService.loadChannel(channelId)).thenReturn(Optional.of(aChannel));
+        when(channelManagementService.loadChannel(channelId)).thenReturn(aChannel);
         when(serverManagementService.loadOrCreate(serverId)).thenReturn(server);
         when(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId())).thenReturn(author);
-        when(botService.getTextChannelFromServer(cachedMessage.getServerId(), cachedMessage.getChannelId())).thenReturn(Optional.of(textChannel));
+        when(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId())).thenReturn(Optional.of(textChannel));
         MessageToSend messageToSend = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(MessageEmbedServiceBean.MESSAGE_EMBED_TEMPLATE), any(MessageEmbeddedModel.class))).thenReturn(messageToSend);
         Message messageContainingEmbed = Mockito.mock(Message.class);

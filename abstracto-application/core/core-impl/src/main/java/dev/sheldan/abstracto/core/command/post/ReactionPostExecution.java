@@ -20,7 +20,7 @@ public class ReactionPostExecution implements PostCommandExecution {
     @Override
     public void execute(CommandContext commandContext, CommandResult commandResult, Command command) {
         ResultState result = commandResult.getResult();
-        if(result.equals(ResultState.ERROR)) {
+        if(result.equals(ResultState.ERROR) || result.equals(ResultState.REPORTED_ERROR)) {
             messageService.addReactionToMessage(WARN_REACTION_EMOTE, commandContext.getGuild().getIdLong(), commandContext.getMessage());
             if(commandResult.getMessage() != null && commandResult.getThrowable() == null){
                 commandContext.getChannel().sendMessage(commandResult.getMessage()).queue();

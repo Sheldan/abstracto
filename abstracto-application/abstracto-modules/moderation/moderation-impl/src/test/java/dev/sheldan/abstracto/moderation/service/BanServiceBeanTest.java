@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -73,7 +73,7 @@ public class BanServiceBeanTest {
         verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
     }
 
-    @Test(expected = GuildException.class)
+    @Test(expected = GuildNotFoundException.class)
     public void tryToBanInNonExistentGuild() {
         Long userId = 8L;
         Long serverId = 5L;

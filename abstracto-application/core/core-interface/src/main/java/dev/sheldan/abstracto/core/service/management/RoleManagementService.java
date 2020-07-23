@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface RoleManagementService {
     ARole createRole(Long id, AServer server);
-    Optional<ARole> findRole(Long id, AServer server);
+    Optional<ARole> findRoleOptional(Long id);
+    ARole findRole(Long id);
     void markDeleted(ARole role);
 }

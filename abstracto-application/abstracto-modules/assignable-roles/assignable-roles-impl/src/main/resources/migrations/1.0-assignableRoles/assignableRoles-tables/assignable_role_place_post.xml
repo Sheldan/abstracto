@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="assignable_role_place_post-table">
+        <createTable tableName="assignable_role_place_post">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="assignable_role_place_post_pkey"/>
+            </column>
+            <column name="assignable_place_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="assignable_role_place_post-fk_assignable_role_place_post_place_id">
+        <addForeignKeyConstraint baseColumnNames="assignable_place_id" baseTableName="assignable_role_place_post" constraintName="fk_assignable_role_place_post_place_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role_place" validate="true"/>
+    </changeSet>
+
+
+    <changeSet author="Sheldan" id="assignable_role_place_post-fk_assignable_role_place_post_channel">
+        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="assignable_role_place_post" constraintName="fk_assignable_role_place_post_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManageme
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,13 +41,13 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
 
 
     @Override
-    public void executeReactionAdded(CachedMessage message, MessageReaction reaction, AUserInAServer userAdding) {
+    public void executeReactionAdded(CachedMessage message, GuildMessageReactionAddEvent event, AUserInAServer userAdding) {
         Long guildId = message.getServerId();
-        AEmote aEmote = emoteService.getEmoteOrFakeEmote(REMOVAL_EMOTE, guildId);
-        MessageReaction.ReactionEmote reactionEmote = reaction.getReactionEmote();
+        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(REMOVAL_EMOTE, guildId);
+        MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
         Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
         log.trace("Removing embed in message {} in channel {} in server {} because of a user reaction.", message.getMessageId(), message.getChannelId(), message.getServerId());
-        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
             Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
             if(embeddedMessageOptional.isPresent()) {
                 EmbeddedMessage embeddedMessage = embeddedMessageOptional.get();

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.interactive;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -59,7 +57,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
         TextChannel currentTextChannel;
         if(postTargetManagement.postTargetExists(postTargetStepParameter.getPostTargetKey(), user.getGuildId())) {
             PostTarget postTarget = postTargetManagement.getPostTarget(postTargetStepParameter.getPostTargetKey(), user.getGuildId());
-            currentTextChannel = botService.getTextChannelFromServer(user.getGuildId(), postTarget.getChannelReference().getId()).orElse(null);
+            currentTextChannel = botService.getTextChannelFromServerOptional(user.getGuildId(), postTarget.getChannelReference().getId()).orElse(null);
         } else {
             currentTextChannel = null;
         }
@@ -70,48 +68,44 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                 .build();
         String messageTemplateKey = "setup_post_target_message";
         String messageText = templateService.renderTemplate(messageTemplateKey, model);
-        Optional<AChannel> channel = channelManagementService.loadChannel(user.getChannelId());
+        AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
-        if(channel.isPresent()) {
-            Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
-            Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
-                try {
+        Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
+        Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
+            try {
 
-                    SetupStepResult result;
-                    Message message = event.getMessage();
-                    if(checkForExit(message)) {
-                        result = SetupStepResult.fromCancelled();
-                    } else {
-                        if(message.getMentionedChannels().size() == 0) {
-                            throw new NoChannelProvidedException("No channel was provided.");
-                        }
-                        TextChannel textChannel = message.getMentionedChannels().get(0);
-                        PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig
-                                .builder()
-                                .postTargetKey(postTargetStepParameter.getPostTargetKey())
-                                .serverId(user.getGuildId())
-                                .textChannel(textChannel)
-                                .channelId(textChannel.getIdLong())
-                                .build();
-                        List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
-                        result = SetupStepResult
-                                .builder()
-                                .result(SetupStepResultType.SUCCESS)
-                                .delayedActionConfigList(delayedSteps)
-                                .build();
+                SetupStepResult result;
+                Message message = event.getMessage();
+                if(checkForExit(message)) {
+                    result = SetupStepResult.fromCancelled();
+                } else {
+                    if(message.getMentionedChannels().size() == 0) {
+                        throw new NoChannelProvidedException("No channel was provided.");
                     }
-
-                    future.complete(result);
-                } catch (Exception e) {
-                    log.error("Failed to handle post target step.", e);
-                    future.completeExceptionally(new SetupStepException(e));
+                    TextChannel textChannel = message.getMentionedChannels().get(0);
+                    PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig
+                            .builder()
+                            .postTargetKey(postTargetStepParameter.getPostTargetKey())
+                            .serverId(user.getGuildId())
+                            .textChannel(textChannel)
+                            .channelId(textChannel.getIdLong())
+                            .build();
+                    List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
+                    result = SetupStepResult
+                            .builder()
+                            .result(SetupStepResultType.SUCCESS)
+                            .delayedActionConfigList(delayedSteps)
+                            .build();
                 }
-            };
-            interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);
-        } else {
-            future.completeExceptionally(new ChannelNotFoundException(user.getGuildId(), user.getChannelId()));
-        }
+
+                future.complete(result);
+            } catch (Exception e) {
+                log.error("Failed to handle post target step.", e);
+                future.completeExceptionally(new SetupStepException(e));
+            }
+        };
+        interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel, parameter.getPreviousMessageId(), configAction, finalAction);
         return future;
     }
 

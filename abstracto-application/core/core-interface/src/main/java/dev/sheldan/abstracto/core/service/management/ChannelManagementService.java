@@ -7,7 +7,8 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import java.util.Optional;
 
 public interface ChannelManagementService {
-    Optional<AChannel> loadChannel(Long id);
+    Optional<AChannel> loadChannelOptional(Long id);
+    AChannel loadChannel(Long id);
     AChannel createChannel(Long id, AChannelType type, AServer server);
     AChannel markAsDeleted(Long id);
     boolean channelExists(Long id);

@@ -4,15 +4,15 @@ import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.HashMap;
 
-public class GuildException extends AbstractoRunTimeException implements Templatable {
+public class GuildNotFoundException extends AbstractoRunTimeException implements Templatable {
     private final Long guildId;
 
-    public GuildException(String message, Long guildId) {
+    public GuildNotFoundException(String message, Long guildId) {
         super(message);
         this.guildId = guildId;
     }
 
-    public GuildException(Long guildId) {
+    public GuildNotFoundException(Long guildId) {
         super("");
         this.guildId = guildId;
     }

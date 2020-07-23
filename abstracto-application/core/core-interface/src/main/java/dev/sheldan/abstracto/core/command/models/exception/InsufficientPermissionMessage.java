@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.command.models;
+package dev.sheldan.abstracto.core.command.models.exception;
 
 import lombok.Builder;
 import lombok.Getter;

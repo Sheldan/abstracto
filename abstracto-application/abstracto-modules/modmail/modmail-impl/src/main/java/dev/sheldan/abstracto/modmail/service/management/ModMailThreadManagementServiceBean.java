@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.modmail.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -26,8 +25,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
 
     @Override
     public ModMailThread getByChannelId(Long channelId) {
-        Optional<AChannel> channelOpt = channelManagementService.loadChannel(channelId);
-        AChannel channel = channelOpt.orElseThrow(() -> new ChannelNotFoundException(channelId, 0L));
+        AChannel channel = channelManagementService.loadChannel(channelId);
         return getByChannel(channel);
     }
 

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
@@ -105,7 +104,7 @@ public class StarboardServiceBean implements StarboardService {
     public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
         AUserInAServer innerStarredUser = userInServerManagementService.loadUser(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
         try {
-            AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId).orElseThrow(() -> new ChannelNotFoundException(starboardChannelId, message.getServerId()));
+            AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
             Message message1 = completableFutures.get(0).get();
             AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
                     .builder()
@@ -129,7 +128,7 @@ public class StarboardServiceBean implements StarboardService {
 
     private StarboardPostModel buildStarboardPostModel(CachedMessage message, Integer starCount)  {
         Member member = botService.getMemberInServer(message.getServerId(), message.getAuthorId());
-        Optional<TextChannel> channel = botService.getTextChannelFromServer(message.getServerId(), message.getChannelId());
+        Optional<TextChannel> channel = botService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
         Optional<Guild> guild = botService.getGuildById(message.getServerId());
         AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
         AUser user = AUser.builder().id(message.getAuthorId()).build();

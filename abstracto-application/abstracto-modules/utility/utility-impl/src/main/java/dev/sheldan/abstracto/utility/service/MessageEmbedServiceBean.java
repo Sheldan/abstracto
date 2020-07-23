@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -144,13 +143,12 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     private MessageEmbeddedModel buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
-        Optional<AChannel> channelOpt = channelManagementService.loadChannel(message.getChannel().getIdLong());
         AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
         AUserInAServer user = userInServerManagementService.loadUser(message.getMember());
         Member author = botService.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
-        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
+        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServerOptional(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
         TextChannel sourceChannel = textChannelFromServer.orElse(null);
-        AChannel channel = channelOpt.orElseThrow(() -> new ChannelNotFoundException(message.getChannel().getIdLong(), server.getId()));
+        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
         return MessageEmbeddedModel
                 .builder()
                 .channel(channel)

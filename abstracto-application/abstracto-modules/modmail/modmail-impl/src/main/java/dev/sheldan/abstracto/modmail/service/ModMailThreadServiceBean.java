@@ -313,7 +313,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     public void relayMessageToModMailThread(ModMailThread modMailThread, Message message) {
-        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServer(modMailThread.getServer().getId(), modMailThread.getChannel().getId());
+        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServerOptional(modMailThread.getServer().getId(), modMailThread.getChannel().getId());
         if(textChannelFromServer.isPresent()) {
             TextChannel textChannel = textChannelFromServer.get();
             self.sendUserReply(textChannel, modMailThread, message);

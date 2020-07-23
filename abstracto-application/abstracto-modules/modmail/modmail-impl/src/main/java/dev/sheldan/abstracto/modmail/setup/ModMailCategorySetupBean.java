@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.modmail.setup;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -86,59 +84,54 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
             model.setCategory(category);
         }
         String messageText = templateService.renderTemplate(messageTemplateKey, model);
-        Optional<AChannel> channel = channelManagementService.loadChannel(user.getChannelId());
+        AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
 
-        // very odd case, if the channel the command was executed in, was not found in the database.
-        if(channel.isPresent()) {
-            Runnable finalAction = getTimeoutRunnable(user.getGuildId(), user.getChannelId());
-            Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
-                try {
+        Runnable finalAction = getTimeoutRunnable(user.getGuildId(), user.getChannelId());
+        Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
+            try {
 
-                    SetupStepResult result;
-                    Message message = event.getMessage();
-                    // this checks whether or not the user wanted to cancel the setup
-                    if(checkForExit(message)) {
-                        result = SetupStepResult.fromCancelled();
+                SetupStepResult result;
+                Message message = event.getMessage();
+                // this checks whether or not the user wanted to cancel the setup
+                if(checkForExit(message)) {
+                    result = SetupStepResult.fromCancelled();
+                } else {
+                    String messageContent = event.getMessage().getContentRaw();
+                    // directly parse the long from the message, for *now*, only the category ID is supported
+                    Long categoryId = Long.parseLong(messageContent);
+                    Guild guild = botService.getGuildByIdNullable(user.getGuildId());
+                    FeatureValidationResult featureValidationResult = FeatureValidationResult.builder().validationResult(true).build();
+                    // directly validate whether or not the given category ID is a valid value
+                    modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);
+                    if(Boolean.TRUE.equals(featureValidationResult.getValidationResult())) {
+                        ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
+                                .builder()
+                                .serverId(user.getGuildId())
+                                .category(guild.getCategoryById(categoryId))
+                                .categoryId(categoryId)
+                                .build();
+                        List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
+                        result = SetupStepResult
+                                .builder()
+                                .result(SetupStepResultType.SUCCESS)
+                                .delayedActionConfigList(delayedSteps)
+                                .build();
                     } else {
-                        String messageContent = event.getMessage().getContentRaw();
-                        // directly parse the long from the message, for *now*, only the category ID is supported
-                        Long categoryId = Long.parseLong(messageContent);
-                        Guild guild = botService.getGuildByIdNullable(user.getGuildId());
-                        FeatureValidationResult featureValidationResult = FeatureValidationResult.builder().validationResult(true).build();
-                        // directly validate whether or not the given category ID is a valid value
-                        modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);
-                        if(Boolean.TRUE.equals(featureValidationResult.getValidationResult())) {
-                            ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
-                                    .builder()
-                                    .serverId(user.getGuildId())
-                                    .category(guild.getCategoryById(categoryId))
-                                    .categoryId(categoryId)
-                                    .build();
-                            List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
-                            result = SetupStepResult
-                                    .builder()
-                                    .result(SetupStepResultType.SUCCESS)
-                                    .delayedActionConfigList(delayedSteps)
-                                    .build();
-                        } else {
-                            // exceptions this exception is used to effectively fail the setup step
-                            throw new InvalidCategoryException();
-                        }
-
+                        // exceptions this exception is used to effectively fail the setup step
+                        throw new InvalidCategoryException();
                     }
 
-                    future.complete(result);
-                } catch (Exception e) {
-                    log.error("Failed to handle mod mail category step.", e);
-                    future.completeExceptionally(new SetupStepException(e));
                 }
-            };
-            interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), configAction, finalAction);
-        } else {
-            future.completeExceptionally(new ChannelNotFoundException(user.getGuildId(), user.getChannelId()));
-        }
+
+                future.complete(result);
+            } catch (Exception e) {
+                log.error("Failed to handle mod mail category step.", e);
+                future.completeExceptionally(new SetupStepException(e));
+            }
+        };
+        interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel, parameter.getPreviousMessageId(), configAction, finalAction);
         return future;
     }
 

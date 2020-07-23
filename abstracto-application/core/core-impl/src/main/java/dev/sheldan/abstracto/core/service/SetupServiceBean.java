@@ -125,7 +125,7 @@ public class SetupServiceBean implements SetupService {
         if(throwable instanceof Templatable) {
             Templatable exception = (Templatable) throwable;
             String text = templateService.renderTemplate(exception.getTemplateName(), exception.getTemplateModel());
-            Optional<TextChannel> channelOptional = botService.getTextChannelFromServer(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
+            Optional<TextChannel> channelOptional = botService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
             channelOptional.ifPresent(channel -> channelService.sendTextToChannel(text, channel));
         }
     }

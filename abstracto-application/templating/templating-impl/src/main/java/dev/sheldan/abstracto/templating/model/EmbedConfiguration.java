@@ -55,4 +55,6 @@ public class EmbedConfiguration {
      * The message which is posted along the {@link net.dv8tion.jda.api.entities.MessageEmbed} as a normal message.
      */
     private String additionalMessage;
+
+    private boolean preventEmptyEmbed = false;
 }

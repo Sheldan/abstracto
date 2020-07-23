@@ -7,12 +7,10 @@ import java.util.HashMap;
 public class ChannelNotFoundException extends AbstractoRunTimeException implements Templatable {
 
     private final Long channelId;
-    private final Long guildId;
 
-    public ChannelNotFoundException(Long channelId, Long guildId) {
-        super("");
+    public ChannelNotFoundException(Long channelId) {
+        super("Channel not found in database");
         this.channelId = channelId;
-        this.guildId = guildId;
     }
 
     @Override
@@ -24,7 +22,6 @@ public class ChannelNotFoundException extends AbstractoRunTimeException implemen
     public Object getTemplateModel() {
         HashMap<String, Long> param = new HashMap<>();
         param.put("channelId", this.channelId);
-        param.put("guildID", this.guildId);
         return param;
     }
 }

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -28,7 +27,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AServerAChannelMessage starboardPost) {
-        AChannel build = channelManagementService.loadChannel(starredMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(starredMessage.getChannelId(), starredMessage.getServerId()));
+        AChannel build = channelManagementService.loadChannel(starredMessage.getChannelId());
         StarboardPost post = StarboardPost
                 .builder()
                 .author(starredUser)

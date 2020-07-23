@@ -12,4 +12,12 @@ import net.dv8tion.jda.api.entities.Role;
 public class FullRole {
     private ARole role;
     private Role serverRole;
+
+    public String getRoleRepr() {
+        if(serverRole != null) {
+            return serverRole.getAsMention();
+        } else {
+            return role.getId().toString();
+        }
+    }
 }

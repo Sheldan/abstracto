@@ -18,8 +18,9 @@ import dev.sheldan.abstracto.utility.service.StarboardService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,15 +60,14 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
 
     @Override
     @Transactional
-    public void executeReactionAdded(CachedMessage message, MessageReaction addedReaction, AUserInAServer userAdding) {
+    public void executeReactionAdded(CachedMessage message, GuildMessageReactionAddEvent addedReaction, AUserInAServer userAdding) {
         if(userAdding.getUserReference().getId().equals(message.getAuthorId())) {
             return;
         }
         Long guildId = message.getServerId();
-        AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
+        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
-        Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
-        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
             log.trace("User {} in server {} reacted with star to put a message {} on starboard.", userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), message.getMessageId());
             Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
                 handleStarboardPostChange(message, reactionOptional.orElse(null), userAdding, true);
@@ -122,15 +122,14 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
 
     @Override
     @Transactional
-    public void executeReactionRemoved(CachedMessage message, MessageReaction removedReaction, AUserInAServer userRemoving) {
+    public void executeReactionRemoved(CachedMessage message, GuildMessageReactionRemoveEvent removedReaction, AUserInAServer userRemoving) {
         if(message.getAuthorId().equals(userRemoving.getUserReference().getId())) {
             return;
         }
         Long guildId = message.getServerId();
-        AEmote aEmote = emoteService.getEmoteOrFakeEmote(STAR_EMOTE, guildId);
+        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
-        Optional<Emote> emoteInGuild = botService.getEmote(guildId, aEmote);
-        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote, emoteInGuild.orElse(null))) {
+        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
             log.trace("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), message.getMessageId());
             Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);

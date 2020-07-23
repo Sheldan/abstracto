@@ -43,4 +43,6 @@ include::features/modmail.adoc[]
 
 include::features/experience.adoc[]
 
+include::features/assignableRoles.adoc[]
+
 include::features/utility.adoc[]

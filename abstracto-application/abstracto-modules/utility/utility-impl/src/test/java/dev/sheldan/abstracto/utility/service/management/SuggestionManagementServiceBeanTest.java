@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -99,24 +98,11 @@ public class SuggestionManagementServiceBeanTest {
         when(channel.getIdLong()).thenReturn(channelId);
         when(message.getIdLong()).thenReturn(messageId);
         AChannel aChannel = AChannel.builder().id(channelId).build();
-        when(channelManagementService.loadChannel(channelId)).thenReturn(Optional.of(aChannel));
+        when(channelManagementService.loadChannel(channelId)).thenReturn(aChannel);
         testUnit.setPostedMessage(suggestion, message);
         Assert.assertEquals(messageId, suggestion.getMessageId());
         Assert.assertEquals(channelId, suggestion.getChannel().getId());
         verify(suggestionRepository, times(1)).save(suggestion);
-    }
-
-    @Test(expected = ChannelNotFoundException.class)
-    public void testSetPostedMessageChannelNotFound() {
-        Long channelId = 6L;
-        AServer server = MockUtils.getServer();
-        Suggestion suggestion = Suggestion.builder().server(server).build();
-        Message message = Mockito.mock(Message.class);
-        MessageChannel channel = Mockito.mock(MessageChannel.class);
-        when(message.getChannel()).thenReturn(channel);
-        when(channel.getIdLong()).thenReturn(channelId);
-        when(channelManagementService.loadChannel(channelId)).thenReturn(Optional.empty());
-        testUnit.setPostedMessage(suggestion, message);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.interactive;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -48,35 +46,31 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
                 .actionConfigs(parameter.getDelayedActionList())
                 .build();
         String messageToSend = templateService.renderTemplate("setup_confirmation", model);
-        Optional<AChannel> channel = channelManagementService.loadChannel(user.getChannelId());
+        AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
-        if(channel.isPresent()) {
-            Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
-            Consumer<Void> confirmation = (Void none) -> {
-                try {
-                    self.executeDelayedSteps(parameter);
-                    SetupStepResult result = SetupStepResult
-                            .builder()
-                            .result(SetupStepResultType.SUCCESS)
-                            .build();
-                    future.complete(result);
-                } catch (Exception e) {
-                    future.completeExceptionally(e);
-                }
-            };
-
-            Consumer<Void> denial = (Void none) -> {
+        Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
+        Consumer<Void> confirmation = (Void none) -> {
+            try {
+                self.executeDelayedSteps(parameter);
                 SetupStepResult result = SetupStepResult
                         .builder()
-                        .result(SetupStepResultType.CANCELLED)
+                        .result(SetupStepResultType.SUCCESS)
                         .build();
                 future.complete(result);
-            };
-            interactiveService.createMessageWithConfirmation(messageToSend, aUserInAServer, channel.get(), parameter.getPreviousMessageId(), confirmation, denial, finalAction);
-        } else {
-            future.completeExceptionally(new ChannelNotFoundException(user.getGuildId(), user.getChannelId()));
-        }
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        };
+
+        Consumer<Void> denial = (Void none) -> {
+            SetupStepResult result = SetupStepResult
+                    .builder()
+                    .result(SetupStepResultType.CANCELLED)
+                    .build();
+            future.complete(result);
+        };
+        interactiveService.createMessageWithConfirmation(messageToSend, aUserInAServer, channel, parameter.getPreviousMessageId(), confirmation, denial, finalAction);
         return future;
     }
 

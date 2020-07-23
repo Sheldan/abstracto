@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -42,7 +43,7 @@ public class MessageEmbedRemovalReactionListenerTest {
     private EmoteService emoteService;
 
     @Mock
-    private MessageReaction messageReaction;
+    private GuildMessageReactionAddEvent messageReaction;
 
     @Mock
     private MessageReaction.ReactionEmote reactionEmote;
@@ -100,10 +101,10 @@ public class MessageEmbedRemovalReactionListenerTest {
                 .channelId(channelId)
                 .build();
         AEmote reactedEmote = AEmote.builder().build();
-        when(emoteService.getEmoteOrFakeEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, serverId)).thenReturn(reactedEmote);
+        when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, serverId)).thenReturn(reactedEmote);
         when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
         when(botService.getEmote(serverId, reactedEmote)).thenReturn(Optional.of(emote));
-        when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote, emote)).thenReturn(true);
+        when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote)).thenReturn(true);
         EmbeddedMessage message = EmbeddedMessage
                 .builder()
                 .embeddingUser(embeddingUser)
@@ -131,10 +132,10 @@ public class MessageEmbedRemovalReactionListenerTest {
                 .build();
         AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
         AEmote reactedEmote = AEmote.builder().build();
-        when(emoteService.getEmoteOrFakeEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, serverId)).thenReturn(reactedEmote);
+        when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, serverId)).thenReturn(reactedEmote);
         when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
         when(botService.getEmote(serverId, reactedEmote)).thenReturn(Optional.of(emote));
-        when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote, emote)).thenReturn(wasCorrectEmote);
+        when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote)).thenReturn(wasCorrectEmote);
         testUnit.executeReactionAdded(cachedMessage, messageReaction, userInAServer);
         verify(messageService, times(0)).deleteMessageInChannelInServer(serverId, channelId, messageId);
     }

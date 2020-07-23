@@ -67,7 +67,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
                 self.callAddedListeners(event, cachedMessage, reaction);
                 messageCache.putMessageInCache(cachedMessage);
             }).exceptionally(throwable -> {
-                log.error("Failed to add reaction to message {} ", event.getMessageIdLong(), throwable);
+                log.error("Failed to handle add reaction to message {} ", event.getMessageIdLong(), throwable);
                 return null;
             })
         ).exceptionally(throwable -> {
@@ -112,7 +112,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
                 return;
             }
             try {
-                reactedAddedListener.executeReactionAdded(cachedMessage, event.getReaction(), userInAServer);
+                reactedAddedListener.executeReactionAdded(cachedMessage, event, userInAServer);
             } catch (Exception e) {
                 log.warn(String.format("Failed to execute reaction added listener %s.", reactedAddedListener.getClass().getName()), e);
             }
@@ -151,7 +151,7 @@ public class ReactionUpdatedListener extends ListenerAdapter {
                 return;
             }
             try {
-                reactionRemovedListener.executeReactionRemoved(cachedMessage, event.getReaction(), userInAServer);
+                reactionRemovedListener.executeReactionRemoved(cachedMessage, event, userInAServer);
             } catch (AbstractoRunTimeException e) {
                 log.warn(String.format("Failed to execute reaction removed listener %s.", reactionRemovedListener.getClass().getName()), e);
             }

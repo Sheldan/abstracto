@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ public class CacheServiceBean {
     private SessionFactory sessionFactory;
 
     @Autowired
+    private TemplateService templateService;
+
+    @Autowired
     public CacheServiceBean(EntityManagerFactory factory) {
         SessionFactory unWrapped = factory.unwrap(SessionFactory.class);
         if(unWrapped == null){
@@ -26,5 +30,6 @@ public class CacheServiceBean {
 
     public void clearCaches() {
         sessionFactory.getCache().evictAllRegions();
+        templateService.clearCache();
     }
 }

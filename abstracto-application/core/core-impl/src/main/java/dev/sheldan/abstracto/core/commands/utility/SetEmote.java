@@ -9,8 +9,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,25 +24,22 @@ public class SetEmote extends AbstractConditionableCommand {
     @Autowired
     private EmoteManagementService emoteManagementService;
 
+    @Autowired
+    private EmoteService emoteService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        String emoteKey = (String) commandContext.getParameters().getParameters().get(0);
-        Object o = commandContext.getParameters().getParameters().get(1);
-        if(o instanceof String) {
-            String emote = (String) o;
-            emoteManagementService.setEmoteToDefaultEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
-        } else {
-            Emote emote = (Emote) o;
-            // todo check if usable
-            emoteManagementService.setEmoteToCustomEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
-        }
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        String emoteKey = (String) parameters.get(0);
+        AEmote emote = (AEmote) parameters.get(1);
+        emoteManagementService.setEmoteToAEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter emoteKey = Parameter.builder().name("emoteKey").type(String.class).templated(true).build();
-        Parameter emote = Parameter.builder().name("emote").type(net.dv8tion.jda.api.entities.Emote.class).templated(true).build();
+        Parameter emote = Parameter.builder().name("emote").type(AEmote.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(emoteKey, emote);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

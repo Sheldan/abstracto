@@ -49,8 +49,7 @@ public class ContextUtilsTest {
         AUserInAServer aUserInAServer = AUserInAServer.builder().userReference(AUser.builder().id(AUTHOR_ID).build()).serverReference(server).build();
         when(userInServerManagementService.loadUser(eq(SERVER_ID), eq(AUTHOR_ID))).thenReturn(aUserInAServer);
         AChannel channel = AChannel.builder().id(CHANNEL_ID).build();
-        Optional<AChannel> op = Optional.of(channel);
-        when(channelManagementService.loadChannel(eq(CHANNEL_ID))).thenReturn(op);
+        when(channelManagementService.loadChannel(eq(CHANNEL_ID))).thenReturn(channel);
     }
 
     @Test

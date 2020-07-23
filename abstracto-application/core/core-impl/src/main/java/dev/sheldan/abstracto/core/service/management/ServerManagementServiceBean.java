@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.exception.GuildException;
+import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +38,16 @@ public class ServerManagementServiceBean implements ServerManagementService {
     }
 
     @Override
+    public AServer loadServer(Long id) {
+        return loadServerOptional(id).orElseThrow(() -> new GuildNotFoundException(id));
+    }
+
+    @Override
+    public Optional<AServer> loadServerOptional(Long id) {
+        return repository.findById(id);
+    }
+
+    @Override
     public void addChannelToServer(AServer server, AChannel channel) {
         server.getChannels().add(channel);
         channel.setServer(server);
@@ -51,9 +61,8 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public AUserInAServer addUserToServer(Long serverId, Long userId) {
         log.info("Adding user {} to server {}", userId, serverId);
-        Optional<AServer> server = repository.findById(serverId);
         AUser user = userManagementService.loadUser(userId);
-        AServer serverReference = server.orElseThrow(() -> new GuildException(serverId));
+        AServer serverReference = loadServer(serverId);
         AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(serverReference).userReference(user).build();
         serverReference.getUsers().add(aUserInAServer);
         return aUserInAServer;

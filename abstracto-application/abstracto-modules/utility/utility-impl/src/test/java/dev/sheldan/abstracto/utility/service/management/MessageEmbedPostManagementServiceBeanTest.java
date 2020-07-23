@@ -52,7 +52,7 @@ public class MessageEmbedPostManagementServiceBeanTest {
         AUserInAServer embeddedUser = MockUtils.getUserObject(7L, server);
         AChannel channel = MockUtils.getTextChannel(server, 8L);
         when(serverManagementService.loadOrCreate(server.getId())).thenReturn(server);
-        when(channelManagementService.loadChannel(channel.getId())).thenReturn(Optional.of(channel));
+        when(channelManagementService.loadChannel(channel.getId())).thenReturn(channel);
         Long embeddedMessageId = 5L;
         Long embeddingMessageId = 7L;
         CachedMessage cachedMessage = CachedMessage

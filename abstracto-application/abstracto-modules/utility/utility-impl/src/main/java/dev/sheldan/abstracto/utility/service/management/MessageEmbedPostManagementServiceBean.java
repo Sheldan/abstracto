@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -43,8 +42,8 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
         if(!embeddedServer.getId().equals(embeddingServer.getId())) {
             throw new CrossServerEmbedException(String.format("Message %s is not from server %s", embeddedMessage.getMessageUrl(), embeddingServer.getId()));
         }
-        AChannel embeddingChannel = channelManagementService.loadChannel(messageContainingEmbed.getChannel().getIdLong()).orElseThrow(() -> new ChannelNotFoundException(messageContainingEmbed.getChannel().getIdLong(), messageContainingEmbed.getGuild().getIdLong()));
-        AChannel embeddedChannel = channelManagementService.loadChannel(embeddedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(embeddedMessage.getChannelId(), embeddedMessage.getServerId()));
+        AChannel embeddingChannel = channelManagementService.loadChannel(messageContainingEmbed.getChannel().getIdLong());
+        AChannel embeddedChannel = channelManagementService.loadChannel(embeddedMessage.getChannelId());
         AUserInAServer embeddedAuthor = userInServerManagementService.loadUser(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
         EmbeddedMessage messageEmbedPost = EmbeddedMessage
                 .builder()

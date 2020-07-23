@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
@@ -64,7 +63,7 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Message message) {
-        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong()).orElseThrow(() -> new ChannelNotFoundException(message.getChannel().getIdLong(), message.getGuild().getIdLong()));
+        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
         AServerAChannelAUser aServerAChannelAUser = AServerAChannelAUser
                 .builder()
                 .user(user.getUserReference())
@@ -109,7 +108,7 @@ public class RemindServiceBean implements ReminderService {
         log.info("Executing reminder {}.", reminderId);
         Optional<Guild> guildToAnswerIn = botService.getGuildById(server.getId());
         if(guildToAnswerIn.isPresent()) {
-            Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServer(server.getId(), channel.getId());
+            Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServerOptional(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
                 AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -57,7 +56,7 @@ public class StarboardPostManagementServiceBeanTest {
                 .channel(starboardChannel)
                 .messageId(starboardPostId)
                 .build();
-        when(channelManagementService.loadChannel(starredMessage.getChannelId())).thenReturn(Optional.ofNullable(sourceChannel));
+        when(channelManagementService.loadChannel(starredMessage.getChannelId())).thenReturn(sourceChannel);
         StarboardPost createdStarboardPost = testUnit.createStarboardPost(starredMessage, userInAServer, postInStarboard);
         verify(repository, times(1)).save(createdStarboardPost);
         Assert.assertEquals(postInStarboard.getChannel().getId(), createdStarboardPost.getStarboardChannel().getId());
@@ -67,30 +66,6 @@ public class StarboardPostManagementServiceBeanTest {
         Assert.assertEquals(userInAServer.getUserInServerId(), createdStarboardPost.getAuthor().getUserInServerId());
         Assert.assertEquals(sourceChannel.getId(), createdStarboardPost.getSourceChanel().getId());
         Assert.assertFalse(createdStarboardPost.isIgnored());
-    }
-
-    @Test(expected = ChannelNotFoundException.class)
-    public void testCreateStarboardPostForNonExistingChannel() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(7L, server);
-        AChannel sourceChannel = MockUtils.getTextChannel(server, 9L);
-        AChannel starboardChannel = MockUtils.getTextChannel(server, 10L);
-        Long starboardPostId = 5L;
-        Long starredMessageId = 8L;
-        CachedMessage starredMessage = CachedMessage
-                .builder()
-                .channelId(sourceChannel.getId())
-                .messageId(starredMessageId)
-                .serverId(server.getId())
-                .build();
-        AServerAChannelMessage postInStarboard = AServerAChannelMessage
-                .builder()
-                .server(server)
-                .channel(starboardChannel)
-                .messageId(starboardPostId)
-                .build();
-        when(channelManagementService.loadChannel(starredMessage.getChannelId())).thenReturn(Optional.empty());
-        testUnit.createStarboardPost(starredMessage, userInAServer, postInStarboard);
     }
 
     @Test

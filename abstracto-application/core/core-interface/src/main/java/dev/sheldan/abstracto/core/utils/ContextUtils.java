@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.utils;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -38,8 +36,7 @@ public class ContextUtils {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
             AUserInAServer aUserInAServer = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
-            Optional<AChannel> channelOptional = channelManagementService.loadChannel(message.getChannelId());
-            AChannel channel = channelOptional.orElseThrow(() -> new ChannelNotFoundException(message.getChannelId(), message.getServerId()));
+            AChannel channel = channelManagementService.loadChannel(message.getChannelId());
             return builder
                     .member(guildChannelMember.getMember())
                     .guild(guildChannelMember.getGuild())

@@ -56,4 +56,6 @@ public interface TemplateService {
      * @return The template rendered as string
      */
     String renderTemplatable(Templatable templatable);
+
+    void clearCache();
 }

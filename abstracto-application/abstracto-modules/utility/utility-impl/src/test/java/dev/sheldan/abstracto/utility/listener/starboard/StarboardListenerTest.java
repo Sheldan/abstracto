@@ -16,6 +16,8 @@ import dev.sheldan.abstracto.utility.service.StarboardService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -57,7 +59,10 @@ public class StarboardListenerTest {
     private EmoteService emoteService;
 
     @Mock
-    private MessageReaction messageReaction;
+    private GuildMessageReactionAddEvent addEvent;
+
+    @Mock
+    private GuildMessageReactionRemoveEvent removeEvent;
 
     @Mock
     private MessageReaction.ReactionEmote reactionEmote;
@@ -72,8 +77,8 @@ public class StarboardListenerTest {
                 .serverId(serverId)
                 .build();
         AUserInAServer userAdding = MockUtils.getUserObject(authorId, MockUtils.getServer(serverId));
-        testUnit.executeReactionAdded(cachedMessage, messageReaction, userAdding);
-        verify(emoteService, times(0)).getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId);
+        testUnit.executeReactionAdded(cachedMessage, addEvent, userAdding);
+        verify(emoteService, times(0)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
     }
 
     @Test
@@ -84,8 +89,8 @@ public class StarboardListenerTest {
         AEmote starEmote = AEmote.builder().build();
         AUserInAServer userAdding = MockUtils.getUserObject(reactionUserId, MockUtils.getServer(serverId));
         CachedMessage cachedMessage = setupWrongEmote(serverId, authorId, starEmote);
-        testUnit.executeReactionAdded(cachedMessage, messageReaction, userAdding);
-        verify(emoteService, times(1)).getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId);
+        testUnit.executeReactionAdded(cachedMessage, addEvent, userAdding);
+        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
         verify(emoteService, times(0)).getReactionFromMessageByEmote(any(CachedMessage.class), eq(starEmote));
     }
 
@@ -144,8 +149,8 @@ public class StarboardListenerTest {
                 .serverId(serverId)
                 .build();
         AUserInAServer userAdding = MockUtils.getUserObject(authorId, MockUtils.getServer(serverId));
-        testUnit.executeReactionRemoved(cachedMessage, messageReaction, userAdding);
-        verify(emoteService, times(0)).getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId);
+        testUnit.executeReactionRemoved(cachedMessage, removeEvent, userAdding);
+        verify(emoteService, times(0)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
     }
 
     @Test
@@ -156,8 +161,8 @@ public class StarboardListenerTest {
         AEmote starEmote = AEmote.builder().build();
         AUserInAServer userAdding = MockUtils.getUserObject(reactionUserId, MockUtils.getServer(serverId));
         CachedMessage cachedMessage = setupWrongEmote(serverId, authorId, starEmote);
-        testUnit.executeReactionRemoved(cachedMessage, messageReaction, userAdding);
-        verify(emoteService, times(1)).getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId);
+        testUnit.executeReactionRemoved(cachedMessage, removeEvent, userAdding);
+        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
         verify(emoteService, times(0)).getReactionFromMessageByEmote(any(CachedMessage.class), eq(starEmote));
     }
 
@@ -235,19 +240,18 @@ public class StarboardListenerTest {
                 .serverId(serverId)
                 .messageId(messageId)
                 .build();
-        when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(removeEvent.getReactionEmote()).thenReturn(reactionEmote);
         AEmote starEmote = AEmote.builder().build();
-        when(emoteService.getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId)).thenReturn(starEmote);
-        when(botService.getEmote(serverId, starEmote)).thenReturn(Optional.empty());
-        when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote, null)).thenReturn(true);
+        when(emoteService.getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId)).thenReturn(starEmote);
+        when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote)).thenReturn(true);
         CachedReaction reaction = CachedReaction.builder().userInServersIds(remainingUsers).build();
         when(emoteService.getReactionFromMessageByEmote(cachedMessage, starEmote)).thenReturn(Optional.of(reaction));
         when(starboardPostManagementService.findByMessageId(messageId)).thenReturn(Optional.ofNullable(post));
         when(userInServerManagementService.loadUser(serverId, author.getUserReference().getId())).thenReturn(author);
         when(userInServerManagementService.loadUser(remainingUser.getUserReference().getId())).thenReturn(Optional.of(remainingUser));
         when(configManagementService.loadConfig(serverId, StarboardListener.FIRST_LEVEL_THRESHOLD_KEY)).thenReturn(AConfig.builder().longValue(requiredStars).build());
-        testUnit.executeReactionRemoved(cachedMessage, messageReaction, userRemoving);
-        verify(emoteService, times(1)).getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId);
+        testUnit.executeReactionRemoved(cachedMessage, removeEvent, userRemoving);
+        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
         verify(emoteService, times(1)).getReactionFromMessageByEmote(cachedMessage, starEmote);
     }
 
@@ -260,19 +264,18 @@ public class StarboardListenerTest {
                 .serverId(serverId)
                 .messageId(messageId)
                 .build();
-        when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(addEvent.getReactionEmote()).thenReturn(reactionEmote);
         AEmote starEmote = AEmote.builder().build();
-        when(emoteService.getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId)).thenReturn(starEmote);
-        when(botService.getEmote(serverId, starEmote)).thenReturn(Optional.empty());
-        when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote, null)).thenReturn(true);
+        when(emoteService.getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId)).thenReturn(starEmote);
+        when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote)).thenReturn(true);
         CachedReaction reaction = CachedReaction.builder().userInServersIds(Arrays.asList(userAdding.getUserReference().getId())).build();
         when(emoteService.getReactionFromMessageByEmote(cachedMessage, starEmote)).thenReturn(Optional.of(reaction));
         when(starboardPostManagementService.findByMessageId(messageId)).thenReturn(Optional.ofNullable(existingPost));
         when(userInServerManagementService.loadUser(serverId, author.getUserReference().getId())).thenReturn(author);
         when(userInServerManagementService.loadUser(userAdding.getUserReference().getId())).thenReturn(Optional.of(userAdding));
         when(configManagementService.loadConfig(serverId, StarboardListener.FIRST_LEVEL_THRESHOLD_KEY)).thenReturn(AConfig.builder().longValue(requiredStars).build());
-        testUnit.executeReactionAdded(cachedMessage, messageReaction, userAdding);
-        verify(emoteService, times(1)).getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId);
+        testUnit.executeReactionAdded(cachedMessage, addEvent, userAdding);
+        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
         verify(emoteService, times(1)).getReactionFromMessageByEmote(cachedMessage, starEmote);
     }
 
@@ -282,10 +285,9 @@ public class StarboardListenerTest {
                 .authorId(authorId)
                 .serverId(serverId)
                 .build();
-        when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
-        when(emoteService.getEmoteOrFakeEmote(StarboardListener.STAR_EMOTE, serverId)).thenReturn(starEmote);
-        when(botService.getEmote(serverId, starEmote)).thenReturn(Optional.empty());
-        when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote, null)).thenReturn(false);
+        when(addEvent.getReactionEmote()).thenReturn(reactionEmote);
+        when(emoteService.getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId)).thenReturn(starEmote);
+        when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote)).thenReturn(false);
         return cachedMessage;
     }
 }

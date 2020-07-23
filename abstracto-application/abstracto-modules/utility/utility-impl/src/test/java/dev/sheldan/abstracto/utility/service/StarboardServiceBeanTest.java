@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -117,7 +116,7 @@ public class StarboardServiceBeanTest {
                 .build();
         Member authorMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(message.getServerId(), message.getAuthorId())).thenReturn(authorMember);
-        when(botService.getTextChannelFromServer(server.getId(), channelId)).thenReturn(Optional.of(mockedTextChannel));
+        when(botService.getTextChannelFromServerOptional(server.getId(), channelId)).thenReturn(Optional.of(mockedTextChannel));
         when(botService.getGuildById(server.getId())).thenReturn(Optional.of(guild));
         MessageToSend postMessage = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
@@ -157,7 +156,7 @@ public class StarboardServiceBeanTest {
         when(userInServerManagementService.loadUser(starredUser.getUserInServerId())).thenReturn(Optional.of(starredUser));
         when(userInServerManagementService.loadUser(userReacting.getUserInServerId())).thenReturn(Optional.of(userReacting));
         AChannel channel = MockUtils.getTextChannel(server, channelId);
-        when(channelManagementService.loadChannel(channelId)).thenReturn(Optional.of(channel));
+        when(channelManagementService.loadChannel(channelId)).thenReturn(channel);
         StarboardPost post = StarboardPost.builder().build();
         when(starboardPostManagementService.createStarboardPost(eq(message), eq(starredUser), any(AServerAChannelMessage.class))).thenReturn(post);
         AUserInAServer secondStarrerUserObj = MockUtils.getUserObject(secondStarrerUserId, server);
@@ -221,17 +220,6 @@ public class StarboardServiceBeanTest {
         AUserInAServer starredUser = MockUtils.getUserObject(5L, server);
         when(userInServerManagementService.loadUser(starredUser.getUserInServerId())).thenReturn(Optional.empty());
         executeLoadErrorTest(server, userReacting, starredUser, 10L);
-    }
-
-    @Test(expected = ChannelNotFoundException.class)
-    public void testPersistingOfNotFoundChannel() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userReacting = MockUtils.getUserObject(4L, server);
-        AUserInAServer starredUser = MockUtils.getUserObject(5L, server);
-        when(userInServerManagementService.loadUser(starredUser.getUserInServerId())).thenReturn(Optional.of(starredUser));
-        Long channelId = 10L;
-        when(channelManagementService.loadChannel(channelId)).thenReturn(Optional.empty());
-        executeLoadErrorTest(server, userReacting, starredUser, channelId);
     }
 
     @Test

@@ -87,7 +87,7 @@ public class RemindServiceBeanTest {
         AChannel aChannel = MockUtils.getTextChannel(server, 5L);
         String remindText = "text";
         Duration duration = Duration.ofSeconds(62);
-        when(channelManagementService.loadChannel(channel.getIdLong())).thenReturn(Optional.of(aChannel));
+        when(channelManagementService.loadChannel(channel.getIdLong())).thenReturn(aChannel);
         Long reminderId = 5L;
         Reminder createdReminder = Reminder.builder().targetDate(Instant.now().plus(duration)).text(remindText).id(reminderId).build();
         Long messageId = 5L;
@@ -109,7 +109,7 @@ public class RemindServiceBeanTest {
         AChannel aChannel = MockUtils.getTextChannel(server, 5L);
         String remindText = "text";
         Duration duration = Duration.ofSeconds(50);
-        when(channelManagementService.loadChannel(channel.getIdLong())).thenReturn(Optional.of(aChannel));
+        when(channelManagementService.loadChannel(channel.getIdLong())).thenReturn(aChannel);
         Long reminderId = 5L;
         Reminder createdReminder = Reminder.builder().targetDate(Instant.now().plus(duration)).text(remindText).id(reminderId).build();
         Long messageId = 5L;
@@ -130,7 +130,7 @@ public class RemindServiceBeanTest {
         when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.of(remindedReminder));
         Guild guildMock = Mockito.mock(Guild.class);
         when(botService.getGuildById(server.getId())).thenReturn(Optional.of(guildMock));
-        when(botService.getTextChannelFromServer(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
+        when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
         Member mockedMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(server.getId(), remindedUser.getUserReference().getId())).thenReturn(mockedMember);
         MessageToSend messageToSend = MessageToSend.builder().build();
@@ -149,7 +149,7 @@ public class RemindServiceBeanTest {
         when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.of(remindedReminder));
         Guild guildMock = Mockito.mock(Guild.class);
         when(botService.getGuildById(server.getId())).thenReturn(Optional.of(guildMock));
-        when(botService.getTextChannelFromServer(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
+        when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
         testUnit.executeReminder(reminderId);
         verify(reminderManagementService, times(1)).setReminded(remindedReminder);
     }

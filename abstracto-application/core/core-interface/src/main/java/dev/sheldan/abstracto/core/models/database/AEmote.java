@@ -25,6 +25,7 @@ public class AEmote implements Serializable {
     @Column
     private String name;
 
+    // the way discord calls them and the unicode char for default Tweemoji emotes
     @Column
     @Setter
     private String emoteKey;
@@ -60,6 +61,15 @@ public class AEmote implements Serializable {
     private void onUpdate() {
         this.updated = Instant.now();
     }
+
+    @Column(name = "changeable")
+    @Getter
+    @Setter
+    @Builder.Default
+    private boolean changeable = true;
+
+    @Transient
+    private boolean fake;
 
     @Override
     public boolean equals(Object o) {

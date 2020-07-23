@@ -14,6 +14,12 @@ public class CommandConfiguration {
     private String description;
 
     @Builder.Default
+    private boolean async = false;
+
+    @Builder.Default
+    private boolean reportsException = false;
+
+    @Builder.Default
     private List<Parameter> parameters = new ArrayList<>();
 
     @Builder.Default

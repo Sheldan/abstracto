@@ -48,9 +48,10 @@ public class InteractiveServiceBean implements InteractiveService {
     @Override
     public void createMessageWithResponse(String messageText, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction) {
         channelService.sendTextToAChannel(messageText, channel);
+        Long channelId = channel.getId();
         eventWaiter.waitForEvent(MessageReceivedEvent.class, event -> {
             if(event != null) {
-                return event.getAuthor().getIdLong() == responder.getUserReference().getId() && event.getMessage().getIdLong() != messageId;
+                return event.getAuthor().getIdLong() == responder.getUserReference().getId() && event.getMessage().getIdLong() != messageId && event.getMessage().getChannel().getIdLong() == channelId;
             }
             return false;
         }, action, 1, TimeUnit.MINUTES, finalAction);
@@ -94,7 +95,7 @@ public class InteractiveServiceBean implements InteractiveService {
     }
 
     private void addEmoteToBuilder(String key, Consumer<Void> consumer, Long serverId, ButtonMenu.Builder builder, HashMap<String, Consumer<Void>> actions) {
-        AEmote emoteOrFakeEmote = emoteService.getEmoteOrFakeEmote(key, serverId);
+        AEmote emoteOrFakeEmote = emoteService.getEmoteOrDefaultEmote(key, serverId);
         if(Boolean.TRUE.equals(emoteOrFakeEmote.getCustom())){
             Optional<Emote> emote = botService.getEmote(serverId, emoteOrFakeEmote);
             emote.ifPresent(emote1 -> {

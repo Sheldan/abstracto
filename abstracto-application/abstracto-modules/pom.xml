@@ -16,6 +16,7 @@
         <module>utility</module>
         <module>experience-tracking</module>
         <module>modmail</module>
+        <module>assignable-roles</module>
     </modules>
 
 

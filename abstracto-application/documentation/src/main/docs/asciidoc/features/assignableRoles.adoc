@@ -1,0 +1,77 @@
+=== Assignable roles
+
+This feature enables creating and maintaining so-called 'assignable role places'. These places are messages at which reactions are added, and when a member reacts a configured role is assigned to the user.
+These places can consist of multiple messages (reactions are limited to 20 per message) and assignable roles can be added/removed. A place can be disabled, which causes any reaction to be removed and no role to be assigned.
+There are several configurations possible for each individual assignable role place.
+* `inline`: tries to display the embed as compact as possible and when this is disabled, every assignable role is displayed in a separate line. Default: `false`
+* `autoRemove`: if a member adds a reaction to the assignable role place, they are removed immediately afterwards. Default: `false`
+* `unique`: if a member adds a reaction and has previously selected other roles, these previous roles are removed before the new ones are assigned. Default: `false`
+* `active`: an inactive assignable role place does not assign any roles and immediately removes any reactions added. Default: `true`
+
+If there are reactions added by members, which are not used within an assignable role place, the reaction gets removed automatically.
+
+If the emote is deleted, the assignable role place is still functional, but if you set it up again, it fail to do so. You need to remove the emote from the assignable role place via its ID. The ID will be displayed for the emotes which were removed.
+Deleting the actual role behind an assignable role causes the assignable role place to become non-functional: the added reaction will remain and reactions can still be added, but nothing will happen.
+
+Feature key: `assignableRole`
+
+
+==== Commands
+Create a new assignable role place::
+* Usage: `createAssignableRolePlace <name> <channel> <text>`
+* Description: Creates a new assignable role place with the key `name`. The `text` will be shown in the description of the first message.
+When the place is setup, it will be posted in the `channel`. The created place is active and inline by default.
+
+Add a role to an assignable role place::
+* Usage: `addRoleToAssignableRolePlace <name> <emote> <text> <role>`
+* Description: Adds to the assignable role place identified by `name` an additional assignable role. The reaction to be used will be `emote` and `role` will be assigned when a member adds the reaction.
+It is required that `emote` is usable by Abstracto and not yet used in the assignable role place. If the assignable role place is currently setup, the assignable role will be directly appended to the assignable role place and is
+immediately available to be used. If this requires a new post, because the last message already has the maximum amount of reactions, it is required to setup the assignable role place again.
+
+Create the assignable role place in discord::
+* Usage: `setupAssignableRolePlace <name>`
+* Description: Posts the messages of the assignable role place identified by `name` to the configured channel in discord and adds the reactions. This will delete the old messages connected to this assignable role place, if there are any.
+
+Remove a role from an assignable role place::
+* Usage: `removeRoleFromAssignableRolePlace <name> <emote>`
+* Description: Removes from the assignable role place identified by `name`, the emote identified by `emote`. If the assignable role place is currently in use, this will update the message and remove all reactions using `emote`.
+
+Show the current configuration for an assignable role place::
+* Usage: `showAssignableRolePlaceConfig <name>`
+* Description: This command displays the current configuration of assignable role place identified by `name`. This information includes the available emotes, which roles they represent and what position they have.
+
+Test how the assignable role place would look like::
+* Usage: `testAssignableRolePlace <name>`
+* Description: Posts the assignable role place identified by `name` in the current channel. This command does not add the reactions, and is purely to check how the messages look.
+
+Move an assignable role place to another channel::
+* Usage: `moveAssignableRolePlace <name> <newChannel>`
+* Description: Moves the assignable role place identified by `name` to be in `newChannel`. This change takes effect the next time the assignable role place is setup via `setupAssignableRolePlace`.
+
+Deactivate the assignable role place::
+* Usage: `deactivateAssignableRolePlace <name>`
+* Description: Deactivates the assignable role place identified by `name`. Any further reactions placed by members will be removed immediately and not assign any roles.
+
+Activate the assignable role place::
+* Usage: `activateAssignableRolePlace <name>`
+* Description: Activates the assignable role place identified by `name` and enables the assignment of roles.
+
+Change configuration of assignable role place::
+* Usage: `changeAssignableRolePlaceConfig <name> <key> <newValue>`
+* Description: Changes the config attribute indicated by `key` of the place identified by `name` to `newValue`. The possible keys are: `inline`, `unique`, `autoRemove` and `active` respectively and all of these can take `true`/`false` as `newValue`.
+
+Swap two emotes in an assignable role place::
+* Usage: `swapAssignableRolePosition <name> <firstEmote> <secondEmote>`
+* Description: Swaps the position of the assignable role places `firstEmote` and `secondEmote` in the assignable role place identified by `name`.  This change takes effect the next time the assignable role place is setup via `setupAssignableRolePlace`.
+
+Set the position of an assignable role within an assignable role place::
+* Usage: `setAssignableRolePosition <name> <emote> <position>`
+* Description: Sets the position of the `emote` within the assignable role place identified by `name` to `position`.  This change takes effect the next time the assignable role place is setup via `setupAssignableRolePlace`.
+
+Delete an assignable role place::
+* Usage: `deleteAssignableRolePlace <name>`
+* Description: Completely deletes the assignable role place identified by `name`. This includes any trace in the database and the current messages, if any.
+
+Change description text of assignable role place::
+* Usage `editAssignableRolePlaceText <name> <newText>`
+* Description: Changes the text which is shown in the first message of the assignable role place identified by `name` to `newText`. This changes the message immediately.

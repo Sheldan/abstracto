@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="assigned_role_user-table">
+        <createTable tableName="assigned_role_user">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="assigned_role_user_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="assigned_role_in_user-table">
+        <createTable tableName="assigned_role_in_user">
+            <column name="assigned_role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="assigned_role_in_user-fk_assigned_role_in_user_assignable_role">
+        <addForeignKeyConstraint baseColumnNames="assigned_role_id" baseTableName="assigned_role_in_user" constraintName="fk_assigned_role_in_user_assignable_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="assigned_role_in_user-fk_assigned_role_in_user_assigned_user">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="assigned_role_in_user" constraintName="fk_assigned_role_in_user_assigned_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assigned_role_user" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="assigned_role_user-fk_assigned_role_user_user">
+        <addForeignKeyConstraint baseColumnNames="id" baseTableName="assigned_role_user" constraintName="fk_assigned_role_user_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="auser" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

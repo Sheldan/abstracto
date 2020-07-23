@@ -72,14 +72,14 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
         AServerAChannelAUser authorUser = AServerAChannelAUser
                 .builder()
                 .guild(serverManagementService.loadOrCreate(cachedMessage.getServerId()))
-                .channel(channelManagementService.loadChannel(cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getServerId(), cachedMessage.getChannelId())))
+                .channel(channelManagementService.loadChannel(cachedMessage.getChannelId()))
                 .aUserInAServer(userInServerManagementService.loadUser(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
                 .build();
 
         GuildChannelMember authorMember = GuildChannelMember
                 .builder()
                 .guild(botService.getGuildByIdNullable(cachedMessage.getServerId()))
-                .textChannel(botService.getTextChannelFromServer(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getServerId(), cachedMessage.getChannelId())))
+                .textChannel(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getChannelId())))
                 .member(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
                 .build();
         listener.forEach(messageDeletedListener -> {

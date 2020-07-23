@@ -22,10 +22,17 @@ public interface ChannelService {
     CompletableFuture<Message> sendEmbedToAChannel(MessageEmbed embed, AChannel channel);
     CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel);
     List<CompletableFuture<Message>> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel);
+    CompletableFuture<Message> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel, Integer embedIndex);
     List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel);
     Optional<TextChannel> getTextChannelInGuild(Long serverId, Long channelId);
     void editMessageInAChannel(MessageToSend messageToSend, AChannel channel, Long messageId);
     void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId);
+    CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId);
+    CompletableFuture<Message> editEmbedMessageInAChannel(MessageEmbed embedToSend, MessageChannel channel, Long messageId);
+    CompletableFuture<Message> editTextMessageInAChannel(String text, MessageChannel channel, Long messageId);
+    List<CompletableFuture<Message>> editMessagesInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, List<Long> messageIds);
+    CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index);
+    CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index, Integer embedIndex);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
     List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel);

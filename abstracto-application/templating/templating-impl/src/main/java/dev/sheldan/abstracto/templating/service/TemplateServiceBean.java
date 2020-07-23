@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Component
 public class TemplateServiceBean implements TemplateService {
 
+    public static final double MAX_FIELD_COUNT = 25D;
     @Autowired
     private Configuration configuration;
 
@@ -60,9 +61,9 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
+        EmbedConfiguration embedConfiguration = gson.fromJson(embedConfig, EmbedConfiguration.class);
         List<EmbedBuilder> embedBuilders = new ArrayList<>();
         embedBuilders.add(new EmbedBuilder());
-        EmbedConfiguration embedConfiguration = gson.fromJson(embedConfig, EmbedConfiguration.class);
         String description = embedConfiguration.getDescription();
         if(description != null) {
             double neededIndices = Math.ceil(description.length() / (double) MessageEmbed.TEXT_MAX_LENGTH) - 1;
@@ -104,7 +105,7 @@ public class TemplateServiceBean implements TemplateService {
         }
 
         List<MessageEmbed> embeds = new ArrayList<>();
-        if(embedBuilders.size() > 1 || !embedBuilders.get(0).isEmpty()) {
+        if((embedBuilders.size() > 1 || !embedBuilders.get(0).isEmpty()) && !isEmptyEmbed(embedConfiguration)) {
             embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
         }
 
@@ -112,6 +113,13 @@ public class TemplateServiceBean implements TemplateService {
                 .embeds(embeds)
                 .message(embedConfiguration.getAdditionalMessage())
                 .build();
+    }
+
+    private boolean isEmptyEmbed(EmbedConfiguration configuration) {
+        if(configuration.isPreventEmptyEmbed()) {
+            return configuration.getFields() == null && configuration.getDescription() == null && configuration.getImageUrl() == null;
+        }
+        return false;
     }
 
     @Override
@@ -129,13 +137,24 @@ public class TemplateServiceBean implements TemplateService {
                 configuration.getFields().add(i + 1, secondPart);
             }
         }
-        double neededIndex = Math.ceil(configuration.getFields().size() / 25D) - 1;
-        extendIfNecessary(embedBuilders, neededIndex);
+        int actualCurrentIndex = 0;
+        int neededMessages = 0;
         for (int i = 0; i < configuration.getFields().size(); i++) {
-            double currentPart = Math.floor(i / 25D);
+            EmbedField field = configuration.getFields().get(i);
+            boolean lastMessageInEmbed = ((actualCurrentIndex + 1) % MAX_FIELD_COUNT) == 0;
+            boolean isStartOfNewMessage = (actualCurrentIndex % MAX_FIELD_COUNT) == 0;
+            boolean newMessageForcedWithinEmbeds = Boolean.TRUE.equals(field.getForceNewMessage()) && !lastMessageInEmbed;
+            boolean startOfNewMessage = actualCurrentIndex != 0 && isStartOfNewMessage;
+            if(newMessageForcedWithinEmbeds || startOfNewMessage) {
+                actualCurrentIndex = 0;
+                neededMessages++;
+            } else {
+                actualCurrentIndex++;
+            }
+            extendIfNecessary(embedBuilders, neededMessages);
             EmbedField embedField = configuration.getFields().get(i);
             boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
-            embedBuilders.get((int) currentPart).addField(embedField.getName(), embedField.getValue(), inline);
+            embedBuilders.get(neededMessages).addField(embedField.getName(), embedField.getValue(), inline);
         }
     }
 
@@ -220,5 +239,10 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public String renderTemplatable(Templatable templatable) {
         return renderTemplate(templatable.getTemplateName(), templatable.getTemplateModel());
+    }
+
+    @Override
+    public void clearCache() {
+        configuration.getCacheStorage().clear();
     }
 }

@@ -23,6 +23,10 @@ public class CommandResult {
         return CommandResult.builder().result(ResultState.SELF_DESTRUCT).build();
     }
 
+    public static CommandResult fromReportedError() {
+        return CommandResult.builder().result(ResultState.REPORTED_ERROR).build();
+    }
+
     public static CommandResult fromError(String message){
         return CommandResult.builder().result(ResultState.ERROR).message(message).build();
     }

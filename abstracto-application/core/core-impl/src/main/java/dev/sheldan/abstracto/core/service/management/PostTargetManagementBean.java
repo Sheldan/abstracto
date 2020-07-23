@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -56,15 +54,13 @@ public class PostTargetManagementBean implements PostTargetManagement {
 
     @Override
     public PostTarget createOrUpdate(String name, AServer server, Long channelId) {
-        Optional<AChannel> dbChannelOpt = channelManagementService.loadChannel(channelId);
-        AChannel dbChannel = dbChannelOpt.orElseThrow(() -> new ChannelNotFoundException(channelId, server.getId()));
+        AChannel dbChannel = channelManagementService.loadChannel(channelId);
         return createOrUpdate(name, server, dbChannel);
     }
 
     @Override
     public PostTarget createOrUpdate(String name, Long serverId, Long channelId) {
-        Optional<AChannel> dbChannelOpt = channelManagementService.loadChannel(channelId);
-        AChannel dbChannel = dbChannelOpt.orElseThrow(() -> new ChannelNotFoundException(channelId, serverId));
+        AChannel dbChannel = channelManagementService.loadChannel(channelId);
         AServer dbServer = serverManagementService.loadOrCreate(serverId);
         return createOrUpdate(name, dbServer, dbChannel);
     }

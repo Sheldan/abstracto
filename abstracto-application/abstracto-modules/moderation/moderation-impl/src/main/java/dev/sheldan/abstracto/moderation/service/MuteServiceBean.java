@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -157,8 +156,7 @@ public class MuteServiceBean implements MuteService {
         AServerAChannelMessage origin = null;
         if(message != null) {
             long channelId = message.getChannel().getIdLong();
-            Optional<AChannel> channelOpt = channelManagementService.loadChannel(channelId);
-            AChannel channel = channelOpt.orElseThrow(() -> new ChannelNotFoundException(channelId, userInServerBeingMuted.getServerReference().getId()));
+            AChannel channel = channelManagementService.loadChannel(channelId);
             origin = AServerAChannelMessage
                     .builder()
                     .channel(channel)
