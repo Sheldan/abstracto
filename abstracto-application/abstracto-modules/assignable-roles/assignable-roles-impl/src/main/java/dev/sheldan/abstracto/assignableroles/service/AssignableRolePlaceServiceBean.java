@@ -510,7 +510,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             AssignablePostConfigRole postRole = AssignablePostConfigRole
                     .builder()
                     .description(role.getDescription())
-                    .emote(jdaEmoteForRole)
+                    .emote(FullEmote.builder().fakeEmote(emoteForRole).emote(jdaEmoteForRole).build())
                     .position(role.getPosition())
                     .awardedRole(jdaRole)
                     .build();

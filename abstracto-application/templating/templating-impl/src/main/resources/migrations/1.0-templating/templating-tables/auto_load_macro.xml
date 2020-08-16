@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="auto_load_macro-table">
+        <createTable tableName="auto_load_macro">
+            <column name="key" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="auto_load_macro_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="auto_load_macro-fk_assignable_role_emote">
+        <addForeignKeyConstraint baseColumnNames="key" baseTableName="auto_load_macro" constraintName="fk_auto_load_macro_template" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="key" referencedTableName="template" validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -6,6 +6,13 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <include file="template.xml" relativeToChangelogFile="true"/>
-    <include file="auto_load_macro.xml" relativeToChangelogFile="true"/>
+    <changeSet  author="Sheldan"  id="templates-auto_load_macro">
+        <insert tableName="auto_load_macro">
+            <column name="key" value="safe_macro"/>
+        </insert>
+        <insert tableName="auto_load_macro">
+            <column name="key" value="member_user_name"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

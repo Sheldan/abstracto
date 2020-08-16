@@ -6,6 +6,5 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <include file="template.xml" relativeToChangelogFile="true"/>
     <include file="auto_load_macro.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
