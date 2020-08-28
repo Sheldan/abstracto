@@ -45,6 +45,7 @@ public class Reminders extends AbstractConditionableCommand {
                 .name("reminders")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .help(helpInfo)
                 .build();

@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.core.command.service;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.ModuleInterface;
-import dev.sheldan.abstracto.core.command.exception.CommandNotFound;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -11,7 +11,6 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public class CommandManager implements CommandRegistry {
                 boolean hasRemainderParameter = commandConfiguration.getParameters().stream().anyMatch(Parameter::isRemainder);
                 if(unParsedCommandParameter.getParameters().size() < commandConfiguration.getNecessaryParameterCount()) {
                     String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
-                    throw new InsufficientParameters(o, nextParameterName);
+                    throw new InsufficientParametersException(o, nextParameterName);
                 }
                 parameterFit = paramCountFits || hasRemainderParameter;
             } else {
@@ -58,7 +57,7 @@ public class CommandManager implements CommandRegistry {
         if(commandOptional.isPresent()){
             return commandOptional.get();
         }
-        throw new CommandNotFound("Command not found.");
+        throw new CommandNotFoundException();
     }
 
     private boolean commandNameMatches(String name, CommandConfiguration commandConfiguration) {
@@ -81,7 +80,7 @@ public class CommandManager implements CommandRegistry {
         if(commandOptional.isPresent()){
             return commandOptional.get();
         }
-        throw new CommandNotFound("Command not found.");
+        throw new CommandNotFoundException();
     }
 
     @Override

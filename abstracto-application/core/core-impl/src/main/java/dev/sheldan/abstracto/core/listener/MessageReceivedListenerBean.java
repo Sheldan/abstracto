@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
@@ -37,6 +38,9 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private ExceptionService exceptionService;
+
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
         messageCache.putMessageInCache(event.getMessage());
@@ -49,6 +53,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
                 messageReceivedListener.execute(event.getMessage());
             } catch (Exception e) {
                 log.error("Listener {} had exception when executing.", messageReceivedListener, e);
+                exceptionService.reportExceptionToGuildMessageReceivedContext(e, event);
             }
         });
     }
@@ -63,6 +68,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
                 messageReceivedListener.execute(event.getMessage());
             } catch (Exception e) {
                 log.error("Listener {} had exception when executing.", messageReceivedListener, e);
+                exceptionService.reportExceptionToPrivateMessageReceivedContext(e, event);
             }
         });
     }

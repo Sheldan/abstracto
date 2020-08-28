@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Suggest extends AbstractConditionableCommand {
@@ -23,14 +24,14 @@ public class Suggest extends AbstractConditionableCommand {
     private SuggestionService suggestionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String text = (String) parameters.get(0);
         SuggestionLog suggestLogModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
         suggestLogModel.setSuggester(commandContext.getAuthor());
-        suggestionService.createSuggestion(commandContext.getAuthor(), text, suggestLogModel);
-        return CommandResult.fromSuccess();
+        return suggestionService.createSuggestion(commandContext.getAuthor(), text, suggestLogModel)
+                .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
     @Override
@@ -42,6 +43,8 @@ public class Suggest extends AbstractConditionableCommand {
                 .name("suggest")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

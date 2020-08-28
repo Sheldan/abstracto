@@ -39,6 +39,7 @@ public class DeactivateAssignableRolePlace extends AbstractConditionableCommand 
                 .name("deactivateAssignableRolePlace")
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

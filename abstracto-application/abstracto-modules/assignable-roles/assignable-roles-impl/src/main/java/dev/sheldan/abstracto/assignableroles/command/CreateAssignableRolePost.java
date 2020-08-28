@@ -52,7 +52,7 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
                 .name("createAssignableRolePlace")
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
-                .reportsException(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .aliases(aliases)

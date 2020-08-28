@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.modmail.listener;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.PrivateMessageReceivedListener;
 import dev.sheldan.abstracto.core.models.database.AUser;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
@@ -15,8 +14,6 @@ import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * This listener is the core mechanic behind mod mail, if the bot receives a message via DM, this listener is executed

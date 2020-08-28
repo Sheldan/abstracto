@@ -36,6 +36,7 @@ public class DecayWarnings extends AbstractConditionableCommand {
                 .name("decayWarnings")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

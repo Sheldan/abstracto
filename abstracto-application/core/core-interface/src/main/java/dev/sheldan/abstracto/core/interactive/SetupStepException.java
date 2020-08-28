@@ -3,11 +3,20 @@ package dev.sheldan.abstracto.core.interactive;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
-
 public class SetupStepException extends AbstractoRunTimeException implements Templatable {
+
+    private final SetupStepExceptionModel model;
+
     public SetupStepException(Throwable throwable) {
-        super("", throwable);
+        super("Failed to execute setup step", throwable);
+        SetupStepExceptionModel.SetupStepExceptionModelBuilder builder = SetupStepExceptionModel.builder();
+        if(getCause() instanceof Templatable) {
+            Templatable templatable = (Templatable) getCause();
+            builder.templateKey(templatable.getTemplateName());
+            builder.templateModel(templatable.getTemplateModel());
+        }
+        builder.message(getCause().getMessage());
+        this.model = builder.build();
     }
 
     @Override
@@ -17,14 +26,6 @@ public class SetupStepException extends AbstractoRunTimeException implements Tem
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Object> stringStringHashMap = new HashMap<>();
-        if(getCause() instanceof Templatable) {
-            Templatable templatable = (Templatable) getCause();
-            stringStringHashMap.put("templateKey", templatable.getTemplateName());
-            stringStringHashMap.put("templateModel", templatable.getTemplateModel());
-        }
-        stringStringHashMap.put("message", getCause().getMessage());
-
-        return stringStringHashMap;
+        return model;
     }
 }

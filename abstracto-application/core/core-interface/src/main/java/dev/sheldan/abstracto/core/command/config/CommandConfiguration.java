@@ -17,7 +17,7 @@ public class CommandConfiguration {
     private boolean async = false;
 
     @Builder.Default
-    private boolean reportsException = false;
+    private boolean supportsEmbedException = false;
 
     @Builder.Default
     private List<Parameter> parameters = new ArrayList<>();

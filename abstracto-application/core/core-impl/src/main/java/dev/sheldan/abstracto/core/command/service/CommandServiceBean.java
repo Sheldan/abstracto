@@ -26,6 +26,8 @@ import java.util.List;
 @Slf4j
 public class CommandServiceBean implements CommandService {
 
+    public static final String NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE = "no_feature_command_found_exception";
+
     @Autowired
     private ModuleManagementService moduleManagementService;
 

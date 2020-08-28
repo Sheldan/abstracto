@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.template;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +22,7 @@ public class ModMailExceptionModel {
     /**
      * A user associated with this exception, depends on the exact behaviour of the exception.
      */
-    private FullUser user;
+    private FullUserInServer user;
     /**
      * The exception which was thrown
      */

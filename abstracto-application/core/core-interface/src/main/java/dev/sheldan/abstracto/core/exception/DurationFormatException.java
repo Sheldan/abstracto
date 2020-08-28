@@ -1,19 +1,18 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.DurationFormatExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class DurationFormatException extends AbstractoRunTimeException implements Templatable {
 
-    private final String invalidFormat;
-    private final List<String> validFormats;
+    private final DurationFormatExceptionModel model;
+
 
     public DurationFormatException(String wrongFormat, List<String> validFormats) {
-        super("");
-        this.invalidFormat = wrongFormat;
-        this.validFormats = validFormats;
+        super("Duration format exception ");
+        this.model = DurationFormatExceptionModel.builder().invalidFormat(wrongFormat).validFormats(validFormats).build();
     }
 
     @Override
@@ -23,9 +22,6 @@ public class DurationFormatException extends AbstractoRunTimeException implement
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, String> param = new HashMap<>();
-        param.put("format", this.invalidFormat);
-        param.put("valid", String.join(", ", this.validFormats));
-        return param;
+        return model;
     }
 }

@@ -57,6 +57,7 @@ public class SetExpRole extends AbstractConditionableCommand {
                 .name("setExpRole")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -57,6 +57,7 @@ public class UnMute extends AbstractConditionableCommand {
                 .name("unMute")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

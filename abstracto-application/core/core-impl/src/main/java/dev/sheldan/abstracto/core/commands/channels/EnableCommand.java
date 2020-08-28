@@ -40,6 +40,7 @@ public class EnableCommand extends AbstractConditionableCommand {
                 .name("enableCommand")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .templated(true)
                 .help(helpInfo)
                 .causesReaction(true)

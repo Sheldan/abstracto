@@ -1,31 +1,27 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.FeatureNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class FeatureNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private final String feature;
-    private final List<String> availableFeatures;
+    private final FeatureNotFoundExceptionModel model;
 
-    public FeatureNotFoundException(String message, String feature, List<String> availableFeatures) {
-        super(message);
-        this.feature = feature;
-        this.availableFeatures = availableFeatures;
+    public FeatureNotFoundException(String feature, List<String> availableFeatures) {
+        super("Feature not found.");
+        this.model = FeatureNotFoundExceptionModel.builder().featureName(feature).availableFeatures(availableFeatures).build();
+
     }
 
     @Override
     public String getTemplateName() {
-        return "feature_not_found";
+        return "feature_not_found_exception";
     }
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Object> parameters = new HashMap<>();
-        parameters.put("featureName", this.feature);
-        parameters.put("availableFeatures", this.availableFeatures);
-        return parameters;
+        return model;
     }
 }

@@ -70,6 +70,7 @@ public class Disable extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .help(helpInfo)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .build();
     }

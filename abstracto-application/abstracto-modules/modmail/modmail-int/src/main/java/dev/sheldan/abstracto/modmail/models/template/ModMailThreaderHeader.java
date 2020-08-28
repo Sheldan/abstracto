@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.template;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,9 +15,9 @@ import lombok.Setter;
 @Builder
 public class ModMailThreaderHeader {
     /**
-     * A {@link FullUser} instance to retrieve information from
+     * A {@link FullUserInServer} instance to retrieve information from
      */
-    private FullUser threadUser;
+    private FullUserInServer threadUser;
     /**
      * The latest {@link ModMailThread}, before the current opened one. This is null if there is no closed mod mail thread
      * for the user

@@ -40,6 +40,7 @@ public class DisableCommand extends AbstractConditionableCommand {
                 .name("disableCommand")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

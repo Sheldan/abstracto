@@ -40,6 +40,7 @@ public class SetMuteRole extends AbstractConditionableCommand {
                 .name("setMuteRole")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

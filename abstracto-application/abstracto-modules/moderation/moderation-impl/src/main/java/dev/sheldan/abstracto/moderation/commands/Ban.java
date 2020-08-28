@@ -57,6 +57,7 @@ public class Ban extends AbstractConditionableCommand {
                 .name("ban")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

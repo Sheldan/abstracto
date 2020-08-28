@@ -1,8 +1,7 @@
 package dev.sheldan.abstracto.modmail.service;
 
 
-import dev.sheldan.abstracto.core.models.FullUser;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -23,7 +22,7 @@ public interface ModMailThreadService {
      * @param feedBackChannel The {@link MessageChannel} in which feedback about exceptions should be posted to
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
      */
-    void createModMailThreadForUser(FullUser userInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated);
+    void createModMailThreadForUser(FullUserInServer userInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated);
 
     /**
      * Changes the configuration value of the category used to create mod mail threads to the given ID.

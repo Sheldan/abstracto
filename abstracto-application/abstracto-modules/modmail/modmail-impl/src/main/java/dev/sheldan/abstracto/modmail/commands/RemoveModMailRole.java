@@ -44,6 +44,7 @@ public class RemoveModMailRole extends AbstractConditionableCommand {
                 .name("removeModMailRole")
                 .module(ModMailModuleInterface.MODMAIL)
                 .aliases(aliases)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .templated(true)

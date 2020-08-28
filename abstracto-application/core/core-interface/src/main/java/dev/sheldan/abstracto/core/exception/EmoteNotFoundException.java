@@ -1,19 +1,17 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.EmoteNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class EmoteNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private final String emoteKey;
-    private final List<String> available;
+    private final EmoteNotFoundExceptionModel model;
 
     public EmoteNotFoundException(String key, List<String> availableEmotes) {
-        super("");
-        this.emoteKey = key;
-        this.available = availableEmotes;
+        super("Emote not found");
+        this.model = EmoteNotFoundExceptionModel.builder().emoteKey(key).available(availableEmotes).build();
     }
 
     @Override
@@ -23,9 +21,6 @@ public class EmoteNotFoundException extends AbstractoRunTimeException implements
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, String> param = new HashMap<>();
-        param.put("emoteKey", this.emoteKey);
-        param.put("available", String.join(",", this.available));
-        return param;
+        return model;
     }
 }

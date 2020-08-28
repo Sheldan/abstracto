@@ -1,16 +1,15 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.RoleNotFoundInDBExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
 
 public class RoleNotFoundInDBException extends AbstractoRunTimeException implements Templatable {
 
-    private final Long roleId;
+    private final RoleNotFoundInDBExceptionModel model;
 
     public RoleNotFoundInDBException(Long roleId) {
-        super("");
-        this.roleId = roleId;
+        super("Role not found in database");
+        this.model = RoleNotFoundInDBExceptionModel.builder().roleId(roleId).build();
     }
 
     @Override
@@ -20,8 +19,6 @@ public class RoleNotFoundInDBException extends AbstractoRunTimeException impleme
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> param = new HashMap<>();
-        param.put("roleId", this.roleId);
-        return param;
+        return model;
     }
 }

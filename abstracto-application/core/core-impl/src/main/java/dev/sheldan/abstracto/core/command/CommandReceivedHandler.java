@@ -3,8 +3,8 @@ package dev.sheldan.abstracto.core.command;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
-import dev.sheldan.abstracto.core.command.exception.ParameterTooLong;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.ParameterTooLongException;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
@@ -200,7 +200,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 }
                 String value = unParsedCommandParameter.getParameters().get(i);
                 if(param.getMaxLength() != null && (value.length() + Constants.PARAMETER_LIMIT) > param.getMaxLength()) {
-                    throw new ParameterTooLong("The passed parameter was too long.", command, param.getName(), value.length(), param.getMaxLength());
+                    throw new ParameterTooLongException(command, param.getName(), value.length(), param.getMaxLength());
                 }
                 try {
                     if(param.getType().equals(Integer.class)){
@@ -302,7 +302,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         }
                     }
                 } catch (NoSuchElementException e) {
-                    throw new IncorrectParameter(command, param.getType(), param.getName());
+                    throw new IncorrectParameterException(command, param.getType(), param.getName());
                 } catch (IllegalArgumentException e) {
 
                 }

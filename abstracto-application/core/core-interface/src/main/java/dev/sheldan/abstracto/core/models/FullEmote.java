@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Builder
 public class FullEmote implements Serializable {
     private AEmote fakeEmote;
-    private Emote emote;
+    private transient Emote emote;
 
     public String getEmoteRepr() {
         if(!fakeEmote.getCustom()) {

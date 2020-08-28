@@ -69,6 +69,7 @@ public class Rank extends AbstractConditionableCommand {
                 .name("rank")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

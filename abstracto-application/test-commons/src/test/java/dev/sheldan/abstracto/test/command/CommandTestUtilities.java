@@ -31,6 +31,11 @@ public class CommandTestUtilities {
         com.execute(context);
     }
 
+    public static void executeAsyncNoParametersTest(Command com) {
+        CommandContext context = CommandTestUtilities.getNoParameters();
+        com.executeAsync(context);
+    }
+
     public static void executeWrongParametersTest(Command com) {
         executeWrongParametersTest(com, new ArrayList<>());
     }
@@ -38,6 +43,15 @@ public class CommandTestUtilities {
     public static void executeWrongParametersTest(Command com, Object value) {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(value));
         com.execute(context);
+    }
+
+    public static void executeAsyncWrongParametersTest(Command com) {
+        executeAsyncWrongParametersTest(com, new ArrayList<>());
+    }
+
+    public static void executeAsyncWrongParametersTest(Command com, Object value) {
+        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(value));
+        com.executeAsync(context);
     }
 
     public static CommandContext getNoParameters() {

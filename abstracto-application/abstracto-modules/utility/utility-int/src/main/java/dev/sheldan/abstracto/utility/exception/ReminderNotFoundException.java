@@ -2,15 +2,14 @@ package dev.sheldan.abstracto.utility.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
+import dev.sheldan.abstracto.utility.models.exception.ReminderNotFoundExceptionModel;
 
 public class ReminderNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private Long reminderId;
+    private final ReminderNotFoundExceptionModel model;
     public ReminderNotFoundException(Long reminderId) {
-        super("");
-        this.reminderId = reminderId;
+        super("Reminder does not exist");
+        this.model = ReminderNotFoundExceptionModel.builder().reminderId(reminderId).build();
     }
 
     @Override
@@ -20,8 +19,6 @@ public class ReminderNotFoundException extends AbstractoRunTimeException impleme
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> params = new HashMap<>();
-        params.put("id", this.reminderId);
-        return params;
+       return model;
     }
 }

@@ -63,6 +63,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                 .name("listDisabledExperienceRoles")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .aliases(aliases)
                 .parameters(parameters)

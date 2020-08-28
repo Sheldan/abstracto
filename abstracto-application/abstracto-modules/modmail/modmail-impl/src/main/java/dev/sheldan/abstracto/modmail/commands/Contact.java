@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -17,8 +17,6 @@ import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.template.ModMailThreadExistsModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,7 +55,7 @@ public class Contact extends AbstractConditionableCommand {
             model.setExistingModMailThread(existingThread);
             channelService.sendEmbedTemplateInChannel("modmail_thread_already_exists", model, commandContext.getChannel());
         } else {
-            FullUser fullUser = FullUser
+            FullUserInServer fullUser = FullUserInServer
                     .builder()
                     .aUserInAServer(user)
                     .member(targetUser)
@@ -77,6 +75,7 @@ public class Contact extends AbstractConditionableCommand {
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

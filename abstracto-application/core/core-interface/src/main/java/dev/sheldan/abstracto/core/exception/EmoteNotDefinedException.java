@@ -1,16 +1,15 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.EmoteNotDefinedExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
 
 public class EmoteNotDefinedException extends AbstractoRunTimeException implements Templatable {
 
-    private final String emoteKey;
+    private final EmoteNotDefinedExceptionModel model;
 
     public EmoteNotDefinedException(String key) {
-        super("");
-        this.emoteKey = key;
+        super(String.format("Emote %s not defined", key));
+        this.model = EmoteNotDefinedExceptionModel.builder().emoteKey(key).build();
     }
 
     @Override
@@ -20,8 +19,6 @@ public class EmoteNotDefinedException extends AbstractoRunTimeException implemen
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, String> param = new HashMap<>();
-        param.put("emoteKey", this.emoteKey);
-        return param;
+        return model;
     }
 }

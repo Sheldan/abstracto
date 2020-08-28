@@ -1,18 +1,15 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.RoleNotFoundInGuildExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
 
 public class RoleNotFoundInGuildException extends AbstractoRunTimeException implements Templatable {
 
-    private final Long roleId;
-    private final Long serverId;
+    private final RoleNotFoundInGuildExceptionModel model;
 
     public RoleNotFoundInGuildException(Long roleId, Long serverId) {
-        super("");
-        this.roleId = roleId;
-        this.serverId = serverId;
+        super("Role not found in guild");
+        this.model = RoleNotFoundInGuildExceptionModel.builder().roleId(roleId).serverId(serverId).build();
     }
 
     @Override
@@ -22,9 +19,6 @@ public class RoleNotFoundInGuildException extends AbstractoRunTimeException impl
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> param = new HashMap<>();
-        param.put("roleId", this.roleId);
-        param.put("serverId", this.serverId);
-        return param;
+        return model;
     }
 }

@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.assignableroles.models.templates.*;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlaceManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
+import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterKeyValueWrongTypeException;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
@@ -111,6 +112,12 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Override
     public CompletableFuture<Void> setEmoteToPosition(AServer server, String placeName, FullEmote emote, Integer position) {
+        if(isPositionUsed(server, placeName, position)) {
+            throw new AbstractoTemplatedException("Position is already used", "assignable_role_place_position_exists_exception");
+        }
+        if(!hasAssignableRolePlaceEmote(server, placeName, emote.getFakeEmote())) {
+            throw new AbstractoTemplatedException("Place does not have emote assigned.", "assignable_role_place_position_exists_exception");
+        }
         Integer emoteId = emote.getFakeEmote().getId();
         AssignableRolePlace assignableRolePlace = rolePlaceManagementService.findByServerAndKey(server, placeName);
         Optional<AssignableRole> emoteOptional = assignableRolePlace.getAssignableRoles().stream().filter(role -> role.getEmote().getId().equals(emoteId)).findFirst();
@@ -584,7 +591,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 setAssignablePlaceActiveTo(server, name, booleanValue);
                 return CompletableFuture.completedFuture(null);
             default:
-                throw new IllegalArgumentException("Illegal assignable role place parameter key was passed.");
+                throw new AbstractoTemplatedException("Illegal configuration key was passed", "assignable_role_place_illegal_configuration_key_exception");
         }
     }
 

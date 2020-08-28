@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.commands;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -97,7 +97,7 @@ public class WarningsTest {
         Assert.assertEquals(secondModelWarning, warningsModel.getWarnings().get(1));
     }
 
-    @Test(expected = IncorrectParameter.class)
+    @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
         CommandTestUtilities.executeWrongParametersTest(testUnit);
     }

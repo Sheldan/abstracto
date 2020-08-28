@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.CommandService;
+import dev.sheldan.abstracto.core.command.service.CommandServiceBean;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
@@ -54,7 +55,7 @@ public class MakeImmune extends AbstractConditionableCommand {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.makeRoleImmuneForCommand(command, role);
         } else {
-            return CommandResult.fromError(templateService.renderTemplate("no_feature_command_found", new Object()));
+            return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE, new Object()));
         }
         return CommandResult.fromSuccess();
     }

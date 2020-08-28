@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.template;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,9 +24,9 @@ public class ModMailLoggedMessageModel {
     private ModMailMessage modMailMessage;
 
     /**
-     * A reference to the {@link FullUser} which is the author. The member part is null, if the member left the guild.
+     * A reference to the {@link FullUserInServer} which is the author. The member part is null, if the member left the guild.
      */
-    private FullUser author;
+    private FullUserInServer author;
 
 
 }

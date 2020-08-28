@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -163,8 +163,8 @@ public class WarnServiceBeanTest {
     @Test
     public void testWarnFullUser() {
         setupMocksForWarning();
-        FullUser warnedFullUser = FullUser.builder().member(warnedMember).aUserInAServer(firstWarnedUser).build();
-        FullUser warningFullUser = FullUser.builder().member(warningMember).aUserInAServer(warningUser).build();
+        FullUserInServer warnedFullUser = FullUserInServer.builder().member(warnedMember).aUserInAServer(firstWarnedUser).build();
+        FullUserInServer warningFullUser = FullUserInServer.builder().member(warningMember).aUserInAServer(warningUser).build();
         Warning warning = testUnit.warnFullUser(warnedFullUser, warningFullUser, REASON, feedBackChannel);
         verifyWarning(warning);
     }

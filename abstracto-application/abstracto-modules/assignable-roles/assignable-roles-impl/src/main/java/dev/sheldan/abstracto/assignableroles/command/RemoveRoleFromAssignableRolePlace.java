@@ -43,6 +43,7 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

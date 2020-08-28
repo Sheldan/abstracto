@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.templating.Templatable;
 public class MemberNotFoundException extends AbstractoRunTimeException implements Templatable {
 
     public MemberNotFoundException() {
-        super("");
+        super("Member was not found");
     }
 
     @Override

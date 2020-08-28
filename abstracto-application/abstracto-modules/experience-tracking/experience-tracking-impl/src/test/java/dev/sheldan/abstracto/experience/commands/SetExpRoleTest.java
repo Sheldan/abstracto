@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.experience.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
@@ -33,23 +33,23 @@ public class SetExpRoleTest {
     @Mock
     private RoleService roleService;
 
-    @Test(expected = InsufficientParameters.class)
+    @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
         CommandTestUtilities.executeNoParametersTest(testUnit);
     }
 
-    @Test(expected = InsufficientParameters.class)
+    @Test(expected = InsufficientParametersException.class)
     public void testRoleMissing() {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(4));
         testUnit.execute(context);
     }
 
-    @Test(expected = IncorrectParameter.class)
+    @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
         CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
-    @Test(expected = IncorrectParameter.class)
+    @Test(expected = IncorrectParameterException.class)
     public void testLevelProvidedButNotRole() {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(4, ""));
         testUnit.execute(context);

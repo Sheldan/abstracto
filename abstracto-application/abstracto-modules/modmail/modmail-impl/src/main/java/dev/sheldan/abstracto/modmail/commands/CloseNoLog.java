@@ -56,6 +56,7 @@ public class CloseNoLog extends AbstractConditionableCommand {
                 .name("closeNoLog")
                 .module(ModMailModuleInterface.MODMAIL)
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

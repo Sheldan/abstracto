@@ -14,7 +14,6 @@ import java.util.List;
  * Model used to render  an overview of the roles for which experience gain has been disabled on the current server.
  */
 @Getter
-@Setter
 @SuperBuilder
 public class DisabledExperienceRolesModel extends UserInitiatedServerContext {
     @Builder.Default

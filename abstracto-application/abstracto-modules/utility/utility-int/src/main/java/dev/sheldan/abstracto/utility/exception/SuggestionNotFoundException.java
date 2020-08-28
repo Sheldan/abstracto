@@ -2,15 +2,15 @@ package dev.sheldan.abstracto.utility.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
+import dev.sheldan.abstracto.utility.models.exception.SuggestionNotFoundExceptionModel;
 
 public class SuggestionNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private Long suggestionId;
+    private final SuggestionNotFoundExceptionModel model;
+
     public SuggestionNotFoundException(Long suggestionId) {
-        super("");
-        this.suggestionId = suggestionId;
+        super("Suggestion not found");
+        this.model = SuggestionNotFoundExceptionModel.builder().suggestionId(suggestionId).build();
     }
 
     @Override
@@ -20,8 +20,6 @@ public class SuggestionNotFoundException extends AbstractoRunTimeException imple
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> params = new HashMap<>();
-        params.put("id", this.suggestionId);
-        return params;
+        return model;
     }
 }

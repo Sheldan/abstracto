@@ -82,6 +82,7 @@ public class ListChannelGroups extends AbstractConditionableCommand {
                 .aliases(aliases)
                 .templated(true)
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .build();
     }

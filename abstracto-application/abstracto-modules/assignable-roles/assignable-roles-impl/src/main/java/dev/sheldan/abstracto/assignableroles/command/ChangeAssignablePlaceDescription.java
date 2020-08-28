@@ -42,6 +42,7 @@ public class ChangeAssignablePlaceDescription extends AbstractConditionableComma
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

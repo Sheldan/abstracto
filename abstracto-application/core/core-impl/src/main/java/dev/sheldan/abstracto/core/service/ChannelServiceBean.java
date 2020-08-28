@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.CategoryNotFoundException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
@@ -171,7 +170,7 @@ public class ChannelServiceBean implements ChannelService {
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 messageAction = channel.editMessageById(messageId, messageToSend.getEmbeds().get(0));
             } else {
-                throw new AbstractoRunTimeException("Message to send did not contain anything to send.");
+                throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }
         }
         return messageAction.submit();

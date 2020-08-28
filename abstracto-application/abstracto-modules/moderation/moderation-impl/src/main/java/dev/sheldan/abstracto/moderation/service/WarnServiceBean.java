@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -60,13 +60,13 @@ public class WarnServiceBean implements WarnService {
 
     @Override
     public Warning warnUser(AUserInAServer warnedAUserInAServer, AUserInAServer warningAUserInAServer, String reason, MessageChannel feedbackChannel)  {
-        FullUser warnedUser = FullUser
+        FullUserInServer warnedUser = FullUserInServer
                 .builder()
                 .aUserInAServer(warnedAUserInAServer)
                 .member(botService.getMemberInServer(warnedAUserInAServer))
                 .build();
 
-        FullUser warningUser = FullUser
+        FullUserInServer warningUser = FullUserInServer
                 .builder()
                 .aUserInAServer(warningAUserInAServer)
                 .member(botService.getMemberInServer(warningAUserInAServer))
@@ -76,13 +76,13 @@ public class WarnServiceBean implements WarnService {
 
     @Override
     public Warning warnMember(Member warnedMember, Member warningMember, String reason, MessageChannel feedbackChannel) {
-        FullUser warnedUser = FullUser
+        FullUserInServer warnedUser = FullUserInServer
                 .builder()
                 .aUserInAServer(userInServerManagementService.loadUser(warnedMember))
                 .member(warnedMember)
                 .build();
 
-        FullUser warningUser = FullUser
+        FullUserInServer warningUser = FullUserInServer
                 .builder()
                 .aUserInAServer(userInServerManagementService.loadUser(warningMember))
                 .member(warningMember)
@@ -91,7 +91,7 @@ public class WarnServiceBean implements WarnService {
     }
 
     @Override
-    public Warning warnFullUser(FullUser warnedMember, FullUser warningMember, String reason, MessageChannel feedbackChannel)  {
+    public Warning warnFullUser(FullUserInServer warnedMember, FullUserInServer warningMember, String reason, MessageChannel feedbackChannel)  {
         Guild guild = warnedMember.getMember().getGuild();
         log.info("User {} is warning {} in server {}", warnedMember.getMember().getId(), warningMember.getMember().getId(), guild.getIdLong());
         Warning warning = warnManagementService.createWarning(warnedMember.getAUserInAServer(), warningMember.getAUserInAServer(), reason);

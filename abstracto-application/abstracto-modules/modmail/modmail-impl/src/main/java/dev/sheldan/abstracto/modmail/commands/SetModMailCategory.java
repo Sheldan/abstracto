@@ -42,6 +42,7 @@ public class SetModMailCategory extends AbstractConditionableCommand {
                 .name("setModMailCategory")
                 .module(ModMailModuleInterface.MODMAIL)
                 .aliases(aliases)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .templated(true)

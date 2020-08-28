@@ -1,14 +1,16 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.command.service.ExceptionService;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.template.commands.SetupCompletedNotificationModel;
 import dev.sheldan.abstracto.core.models.template.commands.SetupInitialMessageModel;
-import dev.sheldan.abstracto.templating.Templatable;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -46,8 +49,11 @@ public class SetupServiceBean implements SetupService {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private ExceptionService exceptionService;
+
     @Override
-    public void performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
+    public CompletableFuture<Void> performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
         List<String> requiredSystemConfigKeys = featureConfig.getRequiredSystemConfigKeys();
         List<SetupExecution> steps = new ArrayList<>();
         requiredSystemConfigKeys.forEach(s -> {
@@ -87,21 +93,23 @@ public class SetupServiceBean implements SetupService {
                 .featureConfig(featureConfig)
                 .build();
         Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(user.getGuildId(), user.getChannelId());
-        textChannelInGuild.ifPresent(textChannel -> {
+        if(textChannelInGuild.isPresent()) {
+            TextChannel textChannel = textChannelInGuild.get();
             String text = templateService.renderTemplate("setup_initial_message", setupInitialMessageModel);
             channelService.sendTextToChannel(text, textChannel);
-            executeSetup(featureConfig, steps, user, new ArrayList<>());
-        });
-
+            return executeSetup(featureConfig, steps, user, new ArrayList<>());
+        }
+        throw new ChannelNotFoundException(user.getChannelId());
     }
 
     @Override
-    public void executeSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs) {
-        steps.stream().findFirst().ifPresent(execution -> executeStep(user, execution, delayedActionConfigs, featureConfig));
+    public CompletableFuture<Void> executeSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs) {
+        SetupExecution nextStep = steps.get(0);
+        return executeStep(user, nextStep, delayedActionConfigs, featureConfig);
     }
 
-    private void executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
-        execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(aVoid -> {
+    private CompletableFuture<Void> executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
+        return execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(aVoid -> {
             if(aVoid.getResult().equals(SetupStepResultType.SUCCESS)) {
                 delayedActionConfigs.addAll(aVoid.getDelayedActionConfigList());
                 if(execution.getNextStep() != null) {
@@ -122,12 +130,9 @@ public class SetupServiceBean implements SetupService {
 
     @Transactional
     public void showExceptionMessage(Throwable throwable, AServerChannelUserId aServerChannelUserId) {
-        if(throwable instanceof Templatable) {
-            Templatable exception = (Templatable) throwable;
-            String text = templateService.renderTemplate(exception.getTemplateName(), exception.getTemplateModel());
-            Optional<TextChannel> channelOptional = botService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
-            channelOptional.ifPresent(channel -> channelService.sendTextToChannel(text, channel));
-        }
+        Optional<TextChannel> channelOptional = botService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
+        Member member = botService.getMemberInServer(aServerChannelUserId.getGuildId(), aServerChannelUserId.getUserId());
+        channelOptional.ifPresent(textChannel -> exceptionService.reportExceptionToChannel(throwable, textChannel, member));
     }
 
     @Transactional

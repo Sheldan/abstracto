@@ -45,7 +45,7 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
         if(any.isPresent()) {
             return any.get();
         }
-        throw new FeatureNotFoundException("", featureEnum.getKey(), getFeaturesAsList());
+        throw new FeatureNotFoundException(featureEnum.getKey(), getFeaturesAsList());
     }
 
     @Override
@@ -83,7 +83,7 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
         if(foundFeature.isPresent()) {
             return foundFeature.get().getFeature();
         }
-        throw new FeatureNotFoundException("", key, getFeaturesAsList());
+        throw new FeatureNotFoundException(key, getFeaturesAsList());
     }
 
     @Override
@@ -121,7 +121,7 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
         if(foundFeature.isPresent()) {
             return foundFeature.get();
         }
-        throw new FeatureModeNotFoundException("", key, getFeatureModesFromFeatureAsString(featureConfig.getFeature().getKey()));
+        throw new FeatureModeNotFoundException(key, getFeatureModesFromFeatureAsString(featureConfig.getFeature().getKey()));
     }
 
     @Override

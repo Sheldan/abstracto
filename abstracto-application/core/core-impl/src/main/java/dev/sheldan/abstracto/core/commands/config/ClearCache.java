@@ -35,6 +35,7 @@ public class ClearCache extends AbstractConditionableCommand {
                 .name("clearCache")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

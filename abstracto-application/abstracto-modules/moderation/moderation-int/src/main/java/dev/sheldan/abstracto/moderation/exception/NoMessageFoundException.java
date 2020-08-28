@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.templating.Templatable;
 
 public class NoMessageFoundException extends AbstractoRunTimeException implements Templatable {
     public NoMessageFoundException() {
-        super("");
+        super("No message found");
     }
 
     @Override

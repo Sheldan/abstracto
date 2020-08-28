@@ -53,6 +53,7 @@ public class Features extends AbstractConditionableCommand {
                 .name("features")
                 .module(ConfigModuleInterface.CONFIG)
                 .templated(true)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)
                 .build();

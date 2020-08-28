@@ -55,6 +55,7 @@ public class Kick extends AbstractConditionableCommand {
                 .name("kick")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

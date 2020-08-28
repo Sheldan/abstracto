@@ -6,12 +6,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Role;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Builder
-public class FullRole {
+public class FullRole implements Serializable {
     private ARole role;
-    private Role serverRole;
+    private transient Role serverRole;
 
     public String getRoleRepr() {
         if(serverRole != null) {

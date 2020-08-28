@@ -1,5 +1,8 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -57,7 +60,7 @@ public class SuggestionServiceBean implements SuggestionService {
     private SuggestionServiceBean self;
 
     @Override
-    public void createSuggestion(Member member, String text, SuggestionLog suggestionLog)  {
+    public CompletableFuture<Void> createSuggestion(Member member, String text, SuggestionLog suggestionLog)  {
         Suggestion suggestion = suggestionManagementService.createSuggestion(member, text);
         suggestionLog.setSuggestion(suggestion);
         suggestionLog.setSuggesterUser(suggestion.getSuggester());
@@ -66,31 +69,30 @@ public class SuggestionServiceBean implements SuggestionService {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
         long guildId = member.getGuild().getIdLong();
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
-        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
+        return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
             Suggestion innerSuggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
             try {
                 Message message = completableFutures.get(0).get();
                 suggestionManagementService.setPostedMessage(innerSuggestion, message);
-                messageService.addReactionToMessage(SUGGESTION_YES_EMOTE, guildId, message);
-                messageService.addReactionToMessage(SUGGESTION_NO_EMOTE, guildId, message);
+                CompletableFuture<Void> firstReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_YES_EMOTE, guildId, message);
+                CompletableFuture<Void> secondReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_NO_EMOTE, guildId, message);
+                return CompletableFuture.allOf(firstReaction, secondReaction);
             } catch (InterruptedException | ExecutionException e) {
                 log.warn("Failed to post suggestion", e);
                 Thread.currentThread().interrupt();
             }
-        }) .exceptionally(throwable -> {
-            log.error("Failed to post suggestion {}", suggestionId, throwable);
-            return null;
+            throw new AbstractoRunTimeException();
         });
     }
 
     @Override
-    public void acceptSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
+    public CompletableFuture<Void> acceptSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
-        updateSuggestion(text, suggestionLog, suggestion);
+        return updateSuggestion(text, suggestionLog, suggestion);
     }
 
-    private void updateSuggestion(String text, SuggestionLog suggestionLog, Suggestion suggestion) {
+    private CompletableFuture<Void> updateSuggestion(String text, SuggestionLog suggestionLog, Suggestion suggestion) {
         suggestionLog.setSuggesterUser(suggestion.getSuggester());
         Long channelId = suggestion.getChannel().getId();
         Long originalMessageId = suggestion.getMessageId();
@@ -108,36 +110,39 @@ public class SuggestionServiceBean implements SuggestionService {
             suggestionLog.setSuggestion(suggestion);
             TextChannel textChannelById = guildById.getTextChannelById(channelId);
             if(textChannelById != null) {
-                textChannelById.retrieveMessageById(originalMessageId).queue(message ->
+                return textChannelById.retrieveMessageById(originalMessageId).submit().thenCompose(message ->
                     self.updateSuggestionMessageText(text, suggestionLog, message)
                 );
             } else {
                 log.warn("Not possible to update suggestion {}, because text channel {} was not found in guild {}.", suggestion.getId(), channelId, serverId);
+                throw new ChannelNotFoundException(channelId);
             }
         } else {
             log.warn("Not possible to update suggestion {}, because guild {} was not found.", suggestion.getId(), serverId);
+            throw new GuildNotFoundException(serverId);
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateSuggestionMessageText(String text, SuggestionLog suggestionLog, Message message)  {
+    public CompletableFuture<Void> updateSuggestionMessageText(String text, SuggestionLog suggestionLog, Message message)  {
         Optional<MessageEmbed> embedOptional = message.getEmbeds().stream().filter(embed -> embed.getDescription() != null).findFirst();
         if(embedOptional.isPresent()) {
             MessageEmbed suggestionEmbed = embedOptional.get();
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
             MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
-            postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, suggestionLog.getServer().getId());
+            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, suggestionLog.getServer().getId());
+            return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
         } else {
             log.warn("The message to update the suggestion for, did not contain an embed to update. Suggestions require an embed with a description as a container. MessageURL: {}", message.getJumpUrl());
-            throw new SuggestionUpdateException("Not possible to update suggestion.");
+            throw new SuggestionUpdateException();
         }
     }
 
     @Override
-    public void rejectSuggestion(Long suggestionId, String text, SuggestionLog log) {
+    public CompletableFuture<Void> rejectSuggestion(Long suggestionId, String text, SuggestionLog log) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() ->  new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
-        updateSuggestion(text, log, suggestion);
+        return updateSuggestion(text, log, suggestion);
     }
 }

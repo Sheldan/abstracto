@@ -1,11 +1,10 @@
 package dev.sheldan.abstracto.modmail.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.modmail.models.exception.ModMailCategoryIdExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.HashMap;
 
 /**
  * This exception is thrown when a {@link net.dv8tion.jda.api.entities.Member} tries to set the mod mail category
@@ -15,22 +14,20 @@ import java.util.HashMap;
 @Getter
 @Setter
 public class ModMailCategoryIdException extends AbstractoRunTimeException implements Templatable {
-    private Long categoryId;
+    private final ModMailCategoryIdExceptionModel model;
 
     public ModMailCategoryIdException(Long categoryId) {
-        super("");
-        this.categoryId = categoryId;
+        super("Mod mail category has not been setup");
+        this.model = ModMailCategoryIdExceptionModel.builder().categoryId(categoryId).build();
     }
 
     @Override
     public String getTemplateName() {
-        return "modmail_category_not_setup";
+        return "modmail_category_not_setup_exception";
     }
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> params = new HashMap<>();
-        params.put("categoryId", this.categoryId);
-        return params;
+       return model;
     }
 }

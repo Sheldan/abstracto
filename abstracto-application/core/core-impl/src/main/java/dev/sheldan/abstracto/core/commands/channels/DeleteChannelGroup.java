@@ -39,6 +39,7 @@ public class DeleteChannelGroup extends AbstractConditionableCommand {
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
                 .aliases(aliases)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

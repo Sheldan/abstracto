@@ -1,31 +1,26 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.FeatureModeNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class FeatureModeNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private final String featureMode;
-    private final List<String> availableModes;
+    private final FeatureModeNotFoundExceptionModel model;
 
-    public FeatureModeNotFoundException(String message, String featureMode, List<String> availableModes) {
-        super(message);
-        this.featureMode = featureMode;
-        this.availableModes = availableModes;
+    public FeatureModeNotFoundException(String featureMode, List<String> availableModes) {
+        super("Feature mode not found.");
+        this.model = FeatureModeNotFoundExceptionModel.builder().availableModes(availableModes).featureMode(featureMode).build();
     }
 
     @Override
     public String getTemplateName() {
-        return "feature_mode_not_found";
+        return "feature_mode_not_found_exception";
     }
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Object> parameters = new HashMap<>();
-        parameters.put("featureMode", this.featureMode);
-        parameters.put("availableModes", this.availableModes);
-        return parameters;
+        return model;
     }
 }

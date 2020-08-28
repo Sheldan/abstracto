@@ -40,6 +40,7 @@ public class ServerInfo extends AbstractConditionableCommand {
                 .name("serverInfo")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)
                 .help(helpInfo)

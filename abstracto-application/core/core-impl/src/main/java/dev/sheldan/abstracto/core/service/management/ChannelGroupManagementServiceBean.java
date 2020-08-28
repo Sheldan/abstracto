@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.command.exception.ChannelAlreadyInChannelGroupException;
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupExistsException;
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
+import dev.sheldan.abstracto.core.command.exception.ChannelNotInChannelGroupException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -56,7 +58,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     public AChannelGroup addChannelToChannelGroup(AChannelGroup channelGroup, AChannel channel) {
         Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
         if(channelGroup.getChannels().stream().anyMatch(channelInGroupPredicate)) {
-            throw new ChannelGroupExistsException(String.format("Channel %s is already part of group %s.", channel.getId(), channelGroup.getGroupName()));
+            throw new ChannelAlreadyInChannelGroupException(channel, channelGroup);
         }
         channelGroup.getChannels().add(channel);
         channel.getGroups().add(channelGroup);
@@ -67,7 +69,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     public void removeChannelFromChannelGroup(AChannelGroup channelGroup, AChannel channel) {
         Predicate<AChannel> channelInGroupPredicate = channel1 -> channel1.getId().equals(channel.getId());
         if(channelGroup.getChannels().stream().noneMatch(channelInGroupPredicate)) {
-            throw new ChannelGroupExistsException(String.format("Channel %s is not part of group %s.", channel.getId(), channelGroup.getGroupName()));
+            throw new ChannelNotInChannelGroupException(channel, channelGroup);
         }
         channelGroup.getChannels().removeIf(channelInGroupPredicate);
         channel.getGroups().removeIf(channelGroup1 -> channelGroup1.getId().equals(channelGroup.getId()));

@@ -6,8 +6,9 @@ import dev.sheldan.abstracto.core.interactive.SetupExecution;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface SetupService {
-    void performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId);
-    void executeSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs);
+    CompletableFuture<Void> performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId);
+    CompletableFuture<Void> executeSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs);
 }

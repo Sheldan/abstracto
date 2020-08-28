@@ -1,27 +1,24 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.UserInServerNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
 
 public class UserInServerNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private final Long userInServerId;
+    private final UserInServerNotFoundExceptionModel model;
 
     public UserInServerNotFoundException(Long userInServerId) {
-        super("");
-        this.userInServerId = userInServerId;
+        super("User in server not found");
+        this.model = UserInServerNotFoundExceptionModel.builder().userInServerId(userInServerId).build();
     }
 
     @Override
     public String getTemplateName() {
-        return "core_user_in_server_not_found_exception";
+        return "user_in_server_not_found_exception";
     }
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> param = new HashMap<>();
-        param.put("userInServerId", this.userInServerId);
-        return param;
+        return model;
     }
 }

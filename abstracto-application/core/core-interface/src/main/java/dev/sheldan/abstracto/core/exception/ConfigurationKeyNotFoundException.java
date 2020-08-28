@@ -1,16 +1,15 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.ConfigurationKeyNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
 
 public class ConfigurationKeyNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private final String key;
+    private final ConfigurationKeyNotFoundExceptionModel model;
 
     public ConfigurationKeyNotFoundException(String key) {
-        super("");
-        this.key = key;
+        super("Configuration key not found");
+        this.model = ConfigurationKeyNotFoundExceptionModel.builder().key(key).build();
     }
 
     @Override
@@ -20,8 +19,6 @@ public class ConfigurationKeyNotFoundException extends AbstractoRunTimeException
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, String> param = new HashMap<>();
-        param.put("key", this.key);
-        return param;
+       return model;
     }
 }

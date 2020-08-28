@@ -72,6 +72,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
                 .name("leaderboard")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

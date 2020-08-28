@@ -45,6 +45,7 @@ public class Echo extends AbstractConditionableCommand {
                 .name("echo")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)
                 .help(helpInfo)

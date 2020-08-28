@@ -15,7 +15,6 @@ import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementS
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -48,8 +47,8 @@ public class UnSubscribe extends AbstractConditionableCommand {
         return CommandConfiguration.builder()
                 .name("unSubscribe")
                 .module(ModMailModuleInterface.MODMAIL)
-                .parameters(new ArrayList<>())
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

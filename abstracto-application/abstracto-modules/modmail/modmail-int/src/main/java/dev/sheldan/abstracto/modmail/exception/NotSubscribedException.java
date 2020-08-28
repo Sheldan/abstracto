@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.templating.Templatable;
  */
 public class NotSubscribedException extends AbstractoRunTimeException implements Templatable {
     public NotSubscribedException() {
-        super("");
+        super("Not subscribed to modmail thread");
     }
 
     @Override

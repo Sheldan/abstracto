@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.experience.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -34,12 +34,12 @@ public class DisableExpGainTest {
     @Mock
     private UserInServerManagementService userInServerManagementService;
 
-    @Test(expected = InsufficientParameters.class)
+    @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
         CommandTestUtilities.executeNoParametersTest(testUnit);
     }
 
-    @Test(expected = IncorrectParameter.class)
+    @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
         CommandTestUtilities.executeWrongParametersTest(testUnit);
     }

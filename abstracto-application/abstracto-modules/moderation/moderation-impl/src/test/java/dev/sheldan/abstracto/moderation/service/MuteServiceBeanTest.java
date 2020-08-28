@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -13,7 +13,7 @@ import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
-import dev.sheldan.abstracto.moderation.exception.MuteException;
+import dev.sheldan.abstracto.moderation.exception.MuteRoleNotSetupException;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
@@ -153,8 +153,8 @@ public class MuteServiceBeanTest {
         Instant unMuteDate = longerMute();
         when(memberBeingMuted.getGuild()).thenReturn(guild);
         when(memberBeingMuted.getUser()).thenReturn(jdaUserBeingMuted);
-        FullUser mutedUser = FullUser.builder().member(memberBeingMuted).aUserInAServer(userBeingMuted).build();
-        FullUser mutingUser = FullUser.builder().member(memberMuting).aUserInAServer(userMuting).build();
+        FullUserInServer mutedUser = FullUserInServer.builder().member(memberBeingMuted).aUserInAServer(userBeingMuted).build();
+        FullUserInServer mutingUser = FullUserInServer.builder().member(memberMuting).aUserInAServer(userMuting).build();
         setupShortMute(unMuteDate);
         when(schedulerService.executeJobWithParametersOnce(eq("unMuteJob"), eq("moderation"), any(JobDataMap.class), eq(Date.from(unMuteDate)))).thenReturn(TRIGGER);
         testUnit.muteUser(mutedUser, mutingUser, REASON, unMuteDate, cause);
@@ -167,19 +167,19 @@ public class MuteServiceBeanTest {
     public void testMuteWithDirectUnMute() {
         when(memberBeingMuted.getGuild()).thenReturn(guild);
         when(memberBeingMuted.getUser()).thenReturn(jdaUserBeingMuted);
-        FullUser mutedUser = FullUser.builder().member(memberBeingMuted).aUserInAServer(userBeingMuted).build();
-        FullUser mutingUser = FullUser.builder().member(memberMuting).aUserInAServer(userMuting).build();
+        FullUserInServer mutedUser = FullUserInServer.builder().member(memberBeingMuted).aUserInAServer(userBeingMuted).build();
+        FullUserInServer mutingUser = FullUserInServer.builder().member(memberMuting).aUserInAServer(userMuting).build();
         Instant unMuteDate = shorterMute();
         setupShortMute(unMuteDate);
         testUnit.muteUser(mutedUser, mutingUser, REASON, unMuteDate, cause);
         verifyDirectMute();
     }
 
-    @Test(expected = MuteException.class)
+    @Test(expected = MuteRoleNotSetupException.class)
     public void testMuteUserWithoutMuteRole() {
-        FullUser mutedUser = FullUser.builder().aUserInAServer(userBeingMuted).build();
+        FullUserInServer mutedUser = FullUserInServer.builder().aUserInAServer(userBeingMuted).build();
         when(muteRoleManagementService.muteRoleForServerExists(server)).thenReturn(false);
-        testUnit.muteUser(mutedUser, FullUser.builder().build(), REASON, longerMute(), Mockito.mock(Message.class));
+        testUnit.muteUser(mutedUser, FullUserInServer.builder().build(), REASON, longerMute(), Mockito.mock(Message.class));
     }
 
     @Test

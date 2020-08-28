@@ -55,6 +55,7 @@ public class SlowMode extends AbstractConditionableCommand {
                 .name("slowmode")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

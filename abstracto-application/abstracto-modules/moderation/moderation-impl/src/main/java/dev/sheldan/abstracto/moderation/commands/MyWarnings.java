@@ -50,6 +50,7 @@ public class MyWarnings extends AbstractConditionableCommand {
                 .name("myWarnings")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .aliases(aliases)
                 .parameters(parameters)

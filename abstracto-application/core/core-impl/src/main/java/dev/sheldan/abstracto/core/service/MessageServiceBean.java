@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
-import dev.sheldan.abstracto.core.exception.ExceptionNotInServerException;
+import dev.sheldan.abstracto.core.exception.ConfiguredEmoteNotUsableException;
+import dev.sheldan.abstracto.core.exception.EmoteNotInServerException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -55,7 +55,7 @@ public class MessageServiceBean implements MessageService {
                     return message.addReaction(emoteById).submit();
                 } else {
                     log.error("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guild.getId());
-                    throw new EmoteNotDefinedException(emoteKey);
+                    throw new ConfiguredEmoteNotUsableException(emote);
                 }
             } else {
                 return message.addReaction(emote.getEmoteKey()).submit();
@@ -79,7 +79,7 @@ public class MessageServiceBean implements MessageService {
     public CompletableFuture<Void> addReactionToMessageWithFuture(Long emoteId, Long serverId, Message message) {
         Emote emoteById = botService.getInstance().getEmoteById(emoteId);
         if(emoteById == null) {
-            throw new ExceptionNotInServerException(emoteId);
+            throw new EmoteNotInServerException(emoteId);
         }
         return message.addReaction(emoteById).submit();
     }
@@ -89,7 +89,7 @@ public class MessageServiceBean implements MessageService {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById == null) {
-                throw new ExceptionNotInServerException(emote.getEmoteId());
+                throw new EmoteNotInServerException(emote.getEmoteId());
             }
             return message.removeReaction(emoteById).submit();
         } else {
@@ -102,7 +102,7 @@ public class MessageServiceBean implements MessageService {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById == null) {
-                throw new ExceptionNotInServerException(emote.getEmoteId());
+                throw new EmoteNotInServerException(emote.getEmoteId());
             }
             return message.clearReactions(emoteById).submit();
         } else {
@@ -150,7 +150,7 @@ public class MessageServiceBean implements MessageService {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById == null) {
-                throw new ExceptionNotInServerException(emote.getEmoteId());
+                throw new EmoteNotInServerException(emote.getEmoteId());
             }
             return message.removeReaction(emoteById, member.getUser()).submit();
         } else {

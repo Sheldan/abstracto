@@ -54,6 +54,7 @@ public class AnonReply extends AbstractConditionableCommand {
                 .name("anonReply")
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.moderation.service.WarnService;
@@ -40,7 +40,7 @@ public class DecayAllWarningsTest {
         CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
     }
 
-    @Test(expected = IncorrectParameter.class)
+    @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
         CommandTestUtilities.executeWrongParametersTest(testUnit);
     }

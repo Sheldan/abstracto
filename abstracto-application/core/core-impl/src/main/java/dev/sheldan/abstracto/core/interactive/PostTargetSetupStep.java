@@ -81,7 +81,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                     result = SetupStepResult.fromCancelled();
                 } else {
                     if(message.getMentionedChannels().size() == 0) {
-                        throw new NoChannelProvidedException("No channel was provided.");
+                        throw new NoChannelProvidedException();
                     }
                     TextChannel textChannel = message.getMentionedChannels().get(0);
                     PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig

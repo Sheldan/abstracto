@@ -46,6 +46,7 @@ public class SyncRoles extends AbstractConditionableCommand {
                 .name("syncExpRoles")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

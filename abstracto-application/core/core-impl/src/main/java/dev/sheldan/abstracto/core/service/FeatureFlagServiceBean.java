@@ -47,7 +47,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     public void enableFeature(FeatureConfig name, AServer server) {
         FeatureEnum feature = name.getFeature();
         if(!featureConfigService.doesFeatureExist(name)) {
-            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), featureConfigService.getFeaturesAsList());
+            throw new FeatureNotFoundException(feature.getKey(), featureConfigService.getFeaturesAsList());
         }
         updateFeatureFlag(feature, server, true);
     }
@@ -62,7 +62,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     public void disableFeature(FeatureConfig name, AServer server) {
         FeatureEnum feature = name.getFeature();
         if(!featureConfigService.doesFeatureExist(name)) {
-            throw new FeatureNotFoundException("Feature not found.", feature.getKey(), featureConfigService.getFeaturesAsList());
+            throw new FeatureNotFoundException(feature.getKey(), featureConfigService.getFeaturesAsList());
         }
         updateFeatureFlag(feature, server, false);
     }

@@ -29,12 +29,6 @@ public class SetAssignableRolePosition extends AbstractConditionableCommand {
         String name = (String) parameters.get(0);
         FullEmote emote = (FullEmote) parameters.get(1);
         Integer newPosition = (Integer) parameters.get(2);
-        if(!service.hasAssignableRolePlaceEmote(commandContext.getUserInitiatedContext().getServer(), name, emote.getFakeEmote())) {
-            return CommandResult.fromError("Place does not have emote assigned.");
-        }
-        if(service.isPositionUsed(commandContext.getUserInitiatedContext().getServer(), name, newPosition)) {
-            return CommandResult.fromError("Position is already used");
-        }
         service.setEmoteToPosition(commandContext.getUserInitiatedContext().getServer(), name, emote, newPosition);
         return CommandResult.fromSuccess();
     }
@@ -51,6 +45,7 @@ public class SetAssignableRolePosition extends AbstractConditionableCommand {
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

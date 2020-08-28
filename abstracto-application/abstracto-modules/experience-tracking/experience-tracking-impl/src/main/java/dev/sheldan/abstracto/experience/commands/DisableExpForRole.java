@@ -45,6 +45,7 @@ public class DisableExpForRole extends AbstractConditionableCommand {
                 .name("disableExpForRole")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -65,6 +65,7 @@ public class UserInfo extends AbstractConditionableCommand {
                 .name("userInfo")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)
                 .help(helpInfo)

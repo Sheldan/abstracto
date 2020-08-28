@@ -46,6 +46,7 @@ public class SetEmote extends AbstractConditionableCommand {
                 .name("setEmote")
                 .module(UtilityModuleInterface.UTILITY)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

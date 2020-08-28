@@ -5,15 +5,12 @@ import dev.sheldan.abstracto.templating.Templatable;
 
 public class CommandNotFoundException extends AbstractoRunTimeException implements Templatable {
     public CommandNotFoundException() {
-        super("");
-    }
-    public CommandNotFoundException(String text) {
-        super(text);
+        super("Command not found");
     }
 
     @Override
     public String getTemplateName() {
-        return "command_not_found_exception_text";
+        return "command_not_found_exception";
     }
 
     @Override

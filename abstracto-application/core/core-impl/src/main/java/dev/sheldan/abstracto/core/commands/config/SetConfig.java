@@ -42,6 +42,7 @@ public class SetConfig extends AbstractConditionableCommand {
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
                 .templated(true)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)
                 .build();

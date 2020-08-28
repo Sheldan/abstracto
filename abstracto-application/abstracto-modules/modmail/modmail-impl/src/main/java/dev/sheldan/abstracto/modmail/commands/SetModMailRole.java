@@ -44,6 +44,7 @@ public class SetModMailRole extends AbstractConditionableCommand {
                 .name("setModMailRole")
                 .module(ModMailModuleInterface.MODMAIL)
                 .aliases(aliases)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .templated(true)

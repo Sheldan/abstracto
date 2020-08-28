@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.template;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.modmail.models.database.ModMailRole;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -23,9 +23,9 @@ public class ModMailNotificationModel extends ServerContext {
      */
     private ModMailThread modMailThread;
     /**
-     * The {@link FullUser} for which this thread is about
+     * The {@link FullUserInServer} for which this thread is about
      */
-    private FullUser threadUser;
+    private FullUserInServer threadUser;
     /**
      * A list of roles which will be notified upon creation of the mod mail thread.
      */

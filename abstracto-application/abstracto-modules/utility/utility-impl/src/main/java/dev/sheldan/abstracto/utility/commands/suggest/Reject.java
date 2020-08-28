@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Reject extends AbstractConditionableCommand {
@@ -23,14 +24,14 @@ public class Reject extends AbstractConditionableCommand {
     private SuggestionService suggestionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
         SuggestionLog suggestionModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
-        suggestionService.rejectSuggestion(suggestionId, text, suggestionModel);
-        return CommandResult.fromSuccess();
+        return suggestionService.rejectSuggestion(suggestionId, text, suggestionModel)
+                .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
     @Override
@@ -43,6 +44,8 @@ public class Reject extends AbstractConditionableCommand {
                 .name("reject")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

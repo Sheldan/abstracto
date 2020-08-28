@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameter;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParameters;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,17 +52,17 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
         if(context.getParameters() != null && context.getParameters().getParameters() != null && context.getParameters().getParameters().size() >= i) {
             boolean parameterIsPresent = i < context.getParameters().getParameters().size();
             if(parameterIsPresent && !desiredType.isInstance(context.getParameters().getParameters().get(i))) {
-                throw new IncorrectParameter(this, desiredType, parameter.getName());
+                throw new IncorrectParameterException(this, desiredType, parameter.getName());
             }
         }
     }
 
     private void checkMandatoryExp(CommandContext context, int i, Parameter parameter, Class desiredType) {
         if(context.getParameters() == null || context.getParameters().getParameters() == null || context.getParameters().getParameters().isEmpty() || i >= context.getParameters().getParameters().size()) {
-            throw new InsufficientParameters(this, parameter.getName());
+            throw new InsufficientParametersException(this, parameter.getName());
         }
         if(!desiredType.isInstance(context.getParameters().getParameters().get(i))) {
-            throw new IncorrectParameter(this, desiredType, parameter.getName());
+            throw new IncorrectParameterException(this, desiredType, parameter.getName());
         }
     }
 }

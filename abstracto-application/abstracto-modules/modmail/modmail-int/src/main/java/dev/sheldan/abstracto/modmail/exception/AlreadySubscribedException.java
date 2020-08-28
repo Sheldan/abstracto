@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.templating.Templatable;
  */
 public class AlreadySubscribedException extends AbstractoRunTimeException implements Templatable {
     public AlreadySubscribedException() {
-        super("");
+        super("Already subscribed to mod mail thread");
     }
 
     @Override

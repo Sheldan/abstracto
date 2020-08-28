@@ -3,10 +3,11 @@ package dev.sheldan.abstracto.core.config;
 import dev.sheldan.abstracto.core.interactive.SetupStep;
 import dev.sheldan.abstracto.core.service.FeatureValidator;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-public interface FeatureConfig {
+public interface FeatureConfig extends Serializable {
     FeatureEnum getFeature();
     default List<FeatureConfig> getRequiredFeatures() {
         return Collections.emptyList();

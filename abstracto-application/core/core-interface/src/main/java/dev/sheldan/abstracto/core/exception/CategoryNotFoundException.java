@@ -1,18 +1,15 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.CategoryNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
-
-import java.util.HashMap;
 
 public class CategoryNotFoundException extends AbstractoRunTimeException implements Templatable {
 
-    private final Long categoryId;
-    private final Long guildId;
+    private final CategoryNotFoundExceptionModel model;
 
     public CategoryNotFoundException(Long categoryId, Long guildId) {
-        super("");
-        this.categoryId = categoryId;
-        this.guildId = guildId;
+        super("Category not found");
+        this.model = CategoryNotFoundExceptionModel.builder().categoryId(categoryId).guildId(guildId).build();
     }
 
     @Override
@@ -22,9 +19,6 @@ public class CategoryNotFoundException extends AbstractoRunTimeException impleme
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> param = new HashMap<>();
-        param.put("categoryId", this.categoryId);
-        param.put("guildId", this.guildId);
-        return param;
+        return model;
     }
 }

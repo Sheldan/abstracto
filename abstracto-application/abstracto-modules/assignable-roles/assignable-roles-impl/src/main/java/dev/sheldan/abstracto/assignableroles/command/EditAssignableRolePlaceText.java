@@ -45,6 +45,7 @@ public class EditAssignableRolePlaceText extends AbstractConditionableCommand {
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .async(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
-import dev.sheldan.abstracto.moderation.exception.MuteException;
+import dev.sheldan.abstracto.moderation.exception.MuteRoleNotSetupException;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
@@ -83,13 +83,13 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public Mute muteMember(Member memberToMute, Member mutingMember, String reason, Instant unMuteDate, Message message) {
-        FullUser mutedUser = FullUser
+        FullUserInServer mutedUser = FullUserInServer
                 .builder()
                     .aUserInAServer(userInServerManagementService.loadUser(memberToMute))
                 .member(memberToMute)
                 .build();
 
-        FullUser mutingUser = FullUser
+        FullUserInServer mutingUser = FullUserInServer
                 .builder()
                 .aUserInAServer(userInServerManagementService.loadUser(mutingMember))
                 .member(mutingMember)
@@ -99,13 +99,13 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public Mute muteAUserInAServer(AUserInAServer userBeingMuted, AUserInAServer userMuting, String reason, Instant unMuteDate, Message message) {
-        FullUser mutedUser = FullUser
+        FullUserInServer mutedUser = FullUserInServer
                 .builder()
                 .aUserInAServer(userBeingMuted)
                 .member(botService.getMemberInServer(userBeingMuted))
                 .build();
 
-        FullUser mutingUser = FullUser
+        FullUserInServer mutingUser = FullUserInServer
                 .builder()
                 .aUserInAServer(userMuting)
                 .member(botService.getMemberInServer(userMuting))
@@ -114,11 +114,11 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
-    public Mute muteUser(FullUser userBeingMuted, FullUser userMuting, String reason, Instant unMuteDate, Message message) {
+    public Mute muteUser(FullUserInServer userBeingMuted, FullUserInServer userMuting, String reason, Instant unMuteDate, Message message) {
         AServer serverBeingMutedIn = userBeingMuted.getAUserInAServer().getServerReference();
         if(!muteRoleManagementService.muteRoleForServerExists(serverBeingMutedIn)) {
             log.error("Mute role for server {} has not been setup.", serverBeingMutedIn.getId());
-            throw new MuteException("Mute role for server has not been setup");
+            throw new MuteRoleNotSetupException();
         }
         Member memberBeingMuted = userBeingMuted.getMember();
         log.info("User {} mutes user {} until {}",
@@ -152,7 +152,7 @@ public class MuteServiceBean implements MuteService {
         messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage, textChannel);
     }
 
-    private Mute createMuteObject(FullUser userMuting, String reason, Instant unMuteDate, Message message, AUserInAServer userInServerBeingMuted) {
+    private Mute createMuteObject(FullUserInServer userMuting, String reason, Instant unMuteDate, Message message, AUserInAServer userInServerBeingMuted) {
         AServerAChannelMessage origin = null;
         if(message != null) {
             long channelId = message.getChannel().getIdLong();

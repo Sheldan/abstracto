@@ -49,6 +49,7 @@ public class UserNoteCommand extends AbstractConditionableCommand {
                 .name("userNote")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

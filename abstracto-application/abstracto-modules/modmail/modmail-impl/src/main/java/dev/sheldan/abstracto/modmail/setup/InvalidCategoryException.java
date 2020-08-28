@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.templating.Templatable;
  */
 public class InvalidCategoryException extends AbstractoRunTimeException implements Templatable {
     public InvalidCategoryException() {
-        super("");
+        super("Invalid category given for setup");
     }
 
     @Override

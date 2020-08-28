@@ -72,6 +72,7 @@ public class Enable extends AbstractConditionableCommand {
                 .name("enable")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .templated(true)
                 .help(helpInfo)
                 .causesReaction(true)

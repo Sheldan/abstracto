@@ -1,19 +1,20 @@
 package dev.sheldan.abstracto.assignableroles.models.exception;
 
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.templating.Templatable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
-@Setter
 @Builder
-public class AssignableRolePlaceExceptionModel {
-    private AssignableRolePlace rolePlace;
-    private FullUser user;
-    private Throwable throwable;
+public class AssignableRolePlaceExceptionModel implements Serializable {
+    private final AssignableRolePlace rolePlace;
+    private final FullUserInServer user;
+    private final Throwable throwable;
 
     public Templatable getTemplate() {
         Throwable current = throwable;

@@ -48,6 +48,7 @@ public class DeleteNote extends AbstractConditionableCommand {
                 .name("deleteNote")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

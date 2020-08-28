@@ -45,6 +45,7 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .templated(true)
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .build();
     }

@@ -35,7 +35,7 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
                 .templated(true)
                 .causesReaction(true)
                 .async(true)
-                .reportsException(true)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .build();
     }

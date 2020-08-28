@@ -75,6 +75,7 @@ public class Warnings extends AbstractConditionableCommand {
                 .module(ModerationModule.MODERATION)
                 .templated(true)
                 .causesReaction(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

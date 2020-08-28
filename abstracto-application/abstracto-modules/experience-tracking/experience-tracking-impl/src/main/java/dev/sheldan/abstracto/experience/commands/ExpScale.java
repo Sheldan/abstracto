@@ -48,6 +48,7 @@ public class ExpScale extends AbstractConditionableCommand {
                 .module(ExperienceModule.EXPERIENCE)
                 .causesReaction(true)
                 .templated(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

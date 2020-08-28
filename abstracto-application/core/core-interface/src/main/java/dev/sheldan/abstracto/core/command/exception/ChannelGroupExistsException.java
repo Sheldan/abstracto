@@ -1,17 +1,16 @@
 package dev.sheldan.abstracto.core.command.exception;
 
+import dev.sheldan.abstracto.core.command.models.exception.ChannelGroupExistsExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
-
 public class ChannelGroupExistsException extends AbstractoRunTimeException implements Templatable {
 
-    private String name;
+    private final ChannelGroupExistsExceptionModel model;
 
     public ChannelGroupExistsException(String name) {
-        super("");
-        this.name = name;
+        super("Channel group already exists");
+        this.model = ChannelGroupExistsExceptionModel.builder().name(name).build();
     }
 
     @Override
@@ -21,8 +20,6 @@ public class ChannelGroupExistsException extends AbstractoRunTimeException imple
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, String> param = new HashMap<>();
-        param.put("name", this.name);
-        return param;
+        return model;
     }
 }

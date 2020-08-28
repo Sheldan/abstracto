@@ -7,10 +7,10 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetDisplayModel;
-import dev.sheldan.abstracto.core.models.template.commands.PostTargetErrorModel;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetModelEntry;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -33,7 +33,6 @@ import java.util.Optional;
 public class PostTargetCommand extends AbstractConditionableCommand {
 
     public static final String POST_TARGET_SHOW_TARGETS = "posttarget_show_targets";
-    public static final String POST_TARGET_INVALID_TARGET_TEMPLATE = "posttarget_invalid_target";
 
     @Autowired
     private PostTargetManagement postTargetManagement;
@@ -73,10 +72,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
         }
         String targetName = (String) commandContext.getParameters().getParameters().get(0);
         if(!postTargetService.validPostTarget(targetName)) {
-            PostTargetErrorModel postTargetErrorModel = (PostTargetErrorModel) ContextConverter.fromCommandContext(commandContext, PostTargetErrorModel.class);
-            postTargetErrorModel.setValidPostTargets(postTargetService.getAvailablePostTargets());
-            String errorMessage = templateService.renderTemplate(POST_TARGET_INVALID_TARGET_TEMPLATE, postTargetErrorModel);
-            return CommandResult.fromError(errorMessage);
+            throw new PostTargetNotValidException(targetName, postTargetService.getAvailablePostTargets());
         }
         GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
         Guild guild = channel.getGuild();
@@ -95,6 +91,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
                 .name("posttarget")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

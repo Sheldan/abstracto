@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.models.exception;
 
 import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.templating.Templatable;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class GenericExceptionModel {
-    private FullUser user;
+    private FullUserInServer user;
+    private FullUser fullUser;
     private Throwable throwable;
 
     public Templatable getTemplate() {

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.exception.InsufficientPermissionException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.models.exception.InsufficientPermissionMessage;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
@@ -10,8 +10,11 @@ import dev.sheldan.abstracto.core.command.service.management.CommandManagementSe
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class CommandDisallowedCondition implements CommandCondition {
@@ -41,11 +44,7 @@ public class CommandDisallowedCondition implements CommandCondition {
                 return ConditionResult.builder().result(true).build();
             }
         }
-        InsufficientPermissionMessage insufficientPermissionMessage = InsufficientPermissionMessage
-                .builder()
-                .allowedRoles(roleService.getRolesFromGuild(commandForServer.getAllowedRoles()))
-                .build();
-        String message = templateService.renderTemplate("insufficient_role", insufficientPermissionMessage);
-        return ConditionResult.builder().result(false).reason(message).build();
+        List<Role> allowedRoles = roleService.getRolesFromGuild(commandForServer.getAllowedRoles());
+        throw new InsufficientPermissionException(allowedRoles);
     }
 }

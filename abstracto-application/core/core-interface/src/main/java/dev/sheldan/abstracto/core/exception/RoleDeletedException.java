@@ -1,21 +1,21 @@
 package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
-import dev.sheldan.abstracto.core.models.exception.RoleDeletedModel;
+import dev.sheldan.abstracto.core.models.exception.RoleDeletedExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
 public class RoleDeletedException extends AbstractoRunTimeException implements Templatable {
 
-    private RoleDeletedModel model;
+    private final RoleDeletedExceptionModel model;
 
     public RoleDeletedException(ARole role) {
         super("Role has been marked as deleted and cannot be used.");
-        this.model = RoleDeletedModel.builder().role(role).build();
+        this.model = RoleDeletedExceptionModel.builder().role(role).build();
     }
 
     @Override
     public String getTemplateName() {
-        return "";
+        return "role_disabled_exception";
     }
 
     @Override

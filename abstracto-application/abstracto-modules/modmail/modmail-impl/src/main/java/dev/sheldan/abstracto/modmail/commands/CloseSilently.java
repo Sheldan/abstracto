@@ -58,6 +58,7 @@ public class CloseSilently extends AbstractConditionableCommand {
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

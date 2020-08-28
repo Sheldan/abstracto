@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.converter;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
@@ -22,7 +22,7 @@ public class UserNotesConverter {
     public List<NoteEntryModel> fromNotes(List<UserNote> userNotes){
         List<NoteEntryModel> entryModels = new ArrayList<>();
         userNotes.forEach(userNote -> {
-            FullUser fullUser = FullUser
+            FullUserInServer fullUser = FullUserInServer
                     .builder()
                     .member(botService.getMemberInServer(userNote.getUser()))
                     .aUserInAServer(userNote.getUser())

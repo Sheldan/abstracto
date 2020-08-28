@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -55,7 +55,7 @@ public class UserNotes extends AbstractConditionableCommand {
             Member member = (Member) parameters.get(0);
             AUserInAServer userInAServer = userInServerManagementService.loadUser(member);
             userNotes = userNoteManagementService.loadNotesForUser(userInAServer);
-            FullUser specifiedUser = FullUser
+            FullUserInServer specifiedUser = FullUserInServer
                     .builder()
                     .aUserInAServer(userInAServer)
                     .member(member)
@@ -79,6 +79,7 @@ public class UserNotes extends AbstractConditionableCommand {
                 .name("userNotes")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

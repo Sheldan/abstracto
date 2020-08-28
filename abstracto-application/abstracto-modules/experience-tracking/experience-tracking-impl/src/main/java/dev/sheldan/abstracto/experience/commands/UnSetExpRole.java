@@ -46,6 +46,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
                 .causesReaction(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

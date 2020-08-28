@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -29,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import static org.mockito.Mockito.*;
 
@@ -86,8 +87,8 @@ public class SuggestionServiceBeanTest {
         when(suggestionManagementService.getSuggestion(suggestionId)).thenReturn(Optional.of(createdSuggestion));
         testUnit.createSuggestion(suggestionCreator, suggestionText, log);
         verify(suggestionManagementService, times(1)).setPostedMessage(createdSuggestion, suggestionMessage);
-        verify( messageService, times(1)).addReactionToMessage(SuggestionServiceBean.SUGGESTION_YES_EMOTE, server.getId(), suggestionMessage);
-        verify( messageService, times(1)).addReactionToMessage(SuggestionServiceBean.SUGGESTION_NO_EMOTE, server.getId(), suggestionMessage);
+        verify( messageService, times(1)).addReactionToMessageWithFuture(SuggestionServiceBean.SUGGESTION_YES_EMOTE, server.getId(), suggestionMessage);
+        verify( messageService, times(1)).addReactionToMessageWithFuture(SuggestionServiceBean.SUGGESTION_NO_EMOTE, server.getId(), suggestionMessage);
     }
 
     @Test
@@ -108,7 +109,7 @@ public class SuggestionServiceBeanTest {
         executeAcceptWithMember(null);
     }
 
-    @Test
+    @Test(expected = ChannelNotFoundException.class)
     public void testAcceptSuggestionInNoTextChannel() {
         Long suggestionId = 5L;
         setupForNoTextChannel(suggestionId);
@@ -137,7 +138,7 @@ public class SuggestionServiceBeanTest {
         when(guild.getTextChannelById(channelId)).thenReturn(null);
     }
 
-    @Test
+    @Test(expected = GuildNotFoundException.class)
     public void testAcceptSuggestionInNoGuild() {
         Long suggestionId = 5L;
         setupForNoGuild(suggestionId);
@@ -183,13 +184,13 @@ public class SuggestionServiceBeanTest {
         executeRejectWithMember(null);
     }
 
-    @Test
+    @Test(expected = ChannelNotFoundException.class)
     public void testRejectSuggestionInNoTextChannel() {
         Long suggestionId = setupForNoTextChannel();
         testUnit.rejectSuggestion(suggestionId, CLOSING_TEXT, SuggestionLog.builder().build());
     }
 
-    @Test
+    @Test(expected = GuildNotFoundException.class)
     public void testRejectSuggestionInNoGuild() {
         Long suggestionId = 5L;
         setupForNoGuild(suggestionId);
@@ -225,9 +226,10 @@ public class SuggestionServiceBeanTest {
         Suggestion suggestionToAccept = setupClosing(suggesterMember, suggestionId, channelId, messageId);
         RestAction<Message> retrievalAction = Mockito.mock(RestAction.class);
         when(textChannel.retrieveMessageById(messageId)).thenReturn(retrievalAction);
+        Message suggestionMessage = Mockito.mock(Message.class);
+        when(retrievalAction.submit()).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
         testUnit.acceptSuggestion(suggestionId, CLOSING_TEXT, logParameter);
         verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.ACCEPTED);
-        verify(retrievalAction, times(1)).queue(any(Consumer.class));
     }
 
     private void executeRejectWithMember(Member suggesterMember) {
@@ -238,9 +240,10 @@ public class SuggestionServiceBeanTest {
         Suggestion suggestionToAccept = setupClosing(suggesterMember, suggestionId, channelId, messageId);
         RestAction<Message> retrievalAction = Mockito.mock(RestAction.class);
         when(textChannel.retrieveMessageById(messageId)).thenReturn(retrievalAction);
+        Message suggestionMessage = Mockito.mock(Message.class);
+        when(retrievalAction.submit()).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
         testUnit.rejectSuggestion(suggestionId, CLOSING_TEXT, logParameter);
         verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.REJECTED);
-        verify(retrievalAction, times(1)).queue(any(Consumer.class));
     }
 
     private Suggestion setupClosing(Member suggesterMember, Long suggestionId, Long channelId, Long messageId) {

@@ -39,6 +39,7 @@ public class CreateChannelGroup extends AbstractConditionableCommand {
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
                 .aliases(aliases)
+                .supportsEmbedException(true)
                 .templated(true)
                 .help(helpInfo)
                 .causesReaction(true)

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.exception.ImmuneUserException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.models.exception.UserImmuneMessage;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
@@ -41,17 +41,11 @@ public class ImmuneUserCondition implements CommandCondition {
             Member member = any.get();
             for (ARole role : commandForServer.getImmuneRoles()) {
                 if (roleService.memberHasRole(member, role)) {
-                    UserImmuneMessage userImmuneMessage = UserImmuneMessage
-                            .builder()
-                            .role(roleService.getRoleFromGuild(role))
-                            .build();
-                    String message = templateService.renderTemplate("immune_role", userImmuneMessage);
-                    return ConditionResult.builder().result(false).reason(message).build();
+                    throw new ImmuneUserException(roleService.getRoleFromGuild(role));
                 }
             }
         }
         return ConditionResult.builder().result(true).build();
-
     }
 
     private Member toMember(Object o) {

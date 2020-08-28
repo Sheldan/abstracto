@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.interactive.InteractiveService;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Setup extends AbstractConditionableCommand {
@@ -36,7 +38,7 @@ public class Setup extends AbstractConditionableCommand {
     private SetupService setupService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         if(featureManagementService.featureExists(name)) {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(name);
@@ -46,9 +48,10 @@ public class Setup extends AbstractConditionableCommand {
                     .channelId(commandContext.getChannel().getIdLong())
                     .userId(commandContext.getAuthor().getIdLong())
                     .build();
-            setupService.performSetup(feature, initiatingUser, commandContext.getMessage().getIdLong());
+            return setupService.performSetup(feature, initiatingUser, commandContext.getMessage().getIdLong())
+                    .thenApply(aVoid ->  CommandResult.fromSuccess());
         }
-        return CommandResult.fromSuccess();
+        throw new FeatureNotFoundException(name, featureConfigService.getFeaturesAsList());
     }
 
     @Override
@@ -60,6 +63,8 @@ public class Setup extends AbstractConditionableCommand {
                 .name("setup")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .async(true)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)
                 .build();

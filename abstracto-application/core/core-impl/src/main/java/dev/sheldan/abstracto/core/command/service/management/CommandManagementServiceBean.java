@@ -48,7 +48,7 @@ public class CommandManagementServiceBean implements CommandManagementService {
 
     @Override
     public ACommand findCommandByName(String name) {
-        return findCommandByNameOptional(name).orElseThrow(() -> new CommandNotFoundException(String.format("Command %s was not found.", name)));
+        return findCommandByNameOptional(name).orElseThrow(CommandNotFoundException::new);
     }
 
     @Override

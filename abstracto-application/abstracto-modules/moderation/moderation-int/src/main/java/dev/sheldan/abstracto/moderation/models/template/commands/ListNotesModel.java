@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.models.template.commands;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,5 +13,5 @@ import java.util.List;
 @Setter
 public class ListNotesModel extends UserInitiatedServerContext {
     private List<NoteEntryModel> userNotes;
-    private FullUser specifiedUser;
+    private FullUserInServer specifiedUser;
 }

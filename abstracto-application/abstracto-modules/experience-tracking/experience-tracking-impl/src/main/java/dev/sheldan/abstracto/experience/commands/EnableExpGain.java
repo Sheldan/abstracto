@@ -48,6 +48,7 @@ public class EnableExpGain extends AbstractConditionableCommand {
                 .name("enableExpGain")
                 .module(ExperienceModule.EXPERIENCE)
                 .causesReaction(true)
+                .supportsEmbedException(true)
                 .templated(true)
                 .parameters(parameters)
                 .help(helpInfo)

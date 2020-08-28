@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.converter;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnEntry;
@@ -19,13 +19,13 @@ public class WarnEntryConverter {
     public List<WarnEntry> fromWarnings(List<Warning> warnings) {
         List<WarnEntry> entries = new ArrayList<>();
         warnings.forEach(warning -> {
-            FullUser warnedUser = FullUser
+            FullUserInServer warnedUser = FullUserInServer
                     .builder()
                     .member(botService.getMemberInServer(warning.getWarnedUser()))
                     .aUserInAServer(warning.getWarnedUser())
                     .build();
 
-            FullUser warningUser = FullUser
+            FullUserInServer warningUser = FullUserInServer
                     .builder()
                     .member(botService.getMemberInServer(warning.getWarningUser()))
                     .aUserInAServer(warning.getWarningUser())

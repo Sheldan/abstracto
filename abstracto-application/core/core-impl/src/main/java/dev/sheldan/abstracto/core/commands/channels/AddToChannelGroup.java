@@ -43,6 +43,7 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
                 .module(ChannelsModuleInterface.CHANNELS)
                 .aliases(aliases)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

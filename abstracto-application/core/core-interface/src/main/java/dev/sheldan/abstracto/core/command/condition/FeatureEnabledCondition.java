@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.exception.FeatureDisabledException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.models.exception.FeatureDisabledMessage;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -30,11 +30,7 @@ public class FeatureEnabledCondition implements CommandCondition {
         if(feature != null) {
             featureFlagValue = featureFlagService.getFeatureFlagValue(feature, context.getGuild().getIdLong());
             if(!featureFlagValue) {
-                FeatureDisabledMessage featureDisabledMessage = FeatureDisabledMessage
-                        .builder()
-                        .featureConfig(featureConfigService.getFeatureDisplayForFeature(feature))
-                        .build();
-                reason = templateService.renderTemplate("feature_disabled_message", featureDisabledMessage);
+                throw new FeatureDisabledException(featureConfigService.getFeatureDisplayForFeature(feature));
             }
         }
         return ConditionResult.builder().reason(reason).result(featureFlagValue).build();

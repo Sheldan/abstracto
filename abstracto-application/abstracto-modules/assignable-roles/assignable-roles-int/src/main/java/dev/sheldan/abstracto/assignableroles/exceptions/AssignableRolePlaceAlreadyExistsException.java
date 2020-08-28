@@ -1,16 +1,16 @@
 package dev.sheldan.abstracto.assignableroles.exceptions;
 
-import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRolePlaceAlreadyExistsModel;
+import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRolePlaceAlreadyExistsExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.templating.Templatable;
 
 public class AssignableRolePlaceAlreadyExistsException extends AbstractoRunTimeException implements Templatable {
 
-    private final AssignableRolePlaceAlreadyExistsModel model;
+    private final AssignableRolePlaceAlreadyExistsExceptionModel model;
 
     public AssignableRolePlaceAlreadyExistsException(String name) {
         super("Assignable role place already exists");
-        this.model = AssignableRolePlaceAlreadyExistsModel.builder().name(name).build();
+        this.model = AssignableRolePlaceAlreadyExistsExceptionModel.builder().name(name).build();
     }
 
     @Override

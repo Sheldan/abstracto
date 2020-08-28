@@ -39,6 +39,7 @@ public class ActivateAssignableRolePlace extends AbstractConditionableCommand {
                 .name("activateAssignableRolePlace")
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

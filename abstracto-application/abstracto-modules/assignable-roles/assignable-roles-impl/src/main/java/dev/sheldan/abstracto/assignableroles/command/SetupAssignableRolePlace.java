@@ -47,7 +47,7 @@ public class SetupAssignableRolePlace extends AbstractConditionableCommand {
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .async(true)
-                .reportsException(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

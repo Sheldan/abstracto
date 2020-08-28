@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.templating.Templatable;
 
 public class NoChannelProvidedException extends AbstractoRunTimeException implements Templatable {
-    public NoChannelProvidedException(String message) {
-        super(message);
+    public NoChannelProvidedException() {
+        super("No channel was provided");
     }
 
     @Override

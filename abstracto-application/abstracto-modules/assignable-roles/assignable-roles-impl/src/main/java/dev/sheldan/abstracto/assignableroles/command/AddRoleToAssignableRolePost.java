@@ -62,7 +62,7 @@ public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
                 .templated(true)
                 .causesReaction(true)
                 .async(true)
-                .reportsException(true)
+                .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

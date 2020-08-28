@@ -1,17 +1,17 @@
 package dev.sheldan.abstracto.assignableroles.exceptions;
 
-import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRoleNotUsableModel;
+import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRoleNotUsableExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.templating.Templatable;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class AssignableRoleNotUsableException extends AbstractoRunTimeException implements Templatable {
-    private final AssignableRoleNotUsableModel model;
+    private final AssignableRoleNotUsableExceptionModel model;
 
     public AssignableRoleNotUsableException(FullRole role, Guild guild) {
         super("Role is not usable as assignable role");
-        this.model = AssignableRoleNotUsableModel.builder().role(role).guild(guild).build();
+        this.model = AssignableRoleNotUsableExceptionModel.builder().role(role).guild(guild).build();
     }
 
     @Override

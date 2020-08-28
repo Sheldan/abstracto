@@ -57,6 +57,7 @@ public class Warn extends AbstractConditionableCommand {
                 .name("warn")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

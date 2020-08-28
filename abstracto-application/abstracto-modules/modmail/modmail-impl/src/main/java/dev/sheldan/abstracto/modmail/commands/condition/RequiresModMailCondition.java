@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
+import dev.sheldan.abstracto.modmail.exception.NotInModMailThreadException;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -29,7 +30,6 @@ public class RequiresModMailCondition implements ModMailContextCondition {
         if(thread != null) {
             return ConditionResult.builder().result(true).build();
         }
-        String text = templateService.renderSimpleTemplate("modmail_not_in_modmail_thread");
-        return ConditionResult.builder().result(false).reason(text).build();
+        throw new NotInModMailThreadException();
     }
 }

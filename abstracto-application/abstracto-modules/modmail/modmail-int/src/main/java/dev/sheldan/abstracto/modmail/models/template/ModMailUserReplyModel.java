@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.template;
 
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,9 +17,9 @@ import java.util.List;
 @Builder
 public class ModMailUserReplyModel {
     /**
-     * The {@link FullUser} from which the message is and whose mod mail thread it is
+     * The {@link FullUserInServer} from which the message is and whose mod mail thread it is
      */
-    private FullUser threadUser;
+    private FullUserInServer threadUser;
     /**
      * The {@link Message} which was posted, which contains all the possible information
      */
@@ -29,8 +29,8 @@ public class ModMailUserReplyModel {
      */
     private ModMailThread modMailThread;
     /**
-     * List of {@link FullUser} which are registered as subscribers for a particular mod mail thread and will be pinged
+     * List of {@link FullUserInServer} which are registered as subscribers for a particular mod mail thread and will be pinged
      * when the user sends a new message
      */
-    private List<FullUser> subscribers;
+    private List<FullUserInServer> subscribers;
 }

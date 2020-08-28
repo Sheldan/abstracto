@@ -1,20 +1,14 @@
 package dev.sheldan.abstracto.core.exception;
 
+import dev.sheldan.abstracto.core.models.exception.GuildNotFoundExceptionModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
-import java.util.HashMap;
-
 public class GuildNotFoundException extends AbstractoRunTimeException implements Templatable {
-    private final Long guildId;
-
-    public GuildNotFoundException(String message, Long guildId) {
-        super(message);
-        this.guildId = guildId;
-    }
+    private final GuildNotFoundExceptionModel model;
 
     public GuildNotFoundException(Long guildId) {
-        super("");
-        this.guildId = guildId;
+        super("Guild not found");
+        this.model = GuildNotFoundExceptionModel.builder().guildId(guildId).build();
     }
 
     @Override
@@ -24,8 +18,6 @@ public class GuildNotFoundException extends AbstractoRunTimeException implements
 
     @Override
     public Object getTemplateModel() {
-        HashMap<String, Long> param = new HashMap<>();
-        param.put("guildId", this.guildId);
-        return param;
+        return model;
     }
 }

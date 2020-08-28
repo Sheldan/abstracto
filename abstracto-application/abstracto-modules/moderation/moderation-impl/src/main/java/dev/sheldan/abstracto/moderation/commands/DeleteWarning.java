@@ -48,6 +48,7 @@ public class DeleteWarning extends AbstractConditionableCommand {
                 .name("deleteWarning")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .aliases(aliases)
                 .causesReaction(true)
                 .parameters(parameters)

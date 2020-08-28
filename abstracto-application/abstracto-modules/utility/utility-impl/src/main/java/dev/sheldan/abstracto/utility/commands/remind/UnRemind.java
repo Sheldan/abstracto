@@ -41,6 +41,7 @@ public class UnRemind extends AbstractConditionableCommand {
                 .name("unRemind")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

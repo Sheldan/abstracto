@@ -37,6 +37,7 @@ public class SetPrefix extends AbstractConditionableCommand {
                 .name("setPrefix")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

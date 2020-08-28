@@ -52,6 +52,7 @@ public class BanId extends AbstractConditionableCommand {
                 .name("banId")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -53,6 +53,7 @@ public class Reply extends AbstractConditionableCommand {
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)
+                .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

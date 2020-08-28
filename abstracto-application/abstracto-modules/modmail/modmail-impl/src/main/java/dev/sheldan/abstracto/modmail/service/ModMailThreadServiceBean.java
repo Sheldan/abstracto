@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.FullGuild;
-import dev.sheldan.abstracto.core.models.FullUser;
+import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.*;
@@ -130,7 +130,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
 
     @Override
-    public void createModMailThreadForUser(FullUser aUserInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated) {
+    public void createModMailThreadForUser(FullUserInServer aUserInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated) {
         Long serverId = aUserInAServer.getAUserInAServer().getServerReference().getId();
         Long categoryId = configService.getLongValue(MODMAIL_CATEGORY, serverId);
         User user = aUserInAServer.getMember().getUser();
@@ -151,14 +151,14 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     /**
      * this method is responsible for creating the instance in the database, sending the header in the newly created text channel and forwarding the initial message
      * by the user (if any), after this is complete, this method executes the method to perform the mod mail notification.
-     * @param aUserInAServer The {@link FullUser} for which a {@link ModMailThread} is being created
+     * @param aUserInAServer The {@link FullUserInServer} for which a {@link ModMailThread} is being created
      * @param initialMessage The {@link Message} which was sent by the user to open a thread, this is null, if the thread was opened via a command
      * @param channel The created {@link TextChannel} in which the mod mail thread is dealt with
      * @param userInitiated Whether or not the thread was initiated by a member
      * @param undoActions The list of actions to undo, in case an exception occurs
      */
     @Transactional
-    public void performModMailThreadSetup(FullUser aUserInAServer, Message initialMessage, TextChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions) {
+    public void performModMailThreadSetup(FullUserInServer aUserInAServer, Message initialMessage, TextChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions) {
         try {
             ModMailThread thread = createThreadObject(channel, aUserInAServer);
             sendModMailHeader(channel, aUserInAServer, undoActions);
@@ -181,12 +181,12 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     /**
      * Sends the message containing the pings to notify the staff members to handle the opened {@link ModMailThread}
-     * @param aUserInAServer The {@link FullUser} which opened the thread
+     * @param aUserInAServer The {@link FullUserInServer} which opened the thread
      * @param thread The {@link ModMailThread} instance which was created
      * @param undoActions The list of {@link UndoActionInstance} to perform, in case an exception occurs
      */
     @Transactional
-    public void sendModMailNotification(FullUser aUserInAServer, ModMailThread thread, List<UndoActionInstance> undoActions) {
+    public void sendModMailNotification(FullUserInServer aUserInAServer, ModMailThread thread, List<UndoActionInstance> undoActions) {
         List<ModMailRole> rolesToPing = modMailRoleManagementService.getRolesForServer(thread.getServer());
         ModMailNotificationModel modMailNotificationModel = ModMailNotificationModel
                 .builder()
@@ -207,10 +207,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     /**
      * Creates the instance of the {@link ModMailThread} in the database.
      * @param channel The {@link TextChannel} in which the {@link ModMailThread} is being done
-     * @param user The {@link FullUser} which the thread is about
+     * @param user The {@link FullUserInServer} which the thread is about
      * @return The created instance of {@link ModMailThread}
      */
-    public ModMailThread createThreadObject(TextChannel channel, FullUser user) {
+    public ModMailThread createThreadObject(TextChannel channel, FullUserInServer user) {
         AChannel channel2 = channelManagementService.createChannel(channel.getIdLong(), AChannelType.TEXT, user.getAUserInAServer().getServerReference());
         log.info("Creating mod mail thread in channel {} with db channel {}", channel.getIdLong(), channel2.getId());
         return modMailThreadManagementService.createModMailThread(user.getAUserInAServer(), channel2);
@@ -265,7 +265,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         .setAction(reactionEmote -> {
                             AUserInAServer chosenServer = choices.get(reactionEmote.getEmoji());
                             Member memberInServer = botService.getMemberInServer(chosenServer);
-                            FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
+                            FullUserInServer fullUser = FullUserInServer.builder().member(memberInServer).aUserInAServer(chosenServer).build();
                             self.createModMailThreadForUser(fullUser, initialMessage, initialMessage.getChannel(), true);
                         })
                         .build();
@@ -274,7 +274,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 // if exactly one server is available, open the thread directly
                 AUserInAServer chosenServer = choices.get(availableGuilds.get(0).getReactionEmote());
                 Member memberInServer = botService.getMemberInServer(chosenServer);
-                FullUser fullUser = FullUser.builder().member(memberInServer).aUserInAServer(chosenServer).build();
+                FullUserInServer fullUser = FullUserInServer.builder().member(memberInServer).aUserInAServer(chosenServer).build();
                 self.createModMailThreadForUser(fullUser, initialMessage, initialMessage.getChannel(), true);
             } else {
                 // in case there is no server available, send an error message
@@ -293,7 +293,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param aUserInAServer The {@link AUserInAServer} which the {@link ModMailThread} is about
      * @param undoActions The list of {@link UndoActionInstance} to execute in case an exception occurs
      */
-    private void sendModMailHeader(TextChannel channel, FullUser aUserInAServer, List<UndoActionInstance> undoActions) {
+    private void sendModMailHeader(TextChannel channel, FullUserInServer aUserInAServer, List<UndoActionInstance> undoActions) {
         ModMailThread latestThread = modMailThreadManagementService.getLatestModMailThread(aUserInAServer.getAUserInAServer());
         List<ModMailThread> oldThreads = modMailThreadManagementService.getModMailThreadForUser(aUserInAServer.getAUserInAServer());
         ModMailThreaderHeader header = ModMailThreaderHeader
@@ -320,8 +320,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         } else {
             // in this case there was no text channel on the server associated with the mod mail thread
             // close the existing one, so the user can start a new one
-            message.getChannel().sendMessage(templateService.renderTemplate("modmail_failed_to_forward_message", new Object())).queue();
             self.closeModMailThreadInDb(modMailThread.getId());
+            message.getChannel().sendMessage(templateService.renderTemplate("modmail_failed_to_forward_message", new Object())).queue();
         }
     }
 
@@ -336,16 +336,16 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      */
     public CompletableFuture<Void> sendUserReply(TextChannel textChannel, ModMailThread modMailThread, Message message) {
         Long modMailThreadId = modMailThread.getId();
-        FullUser fullUser = FullUser
+        FullUserInServer fullUser = FullUserInServer
                 .builder()
                 .aUserInAServer(modMailThread.getUser())
                 .member(botService.getMemberInServer(modMailThread.getUser()))
                 .build();
 
-        List<FullUser> subscribers = new ArrayList<>();
+        List<FullUserInServer> subscribers = new ArrayList<>();
         List<ModMailThreadSubscriber> subscriberList = modMailSubscriberManagementService.getSubscribersForThread(modMailThread);
         subscriberList.forEach(modMailThreadSubscriber -> {
-            FullUser subscriber = FullUser
+            FullUserInServer subscriber = FullUserInServer
                     .builder()
                     .aUserInAServer(modMailThreadSubscriber.getSubscriber())
                     .member(botService.getMemberInServer(modMailThreadSubscriber.getSubscriber()))
@@ -431,7 +431,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         if(modMailThreadOpt.isPresent()) {
             ModMailThread modMailThread = modMailThreadOpt.get();
             try {
-                FullUser fullUser = FullUser
+                FullUserInServer fullUser = FullUserInServer
                         .builder()
                         .aUserInAServer(aUserInAServer)
                         .member(botService.getMemberInServer(aUserInAServer))
@@ -745,7 +745,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             ModMailThread modMailThread = modMailThreadOpt.get();
             AUserInAServer moderator = userInServerManagementService.loadUser(message.getMember());
             Member userInGuild = botService.getMemberInServer(modMailThread.getUser());
-            FullUser fullThreadUser = FullUser
+            FullUserInServer fullThreadUser = FullUserInServer
                     .builder()
                     .aUserInAServer(modMailThread.getUser())
                     .member(userInGuild)
