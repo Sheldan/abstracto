@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.service.StarboardService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class StarStats extends AbstractConditionableCommand {
@@ -30,10 +32,10 @@ public class StarStats extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         StarStatsModel result = starboardService.retrieveStarStats(commandContext.getGuild().getIdLong());
-        channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, result, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, result, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -44,6 +46,7 @@ public class StarStats extends AbstractConditionableCommand {
                 .name("starStats")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

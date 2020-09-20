@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class DecayAllWarnings extends AbstractConditionableCommand {
@@ -23,12 +24,12 @@ public class DecayAllWarnings extends AbstractConditionableCommand {
     private WarnService warnService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         boolean logWarnings = !parameters.isEmpty() ? (Boolean) parameters.get(0) : Boolean.FALSE;
-        warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer(), logWarnings);
-        return CommandResult.fromSuccess();
+        return warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer(), logWarnings)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -41,6 +42,7 @@ public class DecayAllWarnings extends AbstractConditionableCommand {
                 .name("decayAllWarnings")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

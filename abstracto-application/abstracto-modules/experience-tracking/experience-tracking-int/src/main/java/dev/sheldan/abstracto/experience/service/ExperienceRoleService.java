@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Service providing several methods surrounding {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}.
@@ -19,22 +20,22 @@ public interface ExperienceRoleService {
      * @param role The {@link ARole} to set the level to
      * @param level The level the {@link ARole} should be awarded at
      */
-    void setRoleToLevel(ARole role, Integer level, AChannel channel);
+    CompletableFuture<Void> setRoleToLevel(ARole role, Integer level, AChannel channel);
 
     /**
      * Removes the role from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole} configuration
      * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}
      *             configuration
      */
-    void unsetRole(ARole role, AChannel feedbackChannel);
+    CompletableFuture<Void> unsetRole(ARole role, AChannel feedbackChannel);
 
     /**
      * Calculates the appropriate {@link AExperienceRole} based on the provided list of {@link AExperienceRole}
-     * @param userExperience The {@link AUserExperience} containing the level to calculate the {@link AExperienceRole}
      * @param roles The role configuration to be used when calculating the appropriate {@link AExperienceRole}
+     * @param currentLevel
      * @return The best matching {@link AExperienceRole} according to the experience in the provided {@link AUserExperience}
      */
-    AExperienceRole calculateRole(AUserExperience userExperience, List<AExperienceRole> roles);
+    AExperienceRole calculateRole(List<AExperienceRole> roles, Integer currentLevel);
 
     /**
      * Calculates the level at which the next role for a given level is available.

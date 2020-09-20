@@ -4,9 +4,10 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 public interface SlowModeService {
-    void setSlowMode(TextChannel channel, Duration duration);
-    void disableSlowMode(TextChannel channel);
-    void setSlowMode(AChannel channel, Duration duration);
+    CompletableFuture<Void> setSlowMode(TextChannel channel, Duration duration);
+    CompletableFuture<Void> disableSlowMode(TextChannel channel);
+    CompletableFuture<Void> setSlowMode(AChannel channel, Duration duration);
 }

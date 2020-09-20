@@ -23,8 +23,8 @@ public class CommandDisabledCondition implements CommandCondition {
         ACommand acommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
         Boolean booleanResult = channelGroupCommandService.isCommandEnabled(acommand, context.getUserInitiatedContext().getChannel());
         if(!booleanResult) {
-            throw new CommandDisabledException();
+            return ConditionResult.builder().result(true).exception(new CommandDisabledException()).build();
         }
-        return ConditionResult.builder().result(booleanResult).reason("Command is disabled.").build();
+        return ConditionResult.builder().result(true).reason("Command is disabled.").build();
     }
 }

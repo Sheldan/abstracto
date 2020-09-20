@@ -90,6 +90,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
                 .author(event.getMember())
                 .guild(event.getGuild())
+                .undoActions(new ArrayList<>())
                 .channel(event.getTextChannel())
                 .message(event.getMessage())
                 .jda(event.getJDA())
@@ -130,6 +131,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                                 .channel(event.getTextChannel())
                                 .message(event.getMessage())
                                 .jda(event.getJDA())
+                                .undoActions(commandContext.getUndoActions()) // TODO really do this? it would need to guarantee that its available and usable
                                 .userInitiatedContext(rebuildUserContext)
                                 .parameters(parsedParameters).build();
                         CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
@@ -140,7 +142,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     commandResult = self.executeCommand(foundCommand, commandContext);
                 }
             } else {
-                commandResult = CommandResult.fromCondition(conditionResult);
+                // TODO can it be done nicer?
+                if(conditionResult.getException() != null) {
+                    throw conditionResult.getException();
+                }
             }
             if(commandResult != null) {
                 self.executePostCommandListener(foundCommand, commandContext, commandResult);

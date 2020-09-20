@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -48,6 +49,7 @@ public class BanServiceBeanTest {
         when(memberToBan.getGuild()).thenReturn(mockedGuild);
         when(mockedGuild.getIdLong()).thenReturn(serverId);
         AuditableRestAction mockedAction = mock(AuditableRestAction.class);
+        when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
         when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
@@ -64,6 +66,7 @@ public class BanServiceBeanTest {
         ServerContext context = Mockito.mock(ServerContext.class);
         Guild mockedGuild = Mockito.mock(Guild.class);
         AuditableRestAction mockedAction = mock(AuditableRestAction.class);
+        when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
         when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(BanServiceBean.BAN_ID_LOG_TEMPLATE, context)).thenReturn(mockedMessage);

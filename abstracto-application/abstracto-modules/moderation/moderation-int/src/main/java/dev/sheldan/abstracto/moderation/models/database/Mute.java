@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.moderation.models.database;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import lombok.*;
 
 import javax.persistence.*;
@@ -24,9 +25,13 @@ public class Mute {
     /**
      * The globally unique id of the mute.
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private ServerSpecificId muteId;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @MapsId("serverId")
+    @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
+    private AServer server;
 
     /**
      * The {@link AUserInAServer} which was muted
@@ -69,13 +74,6 @@ public class Mute {
     private Long messageId;
 
     /**
-     * The {@link AServer} in which this mute was cast
-     */
-    @ManyToOne
-    @JoinColumn(name = "mutingServer", nullable = false)
-    private AServer mutingServer;
-
-    /**
      * The channel in which this mute was cast
      */
     @ManyToOne
@@ -109,7 +107,7 @@ public class Mute {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Mute mute = (Mute) o;
-        return Objects.equals(id, mute.id) &&
+        return Objects.equals(muteId, mute.muteId) &&
                 Objects.equals(mutedUser, mute.mutedUser) &&
                 Objects.equals(mutingUser, mute.mutingUser) &&
                 Objects.equals(reason, mute.reason) &&
@@ -117,13 +115,13 @@ public class Mute {
                 Objects.equals(muteTargetDate, mute.muteTargetDate) &&
                 Objects.equals(muteEnded, mute.muteEnded) &&
                 Objects.equals(messageId, mute.messageId) &&
-                Objects.equals(mutingServer, mute.mutingServer) &&
+                Objects.equals(server, mute.server) &&
                 Objects.equals(mutingChannel, mute.mutingChannel) &&
                 Objects.equals(triggerKey, mute.triggerKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, mutedUser, mutingUser, reason, muteDate, muteTargetDate, muteEnded, messageId, mutingServer, mutingChannel, triggerKey);
+        return Objects.hash(muteId, mutedUser, mutingUser, reason, muteDate, muteTargetDate, muteEnded, messageId, server, mutingChannel, triggerKey);
     }
 }

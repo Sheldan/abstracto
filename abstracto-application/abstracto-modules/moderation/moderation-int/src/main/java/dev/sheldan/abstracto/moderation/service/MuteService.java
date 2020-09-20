@@ -1,24 +1,26 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.FullUserInServer;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
-import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
+import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
 
 public interface MuteService {
-    Mute muteMember(Member memberToMute, Member userMuting, String reason, Instant unMuteDate, Message message);
-    Mute muteAUserInAServer(AUserInAServer member, AUserInAServer userMuting, String reason, Instant unMuteDate, Message message);
-    Mute muteUser(FullUserInServer userToMute, FullUserInServer userMuting, String reason, Instant unMuteDate, Message message);
-    void applyMuteRole(AUserInAServer aUserInAServer);
-    void muteMemberWithLog(Member memberToMute, Member memberMuting, String reason, Instant unMuteDate, MuteLog log, Message message);
-    String startUnMuteJobFor(Instant unMuteDate, Mute mute);
+    CompletableFuture<Void> muteMember(Member memberToMute, Member userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
+    CompletableFuture<Void> muteAUserInAServer(AUserInAServer member, AUserInAServer userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
+    CompletableFuture<Void> muteUserInServer(FullUserInServer userToMute, FullUserInServer userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
+    CompletableFuture<Void> applyMuteRole(AUserInAServer aUserInAServer);
+    CompletableFuture<Void> muteMemberWithLog(MuteContext context);
+    String startUnMuteJobFor(Instant unMuteDate, Long muteId, Long serverId);
     void cancelUnMuteJob(Mute mute);
-    void unMuteUser(Mute mute);
-    void endMute(Long muteId);
+    CompletableFuture<Void> unMuteUser(AUserInAServer aUserInAServer);
+    CompletableFuture<Void> endMute(Mute mute);
+    CompletableFuture<Void> endMute(Long muteId, Long serverId);
     void completelyUnMuteUser(AUserInAServer aUserInAServer);
     void completelyUnMuteMember(Member member);
 }

@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.RemindersModel;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Reminders extends AbstractConditionableCommand {
@@ -30,12 +32,12 @@ public class Reminders extends AbstractConditionableCommand {
 
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
         RemindersModel model = (RemindersModel) ContextConverter.fromCommandContext(commandContext, RemindersModel.class);
         model.setReminders(activeReminders);
-        channelService.sendEmbedTemplateInChannel(REMINDERS_RESPONSE_TEMPLATE, model, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REMINDERS_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -43,6 +45,7 @@ public class Reminders extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("reminders")
+                .async(true)
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .supportsEmbedException(true)

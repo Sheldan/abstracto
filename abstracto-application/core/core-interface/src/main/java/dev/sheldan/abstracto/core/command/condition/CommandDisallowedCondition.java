@@ -45,6 +45,7 @@ public class CommandDisallowedCondition implements CommandCondition {
             }
         }
         List<Role> allowedRoles = roleService.getRolesFromGuild(commandForServer.getAllowedRoles());
-        throw new InsufficientPermissionException(allowedRoles);
+        InsufficientPermissionException exception = new InsufficientPermissionException(allowedRoles);
+        return ConditionResult.builder().result(false).exception(exception).build();
     }
 }

@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnLog;
+import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -32,19 +33,17 @@ public class Warn extends AbstractConditionableCommand {
     private TemplateService templateService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderSimpleTemplate(WARN_DEFAULT_REASON_TEMPLATE);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
-        WarnLog warnLogModel = (WarnLog) ContextConverter.fromCommandContext(commandContext, WarnLog.class);
-        warnLogModel.setWarnedUser(member);
-        warnLogModel.setMessage(commandContext.getMessage());
+        WarnContext warnLogModel =  (WarnContext) ContextConverter.slimFromCommandContext(commandContext, WarnContext.class);
         warnLogModel.setReason(reason);
-        warnLogModel.setWarningUser(commandContext.getAuthor());
-        warnService.warnUserWithLog(member, commandContext.getAuthor(), reason, warnLogModel, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        warnLogModel.setWarnedMember(member);
+        return warnService.warnUserWithLog(warnLogModel)
+                .thenApply(warning -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -57,6 +56,7 @@ public class Warn extends AbstractConditionableCommand {
                 .name("warn")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

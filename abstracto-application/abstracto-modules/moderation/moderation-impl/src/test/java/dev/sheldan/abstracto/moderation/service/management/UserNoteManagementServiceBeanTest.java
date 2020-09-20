@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.CounterService;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
 import dev.sheldan.abstracto.test.MockUtils;
@@ -26,6 +27,9 @@ public class UserNoteManagementServiceBeanTest {
 
     @Mock
     private UserNoteRepository userNoteRepository;
+
+    @Mock
+    private CounterService counterService;
 
     private static final String NOTE_TEXT = "noteText";
     private static final Long NOTE_ID = 5L;

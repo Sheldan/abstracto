@@ -3,15 +3,19 @@ package dev.sheldan.abstracto.experience.service;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 
 import java.util.Map;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Service providing the required mechanisms to provide experience tracking.
@@ -36,21 +40,22 @@ public interface AUserExperienceService {
     /**
      * Calculates the appropriate level of the given {@link AUserExperience} according to the given {@link AExperienceLevel}
      * configuration.
-     * @param experience The {@link AUserExperience} to calculate the level for
      * @param levels The list of {@link AExperienceLevel} representing the level configuration, this must include the initial level 0
      *               This level will be taken as the initial value, and if no other level qualifies, this will be taken. The levels must be ordered.
+     * @param experienceCount
      * @return The appropriate level of {@link AUserExperience} according to the provided {@link AExperienceLevel} configuration
      */
-    AExperienceLevel calculateLevel(AUserExperience experience, List<AExperienceLevel> levels);
+    AExperienceLevel calculateLevel(List<AExperienceLevel> levels, Long experienceCount);
 
     /**
      * Calculates the new level of the provided {@link AUserExperience} according
      * to the provided list of {@link AExperienceLevel} used as level configuration
      * @param userExperience The {@link AUserExperience} to increase the experience for
      * @param levels The list of {@link AExperienceLevel} to be used as level configuration
+     * @param experienceCount
      * @return Whether or not the user changed level
      */
-    boolean updateUserLevel(AUserExperience userExperience, List<AExperienceLevel> levels);
+    boolean updateUserLevel(AUserExperience userExperience, List<AExperienceLevel> levels, Long experienceCount);
 
     /**
      * Iterates through the given list of {@link AServer} and increases the experience of the users contained in the
@@ -59,7 +64,7 @@ public interface AUserExperienceService {
      * of each user by 1.
      * @param serverExp The list of {@link AServer} containing the users which get experience
      */
-    void handleExperienceGain(List<AServer> serverExp);
+    CompletableFuture<Void> handleExperienceGain(List<AServer> serverExp);
 
     /**
      * Calculates the currently appropriate {@link AExperienceRole} for the given user and updates the role on the
@@ -68,7 +73,7 @@ public interface AUserExperienceService {
      * @param userExperience The {@link AUserExperience} object to recalculate the {@link AExperienceRole} for
      * @param roles The list of {@link AExperienceRole} used as a role configuration
      */
-    void updateUserRole(AUserExperience userExperience, List<AExperienceRole> roles);
+    CompletableFuture<RoleCalculationResult> updateUserRole(AUserExperience userExperience, List<AExperienceRole> roles, Integer currentLevel);
 
 
     /**
@@ -78,7 +83,7 @@ public interface AUserExperienceService {
      * to how much experience the user has. Runs completely in the background.
      * @param server The {@link AServer} to update the users for
      */
-    void syncUserRoles(AServer server);
+    List<CompletableFuture<RoleCalculationResult>> syncUserRoles(AServer server);
 
     /**
      * Synchronizes the state ({@link AExperienceRole}, {@link net.dv8tion.jda.api.entities.Role})
@@ -90,14 +95,14 @@ public interface AUserExperienceService {
      * @param channel The {@link AChannel} in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel}
      *                should be posted to
      */
-    void syncUserRolesWithFeedback(AServer server, AChannel channel);
+    CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, AChannel channel);
 
     /**
      * Recalculates the role of a single user in a server and synchronize the {@link net.dv8tion.jda.api.entities.Role}
      * in the {@link net.dv8tion.jda.api.entities.Guild}
      * @param userExperience The {@link AUserExperience} to synchronize the role for
      */
-    void syncForSingleUser(AUserExperience userExperience);
+    CompletableFuture<RoleCalculationResult> syncForSingleUser(AUserExperience userExperience);
 
     /**
      * Loads the desired page of the ordered complete leaderboard from the {@link AServer} and returns the information as a {@link LeaderBoard}
@@ -125,7 +130,7 @@ public interface AUserExperienceService {
      * @param channel The {@link AChannel} used to provide feedback to the user
      * @param toExecute The {@link Consumer} which should be executed on each element of the passed list
      */
-    void executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Consumer<AUserExperience> toExecute);
+    CompletableFutureList<RoleCalculationResult> executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Function<AUserExperience, CompletableFuture<RoleCalculationResult>> toExecute);
 
     /**
      * Disables the experience gain for a user directly. This sets the `experienceGainDisabled` on the respective {@link AUserExperience} object to true
@@ -138,4 +143,6 @@ public interface AUserExperienceService {
      * @param userInAServer The {@link AUserInAServer} to enable experience for
      */
     void enableExperienceForUser(AUserInAServer userInAServer);
+
+    void syncRolesInStorage(List<RoleCalculationResult> results);
 }

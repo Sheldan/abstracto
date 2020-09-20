@@ -43,7 +43,7 @@ public class WarnManagementServiceBeanTest {
     public void testCreateWarning() {
         AUserInAServer warningUser = MockUtils.getUserObject(7L, server);
         String reason = "REASON";
-        Warning warning = testUnit.createWarning(warnedUser, warningUser, reason);
+        Warning warning = testUnit.createWarning(warnedUser, warningUser, reason, 8L);
         Assert.assertEquals(warningUser, warning.getWarningUser());
         Assert.assertEquals(warnedUser, warning.getWarnedUser());
         Assert.assertEquals(reason, warning.getReason());
@@ -95,9 +95,10 @@ public class WarnManagementServiceBeanTest {
     @Test
     public void testFindByIdExisting() {
         Long warnId = 6L;
+        Long serverId = 8L;
         Warning existingWarning = getWarning();
-        when(warnRepository.findById(warnId)).thenReturn(Optional.ofNullable(existingWarning));
-        Optional<Warning> warningOptional = testUnit.findById(warnId);
+        when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, serverId)).thenReturn(Optional.ofNullable(existingWarning));
+        Optional<Warning> warningOptional = testUnit.findById(warnId, serverId);
         Assert.assertTrue(warningOptional.isPresent());
         warningOptional.ifPresent(foundWarning -> Assert.assertEquals(existingWarning, foundWarning));
     }
@@ -105,8 +106,9 @@ public class WarnManagementServiceBeanTest {
     @Test
     public void testFindByIdNotExisting() {
         Long warnId = 6L;
-        when(warnRepository.findById(warnId)).thenReturn(Optional.ofNullable(null));
-        Optional<Warning> warningOptional = testUnit.findById(warnId);
+        Long serverId = 8L;
+        when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, serverId)).thenReturn(Optional.ofNullable(null));
+        Optional<Warning> warningOptional = testUnit.findById(warnId, serverId);
         Assert.assertFalse(warningOptional.isPresent());
     }
 

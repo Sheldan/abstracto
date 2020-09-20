@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.CounterService;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +17,20 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     @Autowired
     private UserNoteRepository userNoteRepository;
 
+    @Autowired
+    private CounterService counterService;
+
+    public static final String USER_NOTE_COUNTER_KEY = "USER_NOTES";
+
     @Override
     public UserNote createUserNote(AUserInAServer aUserInAServer, String note) {
+        Long id = counterService.getNextCounterValue(aUserInAServer.getServerReference(), USER_NOTE_COUNTER_KEY);
+        ServerSpecificId userNoteId = new ServerSpecificId(aUserInAServer.getServerReference().getId(), id);
         UserNote newNote = UserNote
                 .builder()
                 .note(note)
+                .userNoteId(userNoteId)
+                .server(aUserInAServer.getServerReference())
                 .user(aUserInAServer)
                 .build();
         userNoteRepository.save(newNote);

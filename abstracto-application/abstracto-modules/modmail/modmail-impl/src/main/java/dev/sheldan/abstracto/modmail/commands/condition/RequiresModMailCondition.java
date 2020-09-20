@@ -30,6 +30,6 @@ public class RequiresModMailCondition implements ModMailContextCondition {
         if(thread != null) {
             return ConditionResult.builder().result(true).build();
         }
-        throw new NotInModMailThreadException();
+        return ConditionResult.builder().result(false).exception(new NotInModMailThreadException()).build();
     }
 }

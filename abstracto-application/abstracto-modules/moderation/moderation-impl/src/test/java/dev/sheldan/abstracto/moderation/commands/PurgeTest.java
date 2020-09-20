@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParametersExcept
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
-import dev.sheldan.abstracto.core.utils.ExceptionUtils;
 import dev.sheldan.abstracto.moderation.service.PurgeService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
@@ -36,17 +35,13 @@ public class PurgeTest {
     @Mock
     private TemplateService templateService;
 
-    @Mock
-    private ExceptionUtils exceptionUtils;
-
     @Test
     public void testExecutePurgeOfNoMemberCommand() {
         Integer count = 10;
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(count));
         when(purgeService.purgeMessagesInChannel(count, parameters.getChannel(), parameters.getMessage(), null)).thenReturn(CompletableFuture.completedFuture(null));
-        CommandResult result = testUnit.execute(parameters);
-        verify(exceptionUtils, times(1)).handleExceptionIfTemplatable(null, parameters.getChannel());
-        Assert.assertEquals(ResultState.SELF_DESTRUCT, result.getResult());
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        Assert.assertEquals(ResultState.SELF_DESTRUCT, result.join().getResult());
     }
 
     @Test
@@ -55,33 +50,18 @@ public class PurgeTest {
         Integer count = 10;
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(count, messageAuthor));
         when(purgeService.purgeMessagesInChannel(count, parameters.getChannel(), parameters.getMessage(), messageAuthor)).thenReturn(CompletableFuture.completedFuture(null));
-        CommandResult result = testUnit.execute(parameters);
-        verify(exceptionUtils, times(1)).handleExceptionIfTemplatable(null, parameters.getChannel());
-        Assert.assertEquals(ResultState.SELF_DESTRUCT, result.getResult());
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        Assert.assertEquals(ResultState.SELF_DESTRUCT, result.join().getResult());
     }
-
-    @Test
-    public void testExecutePurgeErroneousCommand() {
-        Integer count = 10;
-        CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(count));
-        CompletableFuture<Void> failingFuture = new CompletableFuture<>();
-        RuntimeException exception = new RuntimeException();
-        failingFuture.completeExceptionally(exception);
-        when(purgeService.purgeMessagesInChannel(count, parameters.getChannel(), parameters.getMessage(), null)).thenReturn(failingFuture);
-        CommandResult result = testUnit.execute(parameters);
-        verify(exceptionUtils, times(1)).handleExceptionIfTemplatable(eq(exception), eq(parameters.getChannel()));
-        Assert.assertEquals(ResultState.SELF_DESTRUCT, result.getResult());
-    }
-
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

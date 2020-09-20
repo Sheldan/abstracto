@@ -8,8 +8,10 @@ import dev.sheldan.abstracto.assignableroles.repository.AssignableRoleRepository
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import net.dv8tion.jda.api.entities.MessageReaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,9 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
 
     @Autowired
     private AssignableRoleRepository repository;
+
+    @Autowired
+    private EmoteService emoteService;
 
     @Override
     public AssignableRole addRoleToPlace(AssignableRolePlace place, AEmote emote, ARole role, String description, AssignableRolePlacePost post) {
@@ -53,7 +58,7 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
 
     @Override
     public AssignableRole addRoleToPlace(Long placeId, Integer emoteId, Long roleId, String description, Long messageId) {
-        AssignableRolePlace place = rolePlaceManagementService.findByPlaceId(placeId).orElseThrow(() -> new AssignableRolePlaceNotFoundException(placeId));
+        AssignableRolePlace place = rolePlaceManagementService.findByPlaceIdOptional(placeId).orElseThrow(() -> new AssignableRolePlaceNotFoundException(placeId));
         AEmote emote = emoteManagementService.loadEmote(emoteId);
         ARole role = roleManagementService.findRole(roleId);
         AssignableRolePlacePost post = postManagementService.findByMessageId(messageId);
@@ -64,7 +69,7 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
 
     @Override
     public AssignableRole addRoleToPlace(Long placeId, Integer emoteId, Long roleId, String description) {
-        AssignableRolePlace place = rolePlaceManagementService.findByPlaceId(placeId).orElseThrow(() -> new AssignableRolePlaceNotFoundException(placeId));
+        AssignableRolePlace place = rolePlaceManagementService.findByPlaceIdOptional(placeId).orElseThrow(() -> new AssignableRolePlaceNotFoundException(placeId));
         AEmote emote = emoteManagementService.loadEmote(emoteId);
         ARole role = roleManagementService.findRole(roleId);
         return addRoleToPlace(place, emote, role, description, null);
@@ -73,5 +78,17 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
     @Override
     public AssignableRole getByAssignableRoleId(Long assignableRoleId) {
         return repository.findById(assignableRoleId).orElseThrow(() -> new AbstractoRunTimeException("Assignable role not found"));
+    }
+
+    @Override
+    public AssignableRole getRoleForReactionEmote(MessageReaction.ReactionEmote emote, AssignableRolePlace assignableRolePlace) {
+        for (AssignableRolePlacePost post : assignableRolePlace.getMessagePosts()) {
+            for (AssignableRole assignableRole : post.getAssignableRoles()) {
+                if (emoteService.isReactionEmoteAEmote(emote, assignableRole.getEmote())) {
+                    return assignableRole;
+                }
+            }
+        }
+        throw new AbstractoRunTimeException("Role for reaction was not found.");
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Disable extends AbstractConditionableCommand {
@@ -40,12 +41,13 @@ public class Disable extends AbstractConditionableCommand {
 
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureConfigService.getAllFeatures());
             String response = templateService.renderTemplate("disable_features_response", model);
-            channelService.sendTextToChannelNoFuture(response, commandContext.getChannel());
+            return channelService.sendTextToChannel(response, commandContext.getChannel())
+                    .thenApply(aVoid -> CommandResult.fromSuccess());
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
@@ -55,8 +57,8 @@ public class Disable extends AbstractConditionableCommand {
                     featureFlagService.disableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer())
                 );
             }
+            return CompletableFuture.completedFuture(CommandResult.fromSuccess());
         }
-        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -68,6 +70,7 @@ public class Disable extends AbstractConditionableCommand {
                 .name("disable")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .async(true)
                 .help(helpInfo)
                 .templated(true)
                 .supportsEmbedException(true)

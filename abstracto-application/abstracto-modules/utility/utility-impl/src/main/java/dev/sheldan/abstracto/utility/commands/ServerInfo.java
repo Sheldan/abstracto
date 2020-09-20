@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.serverinfo.ServerInfoModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class ServerInfo extends AbstractConditionableCommand {
@@ -25,11 +27,11 @@ public class ServerInfo extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ServerInfoModel model = (ServerInfoModel) ContextConverter.fromCommandContext(commandContext, ServerInfoModel.class);
         model.setGuild(commandContext.getGuild());
-        channelService.sendEmbedTemplateInChannel("serverinfo_response", model, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel("serverinfo_response", model, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -40,6 +42,7 @@ public class ServerInfo extends AbstractConditionableCommand {
                 .name("serverInfo")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.core.models.template.commands.PostTargetModelEntry;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -47,7 +49,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             PostTargetDisplayModel posttargetDisplayModel = (PostTargetDisplayModel) ContextConverter.fromCommandContext(commandContext, PostTargetDisplayModel.class);
             AServer server = commandContext.getUserInitiatedContext().getServer();
@@ -67,8 +69,8 @@ public class PostTargetCommand extends AbstractConditionableCommand {
                     postTargetEntries.add(postTargetEntry);
                 }
             });
-            channelService.sendEmbedTemplateInChannel(POST_TARGET_SHOW_TARGETS, posttargetDisplayModel, commandContext.getChannel());
-            return CommandResult.fromSuccess();
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(POST_TARGET_SHOW_TARGETS, posttargetDisplayModel, commandContext.getChannel()))
+                    .thenApply(aVoid -> CommandResult.fromSuccess());
         }
         String targetName = (String) commandContext.getParameters().getParameters().get(0);
         if(!postTargetService.validPostTarget(targetName)) {
@@ -78,7 +80,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
         Guild guild = channel.getGuild();
         postTargetManagement.createOrUpdate(targetName, guild.getIdLong(), channel.getIdLong());
         log.info("Setting posttarget {} in {} to {}", targetName, guild.getIdLong(), channel.getId());
-        return CommandResult.fromSuccess();
+        return CompletableFuture.completedFuture(CommandResult.fromSuccess());
     }
 
     @Override
@@ -91,6 +93,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
                 .name("posttarget")
                 .module(ChannelsModuleInterface.CHANNELS)
                 .parameters(parameters)
+                .async(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)

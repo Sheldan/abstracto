@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Command used to synchronize the actual awarded roles which what is defined to be awarded in the database.
@@ -31,11 +32,11 @@ public class SyncRoles extends AbstractConditionableCommand {
     private AUserExperienceService userExperienceService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         AServer server = commandContext.getUserInitiatedContext().getServer();
         log.info("Synchronizing roles on server {}", server.getId());
-        userExperienceService.syncUserRolesWithFeedback(server, commandContext.getUserInitiatedContext().getChannel());
-        return CommandResult.fromSuccess();
+        return userExperienceService.syncUserRolesWithFeedback(server, commandContext.getUserInitiatedContext().getChannel())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -46,6 +47,7 @@ public class SyncRoles extends AbstractConditionableCommand {
                 .name("syncExpRoles")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

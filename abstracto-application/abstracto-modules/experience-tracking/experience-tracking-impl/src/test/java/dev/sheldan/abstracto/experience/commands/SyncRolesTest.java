@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -27,11 +29,11 @@ public class SyncRolesTest {
     @Test
     public void executeCommand() {
         CommandContext context = CommandTestUtilities.getNoParameters();
-        CommandResult result = testUnit.execute(context);
         AServer server = context.getUserInitiatedContext().getServer();
         AChannel channel = context.getUserInitiatedContext().getChannel();
-        verify(userExperienceService, times(1)).syncUserRolesWithFeedback(server, channel);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        when(userExperienceService.syncUserRolesWithFeedback(server, channel)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

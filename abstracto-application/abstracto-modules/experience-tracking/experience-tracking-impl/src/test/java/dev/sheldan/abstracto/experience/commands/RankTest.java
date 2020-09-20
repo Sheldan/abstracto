@@ -22,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -59,9 +61,9 @@ public class RankTest {
         when(experienceLevelService.calculateExperienceToNextLevel(currentLevelValue, currentExperience)).thenReturn(140L);
         MessageToSend messageToSend = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(Rank.RANK_POST_EMBED_TEMPLATE), any(RankModel.class))).thenReturn(messageToSend);
-        CommandResult result = testUnit.execute(context);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, Mockito.times(1)).sendMessageToSendToChannel(messageToSend, context.getChannel());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

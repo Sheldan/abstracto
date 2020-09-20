@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.execution;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +29,23 @@ public class ContextConverter {
                     .server(commandContext.getUserInitiatedContext().getServer())
                     .aUserInAServer(commandContext.getUserInitiatedContext().getAUserInAServer())
                     .user(commandContext.getUserInitiatedContext().getUser())
+                    .build();
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            log.error("Failed to execute builder method", e);
+        }
+        throw new AbstractoRunTimeException("Failed to create model from context");
+    }
+
+    public static <T extends SlimUserInitiatedServerContext> SlimUserInitiatedServerContext slimFromCommandContext(CommandContext commandContext, Class<T> clazz)  {
+        Method m = null;
+        try {
+            m = clazz.getMethod("builder");
+            SlimUserInitiatedServerContext.SlimUserInitiatedServerContextBuilder<?, ?> builder = (SlimUserInitiatedServerContext.SlimUserInitiatedServerContextBuilder) m.invoke(null, null);
+            return builder
+                    .member(commandContext.getAuthor())
+                    .guild(commandContext.getGuild())
+                    .message(commandContext.getMessage())
+                    .channel(commandContext.getChannel())
                     .build();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);

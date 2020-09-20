@@ -16,6 +16,7 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -33,21 +34,21 @@ public class ShowEmoteTest {
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test
     public void executeCommandWithOneEmote() {
         Emote emote = Mockito.mock(Emote.class);
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(emote));
-        CommandResult result = testUnit.execute(noParameters);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(ShowEmote.SHOW_EMOTE_RESPONSE_TEMPLATE), emoteLogArgumentCaptor.capture(), eq(noParameters.getChannel()));
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         ShowEmoteLog usedLog = emoteLogArgumentCaptor.getValue();
         Assert.assertEquals(emote, usedLog.getEmote());
     }
@@ -57,9 +58,9 @@ public class ShowEmoteTest {
         Emote emote = Mockito.mock(Emote.class);
         Emote secondEmote = Mockito.mock(Emote.class);
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(emote, secondEmote));
-        CommandResult result = testUnit.execute(noParameters);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(ShowEmote.SHOW_EMOTE_RESPONSE_TEMPLATE), emoteLogArgumentCaptor.capture(), eq(noParameters.getChannel()));
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         ShowEmoteLog usedLog = emoteLogArgumentCaptor.getValue();
         Assert.assertEquals(emote, usedLog.getEmote());
     }

@@ -14,5 +14,6 @@ public interface CommandRepository extends JpaRepository<ACommand, Long> {
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Optional<ACommand> findByNameIgnoreCase(String name);
 
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByNameIgnoreCase(String name);
 }

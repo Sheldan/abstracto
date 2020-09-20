@@ -2,21 +2,20 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ConfiguredEmoteNotUsableException;
 import dev.sheldan.abstracto.core.exception.EmoteNotInServerException;
-import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
+import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -38,6 +37,9 @@ public class MessageServiceBean implements MessageService {
     @Autowired
     private MessageServiceBean self;
 
+    @Autowired
+    private TemplateService templateService;
+
     @Override
     public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
         addReactionToMessageWithFuture(emoteKey, serverId, message);
@@ -45,31 +47,35 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message) {
-        AEmote emote = emoteService.getEmoteOrDefaultEmote(emoteKey, serverId);
-        Optional<Guild> guildByIdOptional = botService.getGuildById(serverId);
-        if(guildByIdOptional.isPresent()) {
-            Guild guild = guildByIdOptional.get();
-            if(Boolean.TRUE.equals(emote.getCustom())) {
-                Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
-                if(emoteById != null) {
-                    return message.addReaction(emoteById).submit();
-                } else {
-                    log.error("Emote with key {} and id {} for guild {} was not found.", emoteKey, emote.getEmoteId(), guild.getId());
-                    throw new ConfiguredEmoteNotUsableException(emote);
-                }
-            } else {
-                return message.addReaction(emote.getEmoteKey()).submit();
-            }
-        } else {
-            log.error("Cannot add reaction, guild not found {}", serverId);
-            throw new GuildNotFoundException(serverId);
-        }
+        Guild guild = botService.getGuildByIdNullable(serverId);
+        return addReactionToMessageWithFuture(emoteKey, guild, message);
+    }
+
+    @Override
+    public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Guild guild, Message message) {
+        AEmote emote = emoteService.getEmoteOrDefaultEmote(emoteKey, guild.getIdLong());
+        return addReactionToMessageWithFuture(emote, guild, message);
     }
 
     @Override
     public CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Long serverId, Message message) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
            return addReactionToMessageWithFuture(emote.getEmoteId(), serverId, message);
+        } else {
+            return message.addReaction(emote.getEmoteKey()).submit();
+        }
+    }
+
+    @Override
+    public CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Guild guild, Message message) {
+        if(Boolean.TRUE.equals(emote.getCustom())) {
+            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+            if(emoteById != null) {
+                return message.addReaction(emoteById).submit();
+            } else {
+                log.error("Emote with key {} and id {} for guild {} was not found.", emote.getName() , emote.getEmoteId(), guild.getId());
+                throw new ConfiguredEmoteNotUsableException(emote);
+            }
         } else {
             return message.addReaction(emote.getEmoteKey()).submit();
         }
@@ -224,30 +230,31 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public void sendMessageToUser(AUserInAServer userInAServer, String text, MessageChannel feedbackChannel) {
+    public CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text) {
         Member memberInServer = botService.getMemberInServer(userInAServer);
-        sendMessageToUser(memberInServer.getUser(), text, feedbackChannel);
+        return sendMessageToUser(memberInServer.getUser(), text);
     }
 
     @Override
-    public void sendMessageToUser(User user, String text, MessageChannel feedbackChannel) {
-        CompletableFuture<Message> messageFuture = new CompletableFuture<>();
-
-        user.openPrivateChannel().queue(privateChannel ->
-            privateChannel.sendMessage(text).queue(messageFuture::complete, messageFuture::completeExceptionally)
-        );
-
-        messageFuture.exceptionally(e -> {
-            log.warn("Failed to send message. ", e);
-            if(feedbackChannel != null){
-                self.sendFeedbackAboutException(e, feedbackChannel);
-            }
-            return null;
-        });
+    public CompletableFuture<Message> sendTemplateToUser(User user, String template, Object model) {
+        String message = templateService.renderTemplate(template, model);
+        return sendMessageToUser(user, message);
     }
 
-    @Transactional
-    public void sendFeedbackAboutException(Throwable e, MessageChannel feedbackChannel) {
-        channelService.sendTextToChannelNoFuture(String.format("Failed to send message: %s", e.getMessage()), feedbackChannel);
+    @Override
+    public CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model) {
+        return user.openPrivateChannel().submit().thenCompose(privateChannel ->
+                FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(template, model, privateChannel)));
+    }
+
+    @Override
+    public CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model) {
+        return user.openPrivateChannel().submit().thenCompose(privateChannel ->
+                channelService.sendEmbedTemplateInChannel(template, model, privateChannel).get(0));
+    }
+
+    @Override
+    public CompletableFuture<Message> sendMessageToUser(User user, String text) {
+        return user.openPrivateChannel().flatMap(privateChannel -> privateChannel.sendMessage(text)).submit();
     }
 }

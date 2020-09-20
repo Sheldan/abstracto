@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -47,37 +48,37 @@ public class KickTest {
     public void testKickMemberWithoutReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToKick));
         when(templateService.renderSimpleTemplate(Kick.KICK_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        CommandResult result = testUnit.execute(parameters);
-        verify(kickService, times(1)).kickMember(eq(memberToKick), eq(REASON), logModelArgumentCaptor.capture());
+        when(kickService.kickMember(eq(memberToKick), eq(REASON), logModelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         KickLogModel usedLogModel = logModelArgumentCaptor.getValue();
         Assert.assertEquals(REASON, usedLogModel.getReason());
         Assert.assertEquals(memberToKick, usedLogModel.getKickedUser());
-        Assert.assertEquals(parameters.getAuthor(), usedLogModel.getKickingUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        Assert.assertEquals(parameters.getAuthor(), usedLogModel.getMember());
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
     public void testKickMemberWithReason() {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToKick, customReason));
-        CommandResult result = testUnit.execute(parameters);
-        verify(kickService, times(1)).kickMember(eq(memberToKick), eq(customReason), logModelArgumentCaptor.capture());
+        when(kickService.kickMember(eq(memberToKick), eq(customReason), logModelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         KickLogModel usedLogModel = logModelArgumentCaptor.getValue();
         Assert.assertEquals(customReason, usedLogModel.getReason());
         Assert.assertEquals(memberToKick, usedLogModel.getKickedUser());
-        Assert.assertEquals(parameters.getAuthor(), usedLogModel.getKickingUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        Assert.assertEquals(parameters.getAuthor(), usedLogModel.getMember());
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

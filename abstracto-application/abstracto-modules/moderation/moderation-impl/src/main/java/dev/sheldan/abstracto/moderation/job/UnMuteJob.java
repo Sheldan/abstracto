@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.moderation.job;
 
 import dev.sheldan.abstracto.moderation.service.MuteService;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -14,9 +16,12 @@ import org.springframework.stereotype.Component;
 @DisallowConcurrentExecution
 @Component
 @PersistJobDataAfterExecution
+@Getter
+@Setter
 public class UnMuteJob extends QuartzJobBean {
 
     private Long muteId;
+    private Long serverId;
 
     @Autowired
     private MuteService muteService;
@@ -24,14 +29,7 @@ public class UnMuteJob extends QuartzJobBean {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         log.info("Executing unMute job for mute {}", muteId);
-        muteService.endMute(muteId);
+        muteService.endMute(muteId, serverId);
     }
 
-    public Long getMuteId() {
-        return muteId;
-    }
-
-    public void setMuteId(Long muteId) {
-        this.muteId = muteId;
-    }
 }

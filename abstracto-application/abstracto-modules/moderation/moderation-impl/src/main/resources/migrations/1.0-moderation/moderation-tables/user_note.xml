@@ -16,11 +16,17 @@
             <column name="note_user" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
     <changeSet author="Sheldan" id="user_note-fk_user_note_user">
         <addForeignKeyConstraint baseColumnNames="note_user" baseTableName="user_note" constraintName="fk_user_note_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="user_note-fk_user_note_server_id">
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="user_note" constraintName="fk_user_note_server_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
     </changeSet>
 
 </databaseChangeLog>

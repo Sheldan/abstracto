@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Command used to define which commands are to be awarded at which level
@@ -34,7 +35,7 @@ public class SetExpRole extends AbstractConditionableCommand {
     private RoleService roleService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
@@ -43,8 +44,8 @@ public class SetExpRole extends AbstractConditionableCommand {
             throw new RoleNotFoundInGuildException(role.getId(), server.getId());
         }
         log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, server.getId());
-        experienceRoleService.setRoleToLevel(role, level, commandContext.getUserInitiatedContext().getChannel());
-        return CommandResult.fromSuccess();
+        return experienceRoleService.setRoleToLevel(role, level, commandContext.getUserInitiatedContext().getChannel())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -57,6 +58,7 @@ public class SetExpRole extends AbstractConditionableCommand {
                 .name("setExpRole")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

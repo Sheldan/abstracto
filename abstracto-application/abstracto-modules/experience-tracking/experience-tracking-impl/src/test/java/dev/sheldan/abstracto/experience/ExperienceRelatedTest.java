@@ -51,7 +51,7 @@ public abstract class ExperienceRelatedTest {
         for (int i = 0; i < levelsWithRoles.size(); i++) {
             AExperienceLevel level = levelsWithRoles.get(i);
             ARole role = ARole.builder().id((long)i).server(server).build();
-            roles.add(AExperienceRole.builder().level(level).roleServer(server).role(role).build());
+            roles.add(AExperienceRole.builder().level(level).id(role.getId()).roleServer(server).role(role).build());
         }
         return roles;
     }

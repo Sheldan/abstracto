@@ -80,6 +80,10 @@ public class AUserExperience implements Serializable {
         this.updated = Instant.now();
     }
 
+    public Integer getLevelOrDefault() {
+        return currentLevel != null ? currentLevel.getLevel() : 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

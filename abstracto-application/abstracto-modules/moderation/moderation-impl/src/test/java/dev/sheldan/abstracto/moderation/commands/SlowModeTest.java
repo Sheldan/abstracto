@@ -17,6 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -33,18 +34,18 @@ public class SlowModeTest {
     public void testExecuteSlowModeWithDurationCurrentChannel() {
         String duration = "1m";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration));
-        CommandResult result = testUnit.execute(parameters);
-        verify(slowModeService, times(1)).setSlowMode(parameters.getChannel(), Duration.ofMinutes(1));
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        when(slowModeService.setSlowMode(parameters.getChannel(), Duration.ofMinutes(1))).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
     public void testDisableSlowModeCurrentChannel() {
         String duration = "off";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration));
-        CommandResult result = testUnit.execute(parameters);
-        verify(slowModeService, times(1)).setSlowMode(parameters.getChannel(), Duration.ZERO);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        when(slowModeService.setSlowMode(parameters.getChannel(), Duration.ZERO)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -52,9 +53,9 @@ public class SlowModeTest {
         String duration = "off";
         TextChannel channel = Mockito.mock(TextChannel.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration, channel));
-        CommandResult result = testUnit.execute(parameters);
-        verify(slowModeService, times(1)).setSlowMode(channel, Duration.ZERO);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        when(slowModeService.setSlowMode(channel, Duration.ZERO)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -62,19 +63,19 @@ public class SlowModeTest {
         String duration = "1m";
         TextChannel channel = Mockito.mock(TextChannel.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration, channel));
-        CommandResult result = testUnit.execute(parameters);
-        verify(slowModeService, times(1)).setSlowMode(channel, Duration.ofMinutes(1));
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        when(slowModeService.setSlowMode(channel, Duration.ofMinutes(1))).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

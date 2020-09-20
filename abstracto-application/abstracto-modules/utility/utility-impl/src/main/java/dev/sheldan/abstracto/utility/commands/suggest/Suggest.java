@@ -30,7 +30,7 @@ public class Suggest extends AbstractConditionableCommand {
         String text = (String) parameters.get(0);
         SuggestionLog suggestLogModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
         suggestLogModel.setSuggester(commandContext.getAuthor());
-        return suggestionService.createSuggestion(commandContext.getAuthor(), text, suggestLogModel)
+        return suggestionService.createSuggestionMessage(commandContext.getAuthor(), text, suggestLogModel)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 

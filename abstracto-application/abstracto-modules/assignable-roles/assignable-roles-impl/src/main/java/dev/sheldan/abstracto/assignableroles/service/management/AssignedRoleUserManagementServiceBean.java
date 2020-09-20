@@ -38,6 +38,15 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
     }
 
     @Override
+    public void clearAllAssignedRolesOfUser(AUserInAServer userInAServer) {
+        AssignedRoleUser user = findByUserInServer(userInAServer);
+        user.getRoles().forEach(assignableRole ->
+            assignableRole.getAssignedUsers().remove(user)
+        );
+        user.getRoles().clear();
+    }
+
+    @Override
     public boolean doesAssignedRoleUserExist(AUserInAServer aUserInAServer) {
         return repository.existsById(aUserInAServer.getUserInServerId());
     }

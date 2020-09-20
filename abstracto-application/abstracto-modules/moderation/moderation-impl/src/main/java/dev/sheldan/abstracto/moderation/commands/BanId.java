@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class BanId extends AbstractConditionableCommand {
@@ -27,7 +28,7 @@ public class BanId extends AbstractConditionableCommand {
     private BanService banService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long userId = (Long) parameters.get(0);
@@ -37,9 +38,8 @@ public class BanId extends AbstractConditionableCommand {
         banLogModel.setBannedUserId(userId);
         banLogModel.setBanningUser(commandContext.getAuthor());
         banLogModel.setReason(reason);
-        banService.banMember(commandContext.getGuild().getIdLong(), userId, reason, banLogModel);
-
-        return CommandResult.fromSuccess();
+        return banService.banMember(commandContext.getGuild().getIdLong(), userId, reason, banLogModel)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -52,6 +52,7 @@ public class BanId extends AbstractConditionableCommand {
                 .name("banId")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

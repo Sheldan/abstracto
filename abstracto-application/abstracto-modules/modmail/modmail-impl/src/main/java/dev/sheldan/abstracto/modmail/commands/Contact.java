@@ -12,17 +12,20 @@ import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.template.ModMailThreadExistsModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This command is used to create a thread with a member directly. If a thread already exists, this will post a link to
@@ -44,7 +47,7 @@ public class Contact extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Member targetUser = (Member) commandContext.getParameters().getParameters().get(0);
         AUserInAServer user = userManagementService.loadUser(targetUser);
         // if this AUserInAServer already has an open thread, we should instead post a message
@@ -53,16 +56,17 @@ public class Contact extends AbstractConditionableCommand {
             ModMailThreadExistsModel model = (ModMailThreadExistsModel) ContextConverter.fromCommandContext(commandContext, ModMailThreadExistsModel.class);
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
             model.setExistingModMailThread(existingThread);
-            channelService.sendEmbedTemplateInChannel("modmail_thread_already_exists", model, commandContext.getChannel());
+            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInChannel("modmail_thread_already_exists", model, commandContext.getChannel());
+            return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromSuccess());
         } else {
             FullUserInServer fullUser = FullUserInServer
                     .builder()
                     .aUserInAServer(user)
                     .member(targetUser)
                     .build();
-            modMailThreadService.createModMailThreadForUser(fullUser, null, commandContext.getChannel(), false);
+            return modMailThreadService.createModMailThreadForUser(fullUser, null, commandContext.getChannel(), false, commandContext.getUndoActions())
+                    .thenApply(aVoid -> CommandResult.fromSuccess());
         }
-        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -74,6 +78,7 @@ public class Contact extends AbstractConditionableCommand {
                 .name("contact")
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
+                .async(true)
                 .help(helpInfo)
                 .supportsEmbedException(true)
                 .templated(true)

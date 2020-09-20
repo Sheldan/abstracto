@@ -40,18 +40,19 @@ public class UserInfoTest {
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test
     public void executeWithoutParameterAndLoadedMember() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(true);
-        CommandResult result = testUnit.execute(noParameters);
+        when(self.sendResponse(eq(noParameters),any(UserInfoModel.class))).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(self, times(1)).sendResponse(eq(noParameters), modelArgumentCaptor.capture());
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
         Assert.assertEquals(noParameters.getAuthor(), usedModel.getMemberInfo());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -60,11 +61,11 @@ public class UserInfoTest {
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(false);
         Member loadedAuthor = Mockito.mock(Member.class);
         when(botService.forceReloadMember(noParameters.getAuthor())).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
-        CommandResult result = testUnit.execute(noParameters);
-        verify(self, times(1)).sendResponse(eq(noParameters), modelArgumentCaptor.capture());
+        when(self.sendResponse(eq(noParameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
         Assert.assertEquals(loadedAuthor, usedModel.getMemberInfo());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -72,11 +73,11 @@ public class UserInfoTest {
         Member member = Mockito.mock(Member.class);
         when(member.hasTimeJoined()).thenReturn(true);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
-        CommandResult result = testUnit.execute(parameters);
-        verify(self, times(1)).sendResponse(eq(parameters), modelArgumentCaptor.capture());
+        when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
         Assert.assertEquals(member, usedModel.getMemberInfo());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -86,11 +87,11 @@ public class UserInfoTest {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
         Member loadedAuthor = Mockito.mock(Member.class);
         when(botService.forceReloadMember(member)).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
-        CommandResult result = testUnit.execute(parameters);
-        verify(self, times(1)).sendResponse(eq(parameters), modelArgumentCaptor.capture());
+        when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
         Assert.assertEquals(loadedAuthor, usedModel.getMemberInfo());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

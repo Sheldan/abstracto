@@ -49,6 +49,7 @@ public class AssignableRole implements Serializable {
     @Setter
     @ManyToMany(mappedBy = "roles")
     @Builder.Default
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignedRoleUser> assignedUsers = new ArrayList<>();
 
     private String description;

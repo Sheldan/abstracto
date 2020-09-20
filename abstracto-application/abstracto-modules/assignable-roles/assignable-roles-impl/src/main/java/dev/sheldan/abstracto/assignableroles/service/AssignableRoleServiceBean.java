@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.assignableroles.service;
 
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementServiceBean;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementServiceBean;
@@ -38,30 +40,71 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Override
     public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member toAdd) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
-        return roleService.addRoleToMemberFuture(toAdd, role.getRole()).thenApply(aVoid -> {
-            self.persistRoleAssignment(assignableRoleId, toAdd);
-            return null;
+        return roleService.addRoleToMemberFuture(toAdd, role.getRole());
+    }
+
+    @Override
+    public void clearAllRolesOfUserInPlace(AssignableRolePlace place, AUserInAServer userInAServer) {
+        AssignedRoleUser user = assignedRoleUserManagementServiceBean.findByUserInServer(userInAServer);
+        user.getRoles().forEach(assignableRole -> {
+            if(assignableRole.getAssignablePlace().equals(place)) {
+                assignableRole.getAssignedUsers().remove(user);
+            }
         });
+        user.getRoles().removeIf(assignableRole -> assignableRole.getAssignablePlace().equals(place));
+    }
+
+    @Override
+    public CompletableFuture<Void> fullyAssignAssignableRoleToUser(Long assignableRoleId, Member toAdd) {
+        return this.assignAssignableRoleToUser(assignableRoleId, toAdd).thenAccept(aVoid ->
+            self.addRoleToUser(assignableRoleId, toAdd)
+        );
     }
 
     @Override
     public CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
+        return roleService.removeRoleFromMemberFuture(member, assignableRole.getRole());
+    }
+
+    @Override
+    public CompletableFuture<Void> fullyRemoveAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
         Long assignableRoleId = assignableRole.getId();
-        return roleService.removeRoleFromMemberFuture(member, assignableRole.getRole()).thenApply(aVoid -> {
-            self.persistRoleRemoval(assignableRoleId, member);
-            return null;
-        });
+        return this.removeAssignableRoleFromUser(assignableRole, member).thenAccept(aVoid ->
+            self.removeRoleFromUser(assignableRoleId, member)
+        );
     }
 
     @Transactional
-    public void persistRoleAssignment(Long assignableRoleId, Member member) {
+    public void addRoleToUser(Long assignableRoleId, AUserInAServer aUserInAServer) {
+        AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
+        addRoleToUser(role, aUserInAServer);
+    }
+
+    @Override
+    public void addRoleToUser(AssignableRole assignableRole, AUserInAServer aUserInAServer) {
+        assignedRoleUserManagementServiceBean.addAssignedRoleToUser(assignableRole, aUserInAServer);
+    }
+
+    @Override
+    public void removeRoleFromUser(AssignableRole assignableRole, AUserInAServer aUserInAServer) {
+        assignedRoleUserManagementServiceBean.removeAssignedRoleFromUser(assignableRole, aUserInAServer);
+    }
+
+    @Transactional
+    public void addRoleToUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(member);
         assignedRoleUserManagementServiceBean.addAssignedRoleToUser(role, aUserInAServer);
     }
 
     @Transactional
-    public void persistRoleRemoval(Long assignableRoleId, Member member) {
+    public void removeRoleFromUser(Long assignableRoleId, AUserInAServer aUserInAServer) {
+        AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
+        removeRoleFromUser(role, aUserInAServer);
+    }
+
+    @Transactional
+    public void removeRoleFromUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(member);
         assignedRoleUserManagementServiceBean.removeAssignedRoleFromUser(role, aUserInAServer);

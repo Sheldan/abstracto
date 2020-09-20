@@ -202,7 +202,7 @@ public class MessageEmbedServiceBeanTest {
         when(guild.getIdLong()).thenReturn(serverId);
         when(embeddingMessage.getChannel()).thenReturn(textChannel);
         when(userInServerManagementService.loadUser(embeddingMember)).thenReturn(embeddingUser);
-        when(userInServerManagementService.loadUser(userEmbeddingUserInServerId)).thenReturn(Optional.of(embeddingUser));
+        when(userInServerManagementService.loadUserConditional(userEmbeddingUserInServerId)).thenReturn(Optional.of(embeddingUser));
         when(channelManagementService.loadChannel(channelId)).thenReturn(aChannel);
         when(serverManagementService.loadOrCreate(serverId)).thenReturn(server);
         when(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId())).thenReturn(author);
@@ -223,7 +223,7 @@ public class MessageEmbedServiceBeanTest {
         Long firstMessageId = 6L;
         CachedMessage cachedMessage = CachedMessage.builder().serverId(serverId).channelId(channelId).messageId(firstMessageId).build();
         Long userEmbeddingUserInServerId = 5L;
-        when(userInServerManagementService.loadUser(userEmbeddingUserInServerId)).thenReturn(Optional.empty());
+        when(userInServerManagementService.loadUserConditional(userEmbeddingUserInServerId)).thenReturn(Optional.empty());
         testUnit.embedLink(cachedMessage, textChannel, userEmbeddingUserInServerId, embeddingMessage);
     }
 

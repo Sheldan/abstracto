@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Kick extends AbstractConditionableCommand {
@@ -30,19 +31,18 @@ public class Kick extends AbstractConditionableCommand {
     private KickServiceBean kickService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderSimpleTemplate(KICK_DEFAULT_REASON_TEMPLATE);
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
-        KickLogModel kickLogModel = (KickLogModel) ContextConverter.fromCommandContext(commandContext, KickLogModel.class);
+        KickLogModel kickLogModel = (KickLogModel) ContextConverter.slimFromCommandContext(commandContext, KickLogModel.class);
         kickLogModel.setKickedUser(member);
-        kickLogModel.setKickingUser(commandContext.getAuthor());
         kickLogModel.setReason(reason);
-        kickService.kickMember(member, reason, kickLogModel);
-        return CommandResult.fromSuccess();
+        return kickService.kickMember(member, reason, kickLogModel)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override

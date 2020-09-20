@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Enable extends AbstractConditionableCommand {
@@ -40,18 +41,19 @@ public class Enable extends AbstractConditionableCommand {
     private TemplateService templateService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureConfigService.getAllFeatures());
             String response = templateService.renderTemplate("enable_features_response", model);
-            channelService.sendTextToChannelNoFuture(response, commandContext.getChannel());
+            return channelService.sendTextToChannel(response, commandContext.getChannel())
+                    .thenApply(message -> CommandResult.fromSuccess());
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
             FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, commandContext.getUserInitiatedContext().getServer());
             if(Boolean.FALSE.equals(featureSetup.getValidationResult())) {
-                channelService.sendTextToChannelNoFuture(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
+                channelService.sendTextToChannelNotAsync(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
             }
             featureFlagService.enableFeature(feature, commandContext.getUserInitiatedContext().getServer());
             if(feature.getRequiredFeatures() != null) {
@@ -59,8 +61,8 @@ public class Enable extends AbstractConditionableCommand {
                     featureFlagService.enableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer());
                 });
             }
+            return CompletableFuture.completedFuture(CommandResult.fromSuccess());
         }
-        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -72,6 +74,7 @@ public class Enable extends AbstractConditionableCommand {
                 .name("enable")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .async(true)
                 .supportsEmbedException(true)
                 .templated(true)
                 .help(helpInfo)

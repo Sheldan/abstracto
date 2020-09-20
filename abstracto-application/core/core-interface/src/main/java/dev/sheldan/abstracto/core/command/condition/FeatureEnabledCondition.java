@@ -26,13 +26,13 @@ public class FeatureEnabledCondition implements CommandCondition {
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         FeatureEnum feature = command.getFeature();
         boolean featureFlagValue = true;
-        String reason = "";
         if(feature != null) {
             featureFlagValue = featureFlagService.getFeatureFlagValue(feature, context.getGuild().getIdLong());
             if(!featureFlagValue) {
-                throw new FeatureDisabledException(featureConfigService.getFeatureDisplayForFeature(feature));
+                FeatureDisabledException exception = new FeatureDisabledException(featureConfigService.getFeatureDisplayForFeature(command.getFeature()));
+                return ConditionResult.builder().result(false).exception(exception).build();
             }
         }
-        return ConditionResult.builder().reason(reason).result(featureFlagValue).build();
+        return ConditionResult.builder().result(true).build();
     }
 }

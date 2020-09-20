@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.moderation.models.database;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 
@@ -15,9 +17,13 @@ import java.time.Instant;
 @Setter
 public class UserNote {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private ServerSpecificId userNoteId;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @MapsId("serverId")
+    @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
+    private AServer server;
 
     @ManyToOne
     @JoinColumn(name = "noteUser", nullable = false)

@@ -11,16 +11,19 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.models.database.ADisabledExpRole;
 import dev.sheldan.abstracto.experience.models.templates.DisabledExperienceRolesModel;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Creates an embed containing the roles for which the experience gain has been disabled.
@@ -38,7 +41,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<ADisabledExpRole> disabledRolesForServer = disabledExpRoleManagementService.getDisabledRolesForServer(commandContext.getUserInitiatedContext().getServer());
         DisabledExperienceRolesModel disabledExperienceRolesModel = (DisabledExperienceRolesModel) ContextConverter.fromCommandContext(commandContext, DisabledExperienceRolesModel.class);
@@ -50,8 +53,8 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                     .build();
             disabledExperienceRolesModel.getRoles().add(role);
         });
-        channelService.sendEmbedTemplateInChannel("list_disabled_experience_roles", disabledExperienceRolesModel, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInChannel("list_disabled_experience_roles", disabledExperienceRolesModel, commandContext.getChannel());
+        return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override

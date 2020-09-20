@@ -23,7 +23,7 @@
             <column name="muting_channel" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="muting_server" type="BIGINT">
+            <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="mute_ended" type="BOOLEAN"/>
@@ -44,8 +44,8 @@
     <changeSet author="Sheldan" id="mute-fk_mute_muted_user">
         <addForeignKeyConstraint baseColumnNames="muted_user" baseTableName="mute" constraintName="fk_mute_muted_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
     </changeSet>
-    <changeSet author="Sheldan" id="mute-fk_mute_muting_server">
-        <addForeignKeyConstraint baseColumnNames="muting_server" baseTableName="mute" constraintName="fk_mute_muting_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    <changeSet author="Sheldan" id="mute-fk_mute_server_id">
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="mute" constraintName="fk_mute_server_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
     </changeSet>
 
 </databaseChangeLog>

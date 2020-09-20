@@ -17,6 +17,7 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -44,13 +45,13 @@ public class BanTest {
     public void testBanWithDefaultReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember));
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        CommandResult result = testUnit.execute(parameters);
-        verify(banService, times(1)).banMember(eq(bannedMember), eq(REASON), banLogModelCaptor.capture());
+        when(banService.banMember(eq(bannedMember), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(REASON, usedModel.getReason());
         Assert.assertEquals(bannedMember, usedModel.getBannedUser());
         Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -58,23 +59,23 @@ public class BanTest {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember, customReason));
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        CommandResult result = testUnit.execute(parameters);
-        verify(banService, times(1)).banMember(eq(bannedMember), eq(customReason), banLogModelCaptor.capture());
+        when(banService.banMember(eq(bannedMember), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(customReason, usedModel.getReason());
         Assert.assertEquals(bannedMember, usedModel.getBannedUser());
         Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

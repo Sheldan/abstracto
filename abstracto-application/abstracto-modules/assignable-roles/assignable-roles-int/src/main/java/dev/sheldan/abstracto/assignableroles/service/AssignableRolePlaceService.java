@@ -59,6 +59,13 @@ public interface AssignableRolePlaceService {
     void changeAssignablePlaceDescription(AServer server, String name, String newDescription);
     CompletableFuture<Void> deleteAssignableRolePlace(AServer server, String name);
     CompletableFuture<Void> changeText(AServer server, String name, String newText);
+
+    /**
+     * Removes the reactions and the roles from the user from the place, this does not touch the stored data
+     * @param place The {@link AssignableRolePlace} to which remove the existing reactions and roles from
+     * @param user The {@link AssignedRoleUser} to the remove *all* reactions and assigned roles from
+     * @return A {@link CompletableFuture} which completes when  both of these actions have been done for all {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRole}
+     */
     CompletableFuture<Void> removeExistingReactionsAndRoles(AssignableRolePlace place, AssignedRoleUser user);
     CompletableFuture<Void> changeConfiguration(AServer server, String name, AssignableRolePlaceParameterKey keyToChange, Object newValue);
 

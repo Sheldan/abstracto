@@ -33,16 +33,15 @@ public class Purge extends AbstractConditionableCommand {
     private ExceptionUtils exceptionUtils;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         Integer amountOfMessages = (Integer) commandContext.getParameters().getParameters().get(0);
         Member memberToPurgeMessagesOf = null;
         if(commandContext.getParameters().getParameters().size() == 2) {
             memberToPurgeMessagesOf = (Member) commandContext.getParameters().getParameters().get(1);
         }
-        CompletableFuture<Void> future = purgeService.purgeMessagesInChannel(amountOfMessages, commandContext.getChannel(), commandContext.getMessage(), memberToPurgeMessagesOf);
-        future.whenComplete((aVoid, throwable) -> exceptionUtils.handleExceptionIfTemplatable(throwable, commandContext.getChannel()));
-        return CommandResult.fromSelfDestruct();
+        return purgeService.purgeMessagesInChannel(amountOfMessages, commandContext.getChannel(), commandContext.getMessage(), memberToPurgeMessagesOf)
+                .thenApply(aVoid -> CommandResult.fromSelfDestruct());
     }
 
     @Override
@@ -55,6 +54,7 @@ public class Purge extends AbstractConditionableCommand {
                 .name("purge")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

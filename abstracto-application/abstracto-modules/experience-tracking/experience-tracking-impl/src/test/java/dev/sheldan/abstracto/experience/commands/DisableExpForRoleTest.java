@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManage
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
+@Slf4j
 public class DisableExpForRoleTest {
 
     @InjectMocks

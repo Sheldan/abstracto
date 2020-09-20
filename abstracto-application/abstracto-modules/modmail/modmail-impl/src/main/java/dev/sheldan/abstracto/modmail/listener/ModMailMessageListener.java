@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+
 /**
  * This listener is the core mechanic behind mod mail, if the bot receives a message via DM, this listener is executed
  * and checks if the message should be forwarded to an existing mod mail thread, or if a new thread should be created/the
@@ -44,7 +46,7 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
             // there is only one open mod mail thread for a user at a time, so we can select the first one
             // we cannot use the AUserInAServer directly, because a message in a private channel does not have a Member
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadsForUser(user).get(0);
-            modMailThreadService.relayMessageToModMailThread(existingThread, message);
+            modMailThreadService.relayMessageToModMailThread(existingThread, message, new ArrayList<>());
         } else {
             modMailThreadService.createModMailPrompt(user, message);
         }

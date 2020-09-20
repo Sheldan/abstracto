@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
@@ -25,18 +26,21 @@ public class MuteManagementServiceBean implements MuteManagementService {
     private UserInServerManagementService userInServerManagementService;
 
     @Override
-    public Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage) {
+    public Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage, String triggerKey, Long muteId) {
         log.trace("Creating mute for user {} executed by user {} in server {}, user will be un-muted at {}",
                 mutedUser.getUserReference().getId(), mutingUser.getUserReference().getId(), mutedUser.getServerReference().getId(), unMuteDate);
+        ServerSpecificId id = new ServerSpecificId(muteMessage.getServer().getId(), muteId);
         Mute mute = Mute
                 .builder()
                 .mutedUser(mutedUser)
                 .mutingUser(mutingUser)
                 .muteTargetDate(unMuteDate)
-                .mutingServer(mutedUser.getServerReference())
+                .server(mutedUser.getServerReference())
                 .mutingChannel(muteMessage.getChannel())
                 .messageId(muteMessage.getMessageId())
                 .reason(reason)
+                .triggerKey(triggerKey)
+                .muteId(id)
                 .muteEnded(false)
                 .build();
         muteRepository.save(mute);
@@ -44,8 +48,8 @@ public class MuteManagementServiceBean implements MuteManagementService {
     }
 
     @Override
-    public Optional<Mute> findMute(Long muteId) {
-        return muteRepository.findById(muteId);
+    public Optional<Mute> findMute(Long muteId, Long serverId) {
+        return muteRepository.findByMuteId_IdAndMuteId_ServerId(muteId, serverId);
     }
 
     @Override
@@ -76,7 +80,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
 
     @Override
     public List<Mute> getAllMutesOf(AUserInAServer aUserInAServer) {
-        return muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByIdDesc(aUserInAServer);
+        return muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(aUserInAServer);
     }
 
 

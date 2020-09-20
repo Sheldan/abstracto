@@ -42,8 +42,13 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
     }
 
     @Override
-    public Optional<AssignableRolePlace> findByPlaceId(Long id) {
+    public Optional<AssignableRolePlace> findByPlaceIdOptional(Long id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public AssignableRolePlace findByPlaceId(Long id) {
+        return findByPlaceIdOptional(id).orElseThrow(() -> new AssignableRolePlaceNotFoundException(id));
     }
 
     @Override

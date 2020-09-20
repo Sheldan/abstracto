@@ -1,13 +1,15 @@
 package dev.sheldan.abstracto.moderation.models.template.commands;
 
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.moderation.models.database.Mute;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 import java.time.Duration;
+import java.time.Instant;
 
 
 /**
@@ -16,7 +18,7 @@ import java.time.Duration;
 @Getter
 @SuperBuilder
 @Setter
-public class MuteLog extends UserInitiatedServerContext {
+public class MuteContext {
     /**
      * The {@link Member} being muted
      */
@@ -28,13 +30,19 @@ public class MuteLog extends UserInitiatedServerContext {
     /**
      * The persisted mute object from the database containing the information about the mute
      */
-    private Mute mute;
+    private Long muteId;
+    private Instant muteDate;
+    private Instant muteTargetDate;
+    private String reason;
+    private ServerChannelMessage context;
+    private MessageChannel contextChannel;
+    private Message message;
 
     /**
      * The {@link Duration} of the mute between the mute was cast and and the date it should end
      * @return The {@link Duration} between start and target date
      */
     public Duration getMuteDuration() {
-        return Duration.between(mute.getMuteDate(), mute.getMuteTargetDate());
+        return Duration.between(muteDate, muteTargetDate);
     }
 }

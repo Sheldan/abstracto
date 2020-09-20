@@ -62,6 +62,6 @@ public class UnMuteLog extends ServerContext {
      * @return A string containing an URL leading to the message where the mute was triggered
      */
     public String getMessageUrl() {
-        return MessageUtils.buildMessageUrl(this.mute.getMutingServer().getId() ,this.getMute().getMutingChannel().getId(), this.mute.getMessageId());
+        return MessageUtils.buildMessageUrl(this.mute.getServer().getId() ,this.getMute().getMutingChannel().getId(), this.mute.getMessageId());
     }
 }

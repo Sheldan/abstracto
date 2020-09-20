@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Command used to show an embed containing information about the experience amount, level and message count of a ember on a server
@@ -48,7 +50,7 @@ public class Rank extends AbstractConditionableCommand {
 
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         RankModel rankModel = (RankModel) ContextConverter.fromCommandContext(commandContext, RankModel.class);
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
@@ -56,9 +58,8 @@ public class Rank extends AbstractConditionableCommand {
         AUserExperience experienceObj = userRank.getExperience();
         rankModel.setExperienceToNextLevel(experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience()));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel);
-        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
-
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -69,6 +70,7 @@ public class Rank extends AbstractConditionableCommand {
                 .name("rank")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

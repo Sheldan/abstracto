@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
 import net.dv8tion.jda.api.entities.Member;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class UserInfo extends AbstractConditionableCommand {
@@ -34,26 +36,27 @@ public class UserInfo extends AbstractConditionableCommand {
     private UserInfo self;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getAuthor();
-        UserInfoModel model = (UserInfoModel) ContextConverter.fromCommandContext(commandContext, UserInfoModel.class);
+        UserInfoModel model = (UserInfoModel) ContextConverter.slimFromCommandContext(commandContext, UserInfoModel.class);
         if(!memberToShow.hasTimeJoined()) {
-            botService.forceReloadMember(memberToShow).thenAccept(member -> {
+            return botService.forceReloadMember(memberToShow).thenCompose(member -> {
                 model.setMemberInfo(member);
-                self.sendResponse(commandContext, model);
+                return self.sendResponse(commandContext, model)
+                        .thenApply(aVoid -> CommandResult.fromSuccess());
             });
         } else {
             model.setMemberInfo(memberToShow);
-            self.sendResponse(commandContext, model);
+            return self.sendResponse(commandContext, model)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
         }
-        return CommandResult.fromSuccess();
     }
 
     @Transactional
-    public void sendResponse(CommandContext commandContext, UserInfoModel model) {
-        channelService.sendEmbedTemplateInChannel("userInfo_response", model, commandContext.getChannel());
+    public CompletableFuture<Void> sendResponse(CommandContext commandContext, UserInfoModel model) {
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel("userInfo_response", model, commandContext.getChannel()));
     }
 
     @Override
@@ -65,6 +68,7 @@ public class UserInfo extends AbstractConditionableCommand {
                 .name("userInfo")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

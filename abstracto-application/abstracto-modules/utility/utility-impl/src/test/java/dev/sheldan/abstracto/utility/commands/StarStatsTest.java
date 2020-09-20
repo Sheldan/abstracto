@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,9 +35,9 @@ public class StarStatsTest {
         when(noParameters.getGuild().getIdLong()).thenReturn(noParameters.getUserInitiatedContext().getChannel().getId());
         StarStatsModel starStatsModel = StarStatsModel.builder().build();
         when(starboardService.retrieveStarStats(noParameters.getGuild().getIdLong())).thenReturn(starStatsModel);
-        CommandResult result = testUnit.execute(noParameters);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(StarStats.STARSTATS_RESPONSE_TEMPLATE, starStatsModel, noParameters.getChannel());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

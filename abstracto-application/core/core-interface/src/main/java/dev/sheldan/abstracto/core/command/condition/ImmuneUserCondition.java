@@ -41,7 +41,8 @@ public class ImmuneUserCondition implements CommandCondition {
             Member member = any.get();
             for (ARole role : commandForServer.getImmuneRoles()) {
                 if (roleService.memberHasRole(member, role)) {
-                    throw new ImmuneUserException(roleService.getRoleFromGuild(role));
+                    ImmuneUserException exception = new ImmuneUserException(roleService.getRoleFromGuild(role));
+                    return ConditionResult.builder().result(false).exception(exception).build();
                 }
             }
         }

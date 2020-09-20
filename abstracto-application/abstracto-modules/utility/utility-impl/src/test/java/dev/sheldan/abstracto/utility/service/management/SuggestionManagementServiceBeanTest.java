@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.utility.service.management;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -28,6 +27,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class SuggestionManagementServiceBeanTest {
 
+    public static final long CHANNEL_ID = 6L;
     @InjectMocks
     private SuggestionManagementServiceBean testUnit;
 
@@ -48,7 +48,12 @@ public class SuggestionManagementServiceBeanTest {
         AServer server = MockUtils.getServer();
         AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
         String text = "text";
-        Suggestion createdSuggestion = testUnit.createSuggestion(userInAServer, text);
+        Message message = Mockito.mock(Message.class);
+        MessageChannel messageChannel = Mockito.mock(MessageChannel.class);
+        when(messageChannel.getIdLong()).thenReturn(CHANNEL_ID);
+        when(message.getChannel()).thenReturn(messageChannel);
+        long suggestionId = 1L;
+        Suggestion createdSuggestion = testUnit.createSuggestion(userInAServer, text,message, suggestionId);
         verify(suggestionRepository, times(1)).save(createdSuggestion);
         Assert.assertEquals(SuggestionState.NEW, createdSuggestion.getState());
         Assert.assertEquals(userInAServer.getUserInServerId(), createdSuggestion.getSuggester().getUserInServerId());
@@ -61,8 +66,13 @@ public class SuggestionManagementServiceBeanTest {
         AServer server = MockUtils.getServer();
         AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
         String text = "text";
+        Message message = Mockito.mock(Message.class);
+        MessageChannel messageChannel = Mockito.mock(MessageChannel.class);
+        when(messageChannel.getIdLong()).thenReturn(CHANNEL_ID);
+        when(message.getChannel()).thenReturn(messageChannel);
         when(userInServerManagementService.loadUser(member)).thenReturn(userInAServer);
-        Suggestion createdSuggestion = testUnit.createSuggestion(member, text);
+        long suggestionId = 1L;
+        Suggestion createdSuggestion = testUnit.createSuggestion(member, text, message, suggestionId);
         verify(suggestionRepository, times(1)).save(createdSuggestion);
         Assert.assertEquals(SuggestionState.NEW, createdSuggestion.getState());
         Assert.assertEquals(userInAServer.getUserInServerId(), createdSuggestion.getSuggester().getUserInServerId());
@@ -87,23 +97,6 @@ public class SuggestionManagementServiceBeanTest {
         Assert.assertFalse(suggestionOptional.isPresent());
     }
 
-    @Test
-    public void testSetPostedMessage() {
-        Long messageId = 5L;
-        Long channelId = 6L;
-        Suggestion suggestion = Suggestion.builder().build();
-        Message message = Mockito.mock(Message.class);
-        MessageChannel channel = Mockito.mock(MessageChannel.class);
-        when(message.getChannel()).thenReturn(channel);
-        when(channel.getIdLong()).thenReturn(channelId);
-        when(message.getIdLong()).thenReturn(messageId);
-        AChannel aChannel = AChannel.builder().id(channelId).build();
-        when(channelManagementService.loadChannel(channelId)).thenReturn(aChannel);
-        testUnit.setPostedMessage(suggestion, message);
-        Assert.assertEquals(messageId, suggestion.getMessageId());
-        Assert.assertEquals(channelId, suggestion.getChannel().getId());
-        verify(suggestionRepository, times(1)).save(suggestion);
-    }
 
     @Test
     public void setSuggestionState() {

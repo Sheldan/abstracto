@@ -9,9 +9,8 @@ import net.dv8tion.jda.api.entities.Message;
 import java.util.Optional;
 
 public interface SuggestionManagementService {
-    Suggestion createSuggestion(Member suggester, String text);
-    Suggestion createSuggestion(AUserInAServer suggester, String text);
+    Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId);
+    Suggestion createSuggestion(AUserInAServer suggester, String text, Message message, Long suggestionId);
     Optional<Suggestion> getSuggestion(Long suggestionId);
-    void setPostedMessage(Suggestion suggestion, Message message);
     void setSuggestionState(Suggestion suggestion, SuggestionState newState);
 }

@@ -12,14 +12,17 @@ import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManage
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import net.dv8tion.jda.api.entities.Role;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -43,11 +46,11 @@ public class ListDisabledExperienceRolesTest {
         CommandContext context = CommandTestUtilities.getNoParameters();
         AServer server = context.getUserInitiatedContext().getServer();
         when(disabledExpRoleManagementService.getDisabledRolesForServer(server)).thenReturn(new ArrayList<>());
-        CommandResult result = testUnit.execute(context);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        when(channelService.sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
+                any(DisabledExperienceRolesModel.class), eq(context.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         verify(roleService, times(0)).getRoleFromGuild(any(ARole.class));
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
-                any(DisabledExperienceRolesModel.class), eq(context.getChannel()));
     }
 
     @Test
@@ -57,11 +60,14 @@ public class ListDisabledExperienceRolesTest {
         ADisabledExpRole disabledExpRole1 = ADisabledExpRole.builder().role(MockUtils.getRole(4L, server)).build();
         ADisabledExpRole disabledExpRole2 = ADisabledExpRole.builder().role(MockUtils.getRole(6L, server)).build();
         when(disabledExpRoleManagementService.getDisabledRolesForServer(server)).thenReturn(Arrays.asList(disabledExpRole1, disabledExpRole2));
-        CommandResult result = testUnit.execute(context);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(roleService, times(2)).getRoleFromGuild(any(ARole.class));
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
-                any(DisabledExperienceRolesModel.class), eq(context.getChannel()));
+        Role role1 = Mockito.mock(Role.class);
+        Role role2 = Mockito.mock(Role.class);
+        when(roleService.getRoleFromGuild(disabledExpRole1.getRole())).thenReturn(role1);
+        when(roleService.getRoleFromGuild(disabledExpRole2.getRole())).thenReturn(role2);
+        when(channelService.sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
+                any(DisabledExperienceRolesModel.class), eq(context.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

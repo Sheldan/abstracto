@@ -4,12 +4,15 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository to manage the access to the table managed by {@link AExperienceRole}
@@ -22,7 +25,7 @@ public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole,
      * @return The {@link AExperienceRole} found or null if the query did not return any results
      */
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    AExperienceRole findByRole(ARole role);
+    Optional<AExperienceRole> findByRole(ARole role);
 
     /**
      * Finds a list of {@link AExperienceRole} (if there are multiple ones, because of misconfiguration) of the given
@@ -41,4 +44,9 @@ public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole,
      */
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AExperienceRole> findByRoleServer(AServer server);
+
+    @NotNull
+    @Override
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    Optional<AExperienceRole> findById(@NonNull Long aLong);
 }

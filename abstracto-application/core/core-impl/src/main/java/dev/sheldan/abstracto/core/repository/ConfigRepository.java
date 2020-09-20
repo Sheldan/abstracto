@@ -14,6 +14,9 @@ public interface ConfigRepository extends JpaRepository<AConfig, Long> {
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     AConfig findAConfigByServerIdAndName(Long serverId, String name);
 
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsAConfigByServerIdAndName(Long serverId, String name);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsAConfigByServerAndName(AServer server, String name);
 }

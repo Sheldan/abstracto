@@ -20,6 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -40,18 +41,18 @@ public class RemindTest {
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testOnlyRemindDateParameter() {
         CommandContext durationParameter = CommandTestUtilities.getWithParameters(Arrays.asList(Duration.ofDays(4)));
-        testUnit.execute(durationParameter);
+        testUnit.executeAsync(durationParameter);
     }
 
     @Test
@@ -59,13 +60,13 @@ public class RemindTest {
         String reminderText = "text";
         Duration duration = Duration.ofMinutes(10);
         CommandContext withParameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration, reminderText));
-        CommandResult result = testUnit.execute(withParameters);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(withParameters);
         verify(remindService, times(1)).createReminderInForUser(withParameters.getUserInitiatedContext().getAUserInAServer(), reminderText, duration, withParameters.getMessage());
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Remind.REMINDER_EMBED_KEY), captor.capture(), eq(withParameters.getChannel()));
         ReminderModel reminderModel = captor.getValue();
         Assert.assertEquals(reminderText, reminderModel.getRemindText());
         Assert.assertEquals(withParameters.getMessage(), reminderModel.getMessage());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

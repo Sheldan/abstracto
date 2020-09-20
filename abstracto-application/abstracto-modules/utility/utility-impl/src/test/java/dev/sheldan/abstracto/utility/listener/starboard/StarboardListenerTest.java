@@ -248,7 +248,7 @@ public class StarboardListenerTest {
         when(emoteService.getReactionFromMessageByEmote(cachedMessage, starEmote)).thenReturn(Optional.of(reaction));
         when(starboardPostManagementService.findByMessageId(messageId)).thenReturn(Optional.ofNullable(post));
         when(userInServerManagementService.loadUser(serverId, author.getUserReference().getId())).thenReturn(author);
-        when(userInServerManagementService.loadUser(remainingUser.getUserReference().getId())).thenReturn(Optional.of(remainingUser));
+        when(userInServerManagementService.loadUserConditional(remainingUser.getUserReference().getId())).thenReturn(Optional.of(remainingUser));
         when(configManagementService.loadConfig(serverId, StarboardListener.FIRST_LEVEL_THRESHOLD_KEY)).thenReturn(AConfig.builder().longValue(requiredStars).build());
         testUnit.executeReactionRemoved(cachedMessage, removeEvent, userRemoving);
         verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);
@@ -272,7 +272,7 @@ public class StarboardListenerTest {
         when(emoteService.getReactionFromMessageByEmote(cachedMessage, starEmote)).thenReturn(Optional.of(reaction));
         when(starboardPostManagementService.findByMessageId(messageId)).thenReturn(Optional.ofNullable(existingPost));
         when(userInServerManagementService.loadUser(serverId, author.getUserReference().getId())).thenReturn(author);
-        when(userInServerManagementService.loadUser(userAdding.getUserReference().getId())).thenReturn(Optional.of(userAdding));
+        when(userInServerManagementService.loadUserConditional(userAdding.getUserReference().getId())).thenReturn(Optional.of(userAdding));
         when(configManagementService.loadConfig(serverId, StarboardListener.FIRST_LEVEL_THRESHOLD_KEY)).thenReturn(AConfig.builder().longValue(requiredStars).build());
         testUnit.executeReactionAdded(cachedMessage, addEvent, userAdding);
         verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardListener.STAR_EMOTE, serverId);

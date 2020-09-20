@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowEmoteLog;
 import net.dv8tion.jda.api.entities.Emote;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class ShowEmote extends AbstractConditionableCommand {
@@ -26,14 +28,14 @@ public class ShowEmote extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Emote emoteParameter = (Emote) parameters.get(0);
         ShowEmoteLog emoteLog = (ShowEmoteLog) ContextConverter.fromCommandContext(commandContext, ShowEmoteLog.class);
         emoteLog.setEmote(emoteParameter);
-        channelService.sendEmbedTemplateInChannel(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -45,6 +47,7 @@ public class ShowEmote extends AbstractConditionableCommand {
                 .name("showEmote")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

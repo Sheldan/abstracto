@@ -16,9 +16,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UnSetExpRoleTest {
@@ -31,12 +31,12 @@ public class UnSetExpRoleTest {
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test
@@ -44,9 +44,9 @@ public class UnSetExpRoleTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(changedRole));
-        CommandResult result = testUnit.execute(context);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(experienceRoleService, times(1)).unsetRole(changedRole, context.getUserInitiatedContext().getChannel());
+        when(experienceRoleService.unsetRole(changedRole, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

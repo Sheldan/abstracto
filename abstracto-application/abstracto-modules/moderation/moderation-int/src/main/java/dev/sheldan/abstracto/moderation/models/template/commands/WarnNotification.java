@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.moderation.models.template.commands;
 
-import dev.sheldan.abstracto.moderation.models.database.Warning;
 import lombok.Builder;
 import lombok.Value;
 
@@ -11,9 +10,10 @@ import lombok.Value;
 @Builder
 public class WarnNotification {
     /**
-     * The persisted mute object from the database containing the information about the warning
+     * The reason of the warning
      */
-    private Warning warning;
+    private String reason;
+    private Long warnId;
     /**
      * The name of the server on which the warn was cast
      */

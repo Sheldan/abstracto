@@ -7,9 +7,10 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class UnMute extends AbstractConditionableCommand {
@@ -33,19 +35,18 @@ public class UnMute extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
-        if(!muteManagementService.hasActiveMute(member)) {
-            return CommandResult.fromError(templateService.renderSimpleTemplate(NO_ACTIVE_MUTE));
-        }
-        Mute mute = muteManagementService.getAMuteOf(member);
-        muteService.unMuteUser(mute);
-        muteService.cancelUnMuteJob(mute);
-        muteService.completelyUnMuteMember(member);
-        return CommandResult.fromSuccess();
+        AUserInAServer userToUnMute = userInServerManagementService.loadUser(member);
+        return muteService.unMuteUser(userToUnMute).thenApply(aVoid ->
+            CommandResult.fromSuccess()
+        );
     }
 
     @Override
@@ -57,6 +58,7 @@ public class UnMute extends AbstractConditionableCommand {
                 .name("unMute")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

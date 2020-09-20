@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,8 +43,8 @@ public class JoiningUserRoleListenerTest extends ExperienceRelatedTest {
         Guild guild = Mockito.mock(Guild.class);
         AUserExperience experience = AUserExperience.builder().experience(3L).user(aUserInAServer).build();
         when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(experience);
+        when(userExperienceService.syncForSingleUser(experience)).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.execute(member, guild, aUserInAServer);
-        verify(userExperienceService, times(1)).syncForSingleUser(experience);
     }
 
     @Test

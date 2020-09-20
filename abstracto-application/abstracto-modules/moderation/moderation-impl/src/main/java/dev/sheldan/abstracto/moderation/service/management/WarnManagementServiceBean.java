@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
@@ -18,12 +19,15 @@ public class WarnManagementServiceBean implements WarnManagementService {
     private WarnRepository warnRepository;
 
     @Override
-    public Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason) {
+    public Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, Long warnId) {
+        ServerSpecificId warningId = new ServerSpecificId(warnId, warningAUser.getServerReference().getId());
         Warning warning = Warning.builder()
                 .reason(reason)
                 .warnedUser(warnedAUser)
                 .warningUser(warningAUser)
                 .warnDate(Instant.now())
+                .server(warningAUser.getServerReference())
+                .warnId(warningId)
                 .decayed(false)
                 .build();
         warnRepository.save(warning);
@@ -56,8 +60,8 @@ public class WarnManagementServiceBean implements WarnManagementService {
     }
 
     @Override
-    public Optional<Warning> findById(Long id) {
-        return warnRepository.findById(id);
+    public Optional<Warning> findById(Long id, Long serverId) {
+        return warnRepository.findByWarnId_IdAndWarnId_ServerId(id, serverId);
     }
 
     @Override

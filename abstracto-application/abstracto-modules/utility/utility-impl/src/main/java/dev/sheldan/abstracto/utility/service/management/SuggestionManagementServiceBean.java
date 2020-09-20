@@ -32,19 +32,24 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     private ServerManagementService serverManagementService;
 
     @Override
-    public Suggestion createSuggestion(Member suggester, String text) {
+    public Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId) {
         AUserInAServer user = userInServerManagementService.loadUser(suggester);
-        return this.createSuggestion(user, text);
+        return this.createSuggestion(user, text, message, suggestionId);
     }
 
     @Override
-    public Suggestion createSuggestion(AUserInAServer suggester, String text) {
+    public Suggestion createSuggestion(AUserInAServer suggester, String text, Message message, Long suggestionId) {
+        long channelId = message.getChannel().getIdLong();
+        AChannel channel = channelManagementService.loadChannel(channelId);
         Suggestion suggestion = Suggestion
                 .builder()
                 .state(SuggestionState.NEW)
                 .suggester(suggester)
+                .id(suggestionId)
                 .server(suggester.getServerReference())
                 .suggestionDate(Instant.now())
+                .channel(channel)
+                .messageId(message.getIdLong())
                 .build();
         suggestionRepository.save(suggestion);
         return suggestion;
@@ -55,15 +60,6 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
         return suggestionRepository.findById(suggestionId);
     }
 
-
-    @Override
-    public void setPostedMessage(Suggestion suggestion, Message message) {
-        long channelId = message.getChannel().getIdLong();
-        AChannel channel = channelManagementService.loadChannel(channelId);
-        suggestion.setChannel(channel);
-        suggestion.setMessageId(message.getIdLong());
-        suggestionRepository.save(suggestion);
-    }
 
     @Override
     public void setSuggestionState(Suggestion suggestion, SuggestionState newState) {

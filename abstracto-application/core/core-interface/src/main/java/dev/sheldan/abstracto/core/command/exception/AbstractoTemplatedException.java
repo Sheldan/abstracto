@@ -13,6 +13,11 @@ public class AbstractoTemplatedException extends AbstractoRunTimeException imple
         this.templateKey = templateKey;
     }
 
+    public AbstractoTemplatedException(String message, String templateKey, Throwable cause) {
+        super(message, cause);
+        this.templateKey = templateKey;
+    }
+
     @Override
     public String getTemplateName() {
         return templateKey;

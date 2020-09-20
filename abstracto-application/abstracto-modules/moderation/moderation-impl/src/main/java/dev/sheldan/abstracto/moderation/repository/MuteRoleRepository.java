@@ -18,5 +18,6 @@ public interface MuteRoleRepository extends JpaRepository<MuteRole, Long> {
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<MuteRole> findAllByRoleServer(AServer server);
 
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByRoleServer(AServer server);
 }

@@ -19,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -44,13 +45,13 @@ public class RemindersTest {
         Reminder secondReminder = Reminder.builder().build();
         List<Reminder> reminders = Arrays.asList(reminder, secondReminder);
         when(reminderManagementService.getActiveRemindersForUser(context.getUserInitiatedContext().getAUserInAServer())).thenReturn(reminders);
-        CommandResult result = testUnit.execute(context);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Reminders.REMINDERS_RESPONSE_TEMPLATE), modelCaptor.capture(), eq(context.getChannel()));
         RemindersModel usedModel = modelCaptor.getValue();
         Assert.assertEquals(reminder, usedModel.getReminders().get(0));
         Assert.assertEquals(secondReminder, usedModel.getReminders().get(1));
         Assert.assertEquals(reminders.size(), usedModel.getReminders().size());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

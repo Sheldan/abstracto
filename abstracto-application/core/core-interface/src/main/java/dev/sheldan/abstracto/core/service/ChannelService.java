@@ -13,8 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface ChannelService {
-    void sendTextToAChannelNoFuture(String text, AChannel channel);
-    void sendTextToChannelNoFuture(String text, MessageChannel channel);
+    void sendTextToAChannelNotAsync(String text, AChannel channel);
+    void sendTextToChannelNotAsync(String text, MessageChannel channel);
     CompletableFuture<Message> sendTextToAChannel(String text, AChannel channel);
     CompletableFuture<Message> sendMessageToAChannel(Message message, AChannel channel);
     CompletableFuture<Message> sendMessageToChannel(Message message, MessageChannel channel);
@@ -36,6 +36,7 @@ public interface ChannelService {
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
     List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel);
+    CompletableFuture<Message> sendTextTemplateInChannel(String templateKey, Object model, MessageChannel channel);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
     Optional<TextChannel> getChannelFromAChannel(AChannel channel);

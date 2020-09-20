@@ -22,6 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -45,7 +46,7 @@ public class LeaderBoardCommandTest {
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test
@@ -68,9 +69,9 @@ public class LeaderBoardCommandTest {
         when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(leaderBoardEntryModel);
         MessageToSend messageToSend = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADER_BOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class))).thenReturn(messageToSend);
-        CommandResult result = testUnit.execute(context);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendMessageToSendToChannel(messageToSend, context.getChannel());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

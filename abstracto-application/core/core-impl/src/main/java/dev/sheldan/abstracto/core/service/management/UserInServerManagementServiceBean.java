@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -48,8 +49,13 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public Optional<AUserInAServer> loadUser(Long userInServerId) {
+    public Optional<AUserInAServer> loadUserConditional(Long userInServerId) {
         return userInServerRepository.findById(userInServerId);
+    }
+
+    @Override
+    public AUserInAServer loadUser(Long userInServerId) {
+        return loadUserConditional(userInServerId).orElseThrow(() -> new UserInServerNotFoundException(userInServerId));
     }
 
     @Override

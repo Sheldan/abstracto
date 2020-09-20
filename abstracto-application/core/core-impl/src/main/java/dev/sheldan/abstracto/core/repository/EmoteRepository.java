@@ -2,8 +2,10 @@ package dev.sheldan.abstracto.core.repository;
 
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
@@ -26,4 +28,9 @@ public interface EmoteRepository extends JpaRepository<AEmote, Integer> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByEmoteIdAndServerRef(String emoteId, AServer server);
+
+    @NotNull
+    @Override
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    Optional<AEmote> findById(@NonNull Integer aLong);
 }

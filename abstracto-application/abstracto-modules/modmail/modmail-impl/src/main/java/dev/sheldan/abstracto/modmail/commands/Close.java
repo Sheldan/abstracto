@@ -16,10 +16,10 @@ import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementS
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Closes the mod mail thread: logs the messages to the log post target, if the feature has the appropriate
@@ -43,14 +43,13 @@ public class Close extends AbstractConditionableCommand {
 
 
     @Override
-    @Transactional
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // the default value of the note is configurable via template
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note, true);
-        return CommandResult.fromSuccess();
+        return modMailThreadService.closeModMailThread(thread, note, true, commandContext.getUndoActions())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -63,9 +62,10 @@ public class Close extends AbstractConditionableCommand {
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)
+                .async(true)
                 .supportsEmbedException(true)
                 .templated(true)
-                .causesReaction(true)
+                .causesReaction(false)
                 .build();
     }
 

@@ -4,10 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +12,9 @@ import java.util.concurrent.CompletableFuture;
 public interface MessageService {
     void addReactionToMessage(String emoteKey, Long serverId, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message);
+    CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Guild guild, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Long serverId, Message message);
+    CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Guild guild, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(Long emoteId, Long serverId, Message message);
     CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Long serverId, Message message);
     CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Message message);
@@ -36,6 +35,9 @@ public interface MessageService {
     CompletableFuture<Long> createStatusMessageId(MessageToSend messageToSend, MessageChannel channel);
     void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend);
     void updateStatusMessage(MessageChannel channel, Long messageId, MessageToSend messageToSend);
-    void sendMessageToUser(AUserInAServer userInAServer, String text, MessageChannel feedbackChannel);
-    void sendMessageToUser(User user, String text, MessageChannel feedbackChannel);
+    CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text);
+    CompletableFuture<Message> sendTemplateToUser(User user, String template, Object model);
+    CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model);
+    CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model);
+    CompletableFuture<Message> sendMessageToUser(User user, String text);
 }

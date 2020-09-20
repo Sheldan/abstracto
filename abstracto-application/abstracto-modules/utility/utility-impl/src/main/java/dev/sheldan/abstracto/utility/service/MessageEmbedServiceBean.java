@@ -111,7 +111,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     @Override
     @Transactional
     public void embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
-        Optional<AUserInAServer> causeOpt = userInServerManagementService.loadUser(userEmbeddingUserInServerId);
+        Optional<AUserInAServer> causeOpt = userInServerManagementService.loadUserConditional(userEmbeddingUserInServerId);
         if(causeOpt.isPresent()) {
             AUserInAServer cause = causeOpt.get();
             MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(embeddingMessage, cachedMessage);
@@ -123,7 +123,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
                 try {
                     Message createdMessage = completableFutures.get(0).get();
-                    Optional<AUserInAServer> innerCauseOpt = userInServerManagementService.loadUser(userInServerId);
+                    Optional<AUserInAServer> innerCauseOpt = userInServerManagementService.loadUserConditional(userInServerId);
                     innerCauseOpt.ifPresent(aUserInAServer -> {
                         messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, aUserInAServer);
                         messageService.addReactionToMessage(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage);

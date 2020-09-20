@@ -4,15 +4,15 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ResultState;
-import dev.sheldan.abstracto.moderation.models.database.Mute;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -21,6 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -42,38 +43,36 @@ public class UnMuteTest {
     @Mock
     private Member memberToUnMute;
 
+    @Mock
+    private UserInServerManagementService userInServerManagementService;
+
     @Test
     public void testUnMuteCommand() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToUnMute));
-        when(muteManagementService.hasActiveMute(memberToUnMute)).thenReturn(true);
-        Mute mute = Mute.builder().build();
-        when(muteManagementService.getAMuteOf(memberToUnMute)).thenReturn(mute);
-        CommandResult result = testUnit.execute(parameters);
-        verify(muteService, times(1)).unMuteUser(mute);
-        verify(muteService, times(1)).cancelUnMuteJob(mute);
-        verify(muteService, times(1)).completelyUnMuteMember(memberToUnMute);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        AUserInAServer user = AUserInAServer.builder().build();
+        when(userInServerManagementService.loadUser(memberToUnMute)).thenReturn(user);
+        when(muteService.unMuteUser(user)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
-    @Test
+    @Test(expected = NoMuteFoundException.class)
     public void testUnMuteCommandWithoutExistingMute() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToUnMute));
-        when(muteManagementService.hasActiveMute(memberToUnMute)).thenReturn(false);
-        String message = "text";
-        when(templateService.renderSimpleTemplate(UnMute.NO_ACTIVE_MUTE)).thenReturn(message);
-        CommandResult result = testUnit.execute(parameters);
-        Assert.assertEquals(ResultState.ERROR, result.getResult());
-        Assert.assertEquals(message, result.getMessage());
+        AUserInAServer user = AUserInAServer.builder().build();
+        when(userInServerManagementService.loadUser(memberToUnMute)).thenReturn(user);
+        when(muteService.unMuteUser(user)).thenThrow(new NoMuteFoundException());
+        testUnit.executeAsync(parameters);
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

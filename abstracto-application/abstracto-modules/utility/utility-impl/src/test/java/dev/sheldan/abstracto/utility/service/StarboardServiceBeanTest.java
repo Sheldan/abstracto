@@ -153,15 +153,15 @@ public class StarboardServiceBeanTest {
         Long secondStarrerUserId = 2L;
         List<Long> userExceptAuthorIds = Arrays.asList(secondStarrerUserId, userReacting.getUserReference().getId());
         List<CompletableFuture<Message>> futures = Arrays.asList(CompletableFuture.completedFuture(sendPost));
-        when(userInServerManagementService.loadUser(starredUser.getUserInServerId())).thenReturn(Optional.of(starredUser));
-        when(userInServerManagementService.loadUser(userReacting.getUserInServerId())).thenReturn(Optional.of(userReacting));
+        when(userInServerManagementService.loadUserConditional(starredUser.getUserInServerId())).thenReturn(Optional.of(starredUser));
+        when(userInServerManagementService.loadUserConditional(userReacting.getUserInServerId())).thenReturn(Optional.of(userReacting));
         AChannel channel = MockUtils.getTextChannel(server, channelId);
         when(channelManagementService.loadChannel(channelId)).thenReturn(channel);
         StarboardPost post = StarboardPost.builder().build();
         when(starboardPostManagementService.createStarboardPost(eq(message), eq(starredUser), any(AServerAChannelMessage.class))).thenReturn(post);
         AUserInAServer secondStarrerUserObj = MockUtils.getUserObject(secondStarrerUserId, server);
-        when(userInServerManagementService.loadUser(secondStarrerUserId)).thenReturn(Optional.of(secondStarrerUserObj));
-        when(userInServerManagementService.loadUser(userReacting.getUserInServerId())).thenReturn(Optional.of(userReacting));
+        when(userInServerManagementService.loadUserConditional(secondStarrerUserId)).thenReturn(Optional.of(secondStarrerUserObj));
+        when(userInServerManagementService.loadUserConditional(userReacting.getUserInServerId())).thenReturn(Optional.of(userReacting));
         testUnit.persistPost(message, userExceptAuthorIds, futures, channelId, starredUser.getUserInServerId(), userReacting.getUserInServerId());
         verify(starboardPostReactorManagementService, times(2)).addReactor(eq(post), userInAServerArgumentCaptor.capture());
         List<AUserInAServer> addedReactors = userInAServerArgumentCaptor.getAllValues();
@@ -218,7 +218,7 @@ public class StarboardServiceBeanTest {
         AServer server = MockUtils.getServer();
         AUserInAServer userReacting = MockUtils.getUserObject(4L, server);
         AUserInAServer starredUser = MockUtils.getUserObject(5L, server);
-        when(userInServerManagementService.loadUser(starredUser.getUserInServerId())).thenReturn(Optional.empty());
+        when(userInServerManagementService.loadUserConditional(starredUser.getUserInServerId())).thenReturn(Optional.empty());
         executeLoadErrorTest(server, userReacting, starredUser, 10L);
     }
 

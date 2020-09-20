@@ -10,6 +10,7 @@ public interface AssignedRoleUserManagementService {
     void addAssignedRoleToUser(AssignableRole assignableRole, AUserInAServer aUserInAServer);
     void removeAssignedRoleFromUser(AssignableRole assignableRole, AUserInAServer aUserInAServer);
     AssignedRoleUser createAssignedRoleUser(AUserInAServer aUserInAServer);
+    void clearAllAssignedRolesOfUser(AUserInAServer userInAServer);
     boolean doesAssignedRoleUserExist(AUserInAServer aUserInAServer);
     Optional<AssignedRoleUser> findByUserInServerOptional(AUserInAServer aUserInAServer);
     AssignedRoleUser findByUserInServer(AUserInAServer aUserInAServer);

@@ -16,5 +16,6 @@ public interface ChannelGroupRepository extends JpaRepository<AChannelGroup, Lon
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AChannelGroup> findByServer(AServer server);
 
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByGroupNameAndServer(String name, AServer server);
 }

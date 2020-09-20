@@ -2,12 +2,16 @@ package dev.sheldan.abstracto.modmail.service;
 
 
 import dev.sheldan.abstracto.core.models.FullUserInServer;
+import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Service used to handle the mod mail life cycle, including creation, updating, sending/receiving messages and logging the mod mail thread
@@ -22,7 +26,7 @@ public interface ModMailThreadService {
      * @param feedBackChannel The {@link MessageChannel} in which feedback about exceptions should be posted to
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
      */
-    void createModMailThreadForUser(FullUserInServer userInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated);
+    CompletableFuture<Void> createModMailThreadForUser(FullUserInServer userInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated,  List<UndoActionInstance> undoActions);
 
     /**
      * Changes the configuration value of the category used to create mod mail threads to the given ID.
@@ -48,7 +52,7 @@ public interface ModMailThreadService {
      * @param modMailThread The {@link ModMailThread} on which the user answered
      * @param message The {@link Message} object which was sent by the user to answer with
      */
-    void relayMessageToModMailThread(ModMailThread modMailThread, Message message);
+    CompletableFuture<Void> relayMessageToModMailThread(ModMailThread modMailThread, Message message, List<UndoActionInstance> undoActions);
 
     /**
      * Forwards a message send by a moderator to the direct message channel opened with the user. If the message is
@@ -59,7 +63,7 @@ public interface ModMailThreadService {
      * @param anonymous Whether or nor the message should be send anonymous
      * @param feedBack The {@link MessageChannel} in which feedback about possible exceptions should be sent to
      */
-    void relayMessageToDm(ModMailThread modMailThread, String text, Message message, boolean anonymous, MessageChannel feedBack);
+    CompletableFuture<Void> relayMessageToDm(ModMailThread modMailThread, String text, Message message, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,
@@ -67,11 +71,10 @@ public interface ModMailThreadService {
      * post target. This also takes an optional note, which will be displayed in the first message of the logging. This method changes the state of the
      * {@link ModMailThread} to CLOSED and notifies the user about closing.
      * @param modMailThread The {@link ModMailThread} which is being closed.
-     * @param feedBack The {@link MessageChannel} in which feedback about possible exceptions should be sent to
      * @param note The text of the note used for the header message of the logged mod mail thread.
      * @param notifyUser Whether or not the user should be notified
      */
-    void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, boolean notifyUser);
+    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,
@@ -79,11 +82,10 @@ public interface ModMailThreadService {
      * be displayed in the first message of the logging. This method changes the state of the {@link ModMailThread} to
      * CLOSED and notifies the user about closing.
      * @param modMailThread The {@link ModMailThread} which is being closed.
-     * @param feedBack The {@link MessageChannel} in which feedback about possible exceptions should be sent to
      * @param note The text of the note used for the header message of the logged mod mail thread, this is only required when actually
      *             logging the mod mail thread
      * @param notifyUser Whether or not the user should be notified
      * @param logThread Whether or not the thread should be logged to the appropriate post target
      */
-    void closeModMailThread(ModMailThread modMailThread, MessageChannel feedBack, String note, boolean notifyUser, boolean logThread);
+    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, boolean logThread, List<UndoActionInstance> undoActions);
 }

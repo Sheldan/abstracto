@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -17,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -40,16 +43,17 @@ public class KickServiceBeanTest {
         when(member.getUser()).thenReturn(user);
         when(user.getIdLong()).thenReturn(6L);
         Guild mockedGuild = Mockito.mock(Guild.class);
+        when(mockedGuild.getIdLong()).thenReturn(server.getId());
         when(member.getGuild()).thenReturn(mockedGuild);
-        AuditableRestAction<Void> mockedAction = Mockito.mock(AuditableRestAction.class);
         String reason = "reason";
+        AuditableRestAction<Void> mockedAction = Mockito.mock(AuditableRestAction.class);
         when(mockedGuild.kick(member, reason)).thenReturn(mockedAction);
+        when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
         KickLogModel model = Mockito.mock(KickLogModel.class);
-        when(model.getServer()).thenReturn(server);
+        when(model.getGuild()).thenReturn(mockedGuild);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model)).thenReturn(messageToSend);
+        when(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.KICK_LOG, server.getId())).thenReturn(CommandTestUtilities.messageFutureList());
         testUnit.kickMember(member, reason, model);
-        verify(mockedGuild, times(1)).kick(member, reason);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, ModerationPostTarget.KICK_LOG, server.getId());
     }
 }

@@ -4,7 +4,10 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
+import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -40,6 +44,12 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     @Mock
     private AUserExperienceService userExperienceService;
 
+    @Mock
+    private RoleManagementService roleManagementService;
+
+    @Mock
+    private ExperienceRoleServiceBean self;
+
 
     @Test
     public void testSettingRoleToLevelWithoutOldUsers() {
@@ -48,10 +58,23 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
         ARole roleToChange = getRole(1L, server);
         AExperienceRole previousExperienceRole = AExperienceRole.builder().role(roleToChange).roleServer(server).level(level).build();
-        when(experienceRoleManagementService.getRoleInServer(roleToChange)).thenReturn(previousExperienceRole);
-        when(experienceLevelService.getLevel(levelCount)).thenReturn(Optional.of(level));
-        testingUnit.setRoleToLevel(roleToChange, levelCount, getFeedbackChannel(server));
+        when(experienceRoleManagementService.getRoleInServerOptional(roleToChange)).thenReturn(Optional.of(previousExperienceRole));
+        CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, getFeedbackChannel(server));
+
+        future.join();
         verify(experienceRoleManagementService, times(1)).unsetRole(previousExperienceRole);
+    }
+
+    @Test
+    public void testUnsetRoleInDb() {
+        AServer server = MockUtils.getServer();
+        Integer levelCount = 10;
+        AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
+        ARole roleToChange = getRole(1L, server);
+        when(experienceLevelService.getLevel(levelCount)).thenReturn(Optional.of(level));
+        when(roleManagementService.findRole(roleToChange.getId())).thenReturn(roleToChange);
+        testingUnit.unsetRoleInDb(levelCount, roleToChange.getId());
+
         verify(experienceRoleManagementService, times(1)).removeAllRoleAssignmentsForLevelInServer(level, server);
         verify(experienceRoleManagementService, times(1)).setLevelToRole(level, roleToChange);
         verify(experienceRoleManagementService, times(0)).getExperienceRolesForServer(server);
@@ -70,23 +93,23 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         List<AUserExperience> users = Arrays.asList(firstUser, secondUser);
         AExperienceRole previousExperienceRole = AExperienceRole.builder().role(roleToChange).id(roleToChange.getId()).roleServer(server).level(level).users(users).build();
         AExperienceRole newExperienceRole = AExperienceRole.builder().role(newRoleToAward).id(newRoleToAward.getId()).roleServer(server).level(level).build();
-        when(experienceRoleManagementService.getRoleInServer(roleToChange)).thenReturn(previousExperienceRole);
-        when(experienceLevelService.getLevel(levelCount)).thenReturn(Optional.of(level));
+        when(experienceRoleManagementService.getRoleInServerOptional(roleToChange)).thenReturn(Optional.of(previousExperienceRole));
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(new ArrayList<>(Arrays.asList(newExperienceRole, previousExperienceRole)));
         AChannel feedBackChannel = getFeedbackChannel(server);
-        testingUnit.setRoleToLevel(roleToChange, levelCount, feedBackChannel);
-        verify(experienceRoleManagementService, times(1)).unsetRole(previousExperienceRole);
-        verify(experienceRoleManagementService, times(1)).removeAllRoleAssignmentsForLevelInServer(level, server);
-        verify(experienceRoleManagementService, times(1)).setLevelToRole(level, roleToChange);
-        verify(experienceRoleManagementService, times(1)).getExperienceRolesForServer(server);
-        verify(userExperienceService, times(1)).executeActionOnUserExperiencesWithFeedBack(eq(users), eq(feedBackChannel), any());
+        List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
+        futures.add(CompletableFuture.completedFuture(null));
+        CompletableFutureList<RoleCalculationResult> futuresList = new CompletableFutureList<>(futures);
+        when(userExperienceService.executeActionOnUserExperiencesWithFeedBack(eq(users), eq(feedBackChannel), any())).thenReturn(futuresList);
+        CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, feedBackChannel);
+        future.join();
+        verify(experienceRoleManagementService, times(0)).unsetRole(previousExperienceRole);
     }
 
     @Test
     public void testCalculateRoleForLevelInBetween() {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(6).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(userExperience, roles);
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
         Assert.assertEquals(aExperienceRole.getLevel().getLevel().intValue(), 5);
     }
 
@@ -94,7 +117,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     public void testCalculateRoleForLevelBelow() {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(4).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(userExperience, roles);
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
         Assert.assertNull(aExperienceRole);
     }
 
@@ -102,7 +125,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     public void testCalculateRoleForLevelOver() {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(11).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(userExperience, roles);
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
         Assert.assertEquals(aExperienceRole.getLevel().getLevel().intValue(), 10);
     }
 
@@ -110,7 +133,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     public void testCalculateRoleForLevelExact() {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(10).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(userExperience, roles);
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles,  userExperience.getLevelOrDefault());
         Assert.assertEquals(aExperienceRole.getLevel().getLevel().intValue(), 10);
     }
 
@@ -118,7 +141,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     public void testCalculateRoleForNoRoleConfigFound() {
         List<AExperienceRole> roles = new ArrayList<>();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(6).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(userExperience, roles);
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles,  userExperience.getLevelOrDefault());
         Assert.assertNull(aExperienceRole);
     }
 

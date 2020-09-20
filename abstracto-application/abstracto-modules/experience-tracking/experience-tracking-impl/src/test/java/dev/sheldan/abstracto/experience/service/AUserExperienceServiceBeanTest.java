@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeatureConfig;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
@@ -77,11 +78,14 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     @Captor
     private ArgumentCaptor<AUserExperience> aUserExperienceArgumentCaptor;
 
+    @Mock
+    private AUserExperienceServiceBean self;
+
     @Test
     public void testCalculateLevelTooLow() {
         AUserExperience experienceToCalculate = AUserExperience.builder().experience(50L).build();
         List<AExperienceLevel> levels = getLevelConfiguration();
-        AExperienceLevel calculatedLevel = testUnit.calculateLevel(experienceToCalculate, levels);
+        AExperienceLevel calculatedLevel = testUnit.calculateLevel(levels, experienceToCalculate.getExperience());
         Assert.assertEquals(0, calculatedLevel.getLevel().intValue());
     }
 
@@ -89,7 +93,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     public void testCalculateLevelBetweenLevels() {
         AUserExperience experienceToCalculate = AUserExperience.builder().experience(250L).build();
         List<AExperienceLevel> levels = getLevelConfiguration();
-        AExperienceLevel calculatedLevel = testUnit.calculateLevel(experienceToCalculate, levels);
+        AExperienceLevel calculatedLevel = testUnit.calculateLevel(levels, experienceToCalculate.getExperience());
         Assert.assertEquals(2, calculatedLevel.getLevel().intValue());
     }
 
@@ -97,7 +101,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     public void testCalculateLevelTooHigh() {
         AUserExperience experienceToCalculate = AUserExperience.builder().experience(500L).build();
         List<AExperienceLevel> levels = getLevelConfiguration();
-        AExperienceLevel calculatedLevel = testUnit.calculateLevel(experienceToCalculate, levels);
+        AExperienceLevel calculatedLevel = testUnit.calculateLevel(levels, experienceToCalculate.getExperience());
         Assert.assertEquals(3, calculatedLevel.getLevel().intValue());
     }
 
@@ -106,7 +110,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceLevel> levels = getLevelConfiguration();
         AUserInAServer userObject = MockUtils.getUserObject(2L, MockUtils.getServer());
         AUserExperience experienceToCalculate = AUserExperience.builder().user(userObject).currentLevel(levels.get(1)).experience(250L).build();
-        Assert.assertTrue(testUnit.updateUserLevel(experienceToCalculate, levels));
+        Assert.assertTrue(testUnit.updateUserLevel(experienceToCalculate, levels, experienceToCalculate.getExperience()));
     }
 
     @Test
@@ -114,7 +118,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceLevel> levels = getLevelConfiguration();
         AUserInAServer userObject = MockUtils.getUserObject(2L, MockUtils.getServer());
         AUserExperience experienceToCalculate = AUserExperience.builder().user(userObject).currentLevel(levels.get(2)).experience(250L).build();
-        Assert.assertFalse(testUnit.updateUserLevel(experienceToCalculate, levels));
+        Assert.assertFalse(testUnit.updateUserLevel(experienceToCalculate, levels, experienceToCalculate.getExperience()));
     }
 
     @Test
@@ -126,9 +130,8 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
         AExperienceRole previousExperienceRole = experienceRoles.get(1);
         when(botService.isUserInGuild(userToUse)).thenReturn(true);
-        AExperienceRole newAwardedRole = testRoleRelatedScenario(false, levels, servers, serverToUse, experienceRoles, userToUse, previousExperienceRole);
-        verify(roleService, times(1)).addRoleToUser(userToUse, newAwardedRole.getRole());
-        verify(roleService, times(1)).removeRoleFromUser(userToUse, previousExperienceRole.getRole());
+        testRoleRelatedScenario(levels, servers, serverToUse, experienceRoles, userToUse, previousExperienceRole);
+        verify(roleService, times(1)).removeRoleFromUserFuture(userToUse, previousExperienceRole.getRole());
     }
 
     @Test
@@ -139,7 +142,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
         AExperienceRole previousExperienceRole = experienceRoles.get(1);
-        AExperienceRole newAwardedRole = testRoleRelatedScenario(true, levels, servers, serverToUse, experienceRoles, userToUse, previousExperienceRole);
+        AExperienceRole newAwardedRole = testRoleRelatedScenario(levels, servers, serverToUse, experienceRoles, userToUse, previousExperienceRole);
         verify(roleService, times(0)).addRoleToUser(userToUse, newAwardedRole.getRole());
         verify(roleService, times(0)).removeRoleFromUser(userToUse, previousExperienceRole.getRole());
     }
@@ -153,20 +156,14 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         levels.add(AExperienceLevel.builder().level(4).experienceNeeded(400L).build());
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        Member jdaMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AExperienceRole previousExperienceRole = experienceRoles.get(3);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 401L, 3, previousExperienceRole, false);
 
         AExperienceRole newAwardedRole = experienceRoles.get(3);
-        when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(newAwardedRole);
-        when(roleService.memberHasRole(jdaMember, newAwardedRole.getRole())).thenReturn(true);
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
         testUnit.handleExperienceGain(servers);
-        verify(userExperienceManagementService, times(1)).saveUser(eq(newUserExperience));
         verify(roleService, times(0)).removeRoleFromUser(userToUse, previousExperienceRole.getRole());
         verify(roleService, times(0)).addRoleToUser(userToUse, newAwardedRole.getRole());
-        Assert.assertEquals(4, newUserExperience.getCurrentLevel().getLevel().intValue());
-        Assert.assertEquals(3L, newUserExperience.getCurrentExperienceRole().getRole().getId().longValue());
     }
 
     @Test
@@ -177,15 +174,9 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        Member jdaMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 101L, 1, null, false);
-
-        when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(experienceRoles.get(1));
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
         testUnit.handleExperienceGain(servers);
-        verify(userExperienceManagementService, times(1)).saveUser(eq(newUserExperience));
-        Assert.assertEquals(1, newUserExperience.getCurrentLevel().getLevel().intValue());
-        Assert.assertEquals(1L, newUserExperience.getCurrentExperienceRole().getRole().getId().longValue());
     }
 
     @Test
@@ -196,13 +187,10 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        Member jdaMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, null, false);
 
-        when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(null);
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
         testUnit.handleExperienceGain(servers);
-        verify(userExperienceManagementService, times(1)).saveUser(eq(newUserExperience));
         Assert.assertEquals(0, newUserExperience.getCurrentLevel().getLevel().intValue());
         Assert.assertNull(newUserExperience.getCurrentExperienceRole());
     }
@@ -219,14 +207,12 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, experienceRoles.get(0), false);
 
-        when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(null);
         when(botService.isUserInGuild(userToUse)).thenReturn(true);
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
+        when(roleService.removeRoleFromUserFuture(newUserExperience.getUser(), newUserExperience.getCurrentExperienceRole().getRole())).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.handleExperienceGain(servers);
-        verify(userExperienceManagementService, times(1)).saveUser(eq(newUserExperience));
-        verify(roleService, times(1)).removeRoleFromUser(userToUse, experienceRoles.get(0).getRole());
-        verify(roleService, times(0)).addRoleToUser(eq(userToUse), any(ARole.class));
-        Assert.assertEquals(0, newUserExperience.getCurrentLevel().getLevel().intValue());
-        Assert.assertNull(newUserExperience.getCurrentExperienceRole());
+        verify(roleService, times(1)).removeRoleFromUserFuture(userToUse, experienceRoles.get(0).getRole());
+        verify(roleService, times(0)).addRoleToUserFuture(eq(userToUse), any(ARole.class));
     }
 
     @Test
@@ -238,7 +224,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 50L, 0, experienceRoles.get(0), true);
-
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
         testUnit.handleExperienceGain(servers);
         verify(userExperienceManagementService, times(0)).saveUser(eq(newUserExperience));
         verify(roleService, times(0)).removeRoleFromUser(userToUse, experienceRoles.get(0).getRole());
@@ -275,16 +261,12 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> experienceRoles = getExperienceRoles(levels, serverToUse);
         mockSimpleServer(levels, experienceRoles, serverToUse);
         AUserInAServer userToUse = serverToUse.getUsers().get(0);
-        Member jdaMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 101L, 1, experienceRoles.get(1), false);
-        when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(experienceRoles.get(1));
-        testUnit.handleExperienceGain(servers);
-        verify(userExperienceManagementService, times(1)).saveUser(eq(newUserExperience));
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
+        CompletableFuture<Void> future = testUnit.handleExperienceGain(servers);
+        future.join();
         verify(roleService, times(0)).removeRoleFromUser(userToUse, experienceRoles.get(0).getRole());
         verify(roleService, times(0)).addRoleToUser(eq(userToUse), any(ARole.class));
-        Assert.assertEquals(1, newUserExperience.getCurrentLevel().getLevel().intValue());
-        Assert.assertEquals(experienceRoles.get(1).getRole().getId(), newUserExperience.getCurrentExperienceRole().getRole().getId());
     }
 
     @Test
@@ -304,27 +286,19 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
             List<AExperienceRole> experienceRoles = getExperienceRoles(levels, aServer);
             mockSimpleServer(levels, experienceRoles, aServer);
             AUserInAServer userToUse = aServer.getUsers().get(0);
-            Member jdaMember = Mockito.mock(Member.class);
-            when(botService.getMemberInServer(aServer, userToUse.getUserReference())).thenReturn(jdaMember);
             AExperienceRole role = experienceRoles.get(experienceRoleIndices.get(i));
             AUserExperience newUserExperience = mockServerWithSingleUser(levels, aServer, experienceValues, level, role, false);
-            when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(role);
+            when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
             userExperiences.add(newUserExperience);
             allExperienceRoles.add(experienceRoles);
         }
         testUnit.handleExperienceGain(servers);
-        List<Integer> newLevels = Arrays.asList(1,3);
-        List<Integer> newExperienceRoleIndices = Arrays.asList(1, 2);
         for (int i = 0; i < servers.size(); i++) {
             AServer server = servers.get(i);
-            AUserExperience newUserExperience = userExperiences.get(i);
             AUserInAServer userToUse = server.getUsers().get(0);
             List<AExperienceRole> experienceRoles = allExperienceRoles.get(i);
-            verify(userExperienceManagementService, times(2)).saveUser(aUserExperienceArgumentCaptor.capture());
             verify(roleService, times(0)).removeRoleFromUser(userToUse, experienceRoles.get(0).getRole());
             verify(roleService, times(0)).addRoleToUser(eq(userToUse), any(ARole.class));
-            Assert.assertEquals(newLevels.get(i).intValue(), newUserExperience.getCurrentLevel().getLevel().intValue());
-            Assert.assertEquals(experienceRoles.get(newExperienceRoleIndices.get(i)).getRole().getId(), newUserExperience.getCurrentExperienceRole().getRole().getId());
         }
     }
 
@@ -336,7 +310,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         AExperienceRole afterRole = usedExperienceRoles.get(0);
         Integer removals = 0;
         Integer adds = 1;
-        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole, removals, adds);
+        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole);
     }
 
     @Test
@@ -347,7 +321,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         AExperienceRole afterRole = null;
         Integer removals = 1;
         Integer adds = 0;
-        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole, removals, adds);
+        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole);
     }
 
     @Test
@@ -358,7 +332,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         AExperienceRole afterRole = usedExperienceRoles.get(0);
         Integer removals = 0;
         Integer adds = 0;
-        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole, removals, adds);
+        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole);
     }
 
     @Test
@@ -369,7 +343,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         AExperienceRole afterRole = usedExperienceRoles.get(1);
         Integer removals = 1;
         Integer adds = 1;
-        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole, removals, adds);
+        executeSyncSingleUserTest(server, usedExperienceRoles, previousRole, afterRole);
     }
 
     @Test
@@ -438,7 +412,8 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         AExperienceRole secondPreviousRole = null;
         AExperienceRole secondAfterRole = null;
         AExperienceLevel level0 = AExperienceLevel.builder().level(0).build();
-        AUserExperience experience = AUserExperience.builder().experience(40L).user(MockUtils.getUserObject(3L, server)).currentLevel(level0).build();
+        AExperienceLevel level1 = AExperienceLevel.builder().level(1).build();
+        AUserExperience experience = AUserExperience.builder().experience(40L).user(MockUtils.getUserObject(3L, server)).currentLevel(level1).build();
         AUserExperience experience2 = AUserExperience.builder().experience(201L).user(MockUtils.getUserObject(4L, server)).currentLevel(level0).build();
         List<AUserExperience> experiences = Arrays.asList(experience, experience2);
 
@@ -451,15 +426,19 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         experience2.setCurrentExperienceRole(secondPreviousRole);
         when(userExperienceManagementService.loadAllUsers(server)).thenReturn(experiences);
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(usedExperienceRoles);
-        when(experienceRoleService.calculateRole(experience, usedExperienceRoles)).thenReturn(firstAfterRole);
-        when(experienceRoleService.calculateRole(experience2, usedExperienceRoles)).thenReturn(secondAfterRole);
+        when(experienceRoleService.calculateRole(usedExperienceRoles, experience.getLevelOrDefault())).thenReturn(firstAfterRole);
+        when(experienceRoleService.calculateRole(usedExperienceRoles, experience2.getLevelOrDefault())).thenReturn(secondAfterRole);
         when(botService.getMemberInServer(server, experience.getUser().getUserReference())).thenReturn(firstMember);
         when(botService.getMemberInServer(server, experience2.getUser().getUserReference())).thenReturn(secondMember);
+        when(botService.isUserInGuild(experience.getUser())).thenReturn(true);
+        when(botService.isUserInGuild(experience2.getUser())).thenReturn(true);
+        when(roleService.addRoleToUserFuture(experience.getUser(), firstAfterRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
         when(roleService.memberHasRole(firstMember, firstAfterRole.getRole())).thenReturn(false);
-        testUnit.syncUserRoles(server);
-        Assert.assertNull(experience2.getCurrentExperienceRole());
-        Assert.assertEquals(usedExperienceRoles.get(0).getRole().getId(), experience.getCurrentExperienceRole().getRole().getId());
-        verify(roleService, times(1)).addRoleToUser(users.get(0), usedExperienceRoles.get(0).getRole());
+        List<CompletableFuture<RoleCalculationResult>> futures = testUnit.syncUserRoles(server);
+        RoleCalculationResult result = futures.get(0).join();
+        RoleCalculationResult result2 = futures.get(1).join();
+        Assert.assertEquals(firstAfterRole.getRole().getId(), result.getExperienceRoleId());
+        Assert.assertNull(result2.getExperienceRoleId());
     }
 
     @Test
@@ -547,7 +526,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         verify(messageService, times(messageCount)).updateStatusMessage(channel, messageId, statusMessage);
     }
 
-    private void executeSyncSingleUserTest(AServer server, List<AExperienceRole> usedExperienceRoles, AExperienceRole previousRole, AExperienceRole afterRole, Integer removals, Integer adds) {
+    private void executeSyncSingleUserTest(AServer server, List<AExperienceRole> usedExperienceRoles, AExperienceRole previousRole, AExperienceRole afterRole) {
         AExperienceLevel level0 = AExperienceLevel.builder().level(0).build();
         AUserExperience experience = AUserExperience.builder().experience(40L).user(MockUtils.getUserObject(3L, server)).currentLevel(level0).build();
         List<AUserExperience> experiences = Arrays.asList(experience);
@@ -557,26 +536,25 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         when(botService.getMemberInServer(server, users.get(0).getUserReference())).thenReturn(firstMember);
         experience.setCurrentExperienceRole(previousRole);
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(usedExperienceRoles);
-        when(experienceRoleService.calculateRole(experience, usedExperienceRoles)).thenReturn(afterRole);
+        when(experienceRoleService.calculateRole(usedExperienceRoles, experience.getLevelOrDefault())).thenReturn(afterRole);
         when(botService.getMemberInServer(server, experience.getUser().getUserReference())).thenReturn(firstMember);
-        if(removals > 0) {
-            users.forEach(aUserInAServer -> when(botService.isUserInGuild(aUserInAServer)).thenReturn(true));
+        users.forEach(aUserInAServer -> when(botService.isUserInGuild(aUserInAServer)).thenReturn(true));
+        if(afterRole != null) {
+            when(roleService.addRoleToUserFuture(experience.getUser(), afterRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        }
+        if(previousRole != null) {
+            when(roleService.removeRoleFromUserFuture(experience.getUser(), previousRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
         }
         if(afterRole != null && previousRole != null) {
             boolean sameRole = previousRole.getRole().getId().equals(afterRole.getRole().getId());
             when(roleService.memberHasRole(firstMember, afterRole.getRole())).thenReturn(sameRole);
         }
-        testUnit.syncForSingleUser(experience);
+        CompletableFuture<RoleCalculationResult> calculationFuture = testUnit.syncForSingleUser(experience);
+        RoleCalculationResult result = calculationFuture.join();
         if(afterRole != null) {
-            Assert.assertEquals(afterRole.getRole().getId(), experience.getCurrentExperienceRole().getRole().getId());
+            Assert.assertEquals(afterRole.getRole().getId(), result.getExperienceRoleId());
         } else {
-            Assert.assertNull(experience.getCurrentExperienceRole());
-        }
-        if(previousRole != null) {
-            verify(roleService, times(removals)).removeRoleFromUser(experience.getUser(), previousRole.getRole());
-        }
-        if(afterRole != null) {
-            verify(roleService, times(adds)).addRoleToUser(experience.getUser(), afterRole.getRole());
+            Assert.assertNull(result.getExperienceRoleId());
         }
     }
 
@@ -597,19 +575,16 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         Assert.assertEquals(pageSize, entries.size());
     }
 
-    private AExperienceRole testRoleRelatedScenario(boolean shouldHaveRole, List<AExperienceLevel> levels, List<AServer> servers, AServer serverToUse, List<AExperienceRole> experienceRoles, AUserInAServer userToUse, AExperienceRole previousExperienceRole) {
+    private AExperienceRole testRoleRelatedScenario(List<AExperienceLevel> levels, List<AServer> servers, AServer serverToUse, List<AExperienceRole> experienceRoles, AUserInAServer userToUse, AExperienceRole previousExperienceRole) {
         mockSimpleServer(levels, experienceRoles, serverToUse);
         Member jdaMember = Mockito.mock(Member.class);
         when(botService.getMemberInServer(serverToUse, userToUse.getUserReference())).thenReturn(jdaMember);
         AUserExperience newUserExperience = mockServerWithSingleUser(levels, serverToUse, 301L, 1, previousExperienceRole, false);
 
         AExperienceRole newAwardedRole = experienceRoles.get(3);
-        when(experienceRoleService.calculateRole(newUserExperience, experienceRoles)).thenReturn(newAwardedRole);
-        when(roleService.memberHasRole(jdaMember, newAwardedRole.getRole())).thenReturn(shouldHaveRole);
-        testUnit.handleExperienceGain(servers);
-        verify(userExperienceManagementService, times(1)).saveUser(eq(newUserExperience));
-        Assert.assertEquals(3, newUserExperience.getCurrentLevel().getLevel().intValue());
-        Assert.assertEquals(3L, newUserExperience.getCurrentExperienceRole().getRole().getId().longValue());
+        when(roleService.removeRoleFromUserFuture(newUserExperience.getUser(), newUserExperience.getCurrentExperienceRole().getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        when(userExperienceManagementService.findUserInServer(userToUse)).thenReturn(newUserExperience);
+        testUnit.handleExperienceGain(servers).join();
         return newAwardedRole;
     }
 
@@ -624,9 +599,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     }
 
     private AUserExperience mockUser(Long experience, AExperienceLevel currentLevel, AUserInAServer firstUser, boolean hasExpDisabled, AExperienceRole currentRole) {
-        AUserExperience newUserExperience = AUserExperience.builder().currentLevel(currentLevel).experience(experience).user(firstUser).experienceGainDisabled(hasExpDisabled).currentExperienceRole(currentRole).build();
-        when(userExperienceManagementService.incrementExpForUser(eq(firstUser), anyLong(), anyLong())).thenReturn(newUserExperience);
-        return newUserExperience;
+        return AUserExperience.builder().currentLevel(currentLevel).experience(experience).user(firstUser).experienceGainDisabled(hasExpDisabled).currentExperienceRole(currentRole).messageCount(0L).build();
     }
 
     private void mockSimpleServer(List<AExperienceLevel> levels, List<AExperienceRole> experienceRoles, AServer server) {

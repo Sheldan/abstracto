@@ -23,5 +23,6 @@
     <include file="feature_mode.xml" relativeToChangelogFile="true"/>
     <include file="lock.xml" relativeToChangelogFile="true"/>
     <include file="system_config.xml" relativeToChangelogFile="true"/>
-    <include file="users.xml" relativeToChangelogFile="true"/>
+    <include file="auser.xml" relativeToChangelogFile="true"/>
+    <include file="counter.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

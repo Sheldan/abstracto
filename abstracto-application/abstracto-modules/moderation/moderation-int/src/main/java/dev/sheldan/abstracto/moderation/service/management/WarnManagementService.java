@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WarnManagementService {
-    Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason);
+    Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, Long warnId);
     List<Warning> getActiveWarningsInServerOlderThan(AServer server, Instant date);
     Long getTotalWarnsForUser(AUserInAServer aUserInAServer);
     List<Warning> getAllWarnsForUser(AUserInAServer aUserInAServer);
     List<Warning> getAllWarningsOfServer(AServer server);
     Long getActiveWarnsForUser(AUserInAServer aUserInAServer);
-    Optional<Warning> findById(Long id);
+    Optional<Warning> findById(Long id, Long serverId);
     void deleteWarning(Warning warn);
 }

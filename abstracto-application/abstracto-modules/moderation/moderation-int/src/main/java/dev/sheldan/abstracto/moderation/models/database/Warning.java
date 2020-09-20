@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.moderation.models.database;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 
@@ -20,10 +22,15 @@ public class Warning {
     /**
      * The globally unique id of this warning
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EmbeddedId
     @Getter
-    private Long id;
+    @Setter
+    private ServerSpecificId warnId;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @MapsId("serverId")
+    @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
+    private AServer server;
 
     /**
      * The {@link AUserInAServer} which was warned
@@ -93,7 +100,7 @@ public class Warning {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Warning warning = (Warning) o;
-        return Objects.equals(id, warning.id) &&
+        return Objects.equals(warnId, warning.warnId) &&
                 Objects.equals(warnedUser, warning.warnedUser) &&
                 Objects.equals(warningUser, warning.warningUser) &&
                 Objects.equals(reason, warning.reason) &&
@@ -104,6 +111,6 @@ public class Warning {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, warnedUser, warningUser, reason, warnDate, decayed, decayDate);
+        return Objects.hash(warnId, warnedUser, warningUser, reason, warnDate, decayed, decayDate);
     }
 }

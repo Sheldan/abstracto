@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.CounterService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Component
 @Slf4j
@@ -37,6 +36,7 @@ public class SuggestionServiceBean implements SuggestionService {
     public static final String SUGGESTION_LOG_TEMPLATE = "suggest_log";
     public static final String SUGGESTION_YES_EMOTE = "suggestionYes";
     public static final String SUGGESTION_NO_EMOTE = "suggestionNo";
+    public static final String SUGGESTION_COUNTER_KEY = "suggestion";
 
     @Autowired
     private SuggestionManagementService suggestionManagementService;
@@ -59,30 +59,32 @@ public class SuggestionServiceBean implements SuggestionService {
     @Autowired
     private SuggestionServiceBean self;
 
+    @Autowired
+    private CounterService counterService;
+
     @Override
-    public CompletableFuture<Void> createSuggestion(Member member, String text, SuggestionLog suggestionLog)  {
-        Suggestion suggestion = suggestionManagementService.createSuggestion(member, text);
-        suggestionLog.setSuggestion(suggestion);
-        suggestionLog.setSuggesterUser(suggestion.getSuggester());
+    public CompletableFuture<Void> createSuggestionMessage(Member member, String text, SuggestionLog suggestionLog)  {
+        Long newSuggestionId = counterService.getNextCounterValue(suggestionLog.getServer(), SUGGESTION_COUNTER_KEY);
+        suggestionLog.setSuggestionId(newSuggestionId);
+        suggestionLog.setState(SuggestionState.NEW);
+        suggestionLog.setSuggesterUser(suggestionLog.getAUserInAServer());
         suggestionLog.setText(text);
-        Long suggestionId = suggestion.getId();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
         long guildId = member.getGuild().getIdLong();
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
-            Suggestion innerSuggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
-            try {
-                Message message = completableFutures.get(0).get();
-                suggestionManagementService.setPostedMessage(innerSuggestion, message);
-                CompletableFuture<Void> firstReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_YES_EMOTE, guildId, message);
-                CompletableFuture<Void> secondReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_NO_EMOTE, guildId, message);
-                return CompletableFuture.allOf(firstReaction, secondReaction);
-            } catch (InterruptedException | ExecutionException e) {
-                log.warn("Failed to post suggestion", e);
-                Thread.currentThread().interrupt();
-            }
-            throw new AbstractoRunTimeException();
+            Message message = completableFutures.get(0).join();
+            CompletableFuture<Void> firstReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_YES_EMOTE, guildId, message);
+            CompletableFuture<Void> secondReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_NO_EMOTE, guildId, message);
+            return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 ->
+                self.persistSuggestionInDatabase(member, text, message, newSuggestionId)
+            );
         });
+    }
+
+    @Transactional
+    public void persistSuggestionInDatabase(Member member, String text, Message message, Long suggestionId) {
+        suggestionManagementService.createSuggestion(member, text, message, suggestionId);
     }
 
     @Override
@@ -107,7 +109,8 @@ public class SuggestionServiceBean implements SuggestionService {
             Guild guildById = guildByIdOptional.get();
             Member memberById = guildById.getMemberById(suggester.getUserReference().getId());
             suggestionLog.setSuggester(memberById);
-            suggestionLog.setSuggestion(suggestion);
+            suggestionLog.setState(suggestion.getState());
+            suggestionLog.setSuggestionId(suggestion.getId());
             TextChannel textChannelById = guildById.getTextChannelById(channelId);
             if(textChannelById != null) {
                 return textChannelById.retrieveMessageById(originalMessageId).submit().thenCompose(message ->

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.models.template.commands;
 
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.Member;
 @Getter
 @SuperBuilder
 @Setter
-public class WarnLog extends UserInitiatedServerContext {
+public class WarnContext extends SlimUserInitiatedServerContext {
     /**
      * The reason why the warn was cast
      */
@@ -21,13 +21,9 @@ public class WarnLog extends UserInitiatedServerContext {
     /**
      * The {@link Member} being warned
      */
-    private Member warnedUser;
-    /**
-     * The {@link Member} casting the warn
-     */
-    private Member warningUser;
+    private Member warnedMember;
     /**
      * The persisted {@link Warning} object from the database containing the information about the warning
      */
-    private Warning warning;
+    private Long warnId;
 }

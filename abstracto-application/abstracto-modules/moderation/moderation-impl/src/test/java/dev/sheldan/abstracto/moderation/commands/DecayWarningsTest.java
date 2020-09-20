@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -25,9 +27,9 @@ public class DecayWarningsTest {
     @Test
     public void testExecuteCommand() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        CommandResult result = testUnit.execute(noParameters);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(warnService, times(1)).decayWarningsForServer(noParameters.getUserInitiatedContext().getServer());
+        when(warnService.decayWarningsForServer(noParameters.getUserInitiatedContext().getServer())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

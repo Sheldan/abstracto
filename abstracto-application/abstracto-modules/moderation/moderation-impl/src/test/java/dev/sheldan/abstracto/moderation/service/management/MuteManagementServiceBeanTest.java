@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -45,16 +46,17 @@ public class MuteManagementServiceBeanTest {
         AUserInAServer mutingUser = MockUtils.getUserObject(5L, server);
         AUserInAServer mutedUser = MockUtils.getUserObject(7L, server);
         String reason = "reason";
+        String triggerKey = "key";
         Instant unMuteDate = Instant.now();
         AServerAChannelMessage muteMessage = AServerAChannelMessage.builder().server(server).channel(channel).messageId(messageId).build();
 
-        testUnit.createMute(mutedUser, mutingUser, reason, unMuteDate, muteMessage);
+        testUnit.createMute(mutedUser, mutingUser, reason, unMuteDate, muteMessage, triggerKey, 8L);
         verify(muteRepository, times(1)).save(muteArgumentCaptor.capture());
         Mute createdMute = muteArgumentCaptor.getValue();
         Assert.assertEquals(reason, createdMute.getReason());
         Assert.assertEquals(mutingUser, createdMute.getMutingUser());
         Assert.assertEquals(mutedUser, createdMute.getMutedUser());
-        Assert.assertEquals(server, createdMute.getMutingServer());
+        Assert.assertEquals(server, createdMute.getServer());
         Assert.assertFalse(createdMute.getMuteEnded());
         Assert.assertEquals(messageId, createdMute.getMessageId().longValue());
         Assert.assertEquals(channel, createdMute.getMutingChannel());
@@ -64,18 +66,20 @@ public class MuteManagementServiceBeanTest {
     @Test
     public void testFindMute() {
         Long id = 5L;
-        Mute mute = Mute.builder().id(id).build();
-        when(muteRepository.findById(id)).thenReturn(Optional.of(mute));
-        Optional<Mute> foundMuteOptional = testUnit.findMute(id);
+        Long serverId = 7L;
+        Mute mute = Mute.builder().muteId(new ServerSpecificId(serverId, id)).build();
+        when(muteRepository.findByMuteId_IdAndMuteId_ServerId(id, serverId)).thenReturn(Optional.of(mute));
+        Optional<Mute> foundMuteOptional = testUnit.findMute(id, serverId);
         Assert.assertTrue(foundMuteOptional.isPresent());
-        foundMuteOptional.ifPresent(foundMute -> Assert.assertEquals(id, foundMute.getId()));
+        foundMuteOptional.ifPresent(foundMute -> Assert.assertEquals(id, foundMute.getMuteId().getId()));
     }
 
     @Test
     public void testFindNonExistingMute() {
         Long id = 5L;
-        when(muteRepository.findById(id)).thenReturn(Optional.empty());
-        Optional<Mute> foundMuteOptional = testUnit.findMute(id);
+        Long serverId = 7L;
+        when(muteRepository.findByMuteId_IdAndMuteId_ServerId(id, serverId)).thenReturn(Optional.empty());
+        Optional<Mute> foundMuteOptional = testUnit.findMute(id, serverId);
         Assert.assertFalse(foundMuteOptional.isPresent());
     }
 
@@ -114,7 +118,7 @@ public class MuteManagementServiceBeanTest {
         AUserInAServer userInAServer = MockUtils.getUserObject(9L, server);
         Mute mute1 = Mute.builder().build();
         Mute mute2 = Mute.builder().build();
-        when(muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByIdDesc(userInAServer)).thenReturn(Arrays.asList(mute1, mute2));
+        when(muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(userInAServer)).thenReturn(Arrays.asList(mute1, mute2));
         List<Mute> allMutesOf = testUnit.getAllMutesOf(userInAServer);
         Assert.assertEquals(2, allMutesOf.size());
         Assert.assertEquals(mute1, allMutesOf.get(0));

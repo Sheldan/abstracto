@@ -29,12 +29,8 @@ public class DeleteWarning extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         checkParameters(commandContext);
         Long warnId = (Long) commandContext.getParameters().getParameters().get(0);
-        Optional<Warning> optional = warnManagementService.findById(warnId);
-        optional.ifPresent(warning -> {
-            if(warning.getWarnedUser().getServerReference().getId().equals(commandContext.getUserInitiatedContext().getServer().getId())) {
-                warnManagementService.deleteWarning(warning);
-            }
-        });
+        Optional<Warning> optional = warnManagementService.findById(warnId, commandContext.getGuild().getIdLong());
+        optional.ifPresent(warning -> warnManagementService.deleteWarning(warning));
         return CommandResult.fromSuccess();
     }
 

@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.converter.UserNotesConverter;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class UserNotes extends AbstractConditionableCommand {
@@ -45,7 +47,7 @@ public class UserNotes extends AbstractConditionableCommand {
     private UserNotesConverter userNotesConverter;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         List<UserNote> userNotes;
@@ -65,8 +67,8 @@ public class UserNotes extends AbstractConditionableCommand {
             userNotes = userNoteManagementService.loadNotesForServer(commandContext.getUserInitiatedContext().getServer());
         }
         model.setUserNotes(userNotesConverter.fromNotes(userNotes));
-        channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -79,6 +81,7 @@ public class UserNotes extends AbstractConditionableCommand {
                 .name("userNotes")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

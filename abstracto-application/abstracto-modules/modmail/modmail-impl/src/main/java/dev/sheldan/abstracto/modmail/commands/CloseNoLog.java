@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This command closes a mod mail thread without logging the closing and the contents of the {@link ModMailThread}.
@@ -42,11 +43,11 @@ public class CloseNoLog extends AbstractConditionableCommand {
     private TemplateService templateService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
         // we don't have a note, therefore we cant pass any, the method handles this accordingly
-        modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), null, false, false);
-        return CommandResult.fromSuccess();
+        return modMailThreadService.closeModMailThread(thread, null, false, commandContext.getUndoActions())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -55,6 +56,7 @@ public class CloseNoLog extends AbstractConditionableCommand {
         return CommandConfiguration.builder()
                 .name("closeNoLog")
                 .module(ModMailModuleInterface.MODMAIL)
+                .async(true)
                 .help(helpInfo)
                 .supportsEmbedException(true)
                 .templated(true)

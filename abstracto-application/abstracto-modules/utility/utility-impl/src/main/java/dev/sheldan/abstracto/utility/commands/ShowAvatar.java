@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowAvatarModel;
 import net.dv8tion.jda.api.entities.Member;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class ShowAvatar extends AbstractConditionableCommand {
@@ -27,14 +29,14 @@ public class ShowAvatar extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
         ShowAvatarModel model = (ShowAvatarModel) ContextConverter.fromCommandContext(commandContext, ShowAvatarModel.class);
         model.setMemberInfo(memberToShow);
-        channelService.sendEmbedTemplateInChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -46,6 +48,7 @@ public class ShowAvatar extends AbstractConditionableCommand {
                 .name("showAvatar")
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

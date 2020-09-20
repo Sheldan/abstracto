@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service responsible to manage the {@link AExperienceRole} configuration of a server. This contains functionality to
@@ -42,6 +43,8 @@ public interface ExperienceRoleManagementService {
      * @return the {@link AExperienceRole} which uses the given {@link ARole}
      */
     AExperienceRole getRoleInServer(ARole role);
+    Optional<AExperienceRole> getRoleInServerOptional(ARole role);
+    AExperienceRole getRoleInServer(Long roleId);
 
     /**
      * Retrieves all {@link AExperienceRole} configured in the given {@link AServer}
@@ -49,4 +52,7 @@ public interface ExperienceRoleManagementService {
      * @return A list of {@link AExperienceRole} which are currently configured for the {@link AServer}
      */
     List<AExperienceRole> getExperienceRolesForServer(AServer server);
+
+    AExperienceRole getExperienceRoleById(Long experienceRoleId);
+    Optional<AExperienceRole> getExperienceRoleByIdOptional(Long experienceRoleId);
 }

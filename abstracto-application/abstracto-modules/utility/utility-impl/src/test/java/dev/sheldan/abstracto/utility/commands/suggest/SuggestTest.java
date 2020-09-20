@@ -31,21 +31,21 @@ public class SuggestTest {
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeAsyncNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeAsyncWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test
     public void testExecuteCommand() throws ExecutionException, InterruptedException {
         String text = "text";
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(text));
-        when(suggestionService.createSuggestion(eq(context.getAuthor()), eq(text), any(SuggestionLog.class))).thenReturn(CompletableFuture.completedFuture(null));
+        when(suggestionService.createSuggestionMessage(eq(context.getAuthor()), eq(text), any(SuggestionLog.class))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
-        verify(suggestionService, times(1)).createSuggestion(eq(context.getAuthor()), eq(text), any(SuggestionLog.class));
+        verify(suggestionService, times(1)).createSuggestionMessage(eq(context.getAuthor()), eq(text), any(SuggestionLog.class));
         CommandTestUtilities.checkSuccessfulCompletion(result.get());
     }
 

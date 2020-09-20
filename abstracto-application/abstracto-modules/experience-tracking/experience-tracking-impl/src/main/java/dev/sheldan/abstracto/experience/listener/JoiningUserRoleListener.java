@@ -30,9 +30,12 @@ public class JoiningUserRoleListener implements JoinListener {
     @Override
     public void execute(Member member, Guild guild, AUserInAServer aUserInAServer) {
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(aUserInAServer);
+        Long userInServerId = aUserInAServer.getUserInServerId();
         if(userExperience != null) {
             log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", member.getUser().getIdLong(), guild.getIdLong());
-            userExperienceService.syncForSingleUser(userExperience);
+            userExperienceService.syncForSingleUser(userExperience).thenAccept(result ->
+                log.trace("Finished re-assigning experience for re-joning user {} in server {}.", userInServerId, guild.getIdLong())
+            );
         }
     }
 

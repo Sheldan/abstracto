@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class CommandTestUtilities {
 
@@ -31,7 +32,7 @@ public class CommandTestUtilities {
         com.execute(context);
     }
 
-    public static void executeAsyncNoParametersTest(Command com) {
+    public static void executeNoParametersTestAsync(Command com) {
         CommandContext context = CommandTestUtilities.getNoParameters();
         com.executeAsync(context);
     }
@@ -45,11 +46,11 @@ public class CommandTestUtilities {
         com.execute(context);
     }
 
-    public static void executeAsyncWrongParametersTest(Command com) {
-        executeAsyncWrongParametersTest(com, new ArrayList<>());
+    public static void executeWrongParametersTestAsync(Command com) {
+        executeWrongParametersTestAsync(com, new ArrayList<>());
     }
 
-    public static void executeAsyncWrongParametersTest(Command com, Object value) {
+    public static void executeWrongParametersTestAsync(Command com, Object value) {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(value));
         com.executeAsync(context);
     }
@@ -96,6 +97,14 @@ public class CommandTestUtilities {
 
     public static void checkSuccessfulCompletion(CommandResult result){
         Assert.assertEquals(ResultState.SUCCESSFUL, result.getResult());
+    }
+
+    public static void checkSuccessfulCompletionAsync(CompletableFuture<CommandResult> result){
+        Assert.assertEquals(ResultState.SUCCESSFUL, result.join().getResult());
+    }
+
+    public static List<CompletableFuture<Message>> messageFutureList() {
+        return Arrays.asList(CompletableFuture.completedFuture(null));
     }
 
 

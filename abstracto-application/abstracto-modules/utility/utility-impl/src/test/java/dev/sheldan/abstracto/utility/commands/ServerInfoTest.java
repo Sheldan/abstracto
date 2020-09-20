@@ -12,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -26,9 +28,9 @@ public class ServerInfoTest {
     @Test
     public void executeCommand() {
         CommandContext context = CommandTestUtilities.getNoParameters();
-        CommandResult result = testUnit.execute(context);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq("serverinfo_response"), any(ServerInfoModel.class), eq(context.getChannel()));
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test

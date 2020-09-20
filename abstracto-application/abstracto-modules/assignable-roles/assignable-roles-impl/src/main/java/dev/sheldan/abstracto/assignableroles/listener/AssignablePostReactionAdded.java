@@ -7,6 +7,8 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleServiceBean;
+import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementService;
+import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlaceManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -14,12 +16,15 @@ import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -41,6 +46,18 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
 
     @Autowired
     private AssignedRoleUserManagementService assignedRoleUserManagementService;
+
+    @Autowired
+    private AssignableRolePlaceManagementService assignableRolePlaceManagementService;
+
+    @Autowired
+    private AssignablePostReactionAdded self;
+
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
+    @Autowired
+    private AssignableRoleManagementService assignableRoleManagementService;
 
     @Override
     public void executeReactionAdded(CachedMessage message, GuildMessageReactionAddEvent event, AUserInAServer userAdding) {
@@ -65,38 +82,41 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
     private void addAppropriateRoles(GuildMessageReactionAddEvent event, MessageReaction reaction, AssignableRolePlacePost assignablePlacePost, MessageReaction.ReactionEmote reactionEmote, AUserInAServer userAdding) {
         boolean validReaction = false;
         AssignableRolePlace assignableRolePlace = assignablePlacePost.getAssignablePlace();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (AssignableRole assignableRole : assignablePlacePost.getAssignableRoles()) {
             if (emoteService.isReactionEmoteAEmote(reactionEmote, assignableRole.getEmote())) {
-                CompletableFuture<Void> future;
                 if(assignableRolePlace.getUniqueRoles()) {
                     Optional<AssignedRoleUser> byUserInServer = assignedRoleUserManagementService.findByUserInServerOptional(userAdding);
-                    if(byUserInServer.isPresent()){
-                        future = assignableRolePlaceService.removeExistingReactionsAndRoles(assignableRolePlace, byUserInServer.get());
-                    } else {
-                        future = CompletableFuture.completedFuture(null);
-                    }
-                } else {
-                    future = CompletableFuture.completedFuture(null);
+                    byUserInServer.ifPresent(user -> futures.add(assignableRolePlaceService.removeExistingReactionsAndRoles(assignableRolePlace, user)));
                 }
 
                 Long assignableRoleId = assignableRole.getId();
-                future.whenComplete((aVoid, throwable) -> {
-                    if(throwable != null) {
-                        log.warn("Failed to remove previous role assignments for {} in server {} at place {}.",
-                                userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), assignablePlacePost.getAssignablePlace().getKey());
-                    }
-                    assignableRoleServiceBean.assignAssignableRoleToUser(assignableRoleId, event.getMember()).exceptionally(innerThrowable -> {
-                        log.error("Failed to add new role assignment.", innerThrowable);
-                        return null;
-                    });
-                });
+                CompletableFuture<Void> roleAdditionFuture = assignableRoleServiceBean.assignAssignableRoleToUser(assignableRoleId, event.getMember());
+
+                futures.add(CompletableFuture.allOf(roleAdditionFuture));
                 validReaction = true;
                 break;
             }
         }
-        if(!validReaction || assignableRolePlace.getAutoRemove()) {
-            reaction.removeReaction(event.getUser()).submit();
+        if(!validReaction) {
+            futures.add(reaction.removeReaction(event.getUser()).submit());
         }
+        Long assignableRolePlaceId = assignableRolePlace.getId();
+        Long userInServerId = userAdding.getUserInServerId();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
+            self.updateStoredAssignableRoles(assignableRolePlaceId, userInServerId, reactionEmote)
+        );
+    }
+
+    private void updateStoredAssignableRoles(Long assignableRolePlaceId, Long userAdding, MessageReaction.ReactionEmote reactionEmote) {
+        AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(assignableRolePlaceId);
+        AUserInAServer userInAServer = userInServerManagementService.loadUser(userAdding);
+        if(place.getUniqueRoles()) {
+            assignableRoleServiceBean.clearAllRolesOfUserInPlace(place, userInAServer);
+        }
+        AssignableRole role = assignableRoleManagementService.getRoleForReactionEmote(reactionEmote, place);
+        assignableRoleServiceBean.addRoleToUser(role.getId(), userInAServer);
+
     }
 
     @Override

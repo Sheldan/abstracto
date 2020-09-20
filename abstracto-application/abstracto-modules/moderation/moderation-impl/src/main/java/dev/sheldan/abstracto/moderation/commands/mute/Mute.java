@@ -7,11 +7,11 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
+import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Mute extends AbstractConditionableCommand {
@@ -29,18 +30,31 @@ public class Mute extends AbstractConditionableCommand {
     private MuteService muteService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         Duration duration = (Duration) parameters.get(1);
         String reason = (String) parameters.get(2);
-        MuteLog muteLogModel = (MuteLog) ContextConverter.fromCommandContext(commandContext, MuteLog.class);
-        muteLogModel.setMessage(commandContext.getMessage());
-        muteLogModel.setMutedUser(member);
-        muteLogModel.setMutingUser(commandContext.getAuthor());
-        muteService.muteMemberWithLog(member, commandContext.getAuthor(), reason, Instant.now().plus(duration), muteLogModel, commandContext.getMessage());
-        return CommandResult.fromSuccess();
+        ServerChannelMessage context = ServerChannelMessage
+                .builder()
+                .serverId(commandContext.getGuild().getIdLong())
+                .channelId(commandContext.getChannel().getIdLong())
+                .messageId(commandContext.getMessage().getIdLong())
+                .build();
+        MuteContext muteLogModel = MuteContext
+                .builder()
+                .muteDate(Instant.now())
+                .muteTargetDate(Instant.now().plus(duration))
+                .mutedUser(member)
+                .reason(reason)
+                .contextChannel(commandContext.getChannel())
+                .message(commandContext.getMessage())
+                .mutingUser(commandContext.getAuthor())
+                .context(context)
+                .build();
+        return muteService.muteMemberWithLog(muteLogModel)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -54,6 +68,7 @@ public class Mute extends AbstractConditionableCommand {
                 .name("mute")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .causesReaction(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

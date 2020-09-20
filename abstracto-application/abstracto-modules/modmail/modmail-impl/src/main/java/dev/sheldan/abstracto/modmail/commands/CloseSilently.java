@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This command can be used to close the mod mail thread without sending a 'closing' message to the user.
@@ -39,13 +40,13 @@ public class CloseSilently extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // default note text is configurable via template, because the note is optional
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.closeModMailThread(thread, commandContext.getChannel(), note, false);
-        return CommandResult.fromSuccess();
+        return modMailThreadService.closeModMailThread(thread, note, false, commandContext.getUndoActions())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -55,6 +56,7 @@ public class CloseSilently extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("closeSilently")
+                .async(true)
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)

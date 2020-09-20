@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Sends the reply from the staff member to the user, and shows the actual author in the created embed.
@@ -35,12 +36,12 @@ public class Reply extends AbstractConditionableCommand {
     private ModMailThreadManagementService modMailThreadManagementService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String text = parameters.size() == 1 ? (String) parameters.get(0) : "";
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        modMailThreadService.relayMessageToDm(thread, text, commandContext.getMessage(), false, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return modMailThreadService.relayMessageToDm(thread, text, commandContext.getMessage(), false, commandContext.getChannel(), commandContext.getUndoActions())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -50,6 +51,7 @@ public class Reply extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("reply")
+                .async(true)
                 .module(ModMailModuleInterface.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)

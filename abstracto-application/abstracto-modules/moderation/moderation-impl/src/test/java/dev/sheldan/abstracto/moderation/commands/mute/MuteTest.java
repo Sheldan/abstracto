@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.moderation.models.template.commands.MuteLog;
+import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
@@ -16,8 +16,8 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -31,7 +31,7 @@ public class MuteTest {
     private MuteService muteService;
 
     @Captor
-    private ArgumentCaptor<MuteLog> muteLogArgumentCaptor;
+    private ArgumentCaptor<MuteContext> muteLogArgumentCaptor;
 
     @Test
     public void testMuteMember() {
@@ -39,22 +39,22 @@ public class MuteTest {
         String reason = "reason";
         Duration duration = Duration.ofMinutes(1);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(mutedMember, duration, reason));
-        CommandResult result = testUnit.execute(parameters);
-        verify(muteService, times(1)).muteMemberWithLog(eq(mutedMember), eq(parameters.getAuthor()), eq(reason), any(Instant.class), muteLogArgumentCaptor.capture(), eq(parameters.getMessage()));
-        CommandTestUtilities.checkSuccessfulCompletion(result);
-        MuteLog muteLog = muteLogArgumentCaptor.getValue();
+        when(muteService.muteMemberWithLog(muteLogArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
+        MuteContext muteLog = muteLogArgumentCaptor.getValue();
         Assert.assertEquals(mutedMember, muteLog.getMutedUser());
         Assert.assertEquals(parameters.getAuthor(), muteLog.getMutingUser());
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

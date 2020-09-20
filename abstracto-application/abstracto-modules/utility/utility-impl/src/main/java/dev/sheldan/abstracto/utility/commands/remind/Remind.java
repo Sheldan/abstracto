@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Remind extends AbstractConditionableCommand {
@@ -33,7 +35,7 @@ public class Remind extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Duration remindTime = (Duration) parameters.get(0);
@@ -44,8 +46,8 @@ public class Remind extends AbstractConditionableCommand {
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());
         remindModel.setReminder(createdReminder);
 
-        channelService.sendEmbedTemplateInChannel(REMINDER_EMBED_KEY, remindModel, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REMINDER_EMBED_KEY, remindModel, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -56,6 +58,7 @@ public class Remind extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("remind")
+                .async(true)
                 .module(UtilityModuleInterface.UTILITY)
                 .templated(true)
                 .supportsEmbedException(true)

@@ -32,12 +32,12 @@ public class ChannelServiceBean implements ChannelService {
     private TemplateService templateService;
 
     @Override
-    public void sendTextToAChannelNoFuture(String text, AChannel channel) {
+    public void sendTextToAChannelNotAsync(String text, AChannel channel) {
         sendTextToAChannel(text, channel);
     }
 
     @Override
-    public void sendTextToChannelNoFuture(String text, MessageChannel channel) {
+    public void sendTextToChannelNotAsync(String text, MessageChannel channel) {
         sendTextToChannel(text, channel);
     }
 
@@ -230,6 +230,12 @@ public class ChannelServiceBean implements ChannelService {
     public List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model);
         return sendMessageToSendToChannel(messageToSend, channel);
+    }
+
+    @Override
+    public CompletableFuture<Message> sendTextTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
+        String text = templateService.renderTemplate(templateKey, model);
+        return sendTextToChannel(text, channel);
     }
 
     @Override

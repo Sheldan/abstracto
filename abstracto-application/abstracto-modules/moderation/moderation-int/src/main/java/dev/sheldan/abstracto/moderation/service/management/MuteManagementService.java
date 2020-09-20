@@ -20,16 +20,18 @@ public interface MuteManagementService {
      * @param reason The reason why this user is getting muted
      * @param unMuteDate The date at which the mute should end
      * @param muteMessage The message containing the command which caused the mute
+     * @param triggerKey The key of the trigger in quartz, if any
+     * @param muteId The id of the mute to create
      * @return The created mute object containing the mute ID
      */
-    Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage);
+    Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage, String triggerKey, Long muteId);
 
     /**
      * Finds the mute from the database by the given ID.
      * @param muteId The id of the mute to search for
      * @return An optional containing a {@link Mute} if the ID exists, and null otherwise
      */
-    Optional<Mute> findMute(Long muteId);
+    Optional<Mute> findMute(Long muteId, Long serverId);
 
     /**
      * Saves the given mute to the database.

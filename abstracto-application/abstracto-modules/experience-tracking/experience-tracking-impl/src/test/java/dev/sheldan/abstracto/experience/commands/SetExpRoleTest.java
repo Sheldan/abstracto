@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -35,24 +36,24 @@ public class SetExpRoleTest {
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = InsufficientParametersException.class)
     public void testRoleMissing() {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(4));
-        testUnit.execute(context);
+        testUnit.executeAsync(context);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testLevelProvidedButNotRole() {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(4, ""));
-        testUnit.execute(context);
+        testUnit.executeAsync(context);
     }
 
     @Test
@@ -62,9 +63,9 @@ public class SetExpRoleTest {
         Integer levelToSetTo = 4;
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));
         when(roleService.isRoleInServer(changedRole)).thenReturn(true);
-        CommandResult result = testUnit.execute(context);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(experienceRoleService, times(1)).setRoleToLevel(changedRole, levelToSetTo, context.getUserInitiatedContext().getChannel());
+        when(experienceRoleService.setRoleToLevel(changedRole, levelToSetTo, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test(expected = RoleNotFoundInGuildException.class)
@@ -74,7 +75,7 @@ public class SetExpRoleTest {
         Integer levelToSetTo = 4;
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));
         when(roleService.isRoleInServer(changedRole)).thenReturn(false);
-        testUnit.execute(context);
+        testUnit.executeAsync(context);
     }
 
     @Test

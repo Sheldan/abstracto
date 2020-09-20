@@ -16,6 +16,7 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -43,13 +44,13 @@ public class BanIdTest {
         Long guildId = parameters.getUserInitiatedContext().getServer().getId();
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
         when(parameters.getGuild().getIdLong()).thenReturn(guildId);
-        CommandResult result = testUnit.execute(parameters);
-        verify(banService, times(1)).banMember(eq(guildId), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture());
+        when(banService.banMember(eq(guildId), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(REASON, usedModel.getReason());
         Assert.assertEquals(BANNED_USER_ID, usedModel.getBannedUserId());
         Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -59,25 +60,25 @@ public class BanIdTest {
         Long guildId = parameters.getUserInitiatedContext().getServer().getId();
         when(parameters.getGuild().getIdLong()).thenReturn(guildId);
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        CommandResult result = testUnit.execute(parameters);
-        verify(banService, times(1)).banMember(eq(guildId), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture());
+        when(banService.banMember(eq(guildId), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(customReason, usedModel.getReason());
         Assert.assertEquals(BANNED_USER_ID, usedModel.getBannedUserId());
         Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
 
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
+        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

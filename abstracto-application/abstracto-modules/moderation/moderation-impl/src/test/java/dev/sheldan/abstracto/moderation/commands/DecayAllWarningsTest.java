@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -42,13 +43,13 @@ public class DecayAllWarningsTest {
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     private void executeTest(Boolean logWarnings) {
-        CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(logWarnings));
-        CommandResult result = testUnit.execute(parameters);
-        verify(warnService, times(1)).decayAllWarningsForServer(parameters.getUserInitiatedContext().getServer(), logWarnings);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(logWarnings));
+        when(warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer(), logWarnings)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(commandContext);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class SlowMode extends AbstractConditionableCommand {
@@ -26,7 +27,7 @@ public class SlowMode extends AbstractConditionableCommand {
     private SlowModeService slowModeService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         TextChannel channel;
         String durationString = (String) commandContext.getParameters().getParameters().get(0);
@@ -41,8 +42,8 @@ public class SlowMode extends AbstractConditionableCommand {
         } else {
             channel = commandContext.getChannel();
         }
-        slowModeService.setSlowMode(channel, duration);
-        return CommandResult.fromSuccess();
+        return slowModeService.setSlowMode(channel, duration)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -55,6 +56,7 @@ public class SlowMode extends AbstractConditionableCommand {
                 .name("slowmode")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

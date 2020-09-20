@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Command used to remove a role from the roles to be awarded at certain levels. If there are users with this role currently, their role
@@ -27,13 +28,13 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     private ExperienceRoleService experienceRoleService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         // do not check for the existence of the role, because if the role was deleted, users should be able
         // to get rid of it in the configuration
-        experienceRoleService.unsetRole(role, commandContext.getUserInitiatedContext().getChannel());
-        return CommandResult.fromSuccess();
+        return experienceRoleService.unsetRole(role, commandContext.getUserInitiatedContext().getChannel())
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -45,6 +46,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
                 .name("unSetExpRole")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .async(true)
                 .causesReaction(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

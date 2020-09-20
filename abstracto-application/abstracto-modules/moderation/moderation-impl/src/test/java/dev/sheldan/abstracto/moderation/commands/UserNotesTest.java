@@ -24,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -65,7 +66,7 @@ public class UserNotesTest {
         NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
         List<NoteEntryModel> convertedNotes = Arrays.asList(firstConvertedNote, secondConvertedNote);
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
-        CommandResult result = testUnit.execute(parameters);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
         Assert.assertEquals(convertedNotes.size(), usedModel.getUserNotes().size());
@@ -76,7 +77,7 @@ public class UserNotesTest {
         }
         Assert.assertEquals(userNoteUser, usedModel.getSpecifiedUser().getAUserInAServer());
         Assert.assertEquals(member, usedModel.getSpecifiedUser().getMember());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test
@@ -90,7 +91,7 @@ public class UserNotesTest {
         NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
         List<NoteEntryModel> convertedNotes = Arrays.asList(firstConvertedNote, secondConvertedNote);
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
-        CommandResult result = testUnit.execute(parameters);
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
         Assert.assertEquals(convertedNotes.size(), usedModel.getUserNotes().size());
@@ -100,12 +101,12 @@ public class UserNotesTest {
             Assert.assertEquals(expectedEntry, usedEntry);
         }
         Assert.assertNull(usedModel.getSpecifiedUser());
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
     @Test(expected = IncorrectParameterException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

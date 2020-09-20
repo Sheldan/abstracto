@@ -19,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -77,7 +78,7 @@ public class ExperienceRoleManagementServiceBeanTest extends ExperienceRelatedTe
     @Test
     public void testFindExperienceRoleForRoleInServer() {
         AExperienceRole expRole = getExperienceRoleForLevel(37);
-        when((experienceRoleRepository.findByRole(expRole.getRole()))).thenReturn(expRole);
+        when((experienceRoleRepository.findByRole(expRole.getRole()))).thenReturn(Optional.of(expRole));
         AExperienceRole roleInServer = testUnit.getRoleInServer(expRole.getRole());
         Assert.assertEquals(expRole.getRole().getId(), roleInServer.getRole().getId());
         verify(experienceRoleRepository, times(1)).findByRole(expRole.getRole());
@@ -104,7 +105,7 @@ public class ExperienceRoleManagementServiceBeanTest extends ExperienceRelatedTe
     public void setLevelToRoleWhichHasAnExistingMapping() {
         int level = 5;
         AExperienceRole experienceRole = getExperienceRoleForLevel(level);
-        when(experienceRoleRepository.findByRole(experienceRole.getRole())).thenReturn(experienceRole);
+        when(experienceRoleRepository.findByRole(experienceRole.getRole())).thenReturn(Optional.of(experienceRole));
         AExperienceLevel newLevel = AExperienceLevel.builder().level(8).build();
         AExperienceRole updatedExperienceRole = testUnit.setLevelToRole(newLevel, experienceRole.getRole());
         verify(experienceRoleRepository, times(1)).findByRole(experienceRole.getRole());
@@ -115,7 +116,7 @@ public class ExperienceRoleManagementServiceBeanTest extends ExperienceRelatedTe
     public void setLevelToRoleWithoutAMappingExistingPreviously() {
         int level = 5;
         AExperienceRole experienceRole = getExperienceRoleForLevel(level);
-        when(experienceRoleRepository.findByRole(experienceRole.getRole())).thenReturn(null);
+        when(experienceRoleRepository.findByRole(experienceRole.getRole())).thenReturn(Optional.empty());
         when(experienceRoleRepository.save(any(AExperienceRole.class))).thenReturn(experienceRole);
         AExperienceLevel newLevel = AExperienceLevel.builder().level(8).build();
         AExperienceRole updatedExperienceRole = testUnit.setLevelToRole(newLevel, experienceRole.getRole());

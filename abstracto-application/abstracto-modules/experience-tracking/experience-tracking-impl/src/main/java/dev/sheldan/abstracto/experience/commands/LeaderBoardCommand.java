@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Shows the experience gain information of the top 10 users in the server, or if a page number is provided as a parameter, only the members which are on this page.
@@ -46,7 +48,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
 
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         // parameter is optional, in case its not present, we default to the 0th page
@@ -58,9 +60,9 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         leaderBoardModel.setUserExecuting(converter.fromLeaderBoardEntry(userRank));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
-        channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
 
-        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -72,6 +74,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
                 .name("leaderboard")
                 .module(ExperienceModule.EXPERIENCE)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

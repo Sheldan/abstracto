@@ -3,6 +3,9 @@ package dev.sheldan.abstracto.experience.service;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
+import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
@@ -11,9 +14,12 @@ import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagem
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,6 +35,12 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     @Autowired
     private AUserExperienceService userExperienceService;
 
+    @Autowired
+    private ExperienceRoleServiceBean self;
+
+    @Autowired
+    private RoleManagementService roleManagementService;
+
     /**
      * UnSets the current configuration for the passed level, and sets the {@link ARole} to be used for this level
      * in the given {@link AServer}
@@ -36,11 +48,19 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      * @param level The level the {@link ARole} should be awarded at
      */
     @Override
-    public void setRoleToLevel(ARole role, Integer level, AChannel feedbackChannel) {
+    public CompletableFuture<Void> setRoleToLevel(ARole role, Integer level, AChannel feedbackChannel) {
+        Long roleId = role.getId();
+        return unsetRole(role, feedbackChannel).thenAccept(aVoid ->
+            self.unsetRoleInDb(level, roleId)
+        );
+    }
+
+    @Transactional
+    public void unsetRoleInDb(Integer level, Long roleId) {
         AExperienceLevel experienceLevel = experienceLevelService.getLevel(level).orElseThrow(() -> new IllegalArgumentException(String.format("Could not find level %s", level)));
-        unsetRole(role, feedbackChannel);
-        experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServer(experienceLevel, role.getServer());
-        experienceRoleManagementService.setLevelToRole(experienceLevel, role);
+        ARole loadedRole = roleManagementService.findRole(roleId);
+        experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServer(experienceLevel, loadedRole.getServer());
+        experienceRoleManagementService.setLevelToRole(experienceLevel, loadedRole);
     }
 
     /**
@@ -50,35 +70,52 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      *             configuration
      */
     @Override
-    public void unsetRole(ARole role, AChannel feedbackChannel) {
-        AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(role);
-        if(roleInServer != null) {
+    public CompletableFuture<Void> unsetRole(ARole role, AChannel feedbackChannel) {
+        Optional<AExperienceRole> roleInServerOptional = experienceRoleManagementService.getRoleInServerOptional(role);
+        if(roleInServerOptional.isPresent()) {
+            AExperienceRole roleInServer = roleInServerOptional.get();
             if(!roleInServer.getUsers().isEmpty()) {
                 log.info("Recalculating the roles for {} users, because their current role was removed from experience tracking.", roleInServer.getUsers().size());
                 List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(role.getServer());
                 roles.removeIf(role1 -> role1.getId().equals(roleInServer.getId()));
-
-                userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), feedbackChannel,
-                        (AUserExperience ex) -> userExperienceService.updateUserRole(ex, roles));
+                Long roleId = role.getId();
+                CompletableFutureList<RoleCalculationResult> calculationResults = userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), feedbackChannel,
+                        (AUserExperience ex) -> userExperienceService.updateUserRole(ex, roles, ex.getLevelOrDefault()));
+                return calculationResults.getMainFuture().thenAccept(aVoid ->
+                        self.persistData(calculationResults, roleId)
+                );
+            } else {
+                experienceRoleManagementService.unsetRole(roleInServer);
+                return CompletableFuture.completedFuture(null);
             }
-            experienceRoleManagementService.unsetRole(roleInServer);
+        } else {
+            log.info("Experience role is not define in server - skipping unset.");
+            return CompletableFuture.completedFuture(null);
         }
     }
 
+    @Transactional
+    public void persistData(CompletableFutureList<RoleCalculationResult> results, Long roleId) {
+        AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(roleId);
+        experienceRoleManagementService.unsetRole(roleInServer);
+        userExperienceService.syncRolesInStorage(results.getObjects());
+    }
+
     /**
-     * Finds the best {@link AExperienceRole} for the level of the passed {@link AUserExperience}
-     * @param userExperience The {@link AUserExperience} containing the level to calculate the {@link AExperienceRole}
+     * Finds the best {@link AExperienceRole} for the level of the passed {@link AUserExperience}, returns null if the passed
+     * roles are empty/null
      * @param roles The role configuration to be used when calculating the appropriate {@link AExperienceRole}
+     * @param currentLevel
      * @return The best fitting {@link AExperienceRole} according to the level of the {@link AUserExperience}
      */
     @Override
-    public AExperienceRole calculateRole(AUserExperience userExperience, List<AExperienceRole> roles) {
-        if(roles.isEmpty()) {
+    public AExperienceRole calculateRole(List<AExperienceRole> roles, Integer currentLevel) {
+        if(roles == null || roles.isEmpty()) {
             return null;
         }
         AExperienceRole lastRole = null;
         for (AExperienceRole experienceRole : roles) {
-            if(userExperience.getCurrentLevel().getLevel() >= experienceRole.getLevel().getLevel()) {
+            if(currentLevel >= experienceRole.getLevel().getLevel()) {
                 lastRole = experienceRole;
             } else {
                 return lastRole;

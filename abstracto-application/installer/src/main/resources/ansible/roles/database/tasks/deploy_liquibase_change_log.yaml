@@ -33,7 +33,7 @@
 
 
 - name: Run liquibase migration
-  shell: "{{ liquibase_path }}/liquibase --defaultsFile={{ installer_base_dir }}/liquibase/{{ artifact.group_id }}/{{ artifact.module }}/liquibase.properties --logLevel=info update"
+  shell: "{{ liquibase_path }}/liquibase --defaultsFile={{ installer_base_dir }}/liquibase/{{ artifact.group_id }}/{{ artifact.module }}/liquibase.properties --liquibaseSchemaName=abstracto --liquibaseCatalogName=abstracto --logLevel=info update"
 
 - name: Cleanup folder
   file:

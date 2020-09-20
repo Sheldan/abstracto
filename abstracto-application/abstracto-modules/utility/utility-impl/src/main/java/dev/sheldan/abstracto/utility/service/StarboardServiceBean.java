@@ -102,7 +102,7 @@ public class StarboardServiceBean implements StarboardService {
 
     @Transactional
     public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
-        AUserInAServer innerStarredUser = userInServerManagementService.loadUser(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
+        AUserInAServer innerStarredUser = userInServerManagementService.loadUserConditional(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
         try {
             AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
             Message message1 = completableFutures.get(0).get();
@@ -117,7 +117,7 @@ public class StarboardServiceBean implements StarboardService {
                 log.warn("There are no user ids except the author for the reactions in post {} in guild {} for message {} in channel {}.", starboardPost.getId(), message.getChannelId(), message.getMessageId(), message.getChannelId());
             }
             userExceptAuthorIds.forEach(aLong -> {
-                AUserInAServer user = userInServerManagementService.loadUser(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
+                AUserInAServer user = userInServerManagementService.loadUserConditional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
                 starboardPostReactorManagementService.addReactor(starboardPost, user);
             });
         } catch (InterruptedException | ExecutionException e) {
