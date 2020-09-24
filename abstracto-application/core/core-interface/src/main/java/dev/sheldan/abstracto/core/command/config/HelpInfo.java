@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class HelpInfo {
-    private String usage;
     private String longHelp;
     private String example;
     @Builder.Default

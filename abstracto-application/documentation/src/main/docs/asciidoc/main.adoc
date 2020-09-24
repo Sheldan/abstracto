@@ -26,7 +26,7 @@ Weeks in this case are just a short hand for 7 days.
 Pagination navigation:: If a pagination is used for the output of a command you can navigate the pages with `◀️` and `▶️` and `⏹️` to close the pagination.
 Role as parameter:: Whenever a role is a parameter for a command, this can be done by either providing the role ID or mentioning the role.
 Channel groups:: This concept enables you to group channels together into channel groups and enact certain restrictions or features on this whole group.
-System configuration:: Some properties can be configured while the bot is running.
+System configuration:: Some properties can be configured while the bot is running and can be changed for each guild respectively.
 In the respective features they are noted under `Relevant system configuration`.
 In order to change this you need to use the command `setConfig` with the provided key and the new desired value.
 Emotes:: The features have section of the keys of used emotes in the feature, you can change this emote with the `setEmote` command.

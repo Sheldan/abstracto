@@ -14,6 +14,7 @@ import java.util.List;
 @SuperBuilder
 public class HelpCommandDetailsModel extends UserInitiatedServerContext {
     private CommandConfiguration command;
+    private String usage;
     private List<Role> allowedRoles;
     private List<Role> immuneRoles;
     private Boolean restricted;

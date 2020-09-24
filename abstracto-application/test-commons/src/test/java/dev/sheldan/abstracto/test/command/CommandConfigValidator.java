@@ -31,11 +31,9 @@ public class CommandConfigValidator {
         Assert.assertNotNull(helpInfo);
         if(helpInfo.isTemplated()) {
             Assert.assertNull(helpInfo.getLongHelp());
-            Assert.assertNull(helpInfo.getUsage());
             Assert.assertNull(helpInfo.getExample());
         } else {
             Assert.assertNotNull(helpInfo.getLongHelp());
-            Assert.assertNotNull(helpInfo.getUsage());
             if(helpInfo.isHasExample()) {
                 Assert.assertNotNull(helpInfo.getExample());
             } else {

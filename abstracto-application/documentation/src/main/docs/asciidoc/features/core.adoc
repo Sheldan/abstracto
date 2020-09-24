@@ -33,7 +33,7 @@ Echo::
 * Description: Echos `text` in the same channel this command as executed in.
 Changing the prefix::
 * Usage: `setPrefix <prefix>`
-* Description: Changes the prefix of the bot on this value to `prefix`. This can be one or multiple characters.
+* Description: Changes the prefix of the bot in this guild to `prefix`. This can be one or multiple characters.
 Changing a post target::
 * Usage: `posttarget <key> <channel>`
 * Description: Changes the given post target identified by `key` to the given channel. All messages using this post target will be send to this channel from now on.

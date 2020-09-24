@@ -94,6 +94,7 @@ public class Help implements Command {
                     model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
                     model.setRestricted(true);
                 }
+                model.setUsage(commandService.generateUsage(command));
                 model.setCommand(command.getConfiguration());
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
                 channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());

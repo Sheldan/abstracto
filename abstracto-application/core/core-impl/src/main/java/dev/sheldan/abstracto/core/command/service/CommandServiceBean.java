@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.core.command.service;
 
+import com.google.common.collect.Iterables;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
+import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
@@ -27,6 +29,8 @@ import java.util.List;
 public class CommandServiceBean implements CommandService {
 
     public static final String NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE = "no_feature_command_found_exception";
+    private static final String[] MANDATORY_ENCLOSING = {"<", ">"};
+    private static final String[] OPTIONAL_ENCLOSING = {"[", "]"};
 
     @Autowired
     private ModuleManagementService moduleManagementService;
@@ -89,6 +93,26 @@ public class CommandServiceBean implements CommandService {
     public void restrictCommand(ACommand aCommand, AServer server) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, server);
         commandForServer.setRestricted(true);
+    }
+
+    @Override
+    public String generateUsage(Command command) {
+        StringBuilder builder = new StringBuilder();
+        CommandConfiguration commandConfig = command.getConfiguration();
+        builder.append(commandConfig.getName());
+        if(!commandConfig.getParameters().isEmpty()) {
+            builder.append(" ");
+        }
+        commandConfig.getParameters().forEach(parameter -> {
+            String[] enclosing = parameter.isOptional() ? OPTIONAL_ENCLOSING : MANDATORY_ENCLOSING;
+            builder.append(enclosing[0]);
+            builder.append(parameter.getName());
+            builder.append(enclosing[1]);
+            if(!parameter.equals(Iterables.getLast(commandConfig.getParameters()))) {
+                builder.append(" ");
+            }
+        });
+        return builder.toString();
     }
 
     @Override

@@ -16,6 +16,7 @@ public interface CommandService {
     void makeRoleImmuneForCommand(ACommand aCommand, ARole role);
     void makeRoleAffectedByCommand(ACommand aCommand, ARole role);
     void restrictCommand(ACommand aCommand, AServer server);
+    String generateUsage(Command command);
     void unRestrictCommand(ACommand aCommand, AServer server);
     void disAllowCommandForRole(ACommand aCommand, ARole role);
     void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role);
