@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
+import dev.sheldan.abstracto.experience.models.ServerExperience;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
@@ -35,7 +36,7 @@ public interface AUserExperienceService {
      * containing a list of {@link AUserInAServer} which should gain experience in the minute used as key in the HashMap
      * @return
      */
-    Map<Long, List<AServer>> getRuntimeExperience();
+    Map<Long, List<ServerExperience>> getRuntimeExperience();
 
     /**
      * Calculates the appropriate level of the given {@link AUserExperience} according to the given {@link AExperienceLevel}
@@ -64,7 +65,7 @@ public interface AUserExperienceService {
      * of each user by 1.
      * @param serverExp The list of {@link AServer} containing the users which get experience
      */
-    CompletableFuture<Void> handleExperienceGain(List<AServer> serverExp);
+    CompletableFuture<Void> handleExperienceGain(List<ServerExperience> serverExp);
 
     /**
      * Calculates the currently appropriate {@link AExperienceRole} for the given user and updates the role on the

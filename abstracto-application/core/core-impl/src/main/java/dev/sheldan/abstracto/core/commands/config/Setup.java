@@ -58,11 +58,12 @@ public class Setup extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         Parameter newPrefixParameter = Parameter.builder().name("feature").type(String.class).build();
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
-        HelpInfo helpInfo = HelpInfo.builder().build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setup")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .templated(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

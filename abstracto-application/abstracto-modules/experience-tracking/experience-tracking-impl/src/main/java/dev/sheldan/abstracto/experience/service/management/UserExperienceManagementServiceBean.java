@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
@@ -28,6 +29,16 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     public AUserExperience findUserInServer(AUserInAServer aUserInAServer) {
         Optional<AUserExperience> byId = repository.findById(aUserInAServer.getUserInServerId());
         return byId.orElseGet(() -> createUserInServer(aUserInAServer));
+    }
+
+    @Override
+    public Optional<AUserExperience> findByUserInServerIdOptional(Long userInServerId) {
+       return repository.findById(userInServerId);
+    }
+
+    @Override
+    public AUserExperience findByUserInServerId(Long userInServerId) {
+        return findByUserInServerIdOptional(userInServerId).orElseThrow(() -> new UserInServerNotFoundException(userInServerId));
     }
 
     /**

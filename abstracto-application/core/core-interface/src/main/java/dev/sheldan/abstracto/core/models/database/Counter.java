@@ -22,7 +22,7 @@ public class Counter {
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @MapsId("serverId")
-    @JoinColumn(name = "serverReference", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
     private AServer server;
 
     @Column(name = "counter")

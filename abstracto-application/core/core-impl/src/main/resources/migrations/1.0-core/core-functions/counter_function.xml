@@ -6,9 +6,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet author="me" id="counter_function" dbms="postgres">
+    <changeSet author="Sheldan" id="counter_function" dbms="postgresql">
         <sqlFile encoding="utf8" path="sql/counter_function.sql"
                  relativeToChangelogFile="true"
-                 stripComments="false"/>
+                 splitStatements="false"/>
     </changeSet>
 </databaseChangeLog>

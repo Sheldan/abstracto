@@ -15,4 +15,6 @@ public class ExperienceGainResult {
     private Long newExperience;
     private Integer newLevel;
     private Long newMessageCount;
+    @Builder.Default
+    private boolean createUserExperience = false;
 }

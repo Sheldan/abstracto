@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.job;
 
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.experience.models.ServerExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
@@ -32,13 +32,14 @@ public class ExperiencePersistingJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        Map<Long, List<AServer>> runtimeExperience = userExperienceService.getRuntimeExperience();
+        Map<Long, List<ServerExperience>> runtimeExperience = userExperienceService.getRuntimeExperience();
         log.info("Running experience persisting job.");
         Long pastMinute = (Instant.now().getEpochSecond() / 60) - 1;
         if(runtimeExperience.containsKey(pastMinute)) {
             log.info("Found experience to persist.");
-            userExperienceService.handleExperienceGain(runtimeExperience.get(pastMinute));
-            runtimeExperience.remove(pastMinute);
+            userExperienceService.handleExperienceGain(runtimeExperience.get(pastMinute)).thenAccept(aVoid ->
+                runtimeExperience.remove(pastMinute)
+            );
         }
     }
 

@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service used to manage the record in the {@link AUserExperience} table
@@ -18,6 +19,9 @@ public interface UserExperienceManagementService {
      * @return The {@link AUserExperience} object representing the {@link AUserInAServer}
      */
     AUserExperience findUserInServer(AUserInAServer aUserInAServer);
+
+    Optional<AUserExperience> findByUserInServerIdOptional(Long userInServerId);
+    AUserExperience findByUserInServerId(Long userInServerId);
 
     /**
      * Creates a {@link AUserExperience} object with the default values (0 xp, 0 messages) for the given {@link AUserInAServer} object.

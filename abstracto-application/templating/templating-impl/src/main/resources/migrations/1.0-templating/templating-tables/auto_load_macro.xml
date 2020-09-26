@@ -14,8 +14,9 @@
         </createTable>
     </changeSet>
 
+    <!-- TODO doesnt work for initial config, because auto load macros are defined, but templates not present yet
     <changeSet author="Sheldan" id="auto_load_macro-fk_assignable_role_emote">
         <addForeignKeyConstraint baseColumnNames="key" baseTableName="auto_load_macro" constraintName="fk_auto_load_macro_template" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="key" referencedTableName="template" validate="true"/>
     </changeSet>
-
+    -->
 </databaseChangeLog>

@@ -7,13 +7,23 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.test.MockUtils;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.mockito.Mockito.when;
+
 
 public abstract class ExperienceRelatedTest {
+
+    @Mock
+    private AServer firstServer;
+
+    @Mock
+    private AServer secondServer;
 
     protected List<AUserExperience> getUserExperiences(int count, AServer server) {
         List<AUserExperience> experiences = new ArrayList<>();
@@ -46,12 +56,17 @@ public abstract class ExperienceRelatedTest {
         return new ArrayList<>(Arrays.asList(level0, level1, level2, level3));
     }
 
-    protected List<AExperienceRole> getExperienceRoles(List<AExperienceLevel> levelsWithRoles, AServer server) {
+    protected List<AExperienceRole> getExperienceRoles(List<AExperienceLevel> levelsWithRoles) {
         List<AExperienceRole> roles = new ArrayList<>();
         for (int i = 0; i < levelsWithRoles.size(); i++) {
             AExperienceLevel level = levelsWithRoles.get(i);
-            ARole role = ARole.builder().id((long)i).server(server).build();
-            roles.add(AExperienceRole.builder().level(level).id(role.getId()).roleServer(server).role(role).build());
+            ARole role = Mockito.mock(ARole.class);
+            when(role.getId()).thenReturn((long)i);
+            AExperienceRole experienceRole = Mockito.mock(AExperienceRole.class);
+            when(experienceRole.getLevel()).thenReturn(level);
+            when(experienceRole.getId()).thenReturn((long) i);
+            when(experienceRole.getRole()).thenReturn(role);
+            roles.add(experienceRole);
         }
         return roles;
     }

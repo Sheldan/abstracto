@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Setter
+@Getter
 @Builder
 public class DurationFormatExceptionModel implements Serializable {
     private final String invalidFormat;

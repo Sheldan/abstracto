@@ -6,23 +6,23 @@ BEGIN
     SELECT count(1)
     FROM COUNTER
     INTO v_exists
-    WHERE server_reference = p_server_id
+    WHERE server_id = p_server_id
     AND counter_key = p_counter_key;
 
     IF v_exists >= 1 THEN
         SELECT MAX(counter) + 1
         INTO v_next_count
         FROM counter
-        WHERE server_reference = p_server_id
+        WHERE server_id = p_server_id
         AND counter_key = p_counter_key;
 
         UPDATE counter
         SET counter = v_next_count
-        WHERE server_reference = p_server_id
+        WHERE server_id = p_server_id
         AND counter_key = p_counter_key;
     ELSE
         v_next_count := 1;
-        INSERT INTO counter (counter_key, server_reference, counter)
+        INSERT INTO counter (counter_key, server_id, counter)
             VALUES (p_counter_key, p_server_id, v_next_count);
     END IF;
     RETURN v_next_count;

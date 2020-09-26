@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.experience.models.ServerExperience;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -9,9 +9,9 @@ import java.util.Map;
 
 @Component
 public class RunTimeExperienceService {
-    private Map<Long, List<AServer>> runtimeExperience = new HashMap<>();
+    private Map<Long, List<ServerExperience>> runtimeExperience = new HashMap<>();
 
-    public Map<Long, List<AServer>> getRuntimeExperience() {
+    public Map<Long, List<ServerExperience>> getRuntimeExperience() {
         return runtimeExperience;
     }
 
