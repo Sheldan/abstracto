@@ -30,11 +30,8 @@ public class ServerManagementServiceBean implements ServerManagementService {
 
     @Override
     public AServer loadOrCreate(Long id) {
-        if(repository.existsById(id)) {
-            return repository.findById(id).get();
-        } else {
-            return createServer(id);
-        }
+        Optional<AServer> optional = repository.findById(id);
+        return optional.orElseGet(() -> createServer(id));
     }
 
     @Override

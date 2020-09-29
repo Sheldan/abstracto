@@ -685,35 +685,29 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Transactional
     public CompletableFuture<Void> addEmotes(List<CompletableFuture<Message>> assignablePlacePostsMessageFutures, String placeKey) {
-        try {
-            Message firstMessage = assignablePlacePostsMessageFutures.get(0).get();
-            Long serverId = firstMessage.getGuild().getIdLong();
+        Message firstMessage = assignablePlacePostsMessageFutures.get(0).join();
+        Long serverId = firstMessage.getGuild().getIdLong();
 
-            AServer innerServer = serverManagementService.loadOrCreate(serverId);
-            AssignableRolePlace innerRolePlace = rolePlaceManagementService.findByServerAndKey(innerServer, placeKey);
+        AServer innerServer = serverManagementService.loadOrCreate(serverId);
+        AssignableRolePlace innerRolePlace = rolePlaceManagementService.findByServerAndKey(innerServer, placeKey);
 
-            List<AssignableRole> roleStream = innerRolePlace.getAssignableRoles().stream().sorted(Comparator.comparingInt(AssignableRole::getPosition)).collect(Collectors.toList());
-            List<CompletableFuture<Void>> reactionFutures = new ArrayList<>();
-            int usedEmotes = 0;
-            for (CompletableFuture<Message> messageCompletableFuture : assignablePlacePostsMessageFutures) {
-                Message sentMessage = messageCompletableFuture.get();
-                // this uses the actual embed count as a limit, so this relies on fields to be used for description, if this changes, this needs to be changed
-                MessageEmbed embed = sentMessage.getEmbeds().get(0);
-                List<AssignableRole> firstRoles = roleStream.subList(usedEmotes, usedEmotes + embed.getFields().size());
-                usedEmotes += embed.getFields().size();
-                List<Integer> usedEmoteIds = firstRoles.stream().map(assignableRole -> assignableRole.getEmote().getId()).collect(Collectors.toList());
-                CompletableFuture<Void> firstMessageFuture = createAssignableRolePlacePost(sentMessage, serverId, usedEmoteIds);
-                reactionFutures.add(firstMessageFuture);
-            }
-            return CompletableFuture.allOf(reactionFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
-                self.storeCreatedAssignableRolePlacePosts(placeKey, serverId, assignablePlacePostsMessageFutures);
-                return CompletableFuture.completedFuture(null);
-            });
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to process future from sending assignable place posts messages.", e);
-            throw new AbstractoRunTimeException(e);
+        List<AssignableRole> roleStream = innerRolePlace.getAssignableRoles().stream().sorted(Comparator.comparingInt(AssignableRole::getPosition)).collect(Collectors.toList());
+        List<CompletableFuture<Void>> reactionFutures = new ArrayList<>();
+        int usedEmotes = 0;
+        for (CompletableFuture<Message> messageCompletableFuture : assignablePlacePostsMessageFutures) {
+            Message sentMessage = messageCompletableFuture.join();
+            // this uses the actual embed count as a limit, so this relies on fields to be used for description, if this changes, this needs to be changed
+            MessageEmbed embed = sentMessage.getEmbeds().get(0);
+            List<AssignableRole> firstRoles = roleStream.subList(usedEmotes, usedEmotes + embed.getFields().size());
+            usedEmotes += embed.getFields().size();
+            List<Integer> usedEmoteIds = firstRoles.stream().map(assignableRole -> assignableRole.getEmote().getId()).collect(Collectors.toList());
+            CompletableFuture<Void> firstMessageFuture = createAssignableRolePlacePost(sentMessage, serverId, usedEmoteIds);
+            reactionFutures.add(firstMessageFuture);
         }
-
+        return CompletableFuture.allOf(reactionFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
+            self.storeCreatedAssignableRolePlacePosts(placeKey, serverId, assignablePlacePostsMessageFutures);
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     @Transactional

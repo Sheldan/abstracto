@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @Slf4j
 public class UserManagementServiceBean implements UserManagementService {
@@ -29,10 +31,7 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Override
     public AUser loadUser(Long userId) {
-        if(userRepository.existsById(userId)) {
-            return userRepository.findById(userId).get();
-        } else {
-            return this.createUser(userId);
-        }
+        Optional<AUser> optional = userRepository.findById(userId);
+        return optional.orElseGet(() -> this.createUser(userId));
     }
 }
