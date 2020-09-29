@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.ParameterValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -47,7 +50,8 @@ public class Purge extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("amount").type(Integer.class).templated(true).build());
+        List<ParameterValidator> messageAmountValidator = Arrays.asList(MinIntegerValueValidator.min(1L));
+        parameters.add(Parameter.builder().name("amount").validators(messageAmountValidator).type(Integer.class).templated(true).build());
         parameters.add(Parameter.builder().name("member").type(Member.class).optional(true).templated(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

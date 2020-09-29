@@ -1,11 +1,14 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.assignableroles.config.features.AssignableRoleFeature;
+import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.ParameterValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -42,9 +45,11 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
+        List<ParameterValidator> rolePlaceNameValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
+        Parameter rolePostName = Parameter.builder().name("name").validators(rolePlaceNameValidator).type(String.class).templated(true).build();
         Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).templated(true).build();
-        Parameter text = Parameter.builder().name("text").type(String.class).remainder(true).optional(true).templated(true).build();
+        List<ParameterValidator> rolePlaceDescriptionValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
+        Parameter text = Parameter.builder().name("text").validators(rolePlaceDescriptionValidator).type(String.class).remainder(true).optional(true).templated(true).build();
         List<String> aliases = Arrays.asList("crRPl", "crAssRoPl");
         List<Parameter> parameters = Arrays.asList(rolePostName, channel, text);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();

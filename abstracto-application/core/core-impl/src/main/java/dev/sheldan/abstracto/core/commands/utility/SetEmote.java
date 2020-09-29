@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.ParameterValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -38,7 +40,8 @@ public class SetEmote extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter emoteKey = Parameter.builder().name("emoteKey").type(String.class).templated(true).build();
+        List<ParameterValidator> emoteKeyValidators = Arrays.asList(MaxStringLengthValidator.max(255L));
+        Parameter emoteKey = Parameter.builder().name("emoteKey").validators(emoteKeyValidators).type(String.class).templated(true).build();
         Parameter emote = Parameter.builder().name("emote").type(AEmote.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(emoteKey, emote);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();

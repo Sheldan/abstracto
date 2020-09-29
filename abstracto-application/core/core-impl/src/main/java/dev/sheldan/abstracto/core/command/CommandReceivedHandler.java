@@ -2,7 +2,9 @@ package dev.sheldan.abstracto.core.command;
 
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.Parameters;
+import dev.sheldan.abstracto.core.command.exception.CommandParameterValidationException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.exception.ParameterTooLongException;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
@@ -115,6 +117,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private void tryToExecuteFoundCommand(@Nonnull MessageReceivedEvent event, UserInitiatedServerContext userInitiatedContext, CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
         try {
             Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
+            validateCommandParameters(parsedParameters, foundCommand);
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
             CommandResult commandResult = null;
@@ -155,6 +158,21 @@ public class CommandReceivedHandler extends ListenerAdapter {
             CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
             CommandContext commandContext = commandContextBuilder.build();
             self.executePostCommandListener(foundCommand, commandContext, commandResult);
+        }
+    }
+
+    private void validateCommandParameters(Parameters parameters, Command foundCommand) {
+        List<Parameter> parameterList = foundCommand.getConfiguration().getParameters();
+        // we iterate only over the actually found parameters, that way we dont have to consider the optional parameters
+        // the parameters are going from left to right anyway
+        for (int i = 0; i < parameters.getParameters().size(); i++) {
+            Parameter parameter = parameterList.get(i);
+            for (ParameterValidator parameterValidator : parameter.getValidators()) {
+                boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
+                if(!validate) {
+                    throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getTemplateName(), parameter);
+                }
+            }
         }
     }
 
@@ -308,8 +326,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     }
                 } catch (NoSuchElementException e) {
                     throw new IncorrectParameterException(command, param.getType(), param.getName());
-                } catch (IllegalArgumentException e) {
-
                 }
             }
 

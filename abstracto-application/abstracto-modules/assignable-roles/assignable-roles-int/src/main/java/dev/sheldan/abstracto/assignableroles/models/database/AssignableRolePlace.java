@@ -21,6 +21,9 @@ import java.util.List;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AssignableRolePlace implements Serializable {
 
+    public static final Long ASSIGNABLE_PLACE_NAME_LIMIT = 255L;
+    public static final Long ASSIGNABLE_PLACE_DESCRIPTION_LIMIT = 255L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

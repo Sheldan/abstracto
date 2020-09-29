@@ -4,8 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter @Builder
-public class Parameter {
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@Builder
+public class Parameter implements Serializable {
     private String name;
     private Class type;
     private String description;
@@ -16,4 +22,6 @@ public class Parameter {
     private Integer maxLength;
     @Builder.Default
     private Boolean templated = false;
+    @Builder.Default
+    private List<ParameterValidator> validators = new ArrayList<>();
 }

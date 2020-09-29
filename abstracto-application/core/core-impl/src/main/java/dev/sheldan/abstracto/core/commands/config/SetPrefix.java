@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.ParameterValidator;
+import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -30,7 +32,8 @@ public class SetPrefix extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter newPrefixParameter = Parameter.builder().name("prefix").type(String.class).templated(true).build();
+        List<ParameterValidator> validators = Arrays.asList(MaxStringLengthValidator.max(10L));
+        Parameter newPrefixParameter = Parameter.builder().name("prefix").validators(validators).type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

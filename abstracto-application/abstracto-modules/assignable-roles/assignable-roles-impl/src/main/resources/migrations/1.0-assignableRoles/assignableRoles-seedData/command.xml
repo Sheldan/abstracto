@@ -77,12 +77,6 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="changeAssignablePlaceDescription"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
-            <column name="created" valueComputed="${today}"/>
-        </insert>
-        <insert tableName="command">
             <column name="name" value="showAssignableRolePlaceConfig"/>
             <column name="module_id" valueComputed="${experienceModule}"/>
             <column name="feature_id" valueComputed="${experienceFeature}"/>
