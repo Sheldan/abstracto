@@ -4,8 +4,10 @@ import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.DefaultEmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -27,6 +29,9 @@ public class EmoteServiceBean implements EmoteService {
 
     @Autowired
     private DefaultEmoteManagementService defaultEmoteManagementService;
+
+    @Autowired
+    private ServerManagementService serverManagementService;
 
     @Override
     public boolean isEmoteUsableByBot(Emote emote) {
@@ -128,12 +133,29 @@ public class EmoteServiceBean implements EmoteService {
     public AEmote getFakeEmote(Object object) {
         if(object instanceof Emote) {
             Emote emote = (Emote) object;
-            return AEmote.builder().fake(true).emoteKey(emote.getName()).custom(true).animated(emote.isAnimated()).emoteId(emote.getIdLong()).build();
+            return getFakeEmoteFromEmote(emote);
         } else if(object instanceof String) {
             String emoteText = (String) object;
             return AEmote.builder().fake(true).custom(false).emoteKey(emoteText).build();
         }
         throw new IllegalArgumentException("Not possible to convert given object to AEmote.");
+    }
+
+    @Override
+    public AEmote getFakeEmoteFromEmote(Emote emote) {
+        AServer server = null;
+        if(emote.getGuild() != null) {
+            server = AServer.builder().id(emote.getGuild().getIdLong()).fake(true).build();
+        }
+        return AEmote
+                .builder()
+                .fake(true)
+                .emoteKey(emote.getName())
+                .custom(true)
+                .animated(emote.isAnimated())
+                .emoteId(emote.getIdLong())
+                .serverRef(server)
+                .build();
     }
 
 }

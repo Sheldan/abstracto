@@ -44,6 +44,9 @@ public class ARole implements SnowFlake, Serializable {
     @Column(name = "updated")
     private Instant updated;
 
+    @Transient
+    private boolean fake;
+
     @PreUpdate
     private void onUpdate() {
         this.updated = Instant.now();

@@ -187,4 +187,20 @@ public class RoleServiceBean implements RoleService {
         Member selfMember = jdaRole.getGuild().getSelfMember();
         return selfMember.canInteract(jdaRole);
     }
+
+    @Override
+    public ARole getFakeRoleFromRole(Role role) {
+        AServer server = AServer
+                .builder()
+                .id(role.getGuild().getIdLong())
+                .fake(true)
+                .build();
+        return ARole
+                .builder()
+                .fake(true)
+                .deleted(false)
+                .id(role.getIdLong())
+                .server(server)
+                .build();
+    }
 }

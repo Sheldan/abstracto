@@ -19,7 +19,6 @@ public class Parameter implements Serializable {
     private boolean optional = false;
     @Builder.Default
     private boolean remainder = false;
-    private Integer maxLength;
     @Builder.Default
     private Boolean templated = false;
     @Builder.Default

@@ -21,4 +21,5 @@ public interface EmoteService {
     Optional<CachedReaction> getReactionFromMessageByEmote(CachedMessage message, AEmote emote);
     boolean compareAEmote(AEmote a, AEmote b);
     AEmote getFakeEmote(Object object);
+    AEmote getFakeEmoteFromEmote(Emote emote);
 }

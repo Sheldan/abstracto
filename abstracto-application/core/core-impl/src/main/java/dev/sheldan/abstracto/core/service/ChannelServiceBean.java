@@ -256,4 +256,19 @@ public class ChannelServiceBean implements ChannelService {
     public Optional<TextChannel> getChannelFromAChannel(AChannel channel) {
         return botService.getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
     }
+
+    @Override
+    public AChannel getFakeChannelFromTextChannel(TextChannel textChannel) {
+        AServer server = AServer
+                .builder()
+                .id(textChannel.getIdLong())
+                .fake(true)
+                .build();
+        return AChannel
+                .builder()
+                .fake(true)
+                .id(textChannel.getIdLong())
+                .server(server)
+                .build();
+    }
 }

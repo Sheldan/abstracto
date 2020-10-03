@@ -36,6 +36,9 @@ public class AServer implements SnowFlake, Serializable {
     @Column(name = "updated")
     private Instant updated;
 
+    @Transient
+    private boolean fake;
+
     @PreUpdate
     private void onUpdate() {
         this.updated = Instant.now();

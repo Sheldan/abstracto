@@ -19,6 +19,9 @@ public class ParseUtils {
     private static List<String> validDuration = Arrays.asList("w", "d", "h", "m", "s");
 
     public static Duration parseDuration(String textToParseFrom) {
+        if(textToParseFrom == null || textToParseFrom.isEmpty()) {
+            throw new DurationFormatException("", validDuration);
+        }
         Matcher matcher = ParseUtils.messageRegex.matcher(textToParseFrom);
         Duration start = Duration.ZERO;
         String rest = textToParseFrom;

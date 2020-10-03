@@ -6,37 +6,33 @@ import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterValidationException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
-import dev.sheldan.abstracto.core.command.exception.ParameterTooLongException;
+import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
+import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
-import dev.sheldan.abstracto.core.Constants;
-import dev.sheldan.abstracto.core.exception.MemberNotFoundException;
-import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
-import dev.sheldan.abstracto.core.models.FullEmote;
-import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.*;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.utils.ParseUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
 
 @Service
 @Slf4j
@@ -79,6 +75,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private List<CommandParameterHandler> parameterHandlers;
+
     @Override
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
@@ -99,7 +98,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .userInitiatedContext(userInitiatedContext);
         final Command foundCommand;
         try {
-            String contentStripped = event.getMessage().getContentStripped();
+            String contentStripped = event.getMessage().getContentRaw();
             List<String> parameters = Arrays.asList(contentStripped.split(" "));
             UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
             String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
@@ -214,120 +213,42 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
         Iterator<Role> roleIterator = message.getMentionedRolesBag().iterator();
         Parameter param = command.getConfiguration().getParameters().get(0);
+        CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
         boolean reminderActive = false;
+        List<CommandParameterHandler> orderedHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
-                if(i < command.getConfiguration().getParameters().size() && !param.isRemainder()) {
-                    param = command.getConfiguration().getParameters().get(i);
-                } else {
-                    reminderActive = true;
-                }
-                String value = unParsedCommandParameter.getParameters().get(i);
-                if(param.getMaxLength() != null && (value.length() + Constants.PARAMETER_LIMIT) > param.getMaxLength()) {
-                    throw new ParameterTooLongException(command, param.getName(), value.length(), param.getMaxLength());
-                }
+            if(i < command.getConfiguration().getParameters().size() && !param.isRemainder()) {
+                param = command.getConfiguration().getParameters().get(i);
+            } else {
+                reminderActive = true;
+            }
+            String value = unParsedCommandParameter.getParameters().get(i);
+            boolean handlerMatched = false;
+            for (CommandParameterHandler handler : orderedHandlers) {
                 try {
-                    if(param.getType().equals(Integer.class)){
-                        parsedParameters.add(Integer.parseInt(value));
-                    } else if(param.getType().equals(Double.class)){
-                        parsedParameters.add(Double.parseDouble(value));
-                    } else if(param.getType().equals(Long.class)){
-                        parsedParameters.add(Long.parseLong(value));
-                    } else if(param.getType().equals(TextChannel.class)){
-                        parsedParameters.add(channelIterator.next());
-                    } else if(param.getType().equals(Member.class)) {
-                        if(StringUtils.isNumeric(value)) {
-                            Member memberById = message.getGuild().getMemberById(Long.parseLong(value));
-                            if(memberById == null) {
-                                throw new MemberNotFoundException();
-                            }
-                            parsedParameters.add(memberById);
-                        } else {
-                            parsedParameters.add(memberIterator.next());
-                        }
-                    } else if(param.getType().equals(FullEmote.class)) {
-                        // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
-                        // the second one shadows the first one, and there are too little parameters to go of
-                        if (emoteIterator.hasNext()) {
-                            try {
-                                Long emoteId = Long.parseLong(value);
-                                if(emoteManagementService.emoteExists(emoteId)) {
-                                    AEmote aEmote = AEmote.builder().emoteId(emoteId).custom(true).build();
-                                    FullEmote emote = FullEmote.builder().fakeEmote(aEmote).build();
-                                    parsedParameters.add(emote);
-                                }
-                            } catch (Exception ex) {
-                                Emote actualEmote = emoteIterator.next();
-                                AEmote fakeEmote = emoteService.getFakeEmote(actualEmote);
-                                FullEmote emote = FullEmote.builder().fakeEmote(fakeEmote).emote(actualEmote).build();
-                                parsedParameters.add(emote);
-                            }
-                        } else {
-                            try {
-                                Long emoteId = Long.parseLong(value);
-                                if(emoteManagementService.emoteExists(emoteId)) {
-                                    // we do not need to load the actual emote, as there is no guarantee that it exists anyway
-                                    // there might be multiple emotes with the same emoteId, so we dont have any gain to fetch any of them
-                                    AEmote aEmote = AEmote.builder().emoteId(emoteId).custom(true).build();
-                                    FullEmote emote = FullEmote.builder().fakeEmote(aEmote).build();
-                                    parsedParameters.add(emote);
-                                }
-                            } catch (Exception ex) {
-                                AEmote fakeEmote = emoteService.getFakeEmote(value);
-                                FullEmote emote = FullEmote.builder().fakeEmote(fakeEmote).build();
-                                parsedParameters.add(emote);
-                            }
-                        }
-                    } else if(param.getType().equals(AEmote.class)) {
-                        // TODO maybe rework, this fails if two emotes are needed, and the second one is an emote, the first one a default one
-                        // the second one shadows the first one, and there are too little parameters to go of
-                        if (emoteIterator.hasNext()) {
-                            parsedParameters.add(emoteService.getFakeEmote(emoteIterator.next()));
-                        } else {
-                            parsedParameters.add(emoteService.getFakeEmote(value));
-                        }
-                    } else if(CommandParameterKey.class.isAssignableFrom(param.getType())) {
-                        CommandParameterKey cast = (CommandParameterKey) CommandParameterKey.getEnumFromKey(param.getType(), value);
-                        parsedParameters.add(cast);
-                    } else if(param.getType().equals(FullRole.class)) {
-                        ARole aRole;
-                        if(StringUtils.isNumeric(value)) {
-                            long roleId = Long.parseLong(value);
-                            aRole = roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId));
-                        } else {
-                            long roleId = roleIterator.next().getIdLong();
-                            aRole = roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId));
-                        }
-                        Role role = roleService.getRoleFromGuild(aRole);
-                        FullRole fullRole = FullRole.builder().role(aRole).serverRole(role).build();
-                        parsedParameters.add(fullRole);
-                    } else if(param.getType().equals(ARole.class)) {
-                        if(StringUtils.isNumeric(value)) {
-                            long roleId = Long.parseLong(value);
-                            parsedParameters.add(roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId)));
-                        } else {
-                            long roleId = roleIterator.next().getIdLong();
-                            parsedParameters.add(roleManagementService.findRoleOptional(roleId).orElseThrow(() -> new RoleNotFoundInDBException(roleId)));
-                        }
-                    } else if(param.getType().equals(Boolean.class)) {
-                        parsedParameters.add(Boolean.valueOf(value));
-                    } else if (param.getType().equals(Duration.class)) {
-                        parsedParameters.add(ParseUtils.parseDuration(value));
-                    } else {
-                        if(!reminderActive) {
-                            parsedParameters.add(value);
-                        } else {
-                            if(parsedParameters.isEmpty()) {
-                                parsedParameters.add(value);
-                            } else {
-                                int lastIndex = parsedParameters.size() - 1;
-                                parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
-                            }
-                        }
+                    if(handler.handles(param.getType())) {
+                        handlerMatched = true;
+                        parsedParameters.add(handler.handle(value, iterators, param.getType(), message));
+                        break;
                     }
                 } catch (NoSuchElementException e) {
                     throw new IncorrectParameterException(command, param.getType(), param.getName());
                 }
             }
+            if(!handlerMatched) {
+                if(!reminderActive) {
+                    parsedParameters.add(value);
+                } else {
+                    if(parsedParameters.isEmpty()) {
+                        parsedParameters.add(value);
+                    } else {
+                        int lastIndex = parsedParameters.size() - 1;
+                        parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                    }
+                }
+            }
+
+        }
 
         return Parameters.builder().parameters(parsedParameters).build();
     }

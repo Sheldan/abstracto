@@ -27,4 +27,5 @@ public interface RoleService {
     boolean memberHasRole(Member member, ARole role);
     boolean isRoleInServer(ARole role);
     boolean canBotInteractWithRole(ARole role);
+    ARole getFakeRoleFromRole(Role role);
 }
