@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParametersExcept
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
@@ -13,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -29,6 +31,9 @@ public class UnSetExpRoleTest {
     @Mock
     private ExperienceRoleService experienceRoleService;
 
+    @Mock
+    private RoleManagementService roleManagementService;
+
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
         CommandTestUtilities.executeNoParametersTestAsync(testUnit);
@@ -44,7 +49,9 @@ public class UnSetExpRoleTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(changedRole));
-        when(experienceRoleService.unsetRole(changedRole, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
+        ARole actualRole = Mockito.mock(ARole.class);
+        when(roleManagementService.findRole(changedRole.getId())).thenReturn(actualRole);
+        when(experienceRoleService.unsetRole(actualRole, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class SetAssignableRolePosition extends AbstractConditionableCommand {
@@ -23,14 +24,14 @@ public class SetAssignableRolePosition extends AbstractConditionableCommand {
     private AssignableRolePlaceService service;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         FullEmote emote = (FullEmote) parameters.get(1);
         Integer newPosition = (Integer) parameters.get(2);
-        service.setEmoteToPosition(commandContext.getUserInitiatedContext().getServer(), name, emote, newPosition);
-        return CommandResult.fromSuccess();
+        return service.setEmoteToPosition(commandContext.getUserInitiatedContext().getServer(), name, emote, newPosition)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -45,6 +46,7 @@ public class SetAssignableRolePosition extends AbstractConditionableCommand {
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

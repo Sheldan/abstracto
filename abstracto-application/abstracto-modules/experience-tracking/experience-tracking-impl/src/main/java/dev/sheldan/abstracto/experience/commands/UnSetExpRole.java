@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,17 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     @Autowired
     private ExperienceRoleService experienceRoleService;
 
+    @Autowired
+    private RoleManagementService roleManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
+        ARole actualRole = roleManagementService.findRole(role.getId());
         // do not check for the existence of the role, because if the role was deleted, users should be able
         // to get rid of it in the configuration
-        return experienceRoleService.unsetRole(role, commandContext.getUserInitiatedContext().getChannel())
+        return experienceRoleService.unsetRole(actualRole, commandContext.getUserInitiatedContext().getChannel())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

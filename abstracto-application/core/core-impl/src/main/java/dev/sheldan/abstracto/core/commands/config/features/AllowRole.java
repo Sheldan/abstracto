@@ -48,13 +48,14 @@ public class AllowRole extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
-        ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
+        ARole fakeRole = (ARole) commandContext.getParameters().getParameters().get(1);
+        ARole actualRole = roleManagementService.findRole(fakeRole.getId());
         if(featureManagementService.featureExists(name)) {
             FeatureEnum featureEnum = featureFlagService.getFeatureEnum(name);
-            commandService.allowFeatureForRole(featureEnum, role);
+            commandService.allowFeatureForRole(featureEnum, actualRole);
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
-            commandService.allowCommandForRole(command, role);
+            commandService.allowCommandForRole(command, actualRole);
         } else {
             return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE, new Object()));
         }

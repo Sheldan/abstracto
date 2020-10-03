@@ -53,6 +53,7 @@ public class Allow extends AbstractConditionableCommand {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.unRestrictCommand(command, commandContext.getUserInitiatedContext().getServer());
         } else {
+            // TODO refactor to use exception
             return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE, new Object()));
         }
         return CommandResult.fromSuccess();

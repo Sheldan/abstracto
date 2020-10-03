@@ -33,8 +33,8 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelGroupName = Parameter.builder().name("name").type(String.class).description("The name of the channel group to remove the channel from.").build();
-        Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).description("The mention of the channel to remove from the group.").build();
+        Parameter channelGroupName = Parameter.builder().name("name").type(String.class).build();
+        Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         List<String> aliases = Arrays.asList("rmChChgrp", "chGrpCh-");
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();

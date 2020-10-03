@@ -62,10 +62,9 @@ public class EmoteParameterHandlerTest {
         Assert.assertEquals(parsed, emote);
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testInvalidEmoteMention() {
-        String input = "test";
-        testUnit.handle(input, null, Emote.class, null);
+        Assert.assertNull(testUnit.handle("test", null, Emote.class, null));
     }
 
     private String getEmoteMention() {

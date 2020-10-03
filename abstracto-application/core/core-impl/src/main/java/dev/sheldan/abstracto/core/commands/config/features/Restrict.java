@@ -53,6 +53,7 @@ public class Restrict extends AbstractConditionableCommand {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.restrictCommand(command, commandContext.getUserInitiatedContext().getServer());
         } else {
+            // TODO Refactor to use exception
             return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE, new Object()));
         }
         return CommandResult.fromSuccess();

@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +26,17 @@ public class DisableExpForRole extends AbstractConditionableCommand {
     @Autowired
     private DisabledExpRoleManagementService disabledExpRoleManagementService;
 
+    @Autowired
+    private RoleManagementService roleManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         ARole role = (ARole) parameters.get(0);
-        if(!disabledExpRoleManagementService.isExperienceDisabledForRole(role)) {
-            disabledExpRoleManagementService.setRoleToBeDisabledForExp(role);
+        ARole actualRole = roleManagementService.findRole(role.getId());
+        if(!disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)) {
+            disabledExpRoleManagementService.setRoleToBeDisabledForExp(actualRole);
         }
         return CommandResult.fromSuccess();
     }

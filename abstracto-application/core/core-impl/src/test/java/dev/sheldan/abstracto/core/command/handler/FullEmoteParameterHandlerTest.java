@@ -59,4 +59,15 @@ public class FullEmoteParameterHandlerTest {
     }
 
 
+    @Test
+    public void testDefaultEmoteHandling() {
+        String input = "test";
+        when(emoteParameterHandler.handle(input, iterators, Emote.class, message)).thenReturn(null);
+        when(emoteService.getFakeEmote(input)).thenReturn(aEmote);
+        FullEmote parsed = (FullEmote) testUnit.handle(input, iterators, AEmote.class, message);
+        Assert.assertNull(parsed.getEmote());
+        Assert.assertEquals(aEmote, parsed.getFakeEmote());
+    }
+
+
 }

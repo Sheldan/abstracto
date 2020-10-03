@@ -4,17 +4,17 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
-import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
-import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import net.dv8tion.jda.api.entities.Role;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -33,6 +33,9 @@ public class SetExpRoleTest {
 
     @Mock
     private RoleService roleService;
+
+    @Mock
+    private RoleManagementService roleManagementService;
 
     @Test(expected = InsufficientParametersException.class)
     public void testTooLittleParameters() {
@@ -59,23 +62,13 @@ public class SetExpRoleTest {
     @Test
     public void setExpRole() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
+        Role roleToChange = Mockito.mock(Role.class);
+        when(roleToChange.getGuild()).thenReturn(noParameters.getGuild());
         Integer levelToSetTo = 4;
-        CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));
-        when(roleService.isRoleInServer(changedRole)).thenReturn(true);
-        when(experienceRoleService.setRoleToLevel(changedRole, levelToSetTo, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
+        CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, roleToChange));
+        when(experienceRoleService.setRoleToLevel(roleToChange, levelToSetTo, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
-    }
-
-    @Test(expected = RoleNotFoundInGuildException.class)
-    public void setExpRoleNotExistingOnServer() {
-        CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
-        Integer levelToSetTo = 4;
-        CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, changedRole));
-        when(roleService.isRoleInServer(changedRole)).thenReturn(false);
-        testUnit.executeAsync(context);
     }
 
     @Test

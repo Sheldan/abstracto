@@ -14,7 +14,6 @@ import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePl
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterKeyValueWrongTypeException;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.exception.EmoteNotUsableException;
 import dev.sheldan.abstracto.core.models.FullEmote;
@@ -35,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Component
@@ -169,16 +167,16 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 if(channelOptional.isPresent()) {
                     TextChannel textChannel = channelOptional.get();
                     if(latestPost.getAssignableRoles().size() < 20) {
-                        return addReactionToExistingAssignableRolePlacePost(fakeEmote, description, assignableRolePlace, placeId, roleId, serverId, latestPost, messageToSend, textChannel, fakeEmote);
+                        return addReactionToExistingAssignableRolePlacePost(fakeEmote, description, assignableRolePlace, placeId, roleId, serverId, latestPost, messageToSend, textChannel);
                     } else {
-                        return addNewMessageToAssignableRolePlace(placeName, fakeEmote, description, roleId, serverId, messageToSend, textChannel, fakeEmote);
+                        return addNewMessageToAssignableRolePlace(placeName, fakeEmote, description, roleId, serverId, messageToSend, textChannel);
                     }
                 } else {
                     throw new ChannelNotFoundException(latestPost.getUsedChannel().getId());
                 }
             } else {
                 log.info("Added emote to assignable place {} in server {}, but no message post yet.", placeName, serverId);
-                self.addAssignableRoleInstanceWithoutPost(placeId, roleId, fakeEmote, description);
+                self.addAssignableRoleInstanceWithoutPost(placeId, roleId, fakeEmote, description, serverId);
             }
         } else {
             throw new EmoteNotUsableException(fakeEmote.getEmote());
@@ -186,7 +184,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         return CompletableFuture.completedFuture(null);
     }
 
-    private CompletableFuture<Void> addReactionToExistingAssignableRolePlacePost(FullEmote fakeEmote, String description, AssignableRolePlace assignableRolePlace, Long placeId, Long roleId, Long serverId, AssignableRolePlacePost latestPost, MessageToSend messageToSend, TextChannel textChannel, FullEmote emote) {
+    private CompletableFuture<Void> addReactionToExistingAssignableRolePlacePost(FullEmote fakeEmote, String description, AssignableRolePlace assignableRolePlace, Long placeId, Long roleId, Long serverId, AssignableRolePlacePost latestPost, MessageToSend messageToSend, TextChannel textChannel) {
         // TODO maybe refactor to use the same message object, so we dont need to retrieve it twice and do in parallel
         return textChannel.retrieveMessageById(latestPost.getId()).submit()
                 .thenCompose(message -> messageService.addReactionToMessageWithFuture(fakeEmote.getFakeEmote(), serverId, message))
@@ -195,16 +193,16 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                     return channelService.editEmbedMessageInAChannel(embedToUse, textChannel, latestPost.getId());
                 })
                 .thenCompose(message -> {
-                    self.addAssignableRoleInstanceWithPost(message.getIdLong(), placeId, roleId, description, emote);
+                    self.addAssignableRoleInstanceWithPost(message.getIdLong(), placeId, roleId, description, fakeEmote, serverId);
                     return CompletableFuture.completedFuture(null);
                 });
     }
 
-    private CompletableFuture<Void> addNewMessageToAssignableRolePlace(String placeName, FullEmote fakeEmote, String description, Long roleId, Long serverId, MessageToSend messageToSend, TextChannel textChannel, FullEmote emote) {
+    private CompletableFuture<Void> addNewMessageToAssignableRolePlace(String placeName, FullEmote fakeEmote, String description, Long roleId, Long serverId, MessageToSend messageToSend, TextChannel textChannel) {
         MessageEmbed embedToUse = messageToSend.getEmbeds().get(messageToSend.getEmbeds().size() - 1);
         return channelService.sendEmbedToChannel(embedToUse, textChannel)
                 .thenCompose(message -> messageService.addReactionToMessageWithFuture(fakeEmote.getFakeEmote(), serverId, message).thenAccept(aVoid ->
-                    self.addNewlyCreatedAssignablePlacePost(placeName, description, roleId, serverId, textChannel, message, emote)
+                    self.addNewlyCreatedAssignablePlacePost(placeName, description, roleId, serverId, textChannel, message, fakeEmote)
                 ));
     }
 
@@ -229,15 +227,15 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Transactional
-    public void addAssignableRoleInstanceWithPost(Long messageId, Long placeId, Long roleId, String description, FullEmote fakeEmote) {
-        AEmote emote = emoteManagementService.createEmote(null, fakeEmote.getFakeEmote(), fakeEmote.getEmote().getGuild().getIdLong(), false);
+    public void addAssignableRoleInstanceWithPost(Long messageId, Long placeId, Long roleId, String description, FullEmote fakeEmote, Long serverId) {
+        AEmote emote = emoteManagementService.createEmote(null, fakeEmote.getFakeEmote(), serverId, false);
         emote.setChangeable(false);
         assignableRoleManagementServiceBean.addRoleToPlace(placeId, emote.getId(), roleId, description, messageId);
     }
 
     @Transactional
-    public void addAssignableRoleInstanceWithoutPost(Long placeId, Long roleId, FullEmote fakeEmote, String description) {
-        AEmote emote = emoteManagementService.createEmote(null, fakeEmote.getFakeEmote(), fakeEmote.getEmote().getGuild().getIdLong(), false);
+    public void addAssignableRoleInstanceWithoutPost(Long placeId, Long roleId, FullEmote fakeEmote, String description, Long serverId) {
+        AEmote emote = emoteManagementService.createEmote(null, fakeEmote.getFakeEmote(), serverId, false);
         emote.setChangeable(false);
         assignableRoleManagementServiceBean.addRoleToPlace(placeId, emote.getId(), roleId, description);
     }

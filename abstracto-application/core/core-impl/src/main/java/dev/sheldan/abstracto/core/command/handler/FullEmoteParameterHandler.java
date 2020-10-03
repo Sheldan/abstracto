@@ -26,7 +26,12 @@ public class FullEmoteParameterHandler implements CommandParameterHandler {
     @Override
     public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
         Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
-        AEmote aEmote = emoteService.getFakeEmoteFromEmote(emote);
+        AEmote aEmote;
+        if(emote != null) {
+            aEmote = emoteService.getFakeEmoteFromEmote(emote);
+        } else {
+            aEmote = emoteService.getFakeEmote(input);
+        }
         return FullEmote.builder().emote(emote).fakeEmote(aEmote).build();
     }
 

@@ -25,7 +25,11 @@ public class AEmoteParameterHandler implements CommandParameterHandler {
     @Override
     public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
         Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
-        return emoteService.getFakeEmoteFromEmote(emote);
+        if(emote != null) {
+            return emoteService.getFakeEmoteFromEmote(emote);
+        } else {
+            return emoteService.getFakeEmote(input);
+        }
     }
 
     @Override

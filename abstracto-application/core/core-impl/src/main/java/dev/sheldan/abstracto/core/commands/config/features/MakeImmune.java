@@ -46,15 +46,17 @@ public class MakeImmune extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
+        ARole actualRole = roleManagementService.findRole(role.getId());
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
             feature.getCommands().forEach(command ->
-                commandService.makeRoleImmuneForCommand(command, role)
+                commandService.makeRoleImmuneForCommand(command, actualRole)
             );
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
-            commandService.makeRoleImmuneForCommand(command, role);
+            commandService.makeRoleImmuneForCommand(command, actualRole);
         } else {
+            // TODO refactor to use exception
             return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE, new Object()));
         }
         return CommandResult.fromSuccess();

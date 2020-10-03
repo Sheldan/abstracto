@@ -56,5 +56,14 @@ public class AEmoteParameterHandlerTest {
         Assert.assertEquals(aEmote, parsed);
     }
 
+    @Test
+    public void testDefaultEmoteHandling() {
+        String input = "test";
+        when(emoteParameterHandler.handle(input, iterators, Emote.class, message)).thenReturn(null);
+        when(emoteService.getFakeEmote(input)).thenReturn(aEmote);
+        AEmote parsed = (AEmote) testUnit.handle(input, iterators, AEmote.class, message);
+        Assert.assertEquals(aEmote, parsed);
+    }
+
 
 }

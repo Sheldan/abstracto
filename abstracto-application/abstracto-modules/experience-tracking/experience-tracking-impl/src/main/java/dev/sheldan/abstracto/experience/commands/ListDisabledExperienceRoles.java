@@ -68,6 +68,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .async(true)
                 .aliases(aliases)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Matcher;
@@ -21,8 +22,12 @@ public class EmoteParameterHandler implements CommandParameterHandler {
         if(matcher.matches()) {
             return iterators.getEmoteIterator().next();
         } else {
-            long emoteId = Long.parseLong(input);
-            return context.getGuild().getEmoteById(emoteId);
+            if(StringUtils.isNumeric(input)) {
+                long emoteId = Long.parseLong(input);
+                return context.getGuild().getEmoteById(emoteId);
+            } else {
+                return null;
+            }
         }
     }
 

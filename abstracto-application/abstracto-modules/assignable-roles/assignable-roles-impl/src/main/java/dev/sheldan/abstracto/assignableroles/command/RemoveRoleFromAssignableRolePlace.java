@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableCommand {
@@ -23,13 +24,13 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
     private AssignableRolePlaceService service;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         FullEmote emote = (FullEmote) parameters.get(1);
-        service.removeRoleFromAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name, emote);
-        return CommandResult.fromSuccess();
+        return service.removeRoleFromAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name, emote)
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -43,6 +44,7 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

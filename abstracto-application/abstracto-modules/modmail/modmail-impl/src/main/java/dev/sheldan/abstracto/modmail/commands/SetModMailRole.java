@@ -8,8 +8,10 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.service.ModMailRoleService;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,16 +29,20 @@ public class SetModMailRole extends AbstractConditionableCommand {
     @Autowired
     private ModMailRoleService modMailRoleService;
 
+    @Autowired
+    private RoleManagementService roleManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
+        Role jdaRole = (Role) commandContext.getParameters().getParameters().get(0);
+        ARole role = roleManagementService.findRole(jdaRole.getIdLong());
         modMailRoleService.addRoleToModMailRoles(role);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter categoryId = Parameter.builder().name("role").type(ARole.class).templated(true).build();
+        Parameter categoryId = Parameter.builder().name("role").type(Role.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(categoryId);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<String> aliases = Arrays.asList("modMailRole");

@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import net.dv8tion.jda.api.entities.Role;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +21,7 @@ public interface ExperienceRoleService {
      * @param role The {@link ARole} to set the level to
      * @param level The level the {@link ARole} should be awarded at
      */
-    CompletableFuture<Void> setRoleToLevel(ARole role, Integer level, AChannel channel);
+    CompletableFuture<Void> setRoleToLevel(Role role, Integer level, AChannel channel);
 
     /**
      * Removes the role from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole} configuration

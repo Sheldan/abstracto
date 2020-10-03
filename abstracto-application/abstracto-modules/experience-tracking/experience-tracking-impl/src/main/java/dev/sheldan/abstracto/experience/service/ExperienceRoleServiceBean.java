@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,9 +49,10 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      * @param level The level the {@link ARole} should be awarded at
      */
     @Override
-    public CompletableFuture<Void> setRoleToLevel(ARole role, Integer level, AChannel feedbackChannel) {
-        Long roleId = role.getId();
-        return unsetRole(role, feedbackChannel).thenAccept(aVoid ->
+    public CompletableFuture<Void> setRoleToLevel(Role role, Integer level, AChannel feedbackChannel) {
+        Long roleId = role.getIdLong();
+        ARole aRole = roleManagementService.findRole(roleId);
+        return unsetRole(aRole, feedbackChannel).thenAccept(aVoid ->
             self.unsetRoleInDb(level, roleId)
         );
     }

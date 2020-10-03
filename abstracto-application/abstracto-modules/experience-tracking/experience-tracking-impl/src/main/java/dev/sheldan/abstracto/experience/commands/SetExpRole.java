@@ -9,13 +9,12 @@ import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
-import dev.sheldan.abstracto.core.models.database.ARole;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,16 +36,15 @@ public class SetExpRole extends AbstractConditionableCommand {
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private RoleManagementService roleManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
-        ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
-        AServer server = commandContext.getUserInitiatedContext().getServer();
-        if(!roleService.isRoleInServer(role)) {
-            throw new RoleNotFoundInGuildException(role.getId(), server.getId());
-        }
-        log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, server.getId());
+        Role role = (Role) commandContext.getParameters().getParameters().get(1);
+        log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, role.getGuild().getId());
         return experienceRoleService.setRoleToLevel(role, level, commandContext.getUserInitiatedContext().getChannel())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
@@ -56,7 +54,7 @@ public class SetExpRole extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         List<ParameterValidator> levelValidators = Arrays.asList(MinIntegerValueValidator.min(0L));
         parameters.add(Parameter.builder().name("level").validators(levelValidators).templated(true).type(Integer.class).build());
-        parameters.add(Parameter.builder().name("role").templated(true).type(ARole.class).build());
+        parameters.add(Parameter.builder().name("role").templated(true).type(Role.class).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("setExpRole")

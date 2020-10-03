@@ -34,7 +34,8 @@ public class EditAssignableRolePlaceText extends AbstractConditionableCommand {
         String name = (String) parameters.get(0);
         String newText = (String) parameters.get(1);
 
-        return service.changeText(commandContext.getUserInitiatedContext().getServer(), name, newText).thenApply(aVoid ->  CommandResult.fromSuccess());
+        return service.changeText(commandContext.getUserInitiatedContext().getServer(), name, newText)
+                .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
     @Override
