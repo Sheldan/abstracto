@@ -239,8 +239,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         parsedParameters.add(handler.handle(value, iterators, param.getType(), message));
                         break;
                     }
-                } catch (NoSuchElementException e) {
-                    throw new IncorrectParameterException(command, param.getType(), param.getName());
+                } catch (Exception e) {
+                    log.warn("Failed to parse parameter with exception.", e);
+                    throw new IncorrectParameterException(command, param.getName());
                 }
             }
             if(!handlerMatched) {

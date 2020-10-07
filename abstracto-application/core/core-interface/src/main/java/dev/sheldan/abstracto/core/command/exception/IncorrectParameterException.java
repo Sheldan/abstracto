@@ -9,9 +9,9 @@ public class IncorrectParameterException extends AbstractoRunTimeException imple
 
     private final IncorrectParameterExceptionModel model;
 
-    public IncorrectParameterException(Command command, Class expected, String parameterName) {
+    public IncorrectParameterException(Command command, String parameterName) {
         super("Incorrect parameter given for parameter");
-        this.model = IncorrectParameterExceptionModel.builder().clazz(expected).parameterName(parameterName).command(command).build();
+        this.model = IncorrectParameterExceptionModel.builder().parameterName(parameterName).command(command).build();
     }
 
     @Override

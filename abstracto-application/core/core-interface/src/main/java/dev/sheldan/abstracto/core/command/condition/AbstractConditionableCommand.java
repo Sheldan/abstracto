@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
         if(context.getParameters() != null && context.getParameters().getParameters() != null && context.getParameters().getParameters().size() >= i) {
             boolean parameterIsPresent = i < context.getParameters().getParameters().size();
             if(parameterIsPresent && !desiredType.isInstance(context.getParameters().getParameters().get(i))) {
-                throw new IncorrectParameterException(this, desiredType, parameter.getName());
+                throw new IncorrectParameterTypeException(this, desiredType, parameter.getName());
             }
         }
     }
@@ -62,7 +62,7 @@ public abstract class AbstractConditionableCommand implements ConditionalCommand
             throw new InsufficientParametersException(this, parameter.getName());
         }
         if(!desiredType.isInstance(context.getParameters().getParameters().get(i))) {
-            throw new IncorrectParameterException(this, desiredType, parameter.getName());
+            throw new IncorrectParameterTypeException(this, desiredType, parameter.getName());
         }
     }
 }

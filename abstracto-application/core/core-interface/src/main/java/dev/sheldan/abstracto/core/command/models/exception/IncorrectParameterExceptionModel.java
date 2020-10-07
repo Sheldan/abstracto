@@ -11,5 +11,4 @@ import java.io.Serializable;
 public class IncorrectParameterExceptionModel implements Serializable {
     private final transient Command command;
     private final String parameterName;
-    private final Class clazz;
 }

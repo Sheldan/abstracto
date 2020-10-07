@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.commands.remind;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -44,7 +44,7 @@ public class RemindTest {
         CommandTestUtilities.executeNoParametersTestAsync(testUnit);
     }
 
-    @Test(expected = IncorrectParameterException.class)
+    @Test(expected = IncorrectParameterTypeException.class)
     public void testIncorrectParameterType() {
         CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
