@@ -44,9 +44,11 @@ public class ExceptionServiceBean implements ExceptionService {
         if(command != null && command.getConfiguration().isSupportsEmbedException()) {
             try {
                 GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
+                log.info("Reporting generic exception {} of command {} towards channel {} in server {}.",
+                        throwable.getClass().getSimpleName(), command.getConfiguration().getName(), context.getChannel().getId(), context.getGuild().getId());
                 channelService.sendEmbedTemplateInChannel("generic_command_exception", exceptionModel, context.getChannel());
             } catch (Exception e) {
-                log.error("Failed to notify about assignable role exception.", e);
+                log.error("Failed to notify about exception.", e);
             }
         } else if(throwable instanceof Templatable){
             GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);

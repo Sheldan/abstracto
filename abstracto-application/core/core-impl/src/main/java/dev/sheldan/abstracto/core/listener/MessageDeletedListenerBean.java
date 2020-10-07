@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -88,10 +89,16 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
                 return;
             }
             try {
-                messageDeletedListener.execute(cachedMessage, authorUser, authorMember);
+                self.executeIndividualMessageDeletedListener(cachedMessage, authorUser, authorMember, messageDeletedListener);
             } catch (AbstractoRunTimeException e) {
                 log.error("Listener {} failed with exception:", messageDeletedListener.getClass().getName(), e);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividualMessageDeletedListener(CachedMessage cachedMessage, AServerAChannelAUser authorUser, GuildChannelMember authorMember, MessageDeletedListener messageDeletedListener) {
+        log.trace("Executing message deleted listener {} for message {} in guild {}.", messageDeletedListener.getClass().getName(), cachedMessage.getMessageId(), cachedMessage.getMessageId());
+        messageDeletedListener.execute(cachedMessage, authorUser, authorMember);
     }
 }

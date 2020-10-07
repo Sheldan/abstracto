@@ -34,8 +34,10 @@ public class JoiningUserRoleListener implements JoinListener {
         if(userExperience != null) {
             log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", member.getUser().getIdLong(), guild.getIdLong());
             userExperienceService.syncForSingleUser(userExperience).thenAccept(result ->
-                log.trace("Finished re-assigning experience for re-joning user {} in server {}.", userInServerId, guild.getIdLong())
+                log.info("Finished re-assigning experience for re-joning user {} in server {}.", userInServerId, guild.getIdLong())
             );
+        } else {
+            log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", member.getId(), guild.getId());
         }
     }
 

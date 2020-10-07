@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -41,6 +43,9 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     @Autowired
     private ExceptionService exceptionService;
 
+    @Autowired
+    private MessageReceivedListenerBean self;
+
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
         messageCache.putMessageInCache(event.getMessage());
@@ -50,12 +55,17 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
                 if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
                     return;
                 }
-                messageReceivedListener.execute(event.getMessage());
+                self.executeIndividualGuildMessageReceivedListener(event, messageReceivedListener);
             } catch (Exception e) {
                 log.error("Listener {} had exception when executing.", messageReceivedListener, e);
                 exceptionService.reportExceptionToGuildMessageReceivedContext(e, event);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividualGuildMessageReceivedListener(@Nonnull GuildMessageReceivedEvent event, MessageReceivedListener messageReceivedListener) {
+        messageReceivedListener.execute(event.getMessage());
     }
 
     @Override
@@ -65,11 +75,17 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
         }
         privateMessageReceivedListeners.forEach(messageReceivedListener -> {
             try {
-                messageReceivedListener.execute(event.getMessage());
+                self.executeIndividualPrivateMessageReceivedListener(event, messageReceivedListener);
             } catch (Exception e) {
                 log.error("Listener {} had exception when executing.", messageReceivedListener, e);
                 exceptionService.reportExceptionToPrivateMessageReceivedContext(e, event);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividualPrivateMessageReceivedListener(@Nonnull PrivateMessageReceivedEvent event, PrivateMessageReceivedListener messageReceivedListener) {
+        log.trace("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), event.getAuthor().getId());
+        messageReceivedListener.execute(event.getMessage());
     }
 }

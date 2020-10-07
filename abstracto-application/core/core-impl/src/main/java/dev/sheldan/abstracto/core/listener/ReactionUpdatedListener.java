@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemove
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -112,11 +113,16 @@ public class ReactionUpdatedListener extends ListenerAdapter {
                 return;
             }
             try {
-                reactedAddedListener.executeReactionAdded(cachedMessage, event, userInAServer);
+                self.executeIndividiualReactionAddedListener(event, cachedMessage, userInAServer, reactedAddedListener);
             } catch (Exception e) {
                 log.warn(String.format("Failed to execute reaction added listener %s.", reactedAddedListener.getClass().getName()), e);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividiualReactionAddedListener(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, AUserInAServer userInAServer, ReactedAddedListener reactedAddedListener) {
+        reactedAddedListener.executeReactionAdded(cachedMessage, event, userInAServer);
     }
 
     @Override
@@ -151,11 +157,16 @@ public class ReactionUpdatedListener extends ListenerAdapter {
                 return;
             }
             try {
-                reactionRemovedListener.executeReactionRemoved(cachedMessage, event, userInAServer);
+                self.executeIndividualReactionRemovedListener(event, cachedMessage, userInAServer, reactionRemovedListener);
             } catch (AbstractoRunTimeException e) {
                 log.warn(String.format("Failed to execute reaction removed listener %s.", reactionRemovedListener.getClass().getName()), e);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividualReactionRemovedListener(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, AUserInAServer userInAServer, ReactedRemovedListener reactionRemovedListener) {
+        reactionRemovedListener.executeReactionRemoved(cachedMessage, event, userInAServer);
     }
 
     @Transactional

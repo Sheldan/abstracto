@@ -103,7 +103,6 @@ public class MessageEmbedRemovalReactionListenerTest {
         AEmote reactedEmote = AEmote.builder().build();
         when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, serverId)).thenReturn(reactedEmote);
         when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
-        when(botService.getEmote(serverId, reactedEmote)).thenReturn(Optional.of(emote));
         when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote)).thenReturn(true);
         EmbeddedMessage message = EmbeddedMessage
                 .builder()
@@ -134,7 +133,6 @@ public class MessageEmbedRemovalReactionListenerTest {
         AEmote reactedEmote = AEmote.builder().build();
         when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, serverId)).thenReturn(reactedEmote);
         when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
-        when(botService.getEmote(serverId, reactedEmote)).thenReturn(Optional.of(emote));
         when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote)).thenReturn(wasCorrectEmote);
         testUnit.executeReactionAdded(cachedMessage, messageReaction, userInAServer);
         verify(messageService, times(0)).deleteMessageInChannelInServer(serverId, channelId, messageId);

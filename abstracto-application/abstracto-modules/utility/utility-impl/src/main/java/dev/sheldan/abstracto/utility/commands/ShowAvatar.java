@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowAvatarModel;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class ShowAvatar extends AbstractConditionableCommand {
 
     public static final String SHOW_AVATAR_RESPONSE_TEMPLATE = "showAvatar_response";
@@ -34,6 +36,8 @@ public class ShowAvatar extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
         ShowAvatarModel model = (ShowAvatarModel) ContextConverter.fromCommandContext(commandContext, ShowAvatarModel.class);
+        log.info("Showing avatar for member {} towards user {} in channel {} in server {}.",
+                memberToShow.getId(), commandContext.getAuthor().getId(), commandContext.getChannel().getId(), commandContext.getGuild().getId());
         model.setMemberInfo(memberToShow);
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromSuccess());

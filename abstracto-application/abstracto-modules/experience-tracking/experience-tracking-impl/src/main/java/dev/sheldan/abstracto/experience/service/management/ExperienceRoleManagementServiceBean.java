@@ -31,13 +31,14 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
      */
     @Override
     public void removeAllRoleAssignmentsForLevelInServer(AExperienceLevel level, AServer server) {
-        log.trace("Removing all role assignments for level {}.", level.getLevel());
         List<AExperienceRole> existingExperienceRoles = experienceRoleRepository.findByLevelAndRoleServer(level, server);
+        log.info("Removing all role assignments ({}) for level {} in server {}.", existingExperienceRoles.size(), level.getLevel(), server.getId());
         existingExperienceRoles.forEach(existingRole -> experienceRoleRepository.delete(existingRole));
     }
 
     @Override
     public void unsetRole(AExperienceRole role) {
+        log.info("Deleting experience role {} in server {}.", role.getId(), role.getRoleServer().getId());
         experienceRoleRepository.delete(role);
     }
 
@@ -82,7 +83,9 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     public AExperienceRole setLevelToRole(AExperienceLevel level, ARole role) {
         Optional<AExperienceRole> byRoleServerAndRoleOptional = getRoleInServerOptional(role);
         AExperienceRole experienceRole;
+        log.info("Setting role {} in server {} to level {}.", role.getId(), role.getServer().getId(), level);
         if(byRoleServerAndRoleOptional.isPresent()) {
+            log.trace("Role already existed. Updating.");
             experienceRole = byRoleServerAndRoleOptional.get();
             experienceRole.setLevel(level);
         } else {
@@ -92,6 +95,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
                     .roleServer(role.getServer())
                     .role(role)
                     .build();
+            log.trace("Role did not exist. Creating new.");
             experienceRole = experienceRoleRepository.save(experienceRole);
         }
         return experienceRole;

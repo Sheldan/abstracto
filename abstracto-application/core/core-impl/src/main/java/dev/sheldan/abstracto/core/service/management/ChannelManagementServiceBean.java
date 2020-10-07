@@ -56,6 +56,7 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     public AChannel markAsDeleted(Long id) {
         AChannel channel = loadChannel(id);
         channel.setDeleted(true);
+        log.info("Marking channel {} as deleted.", id);
         return channel;
     }
 

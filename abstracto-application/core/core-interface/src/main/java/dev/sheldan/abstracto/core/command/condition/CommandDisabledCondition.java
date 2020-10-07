@@ -25,6 +25,6 @@ public class CommandDisabledCondition implements CommandCondition {
         if(!booleanResult) {
             return ConditionResult.builder().result(true).exception(new CommandDisabledException()).build();
         }
-        return ConditionResult.builder().result(true).reason("Command is disabled.").build();
+        return ConditionResult.builder().result(true).reason("Command is enabled.").build();
     }
 }

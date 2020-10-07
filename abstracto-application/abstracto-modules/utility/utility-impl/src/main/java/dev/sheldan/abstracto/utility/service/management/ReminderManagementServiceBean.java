@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.repository.ReminderRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class ReminderManagementServiceBean implements ReminderManagementService {
 
     @Autowired
@@ -29,6 +31,8 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
                 .targetDate(timeToBeRemindedAt)
                 .messageId(messageId)
         .build();
+        log.info("Creating reminder for user {} in server {} in message {} to be reminded at {}.",
+                userToBeReminded.getAUserInAServer().getUserReference().getId(), userToBeReminded.getGuild().getId(), messageId, timeToBeRemindedAt);
 
         reminderRepository.save(reminder);
         return reminder;
@@ -42,6 +46,7 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
     @Override
     public void setReminded(Reminder reminder) {
         reminder.setReminded(true);
+        log.info("Setting reminder {} to reminded.", reminder.getId());
         reminderRepository.save(reminder);
     }
 

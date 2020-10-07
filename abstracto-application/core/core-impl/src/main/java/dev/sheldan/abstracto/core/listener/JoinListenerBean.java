@@ -32,6 +32,9 @@ public class JoinListenerBean extends ListenerAdapter {
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private JoinListenerBean self;
+
     @Override
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
@@ -42,7 +45,7 @@ public class JoinListenerBean extends ListenerAdapter {
             }
             try {
                 AUserInAServer aUserInAServer = userInServerManagementService.loadUser(event.getMember());
-                executeListener(event, joinListener, aUserInAServer);
+                self.executeIndividualJoinListener(event, joinListener, aUserInAServer);
             } catch (Exception e) {
                 log.error("Listener {} failed with exception:", joinListener.getClass().getName(), e);
             }
@@ -50,7 +53,8 @@ public class JoinListenerBean extends ListenerAdapter {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void executeListener(@Nonnull GuildMemberJoinEvent event, JoinListener joinListener, AUserInAServer aUserInAServer) {
+    public void executeIndividualJoinListener(@Nonnull GuildMemberJoinEvent event, JoinListener joinListener, AUserInAServer aUserInAServer) {
+        log.trace("Executing join listener {} for member {} in guild {}.", joinListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
         joinListener.execute(event.getMember(), event.getGuild(), aUserInAServer);
     }
 }

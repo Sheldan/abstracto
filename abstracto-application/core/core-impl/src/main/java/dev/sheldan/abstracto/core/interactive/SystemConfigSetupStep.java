@@ -62,19 +62,24 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
+        log.trace("Executing setup for system config {} in server {} for user {}.", systemConfigStepParameter.getConfigKey(), user.getGuildId(), user.getUserId());
+
         Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
         Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
             try {
                 SetupStepResult result;
                 Message message = event.getMessage();
                 if(checkForExit(message)) {
+                    log.info("Setup has been cancelled, because of 'exit' message.");
                     result = SetupStepResult.fromCancelled();
                 } else {
                     AConfig config;
                     if(checkForKeep(message)) {
                         config = self.loadDefaultConfig(systemConfigStepParameter);
+                        log.info("It was decided to keep the original value for key {} in server {}.", systemConfigStepParameter.getConfigKey(), user.getGuildId());
                     } else {
                         config = self.checkValidity(user, systemConfigStepParameter, event);
+                        log.trace("The given value for key {} in server {} was valid.", systemConfigStepParameter.getConfigKey(), user.getGuildId());
                     }
                     SystemConfigDelayedActionConfig build = SystemConfigDelayedActionConfig
                             .builder()
@@ -82,6 +87,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
                             .serverId(user.getGuildId())
                             .value(config)
                             .build();
+                    log.trace("Setup for system config {} in server {} for user {} completed. Storing delayed action.", systemConfigStepParameter.getConfigKey(), user.getGuildId(), user.getUserId());
                     List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
                     result = SetupStepResult
                             .builder()

@@ -5,7 +5,8 @@ import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-@Getter @SuperBuilder
+@Getter
+@SuperBuilder
 public class EchoModel extends UserInitiatedServerContext {
     private String text;
 }

@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.serverinfo.ServerInfoModel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class ServerInfo extends AbstractConditionableCommand {
 
     @Autowired
@@ -30,6 +32,7 @@ public class ServerInfo extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ServerInfoModel model = (ServerInfoModel) ContextConverter.fromCommandContext(commandContext, ServerInfoModel.class);
         model.setGuild(commandContext.getGuild());
+        log.info("Displaying serverinfo for server {}", commandContext.getGuild().getId());
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel("serverinfo_response", model, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }

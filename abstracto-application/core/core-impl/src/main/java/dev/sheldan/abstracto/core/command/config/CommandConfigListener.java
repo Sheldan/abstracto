@@ -6,12 +6,14 @@ import dev.sheldan.abstracto.core.command.service.management.CommandInServerMana
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.listener.ServerConfigListener;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class CommandConfigListener implements ServerConfigListener {
 
     @Autowired
@@ -25,6 +27,7 @@ public class CommandConfigListener implements ServerConfigListener {
 
     @Override
     public void updateServerConfig(AServer server) {
+        log.info("Creating command instances for server {}.", server.getId());
         commandList.forEach(command -> {
             if(command.getConfiguration() != null) {
                 ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());

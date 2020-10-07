@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -57,10 +58,15 @@ public class MessageUpdatedListener extends ListenerAdapter {
                 return;
             }
             try {
-                messageTextUpdatedListener.execute(cachedMessage, message);
+                self.executeIndividualMessageUpdatedListener(message, cachedMessage, messageTextUpdatedListener);
             } catch (AbstractoRunTimeException e) {
                 log.error(String.format("Failed to execute listener. %s", messageTextUpdatedListener.getClass().getName()), e);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividualMessageUpdatedListener(Message message, CachedMessage cachedMessage, MessageTextUpdatedListener messageTextUpdatedListener) {
+        messageTextUpdatedListener.execute(cachedMessage, message);
     }
 }

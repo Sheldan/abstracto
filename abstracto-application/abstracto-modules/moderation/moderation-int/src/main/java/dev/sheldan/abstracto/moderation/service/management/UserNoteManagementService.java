@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface UserNoteManagementService {
     UserNote createUserNote(AUserInAServer aUserInAServer, String note);
-    void deleteNote(Long id);
-    boolean noteExists(Long id);
+    void deleteNote(Long id, AServer server);
+    boolean noteExists(Long id, AServer server);
     List<UserNote> loadNotesForUser(AUserInAServer aUserInAServer);
     List<UserNote> loadNotesForServer(AServer server);
 }

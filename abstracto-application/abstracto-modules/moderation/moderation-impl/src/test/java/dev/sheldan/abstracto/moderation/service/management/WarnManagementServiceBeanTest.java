@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
@@ -130,6 +131,6 @@ public class WarnManagementServiceBeanTest {
     }
 
     private Warning getWarning() {
-        return Warning.builder().build();
+        return Warning.builder().warnId(new ServerSpecificId(3L, 4L)).build();
     }
 }

@@ -33,6 +33,8 @@ public class StarboardFeature implements FeatureConfig {
         return Arrays.asList(starboardFeatureValidator);
     }
 
+    // TODO add missing system config keys
+
     @Override
     public List<String> getRequiredEmotes() {
         return Arrays.asList("star", "star1", "star2", "star3", "star4", "starboardBadge1", "starboardBadge2", "starboardBadge3");

@@ -2,10 +2,12 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
 import dev.sheldan.abstracto.core.repository.DefaultConfigRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class DefaultConfigManagementServiceBean implements DefaultConfigManagementService {
 
     @Autowired
@@ -23,6 +25,7 @@ public class DefaultConfigManagementServiceBean implements DefaultConfigManageme
                     .name(key)
                     .stringValue(value)
                     .build();
+            log.trace("Creating default config entry with type string for key {}.", key);
         }
         defaultConfigRepository.save(build);
     }
@@ -39,6 +42,7 @@ public class DefaultConfigManagementServiceBean implements DefaultConfigManageme
                     .name(key)
                     .longValue(value)
                     .build();
+            log.trace("Creating default config entry with type long for key {}.", key);
         }
         defaultConfigRepository.save(build);
     }
@@ -55,6 +59,7 @@ public class DefaultConfigManagementServiceBean implements DefaultConfigManageme
                     .name(key)
                     .doubleValue(value)
                     .build();
+            log.trace("Creating default config entry with type double for key {}.", key);
         }
         defaultConfigRepository.save(build);
     }

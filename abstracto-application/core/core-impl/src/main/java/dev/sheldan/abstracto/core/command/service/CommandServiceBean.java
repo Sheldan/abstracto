@@ -66,6 +66,7 @@ public class CommandServiceBean implements CommandService {
         if(commandForServer.getAllowedRoles().stream().noneMatch(role1 -> role1.getId().equals(role.getId()))) {
             commandForServer.getAllowedRoles().add(role);
         }
+        log.info("Allowing command {} for role {} in server {}.", aCommand.getName(), role.getId(), role.getServer().getId());
         commandForServer.setRestricted(true);
     }
 
@@ -73,6 +74,7 @@ public class CommandServiceBean implements CommandService {
     public void allowFeatureForRole(FeatureEnum featureEnum, ARole role) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
         feature.getCommands().forEach(command -> this.allowCommandForRole(command, role));
+        log.info("Allowing feature {} for role {} in server {}.", feature.getKey(), role.getId(), role.getServer().getId());
     }
 
     @Override
@@ -81,18 +83,21 @@ public class CommandServiceBean implements CommandService {
         if(commandForServer.getImmuneRoles().stream().noneMatch(role1 -> role1.getId().equals(role.getId()))) {
             commandForServer.getImmuneRoles().add(role);
         }
+        log.info("Making role {} immune from command {} in server {}.", role.getId(), aCommand.getName(), role.getServer().getId());
     }
 
     @Override
     public void makeRoleAffectedByCommand(ACommand aCommand, ARole role) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
         commandForServer.getImmuneRoles().removeIf(role1 -> role1.getId().equals(role.getId()));
+        log.info("Making role {} affected from command {} in server {}.", role.getId(), aCommand.getName(), role.getServer().getId());
     }
 
     @Override
     public void restrictCommand(ACommand aCommand, AServer server) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, server);
         commandForServer.setRestricted(true);
+        log.info("Restricting command {} in server {}.", aCommand.getName(), server.getId());
     }
 
     @Override
@@ -119,6 +124,7 @@ public class CommandServiceBean implements CommandService {
     public void unRestrictCommand(ACommand aCommand, AServer server) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, server);
         commandForServer.setRestricted(false);
+        log.info("Removing restriction on command {} in server {}.", aCommand.getName(), server.getId());
     }
 
     @Override
@@ -126,12 +132,14 @@ public class CommandServiceBean implements CommandService {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
         commandForServer.setRestricted(true);
         commandForServer.getAllowedRoles().removeIf(role1 -> role1.getId().equals(role.getId()));
+        log.info("Disallowing command {} for role {} in server {}.", aCommand.getName(), role.getId(), role.getServer().getId());
     }
 
     @Override
     public void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
         feature.getCommands().forEach(command -> this.disAllowCommandForRole(command, role));
+        log.info("Disallowing feature {} for role {} in server {}.", feature.getKey(), role.getId(), role.getServer().getId());
     }
 
     public ConditionResult isCommandExecutable(Command command, CommandContext commandContext) {

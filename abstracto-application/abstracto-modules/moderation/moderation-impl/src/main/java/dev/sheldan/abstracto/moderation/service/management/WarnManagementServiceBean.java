@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class WarnManagementServiceBean implements WarnManagementService {
 
     @Autowired
@@ -20,6 +22,8 @@ public class WarnManagementServiceBean implements WarnManagementService {
 
     @Override
     public Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, Long warnId) {
+        log.info("Creating warning with id {} for user {} in server {} cast by user {}.",
+                warnId, warnedAUser.getUserReference().getId(), warningAUser.getServerReference().getId(), warningAUser.getUserReference().getId());
         ServerSpecificId warningId = new ServerSpecificId(warnId, warningAUser.getServerReference().getId());
         Warning warning = Warning.builder()
                 .reason(reason)
@@ -66,6 +70,7 @@ public class WarnManagementServiceBean implements WarnManagementService {
 
     @Override
     public void deleteWarning(Warning  warning) {
+        log.info("Deleting warning with id {} in server {}.", warning.getWarnId().getId(), warning.getWarnId().getServerId());
         warnRepository.delete(warning);
     }
 

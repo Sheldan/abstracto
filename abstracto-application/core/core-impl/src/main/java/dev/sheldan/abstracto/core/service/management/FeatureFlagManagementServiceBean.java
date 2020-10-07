@@ -5,12 +5,14 @@ import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.FeatureFlagRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class FeatureFlagManagementServiceBean implements FeatureFlagManagementService {
 
     @Autowired
@@ -36,6 +38,7 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
                 .feature(feature)
                 .server(server)
                 .build();
+        log.info("Creating new feature flag for feature {} in server {} with value {}.", feature.getKey(), server.getId(), newValue);
         repository.save(featureFlag);
         return featureFlag;
     }
@@ -59,15 +62,15 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
 
     @Override
     public AFeatureFlag setFeatureFlagValue(AFeature feature, Long serverId, Boolean newValue) {
-        AFeatureFlag featureFlag = getFeatureFlag(feature, serverId);
-        featureFlag.setEnabled(newValue);
-        return featureFlag;
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return setFeatureFlagValue(feature, server, newValue);
     }
 
     @Override
     public AFeatureFlag setFeatureFlagValue(AFeature feature, AServer server, Boolean newValue) {
         AFeatureFlag featureFlag = getFeatureFlag(feature, server);
         featureFlag.setEnabled(newValue);
+        log.info("Setting feature flag for feature {} in server {} to value {}.", feature.getKey(), server.getId(), newValue);
         return featureFlag;
     }
 }

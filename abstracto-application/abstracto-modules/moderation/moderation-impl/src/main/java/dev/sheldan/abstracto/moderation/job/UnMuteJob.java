@@ -28,7 +28,7 @@ public class UnMuteJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        log.info("Executing unMute job for mute {}", muteId);
+        log.info("Executing unMute job for mute {} in server {}", muteId, serverId);
         muteService.endMute(muteId, serverId);
     }
 

@@ -77,7 +77,7 @@ public class RemindServiceBean implements ReminderService {
                 user.getUserReference().getId(), user.getServerReference().getId(), remindAt);
 
         if(remindIn.getSeconds() < 60) {
-            log.trace("Directly scheduling the reminder, because it was below the threshold.");
+            log.info("Directly scheduling unremind for reminder {}, because it was below the threshold.", reminder.getId());
             instantReminderScheduler.schedule(() -> {
                 try {
                     self.executeReminder(reminder.getId());
@@ -86,10 +86,10 @@ public class RemindServiceBean implements ReminderService {
                 }
             }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
         } else {
-            log.trace("Starting scheduled job to execute reminder.");
             JobDataMap parameters = new JobDataMap();
             parameters.putAsString("reminderId", reminder.getId());
             String triggerKey = schedulerService.executeJobWithParametersOnce("reminderJob", "utility", parameters, Date.from(reminder.getTargetDate()));
+            log.info("Starting scheduled job  with trigger {} to execute reminder. {}", triggerKey, reminder.getId());
             reminder.setJobTriggerKey(triggerKey);
             reminderManagementService.saveReminder(reminder);
         }
@@ -105,7 +105,8 @@ public class RemindServiceBean implements ReminderService {
         }
         AServer server = reminderToRemindFor.getServer();
         AChannel channel = reminderToRemindFor.getChannel();
-        log.info("Executing reminder {}.", reminderId);
+        log.info("Executing reminder {} in channel {} in server {} for user {}.",
+                reminderId, channel.getId(), server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId());
         Optional<Guild> guildToAnswerIn = botService.getGuildById(server.getId());
         if(guildToAnswerIn.isPresent()) {
             Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServerOptional(server.getId(), channel.getId());
@@ -133,9 +134,11 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     public void unRemind(Long reminderId, AUserInAServer aUserInAServer) {
+        log.info("Trying to end reminder {} for user {} in server {}.", reminderId, aUserInAServer.getUserReference().getId(),aUserInAServer.getServerReference().getId());
         Reminder reminder = reminderManagementService.getReminderByAndByUserNotReminded(aUserInAServer, reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
         reminder.setReminded(true);
         if(reminder.getJobTriggerKey() != null) {
+            log.trace("Stopping scheduled trigger {} for reminder {}.", reminder.getJobTriggerKey(), reminderId);
             schedulerService.stopTrigger(reminder.getJobTriggerKey());
         }
     }

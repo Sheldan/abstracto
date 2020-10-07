@@ -51,6 +51,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
+            log.trace("Displaying existing post targets for guild {}.", commandContext.getGuild().getId());
             PostTargetDisplayModel posttargetDisplayModel = (PostTargetDisplayModel) ContextConverter.fromCommandContext(commandContext, PostTargetDisplayModel.class);
             AServer server = commandContext.getUserInitiatedContext().getServer();
             List<PostTarget> postTargets = postTargetService.getPostTargets(server);
@@ -79,7 +80,6 @@ public class PostTargetCommand extends AbstractConditionableCommand {
         GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
         Guild guild = channel.getGuild();
         postTargetManagement.createOrUpdate(targetName, guild.getIdLong(), channel.getIdLong());
-        log.info("Setting posttarget {} in {} to {}", targetName, guild.getIdLong(), channel.getId());
         return CompletableFuture.completedFuture(CommandResult.fromSuccess());
     }
 

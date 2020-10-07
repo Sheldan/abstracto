@@ -59,7 +59,7 @@ public class StarboardPostReactorManagementServiceBeanTest {
 
     @Test
     public void testRemoveReactors() {
-        StarboardPost post = StarboardPost.builder().build();
+        StarboardPost post = StarboardPost.builder().reactions(new ArrayList<>()).build();
         testUnit.removeReactors(post);
         verify(repository, times(1)).deleteByStarboardPost(post);
     }

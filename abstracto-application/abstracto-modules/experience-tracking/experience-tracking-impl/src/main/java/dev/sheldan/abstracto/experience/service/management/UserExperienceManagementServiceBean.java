@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.repository.UserExperienceRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
-
+@Slf4j
 @Component
 public class UserExperienceManagementServiceBean implements UserExperienceManagementService {
 
@@ -48,6 +49,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
      */
     @Override
     public AUserExperience createUserInServer(AUserInAServer aUserInAServer) {
+        log.info("Creating user experience for user {} in server {}.", aUserInAServer.getUserReference().getId(),aUserInAServer.getServerReference().getId());
         AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
         return AUserExperience
                 .builder()
@@ -63,37 +65,6 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     @Override
     public List<AUserExperience> loadAllUsers(AServer server) {
         return repository.findByUser_ServerReference(server);
-    }
-
-    /**
-     * Creates or updates the {@link AUserExperience} object. Does not change the level or the role.
-     * @param user The {@link AUserInAServer} to increase the experience for
-     * @param experience The experience amount to increase by
-     * @param messageCount The amount of messages to increase the count by
-     * @return The created/changed {@link AUserExperience} object
-     */
-    @Override
-    public AUserExperience incrementExpForUser(AUserInAServer user, Long experience, Long messageCount) {
-        Optional<AUserExperience> byId = repository.findById(user.getUserInServerId());
-        if(byId.isPresent()) {
-            AUserExperience userExperience = byId.get();
-            if(Boolean.FALSE.equals(userExperience.getExperienceGainDisabled())) {
-                userExperience.setMessageCount(userExperience.getMessageCount() + messageCount);
-                userExperience.setExperience(userExperience.getExperience() + experience);
-            }
-            return userExperience;
-        } else {
-            AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
-            return AUserExperience
-                    .builder()
-                    .experience(experience)
-                    .messageCount(messageCount)
-                    .experienceGainDisabled(false)
-                    .user(user)
-                    .id(user.getUserInServerId())
-                    .currentLevel(startingLevel)
-                    .build();
-        }
     }
 
     @Override

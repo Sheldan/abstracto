@@ -5,10 +5,12 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.service.management.ModMailRoleManagementService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class ModMailRoleServiceBean implements ModMailRoleService {
 
     @Autowired
@@ -22,15 +24,17 @@ public class ModMailRoleServiceBean implements ModMailRoleService {
 
     @Override
     public void addRoleToModMailRoles(ARole role) {
-        if(!modMailRoleManagementService.isRoleAlreadyAssigned(role, role.getServer())) {
-            modMailRoleManagementService.addRoleToModMailRoles(role, role.getServer());
+        log.info("Adding role {} to modmail roles in server {}.", role.getId(), role.getServer().getId());
+        if(!modMailRoleManagementService.isRoleAlreadyAssigned(role)) {
+            modMailRoleManagementService.addRoleToModMailRoles(role);
         }
         commandService.allowFeatureForRole(ModMailFeatures.MOD_MAIL, role);
     }
 
     @Override
     public void removeRoleFromModMailRoles(ARole role) {
-        modMailRoleManagementService.removeRoleFromModMailRoles(role, role.getServer());
+        log.info("Remove role {} from modmail roles in server {}.", role.getId(), role.getServer().getId());
+        modMailRoleManagementService.removeRoleFromModMailRoles(role);
         commandService.disAllowFeatureForRole(ModMailFeatures.MOD_MAIL, role);
     }
 }

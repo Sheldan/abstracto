@@ -11,11 +11,13 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class AssignableRoleManagementServiceBean implements AssignableRoleManagementService {
 
     @Autowired
@@ -53,6 +55,7 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
                 .assignableRolePlacePost(post)
                 .build();
         place.getAssignableRoles().add(roleToAdd);
+        log.info("Adding role {} to assignable role place {}. There are now {} roles.", role.getId(), place.getId(), place.getAssignableRoles().size());
         return roleToAdd;
     }
 

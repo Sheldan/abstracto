@@ -38,17 +38,6 @@ public interface UserExperienceManagementService {
     List<AUserExperience> loadAllUsers(AServer server);
 
     /**
-     * Increments the experience of the {@link AUserInAServer} by the given experience and the message count.
-     * {@link dev.sheldan.abstracto.experience.models.database.AExperienceLevel} or {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}
-     * are not changed.
-     * @param user The {@link AUserInAServer} to increase the experience for
-     * @param experience The experience amount to increase by
-     * @param messageCount The amount of messages to increase the count by
-     * @return The changed/creates {@link AUserExperience} object containing the values.
-     */
-    AUserExperience incrementExpForUser(AUserInAServer user, Long experience, Long messageCount);
-
-    /**
      * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience.experience} and only returns the positions between {@code start} and @{code end}.
      * @param server The {@link AServer} to retrieve the users for
      * @param start The start index in the complete ordered list to return the {@link AUserExperience} elements for

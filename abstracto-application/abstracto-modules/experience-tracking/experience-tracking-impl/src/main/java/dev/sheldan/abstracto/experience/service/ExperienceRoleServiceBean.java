@@ -59,6 +59,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
 
     @Transactional
     public void unsetRoleInDb(Integer level, Long roleId) {
+        log.info("Unsetting role {} from level {}.", roleId, level);
         AExperienceLevel experienceLevel = experienceLevelService.getLevel(level).orElseThrow(() -> new IllegalArgumentException(String.format("Could not find level %s", level)));
         ARole loadedRole = roleManagementService.findRole(roleId);
         experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServer(experienceLevel, loadedRole.getServer());
@@ -87,6 +88,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
                         self.persistData(calculationResults, roleId)
                 );
             } else {
+                log.info("Roles does not have any active users, no need to remove them.");
                 experienceRoleManagementService.unsetRole(roleInServer);
                 return CompletableFuture.completedFuture(null);
             }
@@ -98,6 +100,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
 
     @Transactional
     public void persistData(CompletableFutureList<RoleCalculationResult> results, Long roleId) {
+        log.info("Persisting {} role calculation results after changing the role {}.", results.getFutures().size(), roleId);
         AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(roleId);
         experienceRoleManagementService.unsetRole(roleInServer);
         userExperienceService.syncRolesInStorage(results.getObjects());
@@ -115,6 +118,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         if(roles == null || roles.isEmpty()) {
             return null;
         }
+        log.trace("Calculating role for level {} in server {}. Using {} roles in our config.", currentLevel, roles.get(0).getRoleServer().getId(), roles.size());
         AExperienceRole lastRole = null;
         for (AExperienceRole experienceRole : roles) {
             if(currentLevel >= experienceRole.getLevel().getLevel()) {
@@ -128,6 +132,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
 
     @Override
     public AExperienceLevel getLevelOfNextRole(AExperienceLevel startLevel, AServer server) {
+        log.trace("Calculating level of next role for level {} in server {}.", startLevel.getLevel(), server.getId());
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
         roles = roles.stream().filter(role -> role.getLevel().getLevel() > startLevel.getLevel()).collect(Collectors.toList());
         roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));

@@ -7,6 +7,6 @@ public class MessageUtils {
     }
 
     public static String buildMessageUrl(Long serverId, Long channelId, Long messageId) {
-        return String.format("https://discordapp.com/channels/%s/%s/%s", serverId, channelId, messageId);
+        return String.format("https://discord.com/channels/%s/%s/%s", serverId, channelId, messageId);
     }
 }

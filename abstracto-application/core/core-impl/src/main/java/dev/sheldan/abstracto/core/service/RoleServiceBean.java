@@ -81,6 +81,7 @@ public class RoleServiceBean implements RoleService {
         }
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
+            log.info("Adding role {} to user {} in server {}.", role.getId(), userId, guild.getId());
             return guild.addRoleToMember(userId, roleById).submit();
         } else {
             throw new RoleNotFoundInGuildException(role.getId(), guild.getIdLong());
@@ -99,6 +100,7 @@ public class RoleServiceBean implements RoleService {
         }
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
+            log.info("Removing role {} from user {} in server {}.", role.getId(), userId, guild.getId());
             return guild.removeRoleFromMember(userId, roleById).submit();
         } else {
             throw new RoleNotFoundInGuildException(role.getId(), guild.getIdLong());
@@ -150,6 +152,7 @@ public class RoleServiceBean implements RoleService {
         }
         Optional<Guild> guildById = botService.getGuildById(role.getServer().getId());
         if(guildById.isPresent()) {
+            log.trace("Loading role {} from server {}.", role.getId(), role.getServer().getId());
             return guildById.get().getRoleById(role.getId());
         } else {
             throw new GuildNotFoundException(role.getServer().getId());

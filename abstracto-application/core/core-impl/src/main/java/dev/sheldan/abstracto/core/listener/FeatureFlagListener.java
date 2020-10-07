@@ -48,7 +48,10 @@ public class FeatureFlagListener implements ServerConfigListener {
             AFeature feature = featureManagementService.getFeature(featureKey);
             if(defaultFeatureKeys.contains(featureKey)) {
                 if(service.getFeatureFlag(feature, server.getId()) == null) {
+                    log.info("Creating feature flag {} for server {}.", feature.getKey(), server.getId());
                     service.createFeatureFlag(feature, server.getId(), featureFlagKey.isEnabled());
+                } else {
+                    log.trace("Feature flag {} for server {} already exists.", feature.getKey(), server.getId());
                 }
                 if(featureFlagKey.getMode() != null && !featureModeManagementService.featureModeSet(feature, server)) {
                     featureModeService.createMode(feature, server, featureFlagKey.getMode());

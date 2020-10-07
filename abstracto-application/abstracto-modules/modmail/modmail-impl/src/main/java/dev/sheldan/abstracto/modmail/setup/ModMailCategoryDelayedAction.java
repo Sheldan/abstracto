@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.interactive.DelayedAction;
 import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
  * This delayed action is responsible for setting the system configuration of the mod mail category for a given server
  */
 @Component
+@Slf4j
 public class ModMailCategoryDelayedAction implements DelayedAction {
 
     @Autowired
@@ -25,6 +27,7 @@ public class ModMailCategoryDelayedAction implements DelayedAction {
     @Override
     public void execute(DelayedActionConfig delayedActionConfig) {
         ModMailCategoryDelayedActionConfig concrete = (ModMailCategoryDelayedActionConfig) delayedActionConfig;
+        log.info("Executing delayed action for configuration the mdomail category to {} in server {}.", concrete.getCategoryId(), concrete.getServerId());
         configService.setLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, concrete.getServerId(), concrete.getCategoryId());
     }
 

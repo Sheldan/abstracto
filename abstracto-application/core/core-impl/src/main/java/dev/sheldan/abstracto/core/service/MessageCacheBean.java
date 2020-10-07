@@ -42,41 +42,35 @@ public class MessageCacheBean implements MessageCache {
     @Autowired
     @Lazy
     // needs to be lazy, because of circular dependency
-    private MessageCache self;
-
-    @Autowired
-    @Lazy
-    // needs to be lazy, because of circular dependency
     private MessageCacheBean concreteSelf;
 
     @Override
     @CachePut(key = "#message.id")
     public CompletableFuture<CachedMessage> putMessageInCache(Message message) {
-        log.info("Adding message {} to cache", message.getId());
-        return self.buildCachedMessageFromMessage(message);
+        log.trace("Adding message {} to cache", message.getId());
+        return concreteSelf.buildCachedMessageFromMessage(message);
     }
 
 
     @Override
     @CachePut(key = "#message.messageId.toString()")
     public CompletableFuture<CachedMessage> putMessageInCache(CachedMessage message) {
-        log.info("Adding cached message to cache");
+        log.trace("Adding cached message to cache");
         return CompletableFuture.completedFuture(message);
     }
 
     @Override
     @Cacheable(key = "#message.id")
     public CompletableFuture<CachedMessage> getMessageFromCache(Message message) {
-        log.info("Retrieving message {}", message.getId());
+        log.trace("Retrieving message {}", message.getId());
         return getMessageFromCache(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
     }
 
     @Override
     @Cacheable(key = "#messageId.toString()")
     public CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId) {
-        log.info("Retrieving message with parameters");
-
-        return self.loadMessage(guildId, textChannelId, messageId);
+        log.trace("Retrieving message with parameters");
+        return concreteSelf.loadMessage(guildId, textChannelId, messageId);
     }
 
     @Override
@@ -123,7 +117,7 @@ public class MessageCacheBean implements MessageCache {
         );
 
         List<CompletableFuture<CachedReaction>> futures = new ArrayList<>();
-        message.getReactions().forEach(messageReaction -> futures.add(self.getCachedReactionFromReaction(messageReaction)));
+        message.getReactions().forEach(messageReaction -> futures.add(concreteSelf.getCachedReactionFromReaction(messageReaction)));
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
         future.complete(CachedMessage.builder()

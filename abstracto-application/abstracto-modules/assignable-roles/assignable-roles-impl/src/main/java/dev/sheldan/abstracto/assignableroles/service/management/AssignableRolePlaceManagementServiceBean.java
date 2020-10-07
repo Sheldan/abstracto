@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRolePlaceRepository;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class AssignableRolePlaceManagementServiceBean implements AssignableRolePlaceManagementService {
 
     @Autowired
@@ -27,6 +29,7 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
                 .key(name)
                 .build();
         repository.save(place);
+        log.info("Creating assignable role place in channel {} on server {}.", channel.getId(), server.getId());
         return place;
     }
 
@@ -54,17 +57,21 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
     @Override
     public void moveAssignableRolePlace(AServer server, String name, AChannel newChannel) {
         AssignableRolePlace assignablePlaceToChange = findByServerAndKey(server, name);
+        log.info("Moving assignable role place {} in server {} from channel {} to channel {}.",
+                assignablePlaceToChange.getId(), server.getId(), assignablePlaceToChange.getChannel().getId(), newChannel.getId());
         assignablePlaceToChange.setChannel(newChannel);
     }
 
     @Override
     public void changeAssignableRolePlaceDescription(AServer server, String name, String newDescription) {
         AssignableRolePlace assignablePlaceToChange = findByServerAndKey(server, name);
+        log.info("Changing description of assignable role place {} in server {}.", assignablePlaceToChange.getId(), server.getId());
         assignablePlaceToChange.setText(newDescription);
     }
 
     @Override
     public void deleteAssignablePlace(AssignableRolePlace toDelete) {
+        log.info("Deleting assignable role place {} in server {} which was in server {}.", toDelete.getId(), toDelete.getChannel().getId(), toDelete.getServer().getId());
         repository.delete(toDelete);
     }
 

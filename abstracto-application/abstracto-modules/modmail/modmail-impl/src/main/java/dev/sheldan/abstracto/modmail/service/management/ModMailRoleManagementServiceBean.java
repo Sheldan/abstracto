@@ -4,30 +4,33 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailRole;
 import dev.sheldan.abstracto.modmail.repository.ModMailRoleRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class ModMailRoleManagementServiceBean implements ModMailRoleManagementService {
 
     @Autowired
     private ModMailRoleRepository modMailRoleRepository;
 
     @Override
-    public void addRoleToModMailRoles(ARole role, AServer server) {
+    public void addRoleToModMailRoles(ARole role) {
         ModMailRole roleToAdd = ModMailRole
                 .builder()
                 .role(role)
-                .server(server)
+                .server(role.getServer())
                 .build();
+        log.info("Adding role {} in server {} to modmail roles.", role.getId(), role.getServer());
         modMailRoleRepository.save(roleToAdd);
     }
 
     @Override
-    public void removeRoleFromModMailRoles(ARole role, AServer server) {
-        modMailRoleRepository.deleteByServerAndRole(server, role);
+    public void removeRoleFromModMailRoles(ARole role) {
+        modMailRoleRepository.deleteByServerAndRole(role.getServer(), role);
     }
 
     @Override
@@ -36,7 +39,7 @@ public class ModMailRoleManagementServiceBean implements ModMailRoleManagementSe
     }
 
     @Override
-    public boolean isRoleAlreadyAssigned(ARole role, AServer server) {
-        return modMailRoleRepository.existsByServerAndRole(server, role);
+    public boolean isRoleAlreadyAssigned(ARole role) {
+        return modMailRoleRepository.existsByServerAndRole(role.getServer(), role);
     }
 }

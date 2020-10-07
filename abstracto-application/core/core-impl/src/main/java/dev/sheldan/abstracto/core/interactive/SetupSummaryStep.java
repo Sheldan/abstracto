@@ -50,8 +50,10 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
         Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
+        log.info("Executing setup summary question step in server {} in channel {} from user {}.", user.getGuildId(), user.getChannelId(), user.getUserId());
         Consumer<Void> confirmation = (Void none) -> {
             try {
+                log.info("Setup summary was confirmed. Executing {} steps.", parameter.getDelayedActionList().size());
                 self.executeDelayedSteps(parameter);
                 SetupStepResult result = SetupStepResult
                         .builder()
@@ -59,11 +61,13 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
                         .build();
                 future.complete(result);
             } catch (Exception e) {
+                log.error("Failed to execute {} delayed actions.", parameter.getDelayedActionList().size(), e);
                 future.completeExceptionally(e);
             }
         };
 
         Consumer<Void> denial = (Void none) -> {
+            log.info("Setup summary was rejected. Cancelling execution of {} steps.", parameter.getDelayedActionList().size());
             SetupStepResult result = SetupStepResult
                     .builder()
                     .result(SetupStepResultType.CANCELLED)

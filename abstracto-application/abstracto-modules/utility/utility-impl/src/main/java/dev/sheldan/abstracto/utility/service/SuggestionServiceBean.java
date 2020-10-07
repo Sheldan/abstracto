@@ -71,19 +71,23 @@ public class SuggestionServiceBean implements SuggestionService {
         suggestionLog.setText(text);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
         long guildId = member.getGuild().getIdLong();
+        log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, member.getGuild().getId(), member.getId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
             Message message = completableFutures.get(0).join();
+            log.trace("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
             CompletableFuture<Void> firstReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_YES_EMOTE, guildId, message);
             CompletableFuture<Void> secondReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_NO_EMOTE, guildId, message);
-            return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 ->
-                self.persistSuggestionInDatabase(member, text, message, newSuggestionId)
-            );
+            return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 -> {
+                log.trace("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
+                self.persistSuggestionInDatabase(member, text, message, newSuggestionId);
+            });
         });
     }
 
     @Transactional
     public void persistSuggestionInDatabase(Member member, String text, Message message, Long suggestionId) {
+        log.info("Persisting suggestion {} for server {} in database.", suggestionId, member.getGuild().getId());
         suggestionManagementService.createSuggestion(member, text, message, suggestionId);
     }
 
@@ -91,6 +95,7 @@ public class SuggestionServiceBean implements SuggestionService {
     public CompletableFuture<Void> acceptSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
+        log.info("Accepting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         return updateSuggestion(text, suggestionLog, suggestion);
     }
 
@@ -99,6 +104,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Long channelId = suggestion.getChannel().getId();
         Long originalMessageId = suggestion.getMessageId();
         Long serverId = suggestion.getServer().getId();
+        log.info("Updated posted suggestion {} in server {}.", suggestion.getId(), suggestion.getServer().getId());
 
         suggestionLog.setOriginalChannelId(channelId);
         suggestionLog.setOriginalMessageId(originalMessageId);
@@ -130,6 +136,7 @@ public class SuggestionServiceBean implements SuggestionService {
     public CompletableFuture<Void> updateSuggestionMessageText(String text, SuggestionLog suggestionLog, Message message)  {
         Optional<MessageEmbed> embedOptional = message.getEmbeds().stream().filter(embed -> embed.getDescription() != null).findFirst();
         if(embedOptional.isPresent()) {
+            log.info("Updating the text of the suggestion {} in server {}.", suggestionLog.getSuggestionId(), message.getGuild().getId());
             MessageEmbed suggestionEmbed = embedOptional.get();
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
@@ -143,9 +150,10 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Override
-    public CompletableFuture<Void> rejectSuggestion(Long suggestionId, String text, SuggestionLog log) {
+    public CompletableFuture<Void> rejectSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() ->  new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
-        return updateSuggestion(text, log, suggestion);
+        log.info("Rejecting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
+        return updateSuggestion(text, suggestionLog, suggestion);
     }
 }

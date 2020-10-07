@@ -39,9 +39,11 @@ public class WarnDecayJob extends QuartzJobBean {
     @Transactional
     public void executeInternal(JobExecutionContext context) throws JobExecutionException {
         List<AServer> allServers = serverManagementService.getAllServers();
+        log.info("Executing warn decay job.");
         allServers.forEach(server -> {
             boolean featureEnabled = featureFlagService.isFeatureEnabled(warningDecayFeature, server);
             if(featureEnabled) {
+                log.info("Executing warn decay for server {}.", server.getId());
                 warnService.decayWarningsForServer(server);
             }
         });

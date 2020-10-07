@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
 import dev.sheldan.abstracto.modmail.repository.ModMailThreadRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class ModMailThreadManagementServiceBean implements ModMailThreadManagementService {
 
     @Autowired
@@ -91,6 +93,9 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
                 .state(ModMailThreadState.INITIAL)
                 .updated(Instant.now())
                 .build();
+
+        log.info("Create modmail thread in channel {} for user {} in server {}.",
+                channel.getId(), userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
 
         modMailThreadRepository.save(thread);
         return thread;

@@ -68,7 +68,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
         if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
-            log.trace("User {} in server {} reacted with star to put a message {} on starboard.", userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), message.getMessageId());
+            log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.", userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), message.getMessageId(), message.getChannelId());
             Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
                 handleStarboardPostChange(message, reactionOptional.orElse(null), userAdding, true);
         }
@@ -105,6 +105,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
 
     private void updateStarboardPost(CachedMessage message, AUserInAServer userReacting, boolean adding, StarboardPost starboardPost, List<AUserInAServer> userExceptAuthor) {
         starboardPost.setIgnored(false);
+        // TODO handle futures correctly
         starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor);
         if(adding) {
             log.trace("Adding reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
@@ -130,7 +131,7 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
         MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
         if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
-            log.trace("User {} in server {} removed star reaction from message {} on starboard.",
+            log.info("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), message.getMessageId());
             Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
             handleStarboardPostChange(message, reactionOptional.orElse(null), userRemoving, false);
@@ -158,6 +159,8 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
 
         starboardPostOptional.ifPresent(starboardPost -> {
+            log.info("Reactions on message {} in channel {} in server {} were cleared. Completely deleting the starboard post {}.",
+                    message.getMessageId(), message.getChannelId(), message.getServerId(), starboardPost.getId());
             starboardPostReactorManagementService.removeReactors(starboardPost);
             completelyRemoveStarboardPost(starboardPost);
         });

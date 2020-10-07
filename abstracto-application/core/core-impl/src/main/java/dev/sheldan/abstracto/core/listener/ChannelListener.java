@@ -28,14 +28,14 @@ public class ChannelListener extends ListenerAdapter {
     @Override
     @Transactional
     public void onTextChannelDelete(@Nonnull TextChannelDeleteEvent event) {
-        log.info("Handling channel delete event. Channel {}, Server {}", event.getChannel().getIdLong(), event.getGuild().getIdLong());
+        log.info("Handling channel delete event. Marking channel {} as deleted in server {}", event.getChannel().getIdLong(), event.getGuild().getIdLong());
         channelManagementService.markAsDeleted(event.getChannel().getIdLong());
     }
 
     @Override
     @Transactional
     public void onTextChannelCreate(@Nonnull TextChannelCreateEvent event) {
-        log.info("Handling channel created event. Channel {}, Server {}", event.getChannel().getIdLong(), event.getGuild().getIdLong());
+        log.info("Handling channel created event. Creating channel {} in server {}", event.getChannel().getIdLong(), event.getGuild().getIdLong());
         AServer serverObject = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         TextChannel createdChannel = event.getChannel();
         AChannelType type = AChannelType.getAChannelType(createdChannel.getType());

@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.repository.StarboardPostRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class StarboardPostManagementServiceBean implements StarboardPostManagementService {
 
     @Autowired
@@ -38,6 +40,10 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
                 .starboardChannel(starboardPost.getChannel())
                 .starredDate(Instant.now())
                 .build();
+        log.info("Persisting starboard post for message {} in channel {} in server {} on starboard at message {} in channel {} and server {} of user {}.",
+                starredMessage.getMessageId(), starredMessage.getChannelId(), starredMessage.getServerId(),
+                starboardPost.getMessageId(), starboardPost.getChannel().getId(), starboardPost.getServer().getId(),
+                starredUser.getUserReference().getId());
         repository.save(post);
         return post;
     }

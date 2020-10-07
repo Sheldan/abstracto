@@ -97,6 +97,8 @@ public class SuggestionServiceBeanTest {
     @Test
     public void testCreateSuggestion() {
         Member member = Mockito.mock(Member.class);
+        when(member.getGuild()).thenReturn(guild);
+        when(guild.getId()).thenReturn("5");
         String text = "text";
         Message message = Mockito.mock(Message.class);
         Long suggestionId = 3L;
@@ -172,6 +174,8 @@ public class SuggestionServiceBeanTest {
         MessageEmbed embed = Mockito.mock(MessageEmbed.class);
         when(embed.getDescription()).thenReturn("description");
         Message suggestionMessage = Mockito.mock(Message.class);
+        when(suggestionMessage.getGuild()).thenReturn(guild);
+        when(guild.getId()).thenReturn("8");
         when(suggestionMessage.getEmbeds()).thenReturn(Arrays.asList(embed));
         MessageToSend updatedMessage = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class))).thenReturn(updatedMessage);

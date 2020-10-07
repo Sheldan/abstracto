@@ -21,7 +21,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
      */
     private void createExperienceLevel(Integer level, Long experienceNeeded) {
         if(!experienceLevelManagementService.levelExists(level)) {
-            log.trace("Creating new experience level {} with experience needed {}.", level, experienceNeeded);
+            log.info("Creating new experience level {} with experience needed {}.", level, experienceNeeded);
             experienceLevelManagementService.createExperienceLevel(level, experienceNeeded);
         }
     }
@@ -32,6 +32,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
      */
     @Override
     public void createLevelsUntil(Integer level) {
+        log.info("Creating experience levels until level {}.", level);
         createExperienceLevel(0, 0L);
         long experience = 0L;
         for (int i = 1; i < level; i++) {

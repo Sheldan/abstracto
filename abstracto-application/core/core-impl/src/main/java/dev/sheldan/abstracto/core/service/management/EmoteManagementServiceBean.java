@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.exception.EmoteNotFoundInDbException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.EmoteRepository;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Autowired
@@ -56,6 +58,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         if(validateName) {
             validateEmoteName(name);
         }
+        log.info("Creating custom emote: id {}, animated {}, in server {}.", emoteId, animated, server.getId());
         AEmote emoteToCreate = AEmote
                 .builder()
                 .custom(true)
@@ -81,6 +84,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         if(validateName) {
             validateEmoteName(name);
         }
+        log.info("Creating default inbuilt emote {} in server {}.", emoteKey, server.getId());
         AEmote emoteToCreate = AEmote
                 .builder()
                 .custom(false)
@@ -113,6 +117,8 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             emote = this.createCustomEmote(name, emoteKey, emoteId, animated, server, true);
         } else {
             emote = emoteOptional.get();
+            log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
+                    emote.getAnimated(), emote.getCustom(), emote.getId(), emote.getEmoteId(), emoteId, animated);
             emote.setEmoteKey(emoteKey);
             emote.setEmoteId(emoteId);
             emote.setAnimated(animated);
@@ -124,20 +130,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId)  {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        AEmote emoteBeingSet;
-        Optional<AEmote> emoteOptional = loadEmoteByName(name, serverId);
-        if(!emoteOptional.isPresent()) {
-            emoteBeingSet = this.createCustomEmote(name, emote.getName(), emote.getIdLong(), emote.isAnimated(), server, true);
-        } else {
-            emoteBeingSet = emoteOptional.get();
-            emoteBeingSet.setCustom(true);
-            emoteBeingSet.setEmoteId(emote.getIdLong());
-            emoteBeingSet.setAnimated(emote.isAnimated());
-            emoteBeingSet.setEmoteKey(emote.getName());
-            repository.save(emoteBeingSet);
-        }
-        return emoteBeingSet;
+        return setEmoteToCustomEmote(name, emote.getName(), emote.getIdLong(), emote.isAnimated(), serverId);
     }
 
     @Override
@@ -149,8 +142,11 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             emoteBeingSet = this.createDefaultEmote(name, emoteKey, server, true);
         } else {
             emoteBeingSet = emoteOptional.get();
+            log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
+                    emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), emoteKey);
             emoteBeingSet.setEmoteKey(emoteKey);
             emoteBeingSet.setCustom(false);
+            emoteBeingSet.setAnimated(false);
             repository.save(emoteBeingSet);
         }
         return emoteBeingSet;
@@ -164,10 +160,14 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         } else {
             AEmote emoteBeingSet = emoteOptional.get();
             if(fakeEmote.getCustom()) {
+                log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
+                        emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), fakeEmote.getEmoteId(), fakeEmote.getAnimated());
                 emoteBeingSet.setCustom(fakeEmote.getCustom());
                 emoteBeingSet.setEmoteId(fakeEmote.getEmoteId());
                 emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());
             } else {
+                log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
+                        emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), fakeEmote.getEmoteKey());
                 emoteBeingSet.setCustom(false);
                 emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());
             }
@@ -197,6 +197,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
 
     @Override
     public void deleteEmote(AEmote aEmote) {
+        log.info("Deleting emote with id {}", aEmote.getId());
         repository.delete(aEmote);
     }
 

@@ -30,12 +30,14 @@ public class DeleteNote extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         checkParameters(commandContext);
         Long id = (Long) commandContext.getParameters().getParameters().get(0);
-        if(userNoteManagementService.noteExists(id)) {
-           userNoteManagementService.deleteNote(id);
+        if(userNoteManagementService.noteExists(id, commandContext.getUserInitiatedContext().getServer())) {
+           userNoteManagementService.deleteNote(id, commandContext.getUserInitiatedContext().getServer());
         } else {
             // TODO replace with exception
             return CommandResult.fromError(templateService.renderSimpleTemplate(NOTE_NOT_FOUND_EXCEPTION_TEMPLATE));

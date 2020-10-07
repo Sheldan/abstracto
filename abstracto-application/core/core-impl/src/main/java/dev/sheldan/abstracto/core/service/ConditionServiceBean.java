@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.InvalidConditionParametersException;
 import dev.sheldan.abstracto.core.models.ConditionContextInstance;
 import dev.sheldan.abstracto.core.models.ConditionContextVariable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class ConditionServiceBean implements ConditionService {
 
     @Autowired
@@ -22,9 +24,12 @@ public class ConditionServiceBean implements ConditionService {
                 .stream()
                 .filter(systemCondition -> systemCondition.getConditionName().equalsIgnoreCase(context.getConditionName()))
                 .findAny();
+        log.trace("Checking condition {}.", context.getConditionName());
         return matchingCondition.map(systemCondition -> {
             verifyConditionContext(context, systemCondition);
-            return systemCondition.checkCondition(context);
+            boolean result = systemCondition.checkCondition(context);
+            log.trace("Condition resulted in {}.", result);
+            return result;
         }).orElse(true);
     }
 

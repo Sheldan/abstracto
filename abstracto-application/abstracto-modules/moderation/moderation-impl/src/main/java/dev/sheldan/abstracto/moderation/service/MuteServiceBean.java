@@ -134,12 +134,12 @@ public class MuteServiceBean implements MuteService {
             throw new MuteRoleNotSetupException();
         }
         Member memberBeingMuted = userBeingMuted.getMember();
-        log.info("User {} mutes user {} until {}",
-                memberBeingMuted.getIdLong(), userMuting.getMember().getIdLong(), unMuteDate);
+        log.info("User {} mutes user {} in server {} until {}",
+                memberBeingMuted.getIdLong(), message.getServerId(), userMuting.getMember().getIdLong(), unMuteDate);
         if(message.getMessageId() != null) {
-            log.trace("because of message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
+            log.info("because of message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
         } else {
-            log.trace("This mute was not triggered by a message.");
+            log.info("This mute was not triggered by a message.");
         }
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         AUserInAServer userInServerBeingMuted = userBeingMuted.getAUserInAServer();
@@ -159,15 +159,16 @@ public class MuteServiceBean implements MuteService {
     }
 
     private CompletableFuture<Void> sendMuteNotification(ServerChannelMessage message, Member memberBeingMuted, MuteNotification muteNotification) {
-        log.trace("Notifying the user about the mute.");
+        log.info("Notifying the user about the mute.");
         CompletableFuture<Void> notificationFuture = new CompletableFuture<>();
         String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification);
         CompletableFuture<Message> messageCompletableFuture = messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage);
         messageCompletableFuture.exceptionally(throwable -> {
             TextChannel feedBackChannel = botService.getTextChannelFromServer(message.getServerId(), message.getChannelId());
-            feedBackChannel.sendMessage(throwable.getMessage()).submit().whenComplete((exceptionMessage, innerThrowable) ->
-                notificationFuture.complete(null)
-            );
+            feedBackChannel.sendMessage(throwable.getMessage()).submit().whenComplete((exceptionMessage, innerThrowable) -> {
+                notificationFuture.complete(null);
+                log.info("Successfully notified user {} in server {} about mute.", memberBeingMuted.getId(), memberBeingMuted.getGuild().getId());
+            });
             return null;
         });
         messageCompletableFuture.thenAccept(message1 ->
@@ -226,7 +227,7 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public CompletableFuture<Void> muteMemberWithLog(MuteContext context) {
-        log.trace("Muting member with sending a mute log");
+        log.trace("Muting member {} in server {} and sending a mute log.", context.getMutedUser().getId(), context.getMutedUser().getGuild().getId());
         AServer server = serverManagementService.loadOrCreate(context.getContext().getServerId());
         Long nextCounterValue = counterService.getNextCounterValue(server, MUTE_COUNTER_KEY);
         context.setMuteId(nextCounterValue);
@@ -244,14 +245,14 @@ public class MuteServiceBean implements MuteService {
     }
 
     public CompletableFuture<Void> sendMuteLog(MuteContext muteLogModel)  {
-        log.trace("Sending mute log to the mute posttarget");
+        log.trace("Sending mute log to the mute posttarget.");
         MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel);
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
         return FutureUtils.toSingleFutureGeneric(completableFutures);
     }
 
     private CompletableFuture<Void> sendUnMuteLog(UnMuteLog muteLogModel)  {
-        log.trace("Sending unMute log to the mute posttarget");
+        log.trace("Sending unMute log to the mute posttarget.");
         MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel);
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getServer().getId());
         return FutureUtils.toSingleFutureGeneric(completableFutures);
@@ -313,7 +314,7 @@ public class MuteServiceBean implements MuteService {
     @Override
     @Transactional
     public CompletableFuture<Void> endMute(Long muteId, Long serverId) {
-        log.info("UnMuting the mute {}", muteId);
+        log.info("UnMuting the mute {} in server {}", muteId, serverId);
         Optional<Mute> muteOptional = muteManagementService.findMute(muteId, serverId);
         if(muteOptional.isPresent()) {
             return endMute(muteOptional.get());
@@ -324,6 +325,7 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public void completelyUnMuteUser(AUserInAServer aUserInAServer) {
+        log.info("Completely unmuting user {} in server {}.", aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         List<Mute> allMutesOfUser = muteManagementService.getAllMutesOf(aUserInAServer);
         allMutesOfUser.forEach(mute -> {
             mute.setMuteEnded(true);

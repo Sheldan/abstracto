@@ -54,46 +54,51 @@ public class SetupServiceBean implements SetupService {
 
     @Override
     public CompletableFuture<Void> performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
-        List<String> requiredSystemConfigKeys = featureConfig.getRequiredSystemConfigKeys();
-        List<SetupExecution> steps = new ArrayList<>();
-        requiredSystemConfigKeys.forEach(s -> {
-            SetupExecution execution = SetupExecution
-                    .builder()
-                    .step(systemConfigSetupStep)
-                    .parameter(SystemConfigStepParameter.builder().configKey(s).build())
-                    .build();
-            steps.add(execution);
-        });
-        featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> {
-            SetupExecution execution = SetupExecution
-                    .builder()
-                    .step(postTargetSetupStep)
-                    .parameter(PostTargetStepParameter.builder().postTargetKey(postTargetEnum.getKey()).build())
-                    .build();
-            steps.add(execution);
-        });
-        featureConfig.getCustomSetupSteps().forEach(setupStep -> {
-            SetupExecution execution = SetupExecution
-                    .builder()
-                    .step(setupStep)
-                    .parameter(EmptySetupParameter.builder().build())
-                    .build();
-            steps.add(execution);
-        });
-        for (int i = 0; i < steps.size(); i++) {
-            SetupExecution setupExecution = steps.get(i);
-            setupExecution.getParameter().setPreviousMessageId(initialMessageId);
-            if(i < steps.size() - 1) {
-                setupExecution.setNextStep(steps.get(i + 1));
-            }
-        }
-
-        SetupInitialMessageModel setupInitialMessageModel = SetupInitialMessageModel
-                .builder()
-                .featureConfig(featureConfig)
-                .build();
+        log.info("Performing setup of feature {} for user {} in channel {} in server {}.",
+                featureConfig.getFeature().getKey(), user.getUserId(), user.getChannelId(), user.getGuildId());
         Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(user.getGuildId(), user.getChannelId());
         if(textChannelInGuild.isPresent()) {
+            List<String> requiredSystemConfigKeys = featureConfig.getRequiredSystemConfigKeys();
+            List<SetupExecution> steps = new ArrayList<>();
+            requiredSystemConfigKeys.forEach(s -> {
+                log.trace("Feature requires system config key {}.", s);
+                SetupExecution execution = SetupExecution
+                        .builder()
+                        .step(systemConfigSetupStep)
+                        .parameter(SystemConfigStepParameter.builder().configKey(s).build())
+                        .build();
+                steps.add(execution);
+            });
+            featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> {
+                log.trace("Feature requires post target {}.", postTargetEnum.getKey());
+                SetupExecution execution = SetupExecution
+                        .builder()
+                        .step(postTargetSetupStep)
+                        .parameter(PostTargetStepParameter.builder().postTargetKey(postTargetEnum.getKey()).build())
+                        .build();
+                steps.add(execution);
+            });
+            featureConfig.getCustomSetupSteps().forEach(setupStep -> {
+                log.trace("Feature requires custom setup step {}.", setupStep.getClass().getName());
+                SetupExecution execution = SetupExecution
+                        .builder()
+                        .step(setupStep)
+                        .parameter(EmptySetupParameter.builder().build())
+                        .build();
+                steps.add(execution);
+            });
+            for (int i = 0; i < steps.size(); i++) {
+                SetupExecution setupExecution = steps.get(i);
+                setupExecution.getParameter().setPreviousMessageId(initialMessageId);
+                if(i < steps.size() - 1) {
+                    setupExecution.setNextStep(steps.get(i + 1));
+                }
+            }
+
+            SetupInitialMessageModel setupInitialMessageModel = SetupInitialMessageModel
+                    .builder()
+                    .featureConfig(featureConfig)
+                    .build();
             TextChannel textChannel = textChannelInGuild.get();
             String text = templateService.renderTemplate("setup_initial_message", setupInitialMessageModel);
             channelService.sendTextToChannel(text, textChannel);
@@ -109,15 +114,20 @@ public class SetupServiceBean implements SetupService {
     }
 
     private CompletableFuture<Void> executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
+        log.trace("Executing step {} in server {} in channel {} for user {}.", execution.getStep().getClass(), aUserInAServer.getGuildId(), aUserInAServer.getChannelId(), aUserInAServer.getUserId());
         return execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(aVoid -> {
             if(aVoid.getResult().equals(SetupStepResultType.SUCCESS)) {
+                log.info("Step {} in server {} has been executed successfully. Proceeding.", execution.getStep().getClass(), aUserInAServer.getGuildId());
                 delayedActionConfigs.addAll(aVoid.getDelayedActionConfigList());
                 if(execution.getNextStep() != null) {
+                    log.trace("Executing next step {}.", execution.getNextStep().getStep().getClass());
                     executeStep(aUserInAServer, execution.getNextStep(), delayedActionConfigs, featureConfig);
                 } else {
+                    log.trace("Step was the last step. Executing post setup steps.");
                     self.executePostSetupSteps(delayedActionConfigs, aUserInAServer, execution.getParameter().getPreviousMessageId(), featureConfig);
                 }
             } else {
+                log.info("Result of step {} has been {}. Notifying user.", execution.getStep().getClass(), SetupStepResultType.CANCELLED);
                 self.notifyAboutCancellation(aUserInAServer, featureConfig);
             }
 
@@ -147,6 +157,8 @@ public class SetupServiceBean implements SetupService {
 
     @Transactional
     public void notifyAboutCompletion(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
+        log.trace("Notifying user {} in channel {} in server {} about completion of setup for feature {}.",
+                aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
         notifyUserWithTemplate(aServerChannelUserId, featureConfig, "setup_completion_notification");
     }
 
@@ -162,6 +174,8 @@ public class SetupServiceBean implements SetupService {
 
     @Transactional
     public void notifyAboutCancellation(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
+        log.trace("Notifying user {} in channel {} in server {} about cancellation of setup for feature {}.",
+                aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
         notifyUserWithTemplate(aServerChannelUserId, featureConfig, "setup_cancellation_notification");
     }
 }

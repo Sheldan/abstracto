@@ -57,6 +57,10 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
                 .embeddingUser(embeddingUser)
                 .build();
 
+        log.info("Saving embedded post: message {} by user {} in channel {} in server {} embedded message {} by user {} in channel {} in server {}.",
+                messageContainingEmbed.getIdLong(), embeddingUser.getUserReference().getId(), embeddingChannel.getId(), embeddingUser.getServerReference().getId(),
+                embeddedMessage.getMessageId(), embeddedMessage.getAuthorId(), embeddedMessage.getChannelId(), embeddedMessage.getServerId());
+
         embeddedMessageRepository.save(messageEmbedPost);
     }
 
@@ -68,6 +72,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
     @Override
     @Transactional
     public void deleteEmbeddedMessage(EmbeddedMessage embeddedMessage) {
+        log.info("Deleting embedded message {}.", embeddedMessage.getEmbeddingMessageId());
        embeddedMessageRepository.delete(embeddedMessage);
     }
 

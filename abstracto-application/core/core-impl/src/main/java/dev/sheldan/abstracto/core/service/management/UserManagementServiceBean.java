@@ -23,8 +23,8 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Override
     public AUser createUser(Long userId) {
-        log.info("Creating user {}", userId);
         AUser aUser = AUser.builder().id(userId).build();
+        log.info("Creating user {}.", userId);
         userRepository.save(aUser);
         return aUser;
     }

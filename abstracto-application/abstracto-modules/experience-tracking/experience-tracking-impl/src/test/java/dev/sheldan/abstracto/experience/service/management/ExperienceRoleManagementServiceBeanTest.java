@@ -132,7 +132,9 @@ public class ExperienceRoleManagementServiceBeanTest extends ExperienceRelatedTe
 
     private AExperienceRole getExperienceRoleForLevel(int levelToBuild) {
         AExperienceLevel firstLevel = AExperienceLevel.builder().level(levelToBuild).build();
-        return AExperienceRole.builder().role(ARole.builder().id((long) levelToBuild).build()).level(firstLevel).build();
+        AServer server = AServer.builder().id(4L).build();
+        ARole aRole = ARole.builder().id((long) levelToBuild).server(server).build();
+        return AExperienceRole.builder().role(aRole).roleServer(server).level(firstLevel).build();
     }
 
     private AExperienceLevel getLevel(Integer level, Long neededExperience) {

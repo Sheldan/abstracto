@@ -1,10 +1,12 @@
 package dev.sheldan.abstracto.core.interactive;
 
 import dev.sheldan.abstracto.core.service.ConfigService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class SystemConfigDelayedAction implements DelayedAction {
 
 
@@ -14,6 +16,7 @@ public class SystemConfigDelayedAction implements DelayedAction {
     @Override
     public void execute(DelayedActionConfig delayedActionConfig) {
         SystemConfigDelayedActionConfig concrete = (SystemConfigDelayedActionConfig) delayedActionConfig;
+        log.trace("Executing delayed system config action for key {} in server {}.", concrete.getConfigKey(), concrete.getServerId());
         configService.setConfigValue(concrete.getConfigKey(), concrete.getServerId(), concrete.getValue());
     }
 

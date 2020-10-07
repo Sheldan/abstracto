@@ -50,6 +50,7 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel);
         postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
         if(messageFromCache.getAttachmentUrls() != null){
+            log.trace("Notifying about deletions of {} attachments.", messageFromCache.getAttachmentUrls().size());
             for (int i = 0; i < messageFromCache.getAttachmentUrls().size(); i++) {
                 MessageDeletedAttachmentLog log = MessageDeletedAttachmentLog
                         .builder()

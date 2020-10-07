@@ -18,7 +18,7 @@ public interface AssignableRolePlaceService {
     boolean hasAssignableRolePlaceEmote(AServer server, String placeName, AEmote emote);
     boolean hasAssignableRolePlaceEmote(AssignableRolePlace place, AEmote emote);
     boolean isPositionUsed(AServer server, String placeName, Integer position);
-    CompletableFuture<Void> setEmoteToPosition(AServer server, String placeName, FullEmote emote, Integer position);
+    void setEmoteToPosition(AServer server, String placeName, FullEmote emote, Integer position);
     CompletableFuture<Void> addRoleToAssignableRolePlace(AServer server, String placeName, ARole role, FullEmote emote, String description);
     CompletableFuture<Void> removeRoleFromAssignableRolePlace(AServer server, String placeName, FullEmote emote);
     CompletableFuture<Void> setupAssignableRolePlace(AServer server, String name);

@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class UserInfo extends AbstractConditionableCommand {
 
     @Autowired
@@ -42,6 +44,7 @@ public class UserInfo extends AbstractConditionableCommand {
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getAuthor();
         UserInfoModel model = (UserInfoModel) ContextConverter.slimFromCommandContext(commandContext, UserInfoModel.class);
         if(!memberToShow.hasTimeJoined()) {
+            log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
             return botService.forceReloadMember(memberToShow).thenCompose(member -> {
                 model.setMemberInfo(member);
                 return self.sendResponse(commandContext, model)

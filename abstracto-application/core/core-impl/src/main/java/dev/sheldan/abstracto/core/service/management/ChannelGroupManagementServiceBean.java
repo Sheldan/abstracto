@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ChannelGroupRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class ChannelGroupManagementServiceBean implements ChannelGroupManagementService {
 
     @Autowired
@@ -35,6 +37,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
                 .groupName(name)
                 .server(server)
                 .build();
+        log.info("Creating new channel group in server {}.", server.getId());
         channelGroupRepository.save(channelGroup);
         return channelGroup;
     }
@@ -51,6 +54,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         if(existing == null) {
             throw new ChannelGroupNotFoundException(name, getAllAvailableAsString(server));
         }
+        log.info("Deleting channel group {} in server {}.", existing.getId(), server.getId());
         channelGroupRepository.delete(existing);
     }
 
@@ -62,6 +66,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         }
         channelGroup.getChannels().add(channel);
         channel.getGroups().add(channelGroup);
+        log.info("Adding channel {} to channel group {} in server {}.", channel.getId(), channelGroup.getId(), channel.getServer().getId());
         return channelGroup;
     }
 
@@ -73,6 +78,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         }
         channelGroup.getChannels().removeIf(channelInGroupPredicate);
         channel.getGroups().removeIf(channelGroup1 -> channelGroup1.getId().equals(channelGroup.getId()));
+        log.info("Removing channel {} from channel group {} in server {}.", channel.getId(), channelGroup.getId(), channel.getServer().getId());
     }
 
     @Override

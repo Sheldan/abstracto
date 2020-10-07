@@ -36,8 +36,9 @@ public class ExperiencePersistingJob extends QuartzJobBean {
         log.info("Running experience persisting job.");
         Long pastMinute = (Instant.now().getEpochSecond() / 60) - 1;
         if(runtimeExperience.containsKey(pastMinute)) {
-            log.info("Found experience to persist.");
-            userExperienceService.handleExperienceGain(runtimeExperience.get(pastMinute)).thenAccept(aVoid ->
+            List<ServerExperience> foundServers = runtimeExperience.get(pastMinute);
+            log.info("Found experience from {} servers to persist.", foundServers.size());
+            userExperienceService.handleExperienceGain(foundServers).thenAccept(aVoid ->
                 runtimeExperience.remove(pastMinute)
             );
         }

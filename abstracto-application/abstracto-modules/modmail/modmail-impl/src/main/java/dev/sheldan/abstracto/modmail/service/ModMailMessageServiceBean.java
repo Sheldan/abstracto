@@ -30,6 +30,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         }
         // all message must be from the same thread
         ModMailThread thread = modMailMessages.get(0).getThreadReference();
+        log.trace("Loading {} mod mail messages from thread {} in server {}.", modMailMessages.size(), thread.getId(), thread.getServer().getId());
         List<ServerChannelMessage> messageIds = new ArrayList<>();
         modMailMessages.forEach(modMailMessage -> {
             ServerChannelMessage.ServerChannelMessageBuilder serverChannelMessageBuilder = ServerChannelMessage
@@ -37,6 +38,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                     .messageId(modMailMessage.getMessageId());
             // if its not from a private chat, we need to set the server and channel ID in order to fetch the data
             if(Boolean.FALSE.equals(modMailMessage.getDmChannel())) {
+                log.trace("Message {} was from DM.", modMailMessage.getMessageId());
                 serverChannelMessageBuilder
                         .channelId(modMailMessage.getThreadReference().getChannel().getId())
                         .serverId(modMailMessage.getThreadReference().getServer().getId());
@@ -55,6 +57,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
             botService.getInstance().openPrivateChannelById(thread.getUser().getUserReference().getId()).queue(privateChannel -> {
                 Iterator<CompletableFuture<Message>> iterator = messageFutures.iterator();
                 messageIds.forEach(serverChannelMessage -> {
+                    log.trace("Loading message {}.", serverChannelMessage.getMessageId());
                     // TODO fix out of order promises
                     // depending what the source of the message is, we need to fetch the message from the correct channel
                     if(serverChannelMessage.getChannelId() == null){

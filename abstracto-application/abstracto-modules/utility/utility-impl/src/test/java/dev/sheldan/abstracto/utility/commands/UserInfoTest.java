@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,6 +61,7 @@ public class UserInfoTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(false);
         Member loadedAuthor = Mockito.mock(Member.class);
+        when(noParameters.getAuthor().getGuild()).thenReturn(Mockito.mock(Guild.class));
         when(botService.forceReloadMember(noParameters.getAuthor())).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(noParameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
@@ -86,6 +88,7 @@ public class UserInfoTest {
         when(member.hasTimeJoined()).thenReturn(false);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
         Member loadedAuthor = Mockito.mock(Member.class);
+        when(member.getGuild()).thenReturn(Mockito.mock(Guild.class));
         when(botService.forceReloadMember(member)).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);

@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
  * Command used to show an embed containing information about the experience amount, level and message count of a ember on a server
  */
 @Component
+@Slf4j
 public class Rank extends AbstractConditionableCommand {
 
     public static final String RANK_POST_EMBED_TEMPLATE = "rank_post";
@@ -56,6 +58,7 @@ public class Rank extends AbstractConditionableCommand {
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         rankModel.setRankUser(converter.fromLeaderBoardEntry(userRank));
         AUserExperience experienceObj = userRank.getExperience();
+        log.info("Rendering rank for user {} in server {}.", commandContext.getAuthor().getId(), commandContext.getGuild().getId());
         rankModel.setExperienceToNextLevel(experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience()));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel);
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))

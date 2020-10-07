@@ -98,6 +98,8 @@ public class WarnServiceBean implements WarnService {
 
     @Transactional
     public void persistWarning(WarnContext context) {
+        log.info("Persisting warning {} in server {} for user {} by user {}.",
+                context.getWarnId(), context.getGuild().getId(), context.getWarnedMember().getId(), context.getMember().getId());
         AUserInAServer warnedUser = userInServerManagementService.loadUser(context.getWarnedMember());
         AUserInAServer warningUser = userInServerManagementService.loadUser(context.getMember());
         warnManagementService.createWarning(warnedUser, warningUser, context.getReason(), context.getWarnId());
@@ -109,6 +111,7 @@ public class WarnServiceBean implements WarnService {
     public CompletableFuture<Void>  decayWarningsForServer(AServer server) {
         Long days = configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId());
         Instant cutOffDay = Instant.now().minus(days, ChronoUnit.DAYS);
+        log.info("Decaying warnings on server {} which are older than {}.", server.getId(), cutOffDay);
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);
         List<Long> warningIds = flattenWarnings(warningsToDecay);
         Long serverId = server.getId();
@@ -129,6 +132,7 @@ public class WarnServiceBean implements WarnService {
     @Transactional
     public void decayWarnings(List<Long> warningIds, Long serverId) {
         Instant now = Instant.now();
+        log.info("Decaying {} warnings.", warningIds.size());
         warningIds.forEach(warningId -> {
             Optional<Warning> warningOptional = warnManagementService.findById(warningId, serverId);
             warningOptional.ifPresent(warning ->
@@ -142,11 +146,13 @@ public class WarnServiceBean implements WarnService {
 
     @Override
     public void decayWarning(Warning warning, Instant now) {
+        log.trace("Decaying warning {} in server {} with date {}.", warning.getWarnId().getId(), warning.getWarnId().getServerId(), now);
         warning.setDecayDate(now);
         warning.setDecayed(true);
     }
 
     private CompletableFuture<Void> logDecayedWarnings(AServer server, List<Warning> warningsToDecay) {
+        log.trace("Logging decaying {} warnings in server {}.", warningsToDecay.size(), server.getId());
         List<WarnDecayWarning> warnDecayWarnings = new ArrayList<>();
         warningsToDecay.forEach(warning -> {
             WarnDecayWarning warnDecayWarning = WarnDecayWarning
@@ -172,6 +178,7 @@ public class WarnServiceBean implements WarnService {
     public CompletableFuture<Void> decayAllWarningsForServer(AServer server, boolean logWarnings) {
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, Instant.now());
         List<Long> warnIds = flattenWarnings(warningsToDecay);
+        log.info("Decaying ALL warning in server {} with logging {}.", server.getId(), logWarnings);
         Long serverId = server.getId();
         if(logWarnings) {
             return logDecayedWarnings(server, warningsToDecay).thenAccept(aVoid ->

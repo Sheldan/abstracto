@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.Member;
 @Getter
 @Setter
 @SuperBuilder
+// TODO change user initiated context so slim context, and remove database entities referenced
 public class SuggestionLog extends UserInitiatedServerContext {
     private Long suggestionId;
     private SuggestionState state;

@@ -59,6 +59,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
         LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.fromCommandContext(commandContext, LeaderBoardModel.class);
         leaderBoardModel.setUserExperiences(converter.fromLeaderBoard(leaderBoard));
+        log.info("Rendering leaderboard for page {} in server {} for user {}.", page, commandContext.getAuthor().getId(), commandContext.getGuild().getId());
 
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         leaderBoardModel.setUserExecuting(converter.fromLeaderBoardEntry(userRank));

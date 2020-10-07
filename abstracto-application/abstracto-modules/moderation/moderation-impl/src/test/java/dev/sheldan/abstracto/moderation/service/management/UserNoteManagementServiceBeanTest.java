@@ -53,14 +53,14 @@ public class UserNoteManagementServiceBeanTest {
 
     @Test
     public void testDeleteNote() {
-        testUnit.deleteNote(NOTE_ID);
-        verify(userNoteRepository, times(1)).deleteById(NOTE_ID);
+        testUnit.deleteNote(NOTE_ID, server);
+        verify(userNoteRepository, times(1)).deleteByUserNoteId_IdAndUserNoteId_ServerId(NOTE_ID, server.getId());
     }
 
     @Test
     public void testNoteExists() {
-        when(userNoteRepository.existsById(NOTE_ID)).thenReturn(true);
-        Assert.assertTrue(testUnit.noteExists(NOTE_ID));
+        when(userNoteRepository.existsByUserNoteId_IdAndUserNoteId_ServerId(NOTE_ID, server.getId())).thenReturn(true);
+        Assert.assertTrue(testUnit.noteExists(NOTE_ID, server));
     }
 
     @Test

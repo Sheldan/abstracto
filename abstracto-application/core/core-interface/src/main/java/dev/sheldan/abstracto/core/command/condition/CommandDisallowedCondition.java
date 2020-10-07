@@ -10,6 +10,8 @@ import dev.sheldan.abstracto.core.command.service.management.CommandManagementSe
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
+@Slf4j
 public class CommandDisallowedCondition implements CommandCondition {
 
 
@@ -40,7 +43,9 @@ public class CommandDisallowedCondition implements CommandCondition {
             return ConditionResult.builder().result(true).build();
         }
         for (ARole role : commandForServer.getAllowedRoles()) {
-            if (roleService.memberHasRole(context.getAuthor(), role)) {
+            Member author = context.getAuthor();
+            if (roleService.memberHasRole(author, role)) {
+                log.trace("Member {} is able to execute restricted command {}, because of role {}.", author.getIdLong(), aCommand.getName(), role.getId());
                 return ConditionResult.builder().result(true).build();
             }
         }

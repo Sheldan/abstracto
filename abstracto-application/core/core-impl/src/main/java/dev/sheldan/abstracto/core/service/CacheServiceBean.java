@@ -29,6 +29,7 @@ public class CacheServiceBean {
     }
 
     public void clearCaches() {
+        log.info("Clearing all caches.");
         sessionFactory.getCache().evictAllRegions();
         templateService.clearCache();
     }

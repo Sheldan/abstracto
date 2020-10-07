@@ -5,12 +5,14 @@ import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.AModule;
 import dev.sheldan.abstracto.core.command.repository.CommandRepository;
 import dev.sheldan.abstracto.core.models.database.AFeature;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class CommandManagementServiceBean implements CommandManagementService {
 
     @Autowired
@@ -37,6 +39,7 @@ public class CommandManagementServiceBean implements CommandManagementService {
                 .module(module)
                 .feature(feature)
                 .build();
+        log.info("Creating creating command {} in module {} with feature {}.", name, module.getName(), feature.getKey());
         commandRepository.save(command);
         return command;
     }

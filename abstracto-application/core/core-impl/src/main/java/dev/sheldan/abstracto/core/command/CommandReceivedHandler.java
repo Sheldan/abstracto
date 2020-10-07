@@ -103,26 +103,29 @@ public class CommandReceivedHandler extends ListenerAdapter {
             UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
             String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
             foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter);
-            tryToExecuteFoundCommand(event, userInitiatedContext, commandContextBuilder, foundCommand, unParsedParameter);
+            tryToExecuteFoundCommand(event, commandContextBuilder, foundCommand, unParsedParameter);
 
         } catch (Exception e) {
-            log.error("Exception when preparing command.", e);
+            log.error("Exception when executing command.", e);
             CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
             CommandContext commandContext = commandContextBuilder.build();
             self.executePostCommandListener(null, commandContext, commandResult);
         }
     }
 
-    private void tryToExecuteFoundCommand(@Nonnull MessageReceivedEvent event, UserInitiatedServerContext userInitiatedContext, CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
+    private void tryToExecuteFoundCommand(@Nonnull MessageReceivedEvent event, CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
         try {
-            Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage(), userInitiatedContext);
+            Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage());
             validateCommandParameters(parsedParameters, foundCommand);
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
             CommandResult commandResult = null;
             if(conditionResult.isResult()) {
-                if(foundCommand.getConfiguration().isAsync()) {
-                    foundCommand.executeAsync(commandContext).thenAccept(result ->
+               if(foundCommand.getConfiguration().isAsync()) {
+                   log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
+                           foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
+
+                   foundCommand.executeAsync(commandContext).thenAccept(result ->
                         executePostCommandListener(foundCommand, commandContext, result)
                     ).exceptionally(throwable -> {
                         log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
@@ -169,6 +172,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
             for (ParameterValidator parameterValidator : parameter.getValidators()) {
                 boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
                 if(!validate) {
+                    log.trace("Parameter {} in command {} failed to validate.", parameter.getName(), foundCommand.getConfiguration().getName());
                     throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getTemplateName(), parameter);
                 }
             }
@@ -177,6 +181,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Transactional
     public void executePostCommandListener(Command foundCommand, CommandContext commandContext, CommandResult result) {
+        log.trace("Executing post command listeners for command from message {}.", commandContext.getMessage().getIdLong());
         for (PostCommandExecution postCommandExecution : executions) {
             postCommandExecution.execute(commandContext, result, foundCommand);
         }
@@ -184,6 +189,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Transactional
     public CommandResult executeCommand(Command foundCommand, CommandContext commandContext) {
+        log.info("Executing sync command {} for server {} in channel {} based on message {} by user {}.",
+                foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
         return foundCommand.execute(commandContext);
     }
 
@@ -203,11 +210,12 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .build();
     }
 
-    public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message, UserInitiatedServerContext userInitiatedServerContext){
+    public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
         if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().isEmpty()) {
             return Parameters.builder().parameters(parsedParameters).build();
         }
+        log.trace("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
         Iterator<Emote> emoteIterator = message.getEmotesBag().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();

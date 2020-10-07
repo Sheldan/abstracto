@@ -70,11 +70,14 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<Message> sendMessageToChannel(Message message, MessageChannel channel) {
+        log.trace("Sending message {} from channel {} and server {} to channel {}.",
+                message.getId(), message.getChannel().getId(), message.getGuild().getId(), channel.getId());
         return channel.sendMessage(message).submit();
     }
 
     @Override
     public CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel) {
+        log.trace("Sending text to channel {}.", channel.getId());
         return channel.sendMessage(text).submit();
     }
 
@@ -97,6 +100,7 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel) {
+        log.trace("Sending embed to channel {}.", channel.getId());
         return channel.sendMessage(embed).submit();
     }
 
@@ -119,14 +123,17 @@ public class ChannelServiceBean implements ChannelService {
         String messageText = messageToSend.getMessage();
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         if(StringUtils.isBlank(messageText)) {
+            log.trace("Only sending {} embeds to channel {}.", messageToSend.getEmbeds().size(), textChannel.getId());
             messageToSend.getEmbeds().forEach(embed ->
                 futures.add(sendEmbedToChannel(embed, textChannel))
             );
         } else  {
+            log.trace("Sending mesagte text to channel {}.", textChannel.getId());
             MessageAction messageAction = textChannel.sendMessage(messageText);
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
-                CompletableFuture<Message> messageFuture = messageAction.embed(messageToSend.getEmbeds().get(0)).submit();
-                futures.add(messageFuture);
+                log.trace("Also sending {} embeds to channel {}.", messageToSend.getEmbeds().size(), textChannel.getId());
+                CompletableFuture<Message> firstMessageFuture = messageAction.embed(messageToSend.getEmbeds().get(0)).submit();
+                futures.add(firstMessageFuture);
                 messageToSend.getEmbeds().stream().skip(1).forEach(embed ->
                     futures.add(sendEmbedToChannel(embed, textChannel))
                 );
@@ -162,11 +169,14 @@ public class ChannelServiceBean implements ChannelService {
     public CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId) {
         MessageAction messageAction;
         if(!StringUtils.isBlank(messageToSend.getMessage())) {
+            log.trace("Editing message {} with new text content.", messageId);
             messageAction = channel.editMessageById(messageId, messageToSend.getMessage());
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
+                log.trace("Also editing the embed for message {}.", messageId);
                 messageAction = messageAction.embed(messageToSend.getEmbeds().get(0));
             }
         } else {
+            log.trace("Editing message {} with new embeds.", messageId);
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 messageAction = channel.editMessageById(messageId, messageToSend.getEmbeds().get(0));
             } else {
@@ -207,6 +217,7 @@ public class ChannelServiceBean implements ChannelService {
         return channel.retrieveMessageById(messageId).submit().thenCompose(message -> {
             EmbedBuilder embedBuilder = new EmbedBuilder(message.getEmbeds().get(embedIndex));
             embedBuilder.getFields().remove(index.intValue());
+            log.trace("Removing field with index {} from message {}.", index, messageId);
             return channel.editMessageById(messageId, embedBuilder.build()).submit();
         });
     }
@@ -220,6 +231,7 @@ public class ChannelServiceBean implements ChannelService {
     public CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId) {
         TextChannel textChannelById = botService.getInstance().getTextChannelById(channelId);
         if(textChannelById != null) {
+            log.info("Deleting channel {} on server {}.", channelId, serverId);
             return textChannelById.delete().submit();
         }
         throw new ChannelNotFoundException(channelId);
@@ -245,6 +257,7 @@ public class ChannelServiceBean implements ChannelService {
             Guild guild = guildById.get();
             Category categoryById = guild.getCategoryById(categoryId);
             if(categoryById != null) {
+                log.info("Creating channel on server {} in category {}.", server.getId(), categoryById);
                 return categoryById.createTextChannel(name).submit();
             }
             throw new CategoryNotFoundException(categoryId, server.getId());

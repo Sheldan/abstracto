@@ -21,7 +21,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public AConfig setOrCreateStringValue(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
-            createConfig(serverId, name, value);
+            config = createConfig(serverId, name, value);
         } else {
             config.setStringValue(value);
         }
@@ -32,7 +32,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public AConfig setOrCreateDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
-            createConfig(serverId, name, value);
+            config = createConfig(serverId, name, value);
         } else {
             config.setDoubleValue(value);
         }
@@ -48,6 +48,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
                 .server(server)
                 .name(name)
                 .build();
+        log.trace("Creating config entry for type string in server {} and key {}", serverId, name);
         configRepository.save(config);
         return config;
     }
@@ -61,6 +62,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
                 .server(server)
                 .name(name)
                 .build();
+        log.trace("Creating config entry for type double in server {} and key {}", serverId, name);
         configRepository.save(config);
         return config;
     }
@@ -75,6 +77,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
                 .name(name)
                 .build();
         configRepository.save(config);
+        log.trace("Creating config entry for type long in server {} and key {}", serverId, name);
         return config;
     }
 
@@ -124,6 +127,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public AConfig setDoubleValue(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         config.setDoubleValue(value);
+        log.trace("Setting double value of key {} in server {}.", name, serverId);
         return config;
     }
 
@@ -131,6 +135,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public AConfig setLongValue(Long serverId, String name, Long value) {
         AConfig config = loadConfig(serverId, name);
         config.setLongValue(value);
+        log.trace("Setting long value of key {} in server {}.", name, serverId);
         return config;
     }
 
@@ -138,6 +143,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     public AConfig setStringValue(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         config.setStringValue(value);
+        log.trace("Setting string value of key {} in server {}.", name, serverId);
         return config;
     }
 

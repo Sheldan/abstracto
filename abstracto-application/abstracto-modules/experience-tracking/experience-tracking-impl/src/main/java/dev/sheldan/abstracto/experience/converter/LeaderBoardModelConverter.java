@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.List;
  * Converter used to convert from {@link LeaderBoard} to a list of {@link LeaderBoardEntryModel}
  */
 @Component
+@Slf4j
 public class LeaderBoardModelConverter {
 
     @Autowired
@@ -30,6 +32,7 @@ public class LeaderBoardModelConverter {
      */
     public List<LeaderBoardEntryModel> fromLeaderBoard(LeaderBoard leaderBoard) {
         List<LeaderBoardEntryModel> models = new ArrayList<>();
+        log.trace("Converting {} entries to a list of leaderbord entries.", leaderBoard.getEntries().size());
         leaderBoard.getEntries().forEach(leaderBoardEntry -> {
             LeaderBoardEntryModel entry = fromLeaderBoardEntry(leaderBoardEntry);
             models.add(entry);

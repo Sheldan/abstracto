@@ -49,6 +49,6 @@ public class ContextUtils {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);
         }
-        throw new AbstractoRunTimeException("Failed to create model from message");
+        throw new AbstractoRunTimeException("Failed to create UserInitiatedServerContext from message");
     }
 }

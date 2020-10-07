@@ -25,7 +25,9 @@ public class ServerManagementServiceBean implements ServerManagementService {
 
     @Override
     public AServer createServer(Long id) {
-        return repository.save(AServer.builder().id(id).build());
+        AServer newServer = AServer.builder().id(id).build();
+        log.info("Creating server with id {}.", id);
+        return repository.save(newServer);
     }
 
     @Override
@@ -46,6 +48,7 @@ public class ServerManagementServiceBean implements ServerManagementService {
 
     @Override
     public void addChannelToServer(AServer server, AChannel channel) {
+        log.info("Adding channel {} to server {}.", channel.getId(), server.getId());
         server.getChannels().add(channel);
         channel.setServer(server);
     }

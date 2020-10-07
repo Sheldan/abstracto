@@ -73,14 +73,10 @@ public class CommandManager implements CommandRegistry {
     }
 
     public Command findCommand(String name) {
-        Optional<Command> commandOptional = commands.stream().filter((Command o )-> {
+        return commands.stream().filter((Command o )-> {
             CommandConfiguration commandConfiguration = o.getConfiguration();
             return commandConfiguration.getName().equals(name);
-        }).findFirst();
-        if(commandOptional.isPresent()){
-            return commandOptional.get();
-        }
-        throw new CommandNotFoundException();
+        }).findFirst().orElseThrow(CommandNotFoundException::new);
     }
 
     @Override
@@ -102,7 +98,7 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public boolean isCommand(Message message) {
-        return message.getContentRaw().startsWith(configService.getStringValue(PREFIX, message.getGuild().getIdLong(), defaultConfigManagementService.getDefaultConfig(PREFIX).getStringValue()));
+        return message.getContentRaw().startsWith(configService.getStringValue(PREFIX, message.getGuild().getIdLong(), getDefaultPrefix()));
     }
 
     @Override
@@ -117,6 +113,10 @@ public class CommandManager implements CommandRegistry {
 
     @Override
     public String getCommandName(String input, Long serverId) {
-        return input.replaceFirst(configService.getStringValue(PREFIX, serverId, defaultConfigManagementService.getDefaultConfig(PREFIX).getStringValue()), "");
+        return input.replaceFirst(configService.getStringValue(PREFIX, serverId, getDefaultPrefix()), "");
+    }
+
+    private String getDefaultPrefix() {
+        return defaultConfigManagementService.getDefaultConfig(PREFIX).getStringValue();
     }
 }

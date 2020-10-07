@@ -49,6 +49,7 @@ public class BotServiceBean implements BotService {
 
     @Override
     public GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId)  {
+        log.trace("Trying to retrieve member {}, channel {} in server {} from cache.", userId, channelId, serverId);
         Optional<Guild> guildOptional = getGuildById(serverId);
         if(guildOptional.isPresent()) {
             Guild guild = guildOptional.get();
@@ -68,6 +69,7 @@ public class BotServiceBean implements BotService {
 
     @Override
     public Member getMemberInServer(Long serverId, Long memberId) {
+        log.trace("Retrieving member {} in server {} from cache.", memberId, serverId);
         Guild guildById = instance.getGuildById(serverId);
         if(guildById != null) {
             return guildById.getMemberById(memberId);

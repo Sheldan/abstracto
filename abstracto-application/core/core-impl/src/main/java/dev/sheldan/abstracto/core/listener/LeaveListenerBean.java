@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -27,6 +28,9 @@ public class LeaveListenerBean extends ListenerAdapter {
     @Autowired
     private FeatureFlagService featureFlagService;
 
+    @Autowired
+    private LeaveListenerBean self;
+
     @Override
     @Transactional
     public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
@@ -36,10 +40,16 @@ public class LeaveListenerBean extends ListenerAdapter {
                 return;
             }
             try {
-                leaveListener.execute(event.getMember(), event.getGuild());
+                self.executeIndividualLeaveListener(event, leaveListener);
             } catch (AbstractoRunTimeException e) {
                 log.error("Listener {} failed with exception:", leaveListener.getClass().getName(), e);
             }
         });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void executeIndividualLeaveListener(@Nonnull GuildMemberRemoveEvent event, LeaveListener leaveListener) {
+        log.trace("Executing leave listener {} for member {} in guild {}.", leaveListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
+        leaveListener.execute(event.getMember(), event.getGuild());
     }
 }

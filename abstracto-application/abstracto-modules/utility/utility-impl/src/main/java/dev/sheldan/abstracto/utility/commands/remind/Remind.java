@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.models.template.commands.reminder.ReminderModel;
 import dev.sheldan.abstracto.utility.service.ReminderService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class Remind extends AbstractConditionableCommand {
 
     public static final String REMINDER_EMBED_KEY = "remind_response";
@@ -44,6 +46,8 @@ public class Remind extends AbstractConditionableCommand {
         remindModel.setRemindText(text);
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());
         remindModel.setReminder(createdReminder);
+
+        log.info("Notifying user {} about reminder being scheduled.", commandContext.getAuthor().getId());
 
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REMINDER_EMBED_KEY, remindModel, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromSuccess());

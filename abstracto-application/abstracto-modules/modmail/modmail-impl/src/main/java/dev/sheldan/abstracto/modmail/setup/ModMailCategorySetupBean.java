@@ -80,9 +80,11 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
         if(configManagementService.configExists(user.getGuildId(), ModMailThreadServiceBean.MODMAIL_CATEGORY)) {
             Guild guild = botService.getGuildByIdNullable(user.getGuildId());
             Long categoryId = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId());
+            log.trace("Previous modmail category exists for server {}. Loading value {}.", guild.getId(), categoryId);
             Category category = guild.getCategoryById(categoryId);
             model.setCategory(category);
         }
+        log.info("Executing mod mail category setup for server {}.", user.getGuildId());
         String messageText = templateService.renderTemplate(messageTemplateKey, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
@@ -96,6 +98,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                 Message message = event.getMessage();
                 // this checks whether or not the user wanted to cancel the setup
                 if(checkForExit(message)) {
+                    log.info("User {} wants to exit modmail category setup for server {}.", user.getUserId(), user.getGuildId());
                     result = SetupStepResult.fromCancelled();
                 } else {
                     String messageContent = event.getMessage().getContentRaw();
@@ -106,6 +109,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                     // directly validate whether or not the given category ID is a valid value
                     modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);
                     if(Boolean.TRUE.equals(featureValidationResult.getValidationResult())) {
+                        log.trace("Given category {} maps to a valid category in server {}.", categoryId, guild.getId());
                         ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
                                 .builder()
                                 .serverId(user.getGuildId())

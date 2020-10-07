@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class ExperienceLevelManagementServiceBean implements ExperienceLevelManagementService {
+public class    ExperienceLevelManagementServiceBean implements ExperienceLevelManagementService {
 
     @Autowired
     private ExperienceLevelRepository experienceLevelRepository;

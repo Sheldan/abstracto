@@ -89,9 +89,8 @@ public class StartupServiceBean implements Startup {
         Set<Long> availableRoles = SnowflakeUtils.getSnowflakeIds(existingRoles);
         Set<Long> newRoles = SetUtils.difference(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
-            ARole newRole = roleManagementService.createRole(aLong, existingAServer);
+            roleManagementService.createRole(aLong, existingAServer);
             log.trace("Adding new role: {}", aLong);
-            existingAServer.getRoles().add(newRole);
         });
     }
 

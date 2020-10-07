@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
 
@@ -47,7 +48,13 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
 
     @Test
     public void testNoUserCreateNewWhenSearching() {
-        AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
+        AUserInAServer user = Mockito.mock(AUserInAServer.class);
+        AServer server = Mockito.mock(AServer.class);
+        when(user.getServerReference()).thenReturn(server);
+        when(server.getId()).thenReturn(2L);
+        AUser aUser = Mockito.mock(AUser.class);
+        when(aUser.getId()).thenReturn(4L);
+        when(user.getUserReference()).thenReturn(aUser);
         when(repository.findById(user.getUserInServerId())).thenReturn(Optional.empty());
         AExperienceLevel startLevel = mockInitialLevel();
         AUserExperience userInServer = testUnit.findUserInServer(user);
@@ -59,7 +66,13 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
 
     @Test
     public void testCreatingUserExperience() {
-        AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
+        AUserInAServer user = Mockito.mock(AUserInAServer.class);
+        AServer server = Mockito.mock(AServer.class);
+        when(user.getServerReference()).thenReturn(server);
+        when(server.getId()).thenReturn(2L);
+        AUser aUser = Mockito.mock(AUser.class);
+        when(aUser.getId()).thenReturn(4L);
+        when(user.getUserReference()).thenReturn(aUser);
         AExperienceLevel startLevel = mockInitialLevel();
         AUserExperience userInServer = testUnit.createUserInServer(user);
         Assert.assertEquals(0L, userInServer.getExperience().longValue());
@@ -110,28 +123,6 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
     }
 
     @Test
-    public void testIncrementExpForUser() {
-        executeTestForExperienceGain(false);
-    }
-
-    @Test
-    public void testIncrementExpForUserWithDisabledExp() {
-        executeTestForExperienceGain(true);
-    }
-
-    @Test
-    public void testIncrementForNonExistingUser() {
-        long addedExperience = 15L;
-        long addedMessages = 1L;
-        AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
-        when(repository.findById(user.getUserInServerId())).thenReturn(Optional.empty());
-        mockInitialLevel();
-        AUserExperience userExperience = testUnit.incrementExpForUser(user, addedExperience, addedMessages);
-        Assert.assertEquals(addedExperience, userExperience.getExperience().longValue());
-        Assert.assertEquals(addedMessages, userExperience.getMessageCount().longValue());
-    }
-
-    @Test
     public void testSaveUser() {
         AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
         AUserExperience experience = AUserExperience.builder().user(user).experience(2L).build();
@@ -145,28 +136,6 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
         AExperienceLevel startLevel = AExperienceLevel.builder().level(0).experienceNeeded(0L).build();
         when(experienceLevelManagementService.getLevel(startLevel.getLevel())).thenReturn(Optional.of(startLevel));
         return startLevel;
-    }
-
-    private void executeTestForExperienceGain(boolean experienceGainDisabled) {
-        long oldExperience = 20L;
-        long oldMessageCount = 25L;
-        long addedExperience = 15L;
-        long addedMessages = 1L;
-        AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
-        AUserExperience experience = AUserExperience.builder().user(user).experienceGainDisabled(experienceGainDisabled).experience(oldExperience).messageCount(oldMessageCount).id(3L).build();
-        when(repository.findById(user.getUserInServerId())).thenReturn(Optional.of(experience));
-        AUserExperience userExperience = testUnit.incrementExpForUser(user, addedExperience, addedMessages);
-        long wantedExperience;
-        long wantedMessageCount;
-        if(experienceGainDisabled) {
-            wantedExperience = oldExperience;
-            wantedMessageCount = oldMessageCount;
-        } else {
-            wantedExperience = oldExperience + addedExperience;
-            wantedMessageCount = oldMessageCount + addedMessages;
-        }
-        Assert.assertEquals(wantedExperience, userExperience.getExperience().longValue());
-        Assert.assertEquals(wantedMessageCount, userExperience.getMessageCount().longValue());
     }
 
     private List<AUserExperience> getUserExperiences() {

@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
-import dev.sheldan.abstracto.test.MockUtils;
 import net.dv8tion.jda.api.entities.Role;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,10 +51,12 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     @Mock
     private ExperienceRoleServiceBean self;
 
+    @Mock
+    private AServer server;
+
 
     @Test
     public void testSettingRoleToLevelWithoutOldUsers() {
-        AServer server = MockUtils.getServer();
         Integer levelCount = 10;
         AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
         Role roleToChange = Mockito.mock(Role.class);
@@ -73,7 +74,6 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
 
     @Test
     public void testUnsetRoleInDb() {
-        AServer server = MockUtils.getServer();
         Integer levelCount = 10;
         AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
         ARole roleToChange = getRole(1L, server);
@@ -89,7 +89,6 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
 
     @Test
     public void testSettingRoleToLevelExistingUsers() {
-        AServer server = MockUtils.getServer();
         Integer levelCount = 10;
         AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
         Role roleToChange = Mockito.mock(Role.class);
@@ -158,7 +157,6 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
 
     @Test
     public void testCalculatingLevelOfNextRole() {
-        AServer server = MockUtils.getServer();
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(getExperienceRoles());
         AExperienceLevel levelToCheckFor =  AExperienceLevel.builder().level(7).build();
         AExperienceLevel levelOfNextRole = testingUnit.getLevelOfNextRole(levelToCheckFor, server);
@@ -167,7 +165,6 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
 
     @Test
     public void testCalculatingLevelOfNextRoleIfThereIsNone() {
-        AServer server = MockUtils.getServer();
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(getExperienceRoles());
         AExperienceLevel levelToCheckFor =  AExperienceLevel.builder().level(15).build();
         AExperienceLevel levelOfNextRole = testingUnit.getLevelOfNextRole(levelToCheckFor, server);
@@ -182,7 +179,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
 
     private AExperienceRole getExperienceRoleForLevel(int levelToBuild) {
         AExperienceLevel firstLevel = AExperienceLevel.builder().level(levelToBuild).build();
-        return AExperienceRole.builder().level(firstLevel).build();
+        return AExperienceRole.builder().roleServer(server).level(firstLevel).build();
     }
 
     private ARole getRole(Long id, AServer server) {

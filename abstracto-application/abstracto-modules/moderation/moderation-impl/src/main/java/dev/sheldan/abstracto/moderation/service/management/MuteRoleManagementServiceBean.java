@@ -43,6 +43,7 @@ public class MuteRoleManagementServiceBean implements MuteRoleManagementService 
     public MuteRole setMuteRoleForServer(AServer server, ARole role) {
         log.info("Setting muted role for server {} to role {}", server.getId(), role.getId());
         if(!muteRoleForServerExists(server)) {
+            log.trace("Mute role did not exist yet, updating for server {}.", server.getId());
             return createMuteRoleForServer(server, role);
         } else {
             MuteRole existing = retrieveMuteRoleForServer(server);

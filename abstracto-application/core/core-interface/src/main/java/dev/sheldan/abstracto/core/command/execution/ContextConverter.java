@@ -33,7 +33,7 @@ public class ContextConverter {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);
         }
-        throw new AbstractoRunTimeException("Failed to create model from context");
+        throw new AbstractoRunTimeException("Failed to create UserInitiatedServerContext from CommandContext.");
     }
 
     public static <T extends SlimUserInitiatedServerContext> SlimUserInitiatedServerContext slimFromCommandContext(CommandContext commandContext, Class<T> clazz)  {
@@ -50,6 +50,6 @@ public class ContextConverter {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);
         }
-        throw new AbstractoRunTimeException("Failed to create model from context");
+        throw new AbstractoRunTimeException("Failed to create SlimUserInitiatedServerContext from CommandContext");
     }
 }

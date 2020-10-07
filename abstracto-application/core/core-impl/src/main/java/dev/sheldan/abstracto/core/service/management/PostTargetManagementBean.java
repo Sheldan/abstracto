@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
+import dev.sheldan.abstracto.core.exception.ServerChannelConflictException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
@@ -32,37 +33,42 @@ public class PostTargetManagementBean implements PostTargetManagement {
     private DefaultPostTargetManagementService defaultPostTargetManagementService;
 
     @Override
-    public PostTarget createPostTarget(String name, AServer server, AChannel targetChannel) {
+    public PostTarget createPostTarget(String name, AChannel targetChannel) {
         if(!postTargetService.validPostTarget(name)) {
             throw new PostTargetNotValidException(name, defaultPostTargetManagementService.getDefaultPostTargetKeys());
         }
-        log.info("Creating post target {} pointing towards {}", name, targetChannel);
-        PostTarget build = PostTarget.builder().name(name).channelReference(targetChannel).serverReference(server).build();
+        log.info("Creating post target {} pointing towards {} on server {}.", name, targetChannel.getId(), targetChannel.getServer().getId());
+        PostTarget build = PostTarget.builder().name(name).channelReference(targetChannel).serverReference(targetChannel.getServer()).build();
         postTargetRepository.save(build);
         return build;
     }
 
     @Override
-    public PostTarget createOrUpdate(String name, AServer server, AChannel targetChannel) {
-        PostTarget existing = postTargetRepository.findPostTargetByNameAndServerReference(name, server);
+    public PostTarget createOrUpdate(String name, AChannel targetChannel) {
+        PostTarget existing = postTargetRepository.findPostTargetByNameAndServerReference(name, targetChannel.getServer());
         if(existing == null){
-            return this.createPostTarget(name, server, targetChannel);
+            return this.createPostTarget(name, targetChannel);
         } else {
-            return this.updatePostTarget(existing, server, targetChannel);
+            return this.updatePostTarget(existing, targetChannel);
         }
     }
 
     @Override
     public PostTarget createOrUpdate(String name, AServer server, Long channelId) {
         AChannel dbChannel = channelManagementService.loadChannel(channelId);
-        return createOrUpdate(name, server, dbChannel);
+        if(!dbChannel.getServer().getId().equals(server.getId())) {
+            throw new ServerChannelConflictException(server.getId(), channelId);
+        }
+        return createOrUpdate(name, dbChannel);
     }
 
     @Override
     public PostTarget createOrUpdate(String name, Long serverId, Long channelId) {
         AChannel dbChannel = channelManagementService.loadChannel(channelId);
-        AServer dbServer = serverManagementService.loadOrCreate(serverId);
-        return createOrUpdate(name, dbServer, dbChannel);
+        if(!dbChannel.getServer().getId().equals(serverId)) {
+            throw new ServerChannelConflictException(serverId, channelId);
+        }
+        return createOrUpdate(name, dbChannel);
     }
 
     @Override
@@ -88,8 +94,9 @@ public class PostTargetManagementBean implements PostTargetManagement {
     }
 
     @Override
-    public PostTarget updatePostTarget(PostTarget target, AServer server, AChannel newTargetChannel) {
+    public PostTarget updatePostTarget(PostTarget target, AChannel newTargetChannel) {
         target.setChannelReference(newTargetChannel);
+        log.info("Setting post target {} pointing towards {} on server {}.", target.getName(), newTargetChannel.getId(), newTargetChannel.getServer().getId());
         return target;
     }
 

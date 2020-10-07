@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.service.management.CommandManagementSe
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,8 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class ImmuneUserCondition implements CommandCondition {
-
 
     @Autowired
     private CommandInServerManagementService commandInServerManagementService;
@@ -41,6 +42,7 @@ public class ImmuneUserCondition implements CommandCondition {
             Member member = any.get();
             for (ARole role : commandForServer.getImmuneRoles()) {
                 if (roleService.memberHasRole(member, role)) {
+                    log.trace("Member {} is immune against command {}, because of role {}.", member.getIdLong(), aCommand.getName(), role.getId());
                     ImmuneUserException exception = new ImmuneUserException(roleService.getRoleFromGuild(role));
                     return ConditionResult.builder().result(false).exception(exception).build();
                 }

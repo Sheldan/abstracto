@@ -65,6 +65,7 @@ public class MessageEmbedListenerTest {
     public void setup(){
         when(guild.getIdLong()).thenReturn(ORIGIN_GUILD_ID);
         when(message.getGuild()).thenReturn(guild);
+        when(message.getChannel()).thenReturn(textChannel);
     }
 
     @Test

@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
 import dev.sheldan.abstracto.utility.repository.SuggestionRepository;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class SuggestionManagementServiceBean implements SuggestionManagementService {
 
     @Autowired
@@ -51,6 +53,8 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
                 .channel(channel)
                 .messageId(message.getIdLong())
                 .build();
+        log.info("Persisting suggestion {} at message {} in channel {} on server {} from user {}.",
+                suggestionId, message.getId(), channelId, message.getGuild().getId(), suggester.getUserReference().getId());
         suggestionRepository.save(suggestion);
         return suggestion;
     }
@@ -64,6 +68,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     @Override
     public void setSuggestionState(Suggestion suggestion, SuggestionState newState) {
         suggestion.setState(newState);
+        log.info("Setting suggestion {} to state {}.", suggestion.getId(), newState);
         suggestionRepository.save(suggestion);
     }
 }

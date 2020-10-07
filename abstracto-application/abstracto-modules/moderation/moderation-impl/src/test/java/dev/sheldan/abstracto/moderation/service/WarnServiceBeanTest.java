@@ -118,6 +118,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayWarning() {
         Instant date = Instant.now();
+        when(firstWarning.getWarnId()).thenReturn(new ServerSpecificId(3L, 4L));
         testUnit.decayWarning(firstWarning, date);
         verify(firstWarning, times(1)).setDecayed(true);
         verify(firstWarning, times(1)).setDecayDate(date);

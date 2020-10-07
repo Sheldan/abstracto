@@ -30,6 +30,7 @@ public class RoleListener extends ListenerAdapter {
     @Override
     @Transactional
     public void onRoleCreate(@Nonnull RoleCreateEvent event) {
+        log.info("Creating role {} in server {}.", event.getRole().getId(), event.getGuild().getId());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         service.createRole(event.getRole().getIdLong(), server);
     }
@@ -37,6 +38,7 @@ public class RoleListener extends ListenerAdapter {
     @Override
     @Transactional
     public void onRoleDelete(@Nonnull RoleDeleteEvent event) {
+        log.info("Marking role {} as deleted in server {}.", event.getRole().getId(), event.getGuild().getId());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
         roleService.markDeleted(event.getRole(), server);
     }

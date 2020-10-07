@@ -17,17 +17,21 @@ import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleDetail
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOverviewModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
+@Slf4j
 public class Help implements Command {
 
 
@@ -56,19 +60,15 @@ public class Help implements Command {
     private CommandService commandService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         if(parameters.isEmpty()) {
-            ModuleInterface moduleInterface = moduleService.getDefaultModule();
-            List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
-            HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
-            model.setModules(subModules);
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
-            channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+            return displayHelpOverview(commandContext);
         } else {
             String parameter = (String) parameters.get(0);
             if(moduleService.moduleExists(parameter)){
                 ModuleInterface moduleInterface = moduleService.getModuleByName(parameter);
+                log.trace("Displaying help for module {}.", moduleInterface.getInfo().getName());
                 SingleLevelPackedModule module = moduleService.getPackedModule(moduleInterface);
                 List<Command> commands = module.getCommands();
                 List<Command> filteredCommands = new ArrayList<>();
@@ -83,9 +83,11 @@ public class Help implements Command {
                 model.setModule(module);
                 model.setSubModules(subModules);
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model);
-                channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+                return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                        .thenApply(aVoid -> CommandResult.fromSuccess());
             } else if(commandRegistry.commandExists(parameter)) {
                 Command command = commandRegistry.getCommandByName(parameter);
+                log.trace("Displaying help for command {}.", command.getConfiguration().getName());
                 ACommand aCommand = commandManagementService.findCommandByName(parameter);
                 ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getUserInitiatedContext().getServer());
                 HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
@@ -97,10 +99,23 @@ public class Help implements Command {
                 model.setUsage(commandService.generateUsage(command));
                 model.setCommand(command.getConfiguration());
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
-                channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
+                return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                        .thenApply(aVoid -> CommandResult.fromSuccess());
+            } else {
+                return displayHelpOverview(commandContext);
             }
         }
-        return CommandResult.fromSuccess();
+    }
+
+    private CompletableFuture<CommandResult> displayHelpOverview(CommandContext commandContext) {
+        log.trace("Displaying help overview response.");
+        ModuleInterface moduleInterface = moduleService.getDefaultModule();
+        List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
+        HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
+        model.setModules(subModules);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -114,6 +129,7 @@ public class Help implements Command {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("help")
+                .async(true)
                 .module(SupportModuleInterface.SUPPORT)
                 .parameters(Collections.singletonList(moduleOrCommandName))
                 .help(helpInfo)

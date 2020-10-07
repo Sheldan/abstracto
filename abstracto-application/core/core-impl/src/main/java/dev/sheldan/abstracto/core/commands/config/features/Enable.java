@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class Enable extends AbstractConditionableCommand {
 
     @Autowired
@@ -53,11 +55,13 @@ public class Enable extends AbstractConditionableCommand {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
             FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, commandContext.getUserInitiatedContext().getServer());
             if(Boolean.FALSE.equals(featureSetup.getValidationResult())) {
+                log.info("Feature {} has failed the setup validation. Notifying user.", flagKey);
                 channelService.sendTextToChannelNotAsync(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
             }
             featureFlagService.enableFeature(feature, commandContext.getUserInitiatedContext().getServer());
             if(feature.getRequiredFeatures() != null) {
                 feature.getRequiredFeatures().forEach(featureDisplay -> {
+                    log.info("Also enabling required feature {}.", featureDisplay.getFeature().getKey());
                     featureFlagService.enableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer());
                 });
             }

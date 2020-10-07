@@ -6,12 +6,14 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.CounterService;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class UserNoteManagementServiceBean implements UserNoteManagementService {
 
     @Autowired
@@ -25,6 +27,7 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     @Override
     public UserNote createUserNote(AUserInAServer aUserInAServer, String note) {
         Long id = counterService.getNextCounterValue(aUserInAServer.getServerReference(), USER_NOTE_COUNTER_KEY);
+        log.info("Creating user note with id {} for user {} in server {}.", id, aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         ServerSpecificId userNoteId = new ServerSpecificId(aUserInAServer.getServerReference().getId(), id);
         UserNote newNote = UserNote
                 .builder()
@@ -38,13 +41,14 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     }
 
     @Override
-    public void deleteNote(Long id) {
-        userNoteRepository.deleteById(id);
+    public void deleteNote(Long id, AServer server) {
+        log.info("Deleting user note with id {} in server {}.", id, server.getId());
+        userNoteRepository.deleteByUserNoteId_IdAndUserNoteId_ServerId(id, server.getId());
     }
 
     @Override
-    public boolean noteExists(Long id) {
-        return userNoteRepository.existsById(id);
+    public boolean noteExists(Long id, AServer server) {
+        return userNoteRepository.existsByUserNoteId_IdAndUserNoteId_ServerId(id, server.getId());
     }
 
     @Override

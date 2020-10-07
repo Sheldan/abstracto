@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -90,9 +89,8 @@ public class StarboardServiceBean implements StarboardService {
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardChannelId = starboard.getChannelReference().getId();
         Long starredUserId = starredUser.getUserInServerId();
-        Long userReactingId = userReacting.getUserInServerId();
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
-            self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId, userReactingId)
+            self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId)
         ) .exceptionally(throwable -> {
             log.error("Failed to create starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId(), throwable);
             return null;
@@ -101,29 +99,25 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     @Transactional
-    public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
+    public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId) {
         AUserInAServer innerStarredUser = userInServerManagementService.loadUserConditional(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
-        try {
-            AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
-            Message message1 = completableFutures.get(0).get();
-            AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
-                    .builder()
-                    .messageId(message1.getIdLong())
-                    .channel(starboardChannel)
-                    .server(starboardChannel.getServer())
-                    .build();
-            StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, innerStarredUser, aServerAChannelMessage);
-            if(userExceptAuthorIds.isEmpty()) {
-                log.warn("There are no user ids except the author for the reactions in post {} in guild {} for message {} in channel {}.", starboardPost.getId(), message.getChannelId(), message.getMessageId(), message.getChannelId());
-            }
-            userExceptAuthorIds.forEach(aLong -> {
-                AUserInAServer user = userInServerManagementService.loadUserConditional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
-                starboardPostReactorManagementService.addReactor(starboardPost, user);
-            });
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to post messages.", e);
-            Thread.currentThread().interrupt();
+        AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
+        Message message1 = completableFutures.get(0).join();
+        AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
+                .builder()
+                .messageId(message1.getIdLong())
+                .channel(starboardChannel)
+                .server(starboardChannel.getServer())
+                .build();
+        StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, innerStarredUser, aServerAChannelMessage);
+        log.info("Persisting starboard post in channel {} with message {} with {} reactors.", message1.getId(),starboardChannelId, userExceptAuthorIds.size());
+        if(userExceptAuthorIds.isEmpty()) {
+            log.warn("There are no user ids except the author for the reactions in post {} in guild {} for message {} in channel {}.", starboardPost.getId(), message.getChannelId(), message.getMessageId(), message.getChannelId());
         }
+        userExceptAuthorIds.forEach(aLong -> {
+            AUserInAServer user = userInServerManagementService.loadUserConditional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
+            starboardPostReactorManagementService.addReactor(starboardPost, user);
+        });
     }
 
     private StarboardPostModel buildStarboardPostModel(CachedMessage message, Integer starCount)  {
@@ -150,20 +144,14 @@ public class StarboardServiceBean implements StarboardService {
 
     @Override
     public void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUserInAServer> userExceptAuthor)  {
+        log.info("Updating starboard post {} in server {} with reactors {}.", post.getId(), post.getSourceChanel().getServer().getId(), userExceptAuthor.size());
         StarboardPostModel starboardPostModel = buildStarboardPostModel(message, userExceptAuthor.size());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
         List<CompletableFuture<Message>> futures = postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardPostId = post.getId();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
-            try {
-                Optional<StarboardPost> innerPost = starboardPostManagementService.findByStarboardPostId(starboardPostId);
-                if(innerPost.isPresent()) {
-                    starboardPostManagementService.setStarboardPostMessageId(innerPost.get(), futures.get(0).get().getIdLong());
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("Failed to post starboard post.", e);
-                Thread.currentThread().interrupt();
-            }
+            Optional<StarboardPost> innerPost = starboardPostManagementService.findByStarboardPostId(starboardPostId);
+            innerPost.ifPresent(starboardPost -> starboardPostManagementService.setStarboardPostMessageId(starboardPost, futures.get(0).join().getIdLong()));
         }).exceptionally(throwable -> {
             log.error("Failed to update starboard post {}.", post.getId(), throwable);
             return null;
@@ -173,6 +161,7 @@ public class StarboardServiceBean implements StarboardService {
     @Override
     public void deleteStarboardMessagePost(StarboardPost message)  {
         AChannel starboardChannel = message.getStarboardChannel();
+        log.info("Deleting starboard post {} in server {}", message.getId(), message.getSourceChanel().getServer().getId());
         botService.deleteMessage(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
     }
 

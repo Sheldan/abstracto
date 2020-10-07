@@ -39,14 +39,17 @@ public class MessageEmbedListener implements MessageReceivedListener {
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         if(!links.isEmpty()) {
+            log.trace("We found {} links to embed in message {} in channel {} in guild {}.", links.size(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
             Long userEmbeddingUserInServerId = userInServerManagementService.loadUser(message.getMember()).getUserInServerId();
             for (MessageEmbedLink messageEmbedLink : links) {
                 if(!messageEmbedLink.getServerId().equals(message.getGuild().getIdLong())) {
+                    log.info("Link for message {} was from a foreign server {}. Do not embed.", messageEmbedLink.getMessageId(), messageEmbedLink.getServerId());
                     continue;
                 }
                 messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
                 Consumer<CachedMessage> cachedMessageConsumer = cachedMessage ->self.loadUserAndEmbed(message, userEmbeddingUserInServerId, cachedMessage);
-                messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId()).thenAccept(cachedMessageConsumer)
+                messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
+                        .thenAccept(cachedMessageConsumer)
                         .exceptionally(throwable -> {
                             log.error("Error when embedding link for message {}", message.getId(), throwable);
                             return null;
@@ -60,6 +63,8 @@ public class MessageEmbedListener implements MessageReceivedListener {
 
     @Transactional
     public void loadUserAndEmbed(Message message, Long cause, CachedMessage cachedMessage) {
+        log.info("Embedding link to message {} in channel {} in server {} to channel {} and server {}.",
+                cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), message.getChannel().getId(), message.getGuild().getId());
         messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message);
     }
 

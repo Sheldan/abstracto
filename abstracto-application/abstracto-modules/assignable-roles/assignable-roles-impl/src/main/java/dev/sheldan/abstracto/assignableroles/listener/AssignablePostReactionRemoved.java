@@ -49,6 +49,8 @@ public class AssignablePostReactionRemoved implements ReactedRemovedListener {
                 assignablePlacePost.getAssignableRoles().forEach(assignableRole -> {
                     if(emoteService.isReactionEmoteAEmote(reactionEmote, assignableRole.getEmote())) {
                         Long assignableRoleId = assignableRole.getId();
+                        log.info("Removing assignable role {} for user {} in server {} from assignable role place {}.", assignableRoleId,
+                                userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), assignablePlacePost.getAssignablePlace().getId());
                         assignableRoleService.fullyRemoveAssignableRoleFromUser(assignableRole, event.getMember()).exceptionally(throwable -> {
                             log.error("Failed to remove assignable role {} from user {}.", assignableRoleId, event.getMember(), throwable);
                             return null;

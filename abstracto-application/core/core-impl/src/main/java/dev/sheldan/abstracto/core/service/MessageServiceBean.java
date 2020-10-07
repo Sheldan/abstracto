@@ -71,12 +71,14 @@ public class MessageServiceBean implements MessageService {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById != null) {
+                log.trace("Adding custom emote {} as reaction to message {}.", emoteById.getId(), message.getId());
                 return message.addReaction(emoteById).submit();
             } else {
                 log.error("Emote with key {} and id {} for guild {} was not found.", emote.getName() , emote.getEmoteId(), guild.getId());
                 throw new ConfiguredEmoteNotUsableException(emote);
             }
         } else {
+            log.trace("Adding default emote {} as reaction to message {}.", emote.getEmoteKey(), message.getId());
             return message.addReaction(emote.getEmoteKey()).submit();
         }
     }
@@ -97,8 +99,10 @@ public class MessageServiceBean implements MessageService {
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
+            log.trace("Removing single custom reaction for emote {} on message {}.", emoteById.getId(), message.getId());
             return message.removeReaction(emoteById).submit();
         } else {
+            log.trace("Removing single default emote {} reaction from message {}.", emote.getEmoteKey(), message.getId());
             return message.removeReaction(emote.getEmoteKey()).submit();
         }
     }
@@ -110,8 +114,10 @@ public class MessageServiceBean implements MessageService {
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
+            log.trace("Clearing reactions for custom emote {} on message {}.", emoteById.getId(), message.getId());
             return message.clearReactions(emoteById).submit();
         } else {
+            log.trace("Clearing reactions for default emote {} on message {}.", emote.getEmoteKey(), message.getId());
             return message.clearReactions(emote.getEmoteKey()).submit();
         }
     }
@@ -158,8 +164,10 @@ public class MessageServiceBean implements MessageService {
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
+            log.trace("Removing reaction for custom emote {} from user {} on message {}.", emoteById.getId(), member.getId(), member.getId());
             return message.removeReaction(emoteById, member.getUser()).submit();
         } else {
+            log.trace("Removing reaction for default emote {} from user {} on message {}.", emote.getEmoteKey(), member.getId(), member.getId());
             return message.removeReaction(emote.getEmoteKey(), member.getUser()).submit();
         }
     }
@@ -249,12 +257,14 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model) {
+        log.trace("Sending direct message with template {} to user {}.", template, user.getIdLong());
         return user.openPrivateChannel().submit().thenCompose(privateChannel ->
                 channelService.sendEmbedTemplateInChannel(template, model, privateChannel).get(0));
     }
 
     @Override
     public CompletableFuture<Message> sendMessageToUser(User user, String text) {
+        log.trace("Sending direct string message to user {}.", user.getIdLong());
         return user.openPrivateChannel().flatMap(privateChannel -> privateChannel.sendMessage(text)).submit();
     }
 }

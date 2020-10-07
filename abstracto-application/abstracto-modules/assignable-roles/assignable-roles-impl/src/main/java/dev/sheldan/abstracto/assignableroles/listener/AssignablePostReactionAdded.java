@@ -71,6 +71,7 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
             }
             MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
             if(assignablePlacePost.getAssignablePlace().getActive()) {
+                log.info("User {} added reaction to assignable role place {} in server {}. Handling added event.", userAdding.getUserReference().getId(), assignablePlacePost.getId(), event.getGuild().getId());
                 addAppropriateRoles(event, reaction, assignablePlacePost, reactionEmote, userAdding);
             } else {
                 reaction.removeReaction(event.getUser()).submit();
@@ -84,13 +85,16 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
         AssignableRolePlace assignableRolePlace = assignablePlacePost.getAssignablePlace();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (AssignableRole assignableRole : assignablePlacePost.getAssignableRoles()) {
+            log.trace("Checking emote {} if it was reaction for assignable role place.", assignableRole.getEmote().getId());
             if (emoteService.isReactionEmoteAEmote(reactionEmote, assignableRole.getEmote())) {
                 if(assignableRolePlace.getUniqueRoles()) {
+                    log.trace("Assignable role place {} has unique roles configured. Removing existing reactions and roles.", assignableRolePlace.getId());
                     Optional<AssignedRoleUser> byUserInServer = assignedRoleUserManagementService.findByUserInServerOptional(userAdding);
                     byUserInServer.ifPresent(user -> futures.add(assignableRolePlaceService.removeExistingReactionsAndRoles(assignableRolePlace, user)));
                 }
 
                 Long assignableRoleId = assignableRole.getId();
+                log.info("User added {} reaction {} and gets assignable role {} in server {}.", userAdding.getUserReference().getId(), assignableRole.getEmote().getId(), assignableRoleId, userAdding.getServerReference().getId());
                 CompletableFuture<Void> roleAdditionFuture = assignableRoleServiceBean.assignAssignableRoleToUser(assignableRoleId, event.getMember());
 
                 futures.add(CompletableFuture.allOf(roleAdditionFuture));
@@ -99,6 +103,7 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
             }
         }
         if(!validReaction) {
+            log.trace("Reaction was not found in the configuration of assignable role place {}, removing reaction.", assignableRolePlace.getId());
             futures.add(reaction.removeReaction(event.getUser()).submit());
         }
         Long assignableRolePlaceId = assignableRolePlace.getId();
@@ -112,9 +117,11 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
         AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(assignableRolePlaceId);
         AUserInAServer userInAServer = userInServerManagementService.loadUser(userAdding);
         if(place.getUniqueRoles()) {
+            log.trace("Assignable role place {} has unique roles. Deleting all existing references.", assignableRolePlaceId);
             assignableRoleServiceBean.clearAllRolesOfUserInPlace(place, userInAServer);
         }
         AssignableRole role = assignableRoleManagementService.getRoleForReactionEmote(reactionEmote, place);
+        log.info("Adding role to assignable role {} to user {} in server {}.", role.getId(), userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         assignableRoleServiceBean.addRoleToUser(role.getId(), userInAServer);
 
     }

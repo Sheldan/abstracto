@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class FeatureConfigServiceBean implements FeatureConfigService {
 
     @Autowired
@@ -99,19 +101,24 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
 
     @Override
     public FeatureValidationResult validateFeatureSetup(FeatureConfig featureConfig, AServer server) {
+        log.info("Verifying feature setup for feature {} in server {}.", featureConfig.getFeature().getKey(), server.getId());
         FeatureValidationResult featureValidationResult = FeatureValidationResult.validationSuccessful(featureConfig);
-        featureConfig.getRequiredPostTargets().forEach(s ->
-            featureValidatorService.checkPostTarget(s, server, featureValidationResult)
-        );
-        featureConfig.getRequiredSystemConfigKeys().forEach(s ->
-            featureValidatorService.checkSystemConfig(s, server, featureValidationResult)
-        );
-        featureConfig.getRequiredEmotes().forEach(s ->
-            featureValidatorService.checkEmote(s, server, featureValidationResult)
-        );
-        featureConfig.getAdditionalFeatureValidators().forEach(featureValidator ->
-            featureValidator.featureIsSetup(featureConfig, server, featureValidationResult)
-        );
+        featureConfig.getRequiredPostTargets().forEach(s -> {
+            log.trace("Checking post target {}.", s.getKey());
+            featureValidatorService.checkPostTarget(s, server, featureValidationResult);
+        });
+        featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
+            log.trace("Checking system config key {}.", s);
+            featureValidatorService.checkSystemConfig(s, server, featureValidationResult);
+        });
+        featureConfig.getRequiredEmotes().forEach(s -> {
+            log.trace("Checking required emote {}.", s);
+            featureValidatorService.checkEmote(s, server, featureValidationResult);
+}       );
+        featureConfig.getAdditionalFeatureValidators().forEach(featureValidator ->  {
+            log.trace("Executing additional feature validator {}.", featureValidator.getClass().getName());
+            featureValidator.featureIsSetup(featureConfig, server, featureValidationResult);
+        });
         return featureValidationResult;
     }
 

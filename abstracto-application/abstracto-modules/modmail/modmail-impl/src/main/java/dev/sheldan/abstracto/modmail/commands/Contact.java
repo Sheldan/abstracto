@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.template.ModMailThreadExistsModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
  * the {@link net.dv8tion.jda.api.entities.MessageChannel}
  */
 @Component
+@Slf4j
 public class Contact extends AbstractConditionableCommand {
 
     @Autowired
@@ -53,6 +55,7 @@ public class Contact extends AbstractConditionableCommand {
         // if this AUserInAServer already has an open thread, we should instead post a message
         // containing a link to the channel, instead of opening a new one
         if(modMailThreadManagementService.hasOpenModMailThreadForUser(user)) {
+            log.info("Modmail thread for user {} in server {} already exists. Notifying user {}.", commandContext.getAuthor().getId(), commandContext.getGuild().getId(), user.getUserReference().getId());
             ModMailThreadExistsModel model = (ModMailThreadExistsModel) ContextConverter.fromCommandContext(commandContext, ModMailThreadExistsModel.class);
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
             model.setExistingModMailThread(existingThread);

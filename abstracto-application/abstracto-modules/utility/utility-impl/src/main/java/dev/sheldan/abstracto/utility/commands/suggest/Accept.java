@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
 import dev.sheldan.abstracto.utility.service.SuggestionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class Accept extends AbstractConditionableCommand {
 
     @Autowired
@@ -32,6 +34,7 @@ public class Accept extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
+        log.trace("Using default reason for accept: {}.", parameters.size() != 2);
         SuggestionLog suggestionModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
         return suggestionService.acceptSuggestion(suggestionId, text, suggestionModel)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());

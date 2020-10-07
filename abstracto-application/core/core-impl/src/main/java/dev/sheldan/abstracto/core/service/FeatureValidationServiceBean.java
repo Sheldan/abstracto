@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class FeatureValidationServiceBean implements FeatureValidatorService {
 
     @Autowired
@@ -38,6 +40,7 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     @Override
     public void checkPostTarget(PostTargetEnum name, AServer server, FeatureValidationResult featureValidationResult) {
         if(!postTargetManagement.postTargetExists(name.getKey(), server)) {
+            log.info("Rejecting feature validation because of post target {}.", name.getKey());
             PostTargetValidationErrorModel validationError = PostTargetValidationErrorModel.builder().postTargetName(name.getKey()).build();
             featureValidationResult.setValidationResult(false);
             featureValidationResult.getValidationErrorModels().add(validationError);
@@ -47,6 +50,7 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     @Override
     public boolean checkSystemConfig(String name, AServer server, FeatureValidationResult featureValidationResult) {
         if(!configService.configExists(server, name)) {
+            log.info("Rejecting feature validation because of system config key {}.", name);
             SystemConfigValidationErrorModel validationError = SystemConfigValidationErrorModel.builder().configKey(name).build();
             featureValidationResult.setValidationResult(false);
             featureValidationResult.getValidationErrorModels().add(validationError);
@@ -79,6 +83,7 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     }
 
     private void rejectEmote(String emoteKey, FeatureValidationResult featureValidationResult) {
+        log.info("Rejecting feature validation because of emote {}", emoteKey);
         EmoteMissingValidationErrorModel validationError = EmoteMissingValidationErrorModel.builder().emoteKey(emoteKey).build();
         featureValidationResult.setValidationResult(false);
         featureValidationResult.getValidationErrorModels().add(validationError);

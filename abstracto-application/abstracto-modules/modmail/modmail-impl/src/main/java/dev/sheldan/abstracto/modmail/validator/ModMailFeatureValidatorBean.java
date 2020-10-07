@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
 import dev.sheldan.abstracto.modmail.models.template.ModMailCategoryValidationErrorModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.Optional;
  * are used to fully validate the mod mail feature.
  */
 @Component
+@Slf4j
 public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
 
     @Autowired
@@ -44,7 +46,9 @@ public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
             boolean checkSucceeded = featureValidatorService.checkSystemConfig(ModMailThreadServiceBean.MODMAIL_CATEGORY, server, validationResult);
+            log.trace("Validating the modmail category for server {}.", server.getId());
             if(checkSucceeded) {
+                log.trace("Modmail category has been set for server {}. Lets see if the category exists.", server.getId());
                 Long modMailCategory = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, server.getId());
                 validateModMailCategory(validationResult, guild, modMailCategory);
             }

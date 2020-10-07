@@ -61,6 +61,7 @@ public class DisabledExpRoleManagementServiceBeanTest extends ExperienceRelatedT
     }
 
     private ARole getARole() {
-        return ARole.builder().id(1L).build();
+        AServer server = AServer.builder().id(4L).build();
+        return ARole.builder().id(1L).server(server).build();
     }
 }

@@ -54,7 +54,6 @@ public class BanServiceBean implements BanService {
     private CompletableFuture<Void> banUser(Long guildId, Long userId, String reason) {
         Optional<Guild> guildByIdOptional = botService.getGuildById(guildId);
         if(guildByIdOptional.isPresent()) {
-            log.info("Banning user {} in guild {}.", userId, guildId);
             return banUser(guildByIdOptional.get(), userId, reason);
         } else {
             log.warn("Guild {} not found. Not able to ban user {}", guildId, userId);
@@ -63,6 +62,7 @@ public class BanServiceBean implements BanService {
     }
 
     private CompletableFuture<Void> banUser(Guild guild, Long userId, String reason) {
+        log.info("Banning user {} in guild {}.", userId, guild.getId());
         return guild.ban(userId.toString(), 0, reason).submit();
     }
 }

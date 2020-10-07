@@ -37,16 +37,16 @@ public class DeleteNoteTest {
     @Test
     public void testDeleteExistingNote() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(NOTE_ID));
-        when(userNoteManagementService.noteExists(NOTE_ID)).thenReturn(true);
+        when(userNoteManagementService.noteExists(NOTE_ID, parameters.getUserInitiatedContext().getServer())).thenReturn(true);
         CommandResult result = testUnit.execute(parameters);
         CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(userNoteManagementService, times(1)).deleteNote(NOTE_ID);
+        verify(userNoteManagementService, times(1)).deleteNote(NOTE_ID, parameters.getUserInitiatedContext().getServer());
     }
 
     @Test
     public void testDeleteNotExistingNote() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(NOTE_ID));
-        when(userNoteManagementService.noteExists(NOTE_ID)).thenReturn(false);
+        when(userNoteManagementService.noteExists(NOTE_ID, parameters.getUserInitiatedContext().getServer())).thenReturn(false);
         when(templateService.renderSimpleTemplate(DeleteNote.NOTE_NOT_FOUND_EXCEPTION_TEMPLATE)).thenReturn("error");
         CommandResult result = testUnit.execute(parameters);
         Assert.assertEquals(ResultState.ERROR, result.getResult());

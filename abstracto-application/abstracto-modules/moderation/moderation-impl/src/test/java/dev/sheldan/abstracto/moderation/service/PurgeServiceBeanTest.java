@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.utils.TimeUtil;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -76,6 +77,15 @@ public class PurgeServiceBeanTest {
 
     @Mock
     private AuditableRestAction deleteStatusAction;
+
+    @Mock
+    private Guild guild;
+
+    @Before
+    public void setup() {
+        when(textChannel.getGuild()).thenReturn(guild);
+        when(guild.getId()).thenReturn("1");
+    }
 
     @Test
     public void testPurgeMessageViaStartMessage() {

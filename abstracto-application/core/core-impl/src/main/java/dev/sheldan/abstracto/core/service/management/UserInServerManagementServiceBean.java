@@ -65,6 +65,7 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
 
     @Override
     public AUserInAServer createUserInServer(Long guildId, Long userId) {
+        log.info("Creating user {} in server {}.", userId, guildId);
         AUserInAServer aUserInAServer = serverManagementService.addUserToServer(guildId, userId);
         userInServerRepository.save(aUserInAServer);
         return aUserInAServer;

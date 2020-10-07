@@ -4,12 +4,14 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThreadSubscriber;
 import dev.sheldan.abstracto.modmail.repository.ModMailSubscriberRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class ModMailSubscriberManagementServiceBean implements ModMailSubscriberManagementService {
 
     @Autowired
@@ -34,12 +36,16 @@ public class ModMailSubscriberManagementServiceBean implements ModMailSubscriber
                 .threadReference(modMailThread)
                 .build();
 
+        log.info("Creating subscription for user {} in server {} for modmail thread {}.",
+                aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId(), modMailThread.getId());
         modMailSubscriberRepository.save(subscriber);
         return subscriber;
     }
 
     @Override
     public void removeSubscriber(AUserInAServer aUserInAServer, ModMailThread modMailThread) {
+        log.info("Un-subscribing user {} in server {} from modmail thread {}.",
+                aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId(), modMailThread.getId());
         modMailSubscriberRepository.deleteBySubscriberAndThreadReference(aUserInAServer, modMailThread);
     }
 }

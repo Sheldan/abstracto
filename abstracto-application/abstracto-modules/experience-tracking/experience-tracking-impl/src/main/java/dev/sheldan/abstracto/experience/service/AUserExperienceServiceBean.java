@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -89,23 +88,27 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      */
     @Override
     public void addExperience(AUserInAServer userInAServer) {
-        Long second = Instant.now().getEpochSecond() / 60;
+        Long minute = Instant.now().getEpochSecond() / 60;
         Map<Long, List<ServerExperience>> runtimeExperience = runTimeExperienceService.getRuntimeExperience();
-        if(runtimeExperience.containsKey(second)) {
-            List<ServerExperience> existing = runtimeExperience.get(second);
-            existing.forEach(server -> {
-                if(server.getUserInServerIds().stream().noneMatch(userInAServer1 -> userInAServer.getUserInServerId().equals(userInAServer1))) {
+        if(runtimeExperience.containsKey(minute)) {
+            log.trace("Minute {} already tracked, adding user {} in server {}.",
+                    minute, userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
+            List<ServerExperience> existing = runtimeExperience.get(minute);
+            for (ServerExperience server : existing) {
+                if (server.getServerId().equals(userInAServer.getServerReference().getId()) && server.getUserInServerIds().stream().noneMatch(userInAServer1 -> userInAServer.getUserInServerId().equals(userInAServer1))) {
                     server.getUserInServerIds().add(userInAServer.getUserInServerId());
+                    break;
                 }
-            });
+            }
 
         } else {
+            log.trace("Minute {} did not exist yet. Creating new entry for user {} in server {}.", minute, userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
             ServerExperience serverExperience = ServerExperience
                     .builder()
                     .serverId(userInAServer.getServerReference().getId())
                     .build();
             serverExperience.getUserInServerIds().add(userInAServer.getUserInServerId());
-            runtimeExperience.put(second, new ArrayList<>(Arrays.asList(serverExperience)));
+            runtimeExperience.put(minute, new ArrayList<>(Arrays.asList(serverExperience)));
         }
     }
 
@@ -128,11 +131,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         AExperienceLevel lastLevel = levels.get(0);
         for (AExperienceLevel level : levels) {
             if(level.getExperienceNeeded() >= experienceCount) {
+                log.trace("Calculated level {} for {} experience.", lastLevel.getLevel(), experienceCount);
                 return lastLevel;
             } else {
                 lastLevel = level;
             }
         }
+        log.trace("Calculated level {} for {} experience.", lastLevel.getLevel(), experienceCount);
         return lastLevel;
     }
 
@@ -166,7 +171,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         // TODO what if there are a lot in here...., transaction size etc
         servers.forEach(serverExp -> {
             AServer server = serverManagementService.loadOrCreate(serverExp.getServerId());
-            log.trace("Handling experience for server {}", serverExp.getServerId());
+            log.info("Handling {} experience for server {}", serverExp.getUserInServerIds().size(), serverExp.getServerId());
             int minExp = configService.getLongValue(ExperienceFeatureConfig.MIN_EXP_KEY, serverExp.getServerId()).intValue();
             int maxExp = configService.getLongValue(ExperienceFeatureConfig.MAX_EXP_KEY, serverExp.getServerId()).intValue();
             Double multiplier = configService.getDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverExp.getServerId());
@@ -206,7 +211,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                             log.trace("Experience gain was disabled. User did not gain any experience.");
                         }
                     } else {
-                        log.info("user experience for user {} was not found. Planning to create new instance.", userInAServer.getUserInServerId());
+                        log.info("User experience for user {} was not found. Planning to create new instance.", userInAServer.getUserInServerId());
                         Long newExperience = gainedExperience.longValue();
                         AExperienceLevel newLevel = calculateLevel(levels, newExperience);
                         Long newMessageCount = 1L;
@@ -246,6 +251,8 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         }
         AExperienceRole role = experienceRoleService.calculateRole(roles, currentLevel);
         if(role == null) {
+            log.trace("No experience role calculated. Applying none to user {} in server {}.",
+                    aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
             return CompletableFuture.completedFuture(RoleCalculationResult
                     .builder()
                     .userInServerId(aUserInAServer.getUserInServerId())
@@ -254,6 +261,8 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         }
         Long experienceRoleId = role.getId();
         Long userInServerId = aUserInAServer.getUserInServerId();
+        log.trace("Applying {} as the first experience role for user {} in server {}.",
+                experienceRoleId, aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         return roleService.addRoleToUserFuture(aUserInAServer, role.getRole()).thenApply(aVoid -> RoleCalculationResult
                 .builder()
                 .experienceRoleId(experienceRoleId)
@@ -264,6 +273,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Transactional
     public void persistExperienceChanges(List<ExperienceGainResult> resultFutures) {
         List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
+        log.info("Storing {} experience gain results.", resultFutures.size());
         HashMap<Long, List<AExperienceRole>> serverRoleMapping = new HashMap<>();
         resultFutures.forEach(experienceGainResult -> {
             AUserInAServer user = userInServerManagementService.loadUser(experienceGainResult.getUserInServerId());
@@ -280,14 +290,14 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             if(foundLevel.isPresent()) {
                 userExperience.setCurrentLevel(foundLevel.get());
             } else {
-                log.warn("User {} was present, but no level could be found.", userExperience.getUser().getUserReference().getId());
+                log.warn("User {} was present, but no level matching the calculation result {} could be found.", userExperience.getUser().getUserReference().getId(), experienceGainResult.getNewLevel());
             }
             AServer server = user.getServerReference();
             if(!serverRoleMapping.containsKey(server.getId())) {
                 serverRoleMapping.put(server.getId(), experienceRoleManagementService.getExperienceRolesForServer(server));
             }
-            List<AExperienceRole> roleConfig = serverRoleMapping.get(server.getId());
-            AExperienceRole role = experienceRoleService.calculateRole(roleConfig, userExperience.getLevelOrDefault());
+            RoleCalculationResult roleCalculationResult = experienceGainResult.getCalculationResult().join();
+            AExperienceRole role = experienceRoleManagementService.getExperienceRoleById(roleCalculationResult.getExperienceRoleId());
             userExperience.setCurrentExperienceRole(role);
             if(experienceGainResult.isCreateUserExperience()) {
                 userExperienceManagementService.saveUser(userExperience);
@@ -321,6 +331,8 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         Member member = botService.getMemberInServer(user.getServerReference(), user.getUserReference());
         boolean currentlyHasNoExperienceRole = userExperience.getCurrentExperienceRole() == null;
         if(role == null) {
+            log.trace("User {} in server {} does not have an experience role, according to new calculation.",
+                    user.getUserReference().getId(),  user.getServerReference().getId());
             if(!currentlyHasNoExperienceRole){
                 return roleService.removeRoleFromUserFuture(user, userExperience.getCurrentExperienceRole().getRole())
                         .thenApply(returnNullRole);
@@ -335,7 +347,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 .userInServerId(userInServerId)
                 .build();
         if(!userHasRoleAlready && (currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId()))) {
-            log.info("User {} in server {} gets a new role {}", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
+            log.info("User {} in server {} gets a new role {} because of experience.", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
             CompletableFuture<Void> removalFuture;
             if(!currentlyHasNoExperienceRole && botService.isUserInGuild(userExperience.getUser())) {
                 removalFuture = roleService.removeRoleFromUserFuture(user, userExperience.getCurrentExperienceRole().getRole());
@@ -395,9 +407,11 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 AUserExperience userExperience = userExperienceManagementService.findUserInServer(user);
                 log.trace("Updating experience role for {} in server {} to {}", user.getUserInServerId(), user.getServerReference(), result.getExperienceRoleId());
                 if(result.getExperienceRoleId() != null) {
+                    log.trace("User experience {} gets new experience role with id {}.", userExperience.getId(), result.getExperienceRoleId());
                     AExperienceRole role = experienceRoleManagementService.getExperienceRoleById(result.getExperienceRoleId());
                     userExperience.setCurrentExperienceRole(role);
                 } else {
+                    log.trace("User experience {} does not get a user experience role.", userExperience.getId());
                     userExperience.setCurrentExperienceRole(null);
                 }
             }
@@ -414,30 +428,26 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     public CompletableFutureList<RoleCalculationResult> executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Function<AUserExperience, CompletableFuture<RoleCalculationResult>> toExecute) {
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
         MessageToSend status = getUserSyncStatusUpdateModel(0, experiences.size());
-        try {
-            Message statusMessage = messageService.createStatusMessage(status, channel).get();
-            int interval = Math.min(Math.max(experiences.size() / 10, 1), 100);
-            for (int i = 0; i < experiences.size(); i++) {
-                if((i % interval) == 1) {
-                    log.trace("Updating feedback message with new index {} out of {}", i, experiences.size());
-                    status = getUserSyncStatusUpdateModel(i, experiences.size());
-                    messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
-                }
-                futures.add(toExecute.apply(experiences.get(i)));
-                log.trace("Synchronizing {} out of {}", i, experiences.size());
+        Message statusMessage = messageService.createStatusMessage(status, channel).join();
+        int interval = Math.min(Math.max(experiences.size() / 10, 1), 100);
+        for (int i = 0; i < experiences.size(); i++) {
+            if((i % interval) == 1) {
+                log.trace("Updating feedback message with new index {} out of {}", i, experiences.size());
+                status = getUserSyncStatusUpdateModel(i, experiences.size());
+                messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
             }
-            status = getUserSyncStatusUpdateModel(experiences.size(), experiences.size());
-            messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
-        } catch (InterruptedException | ExecutionException e) {
-            log.info("Failed to synchronize users.", e);
-            Thread.currentThread().interrupt();
+            futures.add(toExecute.apply(experiences.get(i)));
+            log.trace("Synchronizing {} out of {}", i, experiences.size());
         }
+        status = getUserSyncStatusUpdateModel(experiences.size(), experiences.size());
+        messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
 
         return new CompletableFutureList<>(futures);
     }
 
     @Override
     public void disableExperienceForUser(AUserInAServer userInAServer) {
+        log.info("Disabling experience gain for user {} in server {}.", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
         userExperience.setExperienceGainDisabled(true);
     }
@@ -445,6 +455,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Override
     public void enableExperienceForUser(AUserInAServer userInAServer) {
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
+        log.info("Enabling experience gain for user {} in server {}.", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         userExperience.setExperienceGainDisabled(false);
     }
 
@@ -478,8 +489,10 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         }
         page--;
         int pageSize = 10;
+        log.trace("Loading leaderboard page {} for server {}.", page, server.getId());
         List<AUserExperience> experiences = userExperienceManagementService.findLeaderBoardUsersPaginated(server, page * pageSize, (page + 1) * pageSize);
         List<LeaderBoardEntry> entries = new ArrayList<>();
+        log.trace("Found {} experiences.", experiences.size());
         for (int i = 0; i < experiences.size(); i++) {
             AUserExperience userExperience = experiences.get(i);
             entries.add(LeaderBoardEntry.builder().experience(userExperience).rank((page * pageSize) + i + 1).build());
@@ -494,7 +507,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      */
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {
-        log.info("Retrieving rank for {}", userInAServer.getUserReference().getId());
+        log.trace("Retrieving rank for {}", userInAServer.getUserReference().getId());
         AUserExperience aUserExperience = userExperienceManagementService.findUserInServer(userInAServer);
         Integer rank = 0;
         if(aUserExperience != null) {

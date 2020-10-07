@@ -131,7 +131,7 @@ public class StarboardServiceBeanTest {
         when(configService.getLongValue("starLvl2", server.getId())).thenReturn(2L);
         when(emoteService.getUsableEmoteOrDefault(server.getId(), "star2")).thenReturn("b");
         testUnit.createStarboardPost(message, userExceptAuthor, userReacting, starredUser);
-        verify(self, times(1)).persistPost(eq(message), anyList(), eq(futures), eq(channelId), eq(starredUser.getUserInServerId()), eq(userReacting.getUserInServerId()));
+        verify(self, times(1)).persistPost(eq(message), anyList(), eq(futures), eq(channelId), eq(starredUser.getUserInServerId()));
         List<StarboardPostModel> starboardPostModels = starboardPostModelArgumentCaptor.getAllValues();
         Assert.assertEquals(1, starboardPostModels.size());
         StarboardPostModel usedModel = starboardPostModels.get(0);
@@ -162,7 +162,7 @@ public class StarboardServiceBeanTest {
         AUserInAServer secondStarrerUserObj = MockUtils.getUserObject(secondStarrerUserId, server);
         when(userInServerManagementService.loadUserConditional(secondStarrerUserId)).thenReturn(Optional.of(secondStarrerUserObj));
         when(userInServerManagementService.loadUserConditional(userReacting.getUserInServerId())).thenReturn(Optional.of(userReacting));
-        testUnit.persistPost(message, userExceptAuthorIds, futures, channelId, starredUser.getUserInServerId(), userReacting.getUserInServerId());
+        testUnit.persistPost(message, userExceptAuthorIds, futures, channelId, starredUser.getUserInServerId());
         verify(starboardPostReactorManagementService, times(2)).addReactor(eq(post), userInAServerArgumentCaptor.capture());
         List<AUserInAServer> addedReactors = userInAServerArgumentCaptor.getAllValues();
         Assert.assertEquals(secondStarrerUserId, addedReactors.get(0).getUserInServerId());
@@ -178,6 +178,8 @@ public class StarboardServiceBeanTest {
         Long oldPostId = 36L;
         AUserInAServer starredUser = MockUtils.getUserObject(5L, server);
         Long channelId = 10L;
+        AChannel sourceChannel = Mockito.mock(AChannel.class);
+        when(sourceChannel.getServer()).thenReturn(server);
         CachedMessage message = CachedMessage
                 .builder()
                 .authorId(starredUser.getUserReference().getId())
@@ -185,7 +187,7 @@ public class StarboardServiceBeanTest {
                 .channelId(channelId)
                 .build();
         Long starboardPostId = 47L;
-        StarboardPost post = StarboardPost.builder().postMessageId(postMessageId).starboardMessageId(oldPostId).id(starboardPostId).build();
+        StarboardPost post = StarboardPost.builder().postMessageId(postMessageId).starboardMessageId(oldPostId).sourceChanel(sourceChannel).id(starboardPostId).build();
         MessageToSend postMessage = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
         when(postTargetService.editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, server.getId())).thenReturn(Arrays.asList(CompletableFuture.completedFuture(sendPost)));
@@ -207,6 +209,7 @@ public class StarboardServiceBeanTest {
         StarboardPost post = StarboardPost
                 .builder()
                 .starboardChannel(channel)
+                .sourceChanel(channel)
                 .starboardMessageId(messageId)
                 .build();
         testUnit.deleteStarboardMessagePost(post);
@@ -275,6 +278,6 @@ public class StarboardServiceBeanTest {
         Long secondStarrerUserId = 2L;
         List<Long> userExceptAuthorIds = Arrays.asList(secondStarrerUserId, userReacting.getUserReference().getId());
         List<CompletableFuture<Message>> futures = Arrays.asList(CompletableFuture.completedFuture(sendPost));
-        testUnit.persistPost(message, userExceptAuthorIds, futures, channelId, starredUser.getUserInServerId(), userReacting.getUserInServerId());
+        testUnit.persistPost(message, userExceptAuthorIds, futures, channelId, starredUser.getUserInServerId());
     }
 }
