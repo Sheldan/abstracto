@@ -10,7 +10,7 @@ public class CommandKeyParameterHandler implements CommandParameterHandler {
 
     @Override
     public boolean handles(Class clazz) {
-        return false;
+        return CommandParameterKey.class.isAssignableFrom(clazz);
     }
 
     @Override

@@ -336,6 +336,10 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Override
     public CompletableFuture<Void> refreshAssignablePlacePosts(AssignableRolePlace place) {
+        if(place.getMessagePosts().isEmpty()) {
+            log.info("Trying to refresh an assignable place {} in server {} without any posts.", place.getId(), place.getServer().getId());
+            return CompletableFuture.completedFuture(null);
+        }
         log.info("Refreshing assignable role place posts for assignable role place {} in server {}.", place.getId(), place.getServer().getId());
         MessageToSend messageToSend = renderAssignablePlacePosts(place);
         List<AssignableRolePlacePost> existingMessagePosts = place.getMessagePosts();
