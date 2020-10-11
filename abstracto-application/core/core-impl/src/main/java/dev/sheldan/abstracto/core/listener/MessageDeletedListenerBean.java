@@ -76,24 +76,29 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
                 .channel(channelManagementService.loadChannel(cachedMessage.getChannelId()))
                 .aUserInAServer(userInServerManagementService.loadUser(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
                 .build();
-
-        GuildChannelMember authorMember = GuildChannelMember
-                .builder()
-                .guild(botService.getGuildByIdNullable(cachedMessage.getServerId()))
-                .textChannel(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getChannelId())))
-                .member(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
-                .build();
-        listener.forEach(messageDeletedListener -> {
-            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
-            if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
-                return;
-            }
-            try {
-                self.executeIndividualMessageDeletedListener(cachedMessage, authorUser, authorMember, messageDeletedListener);
-            } catch (AbstractoRunTimeException e) {
-                log.error("Listener {} failed with exception:", messageDeletedListener.getClass().getName(), e);
-            }
+        botService.getMemberInServerAsync(cachedMessage.getServerId(), cachedMessage.getAuthorId()).thenAccept(member -> {
+            GuildChannelMember authorMember = GuildChannelMember
+                    .builder()
+                    .guild(botService.getGuildById(cachedMessage.getServerId()))
+                    .textChannel(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getChannelId())))
+                    .member(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
+                    .build();
+            listener.forEach(messageDeletedListener -> {
+                FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
+                if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
+                    return;
+                }
+                try {
+                    self.executeIndividualMessageDeletedListener(cachedMessage, authorUser, authorMember, messageDeletedListener);
+                } catch (AbstractoRunTimeException e) {
+                    log.error("Listener {} failed with exception:", messageDeletedListener.getClass().getName(), e);
+                }
+            });
+        }).exceptionally(throwable -> {
+            log.error("Message deleted listener failed.", throwable);
+            return null;
         });
+
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

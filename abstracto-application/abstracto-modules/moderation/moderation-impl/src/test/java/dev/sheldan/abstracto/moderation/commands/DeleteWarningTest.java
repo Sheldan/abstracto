@@ -39,7 +39,7 @@ public class DeleteWarningTest {
         AUserInAServer warningUser = MockUtils.getUserObject(6L, server);
         Warning existingWarning = Warning.builder().warnedUser(warnedUser).warningUser(warningUser).build();
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(WARN_ID));
-        when(warnManagementService.findById(WARN_ID, parameters.getGuild().getIdLong())).thenReturn(Optional.of(existingWarning));
+        when(warnManagementService.findByIdOptional(WARN_ID, parameters.getGuild().getIdLong())).thenReturn(Optional.of(existingWarning));
         CommandResult result = testUnit.execute(parameters);
         verify(warnManagementService, times(1)).deleteWarning(existingWarning);
         CommandTestUtilities.checkSuccessfulCompletion(result);

@@ -70,7 +70,7 @@ public class BanServiceBeanTest {
         when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(BanServiceBean.BAN_ID_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
-        when(botService.getGuildById(serverId)).thenReturn(Optional.of(mockedGuild));
+        when(botService.getGuildByIdOptional(serverId)).thenReturn(Optional.of(mockedGuild));
         testUnit.banMember(serverId, userId, REASON, context);
         verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
@@ -81,7 +81,7 @@ public class BanServiceBeanTest {
         Long userId = 8L;
         Long serverId = 5L;
         ServerContext context = Mockito.mock(ServerContext.class);
-        when(botService.getGuildById(serverId)).thenReturn(Optional.empty());
+        when(botService.getGuildByIdOptional(serverId)).thenReturn(Optional.empty());
         testUnit.banMember(serverId, userId, REASON, context);
     }
 

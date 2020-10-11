@@ -47,7 +47,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
                     continue;
                 }
                 messageRaw = messageRaw.replace(messageEmbedLink.getWholeUrl(), "");
-                Consumer<CachedMessage> cachedMessageConsumer = cachedMessage ->self.loadUserAndEmbed(message, userEmbeddingUserInServerId, cachedMessage);
+                Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> self.embedSingleLink(message, userEmbeddingUserInServerId, cachedMessage);
                 messageCache.getMessageFromCache(messageEmbedLink.getServerId(), messageEmbedLink.getChannelId(), messageEmbedLink.getMessageId())
                         .thenAccept(cachedMessageConsumer)
                         .exceptionally(throwable -> {
@@ -62,10 +62,14 @@ public class MessageEmbedListener implements MessageReceivedListener {
     }
 
     @Transactional
-    public void loadUserAndEmbed(Message message, Long cause, CachedMessage cachedMessage) {
+    public void embedSingleLink(Message message, Long cause, CachedMessage cachedMessage) {
         log.info("Embedding link to message {} in channel {} in server {} to channel {} and server {}.",
                 cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), message.getChannel().getId(), message.getGuild().getId());
-        messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message);
+        messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message).exceptionally(throwable -> {
+            log.error("Failed to embed link towards message {} in channel {} in sever {} linked from message {} in channel {} in server {}.", cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(),
+                    message.getId(), message.getChannel().getId(), message.getGuild().getId(), throwable);
+            return null;
+        });
     }
 
     @Override

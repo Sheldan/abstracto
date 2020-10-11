@@ -66,7 +66,7 @@ public class LeaderBoardCommandTest {
         LeaderBoardEntry executingUserRank = LeaderBoardEntry.builder().build();
         when(userExperienceService.getRankOfUserInServer(context.getUserInitiatedContext().getAUserInAServer())).thenReturn(executingUserRank);
         LeaderBoardEntryModel leaderBoardEntryModel = LeaderBoardEntryModel.builder().build();
-        when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(leaderBoardEntryModel);
+        when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(CompletableFuture.completedFuture(leaderBoardEntryModel));
         MessageToSend messageToSend = MessageToSend.builder().build();
         when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADER_BOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class))).thenReturn(messageToSend);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);

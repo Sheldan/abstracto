@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -48,8 +49,13 @@ public class MuteManagementServiceBean implements MuteManagementService {
     }
 
     @Override
-    public Optional<Mute> findMute(Long muteId, Long serverId) {
+    public Optional<Mute> findMuteOptional(Long muteId, Long serverId) {
         return muteRepository.findByMuteId_IdAndMuteId_ServerId(muteId, serverId);
+    }
+
+    @Override
+    public Mute findMute(Long muteId, Long serverId) {
+        return findMuteOptional(muteId, serverId).orElseThrow(() -> new AbstractoRunTimeException("Mute not found."));
     }
 
     @Override

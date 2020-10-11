@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Converter used to convert from {@link LeaderBoard} to a list of {@link LeaderBoardEntryModel}
@@ -30,11 +31,11 @@ public class LeaderBoardModelConverter {
      * @return The list of {@link LeaderBoardEntryModel} which contain the fully fledged information provided to the
      * leader board template
      */
-    public List<LeaderBoardEntryModel> fromLeaderBoard(LeaderBoard leaderBoard) {
-        List<LeaderBoardEntryModel> models = new ArrayList<>();
+    public List<CompletableFuture<LeaderBoardEntryModel>> fromLeaderBoard(LeaderBoard leaderBoard) {
+        List<CompletableFuture<LeaderBoardEntryModel>> models = new ArrayList<>();
         log.trace("Converting {} entries to a list of leaderbord entries.", leaderBoard.getEntries().size());
         leaderBoard.getEntries().forEach(leaderBoardEntry -> {
-            LeaderBoardEntryModel entry = fromLeaderBoardEntry(leaderBoardEntry);
+            CompletableFuture<LeaderBoardEntryModel> entry = fromLeaderBoardEntry(leaderBoardEntry);
             models.add(entry);
         });
         return models;
@@ -47,14 +48,15 @@ public class LeaderBoardModelConverter {
      * @return The {@link LeaderBoardEntryModel} accompanied with the {@link Member} reference, might be null, if the
      * user left the guild
      */
-    public LeaderBoardEntryModel fromLeaderBoardEntry(LeaderBoardEntry leaderBoardEntry) {
+    public CompletableFuture<LeaderBoardEntryModel> fromLeaderBoardEntry(LeaderBoardEntry leaderBoardEntry) {
         AUserInAServer entryUser = leaderBoardEntry.getExperience().getUser();
-        Member entryMember = botService.getMemberInServer(entryUser.getServerReference().getId(), entryUser.getUserReference().getId());
-        return LeaderBoardEntryModel
-                .builder()
-                .experience(leaderBoardEntry.getExperience())
-                .member(entryMember).rank(leaderBoardEntry.getRank())
-                .rank(leaderBoardEntry.getRank())
-                .build();
+        return botService.getMemberInServerAsync(entryUser.getServerReference().getId(), entryUser.getUserReference().getId()).thenApply(member ->
+            LeaderBoardEntryModel
+                    .builder()
+                    .experience(leaderBoardEntry.getExperience())
+                    .member(member).rank(leaderBoardEntry.getRank())
+                    .rank(leaderBoardEntry.getRank())
+                    .build()
+        );
     }
 }

@@ -16,6 +16,7 @@ import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardModel;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Shows the experience gain information of the top 10 users in the server, or if a page number is provided as a parameter, only the members which are on this page.
@@ -57,15 +59,22 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         // parameter is optional, in case its not present, we default to the 0th page
         Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 1;
         LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
-        LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.fromCommandContext(commandContext, LeaderBoardModel.class);
-        leaderBoardModel.setUserExperiences(converter.fromLeaderBoard(leaderBoard));
+        LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.slimFromCommandContext(commandContext, LeaderBoardModel.class);
+        List<CompletableFuture<LeaderBoardEntryModel>> futures = new ArrayList<>();
+        List<CompletableFuture<LeaderBoardEntryModel>> completableFutures = converter.fromLeaderBoard(leaderBoard);
+        futures.addAll(completableFutures);
         log.info("Rendering leaderboard for page {} in server {} for user {}.", page, commandContext.getAuthor().getId(), commandContext.getGuild().getId());
 
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
-        leaderBoardModel.setUserExecuting(converter.fromLeaderBoardEntry(userRank));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+        CompletableFuture<LeaderBoardEntryModel> userRankFuture = converter.fromLeaderBoardEntry(userRank);
+        futures.add(userRankFuture);
+        return FutureUtils.toSingleFutureGeneric(futures).thenCompose(aVoid -> {
+            List<LeaderBoardEntryModel> finalModels = completableFutures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+            leaderBoardModel.setUserExperiences(finalModels);
+            leaderBoardModel.setUserExecuting(userRankFuture.join());
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
+            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));
+        }).thenApply(aVoid -> CommandResult.fromSuccess());
 
     }
 

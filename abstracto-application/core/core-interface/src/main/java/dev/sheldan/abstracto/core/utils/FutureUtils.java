@@ -11,4 +11,8 @@ public class FutureUtils {
     public static <T> CompletableFuture<Void> toSingleFutureGeneric(List<CompletableFuture<T>> futures) {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
+
+    public static CompletableFuture<Void> toSingleFuture(List<CompletableFuture> futures) {
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
 }

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.models.templates;
 
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @SuperBuilder
-public class LeaderBoardModel extends UserInitiatedServerContext {
+public class LeaderBoardModel extends SlimUserInitiatedServerContext {
     /**
      * List of {@link LeaderBoardEntryModel} containing the information about the users from the requested page.
      */

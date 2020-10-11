@@ -1,8 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -12,12 +10,9 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -28,7 +23,6 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +54,7 @@ public class MessageEmbedServiceBeanTest {
     private ChannelService channelService;
 
     @Mock
-    private MessageEmbedService self;
+    private MessageEmbedServiceBean self;
 
     @Mock
     private MessageCache messageCache;
@@ -83,6 +77,16 @@ public class MessageEmbedServiceBeanTest {
     private static final String FIRST_LINK_TEXT = "https://discordapp.com/channels/1/2/3";
     private static final String SHORTER_LINK_TEXT = "https://discord.com/channels/1/2/3";
     private static final String SECOND_LINK_TEXT = "https://discordapp.com/channels/2/3/4";
+
+    private static final Long EMBEDDING_USER_IN_SERVER_ID = 8L;
+    private static final Long SERVER_ID = 8L;
+    private static final Long USER_ID = 9L;
+
+    @Mock
+    private AUserInAServer embeddingUser;
+
+    @Mock
+    private Member embeddingMember;
 
     @Test
     public void testNoLinkInString(){
@@ -182,38 +186,16 @@ public class MessageEmbedServiceBeanTest {
     }
 
     @Test
-    public void testEmbeddingLink() {
-        Long channelId = 6L;
-        Long serverId = 4L;
-        AServer server = MockUtils.getServer(serverId);
-        AChannel aChannel = MockUtils.getTextChannel(server, channelId);
-        Long userEmbeddingUserInServerId = 5L;
-        AUserInAServer embeddingUser = MockUtils.getUserObject(userEmbeddingUserInServerId, server);
-        Long authorId = 7L;
-        AUserInAServer authorUser = MockUtils.getUserObject(authorId, server);
-        Long firstMessageId = 6L;
-        CachedMessage cachedMessage = CachedMessage.builder().serverId(serverId).channelId(channelId).messageId(firstMessageId).authorId(authorUser.getUserReference().getId()).build();
-        Member embeddingMember = Mockito.mock(Member.class);
-        Member author = Mockito.mock(Member.class);
-        Guild guild = Mockito.mock(Guild.class);
-        when(embeddingMessage.getMember()).thenReturn(embeddingMember);
-        when(textChannel.getIdLong()).thenReturn(channelId);
-        when(embeddingMessage.getGuild()).thenReturn(guild);
-        when(guild.getIdLong()).thenReturn(serverId);
-        when(embeddingMessage.getChannel()).thenReturn(textChannel);
-        when(userInServerManagementService.loadUser(embeddingMember)).thenReturn(embeddingUser);
-        when(userInServerManagementService.loadUserConditional(userEmbeddingUserInServerId)).thenReturn(Optional.of(embeddingUser));
-        when(channelManagementService.loadChannel(channelId)).thenReturn(aChannel);
-        when(serverManagementService.loadOrCreate(serverId)).thenReturn(server);
-        when(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId())).thenReturn(author);
-        when(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId())).thenReturn(Optional.of(textChannel));
-        MessageToSend messageToSend = MessageToSend.builder().build();
-        when(templateService.renderEmbedTemplate(eq(MessageEmbedServiceBean.MESSAGE_EMBED_TEMPLATE), any(MessageEmbeddedModel.class))).thenReturn(messageToSend);
-        Message messageContainingEmbed = Mockito.mock(Message.class);
-        when(channelService.sendMessageToSendToChannel(messageToSend, textChannel)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(messageContainingEmbed)));
-        testUnit.embedLink(cachedMessage, textChannel, userEmbeddingUserInServerId, embeddingMessage);
-        verify(messageEmbedPostManagementService, times(1)).createMessageEmbed(cachedMessage, messageContainingEmbed, embeddingUser);
-        verify(messageService, times(1)).addReactionToMessage(MessageEmbedServiceBean.REMOVAL_EMOTE, cachedMessage.getServerId(), messageContainingEmbed);
+    public void testLoadingEmbeddingModel() {
+        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
+        when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(cachedMessage.getAuthorId()).thenReturn(USER_ID);
+        when(userInServerManagementService.loadUserConditional(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(Optional.of(embeddingUser));
+        when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddingMember));
+        MessageEmbeddedModel model = Mockito.mock(MessageEmbeddedModel.class);
+        when(self.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddingMember)).thenReturn(model);
+        when(self.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, model)).thenReturn(CompletableFuture.completedFuture(null));
+        testUnit.embedLink(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage).join();
     }
 
     @Test

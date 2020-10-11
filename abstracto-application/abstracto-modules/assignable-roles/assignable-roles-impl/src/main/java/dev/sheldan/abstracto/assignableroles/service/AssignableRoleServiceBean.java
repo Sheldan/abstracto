@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleMa
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementServiceBean;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,9 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Autowired
     private AssignableRoleServiceBean self;
 
+    @Autowired
+    private BotService botService;
+
     @Override
     public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member toAdd) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
@@ -69,14 +73,29 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Override
     public CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
         log.info("Removing assignable role {} from user {} in server {}.", assignableRole.getId(), member.getId(), member.getGuild().getId());
-        return roleService.removeRoleFromMemberFuture(member, assignableRole.getRole());
+        return roleService.removeRoleFromMemberAsync(member, assignableRole.getRole());
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<Void> removeAssignableRoleFromUser(Long assignableRoleId, Member member) {
+        AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
+        return self.removeAssignableRoleFromUser(role, member);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, AUserInAServer aUserInAServer) {
+        Long assignableRoleId = assignableRole.getId();
+        return botService.getMemberInServerAsync(aUserInAServer).thenCompose(member ->
+            self.removeAssignableRoleFromUser(assignableRoleId, member)
+        );
     }
 
     @Override
     public CompletableFuture<Void> fullyRemoveAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
         Long assignableRoleId = assignableRole.getId();
         return this.removeAssignableRoleFromUser(assignableRole, member).thenAccept(aVoid ->
-            self.removeRoleFromUser(assignableRoleId, member)
+            self.persistRoleRemovalFromUser(assignableRoleId, member)
         );
     }
 
@@ -114,7 +133,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     }
 
     @Transactional
-    public void removeRoleFromUser(Long assignableRoleId, Member member) {
+    public void persistRoleRemovalFromUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(member);
         removeRoleFromUser(role, aUserInAServer);

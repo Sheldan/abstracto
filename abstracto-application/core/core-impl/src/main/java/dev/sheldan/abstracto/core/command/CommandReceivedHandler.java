@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.*;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -106,27 +108,24 @@ public class CommandReceivedHandler extends ListenerAdapter {
             tryToExecuteFoundCommand(event, commandContextBuilder, foundCommand, unParsedParameter);
 
         } catch (Exception e) {
-            log.error("Exception when executing command.", e);
-            CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
-            CommandContext commandContext = commandContextBuilder.build();
-            self.executePostCommandListener(null, commandContext, commandResult);
+            reportException(commandContextBuilder, null, e, "Exception when executing command.");
         }
     }
 
     private void tryToExecuteFoundCommand(@Nonnull MessageReceivedEvent event, CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
-        try {
-            Parameters parsedParameters = getParsedParameters(unParsedParameter, foundCommand, event.getMessage());
+        CompletableFuture<Parameters> parsingFuture = getParsedParameters(unParsedParameter, foundCommand, event.getMessage());
+        parsingFuture.thenAccept(parsedParameters -> {
             validateCommandParameters(parsedParameters, foundCommand);
             CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
             ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
             CommandResult commandResult = null;
             if(conditionResult.isResult()) {
-               if(foundCommand.getConfiguration().isAsync()) {
-                   log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
-                           foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
+                if(foundCommand.getConfiguration().isAsync()) {
+                    log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
+                            foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
-                   foundCommand.executeAsync(commandContext).thenAccept(result ->
-                        executePostCommandListener(foundCommand, commandContext, result)
+                    foundCommand.executeAsync(commandContext).thenAccept(result ->
+                            executePostCommandListener(foundCommand, commandContext, result)
                     ).exceptionally(throwable -> {
                         log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
                         UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
@@ -155,12 +154,21 @@ public class CommandReceivedHandler extends ListenerAdapter {
             if(commandResult != null) {
                 self.executePostCommandListener(foundCommand, commandContext, commandResult);
             }
-        } catch (Exception e) {
-            log.error("Exception when executing command.", e);
-            CommandResult commandResult = CommandResult.fromError(e.getMessage(), e);
-            CommandContext commandContext = commandContextBuilder.build();
-            self.executePostCommandListener(foundCommand, commandContext, commandResult);
-        }
+        }).exceptionally(throwable -> {
+            reportException(commandContextBuilder, foundCommand, throwable, "Exception when executing command.");
+            return null;
+        });
+        parsingFuture.exceptionally(throwable -> {
+            reportException(commandContextBuilder, foundCommand, throwable, "Exception when parsing command.");
+            return null;
+        });
+    }
+
+    private void reportException(CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, Throwable throwable, String s) {
+        log.error(s, throwable);
+        CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
+        CommandContext commandContext = commandContextBuilder.build();
+        self.executePostCommandListener(foundCommand, commandContext, commandResult);
     }
 
     private void validateCommandParameters(Parameters parameters, Command foundCommand) {
@@ -210,10 +218,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .build();
     }
 
-    public Parameters getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
+    public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
         List<Object> parsedParameters = new ArrayList<>();
         if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().isEmpty()) {
-            return Parameters.builder().parameters(parsedParameters).build();
+            return CompletableFuture.completedFuture(Parameters.builder().parameters(parsedParameters).build());
         }
         log.trace("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
@@ -224,6 +232,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
         boolean reminderActive = false;
         List<CommandParameterHandler> orderedHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
+        List<CompletableFuture> futures = new ArrayList<>();
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
             if(i < command.getConfiguration().getParameters().size() && !param.isRemainder()) {
                 param = command.getConfiguration().getParameters().get(i);
@@ -236,7 +245,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 try {
                     if(handler.handles(param.getType())) {
                         handlerMatched = true;
-                        parsedParameters.add(handler.handle(value, iterators, param.getType(), message));
+                        if(handler.async()) {
+                            CompletableFuture future = handler.handleAsync(value, iterators, param.getType(), message);
+                            futures.add(future);
+                            parsedParameters.add(future);
+                        } else {
+                            parsedParameters.add(handler.handle(value, iterators, param.getType(), message));
+                        }
                         break;
                     }
                 } catch (Exception e) {
@@ -256,9 +271,22 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     }
                 }
             }
-
         }
 
-        return Parameters.builder().parameters(parsedParameters).build();
+        if(!futures.isEmpty()) {
+            return FutureUtils.toSingleFuture(futures).thenApply(aVoid -> {
+                List<Object> usableParameters = parsedParameters.stream().map(o -> {
+                    if(o instanceof CompletableFuture) {
+                        return ((CompletableFuture) o).join();
+                    } else {
+                        return o;
+                    }
+                }).collect(Collectors.toList());
+                return Parameters.builder().parameters(usableParameters).build();
+            });
+        } else {
+            Parameters parameters = Parameters.builder().parameters(parsedParameters).build();
+            return CompletableFuture.completedFuture(parameters);
+        }
     }
 }

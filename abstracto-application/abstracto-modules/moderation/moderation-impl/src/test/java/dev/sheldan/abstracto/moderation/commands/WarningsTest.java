@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnEntry;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarningsModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
@@ -25,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -52,23 +52,37 @@ public class WarningsTest {
     @Captor
     private ArgumentCaptor<WarningsModel> captor;
 
+    @Mock
+    private Warnings self;
+
     @Test
     public void testNoParametersForWarningsCommand(){
         CommandContext noParams = CommandTestUtilities.getNoParameters();
-        Warning firstWarning = Warning.builder().build();
-        WarnEntry firstModelWarning = WarnEntry.builder().build();
-        Warning secondWarning = Warning.builder().build();
-        WarnEntry secondModelWarning = WarnEntry.builder().build();
+        Warning firstWarning = Mockito.mock(Warning.class);
+        WarnEntry firstModelWarning = Mockito.mock(WarnEntry.class);
+        Warning secondWarning = Mockito.mock(Warning.class);
+        WarnEntry secondModelWarning = Mockito.mock(WarnEntry.class);
         List<Warning> warningsToDisplay = Arrays.asList(firstWarning, secondWarning);
         List<WarnEntry> modelWarnings = Arrays.asList(firstModelWarning, secondModelWarning);
         when(warnManagementService.getAllWarningsOfServer(noParams.getUserInitiatedContext().getServer())).thenReturn(warningsToDisplay);
-        when(warnEntryConverter.fromWarnings(warningsToDisplay)).thenReturn(modelWarnings);
+        when(warnEntryConverter.fromWarnings(warningsToDisplay)).thenReturn(CompletableFuture.completedFuture(modelWarnings));
+
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(noParams);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
+        verify(self, times(1)).renderWarnings(noParams, modelWarnings);
+
+    }
+
+    @Test
+    public void testWarningsRendering() {
+        CommandContext noParams = CommandTestUtilities.getNoParameters();
+        WarnEntry firstModelWarning = Mockito.mock(WarnEntry.class);
+        WarnEntry secondModelWarning = Mockito.mock(WarnEntry.class);
         Paginator paginator = Mockito.mock(Paginator.class);
         when(paginatorService.createPaginatorFromTemplate(eq(Warnings.WARNINGS_RESPONSE_TEMPLATE), captor.capture(), eq(eventWaiter))).thenReturn(paginator);
-        CommandResult result = testUnit.execute(noParams);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
+        List<WarnEntry> modelWarnings = Arrays.asList(firstModelWarning, secondModelWarning);
+        testUnit.renderWarnings(noParams, modelWarnings);
         WarningsModel warningsModel = captor.getValue();
-        Assert.assertEquals(warningsToDisplay.size(), warningsModel.getWarnings().size());
         Assert.assertEquals(firstModelWarning, warningsModel.getWarnings().get(0));
         Assert.assertEquals(secondModelWarning, warningsModel.getWarnings().get(1));
     }
@@ -77,29 +91,26 @@ public class WarningsTest {
     public void testExecuteWarningsForMember(){
         Member member = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
-        AUserInAServer warnedUser = MockUtils.getUserObject(5L, parameters.getUserInitiatedContext().getServer());
-        when(userInServerManagementService.loadUser(member)).thenReturn(warnedUser);
-        Warning firstWarning = Warning.builder().build();
-        WarnEntry firstModelWarning = WarnEntry.builder().build();
-        Warning secondWarning = Warning.builder().build();
-        WarnEntry secondModelWarning = WarnEntry.builder().build();
+        AUserInAServer warnedUser = Mockito.mock(AUserInAServer.class);
+        Warning firstWarning = Mockito.mock(Warning.class);
+        WarnEntry firstModelWarning = Mockito.mock(WarnEntry.class);
+        Warning secondWarning = Mockito.mock(Warning.class);
+        WarnEntry secondModelWarning = Mockito.mock(WarnEntry.class);
         List<Warning> warningsToDisplay = Arrays.asList(firstWarning, secondWarning);
-        when(warnManagementService.getAllWarnsForUser(warnedUser)).thenReturn(warningsToDisplay);
         List<WarnEntry> modelWarnings = Arrays.asList(firstModelWarning, secondModelWarning);
-        when(warnEntryConverter.fromWarnings(warningsToDisplay)).thenReturn(modelWarnings);
-        Paginator paginator = Mockito.mock(Paginator.class);
-        when(paginatorService.createPaginatorFromTemplate(eq(Warnings.WARNINGS_RESPONSE_TEMPLATE), captor.capture(), eq(eventWaiter))).thenReturn(paginator);
-        CommandResult result = testUnit.execute(parameters);
-        CommandTestUtilities.checkSuccessfulCompletion(result);
-        WarningsModel warningsModel = captor.getValue();
-        Assert.assertEquals(warningsToDisplay.size(), warningsModel.getWarnings().size());
-        Assert.assertEquals(firstModelWarning, warningsModel.getWarnings().get(0));
-        Assert.assertEquals(secondModelWarning, warningsModel.getWarnings().get(1));
+        when(userInServerManagementService.loadUser(member)).thenReturn(warnedUser);
+        when(warnManagementService.getAllWarnsForUser(warnedUser)).thenReturn(warningsToDisplay);
+        when(warnEntryConverter.fromWarnings(warningsToDisplay)).thenReturn(CompletableFuture.completedFuture(modelWarnings));
+
+        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
+        verify(self, times(1)).renderWarnings(parameters, modelWarnings);
+
     }
 
     @Test(expected = IncorrectParameterTypeException.class)
     public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
+        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

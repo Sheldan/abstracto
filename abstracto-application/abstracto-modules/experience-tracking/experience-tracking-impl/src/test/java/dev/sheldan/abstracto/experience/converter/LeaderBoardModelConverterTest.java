@@ -20,6 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.when;
 
@@ -43,11 +44,14 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
         LeaderBoardEntry entry2 = getEntry(server, secondExperience, secondRank);
         List<LeaderBoardEntry> entries = Arrays.asList(entry, entry2);
         LeaderBoard leaderBoard = LeaderBoard.builder().entries(entries).build();
-        List<LeaderBoardEntryModel> leaderBoardEntryModels = testUnit.fromLeaderBoard(leaderBoard);
-        LeaderBoardEntryModel firstEntry = leaderBoardEntryModels.get(0);
+        Member member = Mockito.mock(Member.class);
+        when(botService.getMemberInServerAsync(server.getId(), entry.getExperience().getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
+        when(botService.getMemberInServerAsync(server.getId(), entry2.getExperience().getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
+        List<CompletableFuture<LeaderBoardEntryModel>> leaderBoardEntryModels = testUnit.fromLeaderBoard(leaderBoard);
+        LeaderBoardEntryModel firstEntry = leaderBoardEntryModels.get(0).join();
         Assert.assertEquals(firstRank, firstEntry.getRank().intValue());
         Assert.assertEquals(firstExperience, firstEntry.getExperience().getExperience().longValue());
-        LeaderBoardEntryModel secondEntry = leaderBoardEntryModels.get(1);
+        LeaderBoardEntryModel secondEntry = leaderBoardEntryModels.get(1).join();
         Assert.assertEquals(secondRank, secondEntry.getRank().intValue());
         Assert.assertEquals(secondExperience, secondEntry.getExperience().getExperience().longValue());
         Assert.assertEquals(entries.size(), leaderBoardEntryModels.size());
@@ -63,11 +67,12 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
         User user = Mockito.mock(User.class);
         when(user.getIdLong()).thenReturn(userId);
         when(member.getUser()).thenReturn(user);
-        when(botService.getMemberInServer(server.getId(), experience.getUser().getUserReference().getId())).thenReturn(member);
-        LeaderBoardEntryModel leaderBoardEntryModel = testUnit.fromLeaderBoardEntry(entry);
-        Assert.assertEquals(1, leaderBoardEntryModel.getRank().intValue());
-        Assert.assertEquals(experience.getUser().getUserReference().getId(), leaderBoardEntryModel.getExperience().getUser().getUserReference().getId());
-        Assert.assertEquals(experience.getUser().getUserReference().getId().longValue(), leaderBoardEntryModel.getMember().getUser().getIdLong());
+        when(botService.getMemberInServerAsync(server.getId(), experience.getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
+        CompletableFuture<LeaderBoardEntryModel> leaderBoardEntryModel = testUnit.fromLeaderBoardEntry(entry);
+        LeaderBoardEntryModel entryModel = leaderBoardEntryModel.join();
+        Assert.assertEquals(1, entryModel.getRank().intValue());
+        Assert.assertEquals(experience.getUser().getUserReference().getId(), entryModel.getExperience().getUser().getUserReference().getId());
+        Assert.assertEquals(experience.getUser().getUserReference().getId().longValue(), entryModel.getMember().getUser().getIdLong());
     }
 
     private LeaderBoardEntry getEntry(AServer server, Integer experienceParameter, Integer rank) {

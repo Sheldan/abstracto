@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.converter.UserNotesConverter;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.models.template.commands.ListNotesModel;
+import dev.sheldan.abstracto.moderation.models.template.commands.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
@@ -66,9 +67,12 @@ public class UserNotes extends AbstractConditionableCommand {
         } else {
             userNotes = userNoteManagementService.loadNotesForServer(commandContext.getUserInitiatedContext().getServer());
         }
-        model.setUserNotes(userNotesConverter.fromNotes(userNotes));
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+        CompletableFuture<List<NoteEntryModel>> listCompletableFuture = userNotesConverter.fromNotes(userNotes);
+        return listCompletableFuture.thenCompose(noteEntryModels -> {
+            model.setUserNotes(noteEntryModels);
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+                    .thenApply(aVoid -> CommandResult.fromSuccess());
+        });
     }
 
     @Override

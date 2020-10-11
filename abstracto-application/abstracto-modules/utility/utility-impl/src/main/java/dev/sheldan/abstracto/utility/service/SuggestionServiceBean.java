@@ -1,10 +1,9 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
-import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.CounterService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -73,7 +72,7 @@ public class SuggestionServiceBean implements SuggestionService {
         long guildId = member.getGuild().getIdLong();
         log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, member.getGuild().getId(), member.getId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
-        return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
+        return FutureUtils.toSingleFutureGeneric(completableFutures).thenCompose(aVoid -> {
             Message message = completableFutures.get(0).join();
             log.trace("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
             CompletableFuture<Void> firstReaction = messageService.addReactionToMessageWithFuture(SUGGESTION_YES_EMOTE, guildId, message);
@@ -110,26 +109,22 @@ public class SuggestionServiceBean implements SuggestionService {
         suggestionLog.setOriginalMessageId(originalMessageId);
         suggestionLog.setOriginalMessageUrl(MessageUtils.buildMessageUrl(serverId, channelId, originalMessageId));
         AUserInAServer suggester = suggestion.getSuggester();
-        Optional<Guild> guildByIdOptional = botService.getGuildById(serverId);
-        if(guildByIdOptional.isPresent()) {
-            Guild guildById = guildByIdOptional.get();
-            Member memberById = guildById.getMemberById(suggester.getUserReference().getId());
-            suggestionLog.setSuggester(memberById);
-            suggestionLog.setState(suggestion.getState());
-            suggestionLog.setSuggestionId(suggestion.getId());
-            TextChannel textChannelById = guildById.getTextChannelById(channelId);
-            if(textChannelById != null) {
-                return textChannelById.retrieveMessageById(originalMessageId).submit().thenCompose(message ->
-                    self.updateSuggestionMessageText(text, suggestionLog, message)
-                );
-            } else {
-                log.warn("Not possible to update suggestion {}, because text channel {} was not found in guild {}.", suggestion.getId(), channelId, serverId);
-                throw new ChannelNotFoundException(channelId);
+        TextChannel textChannelById = botService.getTextChannelFromServer(serverId, channelId);
+        CompletableFuture<Member> memberById = botService.getMemberInServerAsync(serverId, suggester.getUserReference().getId());
+        suggestionLog.setState(suggestion.getState());
+        suggestionLog.setSuggestionId(suggestion.getId());
+        CompletableFuture<Void> finalFuture = new CompletableFuture<>();
+        memberById.whenComplete((member, throwable) -> {
+            if(throwable == null) {
+                suggestionLog.setSuggester(member);
             }
-        } else {
-            log.warn("Not possible to update suggestion {}, because guild {} was not found.", suggestion.getId(), serverId);
-            throw new GuildNotFoundException(serverId);
-        }
+            textChannelById.retrieveMessageById(originalMessageId).submit().thenCompose(message ->
+                    self.updateSuggestionMessageText(text, suggestionLog, message)
+            ).thenAccept(aVoid ->  finalFuture.complete(null));
+        });
+
+        return finalFuture;
+
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

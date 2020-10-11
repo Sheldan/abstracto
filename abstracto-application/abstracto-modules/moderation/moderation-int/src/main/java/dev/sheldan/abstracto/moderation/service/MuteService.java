@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface MuteService {
     CompletableFuture<Void> muteMember(Member memberToMute, Member userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
-    CompletableFuture<Void> muteAUserInAServer(AUserInAServer member, AUserInAServer userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
     CompletableFuture<Void> muteUserInServer(FullUserInServer userToMute, FullUserInServer userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
     CompletableFuture<Void> applyMuteRole(AUserInAServer aUserInAServer);
     CompletableFuture<Void> muteMemberWithLog(MuteContext context);

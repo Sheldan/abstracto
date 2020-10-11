@@ -1,15 +1,18 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.when;
 
@@ -44,25 +47,27 @@ public class MemberParameterHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testProperMemberMention() {
         oneMemberInIterator();
         String input = getUserMention();
-        Member parsed = (Member) testUnit.handle(input, iterators, Member.class, null);
-        Assert.assertEquals(parsed, member);
+        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(input, iterators, Member.class, null);
+        Assert.assertEquals(parsed.join(), member);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testMemberById() {
         setupMessage();
         String input = USER_ID.toString();
-        Member parsed = (Member) testUnit.handle(input, null, Member.class, message);
-        Assert.assertEquals(parsed, member);
+        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(input, null, Member.class, message);
+        Assert.assertEquals(parsed.join(), member);
     }
 
     @Test(expected = NumberFormatException.class)
     public void testInvalidMemberMention() {
         String input = "test";
-        testUnit.handle(input, null, Member.class, null);
+        testUnit.handleAsync(input, null, Member.class, null);
     }
 
     private String getUserMention() {
@@ -76,7 +81,9 @@ public class MemberParameterHandlerTest {
 
     private void setupMessage()  {
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getMemberById(USER_ID)).thenReturn(member);
+        RestAction<Member> restAction = Mockito.mock(RestAction.class);
+        when(restAction.submit()).thenReturn(CompletableFuture.completedFuture(member));
+        when(guild.retrieveMemberById(USER_ID)).thenReturn(restAction);
     }
 
 }

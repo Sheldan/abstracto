@@ -13,6 +13,7 @@ public class ExperienceGainResult {
     private CompletableFuture<RoleCalculationResult> calculationResult;
     private Long userInServerId;
     private Long newExperience;
+    private Long serverId;
     private Integer newLevel;
     private Long newMessageCount;
     @Builder.Default

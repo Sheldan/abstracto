@@ -7,11 +7,12 @@ import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStat
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsPost;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface StarboardService {
-    void createStarboardPost(CachedMessage message, List<AUserInAServer> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser);
-    void updateStarboardPost(StarboardPost post, CachedMessage message, List<AUserInAServer> userExceptAuthor);
+    CompletableFuture<Void> createStarboardPost(CachedMessage message, List<AUserInAServer> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser);
+    CompletableFuture<Void> updateStarboardPost(StarboardPost post, CachedMessage message, List<AUserInAServer> userExceptAuthor);
     void deleteStarboardMessagePost(StarboardPost message);
-    StarStatsModel retrieveStarStats(Long serverId);
+    CompletableFuture<StarStatsModel> retrieveStarStats(Long serverId);
     StarStatsPost fromStarboardPost(StarboardPost starboardPost);
 }

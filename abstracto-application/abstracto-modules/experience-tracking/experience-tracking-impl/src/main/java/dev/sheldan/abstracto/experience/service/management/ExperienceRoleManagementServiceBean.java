@@ -83,7 +83,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     public AExperienceRole setLevelToRole(AExperienceLevel level, ARole role) {
         Optional<AExperienceRole> byRoleServerAndRoleOptional = getRoleInServerOptional(role);
         AExperienceRole experienceRole;
-        log.info("Setting role {} in server {} to level {}.", role.getId(), role.getServer().getId(), level);
+        log.info("Setting role {} in server {} to level {}.", role.getId(), role.getServer().getId(), level.getLevel());
         if(byRoleServerAndRoleOptional.isPresent()) {
             log.trace("Role already existed. Updating.");
             experienceRole = byRoleServerAndRoleOptional.get();

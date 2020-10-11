@@ -52,7 +52,7 @@ public class BanServiceBean implements BanService {
     }
 
     private CompletableFuture<Void> banUser(Long guildId, Long userId, String reason) {
-        Optional<Guild> guildByIdOptional = botService.getGuildById(guildId);
+        Optional<Guild> guildByIdOptional = botService.getGuildByIdOptional(guildId);
         if(guildByIdOptional.isPresent()) {
             return banUser(guildByIdOptional.get(), userId, reason);
         } else {

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,7 +60,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private ChannelService channelService;
 
     @Autowired
-    private MessageEmbedService self;
+    private MessageEmbedServiceBean self;
 
     @Autowired
     private MessageCache messageCache;
@@ -102,7 +102,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                     .thenAccept(cachedMessage -> self.embedLink(cachedMessage, target, userEmbeddingUserInServerId, embeddingMessage)
 
                     ).exceptionally(throwable -> {
-                log.error("Message retrieval from cache failed for message {}.", messageEmbedLink.getMessageId(), throwable);
+                log.error("Message embedding from cache failed for message {}.", messageEmbedLink.getMessageId(), throwable);
                 return null;
             })
         );
@@ -110,42 +110,50 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Override
     @Transactional
-    public void embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
+    public CompletableFuture<Void> embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
         Optional<AUserInAServer> causeOpt = userInServerManagementService.loadUserConditional(userEmbeddingUserInServerId);
         if(causeOpt.isPresent()) {
-            AUserInAServer cause = causeOpt.get();
-            MessageEmbeddedModel messageEmbeddedModel = buildTemplateParameter(embeddingMessage, cachedMessage);
-            MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
-            List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
-            log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
-                    cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
-            Long userInServerId = cause.getUserInServerId();
-            CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
-                try {
-                    Message createdMessage = completableFutures.get(0).get();
-                    Optional<AUserInAServer> innerCauseOpt = userInServerManagementService.loadUserConditional(userInServerId);
-                    innerCauseOpt.ifPresent(aUserInAServer -> {
-                        messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, aUserInAServer);
-                        messageService.addReactionToMessage(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage);
-                    });
-                } catch (InterruptedException | ExecutionException e) {
-                    log.error("Failed to post message embed.", e);
-                    Thread.currentThread().interrupt();
-                }
-            }).exceptionally(throwable -> {
-                log.error("Failed to send message for embedding the link for message {} in channel {} in server {}",
-                        cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), throwable);
-                return null;
-            });
+            return buildTemplateParameter(embeddingMessage, cachedMessage).thenCompose(messageEmbeddedModel ->
+                self.sendEmbeddingMessage(cachedMessage, target, userEmbeddingUserInServerId, messageEmbeddedModel)
+            );
         } else {
             log.warn("User {} which was not found in database wanted to embed link in message {}.", userEmbeddingUserInServerId, embeddingMessage.getJumpUrl());
+            return CompletableFuture.completedFuture(null);
         }
     }
 
-    private MessageEmbeddedModel buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
+    @Transactional
+    public CompletionStage<Void> sendEmbeddingMessage(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, MessageEmbeddedModel messageEmbeddedModel) {
+        MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
+        AUserInAServer cause = userInServerManagementService.loadUser(userEmbeddingUserInServerId);
+        List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
+        log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
+                cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
+        Long userInServerId = cause.getUserInServerId();
+        return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
+            Message createdMessage = completableFutures.get(0).join();
+            return messageService.addReactionToMessageWithFuture(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage).thenAccept(aVoid1 ->
+                self.loadUserAndPersistMessage(cachedMessage, userInServerId, createdMessage)
+            );
+        });
+    }
+
+    @Transactional
+    public void loadUserAndPersistMessage(CachedMessage cachedMessage, Long userInServerId, Message createdMessage) {
+        AUserInAServer innerCause = userInServerManagementService.loadUser(userInServerId);
+        messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, innerCause);
+    }
+
+    private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
+        return botService.getMemberInServerAsync(embeddedMessage.getServerId(), embeddedMessage.getAuthorId()).thenApply(member ->
+            self.loadMessageEmbedModel(message, embeddedMessage, member)
+        );
+    }
+
+    @Transactional
+    public MessageEmbeddedModel loadMessageEmbedModel(Message message, CachedMessage embeddedMessage, Member member) {
         AServer server = serverManagementService.loadOrCreate(message.getGuild().getIdLong());
         AUserInAServer user = userInServerManagementService.loadUser(message.getMember());
-        Member author = botService.getMemberInServer(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
         Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServerOptional(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
         TextChannel sourceChannel = textChannelFromServer.orElse(null);
         AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
@@ -155,7 +163,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .server(server)
                 .member(message.getMember())
                 .aUserInAServer(user)
-                .author(author)
+                .author(member)
                 .sourceChannel(sourceChannel)
                 .embeddingUser(message.getMember())
                 .user(user.getUserReference())

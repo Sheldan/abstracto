@@ -14,7 +14,6 @@ import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.test.MockUtils;
 import dev.sheldan.abstracto.utility.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
-import dev.sheldan.abstracto.utility.models.template.commands.reminder.ExecutedReminderModel;
 import dev.sheldan.abstracto.utility.service.management.ReminderManagementService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -32,10 +31,13 @@ import org.quartz.JobDataMap;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static dev.sheldan.abstracto.utility.service.RemindServiceBean.REMINDER_TEMPLATE_TEXT;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -74,6 +76,8 @@ public class RemindServiceBeanTest {
     @Mock
     private ScheduledExecutorService instantReminderScheduler;
 
+    private static final Long REMINDER_ID = 5L;
+
     @Before
     public void setup() {
         when(message.getIdLong()).thenReturn(5L);
@@ -89,8 +93,7 @@ public class RemindServiceBeanTest {
         String remindText = "text";
         Duration duration = Duration.ofSeconds(62);
         when(channelManagementService.loadChannel(channel.getIdLong())).thenReturn(aChannel);
-        Long reminderId = 5L;
-        Reminder createdReminder = Reminder.builder().targetDate(Instant.now().plus(duration)).text(remindText).id(reminderId).build();
+        Reminder createdReminder = Reminder.builder().targetDate(Instant.now().plus(duration)).text(remindText).id(REMINDER_ID).build();
         Long messageId = 5L;
         when(reminderManagementService.createReminder(any(AServerAChannelAUser.class), eq(remindText), any(Instant.class), eq(messageId))).thenReturn(createdReminder);
         String triggerKey = "trigger";
@@ -111,8 +114,7 @@ public class RemindServiceBeanTest {
         String remindText = "text";
         Duration duration = Duration.ofSeconds(50);
         when(channelManagementService.loadChannel(channel.getIdLong())).thenReturn(aChannel);
-        Long reminderId = 5L;
-        Reminder createdReminder = Reminder.builder().targetDate(Instant.now().plus(duration)).text(remindText).id(reminderId).build();
+        Reminder createdReminder = Reminder.builder().targetDate(Instant.now().plus(duration)).text(remindText).id(REMINDER_ID).build();
         Long messageId = 5L;
         when(reminderManagementService.createReminder(any(AServerAChannelAUser.class), eq(remindText), any(Instant.class), eq(messageId))).thenReturn(createdReminder);
         Reminder returnedReminder = testUnit.createReminderInForUser(user, remindText, duration, message);
@@ -126,36 +128,31 @@ public class RemindServiceBeanTest {
         AServer server = MockUtils.getServer();
         AChannel aChannel = MockUtils.getTextChannel(server, 4L);
         AUserInAServer remindedUser = MockUtils.getUserObject(5L, server);
-        Long reminderId = 5L;
-        Reminder remindedReminder = Reminder.builder().reminded(false).remindedUser(remindedUser).reminderDate(Instant.now()).targetDate(Instant.now()).server(server).channel(aChannel).id(reminderId).build();
-        when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.of(remindedReminder));
+        Reminder remindedReminder = Reminder.builder().reminded(false).remindedUser(remindedUser).reminderDate(Instant.now()).targetDate(Instant.now()).server(server).channel(aChannel).id(REMINDER_ID).build();
+        when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
         Guild guildMock = Mockito.mock(Guild.class);
-        when(botService.getGuildById(server.getId())).thenReturn(Optional.of(guildMock));
+        when(botService.getGuildByIdOptional(server.getId())).thenReturn(Optional.of(guildMock));
         when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
         Member mockedMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(server.getId(), remindedUser.getUserReference().getId())).thenReturn(mockedMember);
-        MessageToSend messageToSend = MessageToSend.builder().build();
-        when(templateService.renderEmbedTemplate(eq("remind_reminder"), any(ExecutedReminderModel.class))).thenReturn(messageToSend);
-        testUnit.executeReminder(reminderId);
+        when(botService.getMemberInServerAsync(server.getId(), remindedUser.getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(mockedMember));
+        testUnit.executeReminder(REMINDER_ID);
         verify(reminderManagementService, times(1)).setReminded(remindedReminder);
-        verify(channelService, times(1)).sendMessageToSendToChannel(messageToSend, channel);
     }
 
     @Test
     public void testExecuteReminderFromNotFoundChannel() {
         AServer server = MockUtils.getServer();
         AChannel aChannel = MockUtils.getTextChannel(server, 4L);
-        Long reminderId = 5L;
         AUserInAServer remindedUser = Mockito.mock(AUserInAServer.class);
         AUser user = Mockito.mock(AUser.class);
         when(user.getId()).thenReturn(6L);
         when(remindedUser.getUserReference()).thenReturn(user);
-        Reminder remindedReminder = Reminder.builder().reminded(false).server(server).remindedUser(remindedUser).channel(aChannel).id(reminderId).build();
-        when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.of(remindedReminder));
+        Reminder remindedReminder = Reminder.builder().reminded(false).server(server).remindedUser(remindedUser).channel(aChannel).id(REMINDER_ID).build();
+        when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
         Guild guildMock = Mockito.mock(Guild.class);
-        when(botService.getGuildById(server.getId())).thenReturn(Optional.of(guildMock));
+        when(botService.getGuildByIdOptional(server.getId())).thenReturn(Optional.of(guildMock));
         when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
-        testUnit.executeReminder(reminderId);
+        testUnit.executeReminder(REMINDER_ID);
         verify(reminderManagementService, times(1)).setReminded(remindedReminder);
     }
 
@@ -170,8 +167,8 @@ public class RemindServiceBeanTest {
         when(user.getId()).thenReturn(6L);
         when(remindedUser.getUserReference()).thenReturn(user);
         Reminder remindedReminder = Reminder.builder().reminded(false).server(server).channel(aChannel).remindedUser(remindedUser).id(reminderId).build();
-        when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.of(remindedReminder));
-        when(botService.getGuildById(server.getId())).thenReturn(Optional.empty());
+        when(reminderManagementService.loadReminder(reminderId)).thenReturn(remindedReminder);
+        when(botService.getGuildByIdOptional(server.getId())).thenReturn(Optional.empty());
         testUnit.executeReminder(reminderId);
         verify(reminderManagementService, times(1)).setReminded(remindedReminder);
     }
@@ -180,17 +177,9 @@ public class RemindServiceBeanTest {
     public void testExecuteRemindedReminder() {
         Long reminderId = 5L;
         Reminder remindedReminder = Reminder.builder().reminded(true).build();
-        when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.of(remindedReminder));
+        when(reminderManagementService.loadReminder(reminderId)).thenReturn(remindedReminder);
         testUnit.executeReminder(reminderId);
-        verify(botService, times(0)).getGuildById(anyLong());
-    }
-
-    @Test(expected = ReminderNotFoundException.class)
-    public void testExecuteIllegalReminderId() {
-        Long reminderId = 5L;
-        when(reminderManagementService.loadReminder(reminderId)).thenReturn(Optional.empty());
-        testUnit.executeReminder(reminderId);
-        verify(botService, times(0)).getGuildById(anyLong());
+        verify(botService, times(0)).getGuildByIdOptional(anyLong());
     }
 
     @Test
@@ -223,6 +212,23 @@ public class RemindServiceBeanTest {
         Long reminderId = 5L;
         when(reminderManagementService.getReminderByAndByUserNotReminded(remindedUser, reminderId)).thenReturn(Optional.empty());
         testUnit.unRemind(reminderId, remindedUser);
+    }
+
+    @Test
+    public void testSendReminderText() {
+        Member remindedMember = Mockito.mock(Member.class);
+        Guild guild = Mockito.mock(Guild.class);
+        when(remindedMember.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(8L);
+        when(remindedMember.getIdLong()).thenReturn(9L);
+        Reminder remindedReminder = Mockito.mock(Reminder.class);
+        when(remindedReminder.getTargetDate()).thenReturn(Instant.now());
+        when(remindedReminder.getReminderDate()).thenReturn(Instant.now());
+        when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
+        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
+        when(templateService.renderEmbedTemplate(eq(REMINDER_TEMPLATE_TEXT), any())).thenReturn(messageToSend);
+        when(channelService.sendMessageToSendToChannel(messageToSend, channel)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
+        testUnit.sendReminderText(REMINDER_ID, channel, remindedMember).join();
     }
 
 }

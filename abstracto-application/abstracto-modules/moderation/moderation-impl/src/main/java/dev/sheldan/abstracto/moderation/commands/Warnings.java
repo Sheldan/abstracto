@@ -22,9 +22,11 @@ import dev.sheldan.abstracto.moderation.service.management.WarnManagementService
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class Warnings extends AbstractConditionableCommand {
@@ -45,8 +47,11 @@ public class Warnings extends AbstractConditionableCommand {
     @Autowired
     private EventWaiter eventWaiter;
 
+    @Autowired
+    private Warnings self;
+
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Warning> warnsToDisplay;
         if(!commandContext.getParameters().getParameters().isEmpty()) {
@@ -55,14 +60,21 @@ public class Warnings extends AbstractConditionableCommand {
         } else {
             warnsToDisplay = warnManagementService.getAllWarningsOfServer(commandContext.getUserInitiatedContext().getServer());
         }
-        List<WarnEntry> warnEntries = warnEntryConverter.fromWarnings(warnsToDisplay);
+        return warnEntryConverter.fromWarnings(warnsToDisplay).thenApply(warnEntries -> {
+            self.renderWarnings(commandContext, warnEntries);
+            return CommandResult.fromSuccess();
+        });
 
-        WarningsModel model = (WarningsModel) ContextConverter.fromCommandContext(commandContext, WarningsModel.class);
+
+    }
+
+    @Transactional
+    public void renderWarnings(CommandContext commandContext, List<WarnEntry> warnEntries) {
+        WarningsModel model = (WarningsModel) ContextConverter.slimFromCommandContext(commandContext, WarningsModel.class);
         model.setWarnings(warnEntries);
 
         Paginator paginator = paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, eventWaiter);
         paginator.display(commandContext.getChannel());
-        return CommandResult.fromSuccess();
     }
 
     @Override
@@ -74,6 +86,7 @@ public class Warnings extends AbstractConditionableCommand {
                 .name("warnings")
                 .module(ModerationModule.MODERATION)
                 .templated(true)
+                .async(true)
                 .causesReaction(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

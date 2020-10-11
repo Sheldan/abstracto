@@ -186,7 +186,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 AUserInAServer userInAServer = userInServerManagementService.loadUser(userInAServerId);
                 gainedExperience = (int) Math.floor(gainedExperience * multiplier);
                 Member member = botService.getMemberInServer(userInAServer);
-                if(!roleService.hasAnyOfTheRoles(member, disabledRoles)) {
+                if(member != null && !roleService.hasAnyOfTheRoles(member, disabledRoles)) {
                     log.trace("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
                     Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServerId);
                     if(aUserExperienceOptional.isPresent()) {
@@ -230,7 +230,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                         futures.add(resultFuture);
                     }
                 } else {
-                    log.trace("User {} has a role which makes the user unable to gain experience.", userInAServer.getUserInServerId());
+                    log.trace("User {} has a role which makes the user unable to gain experience or the member could not be found in the server.", userInAServer.getUserInServerId());
                 }
             });
         });
@@ -321,43 +321,62 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 .userInServerId(user.getUserInServerId())
                 .experienceRoleId(null)
                 .build();
-        if(!botService.isUserInGuild(userExperience.getUser())) {
-            log.trace("User {} is not in server {} anymore. No role calculation done.", userExperience.getUser().getUserInServerId(), userExperience.getUser().getServerReference().getId());
-            return CompletableFuture.completedFuture(returnNullRole.apply(null));
-        }
         Long userInServerId = user.getUserInServerId();
-        log.trace("Updating experience role for user {} in server {}", user.getUserReference().getId(), user.getServerReference().getId());
+        Long serverId = user.getServerReference().getId();
+        log.trace("Updating experience role for user {} in server {}", user.getUserReference().getId(), serverId);
         AExperienceRole role = experienceRoleService.calculateRole(roles, currentLevel);
-        Member member = botService.getMemberInServer(user.getServerReference(), user.getUserReference());
         boolean currentlyHasNoExperienceRole = userExperience.getCurrentExperienceRole() == null;
+        // if calculation results in no role, do not add a role
         if(role == null) {
             log.trace("User {} in server {} does not have an experience role, according to new calculation.",
-                    user.getUserReference().getId(),  user.getServerReference().getId());
+                    user.getUserReference().getId(), serverId);
+            // if the user has a experience role currently, remove it
             if(!currentlyHasNoExperienceRole){
                 return roleService.removeRoleFromUserFuture(user, userExperience.getCurrentExperienceRole().getRole())
                         .thenApply(returnNullRole);
             }
             return CompletableFuture.completedFuture(returnNullRole.apply(null));
         }
-        boolean userHasRoleAlready = roleService.memberHasRole(member, role.getRole());
         Long experienceRoleId = role.getId();
-        Function<Void, RoleCalculationResult> fullResult = aVoid -> RoleCalculationResult
-                .builder()
-                .experienceRoleId(experienceRoleId)
-                .userInServerId(userInServerId)
-                .build();
-        if(!userHasRoleAlready && (currentlyHasNoExperienceRole || !role.getRole().getId().equals(userExperience.getCurrentExperienceRole().getRole().getId()))) {
-            log.info("User {} in server {} gets a new role {} because of experience.", user.getUserReference().getId(), user.getServerReference().getId(), role.getRole().getId());
-            CompletableFuture<Void> removalFuture;
-            if(!currentlyHasNoExperienceRole && botService.isUserInGuild(userExperience.getUser())) {
-                removalFuture = roleService.removeRoleFromUserFuture(user, userExperience.getCurrentExperienceRole().getRole());
-            } else {
-                removalFuture = CompletableFuture.completedFuture(null);
+        Long roleId = role.getRole().getId();
+        // if the new role is already the one configured in the database
+        Long userId = user.getUserReference().getId();
+        Long oldUserExperienceRoleId = currentlyHasNoExperienceRole ? 0L : userExperience.getCurrentExperienceRole().getRole().getId();
+        return botService.getMemberInServerAsync(user).thenCompose(member -> {
+            boolean userHasRoleAlready = roleService.memberHasRole(member, roleId);
+            boolean userHasOldRole = false;
+            boolean rolesChanged = true;
+            if(!currentlyHasNoExperienceRole) {
+                userHasOldRole = roleService.memberHasRole(member, oldUserExperienceRoleId);
+                rolesChanged = !roleId.equals(oldUserExperienceRoleId);
             }
-            CompletableFuture<Void> addRoleFuture = roleService.addRoleToUserFuture(user, role.getRole());
-            return CompletableFuture.allOf(removalFuture, addRoleFuture).thenApply(fullResult);
-        }
-        return CompletableFuture.completedFuture(fullResult.apply(null));
+            Function<Void, RoleCalculationResult> fullResult = aVoid -> RoleCalculationResult
+                    .builder()
+                    .experienceRoleId(experienceRoleId)
+                    .userInServerId(userInServerId)
+                    .build();
+            // if the roles changed or
+            // the user does not have the new target role already
+            // the user still has the old role
+            if((!userHasRoleAlready || userHasOldRole)) {
+                log.info("User {} in server {} gets a new role {} because of experience.", userId, serverId, roleId);
+                CompletableFuture<Void> removalFuture;
+                if(userHasOldRole && rolesChanged) {
+                    removalFuture = roleService.removeRoleFromMemberAsync(member, oldUserExperienceRoleId);
+                } else {
+                    removalFuture = CompletableFuture.completedFuture(null);
+                }
+                CompletableFuture<Void> addRoleFuture;
+                if(!userHasRoleAlready) {
+                    addRoleFuture = roleService.addRoleToMemberFuture(member, roleId);
+                } else {
+                    addRoleFuture = CompletableFuture.completedFuture(null);
+                }
+                return CompletableFuture.allOf(removalFuture, addRoleFuture).thenApply(fullResult);
+            }
+            // we are turning the full calculation result regardless
+            return CompletableFuture.completedFuture(fullResult.apply(null));
+        });
     }
 
     /**
@@ -405,7 +424,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             if(result != null) {
                 AUserInAServer user = userInServerManagementService.loadUser(result.getUserInServerId());
                 AUserExperience userExperience = userExperienceManagementService.findUserInServer(user);
-                log.trace("Updating experience role for {} in server {} to {}", user.getUserInServerId(), user.getServerReference(), result.getExperienceRoleId());
+                log.trace("Updating experience role for {} in server {} to {}", user.getUserInServerId(), user.getServerReference().getId(), result.getExperienceRoleId());
                 if(result.getExperienceRoleId() != null) {
                     log.trace("User experience {} gets new experience role with id {}.", userExperience.getId(), result.getExperienceRoleId());
                     AExperienceRole role = experienceRoleManagementService.getExperienceRoleById(result.getExperienceRoleId());

@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.modmail.service;
 
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 
@@ -21,12 +21,12 @@ public interface ModMailThreadService {
      * Creates a new mod mail thread for the given user. including: the {@link net.dv8tion.jda.api.entities.TextChannel}
      * in the appropriate {@link net.dv8tion.jda.api.entities.Category} and calls the methods responsible for storing
      * the necessary data in the database, notifying the users and sending messages  related to the creation of the {@link ModMailThread}
-     * @param userInAServer The {@link AUserInAServer} to create the mod mail thread for
+     * @param member The {@link AUserInAServer} to create the mod mail thread for
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
      * @param feedBackChannel The {@link MessageChannel} in which feedback about exceptions should be posted to
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
      */
-    CompletableFuture<Void> createModMailThreadForUser(FullUserInServer userInAServer, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated,  List<UndoActionInstance> undoActions);
+    CompletableFuture<Void> createModMailThreadForUser(Member member, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated, List<UndoActionInstance> undoActions);
 
     /**
      * Changes the configuration value of the category used to create mod mail threads to the given ID.
@@ -52,18 +52,20 @@ public interface ModMailThreadService {
      * @param modMailThread The {@link ModMailThread} on which the user answered
      * @param message The {@link Message} object which was sent by the user to answer with
      */
-    CompletableFuture<Void> relayMessageToModMailThread(ModMailThread modMailThread, Message message, List<UndoActionInstance> undoActions);
+    CompletableFuture<Message> relayMessageToModMailThread(ModMailThread modMailThread, Message message, List<UndoActionInstance> undoActions);
 
     /**
      * Forwards a message send by a moderator to the direct message channel opened with the user. If the message is
      * marked as anonymous, the bot will take the place of the author, in other case the author is shown in the embed.
-     * @param modMailThread The {@link ModMailThread} to which the reply was sent to
+     * @param threadId The id of the {@link ModMailThread} to which the reply was sent to
      * @param text The parsed text of the reply
      * @param message  The pure {@link Message} containing the command which caused the reply
      * @param anonymous Whether or nor the message should be send anonymous
      * @param feedBack The {@link MessageChannel} in which feedback about possible exceptions should be sent to
+     * @param undoActions list of {@link UndoActionInstance} to execute in case this fails
+     * @param targetMember The {@link Member} the {@link ModMailThread} is about.
      */
-    CompletableFuture<Void> relayMessageToDm(ModMailThread modMailThread, String text, Message message, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions);
+    CompletableFuture<Void> relayMessageToDm(Long threadId, String text, Message message, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions, Member targetMember);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,

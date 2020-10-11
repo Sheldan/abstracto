@@ -99,7 +99,7 @@ public class WarnManagementServiceBeanTest {
         Long serverId = 8L;
         Warning existingWarning = getWarning();
         when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, serverId)).thenReturn(Optional.ofNullable(existingWarning));
-        Optional<Warning> warningOptional = testUnit.findById(warnId, serverId);
+        Optional<Warning> warningOptional = testUnit.findByIdOptional(warnId, serverId);
         Assert.assertTrue(warningOptional.isPresent());
         warningOptional.ifPresent(foundWarning -> Assert.assertEquals(existingWarning, foundWarning));
     }
@@ -109,7 +109,7 @@ public class WarnManagementServiceBeanTest {
         Long warnId = 6L;
         Long serverId = 8L;
         when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, serverId)).thenReturn(Optional.ofNullable(null));
-        Optional<Warning> warningOptional = testUnit.findById(warnId, serverId);
+        Optional<Warning> warningOptional = testUnit.findByIdOptional(warnId, serverId);
         Assert.assertFalse(warningOptional.isPresent());
     }
 

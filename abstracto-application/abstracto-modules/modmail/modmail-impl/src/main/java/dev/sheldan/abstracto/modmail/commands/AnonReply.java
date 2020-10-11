@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -36,14 +37,19 @@ public class AnonReply extends AbstractConditionableCommand {
     @Autowired
     private ModMailThreadManagementService modMailThreadManagementService;
 
+    @Autowired
+    private BotService botService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // text is optional, for example if only an attachment is sent
         String text = parameters.size() == 1 ? (String) parameters.get(0) : "";
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        return modMailThreadService.relayMessageToDm(thread, text, commandContext.getMessage(), true, commandContext.getChannel(), commandContext.getUndoActions())
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+        Long threadId = thread.getId();
+        return botService.getMemberInServerAsync(thread.getUser()).thenCompose(member ->
+            modMailThreadService.relayMessageToDm(threadId, text, commandContext.getMessage(), true, commandContext.getChannel(), commandContext.getUndoActions(), member)
+        ).thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override

@@ -21,12 +21,19 @@ public class MinIntegerValueValidator implements ParameterValidator {
         if(value == null) {
             throw new IllegalArgumentException("Object to validate must not be null");
         }
-        if(!(value instanceof Long)) {
+        boolean isLong = value instanceof Long;
+        boolean isInteger = value instanceof Integer;
+        if(!isLong && !isInteger) {
             throw new ValidatorConfigException("Incorrect value passed to max value validator.");
         }
         SingleNumberValidatorParam param = (SingleNumberValidatorParam) getParameters().get(0);
-        Long longValue = (Long) value;
-        return longValue >= param.getNumber();
+        if(isLong) {
+            Long longValue = (Long) value;
+            return longValue >= param.getNumber();
+        } else {
+            Integer integerValue = (Integer) value;
+            return integerValue >= param.getNumber();
+        }
     }
 
     @Override

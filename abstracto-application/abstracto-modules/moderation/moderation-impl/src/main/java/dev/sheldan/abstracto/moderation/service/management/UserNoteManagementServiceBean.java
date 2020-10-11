@@ -47,6 +47,11 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     }
 
     @Override
+    public UserNote loadNote(Long userNoteId, Long serverId) {
+        return userNoteRepository.findByUserNoteId_IdAndUserNoteId_ServerId(userNoteId, serverId);
+    }
+
+    @Override
     public boolean noteExists(Long id, AServer server) {
         return userNoteRepository.existsByUserNoteId_IdAndUserNoteId_ServerId(id, server.getId());
     }

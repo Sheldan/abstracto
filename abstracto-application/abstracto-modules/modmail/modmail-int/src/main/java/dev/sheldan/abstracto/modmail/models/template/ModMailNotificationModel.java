@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ModMailNotificationModel extends ServerContext {
     /**
      * The {@link FullUserInServer} for which this thread is about
      */
-    private FullUserInServer threadUser;
+    private Member member;
     /**
      * A list of roles which will be notified upon creation of the mod mail thread.
      */

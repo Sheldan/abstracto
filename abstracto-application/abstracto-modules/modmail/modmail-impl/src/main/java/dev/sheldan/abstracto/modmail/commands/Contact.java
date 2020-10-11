@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -62,12 +61,7 @@ public class Contact extends AbstractConditionableCommand {
             List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInChannel("modmail_thread_already_exists", model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromSuccess());
         } else {
-            FullUserInServer fullUser = FullUserInServer
-                    .builder()
-                    .aUserInAServer(user)
-                    .member(targetUser)
-                    .build();
-            return modMailThreadService.createModMailThreadForUser(fullUser, null, commandContext.getChannel(), false, commandContext.getUndoActions())
+            return modMailThreadService.createModMailThreadForUser(targetUser, null, commandContext.getChannel(), false, commandContext.getUndoActions())
                     .thenApply(aVoid -> CommandResult.fromSuccess());
         }
     }

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,7 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message) {
-        Guild guild = botService.getGuildByIdNullable(serverId);
+        Guild guild = botService.getGuildById(serverId);
         return addReactionToMessageWithFuture(emoteKey, guild, message);
     }
 
@@ -93,7 +94,7 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Long serverId, Message message) {
+    public CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Message message) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById == null) {
@@ -123,13 +124,13 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(Integer emoteId, Long serverId, Message message) {
+    public CompletableFuture<Void> removeReactionFromMessageWithFuture(Integer emoteId, Message message) {
         AEmote emote = emoteManagementService.loadEmote(emoteId);
-        return removeReactionFromMessageWithFuture(emote, serverId, message);
+        return removeReactionFromMessageWithFuture(emote, message);
     }
 
     @Override
-    public CompletableFuture<Void> clearReactionFromMessageWithFuture(Integer emoteId, Long serverId, Message message) {
+    public CompletableFuture<Void> clearReactionFromMessageWithFuture(Integer emoteId, Message message) {
         AEmote emote = emoteManagementService.loadEmote(emoteId);
         return clearReactionFromMessageWithFuture(emote, message);
     }
@@ -139,14 +140,22 @@ public class MessageServiceBean implements MessageService {
         TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
         Integer emoteId = emote.getId();
         return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message1 -> removeReactionFromMessageWithFuture(emoteId, serverId, message1));
+                .thenCompose(message -> self.removeReactionFromMessageWithFuture(emoteId, message));
     }
 
     @Override
     public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Long userId) {
-        Guild guild = botService.getGuildByIdNullable(serverId);
-        Member memberById = guild.getMemberById(userId);
-        return removeReactionOfUserFromMessageWithFuture(emote, serverId, channelId, messageId, memberById);
+        Guild guild = botService.getGuildById(serverId);
+        Integer emoteId = emote.getId();
+        TextChannel textChannel = botService.getTextChannelFromServer(serverId, channelId);
+        CompletableFuture<Member> memberFuture = guild.retrieveMemberById(userId).submit();
+        CompletableFuture<Message> messageFuture = textChannel.retrieveMessageById(messageId).submit();
+
+        return CompletableFuture.allOf(memberFuture, messageFuture).thenCompose(aVoid ->
+            memberFuture.thenCompose(member ->
+                    self.removeReactionOfUserFromMessageWithFuture(emoteId, messageFuture.join(), memberFuture.join())
+            )
+        );
     }
 
     @Override
@@ -154,7 +163,7 @@ public class MessageServiceBean implements MessageService {
         TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
         Integer emoteId = emote.getId();
         return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message1 -> removeReactionOfUserFromMessageWithFuture(emoteId, message1, member));
+                .thenCompose(message -> self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member));
     }
 
     @Override
@@ -173,6 +182,7 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    @Transactional
     public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Member member) {
         AEmote emote = emoteManagementService.loadEmote(emoteId);
         return removeReactionOfUserFromMessageWithFuture(emote, message, member);
@@ -180,15 +190,17 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Message message, Long userId) {
-        Member memberById = message.getGuild().getMemberById(userId);
-        return removeReactionOfUserFromMessageWithFuture(emote, message, memberById);
+        Integer emoteId = emote.getId();
+        return message.getGuild().retrieveMemberById(userId).submit().thenCompose(member ->
+            self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member)
+        );
     }
 
     @Override
     public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Long userId) {
-        Member memberById = message.getGuild().getMemberById(userId);
-        AEmote emote = emoteManagementService.loadEmote(emoteId);
-        return removeReactionOfUserFromMessageWithFuture(emote, message, memberById);
+        return message.getGuild().retrieveMemberById(userId).submit().thenCompose(member ->
+            self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member)
+        );
     }
 
     @Override
@@ -196,7 +208,7 @@ public class MessageServiceBean implements MessageService {
         TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
         Integer emoteId = emote.getId();
         return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message1 -> clearReactionFromMessageWithFuture(emoteId, serverId, message1));
+                .thenCompose(message1 -> clearReactionFromMessageWithFuture(emoteId, message1));
     }
 
     @Override
@@ -239,8 +251,9 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text) {
-        Member memberInServer = botService.getMemberInServer(userInAServer);
-        return sendMessageToUser(memberInServer.getUser(), text);
+        return botService.getMemberInServerAsync(userInAServer).thenCompose(member ->
+            sendMessageToUser(member.getUser(), text)
+        );
     }
 
     @Override

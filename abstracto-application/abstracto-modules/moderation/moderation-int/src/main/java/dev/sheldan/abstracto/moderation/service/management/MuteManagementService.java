@@ -31,7 +31,8 @@ public interface MuteManagementService {
      * @param muteId The id of the mute to search for
      * @return An optional containing a {@link Mute} if the ID exists, and null otherwise
      */
-    Optional<Mute> findMute(Long muteId, Long serverId);
+    Optional<Mute> findMuteOptional(Long muteId, Long serverId);
+    Mute findMute(Long muteId, Long serverId);
 
     /**
      * Saves the given mute to the database.

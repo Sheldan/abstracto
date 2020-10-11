@@ -18,10 +18,13 @@ public interface BotService {
     void login() throws LoginException;
     JDA getInstance();
     GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId);
+    CompletableFuture<GuildChannelMember> getServerChannelUserAsync(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
+    CompletableFuture<Member> getMemberInServerAsync(Long serverId, Long memberId);
     boolean isUserInGuild(AUserInAServer aUserInAServer);
     boolean isUserInGuild(Guild guild, AUserInAServer aUserInAServer);
     Member getMemberInServer(AUserInAServer aUserInAServer);
+    CompletableFuture<Member> getMemberInServerAsync(AUserInAServer aUserInAServer);
     Member getMemberInServer(AServer server, AUser member);
     CompletableFuture<Void> deleteMessage(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Void> deleteMessage(Long channelId, Long messageId);
@@ -32,7 +35,7 @@ public interface BotService {
     TextChannel getTextChannelFromServer(Guild serverId, Long textChannelId);
     Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId);
     TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
-    Optional<Guild> getGuildById(Long serverId);
-    Guild getGuildByIdNullable(Long serverId);
+    Optional<Guild> getGuildByIdOptional(Long serverId);
+    Guild getGuildById(Long serverId);
     Member getBotInGuild(AServer server);
 }

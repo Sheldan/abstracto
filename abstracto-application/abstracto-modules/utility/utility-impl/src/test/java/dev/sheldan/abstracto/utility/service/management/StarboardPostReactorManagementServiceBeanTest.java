@@ -18,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -108,11 +109,11 @@ public class StarboardPostReactorManagementServiceBeanTest {
         StarStatsUser user1 = Mockito.mock(StarStatsUser.class);
         StarStatsUser user2 = Mockito.mock(StarStatsUser.class);
         setupStarStatsReceiverResult(amountToRetrieve, serverId, user1, user2);
-        List<StarStatsUser> starStatsUsers = testUnit.retrieveTopStarReceiver(serverId, amountToRetrieve);
+        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.retrieveTopStarReceiver(serverId, amountToRetrieve);
         Assert.assertEquals(expectedAmount, starStatsUsers.size());
-        Assert.assertEquals(user1, starStatsUsers.get(0));
+        Assert.assertEquals(user1, starStatsUsers.get(0).join());
         if(amountToRetrieve > 1) {
-            Assert.assertEquals(user2, starStatsUsers.get(1));
+            Assert.assertEquals(user2, starStatsUsers.get(1).join());
         }
     }
 
@@ -121,11 +122,11 @@ public class StarboardPostReactorManagementServiceBeanTest {
         StarStatsUser user1 = Mockito.mock(StarStatsUser.class);
         StarStatsUser user2 = Mockito.mock(StarStatsUser.class);
         setupStarStatsGiverResult(amountToRetrieve, serverId, user1, user2);
-        List<StarStatsUser> starStatsUsers = testUnit.retrieveTopStarGiver(serverId, amountToRetrieve);
+        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.retrieveTopStarGiver(serverId, amountToRetrieve);
         Assert.assertEquals(expectedAmount, starStatsUsers.size());
-        Assert.assertEquals(user1, starStatsUsers.get(0));
+        Assert.assertEquals(user1, starStatsUsers.get(0).join());
         if(amountToRetrieve > 1) {
-            Assert.assertEquals(user2, starStatsUsers.get(1));
+            Assert.assertEquals(user2, starStatsUsers.get(1).join());
         }
     }
 
@@ -134,10 +135,10 @@ public class StarboardPostReactorManagementServiceBeanTest {
         StarStatsUserResult result2 = Mockito.mock(StarStatsUserResult.class);
         List<StarStatsUserResult> results = Arrays.asList(result1, result2);
         when(repository.findTopStarGiverInServer(serverId, amountToRetrieve)).thenReturn(results);
-        List<StarStatsUser> statsUser = new ArrayList<>();
-        statsUser.add(user1);
+        List<CompletableFuture<StarStatsUser>> statsUser = new ArrayList<>();
+        statsUser.add(CompletableFuture.completedFuture(user1));
         if (amountToRetrieve > 1) {
-            statsUser.add(user2);
+            statsUser.add(CompletableFuture.completedFuture(user2));
         }
         when(converter.convertToStarStatsUser(results, serverId)).thenReturn(statsUser);
     }
@@ -147,10 +148,10 @@ public class StarboardPostReactorManagementServiceBeanTest {
         StarStatsUserResult result2 = Mockito.mock(StarStatsUserResult.class);
         List<StarStatsUserResult> results = Arrays.asList(result1, result2);
         when(repository.retrieveTopStarReceiverInServer(serverId, amountToRetrieve)).thenReturn(results);
-        List<StarStatsUser> statsUser = new ArrayList<>();
-        statsUser.add(user1);
+        List<CompletableFuture<StarStatsUser>> statsUser = new ArrayList<>();
+        statsUser.add(CompletableFuture.completedFuture(user1));
         if (amountToRetrieve > 1) {
-            statsUser.add(user2);
+            statsUser.add(CompletableFuture.completedFuture(user2));
         }
         when(converter.convertToStarStatsUser(results, serverId)).thenReturn(statsUser);
     }

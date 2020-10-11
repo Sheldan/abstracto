@@ -11,7 +11,6 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
-import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
 import dev.sheldan.abstracto.utility.service.StarboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,9 +32,10 @@ public class StarStats extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        StarStatsModel result = starboardService.retrieveStarStats(commandContext.getGuild().getIdLong());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, result, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+        return starboardService.retrieveStarStats(commandContext.getGuild().getIdLong())
+                .thenCompose(starStatsModel ->
+                    FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, starStatsModel, commandContext.getChannel()))
+        ).thenApply(o -> CommandResult.fromSuccess());
     }
 
     @Override

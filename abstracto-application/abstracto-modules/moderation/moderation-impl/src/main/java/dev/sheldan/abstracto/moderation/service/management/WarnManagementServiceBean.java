@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
@@ -24,7 +25,7 @@ public class WarnManagementServiceBean implements WarnManagementService {
     public Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, Long warnId) {
         log.info("Creating warning with id {} for user {} in server {} cast by user {}.",
                 warnId, warnedAUser.getUserReference().getId(), warningAUser.getServerReference().getId(), warningAUser.getUserReference().getId());
-        ServerSpecificId warningId = new ServerSpecificId(warnId, warningAUser.getServerReference().getId());
+        ServerSpecificId warningId = new ServerSpecificId(warningAUser.getServerReference().getId(), warnId);
         Warning warning = Warning.builder()
                 .reason(reason)
                 .warnedUser(warnedAUser)
@@ -64,8 +65,13 @@ public class WarnManagementServiceBean implements WarnManagementService {
     }
 
     @Override
-    public Optional<Warning> findById(Long id, Long serverId) {
+    public Optional<Warning> findByIdOptional(Long id, Long serverId) {
         return warnRepository.findByWarnId_IdAndWarnId_ServerId(id, serverId);
+    }
+
+    @Override
+    public Warning findById(Long id, Long serverId) {
+        return findByIdOptional(id, serverId).orElseThrow(() -> new AbstractoRunTimeException("Warning not found."));
     }
 
     @Override

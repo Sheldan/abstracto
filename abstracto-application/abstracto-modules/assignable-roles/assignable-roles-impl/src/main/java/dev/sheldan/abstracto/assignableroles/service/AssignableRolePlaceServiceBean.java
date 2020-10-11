@@ -554,7 +554,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     public void showAssignablePlaceConfig(AServer server, String name, MessageChannel channel) {
         AssignableRolePlace place = rolePlaceManagementService.findByServerAndKey(server, name);
         List<AssignablePostConfigRole> roles = new ArrayList<>();
-        Guild guild = botService.getGuildByIdNullable(server.getId());
+        Guild guild = botService.getGuildById(server.getId());
         log.info("Showing assignable role place config for place {} in channel {} on server {}.", place.getId(), channel.getId(), server.getId());
         List<AssignableRole> assignableRoles = place.getAssignableRoles().stream().sorted(Comparator.comparingInt(AssignableRole::getPosition)).collect(Collectors.toList());
         for (AssignableRole role : assignableRoles) {
@@ -609,17 +609,16 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Override
     public CompletableFuture<Void> removeExistingReactionsAndRoles(AssignableRolePlace place, AssignedRoleUser user) {
-        Member memberInServer = botService.getMemberInServer(user.getUser());
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         log.info("Removing all existing reactions and roles by user {} on assignable role place {} in server {}.", user.getId(), place.getId(), user.getUser().getServerReference().getId());
         user.getRoles().forEach(assignableRole -> {
-            futures.add(roleService.removeAssignableRoleFromUser(assignableRole, memberInServer));
-            log.trace("Removing role {} from user {} in server {} because of assignable role clearing.", assignableRole.getRole().getId(), memberInServer.getId(), place.getServer().getId());
+            futures.add(roleService.removeAssignableRoleFromUser(assignableRole, user.getUser()));
+            log.trace("Removing role {} from user {} in server {} because of assignable role clearing.", assignableRole.getRole().getId(), user.getUser().getUserReference().getId(), place.getServer().getId());
             AEmote emoteToUseObject = emoteManagementService.loadEmote(assignableRole.getEmote().getId());
             AssignableRolePlacePost assignablePlacePost = assignableRole.getAssignableRolePlacePost();
             log.trace("Removing reaction with emote {} from user {} in server {} because of assignable role clearing.", emoteToUseObject.getId(), user.getUser().getUserReference().getId(), place.getServer().getId());
             futures.add(messageService.removeReactionOfUserFromMessageWithFuture(emoteToUseObject, place.getServer().getId(),
-                    assignablePlacePost.getUsedChannel().getId(), assignablePlacePost.getId(), memberInServer));
+                    assignablePlacePost.getUsedChannel().getId(), assignablePlacePost.getId(), user.getUser().getUserReference().getId()));
         });
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }

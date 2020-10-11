@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.utility.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.repository.ReminderRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +40,13 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
     }
 
     @Override
-    public Optional<Reminder> loadReminder(Long reminderId) {
+    public Optional<Reminder> loadReminderOptional(Long reminderId) {
         return reminderRepository.findById(reminderId);
+    }
+
+    @Override
+    public Reminder loadReminder(Long reminderId) {
+        return loadReminderOptional(reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
     }
 
     @Override

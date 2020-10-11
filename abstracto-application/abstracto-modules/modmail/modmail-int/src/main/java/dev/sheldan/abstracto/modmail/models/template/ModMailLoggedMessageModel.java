@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 
 /**
@@ -26,7 +27,7 @@ public class ModMailLoggedMessageModel {
     /**
      * A reference to the {@link FullUserInServer} which is the author. The member part is null, if the member left the guild.
      */
-    private FullUserInServer author;
+    private Member author;
 
 
 }

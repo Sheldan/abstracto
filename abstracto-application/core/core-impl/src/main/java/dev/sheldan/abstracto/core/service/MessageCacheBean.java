@@ -76,7 +76,7 @@ public class MessageCacheBean implements MessageCache {
     @Override
     public CompletableFuture<CachedMessage> loadMessage(Long guildId, Long textChannelId, Long messageId) {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
-        Optional<Guild> guildOptional = botService.getGuildById(guildId);
+        Optional<Guild> guildOptional = botService.getGuildByIdOptional(guildId);
         if(guildOptional.isPresent()) {
             Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServerOptional(guildOptional.get(), textChannelId);
             if(textChannelByIdOptional.isPresent()) {

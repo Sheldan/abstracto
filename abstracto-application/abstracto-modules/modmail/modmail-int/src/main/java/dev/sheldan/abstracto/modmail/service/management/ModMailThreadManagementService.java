@@ -29,7 +29,14 @@ public interface ModMailThreadManagementService {
      * @param modMailThreadId The ID of the mod mail to search for
      * @return An {@link Optional} containing the mod mail thread or empty
      */
-    Optional<ModMailThread> getById(Long modMailThreadId);
+    Optional<ModMailThread> getByIdOptional(Long modMailThreadId);
+
+    /**
+     * Retrieves the {@link ModMailThread} by the given ID in an optional, if it exists, and an {@literal Optional#empty()} otherwise
+     * @param modMailThreadId The ID of the mod mail to search for
+     * @return An {@link Optional} containing the mod mail thread or empty
+     */
+    ModMailThread getById(Long modMailThreadId);
 
     /**
      * Retrieves a {@link ModMailThread} found in the {@link net.dv8tion.jda.api.entities.MessageChannel} given by the

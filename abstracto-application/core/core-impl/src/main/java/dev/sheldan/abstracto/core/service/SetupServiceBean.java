@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.models.template.commands.SetupCompletedNotific
 import dev.sheldan.abstracto.core.models.template.commands.SetupInitialMessageModel;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -141,8 +140,12 @@ public class SetupServiceBean implements SetupService {
     @Transactional
     public void showExceptionMessage(Throwable throwable, AServerChannelUserId aServerChannelUserId) {
         Optional<TextChannel> channelOptional = botService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
-        Member member = botService.getMemberInServer(aServerChannelUserId.getGuildId(), aServerChannelUserId.getUserId());
-        channelOptional.ifPresent(textChannel -> exceptionService.reportExceptionToChannel(throwable, textChannel, member));
+        botService.getMemberInServerAsync(aServerChannelUserId.getGuildId(), aServerChannelUserId.getUserId()).thenAccept(member ->
+            channelOptional.ifPresent(textChannel -> exceptionService.reportExceptionToChannel(throwable, textChannel, member))
+        ).exceptionally(innserThrowable -> {
+            log.error("Failed to report exception message for exception {} for user {} in channel {} in server {}.", throwable, aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), innserThrowable);
+            return null;
+        });
     }
 
     @Transactional

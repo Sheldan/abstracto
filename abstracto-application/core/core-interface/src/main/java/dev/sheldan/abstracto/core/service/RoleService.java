@@ -12,10 +12,12 @@ import java.util.concurrent.CompletableFuture;
 public interface RoleService {
     void addRoleToUser(AUserInAServer aUserInAServer, ARole role);
     CompletableFuture<Void> addRoleToUserFuture(AUserInAServer aUserInAServer, ARole role);
+    CompletableFuture<Void> addRoleToMemberFuture(Member member, Long roleId);
     void addRoleToMember(Member member, ARole role);
     CompletableFuture<Void> addRoleToMemberFuture(Member member, ARole role);
     void removeRoleFromMember(Member member, ARole role);
-    CompletableFuture<Void> removeRoleFromMemberFuture(Member member, ARole role);
+    CompletableFuture<Void> removeRoleFromMemberAsync(Member member, ARole role);
+    CompletableFuture<Void> removeRoleFromMemberAsync(Member member, Long roleId);
     void removeRoleFromUser(AUserInAServer aUserInAServer, ARole role);
     CompletableFuture<Void> removeRoleFromUserFuture(AUserInAServer aUserInAServer, ARole role);
     void markDeleted(Role role, AServer server);
@@ -25,6 +27,7 @@ public interface RoleService {
     boolean hasAnyOfTheRoles(Member member, List<ARole> roles);
     boolean memberHasRole(Member member, Role role);
     boolean memberHasRole(Member member, ARole role);
+    boolean memberHasRole(Member member, Long roleId);
     boolean isRoleInServer(ARole role);
     boolean canBotInteractWithRole(ARole role);
     ARole getFakeRoleFromRole(Role role);

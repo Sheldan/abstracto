@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -52,13 +53,13 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
     }
 
     @Override
-    public List<StarStatsUser> retrieveTopStarGiver(Long serverId, Integer count) {
+    public List<CompletableFuture<StarStatsUser>> retrieveTopStarGiver(Long serverId, Integer count) {
         List<StarStatsUserResult> starGivers = repository.findTopStarGiverInServer(serverId, count);
         return converter.convertToStarStatsUser(starGivers, serverId);
     }
 
     @Override
-    public List<StarStatsUser> retrieveTopStarReceiver(Long serverId, Integer count) {
+    public List<CompletableFuture<StarStatsUser>> retrieveTopStarReceiver(Long serverId, Integer count) {
         List<StarStatsUserResult> starReceivers = repository.retrieveTopStarReceiverInServer(serverId, count);
         return converter.convertToStarStatsUser(starReceivers, serverId);
     }

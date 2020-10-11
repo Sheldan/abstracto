@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.models.templates;
 
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-public class RankModel extends UserInitiatedServerContext {
+public class RankModel extends SlimUserInitiatedServerContext {
     /**
      * The {@link LeaderBoardEntryModel} containing the experience information about the user executing the rank
      * command.

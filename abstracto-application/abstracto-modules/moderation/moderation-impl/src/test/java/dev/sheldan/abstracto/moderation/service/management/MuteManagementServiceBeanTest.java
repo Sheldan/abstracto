@@ -69,7 +69,7 @@ public class MuteManagementServiceBeanTest {
         Long serverId = 7L;
         Mute mute = Mute.builder().muteId(new ServerSpecificId(serverId, id)).build();
         when(muteRepository.findByMuteId_IdAndMuteId_ServerId(id, serverId)).thenReturn(Optional.of(mute));
-        Optional<Mute> foundMuteOptional = testUnit.findMute(id, serverId);
+        Optional<Mute> foundMuteOptional = testUnit.findMuteOptional(id, serverId);
         Assert.assertTrue(foundMuteOptional.isPresent());
         foundMuteOptional.ifPresent(foundMute -> Assert.assertEquals(id, foundMute.getMuteId().getId()));
     }
@@ -79,7 +79,7 @@ public class MuteManagementServiceBeanTest {
         Long id = 5L;
         Long serverId = 7L;
         when(muteRepository.findByMuteId_IdAndMuteId_ServerId(id, serverId)).thenReturn(Optional.empty());
-        Optional<Mute> foundMuteOptional = testUnit.findMute(id, serverId);
+        Optional<Mute> foundMuteOptional = testUnit.findMuteOptional(id, serverId);
         Assert.assertFalse(foundMuteOptional.isPresent());
     }
 

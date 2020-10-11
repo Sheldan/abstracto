@@ -42,7 +42,7 @@ public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
      */
     @Override
     public void featureIsSetup(FeatureConfig featureConfig, AServer server, FeatureValidationResult validationResult) {
-        Optional<Guild> guildById = botService.getGuildById(server.getId());
+        Optional<Guild> guildById = botService.getGuildByIdOptional(server.getId());
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
             boolean checkSucceeded = featureValidatorService.checkSystemConfig(ModMailThreadServiceBean.MODMAIL_CATEGORY, server, validationResult);

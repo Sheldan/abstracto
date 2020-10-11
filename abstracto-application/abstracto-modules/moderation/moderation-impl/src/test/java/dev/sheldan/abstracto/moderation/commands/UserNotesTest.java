@@ -64,15 +64,16 @@ public class UserNotesTest {
         when(userNoteManagementService.loadNotesForUser(userNoteUser)).thenReturn(userNotes);
         NoteEntryModel firstConvertedNote = NoteEntryModel.builder().build();
         NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
-        List<NoteEntryModel> convertedNotes = Arrays.asList(firstConvertedNote, secondConvertedNote);
+        CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
-        Assert.assertEquals(convertedNotes.size(), usedModel.getUserNotes().size());
+        List<NoteEntryModel> notes = convertedNotes.join();
+        Assert.assertEquals(notes.size(), usedModel.getUserNotes().size());
         for (int i = 0; i < usedModel.getUserNotes().size(); i++) {
             NoteEntryModel usedEntry = usedModel.getUserNotes().get(i);
-            NoteEntryModel expectedEntry = convertedNotes.get(i);
+            NoteEntryModel expectedEntry = notes.get(i);
             Assert.assertEquals(expectedEntry, usedEntry);
         }
         Assert.assertEquals(userNoteUser, usedModel.getSpecifiedUser().getAUserInAServer());
@@ -89,15 +90,16 @@ public class UserNotesTest {
         when(userNoteManagementService.loadNotesForServer(parameters.getUserInitiatedContext().getServer())).thenReturn(userNotes);
         NoteEntryModel firstConvertedNote = NoteEntryModel.builder().build();
         NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
-        List<NoteEntryModel> convertedNotes = Arrays.asList(firstConvertedNote, secondConvertedNote);
+        CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
+        List<NoteEntryModel> notes = convertedNotes.join();
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
-        Assert.assertEquals(convertedNotes.size(), usedModel.getUserNotes().size());
+        Assert.assertEquals(notes.size(), usedModel.getUserNotes().size());
         for (int i = 0; i < usedModel.getUserNotes().size(); i++) {
             NoteEntryModel usedEntry = usedModel.getUserNotes().get(i);
-            NoteEntryModel expectedEntry = convertedNotes.get(i);
+            NoteEntryModel expectedEntry = notes.get(i);
             Assert.assertEquals(expectedEntry, usedEntry);
         }
         Assert.assertNull(usedModel.getSpecifiedUser());

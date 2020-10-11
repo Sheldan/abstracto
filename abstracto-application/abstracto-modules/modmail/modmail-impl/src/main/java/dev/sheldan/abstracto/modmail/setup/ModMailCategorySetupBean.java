@@ -78,7 +78,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                 .builder()
                 .build();
         if(configManagementService.configExists(user.getGuildId(), ModMailThreadServiceBean.MODMAIL_CATEGORY)) {
-            Guild guild = botService.getGuildByIdNullable(user.getGuildId());
+            Guild guild = botService.getGuildById(user.getGuildId());
             Long categoryId = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId());
             log.trace("Previous modmail category exists for server {}. Loading value {}.", guild.getId(), categoryId);
             Category category = guild.getCategoryById(categoryId);
@@ -104,7 +104,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                     String messageContent = event.getMessage().getContentRaw();
                     // directly parse the long from the message, for *now*, only the category ID is supported
                     Long categoryId = Long.parseLong(messageContent);
-                    Guild guild = botService.getGuildByIdNullable(user.getGuildId());
+                    Guild guild = botService.getGuildById(user.getGuildId());
                     FeatureValidationResult featureValidationResult = FeatureValidationResult.builder().validationResult(true).build();
                     // directly validate whether or not the given category ID is a valid value
                     modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);

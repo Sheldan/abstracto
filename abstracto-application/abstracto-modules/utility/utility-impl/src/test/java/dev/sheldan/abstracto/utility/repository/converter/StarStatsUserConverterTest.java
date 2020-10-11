@@ -1,6 +1,9 @@
 package dev.sheldan.abstracto.utility.repository.converter;
 
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,6 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -26,6 +30,8 @@ public class StarStatsUserConverterTest {
     @Mock
     private BotService botService;
 
+    @Mock
+    private UserInServerManagementService userInServerManagementService;
 
     @Test
     public void testConversionOfMultipleItems() {
@@ -37,24 +43,34 @@ public class StarStatsUserConverterTest {
         List<StarStatsUserResult> results = new ArrayList<>();
         StarStatsUserResult firstResult = Mockito.mock(StarStatsUserResult.class);
         Member firstMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(serverId, firstUserId)).thenReturn(firstMember);
+        AUserInAServer firstUser = Mockito.mock(AUserInAServer.class);
+        AUser firstAUser = Mockito.mock(AUser.class);
+        when(firstAUser.getId()).thenReturn(firstUserId);
+        when(firstUser.getUserReference()).thenReturn(firstAUser);
+        when(userInServerManagementService.loadUser(firstUserId)).thenReturn(firstUser);
+        when(botService.getMemberInServerAsync(serverId, firstUserId)).thenReturn(CompletableFuture.completedFuture(firstMember));
         when(firstResult.getUserId()).thenReturn(firstUserId);
         when(firstResult.getStarCount()).thenReturn(firstStarCount);
         results.add(firstResult);
         StarStatsUserResult secondResult = Mockito.mock(StarStatsUserResult.class);
         Member secondMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServer(serverId, secondUserId)).thenReturn(secondMember);
+        AUserInAServer secondUser = Mockito.mock(AUserInAServer.class);
+        AUser secondAUser = Mockito.mock(AUser.class);
+        when(secondAUser.getId()).thenReturn(secondUserId);
+        when(secondUser.getUserReference()).thenReturn(secondAUser);
+        when(userInServerManagementService.loadUser(secondUserId)).thenReturn(secondUser);
+        when(botService.getMemberInServerAsync(serverId, secondUserId)).thenReturn(CompletableFuture.completedFuture(secondMember));
 
         when(secondResult.getUserId()).thenReturn(secondUserId);
         when(secondResult.getStarCount()).thenReturn(secondStarCount);
         results.add(secondResult);
 
-        List<StarStatsUser> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
-        StarStatsUser firstConverted = starStatsUsers.get(0);
+        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
+        StarStatsUser firstConverted = starStatsUsers.get(0).join();
         Assert.assertEquals(firstStarCount, firstConverted.getStarCount());
         Assert.assertEquals(firstMember, firstConverted.getMember());
         Assert.assertEquals(firstUserId, firstConverted.getUser().getId());
-        StarStatsUser secondConverted = starStatsUsers.get(1);
+        StarStatsUser secondConverted = starStatsUsers.get(1).join();
         Assert.assertEquals(secondStarCount, secondConverted.getStarCount());
         Assert.assertEquals(secondMember, secondConverted.getMember());
         Assert.assertEquals(secondUserId, secondConverted.getUser().getId());
@@ -66,7 +82,7 @@ public class StarStatsUserConverterTest {
         Long serverId = 5L;
         List<StarStatsUserResult> results = new ArrayList<>();
 
-        List<StarStatsUser> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
+        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
         verify(botService, times(0)).getMemberInServer(eq(serverId), anyLong());
         Assert.assertEquals(0, starStatsUsers.size());
 

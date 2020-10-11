@@ -116,7 +116,7 @@ public class ReminderManagementServiceBeanTest {
         Long reminderId = 5L;
         Reminder reminderToLoad = Reminder.builder().build();
         when(reminderRepository.findById(reminderId)).thenReturn(Optional.of(reminderToLoad));
-        Optional<Reminder> returned = testUnit.loadReminder(reminderId);
+        Optional<Reminder> returned = testUnit.loadReminderOptional(reminderId);
         Assert.assertTrue(returned.isPresent());
         returned.ifPresent(returnedReminder -> Assert.assertEquals(reminderToLoad, returnedReminder));
     }
@@ -125,7 +125,7 @@ public class ReminderManagementServiceBeanTest {
     public void testLoadingReminderNotFound() {
         Long reminderId = 5L;
         when(reminderRepository.findById(reminderId)).thenReturn(Optional.empty());
-        Optional<Reminder> returned = testUnit.loadReminder(reminderId);
+        Optional<Reminder> returned = testUnit.loadReminderOptional(reminderId);
         Assert.assertFalse(returned.isPresent());
     }
 

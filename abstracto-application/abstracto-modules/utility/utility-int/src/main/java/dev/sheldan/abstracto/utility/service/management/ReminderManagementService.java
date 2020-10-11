@@ -10,7 +10,8 @@ import java.util.Optional;
 
 public interface ReminderManagementService {
     Reminder createReminder(AServerAChannelAUser userToBeReminded, String text, Instant timeToBeRemindedAt, Long messageId);
-    Optional<Reminder> loadReminder(Long reminderId);
+    Optional<Reminder> loadReminderOptional(Long reminderId);
+    Reminder loadReminder(Long reminderId);
     void setReminded(Reminder reminder);
     Reminder saveReminder(Reminder reminder);
     List<Reminder> getActiveRemindersForUser(AUserInAServer aUserInAServer);

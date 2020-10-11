@@ -83,7 +83,7 @@ public class MessageEmbedListenerTest {
         String linkText = "link";
         String text = linkText;
         executeLinkTestForOneLink(text, linkText, ORIGIN_GUILD_ID, ORIGIN_GUILD_ID);
-        verify(self, times(1)).loadUserAndEmbed(eq(message), anyLong(), any(CachedMessage.class));
+        verify(self, times(1)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
         verify(message, times(1)).delete();
         verify(deletionRestAction, times(1)).queue();
     }
@@ -93,7 +93,7 @@ public class MessageEmbedListenerTest {
         String linkText = "link";
         String text = linkText + "more text";
         executeLinkTestForOneLink(text, linkText, ORIGIN_GUILD_ID, ORIGIN_GUILD_ID);
-        verify(self, times(1)).loadUserAndEmbed(eq(message), anyLong(), any(CachedMessage.class));
+        verify(self, times(1)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
         verify(message, times(0)).delete();
         verify(deletionRestAction, times(0)).queue();
     }
@@ -105,7 +105,7 @@ public class MessageEmbedListenerTest {
         executeLinkTestForOneLink(text, linkText, ORIGIN_GUILD_ID, EMBEDDING_GUILD_ID);
         verify(message, times(0)).delete();
         verify(deletionRestAction, times(0)).queue();
-        verify(self, times(0)).loadUserAndEmbed(eq(message), anyLong(), any(CachedMessage.class));
+        verify(self, times(0)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
         verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
     }
 
@@ -149,7 +149,7 @@ public class MessageEmbedListenerTest {
         testUnit.execute(message);
         verify(message, times(0)).delete();
         verify(deletionRestAction, times(0)).queue();
-        verify(self, times(1)).loadUserAndEmbed(message, embeddingUser.getUserInServerId(), cachedMessage);
+        verify(self, times(1)).embedSingleLink(message, embeddingUser.getUserInServerId(), cachedMessage);
     }
 
     @Test
@@ -189,8 +189,8 @@ public class MessageEmbedListenerTest {
         testUnit.execute(message);
         verify(message, times(1)).delete();
         verify(deletionRestAction, times(1)).queue();
-        verify(self, times(1)).loadUserAndEmbed(message, userInAServer.getUserInServerId(), cachedMessage);
-        verify(self, times(1)).loadUserAndEmbed(message, userInAServer.getUserInServerId(), secondCachedMessage);
+        verify(self, times(1)).embedSingleLink(message, userInAServer.getUserInServerId(), cachedMessage);
+        verify(self, times(1)).embedSingleLink(message, userInAServer.getUserInServerId(), secondCachedMessage);
     }
 
     @Test
@@ -198,8 +198,8 @@ public class MessageEmbedListenerTest {
         CachedMessage cachedMessage = CachedMessage.builder().build();
         long userId = 3L;
         when(message.getTextChannel()).thenReturn(textChannel);
-        testUnit.loadUserAndEmbed(message, userId, cachedMessage);
-        verify(messageEmbedService, times(1)).embedLink(cachedMessage, textChannel, userId, message);
+        when(messageEmbedService.embedLink(cachedMessage, textChannel, userId, message)).thenReturn(CompletableFuture.completedFuture(null));
+        testUnit.embedSingleLink(message, userId, cachedMessage);
     }
 
     private void executeLinkTestForOneLink(String text, String linkText, Long originServerId, Long embeddingServerId) {

@@ -50,9 +50,7 @@ public class BotServiceBean implements BotService {
     @Override
     public GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId)  {
         log.trace("Trying to retrieve member {}, channel {} in server {} from cache.", userId, channelId, serverId);
-        Optional<Guild> guildOptional = getGuildById(serverId);
-        if(guildOptional.isPresent()) {
-            Guild guild = guildOptional.get();
+        Guild guild = getGuildById(serverId);
             Optional<TextChannel> textChannelOptional = this.getTextChannelFromServerOptional(guild, channelId);
             if(textChannelOptional.isPresent()) {
                 TextChannel textChannel = textChannelOptional.get();
@@ -61,10 +59,18 @@ public class BotServiceBean implements BotService {
             } else {
                 throw new ChannelNotFoundException(channelId);
             }
-        }
-        else {
-            throw new GuildNotFoundException(serverId);
-        }
+    }
+
+    @Override
+    public CompletableFuture<GuildChannelMember> getServerChannelUserAsync(Long serverId, Long channelId, Long userId) {
+        log.trace("Trying to retrieve member {}, channel {} in server {} async.", userId, channelId, serverId);
+        CompletableFuture<Member> memberFuture = getMemberInServerAsync(serverId, userId);
+
+        Guild guild = getGuildById(serverId);
+        TextChannel textChannel = this.getTextChannelFromServer(guild, channelId);
+        return memberFuture.thenApply(member ->
+            GuildChannelMember.builder().guild(guild).textChannel(textChannel).member(member).build()
+        );
     }
 
     @Override
@@ -73,6 +79,17 @@ public class BotServiceBean implements BotService {
         Guild guildById = instance.getGuildById(serverId);
         if(guildById != null) {
             return guildById.getMemberById(memberId);
+        } else {
+            throw new GuildNotFoundException(serverId);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Member> getMemberInServerAsync(Long serverId, Long memberId) {
+        log.trace("Retrieving member {} in server {} from cache.", memberId, serverId);
+        Guild guildById = instance.getGuildById(serverId);
+        if(guildById != null) {
+            return guildById.retrieveMemberById(memberId).submit();
         } else {
             throw new GuildNotFoundException(serverId);
         }
@@ -96,6 +113,11 @@ public class BotServiceBean implements BotService {
     @Override
     public Member getMemberInServer(AUserInAServer aUserInAServer) {
         return getMemberInServer(aUserInAServer.getServerReference().getId(), aUserInAServer.getUserReference().getId());
+    }
+
+    @Override
+    public CompletableFuture<Member> getMemberInServerAsync(AUserInAServer aUserInAServer) {
+        return getMemberInServerAsync(aUserInAServer.getServerReference().getId(), aUserInAServer.getUserReference().getId());
     }
 
     @Override
@@ -139,7 +161,7 @@ public class BotServiceBean implements BotService {
         if(Boolean.FALSE.equals(emote.getCustom())) {
             return Optional.empty();
         }
-        Optional<Guild> guildById = getGuildById(serverId);
+        Optional<Guild> guildById = getGuildByIdOptional(serverId);
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
             Emote emoteById = guild.getEmoteById(emote.getEmoteId());
@@ -168,7 +190,7 @@ public class BotServiceBean implements BotService {
 
     @Override
     public Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId)  {
-        Optional<Guild> guildOptional = getGuildById(serverId);
+        Optional<Guild> guildOptional = getGuildByIdOptional(serverId);
         if(guildOptional.isPresent()) {
             Guild guild = guildOptional.get();
             return Optional.ofNullable(guild.getTextChannelById(textChannelId));
@@ -182,22 +204,22 @@ public class BotServiceBean implements BotService {
     }
 
     @Override
-    public Optional<Guild> getGuildById(Long serverId) {
+    public Optional<Guild> getGuildByIdOptional(Long serverId) {
         return Optional.ofNullable(instance.getGuildById(serverId));
     }
 
     @Override
-    public Guild getGuildByIdNullable(Long serverId) {
-        return instance.getGuildById(serverId);
+    public Guild getGuildById(Long serverId) {
+        Guild guildById = instance.getGuildById(serverId);
+        if(guildById == null) {
+            throw new GuildNotFoundException(serverId);
+        }
+        return guildById;
     }
 
     @Override
     public Member getBotInGuild(AServer server) {
-        Optional<Guild> guildOptional = getGuildById(server.getId());
-        if(guildOptional.isPresent()) {
-            Guild guild = guildOptional.get();
-            return guild.getMemberById(instance.getSelfUser().getId());
-        }
-        return null;
+        Guild guild = getGuildById(server.getId());
+        return guild.getMemberById(instance.getSelfUser().getId());
     }
 }

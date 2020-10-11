@@ -16,10 +16,10 @@ public interface MessageService {
     CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Long serverId, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Guild guild, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(Long emoteId, Long serverId, Message message);
-    CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Long serverId, Message message);
+    CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Message message);
     CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Message message);
-    CompletableFuture<Void> removeReactionFromMessageWithFuture(Integer emoteId, Long serverId, Message message);
-    CompletableFuture<Void> clearReactionFromMessageWithFuture(Integer emoteId, Long serverId, Message message);
+    CompletableFuture<Void> removeReactionFromMessageWithFuture(Integer emoteId, Message message);
+    CompletableFuture<Void> clearReactionFromMessageWithFuture(Integer emoteId, Message message);
     CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId);
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Long userId);
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Member member);

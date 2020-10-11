@@ -41,13 +41,19 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
     @Override
     @Transactional
     public void execute(Message message) {
+        if(message.getAuthor().isBot()) {
+            return;
+        }
         AUser user = userManagementService.loadUser(message.getAuthor().getIdLong());
         if(modMailThreadManagementService.hasOpenModMailThread(user)) {
             log.trace("User {} has an open modmail thread. Forwarding message {}.", user.getId(), message.getId());
             // there is only one open mod mail thread for a user at a time, so we can select the first one
             // we cannot use the AUserInAServer directly, because a message in a private channel does not have a Member
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadsForUser(user).get(0);
-            modMailThreadService.relayMessageToModMailThread(existingThread, message, new ArrayList<>());
+            modMailThreadService.relayMessageToModMailThread(existingThread, message, new ArrayList<>()).exceptionally(throwable -> {
+                log.error("Error when relaying message from user {} in modmail listener.", message.getAuthor().getIdLong(), throwable);
+                return null;
+            });
         } else {
             log.info("User {} does not have an open modmail thread. Crating prompt.", user.getId());
             modMailThreadService.createModMailPrompt(user, message);

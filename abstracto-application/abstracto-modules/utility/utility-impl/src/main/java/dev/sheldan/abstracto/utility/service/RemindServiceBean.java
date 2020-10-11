@@ -5,8 +5,8 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
@@ -36,6 +36,7 @@ import java.util.concurrent.*;
 @Slf4j
 public class RemindServiceBean implements ReminderService {
 
+    public static final String REMINDER_TEMPLATE_TEXT = "remind_reminder";
     @Autowired
     private ReminderManagementService reminderManagementService;
 
@@ -52,7 +53,7 @@ public class RemindServiceBean implements ReminderService {
     private BotService botService;
 
     @Autowired
-    private ReminderService self;
+    private RemindServiceBean self;
 
     @Autowired
     private ChannelService channelService;
@@ -60,6 +61,7 @@ public class RemindServiceBean implements ReminderService {
     @Autowired
     @Qualifier("reminderScheduler")
     private ScheduledExecutorService instantReminderScheduler;
+
 
     @Override
     public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Message message) {
@@ -99,7 +101,7 @@ public class RemindServiceBean implements ReminderService {
     @Override
     @Transactional
     public void executeReminder(Long reminderId)  {
-        Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
+        Reminder reminderToRemindFor = reminderManagementService.loadReminder(reminderId);
         if(reminderToRemindFor.isReminded()) {
             return;
         }
@@ -107,22 +109,15 @@ public class RemindServiceBean implements ReminderService {
         AChannel channel = reminderToRemindFor.getChannel();
         log.info("Executing reminder {} in channel {} in server {} for user {}.",
                 reminderId, channel.getId(), server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId());
-        Optional<Guild> guildToAnswerIn = botService.getGuildById(server.getId());
+        Optional<Guild> guildToAnswerIn = botService.getGuildByIdOptional(server.getId());
         if(guildToAnswerIn.isPresent()) {
             Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServerOptional(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
-                AUser userReference = reminderToRemindFor.getRemindedUser().getUserReference();
-                Member memberInServer = botService.getMemberInServer(server.getId(), userReference.getId());
-                log.trace("Reminding user {}", userReference.getId());
-                ExecutedReminderModel build = ExecutedReminderModel
-                        .builder()
-                        .reminder(reminderToRemindFor)
-                        .member(memberInServer)
-                        .duration(Duration.between(reminderToRemindFor.getReminderDate(), reminderToRemindFor.getTargetDate()))
-                        .build();
-                MessageToSend messageToSend = templateService.renderEmbedTemplate("remind_reminder", build);
-                channelService.sendMessageToSendToChannel(messageToSend, channelToAnswerIn.get());
+                botService.getMemberInServerAsync(server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId()).thenAccept(member ->
+                    self.sendReminderText(reminderId, channelToAnswerIn.get(), member)
+                );
+
             } else {
                 log.warn("Channel {} in server {} to remind user did not exist anymore. Ignoring reminder {}", channel.getId(), server.getId(), reminderId);
             }
@@ -130,6 +125,20 @@ public class RemindServiceBean implements ReminderService {
             log.warn("Guild {} to remind user in did not exist anymore. Ignoring reminder {}.", server.getId(), reminderId);
         }
         reminderManagementService.setReminded(reminderToRemindFor);
+    }
+
+    @Transactional
+    public CompletableFuture<Void> sendReminderText(Long reminderId, TextChannel channelToAnswerIn, Member member) {
+        Reminder reminder = reminderManagementService.loadReminder(reminderId);
+        log.trace("Sending remind message for reminder {} to user user {} in server {}.", reminderId, member.getIdLong(), member.getGuild().getIdLong());
+        ExecutedReminderModel build = ExecutedReminderModel
+                .builder()
+                .reminder(reminder)
+                .member(member)
+                .duration(Duration.between(reminder.getReminderDate(), reminder.getTargetDate()))
+                .build();
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(REMINDER_TEMPLATE_TEXT, build);
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, channelToAnswerIn));
     }
 
     @Override

@@ -20,8 +20,11 @@ public interface UserNoteRepository extends JpaRepository<UserNote, Long> {
     List<UserNote> findByUser_ServerReference(AServer server);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    boolean existsByUserNoteId_IdAndUserNoteId_ServerId(@NonNull Long aLong, Long serverId);
+    boolean existsByUserNoteId_IdAndUserNoteId_ServerId(@NonNull Long userNoteId, Long serverId);
 
     void deleteByUserNoteId_IdAndUserNoteId_ServerId(@NonNull Long aLong, Long serverId);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    UserNote findByUserNoteId_IdAndUserNoteId_ServerId(Long userNoteId, Long serverId);
 
 }

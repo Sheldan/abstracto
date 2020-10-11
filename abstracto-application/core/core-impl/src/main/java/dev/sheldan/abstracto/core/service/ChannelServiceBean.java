@@ -252,7 +252,7 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId) {
-        Optional<Guild> guildById = botService.getGuildById(server.getId());
+        Optional<Guild> guildById = botService.getGuildByIdOptional(server.getId());
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
             Category categoryById = guild.getCategoryById(categoryId);

@@ -58,6 +58,9 @@ public class WarnServiceBeanTest {
     private ConfigService configService;
 
     @Mock
+    private WarnServiceBean self;
+
+    @Mock
     private Member warnedMember;
 
     @Mock
@@ -128,14 +131,14 @@ public class WarnServiceBeanTest {
     public void testDecayWarningsForServer() {
         setupWarnDecay();
         testUnit.decayWarningsForServer(server);
-        verifyWarnDecayWithLog(true);
+        verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
     @Test
     public void testDecayAllWarningsForServerWithLog() {
         setupWarnDecay();
         testUnit.decayAllWarningsForServer(server, true);
-        verifyWarnDecayWithLog(true);
+        verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
     @Test
@@ -148,14 +151,10 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayAllWarningsWithoutWarnings() {
         List<Warning> warnings = Collections.emptyList();
-        when(botService.getGuildByIdNullable(server.getId())).thenReturn(guild);
-        when(templateService.renderEmbedTemplate(eq(WARN_DECAY_LOG_TEMPLATE_KEY), warnDecayLogModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(server.getId()).thenReturn(SERVER_ID);
         when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
         testUnit.decayAllWarningsForServer(server, true);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId());
-        WarnDecayLogModel model = warnDecayLogModelArgumentCaptor.getValue();
-        List<WarnDecayWarning> usedWarnings = model.getWarnings();
-        Assert.assertEquals(0, usedWarnings.size());
+        verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
     @Test
@@ -218,11 +217,9 @@ public class WarnServiceBeanTest {
         setupWarnings();
         when(configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId())).thenReturn(5L);
         List<Warning> warnings = Arrays.asList(firstWarning, secondWarning);
-        when(botService.getMemberInServer(warningUser)).thenReturn(warningMember);
-        when(botService.getMemberInServer(firstWarnedUser)).thenReturn(warnedMember);
-        when(botService.getMemberInServer(secondWarnedUser)).thenReturn(secondWarnedMember);
-        when(botService.getGuildByIdNullable(server.getId())).thenReturn(guild);
-        when(templateService.renderEmbedTemplate(eq(WARN_DECAY_LOG_TEMPLATE_KEY), warnDecayLogModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(botService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
+        when(botService.getMemberInServerAsync(firstWarnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
+        when(botService.getMemberInServerAsync(secondWarnedUser)).thenReturn(CompletableFuture.completedFuture(secondWarnedMember));
         when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
     }
 
