@@ -2,7 +2,9 @@ package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.core.command.config.ModuleInfo;
 import dev.sheldan.abstracto.core.command.config.ModuleInterface;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AssignableRoleModule implements ModuleInterface {
     public static final String ASSIGNABLE_ROLES = "assignableRoles";
 

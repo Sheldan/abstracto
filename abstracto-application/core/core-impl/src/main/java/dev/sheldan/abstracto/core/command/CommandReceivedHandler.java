@@ -181,7 +181,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
                 if(!validate) {
                     log.trace("Parameter {} in command {} failed to validate.", parameter.getName(), foundCommand.getConfiguration().getName());
-                    throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getTemplateName(), parameter);
+                    throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getExceptionTemplateName(), parameter);
                 }
             }
         }

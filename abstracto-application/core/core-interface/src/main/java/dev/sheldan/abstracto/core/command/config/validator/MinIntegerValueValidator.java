@@ -53,8 +53,18 @@ public class MinIntegerValueValidator implements ParameterValidator {
     }
 
     @Override
-    public String getTemplateName() {
+    public String getExceptionTemplateName() {
         return "command_parameter_validation_value_too_small";
     }
 
+
+    @Override
+    public String getTemplateName() {
+        return "min_integer_value_validation_description";
+    }
+
+    @Override
+    public Object getTemplateModel() {
+        return getParameters().get(0);
+    }
 }

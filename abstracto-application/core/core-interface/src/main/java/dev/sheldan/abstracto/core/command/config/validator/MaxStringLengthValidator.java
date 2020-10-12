@@ -39,7 +39,7 @@ public class MaxStringLengthValidator implements ParameterValidator {
     }
 
     @Override
-    public String getTemplateName() {
+    public String getExceptionTemplateName() {
         return "command_parameter_validation_string_too_long";
     }
 
@@ -51,4 +51,13 @@ public class MaxStringLengthValidator implements ParameterValidator {
     }
 
 
+    @Override
+    public String getTemplateName() {
+        return "max_string_length_validation_description";
+    }
+
+    @Override
+    public Object getTemplateModel() {
+        return getParameters().get(0);
+    }
 }

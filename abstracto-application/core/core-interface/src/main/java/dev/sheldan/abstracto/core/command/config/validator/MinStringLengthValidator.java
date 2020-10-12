@@ -39,7 +39,17 @@ public class MinStringLengthValidator implements ParameterValidator {
     }
 
     @Override
-    public String getTemplateName() {
+    public String getExceptionTemplateName() {
         return "command_parameter_validation_string_too_short";
+    }
+
+    @Override
+    public String getTemplateName() {
+        return "min_string_length_validation_description";
+    }
+
+    @Override
+    public Object getTemplateModel() {
+        return getParameters().get(0);
     }
 }
