@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
 import net.dv8tion.jda.api.entities.Emote;

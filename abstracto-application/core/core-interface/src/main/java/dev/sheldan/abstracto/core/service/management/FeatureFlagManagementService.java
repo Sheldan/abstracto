@@ -10,6 +10,7 @@ public interface FeatureFlagManagementService {
     AFeatureFlag createFeatureFlag(AFeature feature, Long serverId, Boolean newValue);
     AFeatureFlag createFeatureFlag(AFeature feature, AServer server, Boolean newValue);
     AFeatureFlag getFeatureFlag(AFeature key, Long serverId);
+    boolean featureFlagExists(AFeature feature, AServer server);
     AFeatureFlag getFeatureFlag(AFeature key, AServer server);
     List<AFeatureFlag> getFeatureFlagsOfServer(AServer server);
     AFeatureFlag setFeatureFlagValue(AFeature feature, Long serverId, Boolean newValue);

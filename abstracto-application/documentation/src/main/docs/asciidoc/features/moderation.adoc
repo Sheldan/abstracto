@@ -3,8 +3,8 @@
 Feature key: `moderation`
 
 ==== Post targets
-`banLog`:: Will be used to send a log message containing information about the ban for both `ban` and `banId`. Will still ban if not setup.
-`kickLog`:: Will be used to send a log message containing information about the kick. Will still kick if not setup.
+`banLog`:: target of the log message containing information about the ban for both `ban` and `banId`. Will still ban if not setup.
+`kickLog`:: target of the log message containing information about the kick. Will still kick if not setup.
 
 ==== Commands
 Ban a member::
@@ -42,7 +42,7 @@ This feature can be used to warn specific users if they did something not allowe
 Feature key: `warnings`
 
 ==== Post targets
-`warnLog`:: Will be used to send a log message containing information about the warn.
+`warnLog`:: target of the log message containing information about the warn.
 `decayLog`:: Will be used when all the warnings are decayed by a command and logging has been selected.
 
 ==== Commands
@@ -77,7 +77,7 @@ Feature key: `warnDecay`
 `decayDays` The amount of days after which a warning gets decayed. Default: 90
 
 ==== Post targets
-`decayLog`:: Will be used to send the log message containing the information in case a warning is decayed.
+`decayLog`:: target of the log message containing the information in case a warning is decayed.
 
 ==== Commands
 Decaying all warnings if necessary::
@@ -93,7 +93,7 @@ If the user leaves the guild and rejoins, the mute role will be re-applied.
 Feature key `muting`
 
 ==== Post targets
-`muteLog`:: Will be used to send the log message containing the information in case a member was muted and when the mute ended automatically.
+`muteLog`:: target of log message containing the information in case a member was muted and when the mute ended automatically.
 
 ==== Commands
 Muting a user::
@@ -117,11 +117,17 @@ The logging includes:
 
 Feature key `logging`
 
-Deleted message logging:: When a message is deleted, the content of the message and the possible attachments of said message will be logged. Post target `deleteLog`.
+==== Post targets
+`deleteLog`:: target for the messages containing information about a deleted message.
+`editLog`:: target for the messages containing information about an edited message.
+`joinLog`:: target for the messages containing information about an user joining the server.
+`leaveLog`:: target or the messages containing information about an user leaving the server.
+
+Deleted message logging:: When a message is deleted, the content of the message and the possible attachments of said message will be logged.
 Edited message logging:: When a message is edited, the previous content of the message and the new content of the message will be logged.
-This does not work if the message was sent before the bot was started. Post target `editLog`.
-Member joining logging:: When a member joins the guild, a message indicating this is send. Post target `joinLog`.
-Member leaving logging:: When a member leaves the guild, a message indicating this is send. Post target `leaveLog`.
+This does not work if the message was sent before the bot was started.
+Member joining logging:: When a member joins the guild, a message indicating this is send.
+Member leaving logging:: When a member leaves the guild, a message indicating this is send.
 
 
 === User notes

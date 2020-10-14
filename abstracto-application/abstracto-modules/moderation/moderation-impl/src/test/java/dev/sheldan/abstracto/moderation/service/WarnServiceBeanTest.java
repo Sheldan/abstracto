@@ -16,7 +16,7 @@ import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayWarning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;

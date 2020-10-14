@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;

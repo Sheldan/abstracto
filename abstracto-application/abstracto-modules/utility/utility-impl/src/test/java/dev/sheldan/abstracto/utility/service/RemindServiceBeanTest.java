@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.service.management.ReminderManagementService;

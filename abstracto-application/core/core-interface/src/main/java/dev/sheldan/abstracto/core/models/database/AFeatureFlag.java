@@ -6,6 +6,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -34,6 +35,12 @@ public class AFeatureFlag implements Serializable {
     @OneToOne
     @JoinColumn(name = "feature_id", nullable = false)
     private AFeature feature;
+
+    @Getter
+    @Setter
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "featureFlag")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    private List<AFeatureMode> modes;
 
     @Getter
     @Setter

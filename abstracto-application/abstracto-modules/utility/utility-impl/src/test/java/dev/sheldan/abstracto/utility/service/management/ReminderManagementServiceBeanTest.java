@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
 import dev.sheldan.abstracto.utility.repository.ReminderRepository;
 import org.junit.Assert;

@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.repository.UserExperienceRepository;
 import dev.sheldan.abstracto.experience.service.LeaderBoardEntryTestImpl;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -23,7 +23,7 @@ import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagem
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.junit.Assert;

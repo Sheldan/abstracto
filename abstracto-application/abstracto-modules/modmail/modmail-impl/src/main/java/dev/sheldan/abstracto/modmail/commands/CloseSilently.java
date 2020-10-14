@@ -45,7 +45,7 @@ public class CloseSilently extends AbstractConditionableCommand {
         // default note text is configurable via template, because the note is optional
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
-        return modMailThreadService.closeModMailThread(thread, note, false, commandContext.getUndoActions())
+        return modMailThreadService.closeModMailThread(thread, note, false, commandContext.getUndoActions(), true)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeExcept
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.service.ReminderService;
 import org.junit.Test;
 import org.junit.runner.RunWith;

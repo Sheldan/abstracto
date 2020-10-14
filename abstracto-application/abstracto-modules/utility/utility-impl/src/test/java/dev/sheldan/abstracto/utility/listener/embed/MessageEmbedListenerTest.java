@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.service.MessageEmbedService;
 import net.dv8tion.jda.api.entities.Guild;

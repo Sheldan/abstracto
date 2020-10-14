@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * This command closes a mod mail thread without logging the closing and the contents of the {@link ModMailThread}.
  * This command is only available if the server has the {@link dev.sheldan.abstracto.modmail.config.ModMailFeature}
- * in the 'LOGGING' mode, because else the normal close command behaves the same way.
+ * 'LOGGING' mode enabled, because else the normal close command behaves the same way.
  */
 @Component
 public class CloseNoLog extends AbstractConditionableCommand {
@@ -46,7 +46,7 @@ public class CloseNoLog extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
         // we don't have a note, therefore we cant pass any, the method handles this accordingly
-        return modMailThreadService.closeModMailThread(thread, null, false, commandContext.getUndoActions())
+        return modMailThreadService.closeModMailThread(thread, null, false, commandContext.getUndoActions(), false)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
@@ -77,7 +77,7 @@ public class CloseNoLog extends AbstractConditionableCommand {
     }
 
     /**
-     * This command is only available in the LOGGING mod mail feature mode
+     * This command is only available if the LOGGING feature mode is enabled
      */
     @Override
     public List<FeatureMode> getFeatureModeLimitations() {

@@ -297,8 +297,10 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 serverRoleMapping.put(server.getId(), experienceRoleManagementService.getExperienceRolesForServer(server));
             }
             RoleCalculationResult roleCalculationResult = experienceGainResult.getCalculationResult().join();
-            AExperienceRole role = experienceRoleManagementService.getExperienceRoleById(roleCalculationResult.getExperienceRoleId());
-            userExperience.setCurrentExperienceRole(role);
+            if(roleCalculationResult.getExperienceRoleId() != null) {
+                AExperienceRole role = experienceRoleManagementService.getExperienceRoleById(roleCalculationResult.getExperienceRoleId());
+                userExperience.setCurrentExperienceRole(role);
+            }
             if(experienceGainResult.isCreateUserExperience()) {
                 userExperienceManagementService.saveUser(userExperience);
             }

@@ -1,6 +1,7 @@
-package dev.sheldan.abstracto.test.command;
+package dev.sheldan.abstracto.core.test.command;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -8,7 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.ResultState;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -25,6 +26,10 @@ public class CommandTestUtilities {
 
     private CommandTestUtilities() {
 
+    }
+
+    public static void checkSuccessfulCondition(ConditionResult result) {
+        Assert.assertTrue(result.isResult());
     }
 
     public static void executeNoParametersTest(Command com) {

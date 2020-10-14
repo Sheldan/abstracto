@@ -6,7 +6,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet  author="Sheldan"  id="reminder-job-insert">
+    <changeSet  author="Sheldan"  id="experience-job-insert">
         <insert tableName="scheduler_job">
             <column name="name" value="experienceJob"/>
             <column name="group_name" value="experience"/>

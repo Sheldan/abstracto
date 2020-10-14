@@ -15,5 +15,8 @@ public interface FeatureFlagRepository extends JpaRepository<AFeatureFlag, Long>
     AFeatureFlag findByServerAndFeature(AServer server, AFeature key);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    boolean existsByServerAndFeature(AServer server, AFeature key);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AFeatureFlag> findAllByServer(AServer server);
 }

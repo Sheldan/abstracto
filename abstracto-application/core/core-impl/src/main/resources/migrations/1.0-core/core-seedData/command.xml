@@ -170,7 +170,19 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="setMode"/>
+            <column name="name" value="enableMode"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disableMode"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="featureModes"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>
             <column name="created" valueComputed="${today}"/>

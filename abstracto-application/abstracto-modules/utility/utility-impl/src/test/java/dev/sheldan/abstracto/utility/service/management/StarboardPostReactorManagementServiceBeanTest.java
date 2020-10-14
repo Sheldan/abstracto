@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;

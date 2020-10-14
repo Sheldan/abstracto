@@ -99,6 +99,14 @@
         </dependency>
 
         <dependency>
+            <groupId>dev.sheldan.abstracto.core</groupId>
+            <artifactId>core-interface</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+
+        <dependency>
             <groupId>dev.sheldan.abstracto.templating</groupId>
             <artifactId>templating-interface</artifactId>
             <version>${project.version}</version>

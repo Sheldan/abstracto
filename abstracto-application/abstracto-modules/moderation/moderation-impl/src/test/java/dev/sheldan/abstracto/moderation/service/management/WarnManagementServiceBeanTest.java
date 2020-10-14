@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -5,8 +5,8 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParametersExcept
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.ShowEmoteLog;
 import net.dv8tion.jda.api.entities.Emote;
 import org.junit.Assert;

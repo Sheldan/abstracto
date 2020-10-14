@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
+import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,11 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
             return foundFeature.get();
         }
         throw new FeatureModeNotFoundException(key, getFeatureModesFromFeatureAsString(featureConfig.getFeature().getKey()));
+    }
+
+    @Override
+    public FeatureConfig getFeatureConfigForFeature(AFeature feature) {
+        return getFeatureDisplayForFeature(feature.getKey());
     }
 
     @Override

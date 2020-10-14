@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.repository.SuggestionRepository;

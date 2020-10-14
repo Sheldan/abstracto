@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.repository.MuteRepository;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;

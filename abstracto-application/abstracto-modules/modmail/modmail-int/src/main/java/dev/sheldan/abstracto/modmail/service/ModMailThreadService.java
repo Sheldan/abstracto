@@ -75,8 +75,9 @@ public interface ModMailThreadService {
      * @param modMailThread The {@link ModMailThread} which is being closed.
      * @param note The text of the note used for the header message of the logged mod mail thread.
      * @param notifyUser Whether or not the user should be notified
+     * @param log whether or not the closed {@link ModMailThread} should be logged (if the {@link dev.sheldan.abstracto.core.config.FeatureMode} is enabled)
      */
-    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions);
+    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions, Boolean log);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,

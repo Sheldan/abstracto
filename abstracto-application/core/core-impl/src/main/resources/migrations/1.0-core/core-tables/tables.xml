@@ -19,6 +19,7 @@
     <include file="command.xml" relativeToChangelogFile="true"/>
     <include file="channel_group.xml" relativeToChangelogFile="true"/>
     <include file="default_feature_flag.xml" relativeToChangelogFile="true"/>
+    <include file="default_feature_mode.xml" relativeToChangelogFile="true" />
     <include file="feature_flag.xml" relativeToChangelogFile="true"/>
     <include file="feature_mode.xml" relativeToChangelogFile="true"/>
     <include file="lock.xml" relativeToChangelogFile="true"/>

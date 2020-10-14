@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.core.models.database.AFeature;
-import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
-import dev.sheldan.abstracto.core.models.database.AFeatureMode;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.repository.FeatureModeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class FeatureModeManagementServiceBean implements FeatureModeManagementService {
@@ -15,12 +15,23 @@ public class FeatureModeManagementServiceBean implements FeatureModeManagementSe
     @Autowired
     private FeatureModeRepository featureModeRepository;
 
+    @Autowired
+    private DefaultFeatureModeManagement defaultFeatureModeManagement;
+
     @Override
-    public AFeatureMode createMode(AFeatureFlag featureFlag, FeatureMode mode) {
+    public AFeatureMode createMode(AFeatureFlag featureFlag, FeatureMode mode, boolean enabled) {
+        return createMode(featureFlag, mode.getKey(), enabled);
+    }
+
+    @Override
+    public AFeatureMode createMode(AFeatureFlag featureFlag, String mode, boolean enabled) {
+        DefaultFeatureMode defaultMode = defaultFeatureModeManagement.getFeatureMode(featureFlag.getFeature(), mode);
         AFeatureMode aFeatureMode = AFeatureMode
                 .builder()
                 .featureFlag(featureFlag)
-                .mode(mode.getKey())
+                .server(featureFlag.getServer())
+                .enabled(enabled)
+                .featureMode(defaultMode)
                 .build();
 
         featureModeRepository.save(aFeatureMode);
@@ -28,19 +39,40 @@ public class FeatureModeManagementServiceBean implements FeatureModeManagementSe
     }
 
     @Override
-    public AFeatureMode getModeForFeature(AFeatureFlag featureFlag) {
-        return featureModeRepository.findByFeatureFlag(featureFlag);
+    public boolean isFeatureModeActive(AFeature aFeature, AServer server, FeatureMode mode) {
+        Optional<AFeatureMode> featureModeOptional = featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, aFeature, mode.getKey());
+        return featureModeOptional.isPresent() && featureModeOptional.get().getEnabled();
     }
 
     @Override
-    public boolean featureModeSet(AFeature aFeature, AServer server) {
-        return featureModeRepository.existsByFeatureFlag_ServerAndFeatureFlag_Feature(server, aFeature);
+    public boolean doesFeatureModeExist(AFeature aFeature, AServer server, FeatureMode mode) {
+        return getFeatureMode(aFeature, server, mode).isPresent();
     }
 
     @Override
-    public AFeatureMode setModeForFeature(AFeatureFlag featureFlag, FeatureMode featureMode) {
-        AFeatureMode modeForFeature = getModeForFeature(featureFlag);
-        modeForFeature.setMode(featureMode.getKey());
-        return modeForFeature;
+    public boolean doesFeatureModeExist(AFeature aFeature, AServer server, String modeKey) {
+        return featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, aFeature, modeKey).isPresent();
     }
+
+    @Override
+    public Optional<AFeatureMode> getFeatureMode(AFeature aFeature, AServer server, FeatureMode mode) {
+        return getFeatureMode(aFeature, server, mode.getKey());
+    }
+
+    @Override
+    public Optional<AFeatureMode> getFeatureMode(AFeature aFeature, AServer server, String modeKey) {
+        return featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, aFeature, modeKey);
+    }
+
+    @Override
+    public List<AFeatureMode> getFeatureModesOfServer(AServer server) {
+        return featureModeRepository.findByServer(server);
+    }
+
+    @Override
+    public List<AFeatureMode> getFeatureModesOfFeatureInServer(AServer server, AFeature aFeature) {
+        return featureModeRepository.findByServerAndFeatureFlag_Feature(server, aFeature);
+    }
+
+
 }

@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.test;
+package dev.sheldan.abstracto.core.test;
 
 import dev.sheldan.abstracto.core.models.database.*;
 

@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
 import dev.sheldan.abstracto.moderation.service.WarnService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

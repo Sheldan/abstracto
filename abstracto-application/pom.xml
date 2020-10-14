@@ -17,7 +17,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>test-commons</module>
         <module>core</module>
         <module>templating</module>
         <module>abstracto-modules</module>

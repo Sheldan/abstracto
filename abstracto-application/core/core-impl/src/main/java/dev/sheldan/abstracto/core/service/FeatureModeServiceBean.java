@@ -4,14 +4,21 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.core.models.database.AFeature;
-import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
-import dev.sheldan.abstracto.core.models.database.AFeatureMode;
-import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
+import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
+import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagement;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Component
 public class FeatureModeServiceBean implements FeatureModeService {
@@ -28,105 +35,127 @@ public class FeatureModeServiceBean implements FeatureModeService {
     @Autowired
     private FeatureModeManagementService featureModeManagementService;
 
-    @Override
-    public AFeatureMode setModeForFeatureTo(String key, AServer server, String newMode) {
-       FeatureEnum featureEnum = featureConfigService.getFeatureEnum(key);
-       return setModeForFeatureTo(featureEnum, server, newMode);
-    }
+    @Autowired
+    private DefaultFeatureModeManagement defaultFeatureModeManagement;
 
     @Override
-    public AFeatureMode setModeForFeatureTo(AFeatureFlag flag, String newMode) {
-        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(flag.getFeature().getKey());
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
-        return setModeForFeatureTo(flag, featureMode);
-    }
-
-    @Override
-    public AFeatureMode setModeForFeatureTo(FeatureEnum featureEnum, AServer server, String newMode) {
-        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(featureEnum);
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
-        return setModeForFeatureTo(featureEnum, server, featureMode);
-    }
-
-    @Override
-    public AFeatureMode setModeForFeatureTo(AFeature feature, AServer server, String newMode) {
-        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(feature.getKey());
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
-        return setModeForFeatureTo(feature, server, featureMode);
-    }
-
-    @Override
-    public AFeatureMode setModeForFeatureTo(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
+    public void enableFeatureModeForFeature(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
-        return setModeForFeatureTo(feature, server, mode);
+        Optional<AFeatureMode> existing = featureModeManagementService.getFeatureMode(feature, server, mode);
+        if(existing.isPresent()) {
+            existing.get().setEnabled(true);
+        } else {
+            AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(feature, server);
+            featureModeManagementService.createMode(featureFlag, mode, true);
+        }
     }
 
     @Override
-    public AFeatureMode setModeForFeatureTo(AFeature feature, AServer server, FeatureMode mode) {
-        AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(feature, server);
-        return setModeForFeatureTo(featureFlag, mode);
+    public void setFutureModeForFuture(FeatureEnum featureEnum, AServer server, FeatureMode mode, Boolean newValue) {
+        if(newValue) {
+            enableFeatureModeForFeature(featureEnum, server, mode);
+        } else {
+            disableFeatureModeForFeature(featureEnum, server, mode);
+        }
     }
 
     @Override
-    public AFeatureMode setModeForFeatureTo(AFeatureFlag featureFlag, FeatureMode mode) {
-        return featureModeManagementService.setModeForFeature(featureFlag, mode);
-    }
-
-
-    @Override
-    public AFeatureMode createMode(String key, AServer server, String newMode) {
-        FeatureEnum featureEnum = featureConfigService.getFeatureEnum(key);
-        return createMode(featureEnum, server, newMode);
-    }
-
-    @Override
-    public AFeatureMode createMode(AFeatureFlag flag, String newMode) {
-        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(flag.getFeature().getKey());
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
-        return createMode(flag, featureMode);
-    }
-
-    @Override
-    public AFeatureMode createMode(FeatureEnum featureEnum, AServer server, String newMode) {
-        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(featureEnum);
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
-        return createMode(featureEnum, server, featureMode);
-    }
-
-    @Override
-    public AFeatureMode createMode(AFeature feature, AServer server, String newMode) {
-        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(feature.getKey());
-        FeatureMode featureMode = featureConfigService.getFeatureModeByKey(featureConfig, newMode);
-        return createMode(feature, server, featureMode);
-    }
-
-    @Override
-    public AFeatureMode createMode(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
+    public void disableFeatureModeForFeature(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
-        return createMode(feature, server, mode);
+        Optional<AFeatureMode> existing = featureModeManagementService.getFeatureMode(feature, server, mode);
+        if(existing.isPresent()) {
+            existing.get().setEnabled(false);
+        } else {
+            AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(feature, server);
+            featureModeManagementService.createMode(featureFlag, mode, false);
+        }
     }
 
     @Override
-    public AFeatureMode createMode(AFeature feature, AServer server, FeatureMode mode) {
-        AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(feature, server);
-        return createMode(featureFlag, mode);
-    }
-
-    @Override
-    public AFeatureMode createMode(AFeatureFlag featureFlag, FeatureMode mode) {
-        return featureModeManagementService.createMode(featureFlag, mode);
-    }
-
-    @Override
-    public AFeatureMode getFeatureMode(FeatureEnum featureEnum, AServer server) {
+    public boolean featureModeActive(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
         AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
-        return getFeatureMode(feature, server);
+        if(featureModeManagementService.doesFeatureModeExist(feature, server, mode)) {
+            return featureModeManagementService.isFeatureModeActive(feature, server, mode);
+        } else {
+            return defaultFeatureModeManagement.getFeatureMode(feature, mode.getKey()).isEnabled();
+        }
     }
 
     @Override
-    public AFeatureMode getFeatureMode(AFeature feature, AServer server) {
-        AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(feature, server);
-        return featureModeManagementService.getModeForFeature(featureFlag);
+    public FeatureMode getFeatureModeForKey(String key) {
+        return getAllAvailableFeatureModes().stream().filter(mode -> mode.getKey().equalsIgnoreCase(key)).findAny().orElseThrow(() -> new FeatureModeNotFoundException(key, getFeatureModesAsStrings()));
+    }
+
+    @Override
+    public List<FeatureMode> getAllAvailableFeatureModes() {
+        List<FeatureMode> featureModes = new ArrayList<>();
+        featureConfigService.getAllFeatureConfigs().forEach(featureConfig -> featureModes.addAll(featureConfig.getAvailableModes()));
+        return featureModes;
+    }
+
+    private List<String> getFeatureModesAsStrings() {
+        return getAllAvailableFeatureModes().stream().map(FeatureMode::getKey).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server) {
+        List<DefaultFeatureMode> allDefaultModes = defaultFeatureModeManagement.getAll();
+        List<AFeatureMode> allModesFromServer = featureModeManagementService.getFeatureModesOfServer(server);
+        return combineFeatureModesWithDefault(server, allDefaultModes, allModesFromServer);
+    }
+
+    private List<FeatureModeDisplay> combineFeatureModesWithDefault(AServer server, List<DefaultFeatureMode> allDefaultModes, List<AFeatureMode> allModesFromServer) {
+        List<FeatureModeDisplay> result = new ArrayList<>();
+        List<AFeatureMode> activeModes = allModesFromServer.stream().filter(AFeatureMode::getEnabled).collect(Collectors.toList());
+        List<AFeatureMode> disabledModes = allModesFromServer.stream().filter(aFeatureMode -> !aFeatureMode.getEnabled()).collect(Collectors.toList());
+        List<String> usedModes = allModesFromServer.stream().map(aFeatureMode -> aFeatureMode.getFeatureMode().getMode()).collect(Collectors.toList());
+        HashMap<String, FeatureConfig> featureConfigCache = new HashMap<>();
+        Consumer<AFeatureMode> loadUsedValues = aFeatureMode -> {
+            FeatureConfig featureConfig = getFeatureConfig(featureConfigCache, aFeatureMode.getFeatureFlag().getFeature());
+            FeatureModeDisplay featureModeDisplay = FeatureModeDisplay
+                    .builder()
+                    .featureMode(aFeatureMode)
+                    .isDefaultValue(false)
+                    .featureConfig(featureConfig)
+                    .build();
+            result.add(featureModeDisplay);
+        };
+        activeModes.forEach(loadUsedValues);
+        disabledModes.forEach(loadUsedValues);
+        allDefaultModes.forEach(defaultFeatureMode -> {
+            if(!usedModes.contains(defaultFeatureMode.getMode())) {
+                FeatureConfig featureConfig = getFeatureConfig(featureConfigCache, defaultFeatureMode.getFeature());
+                AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(defaultFeatureMode.getFeature(), server);
+                AFeatureMode fakeMode = AFeatureMode.builder().server(server).enabled(defaultFeatureMode.isEnabled()).featureMode(defaultFeatureMode).featureFlag(featureFlag).build();
+                FeatureModeDisplay featureModeDisplay = FeatureModeDisplay
+                        .builder()
+                        .featureMode(fakeMode)
+                        .isDefaultValue(true)
+                        .featureConfig(featureConfig)
+                        .build();
+                result.add(featureModeDisplay);
+            }
+        });
+        return result;
+    }
+
+    private FeatureConfig getFeatureConfig(HashMap<String, FeatureConfig> featureConfigs, AFeature feature) {
+        String featureKey = feature.getKey();
+        FeatureConfig featureConfig;
+        if (featureConfigs.containsKey(featureKey)) {
+            featureConfig = featureConfigs.get(featureKey);
+        } else {
+            featureConfig = featureConfigService.getFeatureConfigForFeature(feature);
+            featureConfigs.put(featureKey, featureConfig);
+        }
+        return featureConfig;
+    }
+
+    @Override
+    public List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server, AFeature feature) {
+        List<DefaultFeatureMode> allDefaultModes = defaultFeatureModeManagement.getFeatureModesForFeature(feature);
+        List<AFeatureMode> allModesFromServer = featureModeManagementService.getFeatureModesOfFeatureInServer(server, feature);
+        return combineFeatureModesWithDefault(server, allDefaultModes, allModesFromServer);
     }
 
 

@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -82,13 +81,44 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+    public void onMessageReceived(MessageReceivedEvent event) {
         if(!event.isFromGuild()) {
             return;
         }
         if(!commandManager.isCommand(event.getMessage())) {
             return;
         }
+
+        final Command foundCommand;
+        try {
+            String contentStripped = event.getMessage().getContentRaw();
+            List<String> parameters = Arrays.asList(contentStripped.split(" "));
+            UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
+            String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
+            foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter);
+            tryToExecuteFoundCommand(event, foundCommand, unParsedParameter);
+
+        } catch (Exception e) {
+            reportException(event, null, e, "Exception when executing command.");
+        }
+    }
+
+    private void tryToExecuteFoundCommand(MessageReceivedEvent event, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
+        CompletableFuture<Parameters> parsingFuture = getParsedParameters(unParsedParameter, foundCommand, event.getMessage());
+        parsingFuture.thenAccept(parsedParameters ->
+            self.executeCommand(event, foundCommand, parsedParameters)
+        ).exceptionally(throwable -> {
+            reportException(event, foundCommand, throwable, "Exception when executing command.");
+            return null;
+        });
+        parsingFuture.exceptionally(throwable -> {
+            self.reportException(event, foundCommand, throwable, "Exception when parsing command.");
+            return null;
+        });
+    }
+
+    @Transactional
+    public void executeCommand(MessageReceivedEvent event, Command foundCommand, Parameters parsedParameters) {
         UserInitiatedServerContext userInitiatedContext = buildTemplateParameter(event);
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
                 .author(event.getMember())
@@ -98,73 +128,58 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .message(event.getMessage())
                 .jda(event.getJDA())
                 .userInitiatedContext(userInitiatedContext);
-        final Command foundCommand;
-        try {
-            String contentStripped = event.getMessage().getContentRaw();
-            List<String> parameters = Arrays.asList(contentStripped.split(" "));
-            UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
-            String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
-            foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter);
-            tryToExecuteFoundCommand(event, commandContextBuilder, foundCommand, unParsedParameter);
+        validateCommandParameters(parsedParameters, foundCommand);
+        CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
+        ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
+        CommandResult commandResult = null;
+        if(conditionResult.isResult()) {
+            if(foundCommand.getConfiguration().isAsync()) {
+                log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
+                        foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
-        } catch (Exception e) {
-            reportException(commandContextBuilder, null, e, "Exception when executing command.");
+                foundCommand.executeAsync(commandContext).thenAccept(result ->
+                        executePostCommandListener(foundCommand, commandContext, result)
+                ).exceptionally(throwable -> {
+                    log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
+                    UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
+                    CommandContext rebuildContext = CommandContext.builder()
+                            .author(event.getMember())
+                            .guild(event.getGuild())
+                            .channel(event.getTextChannel())
+                            .message(event.getMessage())
+                            .jda(event.getJDA())
+                            .undoActions(commandContext.getUndoActions()) // TODO really do this? it would need to guarantee that its available and usable
+                            .userInitiatedContext(rebuildUserContext)
+                            .parameters(parsedParameters).build();
+                    CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
+                    self.executePostCommandListener(foundCommand, rebuildContext, failedResult);
+                    return null;
+                });
+            } else {
+                commandResult = self.executeCommand(foundCommand, commandContext);
+            }
+        } else {
+            // TODO can it be done nicer?
+            if(conditionResult.getException() != null) {
+                throw conditionResult.getException();
+            }
+        }
+        if(commandResult != null) {
+            self.executePostCommandListener(foundCommand, commandContext, commandResult);
         }
     }
 
-    private void tryToExecuteFoundCommand(@Nonnull MessageReceivedEvent event, CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
-        CompletableFuture<Parameters> parsingFuture = getParsedParameters(unParsedParameter, foundCommand, event.getMessage());
-        parsingFuture.thenAccept(parsedParameters -> {
-            validateCommandParameters(parsedParameters, foundCommand);
-            CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
-            ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
-            CommandResult commandResult = null;
-            if(conditionResult.isResult()) {
-                if(foundCommand.getConfiguration().isAsync()) {
-                    log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
-                            foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
-
-                    foundCommand.executeAsync(commandContext).thenAccept(result ->
-                            executePostCommandListener(foundCommand, commandContext, result)
-                    ).exceptionally(throwable -> {
-                        log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
-                        UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
-                        CommandContext rebuildContext = CommandContext.builder()
-                                .author(event.getMember())
-                                .guild(event.getGuild())
-                                .channel(event.getTextChannel())
-                                .message(event.getMessage())
-                                .jda(event.getJDA())
-                                .undoActions(commandContext.getUndoActions()) // TODO really do this? it would need to guarantee that its available and usable
-                                .userInitiatedContext(rebuildUserContext)
-                                .parameters(parsedParameters).build();
-                        CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
-                        self.executePostCommandListener(foundCommand, rebuildContext, failedResult);
-                        return null;
-                    });
-                } else {
-                    commandResult = self.executeCommand(foundCommand, commandContext);
-                }
-            } else {
-                // TODO can it be done nicer?
-                if(conditionResult.getException() != null) {
-                    throw conditionResult.getException();
-                }
-            }
-            if(commandResult != null) {
-                self.executePostCommandListener(foundCommand, commandContext, commandResult);
-            }
-        }).exceptionally(throwable -> {
-            reportException(commandContextBuilder, foundCommand, throwable, "Exception when executing command.");
-            return null;
-        });
-        parsingFuture.exceptionally(throwable -> {
-            reportException(commandContextBuilder, foundCommand, throwable, "Exception when parsing command.");
-            return null;
-        });
-    }
-
-    private void reportException(CommandContext.CommandContextBuilder commandContextBuilder, Command foundCommand, Throwable throwable, String s) {
+    @Transactional
+    public void reportException(MessageReceivedEvent event, Command foundCommand, Throwable throwable, String s) {
+        UserInitiatedServerContext userInitiatedContext = buildTemplateParameter(event);
+        CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
+                .author(event.getMember())
+                .guild(event.getGuild())
+                .undoActions(new ArrayList<>())
+                .channel(event.getTextChannel())
+                .message(event.getMessage())
+                .jda(event.getJDA())
+                .userInitiatedContext(userInitiatedContext);
         log.error(s, throwable);
         CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
         CommandContext commandContext = commandContextBuilder.build();

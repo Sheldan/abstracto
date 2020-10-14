@@ -266,6 +266,7 @@ public class MuteServiceBean implements MuteService {
         log.trace("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
         Guild guild = botService.getGuildById(mutingServer.getId());
         CompletableFuture<Void> roleRemovalFuture;
+        // TODO replace with future, because caching
         if(botService.isUserInGuild(guild, mute.getMutedUser())) {
             roleRemovalFuture = roleService.removeRoleFromUserFuture(mute.getMutedUser(), muteRole.getRole());
         } else {

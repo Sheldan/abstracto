@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.test.command;
+package dev.sheldan.abstracto.core.test.command;
 
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;

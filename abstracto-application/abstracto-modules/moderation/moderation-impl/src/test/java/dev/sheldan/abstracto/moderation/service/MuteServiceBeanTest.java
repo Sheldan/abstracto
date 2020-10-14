@@ -24,7 +24,7 @@ import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementSer
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.*;
 import org.junit.Before;
 import org.junit.Test;

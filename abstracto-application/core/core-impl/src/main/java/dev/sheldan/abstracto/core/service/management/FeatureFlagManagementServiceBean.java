@@ -51,6 +51,11 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     }
 
     @Override
+    public boolean featureFlagExists(AFeature feature, AServer server) {
+        return repository.existsByServerAndFeature(server, feature);
+    }
+
+    @Override
     public AFeatureFlag getFeatureFlag(AFeature feature, AServer server) {
         return repository.findByServerAndFeature(server, feature);
     }

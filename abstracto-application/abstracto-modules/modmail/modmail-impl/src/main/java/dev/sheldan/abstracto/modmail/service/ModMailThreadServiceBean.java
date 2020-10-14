@@ -452,10 +452,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     }
 
     @Override
-    public CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser,  List<UndoActionInstance> undoActions) {
-        AFeatureMode aFeatureMode = featureModeService.getFeatureMode(ModMailFeatures.MOD_MAIL, modMailThread.getServer());
-        boolean loggingMode = aFeatureMode.getMode().equalsIgnoreCase(ModMailMode.LOGGING.getKey());
-        return closeModMailThread(modMailThread, note, notifyUser, loggingMode, undoActions);
+    public CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions, Boolean log) {
+        boolean loggingMode = featureModeService.featureModeActive(ModMailFeatures.MOD_MAIL, modMailThread.getServer(), ModMailMode.LOGGING);
+        boolean shouldLogThread = log && loggingMode;
+        return closeModMailThread(modMailThread, note, notifyUser, shouldLogThread, undoActions);
     }
 
     @Override

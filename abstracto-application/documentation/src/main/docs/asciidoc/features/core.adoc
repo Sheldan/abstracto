@@ -102,9 +102,15 @@ Make a role immune against a command::
 Enforce the role restrictions of commands::
 * Usage: `restrict <featureName|commandName>`
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
-Changing the mode of a feature::
-* Usage: `setMode <featureName> <newMode>`
-* Description: Changes the mode of feature `featureName` to `newMode`.
+Enabling a feature mode::
+* Usage: `enableMode <featureName> <mode>`
+* Description: Enables the mode `mode` in feature `featureName`.
+Disabling a feature mode::
+* Usage: `disableMode <featureName> <mode>`
+* Description: Disables the mode `mode` in feature `featureName`.
+Listing all feature modes::
+* usage `featureModes [feature]`
+* Description: Lists all of the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether or not the current mode is enabled and if this value comes from the default configuration.
 Setting up a feature with an interactive wizard::
 Usage: `setup <featureName>`
 * Description: Starts an interactive wizard to configure the necessary properties and post targets of a feature. Also includes custom steps. Closes with a summary page to see all changes.
@@ -119,3 +125,10 @@ A command can take a member as a target, for example `ban`. If a role is conside
 * Mute
 
 While a role can be made immune for any command, only these commands actually use this information.
+
+.What is a feature mode?
+A feature mode is a very specific way in which a feature behaves for a certain decision. These feature modes can be defined for each server and are directly bound to a feature.
+These feature modes influence the availability of commands or general behavior of features.
+
+An example of a feature mode is mod mail logging: If the feature mode `log` of mod mail is disabled, no thread will be logged and the separate command `closeNoLog` will not be available in the first place, because it will behave the same as the normal `close` command.
+If the feature mode is enabled, the messages from the thread are logged in the respective post target and the command will be available.

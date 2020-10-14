@@ -23,14 +23,26 @@ public class AFeatureMode implements Serializable {
 
     @Getter
     @Setter
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "feature_flag_id", nullable = false)
     private AFeatureFlag featureFlag;
 
-    @Column
-    @Setter
     @Getter
-    private String mode;
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "feature_mode_id", nullable = false)
+    private DefaultFeatureMode featureMode;
+
+    @Getter
+    @Setter
+    @OneToOne
+    @JoinColumn(name = "server_id", nullable = false)
+    private AServer server;
+
+    @Column
+    @Getter
+    @Setter
+    private Boolean enabled;
 
     @Column(name = "created")
     private Instant created;

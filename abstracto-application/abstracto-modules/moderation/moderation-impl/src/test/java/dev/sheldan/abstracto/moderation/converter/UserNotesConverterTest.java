@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.models.template.commands.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
-import dev.sheldan.abstracto.test.MockUtils;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;

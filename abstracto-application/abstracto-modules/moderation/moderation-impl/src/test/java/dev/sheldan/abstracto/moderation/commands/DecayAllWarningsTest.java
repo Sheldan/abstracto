@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeExcept
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.moderation.service.WarnService;
-import dev.sheldan.abstracto.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

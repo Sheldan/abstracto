@@ -18,15 +18,15 @@ Feature key: `modmail`
 
 ==== Relevant system configuration
 `modmailCategory`:: The category on the server which is used to hold the text channels representing the threads
-`modMailClosingText`::The text being used when notifying the user when a thread is closed.
+
+`modMailClosingText`:: The text being used when notifying the user when a thread is closed.
 
 ==== Post targets
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
 `modmailLog`:: Will be used to log the interactions when a thread is closed.
 
-==== Modes
-`log`:: The messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands)
-`nogLog`:: The messages should not be logged into the `modmailLog` post target when the thread is closed.
+==== Feature modes
+`log`:: If this is enabled, the messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands). This is required for the command `closeNoLog` to be available.
 
 
 ==== Emotes

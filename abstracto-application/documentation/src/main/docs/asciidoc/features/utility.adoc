@@ -40,6 +40,7 @@ Feature key: `starboard`
 ** Second place: `starboardBadge2`
 ** Third place: `starboardBadge3`
 
+
 ==== Relevant system configuration
 `starLvl1` The amount of stars necessary to appear on the starboard. Default: 5
 
@@ -48,6 +49,9 @@ Feature key: `starboard`
 `starLvl3` The amount of stars necessary in order for the level 3 emote to be used in the starboard post. Default: 13
 
 `starLvl4` The amount of stars necessary in order for the level 4 emote to be used in the starboard post. Default: 17
+
+==== Post targets
+`starboard`:: The target used for the messages containing the starboard posts with the current star amount
 
 ==== Commands
 Showing starboard statistics::
@@ -59,6 +63,9 @@ Showing starboard statistics::
 This feature provides the ability for members to post suggestions containing text to the post target `suggestions`. These suggestions can then be accepted or denied by the moderators.
 
 Feature key: `suggestion`
+
+==== Post targets
+`suggestions`:: the target of the messages containing the suggestions
 
 ==== Emotes
 * for up-voting a suggestion: `suggestionYes`
