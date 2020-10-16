@@ -64,7 +64,7 @@
         <mockito-core.version>3.3.3</mockito-core.version>
         <commons-collections.version>4.3</commons-collections.version>
         <spring-boot-starter.version>2.3.1.RELEASE</spring-boot-starter.version>
-        <junit.version>4.13</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <build>
