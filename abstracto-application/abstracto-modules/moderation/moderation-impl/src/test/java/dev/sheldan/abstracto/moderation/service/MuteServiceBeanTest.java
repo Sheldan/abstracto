@@ -11,6 +11,8 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.features.MutingMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
 import dev.sheldan.abstracto.moderation.exception.MuteRoleNotSetupException;
 import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
@@ -18,7 +20,6 @@ import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteNotification;
-import dev.sheldan.abstracto.moderation.models.template.commands.UnMuteLog;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
@@ -42,7 +43,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static dev.sheldan.abstracto.moderation.service.MuteServiceBean.MUTE_NOTIFICATION_TEMPLATE;
-import static dev.sheldan.abstracto.moderation.service.MuteServiceBean.UN_MUTE_LOG_TEMPLATE;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -133,6 +133,9 @@ public class MuteServiceBeanTest {
 
     @Mock
     private CounterService counterService;
+
+    @Mock
+    private FeatureModeService featureModeService;
 
     private static final Long CHANNEL_ID = 8L;
     private static final String REASON = "reason";
@@ -251,6 +254,8 @@ public class MuteServiceBeanTest {
         when(muteLog.getMutingUser()).thenReturn(memberMuting);
         when(muteLog.getContext()).thenReturn(serverChannelMessage);
         when(muteLog.getMuteTargetDate()).thenReturn(unMuteDate);
+        when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
+        when(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)).thenReturn(true);
         String notificationText = "text";
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
@@ -263,9 +268,38 @@ public class MuteServiceBeanTest {
     }
 
     @Test
+    public void testMuteMemberWithoutLog() {
+        when(userInServerManagementService.loadUser(memberBeingMuted)).thenReturn(userBeingMuted);
+        when(userInServerManagementService.loadUser(memberMuting)).thenReturn(userMuting);
+        Instant unMuteDate = shorterMute();
+        when(memberBeingMuted.getGuild()).thenReturn(guild);
+        when(memberBeingMuted.getUser()).thenReturn(jdaUserBeingMuted);
+        when(muteRoleManagementService.muteRoleForServerExists(server)).thenReturn(true);
+        when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
+
+        ServerChannelMessage serverChannelMessage = Mockito.mock(ServerChannelMessage.class);
+        when(serverChannelMessage.getServerId()).thenReturn(SERVER_ID);
+        MuteContext muteLog = Mockito.mock(MuteContext.class);
+        when(muteLog.getMutedUser()).thenReturn(memberBeingMuted);
+        when(muteLog.getMutingUser()).thenReturn(memberMuting);
+        when(muteLog.getContext()).thenReturn(serverChannelMessage);
+        when(muteLog.getMuteTargetDate()).thenReturn(unMuteDate);
+        when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
+        when(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)).thenReturn(false);
+        String notificationText = "text";
+        when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class))).thenReturn(notificationText);
+        when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToUserFuture(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        testUnit.muteMemberWithLog(muteLog);
+        verifyDirectMute();
+        verify(postTargetService, times(0)).sendEmbedInPostTarget(messageToSend, MutingPostTarget.MUTE_LOG, SERVER_ID);
+    }
+
+    @Test
     public void testUnMuteMemberWhoseMuteEnded() {
         when(mute.getMuteEnded()).thenReturn(true);
         when(mute.getMutedUser()).thenReturn(userBeingMuted);
+        when(muteManagementService.hasActiveMute(userBeingMuted)).thenReturn(true);
         when(muteManagementService.getAMuteOf(userBeingMuted)).thenReturn(mute);
         when(mute.getMuteId()).thenReturn(new ServerSpecificId(SERVER_ID, MUTE_ID));
         testUnit.unMuteUser(userBeingMuted);
@@ -291,8 +325,6 @@ public class MuteServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(muteManagementService.findMute(MUTE_ID, SERVER_ID)).thenReturn(mute);
         when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
-        when(templateService.renderEmbedTemplate(eq(UN_MUTE_LOG_TEMPLATE), any(UnMuteLog.class))).thenReturn(messageToSend);
-        when(postTargetService.sendEmbedInPostTarget(eq(messageToSend), eq(MutingPostTarget.MUTE_LOG), anyLong())).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
         testUnit.sendUnmuteLog(MUTE_ID, guild, CompletableFuture.completedFuture(memberMuting), CompletableFuture.completedFuture(memberBeingMuted));
         verify(self, times(1)).endMuteInDatabase(MUTE_ID, SERVER_ID);
     }
@@ -383,6 +415,7 @@ public class MuteServiceBeanTest {
     private void setupUnMuteMocks(boolean stillInGuild) {
         when(mute.getMuteId()).thenReturn(new ServerSpecificId(SERVER_ID, MUTE_ID));
         when(muteManagementService.getAMuteOf(userBeingMuted)).thenReturn(mute);
+        when(muteManagementService.hasActiveMute(userBeingMuted)).thenReturn(true);
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
         when(botService.getGuildById(server.getId())).thenReturn(guild);
         when(botService.isUserInGuild(guild, userBeingMuted)).thenReturn(stillInGuild);

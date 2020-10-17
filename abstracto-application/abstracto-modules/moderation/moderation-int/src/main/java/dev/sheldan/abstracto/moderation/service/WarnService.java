@@ -13,5 +13,5 @@ public interface WarnService {
     CompletableFuture<Void> warnUserWithLog(WarnContext context);
     void decayWarning(Warning warning, Instant decayDate);
     CompletableFuture<Void>  decayWarningsForServer(AServer server);
-    CompletableFuture<Void> decayAllWarningsForServer(AServer server, boolean logWarnings);
+    CompletableFuture<Void> decayAllWarningsForServer(AServer server);
 }

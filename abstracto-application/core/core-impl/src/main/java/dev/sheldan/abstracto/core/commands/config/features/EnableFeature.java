@@ -12,11 +12,13 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +27,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-public class Disable extends AbstractConditionableCommand {
+@Slf4j
+public class EnableFeature extends AbstractConditionableCommand {
 
     @Autowired
     private FeatureConfigService featureConfigService;
@@ -39,23 +42,28 @@ public class Disable extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
-
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureConfigService.getAllFeatures());
-            String response = templateService.renderTemplate("disable_features_response", model);
+            String response = templateService.renderTemplate("enable_features_response", model);
             return channelService.sendTextToChannel(response, commandContext.getChannel())
-                    .thenApply(aVoid -> CommandResult.fromSuccess());
+                    .thenApply(message -> CommandResult.fromSuccess());
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
-            featureFlagService.disableFeature(feature, commandContext.getGuild().getIdLong());
-            if(feature.getDependantFeatures() != null) {
-                feature.getDependantFeatures().forEach(featureDisplay ->
-                    featureFlagService.disableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer())
-                );
+            FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, commandContext.getUserInitiatedContext().getServer());
+            if(Boolean.FALSE.equals(featureSetup.getValidationResult())) {
+                log.info("Feature {} has failed the setup validation. Notifying user.", flagKey);
+                channelService.sendTextToChannelNotAsync(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
+            }
+            featureFlagService.enableFeature(feature, commandContext.getUserInitiatedContext().getServer());
+            if(feature.getRequiredFeatures() != null) {
+                feature.getRequiredFeatures().forEach(featureDisplay -> {
+                    log.info("Also enabling required feature {}.", featureDisplay.getFeature().getKey());
+                    featureFlagService.enableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer());
+                });
             }
             return CompletableFuture.completedFuture(CommandResult.fromSuccess());
         }
@@ -63,17 +71,17 @@ public class Disable extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("featureName").templated(true).type(String.class).optional(true).build();
+        Parameter featureName = Parameter.builder().name("featureName").type(String.class).optional(true).templated(true).build();
         List<Parameter> parameters = Arrays.asList(featureName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
-                .name("disable")
+                .name("enableFeature")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
                 .async(true)
-                .help(helpInfo)
-                .templated(true)
                 .supportsEmbedException(true)
+                .templated(true)
+                .help(helpInfo)
                 .causesReaction(true)
                 .build();
     }

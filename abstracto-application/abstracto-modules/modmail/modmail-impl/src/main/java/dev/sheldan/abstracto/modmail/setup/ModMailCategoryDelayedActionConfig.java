@@ -23,7 +23,7 @@ public class ModMailCategoryDelayedActionConfig implements DelayedActionConfig {
 
     @Override
     public String getTemplateName() {
-        return "setup_modmail_category_action";
+        return "feature_setup_modmail_category_action";
     }
 
     @Override

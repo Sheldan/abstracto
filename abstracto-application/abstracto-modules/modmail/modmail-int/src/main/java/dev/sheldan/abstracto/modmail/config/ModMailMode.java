@@ -11,7 +11,7 @@ import lombok.Getter;
 public enum  ModMailMode implements FeatureMode {
     LOGGING("log");
 
-    private String key;
+    private final String key;
 
     ModMailMode(String key) {
         this.key = key;

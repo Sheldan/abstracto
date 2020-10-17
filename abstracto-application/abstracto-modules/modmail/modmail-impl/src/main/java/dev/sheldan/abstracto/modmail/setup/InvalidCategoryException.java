@@ -14,7 +14,7 @@ public class InvalidCategoryException extends AbstractoRunTimeException implemen
 
     @Override
     public String getTemplateName() {
-        return "setup_category_not_valid_exception";
+        return "feature_setup_category_not_valid_exception";
     }
 
     @Override

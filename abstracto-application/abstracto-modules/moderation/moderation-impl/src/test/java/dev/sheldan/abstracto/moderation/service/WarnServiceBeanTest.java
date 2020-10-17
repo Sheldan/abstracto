@@ -5,7 +5,10 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.features.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.features.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
@@ -114,6 +117,9 @@ public class WarnServiceBeanTest {
     @Mock
     private MessageService messageService;
 
+    @Mock
+    private FeatureModeService featureModeService;
+
     private static final String NOTIFICATION_TEXT = "text";
     private static final String GUILD_NAME = "guild";
     private static final Long SERVER_ID = 4L;
@@ -130,36 +136,60 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayWarningsForServer() {
         setupWarnDecay();
+        when(featureModeService.featureModeActive(ModerationFeatures.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)).thenReturn(true);
         testUnit.decayWarningsForServer(server);
         verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
     @Test
-    public void testDecayAllWarningsForServerWithLog() {
+    public void testDecayWarningsForServerWithoutLog() {
         setupWarnDecay();
-        testUnit.decayAllWarningsForServer(server, true);
+        when(featureModeService.featureModeActive(ModerationFeatures.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)).thenReturn(false);
+        testUnit.decayWarningsForServer(server);
+        verify(self, times(0)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
+    }
+
+    @Test
+    public void testDecayAllWarningsForServer() {
+        setupWarnDecay();
+        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(true);
+        testUnit.decayAllWarningsForServer(server);
         verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
     @Test
     public void testDecayAllWarningsForServerWithoutLog() {
         setupWarnDecay();
-        testUnit.decayAllWarningsForServer(server, false);
-        verifyWarnDecayWithLog(false);
+        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(false);
+        testUnit.decayAllWarningsForServer(server);
+        verify(self, times(0)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
+
     @Test
-    public void testDecayAllWarningsWithoutWarnings() {
+    public void testDecayAllWarningsWithoutWarningsWithoutLog() {
         List<Warning> warnings = Collections.emptyList();
         when(server.getId()).thenReturn(SERVER_ID);
         when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
-        testUnit.decayAllWarningsForServer(server, true);
+        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(false);
+        testUnit.decayAllWarningsForServer(server);
+        verify(self, times(0)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
+    }
+
+    @Test
+    public void testDecayAllWarningsWithoutWarningsWithLog() {
+        List<Warning> warnings = Collections.emptyList();
+        when(server.getId()).thenReturn(SERVER_ID);
+        when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
+        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(true);
+        testUnit.decayAllWarningsForServer(server);
         verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
 
     @Test
     public void testWarnFullUser() {
         setupWarnContext();
+        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, SERVER_ID, WarningMode.WARN_LOG)).thenReturn(true);
         setupMocksForWarning();
         testUnit.notifyAndLogFullUserWarning(context);
     }
@@ -195,22 +225,6 @@ public class WarnServiceBeanTest {
         when(firstWarning.getWarnId()).thenReturn(new ServerSpecificId(SERVER_ID, WARN_ID));
         when(secondWarning.getWarnId()).thenReturn(new ServerSpecificId(SERVER_ID, 9L));
         when(server.getId()).thenReturn(SERVER_ID);
-    }
-
-    private void verifyWarnDecayWithLog(boolean withLog) {
-        int logCount = withLog ? 1 : 0;
-        verify(postTargetService, times(logCount)).sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId());
-        if(withLog) {
-            WarnDecayLogModel model = warnDecayLogModelArgumentCaptor.getValue();
-            List<WarnDecayWarning> usedWarnings = model.getWarnings();
-            Assert.assertEquals(firstWarning, usedWarnings.get(0).getWarning());
-            Assert.assertEquals(warnedMember, usedWarnings.get(0).getWarnedMember());
-            Assert.assertEquals(warningMember, usedWarnings.get(0).getWarningMember());
-            Assert.assertEquals(secondWarning, usedWarnings.get(1).getWarning());
-            Assert.assertEquals(secondWarnedMember, usedWarnings.get(1).getWarnedMember());
-            Assert.assertEquals(warningMember, usedWarnings.get(1).getWarningMember());
-            Assert.assertEquals(2, usedWarnings.size());
-        }
     }
 
     private void setupWarnDecay() {

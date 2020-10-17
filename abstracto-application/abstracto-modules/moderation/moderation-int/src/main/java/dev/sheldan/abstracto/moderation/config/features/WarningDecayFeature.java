@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.config.features;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,4 +39,8 @@ public class WarningDecayFeature implements FeatureConfig {
         return Arrays.asList(WarnDecayPostTarget.DECAY_LOG);
     }
 
+    @Override
+    public List<FeatureMode> getAvailableModes() {
+        return Arrays.asList(WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG);
+    }
 }

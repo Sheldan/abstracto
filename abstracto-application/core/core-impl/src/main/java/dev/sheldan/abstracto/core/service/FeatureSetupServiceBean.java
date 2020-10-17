@@ -22,8 +22,11 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class SetupServiceBean implements SetupService {
+public class FeatureSetupServiceBean implements FeatureSetupService {
 
+    public static final String FEATURE_SETUP_CANCELLATION_NOTIFICATION_TEMPLATE = "feature_setup_cancellation_notification";
+    public static final String FEATURE_SETUP_COMPLETION_NOTIFICATION_TEMPLATE = "feature_setup_completion_notification";
+    public static final String FEATURE_SETUP_INITIAL_MESSAGE_TEMPLATE_KEY = "feature_setup_initial_message";
     @Autowired
     private SystemConfigSetupStep systemConfigSetupStep;
 
@@ -34,7 +37,7 @@ public class SetupServiceBean implements SetupService {
     private DelayedActionService delayedActionService;
 
     @Autowired
-    private SetupServiceBean self;
+    private FeatureSetupServiceBean self;
 
     @Autowired
     private SetupSummaryStep setupSummaryStep;
@@ -52,7 +55,7 @@ public class SetupServiceBean implements SetupService {
     private ExceptionService exceptionService;
 
     @Override
-    public CompletableFuture<Void> performSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
+    public CompletableFuture<Void> performFeatureSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
         log.info("Performing setup of feature {} for user {} in channel {} in server {}.",
                 featureConfig.getFeature().getKey(), user.getUserId(), user.getChannelId(), user.getGuildId());
         Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(user.getGuildId(), user.getChannelId());
@@ -99,15 +102,15 @@ public class SetupServiceBean implements SetupService {
                     .featureConfig(featureConfig)
                     .build();
             TextChannel textChannel = textChannelInGuild.get();
-            String text = templateService.renderTemplate("setup_initial_message", setupInitialMessageModel);
+            String text = templateService.renderTemplate(FEATURE_SETUP_INITIAL_MESSAGE_TEMPLATE_KEY, setupInitialMessageModel);
             channelService.sendTextToChannel(text, textChannel);
-            return executeSetup(featureConfig, steps, user, new ArrayList<>());
+            return executeFeatureSetup(featureConfig, steps, user, new ArrayList<>());
         }
         throw new ChannelNotFoundException(user.getChannelId());
     }
 
     @Override
-    public CompletableFuture<Void> executeSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs) {
+    public CompletableFuture<Void> executeFeatureSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs) {
         SetupExecution nextStep = steps.get(0);
         return executeStep(user, nextStep, delayedActionConfigs, featureConfig);
     }
@@ -162,7 +165,7 @@ public class SetupServiceBean implements SetupService {
     public void notifyAboutCompletion(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
         log.trace("Notifying user {} in channel {} in server {} about completion of setup for feature {}.",
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
-        notifyUserWithTemplate(aServerChannelUserId, featureConfig, "setup_completion_notification");
+        notifyUserWithTemplate(aServerChannelUserId, featureConfig, FEATURE_SETUP_COMPLETION_NOTIFICATION_TEMPLATE);
     }
 
     private void notifyUserWithTemplate(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig, String templateName) {
@@ -179,6 +182,6 @@ public class SetupServiceBean implements SetupService {
     public void notifyAboutCancellation(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
         log.trace("Notifying user {} in channel {} in server {} about cancellation of setup for feature {}.",
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
-        notifyUserWithTemplate(aServerChannelUserId, featureConfig, "setup_cancellation_notification");
+        notifyUserWithTemplate(aServerChannelUserId, featureConfig, FEATURE_SETUP_CANCELLATION_NOTIFICATION_TEMPLATE);
     }
 }

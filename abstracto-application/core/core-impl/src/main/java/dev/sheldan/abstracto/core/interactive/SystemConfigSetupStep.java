@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class SystemConfigSetupStep extends AbstractConfigSetupStep {
 
+    public static final String SETUP_SYSTEM_CONFIG_MESSAGE_TEMPLATE_KEY = "feature_setup_system_config_message";
     @Autowired
     private ConfigService configService;
 
@@ -57,8 +58,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
                 .configKey(systemConfigStepParameter.getConfigKey())
                 .defaultConfig(defaultConfig)
                 .build();
-        String messageTemplateKey = "setup_system_config_message";
-        String messageText =  templateService.renderTemplate(messageTemplateKey, model);
+        String messageText =  templateService.renderTemplate(SETUP_SYSTEM_CONFIG_MESSAGE_TEMPLATE_KEY, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());

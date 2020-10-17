@@ -73,7 +73,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
      */
     @Override
     public CompletableFuture<SetupStepResult> execute(AServerChannelUserId user, SetupStepParameter parameter) {
-        String messageTemplateKey = "setup_modmail_category_message";
+        String messageTemplateKey = "feature_setup_modmail_category_message";
         SetupModMailCategoryMessageModel model = SetupModMailCategoryMessageModel
                 .builder()
                 .build();

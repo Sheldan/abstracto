@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class PostTargetSetupStep extends AbstractConfigSetupStep {
 
+    public static final String FEATURE_SETUP_POST_TARGET_MESSAGE_TEMPLATE_KEY = "feature_setup_post_target_message";
     @Autowired
     private ConfigService configService;
 
@@ -66,8 +67,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                 .postTargetKey(postTargetStepParameter.getPostTargetKey())
                 .currentTextChannel(currentTextChannel)
                 .build();
-        String messageTemplateKey = "setup_post_target_message";
-        String messageText = templateService.renderTemplate(messageTemplateKey, model);
+        String messageText = templateService.renderTemplate(FEATURE_SETUP_POST_TARGET_MESSAGE_TEMPLATE_KEY, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());

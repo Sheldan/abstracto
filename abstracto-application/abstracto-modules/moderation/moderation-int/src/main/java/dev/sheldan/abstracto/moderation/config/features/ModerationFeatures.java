@@ -7,7 +7,7 @@ import lombok.Getter;
 public enum ModerationFeatures implements FeatureEnum {
     MODERATION("moderation"), WARNING("warnings"), LOGGING("logging"), MUTING("muting"), AUTOMATIC_WARN_DECAY("warnDecay"), USER_NOTES("userNotes");
 
-    private String key;
+    private final String key;
 
     ModerationFeatures(String key) {
         this.key = key;

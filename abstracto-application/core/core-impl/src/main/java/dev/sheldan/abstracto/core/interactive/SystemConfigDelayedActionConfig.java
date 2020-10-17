@@ -16,7 +16,7 @@ public class SystemConfigDelayedActionConfig implements DelayedActionConfig {
 
     @Override
     public String getTemplateName() {
-        return "setup_system_config_action";
+        return "feature_setup_system_config_action";
     }
 
     @Override

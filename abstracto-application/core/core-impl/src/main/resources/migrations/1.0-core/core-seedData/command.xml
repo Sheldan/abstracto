@@ -110,7 +110,7 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="setup"/>
+            <column name="name" value="setupFeature"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>
             <column name="created" valueComputed="${today}"/>
@@ -128,7 +128,7 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="disable"/>
+            <column name="name" value="disableFeature"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>
             <column name="created" valueComputed="${today}"/>
@@ -140,7 +140,7 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="enable"/>
+            <column name="name" value="enableFeature"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>
             <column name="created" valueComputed="${today}"/>

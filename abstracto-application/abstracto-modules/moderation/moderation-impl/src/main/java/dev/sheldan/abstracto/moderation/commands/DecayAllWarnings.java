@@ -26,18 +26,14 @@ public class DecayAllWarnings extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        boolean logWarnings = !parameters.isEmpty() ? (Boolean) parameters.get(0) : Boolean.FALSE;
-        return warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer(), logWarnings)
+        return warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        Parameter logWarnings = Parameter.builder().optional(true).name("writeLog").templated(true).type(Boolean.class).build();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
-        parameters.add(logWarnings);
         return CommandConfiguration.builder()
                 .name("decayAllWarnings")
                 .module(ModerationModule.MODERATION)

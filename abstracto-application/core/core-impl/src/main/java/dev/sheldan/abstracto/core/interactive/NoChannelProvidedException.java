@@ -10,7 +10,7 @@ public class NoChannelProvidedException extends AbstractoRunTimeException implem
 
     @Override
     public String getTemplateName() {
-        return "setup_no_channel_provided_exception";
+        return "feature_setup_no_channel_provided_exception";
     }
 
     @Override

@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+
 
 @RunWith(MockitoJUnitRunner.class)
-public class DisableModeTest {
+public class EnableFeatureModeTest {
 
     @InjectMocks
-    private DisableMode testUnit;
+    private EnableMode testUnit;
 
     @Mock
     private FeatureConfigService featureConfigService;
@@ -56,7 +58,7 @@ public class DisableModeTest {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
         CommandResult commandResultCompletableFuture = testUnit.execute(context);
         CommandTestUtilities.checkSuccessfulCompletion(commandResultCompletableFuture);
-        verify(featureModeService, times(1)).disableFeatureModeForFeature(featureEnum, context.getUserInitiatedContext().getServer(), featureMode);
+        verify(featureModeService, times(1)).enableFeatureModeForFeature(featureEnum, context.getUserInitiatedContext().getServer(), featureMode);
     }
 
     @Test(expected = FeatureNotFoundException.class)
@@ -78,5 +80,4 @@ public class DisableModeTest {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
         testUnit.execute(context);
     }
-
 }

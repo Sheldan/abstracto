@@ -3,8 +3,8 @@
 The core feature contains necessary commands in order for Abstracto to function and be configured.
 
 ==== Emotes
-* reaction emote in case the command completed successfully `successReaction`
-* reaction emote in case the command did not complete successfully `warnReaction`
+* `successReaction` reaction emote in case the command completed successfully
+* `warnReaction` reaction emote in case the command did not complete successfully
 
 ==== Commands
 Help::
@@ -43,13 +43,13 @@ Listing the features::
 * Usage: `features`
 * Description: Lists the available features and whether or not they are enabled in this server.
 Enabling a feature::
-* Usage: `enable <key>`
+* Usage: `enableFeature <key>`
 * Description: Enables the feature identified by `key` in this server. If the feature dependents on other features, they will be enabled as well.
-* Example: `enable moderation` to enable the moderation feature
+* Example: `enableFeature moderation` to enable the moderation feature
 Disabling a feature::
-* Usage: `disable <key>`
+* Usage: `disableFeature <key>`
 * Description: Disables the feature identified by `key` in this server. If the feature is required for other features, they will be disabled as well.
-* Example: `disable moderation` to disable the moderation feature
+* Example: `disableFeature moderation` to disable the moderation feature
 Creating a channel group::
 * Usage: `createChannelGroup <key>`
 * Description: Creates a new channel group identified by `key`.
@@ -112,7 +112,7 @@ Listing all feature modes::
 * usage `featureModes [feature]`
 * Description: Lists all of the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether or not the current mode is enabled and if this value comes from the default configuration.
 Setting up a feature with an interactive wizard::
-Usage: `setup <featureName>`
+Usage: `setupFeature <featureName>`
 * Description: Starts an interactive wizard to configure the necessary properties and post targets of a feature. Also includes custom steps. Closes with a summary page to see all changes.
 
 

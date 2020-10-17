@@ -18,7 +18,7 @@ public class PostTargetDelayedActionConfig implements DelayedActionConfig {
 
     @Override
     public String getTemplateName() {
-        return "setup_post_target_action";
+        return "feature_setup_post_target_action";
     }
 
     @Override

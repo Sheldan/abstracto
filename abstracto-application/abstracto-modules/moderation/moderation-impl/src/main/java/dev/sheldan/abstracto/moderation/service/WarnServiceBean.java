@@ -6,7 +6,10 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.features.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.features.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
@@ -67,6 +70,9 @@ public class WarnServiceBean implements WarnService {
     private ServerManagementService serverManagementService;
 
     @Autowired
+    private FeatureModeService featureModeService;
+
+    @Autowired
     private WarnServiceBean self;
 
     public static final String WARN_LOG_TEMPLATE = "warn_log";
@@ -87,8 +93,13 @@ public class WarnServiceBean implements WarnService {
         String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification);
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         futures.add(messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage));
-        MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context);
-        futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
+        if(featureModeService.featureModeActive(ModerationFeatures.WARNING, server.getId(), WarningMode.WARN_LOG)) {
+            log.trace("Logging warning for server {}.", server.getId());
+            MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context);
+            futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
+        } else {
+            log.trace("Not logging warning because of feature {} with feature mode {} in server {}.", ModerationFeatures.WARNING, WarningMode.WARN_LOG, server.getId());
+        }
 
         return FutureUtils.toSingleFutureGeneric(futures);
     }
@@ -119,7 +130,15 @@ public class WarnServiceBean implements WarnService {
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);
         List<Long> warningIds = flattenWarnings(warningsToDecay);
         Long serverId = server.getId();
-        return logDecayedWarnings(server, warningsToDecay).thenAccept(aVoid ->
+        CompletableFuture<Void> completableFuture;
+        if(featureModeService.featureModeActive(ModerationFeatures.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)) {
+            log.trace("Sending log messages for automatic warn decay in server {}.", server.getId());
+            completableFuture = logDecayedWarnings(server, warningsToDecay);
+        } else {
+            log.trace("Not logging automatic warn decay, because feature {} has its mode {} disabled in server {}.", ModerationFeatures.AUTOMATIC_WARN_DECAY, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG, server.getId());
+            completableFuture = CompletableFuture.completedFuture(null);
+        }
+        return completableFuture.thenAccept(aVoid ->
             self.decayWarnings(warningIds, serverId)
         );
     }
@@ -187,8 +206,8 @@ public class WarnServiceBean implements WarnService {
             // TODO add ids to render in case any member left the server
             WarnDecayWarning warnDecayWarning = WarnDecayWarning
                     .builder()
-                    .warnedMember(pair.getFirstMember().join())
-                    .warningMember(pair.getSecondMember().join())
+                    .warningMember(pair.getFirstMember().join())
+                    .warnedMember(pair.getSecondMember().join())
                     .warning(warning)
                     .build();
             warnDecayWarnings.add(warnDecayWarning);
@@ -205,16 +224,18 @@ public class WarnServiceBean implements WarnService {
     }
 
     @Override
-    public CompletableFuture<Void> decayAllWarningsForServer(AServer server, boolean logWarnings) {
+    public CompletableFuture<Void> decayAllWarningsForServer(AServer server) {
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, Instant.now());
         List<Long> warnIds = flattenWarnings(warningsToDecay);
-        log.info("Decaying ALL warning in server {} with logging {}.", server.getId(), logWarnings);
+        log.info("Decaying ALL warning in server {}.", server.getId());
         Long serverId = server.getId();
-        if(logWarnings) {
+        if(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)) {
+            log.trace("Logging warn decays in server {}", serverId);
             return logDecayedWarnings(server, warningsToDecay).thenAccept(aVoid ->
                 self.decayWarnings(warnIds, serverId)
             );
         } else {
+            log.trace("Not logging warn decays for manual decay in server {} because feature {} with feature mode: {}", serverId, ModerationFeatures.WARNING, WarningMode.WARN_DECAY_LOG);
             decayWarnings(warnIds, serverId);
             return CompletableFuture.completedFuture(null);
         }

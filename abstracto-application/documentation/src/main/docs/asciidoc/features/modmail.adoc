@@ -26,11 +26,11 @@ Feature key: `modmail`
 `modmailLog`:: Will be used to log the interactions when a thread is closed.
 
 ==== Feature modes
-`log`:: If this is enabled, the messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands). This is required for the command `closeNoLog` to be available.
+`log`:: If this is enabled, the messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands). This is required for the command `closeNoLog` to be available. Enabled by default.
 
 
 ==== Emotes
-* to indicate to the user that the message sent was processed `readReaction`
+* `readReaction` to indicate to the user that the message sent was processed
 
 ==== Commands
 Opening a mod mail thread for a user::

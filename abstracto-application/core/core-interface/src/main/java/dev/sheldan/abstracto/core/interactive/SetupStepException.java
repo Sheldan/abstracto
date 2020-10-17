@@ -21,7 +21,7 @@ public class SetupStepException extends AbstractoRunTimeException implements Tem
 
     @Override
     public String getTemplateName() {
-        return "setup_step_exception";
+        return "feature_setup_step_exception";
     }
 
     @Override

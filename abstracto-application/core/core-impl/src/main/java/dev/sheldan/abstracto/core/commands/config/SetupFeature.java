@@ -14,7 +14,7 @@ import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.interactive.InteractiveService;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
-import dev.sheldan.abstracto.core.service.SetupService;
+import dev.sheldan.abstracto.core.service.FeatureSetupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-public class Setup extends AbstractConditionableCommand {
+public class SetupFeature extends AbstractConditionableCommand {
 
     @Autowired
     private InteractiveService interactiveService;
@@ -35,7 +35,7 @@ public class Setup extends AbstractConditionableCommand {
     private FeatureConfigService featureConfigService;
 
     @Autowired
-    private SetupService setupService;
+    private FeatureSetupService setupService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -48,7 +48,7 @@ public class Setup extends AbstractConditionableCommand {
                     .channelId(commandContext.getChannel().getIdLong())
                     .userId(commandContext.getAuthor().getIdLong())
                     .build();
-            return setupService.performSetup(feature, initiatingUser, commandContext.getMessage().getIdLong())
+            return setupService.performFeatureSetup(feature, initiatingUser, commandContext.getMessage().getIdLong())
                     .thenApply(aVoid ->  CommandResult.fromSuccess());
         }
         throw new FeatureNotFoundException(name, featureConfigService.getFeaturesAsList());
@@ -60,7 +60,7 @@ public class Setup extends AbstractConditionableCommand {
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("setup")
+                .name("setupFeature")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
                 .templated(true)

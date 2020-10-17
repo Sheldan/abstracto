@@ -18,7 +18,7 @@ public class ModMailCategoryValidationErrorModel implements ValidationErrorModel
 
     @Override
     public String getTemplateName() {
-        return "setup_modmail_category_not_setup";
+        return "feature_setup_modmail_category_not_setup";
     }
 
     @Override

@@ -3,7 +3,10 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
 import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
+import dev.sheldan.abstracto.moderation.config.features.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -38,8 +41,32 @@ public class BanServiceBeanTest {
     @Mock
     private PostTargetService postTargetService;
 
+    @Mock
+    private FeatureModeService featureModeService;
+
     @Test
-    public void testBanMemberByMember() {
+    public void testBanMemberByMemberWithoutLog() {
+        Long userId = 8L;
+        Long serverId = 9L;
+        Member memberToBan = Mockito.mock(Member.class);
+        when(memberToBan.getIdLong()).thenReturn(userId);
+        ServerContext context = Mockito.mock(ServerContext.class);
+        Guild mockedGuild = Mockito.mock(Guild.class);
+        when(memberToBan.getGuild()).thenReturn(mockedGuild);
+        when(mockedGuild.getIdLong()).thenReturn(serverId);
+        AuditableRestAction mockedAction = mock(AuditableRestAction.class);
+        when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
+        when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
+        MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(false);
+        testUnit.banMember(memberToBan, REASON, context);
+        verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
+        verify(postTargetService, times(0)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
+        verify(templateService, times(0)).renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context);
+    }
+
+    @Test
+    public void testBanMemberWithLog() {
         Long userId = 8L;
         Long serverId = 9L;
         Member memberToBan = Mockito.mock(Member.class);
@@ -53,6 +80,7 @@ public class BanServiceBeanTest {
         when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(true);
         testUnit.banMember(memberToBan, REASON, context);
         verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
@@ -70,8 +98,9 @@ public class BanServiceBeanTest {
         when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(BanServiceBean.BAN_ID_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(true);
         when(botService.getGuildByIdOptional(serverId)).thenReturn(Optional.of(mockedGuild));
-        testUnit.banMember(serverId, userId, REASON, context);
+        testUnit.banUserViaId(serverId, userId, REASON, context);
         verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
     }
@@ -82,7 +111,7 @@ public class BanServiceBeanTest {
         Long serverId = 5L;
         ServerContext context = Mockito.mock(ServerContext.class);
         when(botService.getGuildByIdOptional(serverId)).thenReturn(Optional.empty());
-        testUnit.banMember(serverId, userId, REASON, context);
+        testUnit.banUserViaId(serverId, userId, REASON, context);
     }
 
 }

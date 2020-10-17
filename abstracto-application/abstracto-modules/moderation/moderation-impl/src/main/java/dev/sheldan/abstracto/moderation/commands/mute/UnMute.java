@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class UnMute extends AbstractConditionableCommand {
 
-    public static final String NO_ACTIVE_MUTE = "unMute_has_no_active_mute";
     @Autowired
     private MuteService muteService;
 

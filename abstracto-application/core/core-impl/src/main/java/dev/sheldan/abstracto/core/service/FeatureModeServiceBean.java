@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagement;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,9 @@ public class FeatureModeServiceBean implements FeatureModeService {
 
     @Autowired
     private DefaultFeatureModeManagement defaultFeatureModeManagement;
+
+    @Autowired
+    private ServerManagementService serverManagementService;
 
     @Override
     public void enableFeatureModeForFeature(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
@@ -79,6 +83,12 @@ public class FeatureModeServiceBean implements FeatureModeService {
         } else {
             return defaultFeatureModeManagement.getFeatureMode(feature, mode.getKey()).isEnabled();
         }
+    }
+
+    @Override
+    public boolean featureModeActive(FeatureEnum featureEnum, Long serverId, FeatureMode mode) {
+        AServer server = serverManagementService.loadServer(serverId);
+        return featureModeActive(featureEnum, server, mode);
     }
 
     @Override

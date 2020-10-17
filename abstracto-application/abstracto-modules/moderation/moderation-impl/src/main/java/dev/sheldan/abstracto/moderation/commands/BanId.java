@@ -38,7 +38,7 @@ public class BanId extends AbstractConditionableCommand {
         banLogModel.setBannedUserId(userId);
         banLogModel.setBanningUser(commandContext.getAuthor());
         banLogModel.setReason(reason);
-        return banService.banMember(commandContext.getGuild().getIdLong(), userId, reason, banLogModel)
+        return banService.banUserViaId(commandContext.getGuild().getIdLong(), userId, reason, banLogModel)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

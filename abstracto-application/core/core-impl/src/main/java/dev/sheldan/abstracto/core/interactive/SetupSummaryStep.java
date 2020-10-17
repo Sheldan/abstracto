@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class SetupSummaryStep extends AbstractConfigSetupStep {
 
+    public static final String FEATURE_SETUP_CONFIRMATION_TEMPLATE_KEY = "feature_setup_confirmation";
     @Autowired
     private InteractiveService interactiveService;
 
@@ -45,7 +46,7 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
                 .builder()
                 .actionConfigs(parameter.getDelayedActionList())
                 .build();
-        String messageToSend = templateService.renderTemplate("setup_confirmation", model);
+        String messageToSend = templateService.renderTemplate(FEATURE_SETUP_CONFIRMATION_TEMPLATE_KEY, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());

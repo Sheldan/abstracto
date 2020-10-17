@@ -44,7 +44,7 @@ public class BanIdTest {
         Long guildId = parameters.getUserInitiatedContext().getServer().getId();
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
         when(parameters.getGuild().getIdLong()).thenReturn(guildId);
-        when(banService.banMember(eq(guildId), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        when(banService.banUserViaId(eq(guildId), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(REASON, usedModel.getReason());
@@ -60,7 +60,7 @@ public class BanIdTest {
         Long guildId = parameters.getUserInitiatedContext().getServer().getId();
         when(parameters.getGuild().getIdLong()).thenReturn(guildId);
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        when(banService.banMember(eq(guildId), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        when(banService.banUserViaId(eq(guildId), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(customReason, usedModel.getReason());
