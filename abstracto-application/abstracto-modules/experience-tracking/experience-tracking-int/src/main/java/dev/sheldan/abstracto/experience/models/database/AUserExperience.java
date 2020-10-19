@@ -7,7 +7,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 
 /**
@@ -21,6 +20,7 @@ import java.util.Objects;
 @Table(name = "user_experience")
 @Getter
 @Setter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AUserExperience implements Serializable {
@@ -82,23 +82,5 @@ public class AUserExperience implements Serializable {
 
     public Integer getLevelOrDefault() {
         return currentLevel != null ? currentLevel.getLevel() : 0;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AUserExperience that = (AUserExperience) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(user, that.user) &&
-                Objects.equals(experience, that.experience) &&
-                Objects.equals(messageCount, that.messageCount) &&
-                Objects.equals(currentLevel, that.currentLevel) &&
-                Objects.equals(currentExperienceRole, that.currentExperienceRole);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, user, experience, messageCount, currentLevel, currentExperienceRole);
     }
 }

@@ -130,10 +130,7 @@ public class BotServiceBean implements BotService {
         Optional<TextChannel> textChannelOptional = getTextChannelFromServerOptional(serverId, channelId);
         if(textChannelOptional.isPresent()) {
             TextChannel textChannel = textChannelOptional.get();
-            return textChannel.deleteMessageById(messageId).submit().exceptionally(throwable -> {
-                log.warn("Deleting the message {} in channel {} in guild {} failed.", messageId, channelId, serverId, throwable);
-                return null;
-            });
+            return textChannel.deleteMessageById(messageId).submit();
         } else {
             log.warn("Could not find channel {} in guild {} to delete message {} in.", channelId, serverId, messageId);
         }

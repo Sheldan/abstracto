@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * A role for which the experience gain in a particular server has been disabled.
@@ -16,9 +17,10 @@ import javax.persistence.*;
 @Table(name = "disabled_experience_roles")
 @Getter
 @Setter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ADisabledExpRole {
+public class ADisabledExpRole implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

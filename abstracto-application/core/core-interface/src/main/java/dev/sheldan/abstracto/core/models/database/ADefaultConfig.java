@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -12,6 +13,9 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ADefaultConfig implements Serializable {
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

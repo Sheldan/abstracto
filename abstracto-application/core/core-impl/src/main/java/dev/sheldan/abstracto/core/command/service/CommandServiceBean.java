@@ -2,11 +2,14 @@ package dev.sheldan.abstracto.core.command.service;
 
 import com.google.common.collect.Iterables;
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.CommandReceivedHandler;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.models.database.AModule;
@@ -19,10 +22,12 @@ import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -43,6 +48,12 @@ public class CommandServiceBean implements CommandService {
 
     @Autowired
     private CommandInServerManagementService commandInServerManagementService;
+
+    @Autowired
+    private CommandRegistry commandRegistry;
+
+    @Autowired
+    private CommandReceivedHandler commandReceivedHandler;
 
     @Override
     public ACommand createCommand(String name, String moduleName, FeatureEnum featureEnum) {
@@ -149,6 +160,14 @@ public class CommandServiceBean implements CommandService {
         } else {
             return ConditionResult.builder().result(true).build();
         }
+    }
+
+    @Override
+    public CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent) {
+        String contentStripped = messageContainingContent.getContentRaw();
+        UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
+        Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter);
+        return commandReceivedHandler.getParsedParameters(unParsedParameter, command, messageContainingContent);
     }
 
     private ConditionResult checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {

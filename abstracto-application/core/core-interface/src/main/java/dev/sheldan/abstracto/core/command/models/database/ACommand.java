@@ -7,7 +7,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "command")
@@ -16,6 +15,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Cacheable
+@EqualsAndHashCode
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ACommand implements Serializable {
     @Id
@@ -53,19 +53,4 @@ public class ACommand implements Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ACommand aCommand = (ACommand) o;
-        return Objects.equals(id, aCommand.id) &&
-                Objects.equals(name, aCommand.name) &&
-                Objects.equals(module, aCommand.module) &&
-                Objects.equals(feature, aCommand.feature);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, module, feature);
-    }
 }

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.modmail.service;
 
 
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -50,9 +51,9 @@ public interface ModMailThreadService {
      * In case there was no channel found, this will cause a message to be shown to the user and the existing mod mail thread will be closed.
      * This is the case, if the mod mail thread was still open in the database, but no text channel was found anymore.
      * @param modMailThread The {@link ModMailThread} on which the user answered
-     * @param message The {@link Message} object which was sent by the user to answer with
+     * @param messageFromUser The {@link Message} object which was sent by the user as an answer
      */
-    CompletableFuture<Message> relayMessageToModMailThread(ModMailThread modMailThread, Message message, List<UndoActionInstance> undoActions);
+    CompletableFuture<Message> relayMessageToModMailThread(ModMailThread modMailThread, Message messageFromUser, List<UndoActionInstance> undoActions);
 
     /**
      * Forwards a message send by a moderator to the direct message channel opened with the user. If the message is
@@ -91,4 +92,7 @@ public interface ModMailThreadService {
      * @param logThread Whether or not the thread should be logged to the appropriate post target
      */
     CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, boolean logThread, List<UndoActionInstance> undoActions);
+
+    boolean isModMailThread(AChannel channel);
+    boolean isModMailThread(Long channelId);
 }

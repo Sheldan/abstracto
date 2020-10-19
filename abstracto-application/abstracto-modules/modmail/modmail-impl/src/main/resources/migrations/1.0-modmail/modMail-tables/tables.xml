@@ -6,8 +6,8 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <include file="modmail_threads.xml" relativeToChangelogFile="true"/>
-    <include file="modmail_messages.xml" relativeToChangelogFile="true"/>
+    <include file="modmail_thread.xml" relativeToChangelogFile="true"/>
+    <include file="modmail_message.xml" relativeToChangelogFile="true"/>
     <include file="modmail_subscriber.xml" relativeToChangelogFile="true"/>
-    <include file="modmail_roles.xml" relativeToChangelogFile="true"/>
+    <include file="modmail_role.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

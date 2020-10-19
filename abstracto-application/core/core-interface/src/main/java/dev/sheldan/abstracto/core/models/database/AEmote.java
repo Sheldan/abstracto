@@ -6,7 +6,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "emote")
@@ -14,6 +13,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AEmote implements Serializable {
@@ -71,22 +71,4 @@ public class AEmote implements Serializable {
     @Transient
     private boolean fake;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AEmote emote = (AEmote) o;
-        return Objects.equals(id, emote.id) &&
-                Objects.equals(name, emote.name) &&
-                Objects.equals(emoteKey, emote.emoteKey) &&
-                Objects.equals(emoteId, emote.emoteId) &&
-                Objects.equals(animated, emote.animated) &&
-                Objects.equals(custom, emote.custom) &&
-                Objects.equals(serverRef, emote.serverRef);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, emoteKey, emoteId, animated, custom, serverRef);
-    }
 }

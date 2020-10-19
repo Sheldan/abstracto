@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 /**
@@ -16,18 +17,29 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_messages")
-@Cacheable
+@Table(name = "modmail_message")
 @Getter
 @Setter
+@EqualsAndHashCode
+@Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ModMailMessage {
+public class ModMailMessage implements Serializable {
 
     /**
-     * The globally unique message ID which was send in the mod mail thread, either by a user of by the staff handling the thread
+     * The ID of the message which caused this message to be created, either the message containing the command or the message received from the user
      */
     @Id
     private Long messageId;
+
+    /**
+     * The message which got created:
+     * for a message from the user, the messageId of the message in the thread
+     * for a message from staff, the messageId of the message in the DM channel
+     */
+    @Column(name = "created_message_in_dm")
+    private Long createdMessageInDM;
+    @Column
+    private Long createdMessageInChannel;
 
     /**
      * The {@link AUserInAServer} which authored this message
@@ -39,18 +51,21 @@ public class ModMailMessage {
     /**
      * The {@link ModMailThread} in whose context this message was sent and this message is related to
      */
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "threadReference", nullable = false)
     private ModMailThread threadReference;
 
     /**
-     * Whether or not this message was from the user or a staff member, for convenience
+     * true: message was send via command, false: message was send from the user
+     * This is used to decide where to get the message from in case of logging, because the user might delete the message and we do not want to re-parse the command message
      */
+    @Column
     private Boolean dmChannel;
 
     /**
      * Staff only: Whether or not this message meant to be sent anonymous
      */
+    @Column
     private Boolean anonymous;
 
     @Column(name = "created")

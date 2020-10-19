@@ -1,6 +1,9 @@
 === Mod mail
 
 This feature enables users to contact the moderation of the server in a private manner. This can be initiated by messaging the Abstracto bot.
+The messages, in the channel which is created to contain the mod mail thread, are not automatically sent to the user, but only when using the commands
+`reply` or `anonReply`. Any other message is ignored with the intention of enabling discussions within the channel. In case the message of a message sent to the user
+needs to be updated or deleted, you can do simply by editing/deleting the message containing the command.
 
 Feature key: `modmail`
 
@@ -27,6 +30,8 @@ Feature key: `modmail`
 
 ==== Feature modes
 `log`:: If this is enabled, the messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands). This is required for the command `closeNoLog` to be available. Enabled by default.
+`threadMessage`:: if this is enabled, every message which is send via the commands `reply` and `anonReply` will also be sent to the thread in order to have a visualizer how the message looks
+and to have a clear indication which messages were sent. Enabled by default.
 
 
 ==== Emotes

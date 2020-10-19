@@ -7,8 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name="reminder")
@@ -17,9 +17,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Reminder {
+public class Reminder implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,24 +74,4 @@ public class Reminder {
     @Setter
     private String jobTriggerKey;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Reminder reminder = (Reminder) o;
-        return reminded == reminder.reminded &&
-                Objects.equals(id, reminder.id) &&
-                Objects.equals(remindedUser, reminder.remindedUser) &&
-                Objects.equals(messageId, reminder.messageId) &&
-                Objects.equals(channel, reminder.channel) &&
-                Objects.equals(server, reminder.server) &&
-                Objects.equals(reminderDate, reminder.reminderDate) &&
-                Objects.equals(targetDate, reminder.targetDate) &&
-                Objects.equals(text, reminder.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, remindedUser, messageId, channel, server, reminderDate, targetDate, text, reminded);
-    }
 }

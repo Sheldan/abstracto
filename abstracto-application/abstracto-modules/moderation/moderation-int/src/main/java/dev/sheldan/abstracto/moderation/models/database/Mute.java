@@ -5,10 +5,11 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 /**
  * Table used to store mutes in order to track when the mute was cast and when it ended.
@@ -20,7 +21,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Mute {
+@EqualsAndHashCode
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Mute implements Serializable {
 
     /**
      * The globally unique id of the mute.
@@ -102,26 +106,4 @@ public class Mute {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Mute mute = (Mute) o;
-        return Objects.equals(muteId, mute.muteId) &&
-                Objects.equals(mutedUser, mute.mutedUser) &&
-                Objects.equals(mutingUser, mute.mutingUser) &&
-                Objects.equals(reason, mute.reason) &&
-                Objects.equals(muteDate, mute.muteDate) &&
-                Objects.equals(muteTargetDate, mute.muteTargetDate) &&
-                Objects.equals(muteEnded, mute.muteEnded) &&
-                Objects.equals(messageId, mute.messageId) &&
-                Objects.equals(server, mute.server) &&
-                Objects.equals(mutingChannel, mute.mutingChannel) &&
-                Objects.equals(triggerKey, mute.triggerKey);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(muteId, mutedUser, mutingUser, reason, muteDate, muteTargetDate, muteEnded, messageId, server, mutingChannel, triggerKey);
-    }
 }

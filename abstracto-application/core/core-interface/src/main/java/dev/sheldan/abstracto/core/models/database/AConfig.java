@@ -6,7 +6,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name="systemConfig")
@@ -14,6 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AConfig implements Serializable {
@@ -70,20 +70,5 @@ public class AConfig implements Serializable {
         return null;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AConfig config = (AConfig) o;
-        return Objects.equals(id, config.id) &&
-                Objects.equals(name, config.name) &&
-                Objects.equals(stringValue, config.stringValue) &&
-                Objects.equals(doubleValue, config.doubleValue) &&
-                Objects.equals(server, config.server);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, stringValue, doubleValue, server);
-    }
 }

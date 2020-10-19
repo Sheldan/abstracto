@@ -1,14 +1,11 @@
 package dev.sheldan.abstracto.templating.model.database;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 /**
  * Represents the template stored in the database.
@@ -18,9 +15,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "template")
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Template {
+public class Template implements Serializable {
 
     /**
      * The globally unique key of the template
@@ -64,19 +62,4 @@ public class Template {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Template template = (Template) o;
-        return Objects.equals(key, template.key) &&
-                Objects.equals(content, template.content) &&
-                Objects.equals(section, template.section) &&
-                Objects.equals(lastModified, template.lastModified);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, content, section, lastModified);
-    }
 }

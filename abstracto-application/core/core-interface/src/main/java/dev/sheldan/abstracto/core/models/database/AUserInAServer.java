@@ -6,7 +6,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "user_in_server")
@@ -15,6 +14,7 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AUserInAServer implements Serializable {
@@ -47,18 +47,4 @@ public class AUserInAServer implements Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AUserInAServer that = (AUserInAServer) o;
-        return Objects.equals(userInServerId, that.userInServerId) &&
-                Objects.equals(userReference, that.userReference) &&
-                Objects.equals(serverReference, that.serverReference);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userInServerId, userReference, serverReference);
-    }
 }

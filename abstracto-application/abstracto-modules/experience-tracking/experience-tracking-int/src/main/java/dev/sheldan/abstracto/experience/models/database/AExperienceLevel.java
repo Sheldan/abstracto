@@ -6,7 +6,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 /**
  * Represents an existing level to reach and the total necessary experience needed to reach that level.
@@ -18,6 +17,7 @@ import java.util.Objects;
 @Table(name = "experience_level")
 @Getter
 @Setter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AExperienceLevel implements Serializable {
@@ -47,17 +47,4 @@ public class AExperienceLevel implements Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AExperienceLevel that = (AExperienceLevel) o;
-        return Objects.equals(level, that.level) &&
-                Objects.equals(experienceNeeded, that.experienceNeeded);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(level, experienceNeeded);
-    }
 }

@@ -7,8 +7,8 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name="embedded_message")
@@ -17,9 +17,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class EmbeddedMessage {
+public class EmbeddedMessage implements Serializable {
 
     @Getter
     @ManyToOne
@@ -66,23 +67,5 @@ public class EmbeddedMessage {
         this.created = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        EmbeddedMessage that = (EmbeddedMessage) o;
-        return Objects.equals(embeddedUser, that.embeddedUser) &&
-                Objects.equals(embeddingUser, that.embeddingUser) &&
-                Objects.equals(embeddedServer, that.embeddedServer) &&
-                Objects.equals(embeddedChannel, that.embeddedChannel) &&
-                Objects.equals(embeddedMessageId, that.embeddedMessageId) &&
-                Objects.equals(embeddingServer, that.embeddingServer) &&
-                Objects.equals(embeddingChannel, that.embeddingChannel) &&
-                Objects.equals(embeddingMessageId, that.embeddingMessageId);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(embeddedUser, embeddingUser, embeddedServer, embeddedChannel, embeddedMessageId, embeddingServer, embeddingChannel, embeddingMessageId);
-    }
 }

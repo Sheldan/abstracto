@@ -276,8 +276,24 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public CompletableFuture<Message> sendMessageToSendToUser(User user, MessageToSend messageToSend) {
+        return user.openPrivateChannel().submit().thenCompose(privateChannel -> channelService.sendMessageToSendToChannel(messageToSend, privateChannel).get(0));
+    }
+
+    @Override
     public CompletableFuture<Message> sendMessageToUser(User user, String text) {
         log.trace("Sending direct string message to user {}.", user.getIdLong());
         return user.openPrivateChannel().flatMap(privateChannel -> privateChannel.sendMessage(text)).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteMessageInChannelWithUser(User user, Long messageId) {
+        log.info("Deleting message {} in channel with user {}.", messageId, user.getIdLong());
+        return user.openPrivateChannel().flatMap(privateChannel -> privateChannel.deleteMessageById(messageId)).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> editMessageInDMChannel(User user, MessageToSend messageToSend, Long messageId) {
+        return user.openPrivateChannel().submit().thenCompose(privateChannel -> channelService.editMessageInAChannelFuture(messageToSend, privateChannel, messageId).thenApply(message -> null));
     }
 }

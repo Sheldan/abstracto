@@ -7,7 +7,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name="auser")
@@ -15,6 +14,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AUser implements Serializable {
@@ -45,17 +45,4 @@ public class AUser implements Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AUser user = (AUser) o;
-        return Objects.equals(id, user.id) &&
-                Objects.equals(servers, user.servers);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, servers);
-    }
 }

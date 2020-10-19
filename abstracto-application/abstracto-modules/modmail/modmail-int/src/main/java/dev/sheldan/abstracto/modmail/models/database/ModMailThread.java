@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +19,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "modmail_thread")
-@Cacheable
 @Getter
 @Setter
+@EqualsAndHashCode
+@Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ModMailThread {
+public class ModMailThread implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

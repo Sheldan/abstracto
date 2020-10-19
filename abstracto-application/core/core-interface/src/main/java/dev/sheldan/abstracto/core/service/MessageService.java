@@ -39,5 +39,8 @@ public interface MessageService {
     CompletableFuture<Message> sendTemplateToUser(User user, String template, Object model);
     CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model);
     CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model);
+    CompletableFuture<Message> sendMessageToSendToUser(User user, MessageToSend messageToSend);
     CompletableFuture<Message> sendMessageToUser(User user, String text);
+    CompletableFuture<Void> deleteMessageInChannelWithUser(User user, Long messageId);
+    CompletableFuture<Void> editMessageInDMChannel(User user, MessageToSend messageToSend, Long messageId);
 }

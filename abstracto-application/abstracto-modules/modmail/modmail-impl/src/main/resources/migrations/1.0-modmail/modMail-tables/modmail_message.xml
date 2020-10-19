@@ -6,10 +6,10 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet author="Sheldan" id="modmail_messages-table">
-        <createTable tableName="modmail_messages">
+    <changeSet author="Sheldan" id="modmail_message-table">
+        <createTable tableName="modmail_message">
             <column name="message_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_messages_pkey"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_message_pkey"/>
             </column>
             <column name="anonymous" type="BOOLEAN"/>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
@@ -22,10 +22,10 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="Sheldan" id="modmail_messages-fk_modmail_message_thread">
-        <addForeignKeyConstraint baseColumnNames="thread_reference" baseTableName="modmail_messages" constraintName="fk_modmail_message_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="modmail_thread" validate="true"/>
+    <changeSet author="Sheldan" id="modmail_message-fk_modmail_message_thread">
+        <addForeignKeyConstraint baseColumnNames="thread_reference" baseTableName="modmail_message" constraintName="fk_modmail_message_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="modmail_thread" validate="true"/>
     </changeSet>
-    <changeSet author="Sheldan" id="modmail_messages-fk_modmail_message_author">
-        <addForeignKeyConstraint baseColumnNames="modmail_message_author" baseTableName="modmail_messages" constraintName="fk_modmail_message_author" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    <changeSet author="Sheldan" id="modmail_message-fk_modmail_message_author">
+        <addForeignKeyConstraint baseColumnNames="modmail_message_author" baseTableName="modmail_message" constraintName="fk_modmail_message_author" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
     </changeSet>
 </databaseChangeLog>

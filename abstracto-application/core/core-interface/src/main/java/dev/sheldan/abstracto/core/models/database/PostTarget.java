@@ -6,13 +6,13 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name="posttarget")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PostTarget implements Serializable {
@@ -51,19 +51,5 @@ public class PostTarget implements Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PostTarget that = (PostTarget) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(channelReference, that.channelReference) &&
-                Objects.equals(serverReference, that.serverReference);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, channelReference, serverReference);
-    }
 }

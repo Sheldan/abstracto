@@ -38,7 +38,6 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         modMailMessages.forEach(modMailMessage -> {
             ServerChannelMessageUser.ServerChannelMessageUserBuilder serverChannelMessageBuilder = ServerChannelMessageUser
                     .builder()
-                    .messageId(modMailMessage.getMessageId())
                     .userId(modMailMessage.getAuthor().getUserReference().getId())
                     .serverId(thread.getServer().getId());
             // if its not from a private chat, we need to set channel ID in order to fetch the data
@@ -46,6 +45,9 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                 log.trace("Message {} was from DM.", modMailMessage.getMessageId());
                 serverChannelMessageBuilder
                         .channelId(modMailMessage.getThreadReference().getChannel().getId());
+                serverChannelMessageBuilder.messageId(modMailMessage.getCreatedMessageInChannel());
+            } else {
+                serverChannelMessageBuilder.messageId(modMailMessage.getCreatedMessageInDM());
             }
             messageIds.add(serverChannelMessageBuilder.build());
         });

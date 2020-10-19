@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 /**
@@ -16,12 +17,13 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_roles")
-@Cacheable
+@Table(name = "modmail_role")
 @Getter
 @Setter
+@EqualsAndHashCode
+@Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ModMailRole {
+public class ModMailRole implements Serializable {
 
     /**
      * Unique ID of the mod mail role

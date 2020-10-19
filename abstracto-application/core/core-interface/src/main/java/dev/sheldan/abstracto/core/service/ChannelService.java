@@ -3,10 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 
 import java.util.List;
 import java.util.Optional;

@@ -45,6 +45,8 @@ public interface ModMailThreadManagementService {
      * @return The found mod mail thread, or null if none was found
      */
     ModMailThread getByChannel(AChannel channel);
+    Optional<ModMailThread> getByChannelOptional(AChannel channel);
+    Optional<ModMailThread> getByChannelIdOptional(Long channelId);
 
     /**
      * Searches for mod mail threads with the appropriate staten which concern the given {@link AUserInAServer}

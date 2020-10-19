@@ -3,10 +3,11 @@ package dev.sheldan.abstracto.moderation.models.database;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 /**
  * Represents a role to be used for muting users on a certain server
@@ -18,7 +19,10 @@ import java.util.Objects;
 @Table(name = "mute_role")
 @Getter
 @Setter
-public class MuteRole {
+@EqualsAndHashCode
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class MuteRole implements Serializable {
 
     /**
      * The abstracto unique id of this mute role.
@@ -59,18 +63,4 @@ public class MuteRole {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MuteRole muteRole = (MuteRole) o;
-        return Objects.equals(id, muteRole.id) &&
-                Objects.equals(roleServer, muteRole.roleServer) &&
-                Objects.equals(role, muteRole.role);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, roleServer, role);
-    }
 }

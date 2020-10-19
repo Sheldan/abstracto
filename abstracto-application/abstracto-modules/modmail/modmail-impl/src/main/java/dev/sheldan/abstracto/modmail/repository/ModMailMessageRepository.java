@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository to manage the stored {@link ModMailMessage} instances
@@ -16,4 +17,7 @@ import java.util.List;
 public interface ModMailMessageRepository extends JpaRepository<ModMailMessage, Long> {
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<ModMailMessage> findByThreadReference(ModMailThread modMailThread);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    Optional<ModMailMessage> findByMessageId(Long messageId);
 }

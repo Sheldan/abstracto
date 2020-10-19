@@ -16,9 +16,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "modmail_subscriber")
-@Cacheable
 @Getter
 @Setter
+@EqualsAndHashCode
+@Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ModMailThreadSubscriber {
 

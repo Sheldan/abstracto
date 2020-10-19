@@ -9,13 +9,13 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name="feature")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AFeature implements SnowFlake, Serializable {
@@ -52,18 +52,5 @@ public class AFeature implements SnowFlake, Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AFeature feature = (AFeature) o;
-        return Objects.equals(id, feature.id) &&
-                Objects.equals(key, feature.key) &&
-                Objects.equals(commands, feature.commands);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, key, commands);
-    }
 }

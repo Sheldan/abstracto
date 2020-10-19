@@ -7,13 +7,13 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name="role")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ARole implements SnowFlake, Serializable {
@@ -50,21 +50,6 @@ public class ARole implements SnowFlake, Serializable {
     @PreUpdate
     private void onUpdate() {
         this.updated = Instant.now();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ARole role = (ARole) o;
-        return Objects.equals(id, role.id) &&
-                Objects.equals(server, role.server) &&
-                Objects.equals(deleted, role.deleted);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, server, deleted);
     }
 
     public String getAsMention() {

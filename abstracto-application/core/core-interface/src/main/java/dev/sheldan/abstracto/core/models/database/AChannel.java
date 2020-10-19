@@ -8,13 +8,13 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name="channel")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AChannel implements SnowFlake, Serializable {
@@ -55,20 +55,5 @@ public class AChannel implements SnowFlake, Serializable {
     @Transient
     private boolean fake;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AChannel channel = (AChannel) o;
-        return Objects.equals(id, channel.id) &&
-                Objects.equals(groups, channel.groups) &&
-                Objects.equals(server, channel.server) &&
-                type == channel.type &&
-                Objects.equals(deleted, channel.deleted);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, groups, server, type, deleted);
-    }
 }

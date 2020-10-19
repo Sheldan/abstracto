@@ -8,7 +8,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
 
 @Entity(name = "command_in_server")
 @Getter
@@ -16,6 +15,7 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ACommandInAServer implements Serializable {
@@ -49,23 +49,6 @@ public class ACommandInAServer implements Serializable {
     @Column
     private Boolean restricted;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ACommandInAServer that = (ACommandInAServer) o;
-        return Objects.equals(commandInServerId, that.commandInServerId) &&
-                Objects.equals(commandReference, that.commandReference) &&
-                Objects.equals(serverReference, that.serverReference) &&
-                Objects.equals(allowedRoles, that.allowedRoles) &&
-                Objects.equals(immuneRoles, that.immuneRoles) &&
-                Objects.equals(restricted, that.restricted);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(commandInServerId, commandReference, serverReference, allowedRoles, immuneRoles, restricted);
-    }
 }
 
 

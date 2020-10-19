@@ -4,10 +4,11 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 /**
  * A warning which was given a member with a special reason by a moderating member. This warning is bound to a server.
@@ -17,7 +18,10 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Warning {
+@EqualsAndHashCode
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Warning implements Serializable {
 
     /**
      * The globally unique id of this warning
@@ -94,23 +98,4 @@ public class Warning {
         this.updated = Instant.now();
     }
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Warning warning = (Warning) o;
-        return Objects.equals(warnId, warning.warnId) &&
-                Objects.equals(warnedUser, warning.warnedUser) &&
-                Objects.equals(warningUser, warning.warningUser) &&
-                Objects.equals(reason, warning.reason) &&
-                Objects.equals(warnDate, warning.warnDate) &&
-                Objects.equals(decayed, warning.decayed) &&
-                Objects.equals(decayDate, warning.decayDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(warnId, warnedUser, warningUser, reason, warnDate, decayed, decayDate);
-    }
 }

@@ -23,7 +23,7 @@ import java.util.Optional;
 public interface ModMailThreadRepository extends JpaRepository<ModMailThread, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    ModMailThread findByChannel(AChannel channel);
+    Optional<ModMailThread> findByChannel(AChannel channel);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<ModMailThread> findByUser(AUserInAServer aUserInAServer);

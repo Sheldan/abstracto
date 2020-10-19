@@ -7,7 +7,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name="channelGroup")
@@ -15,6 +14,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AChannelGroup implements Serializable {
@@ -49,19 +49,5 @@ public class AChannelGroup implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AChannel> channels;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AChannelGroup that = (AChannelGroup) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(groupName, that.groupName) &&
-                Objects.equals(server, that.server) &&
-                Objects.equals(channels, that.channels);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, groupName, server, channels);
-    }
 }

@@ -1,9 +1,7 @@
 package dev.sheldan.abstracto.templating.model.database;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
@@ -13,6 +11,9 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name = "auto_load_macro")
 @Getter
+@EqualsAndHashCode
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AutoLoadMacro {
 
     @Id

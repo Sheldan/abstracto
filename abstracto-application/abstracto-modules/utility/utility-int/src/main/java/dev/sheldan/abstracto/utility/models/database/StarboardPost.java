@@ -6,9 +6,9 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name="starboard_post")
@@ -17,9 +17,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class StarboardPost {
+public class StarboardPost implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -88,25 +89,4 @@ public class StarboardPost {
         return this.reactions.size();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        StarboardPost post = (StarboardPost) o;
-        return ignored == post.ignored &&
-                Objects.equals(id, post.id) &&
-                Objects.equals(author, post.author) &&
-                Objects.equals(starboardMessageId, post.starboardMessageId) &&
-                Objects.equals(postMessageId, post.postMessageId) &&
-                Objects.equals(starboardChannel, post.starboardChannel) &&
-                Objects.equals(sourceChanel, post.sourceChanel) &&
-                Objects.equals(reactionCount, post.reactionCount) &&
-                Objects.equals(reactions, post.reactions) &&
-                Objects.equals(starredDate, post.starredDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, author, starboardMessageId, postMessageId, starboardChannel, sourceChanel, reactionCount, reactions, starredDate, ignored);
-    }
 }

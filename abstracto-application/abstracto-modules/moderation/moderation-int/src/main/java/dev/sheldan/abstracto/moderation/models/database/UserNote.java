@@ -4,8 +4,10 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
@@ -15,7 +17,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserNote {
+@EqualsAndHashCode
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class UserNote implements Serializable {
 
     @EmbeddedId
     private ServerSpecificId userNoteId;

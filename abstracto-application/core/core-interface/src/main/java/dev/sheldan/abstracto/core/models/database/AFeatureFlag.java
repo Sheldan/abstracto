@@ -7,13 +7,13 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name="feature_flag")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AFeatureFlag implements Serializable {
@@ -62,19 +62,5 @@ public class AFeatureFlag implements Serializable {
         this.updateTimestamp = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AFeatureFlag that = (AFeatureFlag) o;
-        return enabled == that.enabled &&
-                Objects.equals(id, that.id) &&
-                Objects.equals(server, that.server) &&
-                Objects.equals(feature, that.feature);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, server, feature, enabled);
-    }
 }

@@ -6,13 +6,13 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name="default_feature_flag")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class DefaultFeatureFlag implements Serializable {
@@ -53,21 +53,5 @@ public class DefaultFeatureFlag implements Serializable {
         this.updateTimestamp = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DefaultFeatureFlag that = (DefaultFeatureFlag) o;
-        return enabled == that.enabled &&
-                Objects.equals(id, that.id) &&
-                Objects.equals(feature, that.feature) &&
-                Objects.equals(mode, that.mode) &&
-                Objects.equals(created, that.created) &&
-                Objects.equals(updateTimestamp, that.updateTimestamp);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, feature, enabled, mode, created, updateTimestamp);
-    }
 }

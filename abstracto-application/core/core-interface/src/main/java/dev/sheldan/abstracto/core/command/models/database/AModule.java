@@ -1,9 +1,6 @@
 package dev.sheldan.abstracto.core.command.models.database;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
@@ -11,7 +8,6 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "module")
@@ -19,6 +15,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AModule implements Serializable {
@@ -54,18 +51,4 @@ public class AModule implements Serializable {
         this.updated = Instant.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AModule aModule = (AModule) o;
-        return Objects.equals(id, aModule.id) &&
-                Objects.equals(name, aModule.name) &&
-                Objects.equals(commands, aModule.commands);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, commands);
-    }
 }

@@ -48,7 +48,7 @@ public class ModMailFeature implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(ModMailMode.LOGGING);
+        return Arrays.asList(ModMailMode.LOGGING, ModMailMode.SEPARATE_MESSAGE);
     }
 
     @Override

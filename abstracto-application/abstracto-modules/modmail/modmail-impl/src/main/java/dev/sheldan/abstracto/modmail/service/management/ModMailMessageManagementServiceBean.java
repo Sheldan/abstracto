@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -19,17 +20,21 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
     private ModMailMessageRepository modMailMessageRepository;
 
     @Override
-    public ModMailMessage addMessageToThread(ModMailThread modMailThread, Message message, AUserInAServer author, Boolean anonymous, Boolean dmChannel) {
+    public ModMailMessage addMessageToThread(ModMailThread modMailThread, Message createdMessageInDM, Message createdMessageInChannel, Message userPostedMessage, AUserInAServer author, Boolean anonymous, Boolean dmChannel) {
+        Long dmId = createdMessageInDM != null ? createdMessageInDM.getIdLong() : null;
+        Long channelMessageId = createdMessageInChannel != null ? createdMessageInChannel.getIdLong() : null;
         ModMailMessage modMailMessage = ModMailMessage
                 .builder()
                 .author(author)
-                .messageId(message.getIdLong())
+                .messageId(userPostedMessage.getIdLong())
+                .createdMessageInDM(dmId)
+                .createdMessageInChannel(channelMessageId)
                 .dmChannel(dmChannel)
                 .threadReference(modMailThread)
                 .anonymous(anonymous)
                 .build();
-        log.info("Storing modmail thread message {} to modmail thread {} of user {} in server {}.",
-                message.getId(), modMailThread.getId(), author.getUserReference().getId(), author.getServerReference().getId());
+        log.info("Storing created message in DM {} with created message in channel {} caused by message {} to modmail thread {} of user {} in server {}.",
+                dmId, channelMessageId, userPostedMessage.getId(), modMailThread.getId(), author.getUserReference().getId(), author.getServerReference().getId());
 
         modMailMessageRepository.save(modMailMessage);
         return modMailMessage;
@@ -38,5 +43,15 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
     @Override
     public List<ModMailMessage> getMessagesOfThread(ModMailThread modMailThread) {
         return modMailMessageRepository.findByThreadReference(modMailThread);
+    }
+
+    @Override
+    public Optional<ModMailMessage> getByMessageIdOptional(Long messageId) {
+        return modMailMessageRepository.findByMessageId(messageId);
+    }
+
+    @Override
+    public void deleteMessageFromThread(ModMailMessage modMailMessage) {
+        modMailMessageRepository.delete(modMailMessage);
     }
 }
