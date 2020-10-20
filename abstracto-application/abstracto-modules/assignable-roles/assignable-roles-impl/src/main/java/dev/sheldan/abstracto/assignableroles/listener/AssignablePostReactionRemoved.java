@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -61,5 +62,10 @@ public class AssignablePostReactionRemoved implements ReactedRemovedListener {
                 log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), userRemoving.getServerReference().getId());
             }
         }
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

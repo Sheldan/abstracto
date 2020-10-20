@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -51,5 +53,10 @@ public class LeaveListenerBean extends ListenerAdapter {
     public void executeIndividualLeaveListener(@Nonnull GuildMemberRemoveEvent event, LeaveListener leaveListener) {
         log.trace("Executing leave listener {} for member {} in guild {}.", leaveListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
         leaveListener.execute(event.getMember(), event.getGuild());
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        listenerList.sort(Comparator.comparing(Prioritized::getPriority).reversed());
     }
 }

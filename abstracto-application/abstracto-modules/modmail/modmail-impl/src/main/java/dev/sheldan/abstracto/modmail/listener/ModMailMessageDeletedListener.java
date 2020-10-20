@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.modmail.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
@@ -54,7 +55,7 @@ public class ModMailMessageDeletedListener implements MessageDeletedListener {
                 } else {
                     channelDeletePromise = CompletableFuture.completedFuture(null);
                 }
-                CompletableFuture.allOf(dmDeletePromise, channelDeletePromise).thenAccept(unused ->
+                CompletableFuture.allOf(dmDeletePromise, channelDeletePromise).whenComplete((unused, throwable) ->
                         self.removeMessageFromThread(messageBefore.getMessageId())
                 );
             });
@@ -73,5 +74,10 @@ public class ModMailMessageDeletedListener implements MessageDeletedListener {
     @Override
     public FeatureEnum getFeature() {
         return ModMailFeatures.MOD_MAIL;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.MEDIUM;
     }
 }

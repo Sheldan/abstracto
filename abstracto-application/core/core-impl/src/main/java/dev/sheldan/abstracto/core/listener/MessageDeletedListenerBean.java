@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -105,5 +107,10 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     public void executeIndividualMessageDeletedListener(CachedMessage cachedMessage, AServerAChannelAUser authorUser, GuildChannelMember authorMember, MessageDeletedListener messageDeletedListener) {
         log.trace("Executing message deleted listener {} for message {} in guild {}.", messageDeletedListener.getClass().getName(), cachedMessage.getMessageId(), cachedMessage.getMessageId());
         messageDeletedListener.execute(cachedMessage, authorUser, authorMember);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        listener.sort(Comparator.comparing(Prioritized::getPriority).reversed());
     }
 }

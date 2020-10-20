@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
@@ -35,5 +36,10 @@ public class StarboardPostDeletedListener implements MessageDeletedListener {
     @Override
     public FeatureEnum getFeature() {
         return UtilityFeature.STARBOARD;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

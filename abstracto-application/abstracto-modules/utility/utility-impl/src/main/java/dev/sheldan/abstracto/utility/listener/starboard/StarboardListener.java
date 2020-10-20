@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
 import dev.sheldan.abstracto.core.listener.ReactionClearedListener;
@@ -164,5 +165,10 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
             starboardPostReactorManagementService.removeReactors(starboardPost);
             completelyRemoveStarboardPost(starboardPost);
         });
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

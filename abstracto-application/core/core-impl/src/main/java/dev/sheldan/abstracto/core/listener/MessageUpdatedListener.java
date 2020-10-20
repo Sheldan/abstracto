@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -68,5 +70,10 @@ public class MessageUpdatedListener extends ListenerAdapter {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void executeIndividualMessageUpdatedListener(Message message, CachedMessage cachedMessage, MessageTextUpdatedListener messageTextUpdatedListener) {
         messageTextUpdatedListener.execute(cachedMessage, message);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        listener.sort(Comparator.comparing(Prioritized::getPriority).reversed());
     }
 }

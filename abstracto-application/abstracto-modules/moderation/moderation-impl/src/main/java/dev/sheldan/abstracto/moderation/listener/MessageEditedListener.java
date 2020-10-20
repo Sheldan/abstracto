@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
@@ -50,5 +51,10 @@ public class MessageEditedListener implements MessageTextUpdatedListener {
     @Override
     public FeatureEnum getFeature() {
         return ModerationFeatures.LOGGING;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.MEDIUM;
     }
 }

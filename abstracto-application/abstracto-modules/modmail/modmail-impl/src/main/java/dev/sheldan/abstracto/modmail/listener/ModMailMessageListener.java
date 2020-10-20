@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.modmail.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.PrivateMessageReceivedListener;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -63,5 +64,10 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
     @Override
     public FeatureEnum getFeature() {
         return ModMailFeatures.MOD_MAIL;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

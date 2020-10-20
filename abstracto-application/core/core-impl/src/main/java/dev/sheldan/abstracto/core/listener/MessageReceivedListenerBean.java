@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -87,5 +89,11 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     public void executeIndividualPrivateMessageReceivedListener(@Nonnull PrivateMessageReceivedEvent event, PrivateMessageReceivedListener messageReceivedListener) {
         log.trace("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), event.getAuthor().getId());
         messageReceivedListener.execute(event.getMessage());
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        listenerList.sort(Comparator.comparing(Prioritized::getPriority).reversed());
+        privateMessageReceivedListeners.sort(Comparator.comparing(Prioritized::getPriority).reversed());
     }
 }

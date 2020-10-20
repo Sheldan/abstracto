@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.LeaveListener;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
@@ -48,5 +49,10 @@ public class LeaveLogger implements LeaveListener {
     @Override
     public FeatureEnum getFeature() {
         return ModerationFeatures.LOGGING;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.MEDIUM;
     }
 }

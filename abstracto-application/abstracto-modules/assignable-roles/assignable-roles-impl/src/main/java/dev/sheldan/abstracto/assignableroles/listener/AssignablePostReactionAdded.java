@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePl
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -129,5 +130,10 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
     @Override
     public FeatureEnum getFeature() {
         return AssignableRoleFeature.ASSIGNABLE_ROLES;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

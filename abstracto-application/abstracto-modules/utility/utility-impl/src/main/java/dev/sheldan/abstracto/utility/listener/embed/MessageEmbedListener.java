@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.embed;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.MessageCache;
@@ -75,5 +76,10 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Override
     public FeatureEnum getFeature() {
         return UtilityFeature.LINK_EMBEDS;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.MEDIUM;
     }
 }

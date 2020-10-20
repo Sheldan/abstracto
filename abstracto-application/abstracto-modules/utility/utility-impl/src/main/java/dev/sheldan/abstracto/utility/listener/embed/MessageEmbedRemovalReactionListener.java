@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.embed;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -71,5 +72,10 @@ public class MessageEmbedRemovalReactionListener implements ReactedAddedListener
     @Override
     public FeatureEnum getFeature() {
         return UtilityFeature.LINK_EMBEDS;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.experience.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -35,5 +36,10 @@ public class ExperienceTrackerListener implements MessageReceivedListener {
     @Override
     public FeatureEnum getFeature() {
         return ExperienceFeature.EXPERIENCE;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.MEDIUM;
     }
 }

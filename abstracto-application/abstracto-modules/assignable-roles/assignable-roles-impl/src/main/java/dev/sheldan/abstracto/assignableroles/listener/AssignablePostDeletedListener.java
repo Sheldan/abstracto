@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
@@ -36,5 +37,10 @@ public class AssignablePostDeletedListener implements MessageDeletedListener {
     @Override
     public FeatureEnum getFeature() {
         return AssignableRoleFeature.ASSIGNABLE_ROLES;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.LOW;
     }
 }

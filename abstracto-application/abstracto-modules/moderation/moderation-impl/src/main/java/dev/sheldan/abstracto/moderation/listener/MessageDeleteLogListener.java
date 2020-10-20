@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
@@ -73,5 +74,10 @@ public class MessageDeleteLogListener implements MessageDeletedListener {
     @Override
     public FeatureEnum getFeature() {
         return ModerationFeatures.LOGGING;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.MEDIUM;
     }
 }

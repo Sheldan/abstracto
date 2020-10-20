@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.MessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -128,5 +129,10 @@ public class ModMailMessageEditedListener implements MessageTextUpdatedListener 
     @Override
     public FeatureEnum getFeature() {
         return ModMailFeatures.MOD_MAIL;
+    }
+
+    @Override
+    public Integer getPriority() {
+        return ListenerPriority.HIGH;
     }
 }

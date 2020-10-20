@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -56,5 +59,10 @@ public class JoinListenerBean extends ListenerAdapter {
     public void executeIndividualJoinListener(@Nonnull GuildMemberJoinEvent event, JoinListener joinListener, AUserInAServer aUserInAServer) {
         log.trace("Executing join listener {} for member {} in guild {}.", joinListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
         joinListener.execute(event.getMember(), event.getGuild(), aUserInAServer);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        listenerList.sort(Comparator.comparing(Prioritized::getPriority).reversed());
     }
 }

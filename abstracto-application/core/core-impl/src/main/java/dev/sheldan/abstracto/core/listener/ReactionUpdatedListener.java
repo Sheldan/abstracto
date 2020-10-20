@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -196,6 +198,13 @@ public class ReactionUpdatedListener extends ListenerAdapter {
             log.error("Message retrieval from cache failed for message {}", event.getMessageIdLong(), throwable);
             return null;
         });
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        reactionRemovedListeners.sort(Comparator.comparing(Prioritized::getPriority).reversed());
+        addedListenerList.sort(Comparator.comparing(Prioritized::getPriority).reversed());
+        clearedListenerList.sort(Comparator.comparing(Prioritized::getPriority).reversed());
     }
 
 }
