@@ -2,7 +2,6 @@ FROM ubuntu as base
 MAINTAINER Sheldan
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG maven_version=3.6.3
 ARG liquibase_version=3.8.9
 ARG postgres_driver_version=42.2.14
 # Install prerequisities for Ansible
@@ -26,12 +25,17 @@ RUN mkdir -p /postgres \
 # Install ansible and required libraries
 
 FROM python:3.7-slim-buster as runtime
-RUN pip3 install --no-cache-dir ansible psycopg2-binary SQLAlchemy lxml
-RUN apt-get update && apt-get install unzip && rm -rf /var/lib/apt/lists/
+RUN pip3 install --no-cache-dir psycopg2-binary SQLAlchemy jinja2
 COPY --from=base /liquibase /liquibase
 COPY --from=base /postgres /postgres
 COPY --from=base /java /java
 ENV JAVA_HOME=/java/jre
-ADD resources/ /
+ADD python/ /python
+ADD wrapper/ /
 RUN chmod +x /deploy.sh
-ENTRYPOINT ["/deploy.sh"]
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
+RUN chmod +x /wait
+
+ENV LIQUIBASE_PATH=/liquibase
+ENV POSTGRES_DRIVER=/postgres/driver.jar
+CMD /wait && /deploy.sh

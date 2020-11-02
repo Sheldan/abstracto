@@ -12,6 +12,7 @@ if [ "x$EXECUTE_TEMPLATES" = 'xtrue' ]; then
 fi
 
 if [ "x$EXECUTE_DEPLOYMENT" = 'xtrue' ]; then
-   ansible-playbook playbook.yaml -e "execute_liquibase_input=${DEPLOY_LIQUIBASE}" -e "execute_templates_input=${DEPLOY_TEMPLATES}";
+   python3 python/main.py $DEPLOY_TEMPLATES $DEPLOY_LIQUIBASE
 fi
 
+echo "Finished deployment"

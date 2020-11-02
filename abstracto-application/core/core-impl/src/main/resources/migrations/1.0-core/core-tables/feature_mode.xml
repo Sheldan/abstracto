@@ -22,6 +22,9 @@
             <column name="feature_flag_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="Sheldan" id="feature_mode-fk_feature_mode_flag">
@@ -29,5 +32,8 @@
     </changeSet>
     <changeSet author="Sheldan" id="feature_mode-fk_feature_mode_mode">
         <addForeignKeyConstraint baseColumnNames="feature_mode_id" baseTableName="feature_mode" constraintName="fk_feature_mode_mode" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="default_feature_mode" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="feature_mode-fk_feature_mode_server">
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="feature_mode" constraintName="fk_feature_mode_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
     </changeSet>
 </databaseChangeLog>

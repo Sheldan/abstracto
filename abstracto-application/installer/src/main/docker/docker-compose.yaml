@@ -1,0 +1,6 @@
+version: "3.7"
+
+services:
+  bot:
+    build: deployment
+    image: abstracto_deployment:latest

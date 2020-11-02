@@ -21,8 +21,7 @@ An example implementation of this bot can be seen [here](https://github.com/Shel
 * [Ehcache](https://github.com/ehcache/ehcache3) is used as a caching implementation for the database and other caches.
 * [Lombok](https://github.com/rzwitserloot/lombok) is used as a framework in order to speed up creation of container classes and builders.
 * [Quartz](https://github.com/quartz-scheduler/quartz) is used as a scheduling framework in order to provide functionalities which either require a delayed or cronjob behaviour.
-* [Docker](https://github.com/docker) is used to package the application into a container and [Docker Compose](https://github.com/docker/compose) is used to connect the required containers togeteher.
-* [Ansible](https://github.com/ansible/ansible) is used to deploy configuration to the running instance
+* [Docker](https://github.com/docker) is used to package the application into a container and [Docker Compose](https://github.com/docker/compose) is used to connect the required containers together.
 * [Liquibase](https://github.com/liquibase/liquibase) is used to manage changes to the database
 
 ## Documentation
