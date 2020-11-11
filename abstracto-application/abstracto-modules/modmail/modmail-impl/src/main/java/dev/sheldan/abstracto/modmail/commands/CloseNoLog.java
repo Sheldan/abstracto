@@ -47,7 +47,7 @@ public class CloseNoLog extends AbstractConditionableCommand {
         ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
         // we don't have a note, therefore we cant pass any, the method handles this accordingly
         return modMailThreadService.closeModMailThread(thread, null, false, commandContext.getUndoActions(), false)
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

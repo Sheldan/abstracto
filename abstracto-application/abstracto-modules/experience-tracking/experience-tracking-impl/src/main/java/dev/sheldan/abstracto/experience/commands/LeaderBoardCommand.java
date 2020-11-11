@@ -74,7 +74,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
             leaderBoardModel.setUserExecuting(userRankFuture.join());
             MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));
-        }).thenApply(aVoid -> CommandResult.fromSuccess());
+        }).thenApply(aVoid -> CommandResult.fromIgnored());
 
     }
 

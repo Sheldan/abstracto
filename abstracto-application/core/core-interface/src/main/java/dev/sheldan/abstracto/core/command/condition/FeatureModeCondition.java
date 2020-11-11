@@ -25,7 +25,7 @@ public class FeatureModeCondition implements CommandCondition {
                         return ConditionResult.builder().result(true).build();
                     }
                 }
-                throw new IncorrectFeatureModeException(command, feature, command.getFeatureModeLimitations());
+                throw new IncorrectFeatureModeException(feature, command.getFeatureModeLimitations());
             }
         }
 

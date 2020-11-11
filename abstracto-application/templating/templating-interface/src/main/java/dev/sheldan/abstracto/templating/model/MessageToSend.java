@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -22,4 +23,12 @@ public class MessageToSend {
      * The string content to be used in the first message.
      */
     private String message;
+    /**
+     * The file handle to send attached to the message.
+     */
+    private File fileToSend;
+
+    public boolean hasFileToSend() {
+        return fileToSend != null;
+    }
 }

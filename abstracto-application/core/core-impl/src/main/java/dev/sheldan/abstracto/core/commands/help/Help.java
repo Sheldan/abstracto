@@ -84,7 +84,7 @@ public class Help implements Command {
                 model.setSubModules(subModules);
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model);
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                        .thenApply(aVoid -> CommandResult.fromSuccess());
+                        .thenApply(aVoid -> CommandResult.fromIgnored());
             } else if(commandRegistry.commandExists(parameter)) {
                 Command command = commandRegistry.getCommandByName(parameter);
                 log.trace("Displaying help for command {}.", command.getConfiguration().getName());
@@ -100,7 +100,7 @@ public class Help implements Command {
                 model.setCommand(command.getConfiguration());
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                        .thenApply(aVoid -> CommandResult.fromSuccess());
+                        .thenApply(aVoid -> CommandResult.fromIgnored());
             } else {
                 return displayHelpOverview(commandContext);
             }
@@ -115,7 +115,7 @@ public class Help implements Command {
         model.setModules(subModules);
         MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override
@@ -134,7 +134,7 @@ public class Help implements Command {
                 .parameters(Collections.singletonList(moduleOrCommandName))
                 .help(helpInfo)
                 .templated(true)
-                .causesReaction(false)
+                .causesReaction(true)
                 .build();
     }
 

@@ -158,4 +158,9 @@ public class EmoteServiceBean implements EmoteService {
                 .build();
     }
 
+    @Override
+    public boolean emoteIsFromGuild(Emote emote, Guild guild) {
+        return guild.getEmoteById(emote.getId()) != null;
+    }
+
 }

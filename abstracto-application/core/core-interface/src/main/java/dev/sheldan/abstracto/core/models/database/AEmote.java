@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.models.database;
 
+import dev.sheldan.abstracto.core.models.Fakeable;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -16,7 +17,7 @@ import java.time.Instant;
 @EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AEmote implements Serializable {
+public class AEmote implements Serializable, Fakeable {
 
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

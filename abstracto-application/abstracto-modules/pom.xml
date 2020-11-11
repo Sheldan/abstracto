@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>abstracto-modules</artifactId>
+    <groupId>dev.sheldan.abstracto.modules</groupId>
     <packaging>pom</packaging>
     <modules>
         <module>moderation</module>
@@ -17,6 +18,7 @@
         <module>experience-tracking</module>
         <module>modmail</module>
         <module>assignable-roles</module>
+        <module>statistic</module>
     </modules>
 
 

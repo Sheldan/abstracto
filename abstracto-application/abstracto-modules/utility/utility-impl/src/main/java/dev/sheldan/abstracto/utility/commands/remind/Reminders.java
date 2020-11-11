@@ -42,7 +42,7 @@ public class Reminders extends AbstractConditionableCommand {
         model.setReminders(activeReminders);
         log.info("Showing {} reminders for user {} in server {}.", activeReminders.size(), commandContext.getAuthor().getId(), commandContext.getGuild().getId());
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REMINDERS_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

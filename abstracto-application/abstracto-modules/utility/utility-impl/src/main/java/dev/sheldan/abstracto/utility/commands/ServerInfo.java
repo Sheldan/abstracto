@@ -34,7 +34,7 @@ public class ServerInfo extends AbstractConditionableCommand {
         model.setGuild(commandContext.getGuild());
         log.info("Displaying serverinfo for server {}", commandContext.getGuild().getId());
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel("serverinfo_response", model, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

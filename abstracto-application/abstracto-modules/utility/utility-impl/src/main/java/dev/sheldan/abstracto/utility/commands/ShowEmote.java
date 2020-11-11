@@ -35,7 +35,7 @@ public class ShowEmote extends AbstractConditionableCommand {
         ShowEmoteLog emoteLog = (ShowEmoteLog) ContextConverter.fromCommandContext(commandContext, ShowEmoteLog.class);
         emoteLog.setEmote(emoteParameter);
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

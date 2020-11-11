@@ -48,12 +48,12 @@ public class UserInfo extends AbstractConditionableCommand {
             return botService.forceReloadMember(memberToShow).thenCompose(member -> {
                 model.setMemberInfo(member);
                 return self.sendResponse(commandContext, model)
-                        .thenApply(aVoid -> CommandResult.fromSuccess());
+                        .thenApply(aVoid -> CommandResult.fromIgnored());
             });
         } else {
             model.setMemberInfo(memberToShow);
             return self.sendResponse(commandContext, model)
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
         }
     }
 

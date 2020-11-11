@@ -101,11 +101,20 @@ public class CommandTestUtilities {
     }
 
     public static void checkSuccessfulCompletion(CommandResult result){
-        Assert.assertEquals(ResultState.SUCCESSFUL, result.getResult());
+        ResultState resultState = result.getResult();
+        checkForSuccessResultState(resultState);
+    }
+
+    private static void checkForSuccessResultState(ResultState resultState) {
+        boolean canBeConsideredSuccessful = ResultState.SUCCESSFUL.equals(resultState)
+                || ResultState.IGNORED.equals(resultState)
+                || ResultState.SELF_DESTRUCT.equals(resultState);
+        Assert.assertTrue(canBeConsideredSuccessful);
     }
 
     public static void checkSuccessfulCompletionAsync(CompletableFuture<CommandResult> result){
-        Assert.assertEquals(ResultState.SUCCESSFUL, result.join().getResult());
+        ResultState resultState = result.join().getResult();
+        checkForSuccessResultState(resultState);
     }
 
     public static List<CompletableFuture<Message>> messageFutureList() {

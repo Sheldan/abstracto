@@ -28,7 +28,7 @@ public class TestAssignableRolePlace extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         return service.testAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name, commandContext.getChannel())
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

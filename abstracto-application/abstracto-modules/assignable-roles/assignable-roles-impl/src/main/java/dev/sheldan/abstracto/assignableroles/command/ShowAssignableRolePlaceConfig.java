@@ -29,7 +29,7 @@ public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand 
         String name = (String) parameters.get(0);
         // TODO refactor to return something to be posted in this command here instead of relying it to be posted somewhere else
         service.showAssignablePlaceConfig(commandContext.getUserInitiatedContext().getServer(), name, commandContext.getChannel());
-        return CommandResult.fromSuccess();
+        return CommandResult.fromIgnored();
     }
 
     @Override

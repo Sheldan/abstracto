@@ -101,7 +101,12 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel) {
         log.trace("Sending embed to channel {}.", channel.getId());
-        return channel.sendMessage(embed).submit();
+        return sendEmbedToChannelInComplete(embed, channel).submit();
+    }
+
+    @Override
+    public MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
+        return channel.sendMessage(embed);
     }
 
     @Override
@@ -122,25 +127,30 @@ public class ChannelServiceBean implements ChannelService {
     public List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel) {
         String messageText = messageToSend.getMessage();
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        if(StringUtils.isBlank(messageText)) {
-            log.trace("Only sending {} embeds to channel {}.", messageToSend.getEmbeds().size(), textChannel.getId());
-            messageToSend.getEmbeds().forEach(embed ->
-                futures.add(sendEmbedToChannel(embed, textChannel))
-            );
-        } else  {
-            log.trace("Sending mesagte text to channel {}.", textChannel.getId());
-            MessageAction messageAction = textChannel.sendMessage(messageText);
-            if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
-                log.trace("Also sending {} embeds to channel {}.", messageToSend.getEmbeds().size(), textChannel.getId());
-                CompletableFuture<Message> firstMessageFuture = messageAction.embed(messageToSend.getEmbeds().get(0)).submit();
-                futures.add(firstMessageFuture);
-                messageToSend.getEmbeds().stream().skip(1).forEach(embed ->
-                    futures.add(sendEmbedToChannel(embed, textChannel))
-                );
+        MessageAction firstMessageAction = null;
+        List<MessageAction> allMessageActions = new ArrayList<>();
+        if(!StringUtils.isBlank(messageText)) {
+            firstMessageAction = textChannel.sendMessage(messageText);
+        }
+        if(!messageToSend.getEmbeds().isEmpty()) {
+            if(firstMessageAction != null) {
+                firstMessageAction.embed(messageToSend.getEmbeds().get(0));
             } else {
-                futures.add(messageAction.submit());
+                firstMessageAction = textChannel.sendMessage(messageToSend.getEmbeds().get(0));
+            }
+            messageToSend.getEmbeds().stream().skip(1).forEach(embed -> allMessageActions.add(sendEmbedToChannelInComplete(embed, textChannel)));
+        }
+        if(messageToSend.hasFileToSend()) {
+            if(firstMessageAction != null) {
+                firstMessageAction.addFile(messageToSend.getFileToSend());
+            } else {
+                firstMessageAction = textChannel.sendFile(messageToSend.getFileToSend());
             }
         }
+        allMessageActions.add(0, firstMessageAction);
+        allMessageActions.forEach(messageAction ->
+            futures.add(messageAction.submit())
+        );
         return futures;
     }
 

@@ -35,7 +35,7 @@ public class StarStats extends AbstractConditionableCommand {
         return starboardService.retrieveStarStats(commandContext.getGuild().getIdLong())
                 .thenCompose(starStatsModel ->
                     FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, starStatsModel, commandContext.getChannel()))
-        ).thenApply(o -> CommandResult.fromSuccess());
+        ).thenApply(o -> CommandResult.fromIgnored());
     }
 
     @Override

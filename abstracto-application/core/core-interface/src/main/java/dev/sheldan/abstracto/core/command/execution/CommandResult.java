@@ -35,6 +35,10 @@ public class CommandResult {
         return CommandResult.builder().result(ResultState.ERROR).message(message).throwable(throwable).build();
     }
 
+    public static CommandResult fromIgnored() {
+        return CommandResult.builder().result(ResultState.IGNORED).build();
+    }
+
     public static CommandResult fromCondition(ConditionResult result) {
         return CommandResult.builder().conditionResult(result).result(ResultState.CONDITION).build();
     }

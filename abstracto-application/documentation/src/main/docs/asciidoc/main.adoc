@@ -35,14 +35,16 @@ In the mode `log` mod mail threads will be logged into the post target `modmailL
 
 == Features
 
-include::features/core.adoc[]
+include::modules/core.adoc[]
 
-include::features/moderation.adoc[]
+include::modules/moderation.adoc[]
 
-include::features/modmail.adoc[]
+include::modules/modmail.adoc[]
 
-include::features/experience.adoc[]
+include::modules/experience.adoc[]
 
-include::features/assignableRoles.adoc[]
+include::modules/assignableRoles.adoc[]
 
-include::features/utility.adoc[]
+include::modules/statistic.adoc[]
+
+include::modules/utility.adoc[]

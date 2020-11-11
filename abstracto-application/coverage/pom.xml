@@ -67,9 +67,10 @@
             <artifactId>scheduling-impl</artifactId>
         </dependency>
 
+
         <dependency>
-            <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>core-impl</artifactId>
+            <groupId>dev.sheldan.abstracto.modules</groupId>
+            <artifactId>statistic-impl</artifactId>
         </dependency>
 
         <dependency>

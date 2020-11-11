@@ -71,7 +71,7 @@ public class UserNotes extends AbstractConditionableCommand {
         return listCompletableFuture.thenCompose(noteEntryModels -> {
             model.setUserNotes(noteEntryModels);
             return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
-                    .thenApply(aVoid -> CommandResult.fromSuccess());
+                    .thenApply(aVoid -> CommandResult.fromIgnored());
         });
     }
 

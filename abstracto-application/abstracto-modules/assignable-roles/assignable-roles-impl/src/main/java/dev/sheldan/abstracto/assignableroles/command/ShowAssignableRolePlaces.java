@@ -23,7 +23,7 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         return service.showAllAssignableRolePlaces(commandContext.getUserInitiatedContext().getServer(), commandContext.getChannel())
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

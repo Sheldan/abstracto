@@ -62,7 +62,7 @@ public class Warnings extends AbstractConditionableCommand {
         }
         return warnEntryConverter.fromWarnings(warnsToDisplay).thenApply(warnEntries -> {
             self.renderWarnings(commandContext, warnEntries);
-            return CommandResult.fromSuccess();
+            return CommandResult.fromIgnored();
         });
 
 

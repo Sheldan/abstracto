@@ -36,7 +36,7 @@ public class SyncRoles extends AbstractConditionableCommand {
         AServer server = commandContext.getUserInitiatedContext().getServer();
         log.info("Synchronizing roles on server {}", server.getId());
         return userExperienceService.syncUserRolesWithFeedback(server, commandContext.getUserInitiatedContext().getChannel())
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

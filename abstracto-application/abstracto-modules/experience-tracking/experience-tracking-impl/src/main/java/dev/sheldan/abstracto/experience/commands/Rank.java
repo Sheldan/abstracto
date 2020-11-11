@@ -72,7 +72,7 @@ public class Rank extends AbstractConditionableCommand {
         CompletableFuture<LeaderBoardEntryModel> future = converter.fromLeaderBoardEntry(userRank);
         return future.thenCompose(leaderBoardEntryModel ->
             self.renderAndSendRank(commandContext, rankModel, leaderBoardEntryModel)
-        ).thenApply(result -> CommandResult.fromSuccess());
+        ).thenApply(result -> CommandResult.fromIgnored());
     }
 
     @Transactional

@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.exception;
 
 
-import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.exception.IncorrectFeatureModeExceptionModel;
@@ -13,9 +12,9 @@ public class IncorrectFeatureModeException extends AbstractoRunTimeException imp
 
     private final IncorrectFeatureModeExceptionModel model;
 
-    public IncorrectFeatureModeException(Command command, FeatureEnum featureEnum, List<FeatureMode> requiredModes) {
+    public IncorrectFeatureModeException(FeatureEnum featureEnum, List<FeatureMode> requiredModes) {
         super("Incorrect feature mode for the command.");
-        this.model = IncorrectFeatureModeExceptionModel.builder().command(command).featureEnum(featureEnum).requiredModes(requiredModes).build();
+        this.model = IncorrectFeatureModeExceptionModel.builder().featureEnum(featureEnum).requiredModes(requiredModes).build();
     }
 
     @Override

@@ -33,7 +33,7 @@ public class Echo extends AbstractConditionableCommand {
         );
         EchoModel model = EchoModel.builder().text(sb.toString()).build();
         commandContext.getChannel().sendMessage(templateService.renderTemplate(TEMPLATE_NAME, model)).queue();
-        return CommandResult.fromSuccess();
+        return CommandResult.fromIgnored();
     }
 
     @Override

@@ -33,10 +33,6 @@ public class DefaultFeatureFlag implements Serializable {
     @Setter
     private boolean enabled;
 
-    @Getter
-    @Setter
-    private String mode;
-
     @Column(name = "created")
     private Instant created;
 

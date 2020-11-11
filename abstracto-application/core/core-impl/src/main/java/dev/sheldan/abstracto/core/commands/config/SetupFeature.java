@@ -49,7 +49,7 @@ public class SetupFeature extends AbstractConditionableCommand {
                     .userId(commandContext.getAuthor().getIdLong())
                     .build();
             return setupService.performFeatureSetup(feature, initiatingUser, commandContext.getMessage().getIdLong())
-                    .thenApply(aVoid ->  CommandResult.fromSuccess());
+                    .thenApply(aVoid ->  CommandResult.fromIgnored());
         }
         throw new FeatureNotFoundException(name, featureConfigService.getFeaturesAsList());
     }

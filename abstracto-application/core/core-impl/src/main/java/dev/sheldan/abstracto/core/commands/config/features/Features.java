@@ -45,7 +45,7 @@ public class Features extends AbstractConditionableCommand {
         featuresModel.setFeatures(featureFlagConverter.fromFeatureFlags(features));
         MessageToSend messageToSend = templateService.renderEmbedTemplate("features_response", featuresModel);
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

@@ -40,7 +40,7 @@ public class ShowAvatar extends AbstractConditionableCommand {
                 memberToShow.getId(), commandContext.getAuthor().getId(), commandContext.getChannel().getId(), commandContext.getGuild().getId());
         model.setMemberInfo(memberToShow);
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromSuccess());
+                .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Override

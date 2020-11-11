@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageReaction;
 
 import java.util.Optional;
@@ -22,4 +23,5 @@ public interface EmoteService {
     boolean compareAEmote(AEmote a, AEmote b);
     AEmote getFakeEmote(Object object);
     AEmote getFakeEmoteFromEmote(Emote emote);
+    boolean emoteIsFromGuild(Emote emote, Guild guild);
 }

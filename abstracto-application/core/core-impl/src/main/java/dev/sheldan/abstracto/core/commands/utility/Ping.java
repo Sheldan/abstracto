@@ -36,7 +36,7 @@ public class Ping implements Command {
         long ping = commandContext.getJda().getGatewayPing();
         PingModel model = PingModel.builder().latency(ping).build();
         return channelService.sendTextTemplateInChannel(PING_TEMPLATE, model, commandContext.getChannel())
-                .thenApply(message -> CommandResult.fromSuccess());
+                .thenApply(message -> CommandResult.fromIgnored());
     }
 
     @Override
