@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.core.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -63,13 +62,13 @@ public class FeatureModeConditionTest {
         CommandTestUtilities.checkSuccessfulCondition(testUnit.shouldExecute(commandContext, command));
     }
 
-    @Test(expected = IncorrectFeatureModeException.class)
+    @Test
     public void testLimitedCommand() {
         when(commandContext.getUserInitiatedContext()).thenReturn(userInitiatedServerContext);
         when(userInitiatedServerContext.getServer()).thenReturn(server);
         when(command.getFeature()).thenReturn(featureEnum);
         when(modeService.featureModeActive(featureEnum, server, featureMode)).thenReturn(false);
         when(command.getFeatureModeLimitations()).thenReturn(Arrays.asList(featureMode));
-        testUnit.shouldExecute(commandContext, command);
+        CommandTestUtilities.checkUnmetCondition(testUnit.shouldExecute(commandContext, command));
     }
 }

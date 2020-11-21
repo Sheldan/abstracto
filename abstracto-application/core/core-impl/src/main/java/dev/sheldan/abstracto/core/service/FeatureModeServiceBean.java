@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.command.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
@@ -14,10 +15,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -89,6 +87,14 @@ public class FeatureModeServiceBean implements FeatureModeService {
     public boolean featureModeActive(FeatureEnum featureEnum, Long serverId, FeatureMode mode) {
         AServer server = serverManagementService.loadServer(serverId);
         return featureModeActive(featureEnum, server, mode);
+    }
+
+    @Override
+    public void validateActiveFeatureMode(Long serverId, FeatureEnum featureEnum, FeatureMode mode) {
+        boolean featureModeActive = featureModeActive(featureEnum, serverId, mode);
+        if(!featureModeActive) {
+            throw new IncorrectFeatureModeException(featureEnum, Arrays.asList(mode));
+        }
     }
 
     @Override

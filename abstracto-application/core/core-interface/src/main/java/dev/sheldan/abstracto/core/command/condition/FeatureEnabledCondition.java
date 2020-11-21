@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.exception.FeatureDisabledException;
+import dev.sheldan.abstracto.core.command.condition.detail.FeatureDisabledConditionDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
@@ -32,8 +32,8 @@ public class FeatureEnabledCondition implements CommandCondition {
             featureFlagValue = featureFlagService.getFeatureFlagValue(feature, context.getGuild().getIdLong());
             if(!featureFlagValue) {
                 log.trace("Feature {} is disabled, disallows command {} to be executed in guild {}.", feature.getKey(), command.getConfiguration().getName(), context.getGuild().getId());
-                FeatureDisabledException exception = new FeatureDisabledException(featureConfigService.getFeatureDisplayForFeature(command.getFeature()));
-                return ConditionResult.builder().result(false).exception(exception).build();
+                FeatureDisabledConditionDetail exception = new FeatureDisabledConditionDetail(featureConfigService.getFeatureDisplayForFeature(command.getFeature()));
+                return ConditionResult.builder().result(false).conditionDetail(exception).build();
             }
         }
         return ConditionResult.builder().result(true).build();

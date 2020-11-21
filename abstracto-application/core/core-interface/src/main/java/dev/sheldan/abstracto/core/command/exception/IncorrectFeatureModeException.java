@@ -1,20 +1,18 @@
-package dev.sheldan.abstracto.core.exception;
-
+package dev.sheldan.abstracto.core.command.exception;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.core.models.exception.IncorrectFeatureModeExceptionModel;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.exception.IncorrectFeatureModeModel;
 import dev.sheldan.abstracto.templating.Templatable;
 
 import java.util.List;
 
 public class IncorrectFeatureModeException extends AbstractoRunTimeException implements Templatable {
-
-    private final IncorrectFeatureModeExceptionModel model;
+    private final IncorrectFeatureModeModel model;
 
     public IncorrectFeatureModeException(FeatureEnum featureEnum, List<FeatureMode> requiredModes) {
-        super("Incorrect feature mode for the command.");
-        this.model = IncorrectFeatureModeExceptionModel.builder().featureEnum(featureEnum).requiredModes(requiredModes).build();
+        this.model = IncorrectFeatureModeModel.builder().featureEnum(featureEnum).requiredModes(requiredModes).build();
     }
 
     @Override

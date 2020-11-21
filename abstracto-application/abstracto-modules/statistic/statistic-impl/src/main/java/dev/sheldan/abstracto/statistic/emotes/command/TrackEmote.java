@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -52,12 +50,9 @@ public class TrackEmote extends AbstractConditionableCommand {
         } else if(emoteToTrack.getEmote() != null) {
             boolean external = !emoteService.emoteIsFromGuild(emoteToTrack.getEmote(), commandContext.getGuild());
             if(external) {
-                boolean trackExternalEmotes = featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, serverId, EmoteTrackingMode.EXTERNAL_EMOTES);
-                if(!trackExternalEmotes) {
-                    throw new IncorrectFeatureModeException(StatisticFeatures.EMOTE_TRACKING, Arrays.asList(EmoteTrackingMode.EXTERNAL_EMOTES));
-                }
+                featureModeService.validateActiveFeatureMode(serverId, StatisticFeatures.EMOTE_TRACKING, EmoteTrackingMode.EXTERNAL_EMOTES);
             }
-            trackedEmoteService.createFakeTrackedEmote(emoteToTrack.getEmote(), commandContext.getGuild());
+            trackedEmoteService.createFakeTrackedEmote(emoteToTrack.getEmote(), commandContext.getGuild(), external);
         } else {
             throw new IncorrectParameterException(this, getConfiguration().getParameters().get(0).getName());
         }

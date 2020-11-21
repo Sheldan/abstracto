@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.config;
 
-public interface FeatureMode {
+import java.io.Serializable;
+
+public interface FeatureMode extends Serializable {
     String getKey();
 }

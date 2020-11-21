@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.exception.CommandDisabledException;
+import dev.sheldan.abstracto.core.command.condition.detail.CommandDisabledDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.ChannelGroupCommandService;
@@ -21,10 +21,10 @@ public class CommandDisabledCondition implements CommandCondition {
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         ACommand acommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
-        Boolean booleanResult = channelGroupCommandService.isCommandEnabled(acommand, context.getUserInitiatedContext().getChannel());
-        if(!booleanResult) {
-            return ConditionResult.builder().result(true).exception(new CommandDisabledException()).build();
+        Boolean commandEnabled = channelGroupCommandService.isCommandEnabled(acommand, context.getUserInitiatedContext().getChannel());
+        if(!commandEnabled) {
+            return ConditionResult.builder().result(false).conditionDetail(new CommandDisabledDetail()).build();
         }
-        return ConditionResult.builder().result(true).reason("Command is enabled.").build();
+        return ConditionResult.builder().result(true).build();
     }
 }

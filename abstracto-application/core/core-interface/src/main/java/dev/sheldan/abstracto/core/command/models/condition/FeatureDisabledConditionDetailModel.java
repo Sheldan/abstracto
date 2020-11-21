@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.command.models.exception;
+package dev.sheldan.abstracto.core.command.models.condition;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import lombok.Builder;
@@ -10,6 +10,6 @@ import java.io.Serializable;
 @Setter
 @Getter
 @Builder
-public class FeatureDisabledExceptionModel implements Serializable {
+public class FeatureDisabledConditionDetailModel implements Serializable {
     private FeatureConfig featureConfig;
 }

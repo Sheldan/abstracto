@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class IncorrectFeatureModeExceptionModel implements Serializable {
+public class IncorrectFeatureModeModel implements Serializable {
     private List<FeatureMode> requiredModes;
     private FeatureEnum featureEnum;
 }

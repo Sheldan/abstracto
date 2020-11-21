@@ -23,10 +23,10 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
         List<AChannelGroupCommand> allChannelGroupsOfCommand = channelGroupCommandService.getAllGroupCommandsForCommand(command);
         for (AChannelGroupCommand aChannelGroupCommand : allChannelGroupsOfCommand) {
             Optional<AChannel> channelInGroup = aChannelGroupCommand.getGroup()
-                    .getChannels().stream().filter(channel1 -> channel1.getId().equals(channel.getId())).findAny();
-            if (channelInGroup.isPresent() && aChannelGroupCommand.getEnabled()) {
-                log.trace("Command {} is enabled because the channel is part of group {} in server.", command.getName(), aChannelGroupCommand.getGroup().getId());
-                return true;
+                    .getChannels().stream().filter(innerChannel -> innerChannel.getId().equals(channel.getId())).findAny();
+            if (channelInGroup.isPresent() && !aChannelGroupCommand.getEnabled()) {
+                log.trace("Command {} is disabled because the channel is part of group {} in server.", command.getName(), aChannelGroupCommand.getGroup().getId());
+                return false;
             }
         }
         // empty -> no groups, command enabled

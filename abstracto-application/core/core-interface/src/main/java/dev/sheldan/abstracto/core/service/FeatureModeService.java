@@ -15,6 +15,7 @@ public interface FeatureModeService {
     void disableFeatureModeForFeature(FeatureEnum featureEnum, AServer server, FeatureMode mode);
     boolean featureModeActive(FeatureEnum featureEnum, AServer server, FeatureMode mode);
     boolean featureModeActive(FeatureEnum featureEnum, Long serverId, FeatureMode mode);
+    void validateActiveFeatureMode(Long serverId, FeatureEnum featureEnum, FeatureMode mode);
     FeatureMode getFeatureModeForKey(String key);
     List<FeatureMode> getAllAvailableFeatureModes();
     List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server);

@@ -32,6 +32,11 @@ public class CommandTestUtilities {
         Assert.assertTrue(result.isResult());
     }
 
+    public static void checkUnmetCondition(ConditionResult result) {
+        Assert.assertFalse(result.isResult());
+        Assert.assertNotNull(result.getConditionDetail());
+    }
+
     public static void executeNoParametersTest(Command com) {
         CommandContext context = CommandTestUtilities.getNoParameters();
         com.execute(context);

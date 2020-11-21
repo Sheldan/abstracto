@@ -20,6 +20,7 @@ public interface TrackedEmoteService {
     TrackedEmoteOverview loadTrackedEmoteOverview(Guild guild);
     TrackedEmoteOverview loadTrackedEmoteOverview(Guild guild, Boolean showTrackingDisabled);
     TrackedEmote createFakeTrackedEmote(Emote emote, Guild guild);
+    TrackedEmote createFakeTrackedEmote(Emote emote, Guild guild, boolean external);
     void deleteTrackedEmote(TrackedEmote trackedEmote);
     void resetEmoteStats(Guild guild);
     void disableEmoteTracking(Guild guild);

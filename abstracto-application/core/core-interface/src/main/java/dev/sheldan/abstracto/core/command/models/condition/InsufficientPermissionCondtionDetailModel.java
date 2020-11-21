@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.command.models.exception;
+package dev.sheldan.abstracto.core.command.models.condition;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +9,6 @@ import java.util.List;
 
 @Getter
 @Builder
-public class InsufficientPermissionExceptionModel implements Serializable {
+public class InsufficientPermissionCondtionDetailModel implements Serializable {
     private transient List<Role> allowedRoles;
 }

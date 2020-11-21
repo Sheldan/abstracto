@@ -173,6 +173,11 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     @Override
     public TrackedEmote createFakeTrackedEmote(Emote emote, Guild guild) {
         boolean external = !emoteService.emoteIsFromGuild(emote, guild);
+        return createFakeTrackedEmote(emote, guild, external);
+    }
+
+    @Override
+    public TrackedEmote createFakeTrackedEmote(Emote emote, Guild guild, boolean external) {
         return trackedEmoteManagementService.createTrackedEmote(emote, guild, external);
     }
 

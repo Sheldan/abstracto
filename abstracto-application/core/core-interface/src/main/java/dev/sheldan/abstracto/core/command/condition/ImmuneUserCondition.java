@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.exception.ImmuneUserException;
+import dev.sheldan.abstracto.core.command.condition.detail.ImmuneUserConditionDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
@@ -43,8 +43,8 @@ public class ImmuneUserCondition implements CommandCondition {
             for (ARole role : commandForServer.getImmuneRoles()) {
                 if (roleService.memberHasRole(member, role)) {
                     log.trace("Member {} is immune against command {}, because of role {}.", member.getIdLong(), aCommand.getName(), role.getId());
-                    ImmuneUserException exception = new ImmuneUserException(roleService.getRoleFromGuild(role));
-                    return ConditionResult.builder().result(false).exception(exception).build();
+                    ImmuneUserConditionDetail exception = new ImmuneUserConditionDetail(roleService.getRoleFromGuild(role));
+                    return ConditionResult.builder().result(false).conditionDetail(exception).build();
                 }
             }
         }

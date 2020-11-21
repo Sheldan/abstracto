@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.exception.InsufficientPermissionException;
+import dev.sheldan.abstracto.core.command.condition.detail.InsufficientPermissionConditionDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
@@ -50,7 +50,7 @@ public class CommandDisallowedCondition implements CommandCondition {
             }
         }
         List<Role> allowedRoles = roleService.getRolesFromGuild(commandForServer.getAllowedRoles());
-        InsufficientPermissionException exception = new InsufficientPermissionException(allowedRoles);
-        return ConditionResult.builder().result(false).exception(exception).build();
+        InsufficientPermissionConditionDetail exception = new InsufficientPermissionConditionDetail(allowedRoles);
+        return ConditionResult.builder().result(false).conditionDetail(exception).build();
     }
 }

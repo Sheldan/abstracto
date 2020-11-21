@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeExcept
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.exception.IncorrectFeatureModeException;
+import dev.sheldan.abstracto.core.command.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
@@ -88,7 +88,7 @@ public class TrackEmoteTest {
         when(trackEmoteParameter.getEmote()).thenReturn(emoteToTrack);
         when(trackEmoteParameter.getTrackedEmote()).thenReturn(trackedEmote);
         when(emoteService.emoteIsFromGuild(emoteToTrack, commandContext.getGuild())).thenReturn(false);
-        when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(false);
+        doThrow(new IncorrectFeatureModeException(null, null)).when(featureModeService).validateActiveFeatureMode(SERVER_ID, StatisticFeatures.EMOTE_TRACKING, EmoteTrackingMode.EXTERNAL_EMOTES);
         testUnit.execute(commandContext);
     }
 
@@ -103,10 +103,10 @@ public class TrackEmoteTest {
         when(trackEmoteParameter.getEmote()).thenReturn(emoteToTrack);
         when(trackEmoteParameter.getTrackedEmote()).thenReturn(trackedEmote);
         when(emoteService.emoteIsFromGuild(emoteToTrack, commandContext.getGuild())).thenReturn(false);
-        when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         CommandResult result = testUnit.execute(commandContext);
         CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(trackedEmoteService, times(1)).createFakeTrackedEmote(emoteToTrack, commandContext.getGuild());
+        verify(trackedEmoteService, times(1)).createFakeTrackedEmote(emoteToTrack, commandContext.getGuild(), true);
+        verify(featureModeService, times(1)).validateActiveFeatureMode(SERVER_ID, StatisticFeatures.EMOTE_TRACKING, EmoteTrackingMode.EXTERNAL_EMOTES);
     }
 
     @Test(expected = IncorrectParameterException.class)

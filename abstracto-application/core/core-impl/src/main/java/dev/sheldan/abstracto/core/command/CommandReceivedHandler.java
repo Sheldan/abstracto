@@ -159,10 +159,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 commandResult = self.executeCommand(foundCommand, commandContext);
             }
         } else {
-            // TODO can it be done nicer?
-            if(conditionResult.getException() != null) {
-                throw conditionResult.getException();
-            }
+            commandResult = CommandResult.fromCondition(conditionResult);
         }
         if(commandResult != null) {
             self.executePostCommandListener(foundCommand, commandContext, commandResult);
