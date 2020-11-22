@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -47,7 +48,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
                 .builder()
                 .state(SuggestionState.NEW)
                 .suggester(suggester)
-                .id(suggestionId)
+                .suggestionId(new ServerSpecificId(suggester.getServerReference().getId(), suggestionId))
                 .server(suggester.getServerReference())
                 .suggestionDate(Instant.now())
                 .channel(channel)
@@ -68,7 +69,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     @Override
     public void setSuggestionState(Suggestion suggestion, SuggestionState newState) {
         suggestion.setState(newState);
-        log.info("Setting suggestion {} to state {}.", suggestion.getId(), newState);
+        log.info("Setting suggestion {} in server {} to state {}.", suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId(), newState);
         suggestionRepository.save(suggestion);
     }
 }

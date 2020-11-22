@@ -8,9 +8,7 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="mute-table">
         <createTable tableName="mute">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="mute_pkey"/>
-            </column>
+            <column name="id" type="BIGINT" />
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="reason" type="VARCHAR(255)"/>
             <column name="trigger_key" type="VARCHAR(255)"/>
@@ -32,6 +30,7 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addPrimaryKey columnNames="server_id, id" tableName="mute" constraintName="pk_mute" validate="true"/>
     </changeSet>
 
     <changeSet author="Sheldan" id="mute-fk_mute_channel">

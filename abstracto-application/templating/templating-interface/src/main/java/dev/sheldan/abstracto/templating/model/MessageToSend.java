@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +19,8 @@ public class MessageToSend {
     /**
      * The collections of embeds to be send. The first embed is in the same message as the string message.
      */
-    private List<MessageEmbed> embeds;
+    @Builder.Default
+    private List<MessageEmbed> embeds = new ArrayList<>();
     /**
      * The string content to be used in the first message.
      */

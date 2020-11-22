@@ -8,9 +8,7 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="tracked_emote-table">
         <createTable tableName="tracked_emote">
-            <column name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="tracked_emote_pkey"/>
-            </column>
+            <column name="id" type="BIGINT" />
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="name" type="VARCHAR(32)"/>
@@ -23,6 +21,7 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addPrimaryKey columnNames="server_id, id" tableName="tracked_emote" constraintName="pk_tracked_emote" validate="true"/>
     </changeSet>
     <changeSet author="Sheldan" id="tracked_emote-fk_tracked_emote_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="tracked_emote" constraintName="fk_tracked_emote_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>

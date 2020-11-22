@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -89,11 +90,11 @@ public class SuggestionManagementServiceBeanTest {
     @Test
     public void testGetSuggestion() {
         Long suggestionId = 5L;
-        Suggestion foundSuggestion = Suggestion.builder().id(suggestionId).build();
+        Suggestion foundSuggestion = Suggestion.builder().suggestionId(new ServerSpecificId(0L, suggestionId)).build();
         when(suggestionRepository.findById(suggestionId)).thenReturn(Optional.of(foundSuggestion));
         Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(suggestionId);
         Assert.assertTrue(suggestionOptional.isPresent());
-        suggestionOptional.ifPresent(suggestion -> Assert.assertEquals(suggestionId, suggestion.getId()));
+        suggestionOptional.ifPresent(suggestion -> Assert.assertEquals(suggestionId, suggestion.getSuggestionId().getId()));
     }
 
     @Test
@@ -107,7 +108,7 @@ public class SuggestionManagementServiceBeanTest {
 
     @Test
     public void setSuggestionState() {
-        Suggestion suggestion = Suggestion.builder().build();
+        Suggestion suggestion = Suggestion.builder().suggestionId(new ServerSpecificId(0L, 4L)).build();
         testUnit.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
         Assert.assertEquals(suggestion.getState(), SuggestionState.ACCEPTED);
         verify(suggestionRepository, times(1)).save(suggestion);

@@ -8,9 +8,7 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="suggestion-table">
         <createTable tableName="suggestion">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="suggestion_pkey"/>
-            </column>
+            <column autoIncrement="true" name="id" type="BIGINT"/>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="message_id" type="BIGINT"/>
             <column name="state" type="VARCHAR(255)"/>
@@ -22,6 +20,7 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addPrimaryKey columnNames="server_id, id" tableName="suggestion" constraintName="pk_suggestion" validate="true"/>
     </changeSet>
     <changeSet author="Sheldan" id="suggestion-fk_suggestion_channel">
         <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="suggestion" constraintName="fk_suggestion_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>

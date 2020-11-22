@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -150,7 +151,7 @@ public class SuggestionServiceBeanTest {
                 .builder()
                 .channel(channel)
                 .server(server)
-                .id(SUGGESTION_ID)
+                .suggestionId(new ServerSpecificId(server.getId(), SUGGESTION_ID))
                 .suggester(suggester)
                 .messageId(messageId)
                 .build();
@@ -235,7 +236,7 @@ public class SuggestionServiceBeanTest {
                 .builder()
                 .channel(channel)
                 .server(server)
-                .id(SUGGESTION_ID)
+                .suggestionId(new ServerSpecificId(server.getId(), SUGGESTION_ID))
                 .suggester(suggester)
                 .messageId(messageId)
                 .build();

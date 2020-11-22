@@ -8,9 +8,7 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="warning-table">
         <createTable tableName="warning">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="warning_pkey"/>
-            </column>
+            <column autoIncrement="true" name="id" type="BIGINT" />
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="decay_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="decayed" type="BOOLEAN"/>
@@ -27,8 +25,8 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addPrimaryKey columnNames="server_id, id" tableName="warning" constraintName="pk_warning" validate="true"/>
     </changeSet>
-
 
     <changeSet author="Sheldan" id="warning-fk_warning_warned_user">
         <addForeignKeyConstraint baseColumnNames="warned_user_id" baseTableName="warning" constraintName="fk_warning_warned_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>

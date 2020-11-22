@@ -103,7 +103,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Long channelId = suggestion.getChannel().getId();
         Long originalMessageId = suggestion.getMessageId();
         Long serverId = suggestion.getServer().getId();
-        log.info("Updated posted suggestion {} in server {}.", suggestion.getId(), suggestion.getServer().getId());
+        log.info("Updated posted suggestion {} in server {}.", suggestion.getSuggestionId().getId(), suggestion.getServer().getId());
 
         suggestionLog.setOriginalChannelId(channelId);
         suggestionLog.setOriginalMessageId(originalMessageId);
@@ -112,7 +112,7 @@ public class SuggestionServiceBean implements SuggestionService {
         TextChannel textChannelById = botService.getTextChannelFromServer(serverId, channelId);
         CompletableFuture<Member> memberById = botService.getMemberInServerAsync(serverId, suggester.getUserReference().getId());
         suggestionLog.setState(suggestion.getState());
-        suggestionLog.setSuggestionId(suggestion.getId());
+        suggestionLog.setSuggestionId(suggestion.getSuggestionId().getId());
         CompletableFuture<Void> finalFuture = new CompletableFuture<>();
         memberById.whenComplete((member, throwable) -> {
             if(throwable == null) {
