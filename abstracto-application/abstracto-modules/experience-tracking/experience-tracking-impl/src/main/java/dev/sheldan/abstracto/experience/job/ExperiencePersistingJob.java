@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.experience.job;
 
 import dev.sheldan.abstracto.experience.models.ServerExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import dev.sheldan.abstracto.experience.service.RunTimeExperienceService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -30,17 +31,27 @@ public class ExperiencePersistingJob extends QuartzJobBean {
     @Autowired
     private AUserExperienceService userExperienceService;
 
+    @Autowired
+    private RunTimeExperienceService runTimeExperienceService;
+
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        Map<Long, List<ServerExperience>> runtimeExperience = userExperienceService.getRuntimeExperience();
-        log.info("Running experience persisting job.");
-        Long pastMinute = (Instant.now().getEpochSecond() / 60) - 1;
-        if(runtimeExperience.containsKey(pastMinute)) {
-            List<ServerExperience> foundServers = runtimeExperience.get(pastMinute);
-            log.info("Found experience from {} servers to persist.", foundServers.size());
-            userExperienceService.handleExperienceGain(foundServers).thenAccept(aVoid ->
-                runtimeExperience.remove(pastMinute)
-            );
+        runTimeExperienceService.takeLock();
+        try {
+            Map<Long, List<ServerExperience>> runtimeExperience = runTimeExperienceService.getRuntimeExperience();
+            log.info("Running experience persisting job.");
+            Long pastMinute = (Instant.now().getEpochSecond() / 60) - 1;
+            if(runtimeExperience.containsKey(pastMinute)) {
+                List<ServerExperience> foundServers = runtimeExperience.get(pastMinute);
+                log.info("Found experience from {} servers to persist.", foundServers.size());
+                userExperienceService.handleExperienceGain(foundServers).thenAccept(aVoid -> {
+                    runTimeExperienceService.takeLock();
+                    runTimeExperienceService.getRuntimeExperience().remove(pastMinute);
+                    runTimeExperienceService.releaseLock();
+                });
+            }
+        } finally {
+            runTimeExperienceService.releaseLock();
         }
     }
 

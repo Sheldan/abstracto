@@ -33,15 +33,20 @@ public class EmotePersistingJob extends QuartzJobBean {
     @Override
     @Transactional
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        Map<Long, Map<Long, List<PersistingEmote>>> runtimeConfig = trackedEmoteRuntimeService.getRuntimeConfig();
-        log.info("Running statistic persisting job.");
-        Long pastMinute = getPastMinute();
-        if(runtimeConfig.containsKey(pastMinute)) {
-            Map<Long, List<PersistingEmote>> foundStatistics = runtimeConfig.get(pastMinute);
-            log.info("Found emote statistics from {} servers to persist.", foundStatistics.size());
-            trackedEmoteService.storeEmoteStatistics(foundStatistics);
-            runtimeConfig.remove(pastMinute);
-            checkForPastEmoteStats(pastMinute, runtimeConfig);
+        trackedEmoteRuntimeService.takeLock();
+        try {
+            Map<Long, Map<Long, List<PersistingEmote>>> runtimeConfig = trackedEmoteRuntimeService.getRuntimeConfig();
+            log.info("Running statistic persisting job.");
+            Long pastMinute = getPastMinute();
+            if(runtimeConfig.containsKey(pastMinute)) {
+                Map<Long, List<PersistingEmote>> foundStatistics = runtimeConfig.get(pastMinute);
+                log.info("Found emote statistics from {} servers to persist.", foundStatistics.size());
+                trackedEmoteService.storeEmoteStatistics(foundStatistics);
+                runtimeConfig.remove(pastMinute);
+                checkForPastEmoteStats(pastMinute, runtimeConfig);
+            }
+        } finally {
+            trackedEmoteRuntimeService.releaseLock();
         }
     }
 

@@ -88,33 +88,33 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      */
     @Override
     public void addExperience(AUserInAServer userInAServer) {
-        Long minute = Instant.now().getEpochSecond() / 60;
-        Map<Long, List<ServerExperience>> runtimeExperience = runTimeExperienceService.getRuntimeExperience();
-        if(runtimeExperience.containsKey(minute)) {
-            log.trace("Minute {} already tracked, adding user {} in server {}.",
-                    minute, userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
-            List<ServerExperience> existing = runtimeExperience.get(minute);
-            for (ServerExperience server : existing) {
-                if (server.getServerId().equals(userInAServer.getServerReference().getId()) && server.getUserInServerIds().stream().noneMatch(userInAServer1 -> userInAServer.getUserInServerId().equals(userInAServer1))) {
-                    server.getUserInServerIds().add(userInAServer.getUserInServerId());
-                    break;
+        runTimeExperienceService.takeLock();
+        try {
+            Long minute = Instant.now().getEpochSecond() / 60;
+            Map<Long, List<ServerExperience>> runtimeExperience = runTimeExperienceService.getRuntimeExperience();
+            if(runtimeExperience.containsKey(minute)) {
+                log.trace("Minute {} already tracked, adding user {} in server {}.",
+                        minute, userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
+                List<ServerExperience> existing = runtimeExperience.get(minute);
+                for (ServerExperience server : existing) {
+                    if (server.getServerId().equals(userInAServer.getServerReference().getId()) && server.getUserInServerIds().stream().noneMatch(userInAServer1 -> userInAServer.getUserInServerId().equals(userInAServer1))) {
+                        server.getUserInServerIds().add(userInAServer.getUserInServerId());
+                        break;
+                    }
                 }
+
+            } else {
+                log.trace("Minute {} did not exist yet. Creating new entry for user {} in server {}.", minute, userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
+                ServerExperience serverExperience = ServerExperience
+                        .builder()
+                        .serverId(userInAServer.getServerReference().getId())
+                        .build();
+                serverExperience.getUserInServerIds().add(userInAServer.getUserInServerId());
+                runtimeExperience.put(minute, new ArrayList<>(Arrays.asList(serverExperience)));
             }
-
-        } else {
-            log.trace("Minute {} did not exist yet. Creating new entry for user {} in server {}.", minute, userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
-            ServerExperience serverExperience = ServerExperience
-                    .builder()
-                    .serverId(userInAServer.getServerReference().getId())
-                    .build();
-            serverExperience.getUserInServerIds().add(userInAServer.getUserInServerId());
-            runtimeExperience.put(minute, new ArrayList<>(Arrays.asList(serverExperience)));
+        } finally {
+            runTimeExperienceService.releaseLock();
         }
-    }
-
-    @Override
-    public Map<Long, List<ServerExperience>> getRuntimeExperience() {
-        return runTimeExperienceService.getRuntimeExperience();
     }
 
 

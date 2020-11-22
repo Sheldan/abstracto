@@ -12,7 +12,6 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 
-import java.util.Map;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -30,13 +29,6 @@ public interface AUserExperienceService {
      * @param userInAServer The {@link AUserInAServer} to be added to the list of users gaining experience
      */
     void addExperience(AUserInAServer userInAServer);
-
-    /**
-     * The current representation of the run time experience. Basically a HashMap of minutes to a list of {@link AServer}
-     * containing a list of {@link AUserInAServer} which should gain experience in the minute used as key in the HashMap
-     * @return
-     */
-    Map<Long, List<ServerExperience>> getRuntimeExperience();
 
     /**
      * Calculates the appropriate level of the given {@link AUserExperience} according to the given {@link AExperienceLevel}

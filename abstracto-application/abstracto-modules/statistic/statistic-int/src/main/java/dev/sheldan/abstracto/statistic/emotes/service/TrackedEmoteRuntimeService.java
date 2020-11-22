@@ -14,4 +14,6 @@ public interface TrackedEmoteRuntimeService {
     Long getKey();
     PersistingEmote createFromEmote(Guild guild, Emote emote, boolean external);
     PersistingEmote createFromEmote(Guild guild, Emote emote, Long count, boolean external);
+    void takeLock();
+    void releaseLock();
 }
