@@ -1,5 +1,9 @@
 package dev.sheldan.abstracto.core.listener;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.FeatureModeService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
@@ -31,15 +35,31 @@ public class EmoteListener extends ListenerAdapter {
     private List<EmoteUpdatedListener> updatedListeners;
 
     @Autowired
+    private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
+
+    @Autowired
+    private FeatureModeService featureModeService;
+
+    @Autowired
     @Lazy
     private EmoteListener self;
 
     @Override
     @Transactional
     public void onEmoteAdded(@NotNull EmoteAddedEvent event) {
-        createdListeners.forEach(listener ->
-            self.executeCreatedListener(listener, event.getEmote())
-        );
+        createdListeners.forEach(listener -> {
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
+            if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
+                return;
+            }
+            if(!featureModeService.necessaryFeatureModesMet(listener, event.getGuild().getIdLong())) {
+                return;
+            }
+            self.executeCreatedListener(listener, event.getEmote());
+        });
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -49,9 +69,16 @@ public class EmoteListener extends ListenerAdapter {
 
     @Override
     public void onEmoteRemoved(@NotNull EmoteRemovedEvent event) {
-        deletedListeners.forEach(listener ->
-            self.executeDeletedListener(listener, event.getEmote())
-        );
+        deletedListeners.forEach(listener -> {
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
+            if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
+                return;
+            }
+            if(!featureModeService.necessaryFeatureModesMet(listener, event.getGuild().getIdLong())) {
+                return;
+            }
+            self.executeDeletedListener(listener, event.getEmote());
+        });
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -61,9 +88,16 @@ public class EmoteListener extends ListenerAdapter {
 
     @Override
     public void onEmoteUpdateName(@NotNull EmoteUpdateNameEvent event) {
-        updatedListeners.forEach(emoteUpdatedListener ->
-            self.executeUpdatedListener(emoteUpdatedListener, event.getEmote(), event.getOldName(), event.getNewName())
-        );
+        updatedListeners.forEach(emoteUpdatedListener -> {
+            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(emoteUpdatedListener.getFeature());
+            if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
+                return;
+            }
+            if(!featureModeService.necessaryFeatureModesMet(emoteUpdatedListener, event.getGuild().getIdLong())) {
+                return;
+            }
+            self.executeUpdatedListener(emoteUpdatedListener, event.getEmote(), event.getOldName(), event.getNewName());
+        });
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

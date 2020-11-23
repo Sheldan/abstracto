@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.TrackedEmoteService;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This command completely deletes one individual {@link TrackedEmote} and all of its usages from the database. This command cannot be undone.
+ */
 @Component
 public class DeleteTrackedEmote extends AbstractConditionableCommand {
 
@@ -32,6 +35,7 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
+        // need to actually load the TrackedEmote
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
         trackedEmoteService.deleteTrackedEmote(trackedEmote);
         return CommandResult.fromSuccess();
@@ -44,7 +48,7 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("deleteTrackedEmote")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

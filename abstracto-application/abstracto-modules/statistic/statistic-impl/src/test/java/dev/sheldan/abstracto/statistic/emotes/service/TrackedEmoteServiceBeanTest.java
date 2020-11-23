@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -10,7 +11,6 @@ import dev.sheldan.abstracto.statistic.emotes.model.TrackedEmoteOverview;
 import dev.sheldan.abstracto.statistic.emotes.model.TrackedEmoteSynchronizationResult;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
 import dev.sheldan.abstracto.statistic.emotes.service.management.UsedEmoteManagementService;
 import net.dv8tion.jda.api.entities.Emote;
@@ -70,7 +70,7 @@ public class TrackedEmoteServiceBeanTest {
     private TrackedEmote trackedEmote2;
 
     @Mock
-    private TrackedEmoteServer trackedEmoteServer;
+    private ServerSpecificId trackedEmoteServer;
 
     @Mock
     private TrackedEmote secondTrackedEmote;
@@ -85,7 +85,7 @@ public class TrackedEmoteServiceBeanTest {
     private UsedEmote usedEmote;
 
     @Mock
-    private TrackedEmoteServer secondTrackedEmoteServer;
+    private ServerSpecificId secondTrackedEmoteServer;
 
     @Captor
     private ArgumentCaptor<Emote> emoteArgumentCaptor;
@@ -197,7 +197,7 @@ public class TrackedEmoteServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         TrackedEmote fakeTrackedEmote = testUnit.getFakeTrackedEmote(emote, guild);
         Assert.assertTrue(fakeTrackedEmote.isFake());
-        Assert.assertEquals(EMOTE_ID, fakeTrackedEmote.getTrackedEmoteId().getEmoteId());
+        Assert.assertEquals(EMOTE_ID, fakeTrackedEmote.getTrackedEmoteId().getId());
         Assert.assertEquals(SERVER_ID, fakeTrackedEmote.getTrackedEmoteId().getServerId());
     }
 
@@ -206,7 +206,7 @@ public class TrackedEmoteServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         TrackedEmote fakedTrackedEmote = testUnit.getFakeTrackedEmote(EMOTE_ID, guild);
         Assert.assertTrue(fakedTrackedEmote.isFake());
-        Assert.assertEquals(EMOTE_ID, fakedTrackedEmote.getTrackedEmoteId().getEmoteId());
+        Assert.assertEquals(EMOTE_ID, fakedTrackedEmote.getTrackedEmoteId().getId());
         Assert.assertEquals(SERVER_ID, fakedTrackedEmote.getTrackedEmoteId().getServerId());
     }
 
@@ -215,10 +215,10 @@ public class TrackedEmoteServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
-        when(trackedEmoteServer.getEmoteId()).thenReturn(EMOTE_ID);
+        when(trackedEmoteServer.getId()).thenReturn(EMOTE_ID);
         when(secondTrackedEmote.getTrackedEmoteId()).thenReturn(secondTrackedEmoteServer);
         when(secondTrackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
-        when(secondTrackedEmoteServer.getEmoteId()).thenReturn(EMOTE_ID_2);
+        when(secondTrackedEmoteServer.getId()).thenReturn(EMOTE_ID_2);
         when(guild.getEmotes()).thenReturn(Arrays.asList(emote, secondEmote));
         when(emote.getIdLong()).thenReturn(EMOTE_ID);
         when(secondEmote.getIdLong()).thenReturn(EMOTE_ID_2);
@@ -235,7 +235,7 @@ public class TrackedEmoteServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
-        when(trackedEmoteServer.getEmoteId()).thenReturn(EMOTE_ID);
+        when(trackedEmoteServer.getId()).thenReturn(EMOTE_ID);
         when(guild.getEmotes()).thenReturn(Arrays.asList(emote, secondEmote));
         when(emote.getIdLong()).thenReturn(EMOTE_ID);
         when(trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(SERVER_ID)).thenReturn(new ArrayList<>(Arrays.asList(trackedEmote)));
@@ -251,7 +251,7 @@ public class TrackedEmoteServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
-        when(trackedEmoteServer.getEmoteId()).thenReturn(EMOTE_ID);
+        when(trackedEmoteServer.getId()).thenReturn(EMOTE_ID);
         when(guild.getEmotes()).thenReturn(Arrays.asList(emote));
         when(emote.getIdLong()).thenReturn(EMOTE_ID);
         when(trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(SERVER_ID)).thenReturn(new ArrayList<>(Arrays.asList(trackedEmote, secondTrackedEmote)));
@@ -315,7 +315,7 @@ public class TrackedEmoteServiceBeanTest {
         usagesToStore.put(SERVER_ID, Arrays.asList(persistingEmote));
         when(persistingEmote.getEmoteId()).thenReturn(EMOTE_ID);
         when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.of(trackedEmote));
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         when(trackedEmote.getTrackingEnabled()).thenReturn(false);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.AUTO_TRACK_EXTERNAL)).thenReturn(true);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
@@ -351,28 +351,10 @@ public class TrackedEmoteServiceBeanTest {
     }
 
     @Test
-    public void testStoreStatisticOneServerInternalEmoteTrackingEnabledAutoTracking() {
-        HashMap<Long, List<PersistingEmote>> usagesToStore = new HashMap<>();
-        usagesToStore.put(SERVER_ID, Arrays.asList(persistingEmote));
-        when(persistingEmote.getEmoteId()).thenReturn(EMOTE_ID);
-        when(botService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote);
-        when(persistingEmote.getCount()).thenReturn(COUNT);
-        when(trackedEmoteManagementService.createTrackedEmote(emote, guild)).thenReturn(trackedEmote);
-        when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.empty());
-        when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.AUTO_TRACK_EXTERNAL)).thenReturn(true);
-        when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
-        testUnit.storeEmoteStatistics(usagesToStore);
-        verify(usedEmoteManagementService, times(1)).createEmoteUsageForToday(trackedEmote, COUNT);
-    }
-
-    @Test
     public void testStoreStatisticOneServerExternalEmoteTrackingEnabledAutoTrackingDisabledExternal() {
         HashMap<Long, List<PersistingEmote>> usagesToStore = new HashMap<>();
         usagesToStore.put(SERVER_ID, Arrays.asList(persistingEmote));
         when(persistingEmote.getEmoteId()).thenReturn(EMOTE_ID);
-        when(botService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(null);
         when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.empty());
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.AUTO_TRACK_EXTERNAL)).thenReturn(false);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
@@ -386,10 +368,9 @@ public class TrackedEmoteServiceBeanTest {
         usagesToStore.put(SERVER_ID, Arrays.asList(persistingEmote));
         when(persistingEmote.getEmoteId()).thenReturn(EMOTE_ID);
         when(botService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(null);
         when(persistingEmote.getCount()).thenReturn(COUNT);
         when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.empty());
-        when(trackedEmoteManagementService.createExternalEmote(persistingEmote)).thenReturn(trackedEmote);
+        when(trackedEmoteManagementService.createExternalTrackedEmote(persistingEmote)).thenReturn(trackedEmote);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.AUTO_TRACK_EXTERNAL)).thenReturn(true);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
@@ -401,29 +382,27 @@ public class TrackedEmoteServiceBeanTest {
         HashMap<Long, List<PersistingEmote>> usagesToStore = new HashMap<>();
 
         usagesToStore.put(SERVER_ID, Arrays.asList(persistingEmote));
-        when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.empty());
-        when(botService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(null);
+        when(trackedEmote.getTrackingEnabled()).thenReturn(true);
+        when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.of(trackedEmote));
         when(persistingEmote.getEmoteId()).thenReturn(EMOTE_ID);
         when(persistingEmote.getCount()).thenReturn(COUNT);
-        when(trackedEmoteManagementService.createExternalEmote(persistingEmote)).thenReturn(trackedEmote);
+        when(usedEmoteManagementService.loadUsedEmoteForTrackedEmoteToday(trackedEmote)).thenReturn(Optional.of(usedEmote));
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.AUTO_TRACK_EXTERNAL)).thenReturn(true);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
 
         Long serverId2 = SERVER_ID + 1;
         usagesToStore.put(serverId2, Arrays.asList(persistingEmote2));
-        when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID_2, serverId2)).thenReturn(Optional.of(trackedEmote));
-        when(trackedEmote.getTrackingEnabled()).thenReturn(true);
+        when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID_2, serverId2)).thenReturn(Optional.of(trackedEmote2));
+        when(trackedEmote2.getTrackingEnabled()).thenReturn(true);
         when(persistingEmote2.getEmoteId()).thenReturn(EMOTE_ID_2);
         when(persistingEmote2.getCount()).thenReturn(COUNT);
         when(usedEmote.getAmount()).thenReturn(COUNT);
-        when(usedEmoteManagementService.loadUsedEmoteForTrackedEmoteToday(trackedEmote)).thenReturn(Optional.of(usedEmote));
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, serverId2, EmoteTrackingMode.AUTO_TRACK_EXTERNAL)).thenReturn(true);
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, serverId2, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
 
         testUnit.storeEmoteStatistics(usagesToStore);
 
-        verify(usedEmoteManagementService, times(1)).createEmoteUsageForToday(eq(trackedEmote), anyLong());
+        verify(usedEmoteManagementService, times(1)).createEmoteUsageForToday(eq(trackedEmote2), anyLong());
         verify(usedEmote, times(1)).setAmount(2 * COUNT);
     }
 
@@ -439,7 +418,7 @@ public class TrackedEmoteServiceBeanTest {
 
     private void executeCreateFakeTrackedEmoteTest(boolean external) {
         when(emoteService.emoteIsFromGuild(emote, guild)).thenReturn(!external);
-        testUnit.createFakeTrackedEmote(emote, guild);
+        testUnit.createTrackedEmote(emote, guild);
         verify(trackedEmoteManagementService, times(1)).createTrackedEmote(emote, guild, external);
     }
 
@@ -483,8 +462,8 @@ public class TrackedEmoteServiceBeanTest {
         when(trackedEmote2.getDeleted()).thenReturn(false);
         when(trackedEmote2.getExternal()).thenReturn(false);
         when(trackedEmote2.getAnimated()).thenReturn(true);
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
-        when(trackedEmote2.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID_2, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
+        when(trackedEmote2.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID_2));
         when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote);
         Emote emote2 = Mockito.mock(Emote.class);
         when(guild.getEmoteById(EMOTE_ID_2)).thenReturn(emote2);

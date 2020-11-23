@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.statistic.emotes.service.management;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.repository.TrackedEmoteRepository;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -76,7 +76,7 @@ public class TrackedEmoteManagementServiceBeanTest {
     @Test
     public void testCreateExternalEmote() {
         when(server.getId()).thenReturn(SERVER_ID);
-        testUnit.createExternalEmote(EMOTE_ID, EMOTE_NAME, EXTERNAL_URL, ANIMATED, server);
+        testUnit.createExternalEmote(EMOTE_ID, EMOTE_NAME, EXTERNAL_URL, ANIMATED, server, true);
         verifyEmoteCreation(true, true, EXTERNAL_URL);
     }
 
@@ -122,7 +122,7 @@ public class TrackedEmoteManagementServiceBeanTest {
         when(persistingEmote.getEmoteName()).thenReturn(EMOTE_NAME);
         when(persistingEmote.getAnimated()).thenReturn(ANIMATED);
         when(persistingEmote.getExternalUrl()).thenReturn(EXTERNAL_URL);
-        testUnit.createExternalEmote(persistingEmote);
+        testUnit.createExternalTrackedEmote(persistingEmote);
         verifyEmoteCreation(true, true, EXTERNAL_URL);
     }
 
@@ -135,14 +135,14 @@ public class TrackedEmoteManagementServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(server.getId()).thenReturn(SERVER_ID);
         when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
-        testUnit.createExternalEmote(emote, guild);
+        testUnit.createExternalTrackedEmote(emote, guild);
         verifyEmoteCreation(true, true, EXTERNAL_URL);
     }
 
     public void verifyEmoteCreation(boolean tracked, boolean external, String externalUrl) {
         verify(repository, times(1)).save(trackedEmoteArgumentCaptor.capture());
         TrackedEmote createdTrackedEmote = trackedEmoteArgumentCaptor.getValue();
-        Assert.assertEquals(EMOTE_ID, createdTrackedEmote.getTrackedEmoteId().getEmoteId());
+        Assert.assertEquals(EMOTE_ID, createdTrackedEmote.getTrackedEmoteId().getId());
         Assert.assertEquals(SERVER_ID, createdTrackedEmote.getTrackedEmoteId().getServerId());
         Assert.assertEquals(EMOTE_NAME, createdTrackedEmote.getEmoteName());
         Assert.assertEquals(ANIMATED, createdTrackedEmote.getAnimated());
@@ -155,7 +155,7 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test
     public void testMarkAsDeleted() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         testUnit.markAsDeleted(trackedEmote);
         verify(trackedEmote, times(1)).setDeleted(true);
@@ -163,7 +163,7 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test
     public void testMarkAsDeletedId() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.of(trackedEmote));
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         testUnit.markAsDeleted(SERVER_ID, EMOTE_ID);
@@ -175,7 +175,7 @@ public class TrackedEmoteManagementServiceBeanTest {
         when(emote.getIdLong()).thenReturn(EMOTE_ID);
         when(emote.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.of(trackedEmote));
         TrackedEmote retrievedTrackedEmote = testUnit.loadByEmote(emote);
         Assert.assertEquals(trackedEmote, retrievedTrackedEmote);
@@ -183,7 +183,7 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test
     public void testLoadByEmoteId() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.of(trackedEmote));
         TrackedEmote retrievedEmote = testUnit.loadByEmoteId(EMOTE_ID, SERVER_ID);
         Assert.assertEquals(trackedEmote, retrievedEmote);
@@ -191,14 +191,14 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test(expected = AbstractoRunTimeException.class)
     public void testLoadByEmoteIdNotFound() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.empty());
         testUnit.loadByEmoteId(EMOTE_ID, SERVER_ID);
     }
 
     @Test
     public void testTrackedEmoteExists() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.of(trackedEmote));
         boolean exists = testUnit.trackedEmoteExists(EMOTE_ID, SERVER_ID);
         Assert.assertTrue(exists);
@@ -206,7 +206,7 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test
     public void testTrackedEmoteExistsNot() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.empty());
         boolean exists = testUnit.trackedEmoteExists(EMOTE_ID, SERVER_ID);
         Assert.assertFalse(exists);
@@ -214,7 +214,7 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test
     public void testLoadByTrackedEmoteServer() {
-        TrackedEmoteServer trackedEmoteServer = new TrackedEmoteServer(EMOTE_ID, SERVER_ID);
+        ServerSpecificId trackedEmoteServer = new ServerSpecificId(SERVER_ID, EMOTE_ID);
         when(repository.findById(trackedEmoteServer)).thenReturn(Optional.of(trackedEmote));
         TrackedEmote retrievedTrackedEmote = testUnit.loadByTrackedEmoteServer(trackedEmoteServer);
         Assert.assertEquals(trackedEmote, retrievedTrackedEmote);
@@ -255,28 +255,28 @@ public class TrackedEmoteManagementServiceBeanTest {
 
     @Test
     public void testSetName() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         testUnit.changeName(trackedEmote, EMOTE_NAME);
         verify(trackedEmote, times(1)).setEmoteName(EMOTE_NAME);
     }
 
     @Test
     public void testDisableTrackedEmote() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         testUnit.disableTrackedEmote(trackedEmote);
         verify(trackedEmote, times(1)).setTrackingEnabled(false);
     }
 
     @Test
     public void testEnableTrackedEmote() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         testUnit.enableTrackedEmote(trackedEmote);
         verify(trackedEmote, times(1)).setTrackingEnabled(true);
     }
 
     @Test
     public void testDeleteTrackedEmote() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         testUnit.deleteTrackedEmote(trackedEmote);
         verify(repository, times(1)).delete(trackedEmote);
     }

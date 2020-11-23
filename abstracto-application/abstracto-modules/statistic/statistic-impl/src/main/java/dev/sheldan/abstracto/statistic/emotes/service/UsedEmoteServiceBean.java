@@ -50,7 +50,7 @@ public class UsedEmoteServiceBean implements UsedEmoteService {
 
     @Override
     public void purgeEmoteUsagesSince(TrackedEmote emote, Instant since) {
-        log.info("Purging emote {} in server {} since {}.", emote.getTrackedEmoteId().getEmoteId(), emote.getTrackedEmoteId().getServerId(), since);
+        log.info("Purging emote {} in server {} since {}.", emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId(), since);
         usedEmoteManagementService.purgeEmoteUsagesSince(emote, since.truncatedTo(ChronoUnit.DAYS));
     }
 

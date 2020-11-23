@@ -5,12 +5,12 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeExcept
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class ShowExternalTrackedEmoteTest {
         TrackedEmote fakeTrackedEmote = Mockito.mock(TrackedEmote.class);
         TrackedEmote actualTrackedEmote = Mockito.mock(TrackedEmote.class);
         when(actualTrackedEmote.getExternal()).thenReturn(true);
-        TrackedEmoteServer trackedEmoteServer = Mockito.mock(TrackedEmoteServer.class);
+        ServerSpecificId trackedEmoteServer = Mockito.mock(ServerSpecificId.class);
         when(fakeTrackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId())).thenReturn(actualTrackedEmote);
         CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(fakeTrackedEmote));
@@ -67,7 +67,7 @@ public class ShowExternalTrackedEmoteTest {
         TrackedEmote fakeTrackedEmote = Mockito.mock(TrackedEmote.class);
         TrackedEmote actualTrackedEmote = Mockito.mock(TrackedEmote.class);
         when(actualTrackedEmote.getExternal()).thenReturn(false);
-        TrackedEmoteServer trackedEmoteServer = Mockito.mock(TrackedEmoteServer.class);
+        ServerSpecificId trackedEmoteServer = Mockito.mock(ServerSpecificId.class);
         when(fakeTrackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId())).thenReturn(actualTrackedEmote);
         CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(fakeTrackedEmote));

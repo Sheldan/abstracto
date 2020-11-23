@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.statistic.emotes.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.repository.UsedEmoteRepository;
 import org.junit.Assert;
 import org.junit.Test;
@@ -129,7 +129,7 @@ public class UsedEmoteManagementServiceBeanTest {
     }
 
     private void setupTrackedEmote() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
     }
 
     private void setupServer() {

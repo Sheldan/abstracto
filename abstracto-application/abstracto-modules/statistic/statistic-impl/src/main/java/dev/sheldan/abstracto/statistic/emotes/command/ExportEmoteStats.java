@@ -14,7 +14,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FileUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.exception.DownloadEmoteStatsFileTooBigException;
 import dev.sheldan.abstracto.statistic.emotes.model.DownloadEmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote;
@@ -33,6 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+
+/**
+ * This command renders a file containing information about emote statistics and provides the file as a download.
+ * If the file size is over the size limit of the {@link net.dv8tion.jda.api.entities.Guild}, this command will fail, but
+ * throw an {@link DownloadEmoteStatsFileTooBigException}.
+ * This will create a temporary file on the server, which will be deleted after it has been send.
+ */
 @Component
 @Slf4j
 public class ExportEmoteStats extends AbstractConditionableCommand {
@@ -61,12 +68,15 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Instant statsSince = Instant.EPOCH;
+        // default is 1.1.1970
         if(!parameters.isEmpty()) {
+            // if a duration is given, subtract this duration from the current point in time
             Duration duration = (Duration) parameters.get(0);
             statsSince = Instant.now().minus(duration);
         }
         AServer actualServer = serverManagementService.loadServer(commandContext.getGuild().getIdLong());
         List<UsedEmote> usedEmotes = usedEmoteManagementService.loadEmoteUsagesForServerSince(actualServer, statsSince);
+        // if there are no stats available, render a message indicating so
         if(usedEmotes.isEmpty()) {
             return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());
@@ -88,6 +98,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         try {
             fileUtils.writeContentToFile(tempFile, fileContent);
             long maxFileSize = commandContext.getGuild().getMaxFileSize();
+            // in this case, we cannot upload the file, so we need to fail
             if(maxFileSize < tempFile.length()) {
                 throw new DownloadEmoteStatsFileTooBigException(tempFile.length(), maxFileSize);
             }
@@ -113,7 +124,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("exportEmoteStats")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)
                 .supportsEmbedException(true)

@@ -4,6 +4,9 @@ import dev.sheldan.abstracto.core.command.config.ModuleInfo;
 import dev.sheldan.abstracto.core.command.config.ModuleInterface;
 import org.springframework.stereotype.Component;
 
+/**
+ * Help module for all statistics related commands, they have their own module if they have a significant emount of commands on their own.
+ */
 @Component
 public class StatisticModule implements ModuleInterface {
 

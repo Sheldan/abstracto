@@ -6,6 +6,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
+/**
+ * An actual instance which has been used on a certain date with a certain amount.
+ */
 @Builder
 @Entity
 @NoArgsConstructor
@@ -18,9 +21,15 @@ import javax.persistence.*;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UsedEmote {
 
+    /**
+     * The unique identifier for the emote: the ID of the emote, the ID of the server it was used in, the *date* the emote was used on.
+     */
     @EmbeddedId
     private UsedEmoteDay emoteId;
 
+    /**
+     * Reference to the {@link TrackedEmote} which was used at the given date
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns(
     {
@@ -29,6 +38,9 @@ public class UsedEmote {
     })
     private TrackedEmote trackedEmote;
 
+    /**
+     * The amount this {@link TrackedEmote} has been used on this date
+     */
     @Column(name = "amount")
     private Long amount;
 }

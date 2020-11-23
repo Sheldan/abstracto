@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.statistic.emotes.converter;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -84,11 +84,11 @@ public class EmoteStatsConverterTest {
         when(trackedEmote.getExternal()).thenReturn(false);
         when(trackedEmote.getAnimated()).thenReturn(false);
         when(trackedEmote.getDeleted()).thenReturn(false);
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         when(trackedEmote2.getExternal()).thenReturn(false);
         when(trackedEmote2.getAnimated()).thenReturn(true);
         when(trackedEmote2.getDeleted()).thenReturn(false);
-        when(trackedEmote2.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID_2, SERVER_ID));
+        when(trackedEmote2.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID_2));
         when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
         Emote emote1 = Mockito.mock(Emote.class);
         when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote1);

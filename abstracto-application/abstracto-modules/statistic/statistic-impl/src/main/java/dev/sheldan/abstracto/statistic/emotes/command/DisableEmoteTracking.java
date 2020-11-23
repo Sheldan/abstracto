@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.TrackedEmoteService;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This command disables the tracking for either one {@link TrackedEmote} or for all of them, if no emote is given as a parameter
+ */
 @Component
 public class DisableEmoteTracking extends AbstractConditionableCommand {
 
@@ -33,6 +36,7 @@ public class DisableEmoteTracking extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         if(!parameters.isEmpty()) {
             TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
+            // need to reload the tracked emote
             TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
             trackedEmoteManagementService.disableTrackedEmote(trackedEmote);
         } else {
@@ -48,7 +52,7 @@ public class DisableEmoteTracking extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("disableEmoteTracking")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

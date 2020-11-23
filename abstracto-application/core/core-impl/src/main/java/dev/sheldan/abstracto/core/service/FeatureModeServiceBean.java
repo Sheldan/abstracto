@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
+import dev.sheldan.abstracto.core.listener.FeatureAware;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagement;
@@ -172,6 +173,21 @@ public class FeatureModeServiceBean implements FeatureModeService {
         List<DefaultFeatureMode> allDefaultModes = defaultFeatureModeManagement.getFeatureModesForFeature(feature);
         List<AFeatureMode> allModesFromServer = featureModeManagementService.getFeatureModesOfFeatureInServer(server, feature);
         return combineFeatureModesWithDefault(server, allDefaultModes, allModesFromServer);
+    }
+
+    @Override
+    public boolean necessaryFeatureModesMet(FeatureEnum featureEnum, List<FeatureMode> featureModes, Long serverId) {
+        for (FeatureMode featureMode : featureModes) {
+            if(featureModeActive(featureEnum, serverId, featureMode)) {
+                return true;
+            }
+        }
+        return featureModes.isEmpty();
+    }
+
+    @Override
+    public boolean necessaryFeatureModesMet(FeatureAware featureAware, Long serverId) {
+        return necessaryFeatureModesMet(featureAware.getFeature(), featureAware.getFeatureModeLimitations(), serverId);
     }
 
 

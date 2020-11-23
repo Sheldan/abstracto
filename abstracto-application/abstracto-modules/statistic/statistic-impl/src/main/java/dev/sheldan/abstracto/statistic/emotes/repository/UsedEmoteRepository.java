@@ -12,9 +12,20 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository used to query and created {@link UsedEmote}. This also includes query for the emote statistics.
+ */
 @Repository
 public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteDay> {
 
+    /**
+     * Selects the {@link UsedEmote} for one particular {@link dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote}
+     * for the current date.
+     * @param emoteId The ID of the {@link net.dv8tion.jda.api.entities.Emote} which is being tracked
+     * @param server_id The ID of the {@link net.dv8tion.jda.api.entities.Guild} which is the server where the {@link net.dv8tion.jda.api.entities.Emote}
+     *                  is being tracked
+     * @return An {@link Optional} containing a possible {@link UsedEmote}, if it exists for the criteria, an empty Optional otherwise.
+     */
     @Query(value="select * from used_emote " +
             "where emote_id = :emote_id and server_id = :server_id " +
             "and use_date = date_trunc('day', now())", nativeQuery = true)

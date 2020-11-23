@@ -23,17 +23,17 @@ public class UsedEmoteManagementServiceBean implements UsedEmoteManagementServic
 
     @Override
     public Optional<UsedEmote> loadUsedEmoteForTrackedEmoteToday(TrackedEmote trackedEmote) {
-        return usedEmoteRepository.findEmoteFromServerToday(trackedEmote.getTrackedEmoteId().getEmoteId() , trackedEmote.getTrackedEmoteId().getServerId());
+        return usedEmoteRepository.findEmoteFromServerToday(trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId());
     }
 
     @Override
     public UsedEmote createEmoteUsageForToday(TrackedEmote trackedEmote, Long count) {
         UsedEmote usedEmote = UsedEmote
                 .builder()
-                .emoteId(new UsedEmoteDay(trackedEmote.getTrackedEmoteId().getEmoteId(), trackedEmote.getTrackedEmoteId().getServerId(), Instant.now()))
+                .emoteId(new UsedEmoteDay(trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), Instant.now()))
                 .amount(count)
                 .build();
-        log.trace("Creating emote usage for emote {} in server {} with count {}.", trackedEmote.getTrackedEmoteId().getEmoteId(), trackedEmote.getTrackedEmoteId().getServerId(), count);
+        log.trace("Creating emote usage for emote {} in server {} with count {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), count);
         return usedEmoteRepository.save(usedEmote);
     }
 
@@ -64,6 +64,6 @@ public class UsedEmoteManagementServiceBean implements UsedEmoteManagementServic
 
     @Override
     public void purgeEmoteUsagesSince(TrackedEmote emote, Instant since) {
-        usedEmoteRepository.deleteByEmoteId_EmoteIdAndEmoteId_ServerIdAndEmoteId_UseDateGreaterThan(emote.getTrackedEmoteId().getEmoteId(), emote.getTrackedEmoteId().getServerId(), since);
+        usedEmoteRepository.deleteByEmoteId_EmoteIdAndEmoteId_ServerIdAndEmoteId_UseDateGreaterThan(emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId(), since);
     }
 }

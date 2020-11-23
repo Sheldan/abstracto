@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
+import dev.sheldan.abstracto.core.listener.FeatureAware;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
@@ -20,4 +21,6 @@ public interface FeatureModeService {
     List<FeatureMode> getAllAvailableFeatureModes();
     List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server);
     List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server, AFeature feature);
+    boolean necessaryFeatureModesMet(FeatureEnum featureEnum, List<FeatureMode> featureModes, Long serverId);
+    boolean necessaryFeatureModesMet(FeatureAware featureAware, Long serverId);
 }

@@ -12,8 +12,8 @@ import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * This command is used to show the image and provide the link of an external {@link TrackedEmote}. It is only available, if the
+ * EmoteTrackingMode.EXTERNAL_EMOTES is active.
+ */
 @Component
 public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
 
@@ -39,7 +43,9 @@ public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
+        // load the actual TrackedEmote instance
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
+        // the command only works for external emotes
         if(!trackedEmote.getExternal()) {
             throw new AbstractoTemplatedException("Emote is not external", "showExternalTrackedEmote_emote_is_not_external");
         }
@@ -54,7 +60,7 @@ public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("showExternalTrackedEmote")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)
                 .supportsEmbedException(true)

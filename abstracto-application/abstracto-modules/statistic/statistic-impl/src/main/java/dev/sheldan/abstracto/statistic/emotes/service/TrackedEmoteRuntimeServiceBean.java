@@ -34,25 +34,33 @@ public class TrackedEmoteRuntimeServiceBean implements TrackedEmoteRuntimeServic
     public void addEmoteForServer(Emote emote, Guild guild, Long count, boolean external) {
         takeLock();
         try {
+            // generate an appropriate key
             Long key = getKey();
+            // create a PersistingEmote based the given Emote
             PersistingEmote newPersistentEmote = createFromEmote(guild, emote, count, external);
             if (trackedEmoteRunTimeStorage.contains(key)) {
+                // if it already exists, we can add to the already existing map
                 Map<Long, List<PersistingEmote>> elementsForKey = trackedEmoteRunTimeStorage.get(key);
                 if (elementsForKey.containsKey(guild.getIdLong())) {
+                    // if the server already has an entry, we can just add it to the list of existing ones
                     List<PersistingEmote> persistingEmotes = elementsForKey.get(guild.getIdLong());
                     Optional<PersistingEmote> existingEmote = persistingEmotes
                             .stream()
                             .filter(persistingEmote -> persistingEmote.getEmoteId().equals(emote.getIdLong()))
                             .findFirst();
+                    // if it exists already, just increment the counter by the given amount
                     existingEmote.ifPresent(persistingEmote -> persistingEmote.setCount(persistingEmote.getCount() + count));
                     if (!existingEmote.isPresent()) {
+                        // just add the newly created one
                         persistingEmotes.add(newPersistentEmote);
                     }
                 } else {
+                    // it did not exist for the server, create a new list of PersistingEmote
                     log.trace("Adding emote {} to list of server {}.", newPersistentEmote.getEmoteId(), guild.getIdLong());
                     elementsForKey.put(guild.getIdLong(), new ArrayList<>(Arrays.asList(newPersistentEmote)));
                 }
             } else {
+                // no entry for the minute exists yet, add a new one
                 HashMap<Long, List<PersistingEmote>> serverEmotes = new HashMap<>();
                 serverEmotes.put(guild.getIdLong(), new ArrayList<>(Arrays.asList(newPersistentEmote)));
                 log.trace("Adding emote map entry for server {}.", guild.getIdLong());

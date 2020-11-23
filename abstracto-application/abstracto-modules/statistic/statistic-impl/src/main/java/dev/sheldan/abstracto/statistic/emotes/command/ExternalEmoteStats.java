@@ -9,11 +9,10 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.service.UsedEmoteService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +27,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * This command will show the emote statistics for all emotes which are tracked in the current server, but are not from that server.
+ * There is an optional {@link Duration} parameter, which will define the amount of time to retrieve the stats for. If not provided, all stats will be shown.
+ */
 @Component
 @Slf4j
 public class ExternalEmoteStats extends AbstractConditionableCommand {
@@ -38,9 +41,6 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
-    @Autowired
-    private FeatureModeService featureModeService;
-
     public static final String EMOTE_STATS_STATIC_EXTERNAL_RESPONSE = "externalEmoteStats_static_response";
     public static final String EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE = "externalEmoteStats_animated_response";
 
@@ -48,22 +48,29 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
+        // default is 1.1.1970
         Instant statsSince = Instant.EPOCH;
         if(!parameters.isEmpty()) {
+            // subtract the given Duration parameter from the current point in time
             Duration duration = (Duration) parameters.get(0);
             statsSince = Instant.now().minus(duration);
         }
         EmoteStatsModel emoteStatsModel = usedEmoteService.getExternalEmoteStatsForServerSince(commandContext.getUserInitiatedContext().getServer(), statsSince);
         List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
 
+        // only show embed if static emote stats are available
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
             log.trace("External emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInChannel(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
+
+        // only show embed if animated emote stats are available
         if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
             log.trace("External emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInChannel(EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
+
+        // show an embed if no emote stats are available indicating so
         if(!emoteStatsModel.areStatsAvailable()) {
             log.info("No external emote stats available for guild {} since {}.", commandContext.getGuild().getIdLong(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInChannel(EmoteStats.EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
@@ -80,7 +87,7 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("externalEmoteStats")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)
                 .supportsEmbedException(true)

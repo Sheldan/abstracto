@@ -2,10 +2,10 @@ package dev.sheldan.abstracto.statistic.emotes.command;
 
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.service.UsedEmoteService;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
 import org.junit.Assert;
@@ -43,7 +43,7 @@ public class PurgeEmoteStatsTest {
     public void testPurgeEntireTimeLineOfEmote() {
         TrackedEmote fakeTrackedEmote = Mockito.mock(TrackedEmote.class);
         TrackedEmote actualTrackedEmote = Mockito.mock(TrackedEmote.class);
-        TrackedEmoteServer trackedEmoteServer = Mockito.mock(TrackedEmoteServer.class);
+        ServerSpecificId trackedEmoteServer = Mockito.mock(ServerSpecificId.class);
         when(fakeTrackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteManagementService.loadByTrackedEmoteServer(trackedEmoteServer)).thenReturn(actualTrackedEmote);
         CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(fakeTrackedEmote));
@@ -56,7 +56,7 @@ public class PurgeEmoteStatsTest {
         TrackedEmote fakeTrackedEmote = Mockito.mock(TrackedEmote.class);
         CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(fakeTrackedEmote, Duration.ofHours(4)));
         TrackedEmote actualTrackedEmote = Mockito.mock(TrackedEmote.class);
-        TrackedEmoteServer trackedEmoteServer = Mockito.mock(TrackedEmoteServer.class);
+        ServerSpecificId trackedEmoteServer = Mockito.mock(ServerSpecificId.class);
         when(fakeTrackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteManagementService.loadByTrackedEmoteServer(trackedEmoteServer)).thenReturn(actualTrackedEmote);
         testUnit.execute(commandContext);

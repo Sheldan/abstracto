@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.service.TrackedEmoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This command removes all {@link dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote} instances
+ * and all {@link dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote} in a guild. This command cannot be undone.
+ */
 @Component
 public class ResetEmoteStats extends AbstractConditionableCommand {
 
@@ -34,7 +38,7 @@ public class ResetEmoteStats extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("resetEmoteStats")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

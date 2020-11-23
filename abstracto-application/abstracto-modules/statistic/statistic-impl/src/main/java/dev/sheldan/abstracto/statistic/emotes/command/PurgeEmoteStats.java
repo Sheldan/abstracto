@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.config.StatisticModule;
+import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.UsedEmoteService;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
@@ -20,6 +20,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This command will delete the instances of {@link dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote} of a given {@link TrackedEmote}
+ * for the desired {@link Duration}, or all of them. This command cannot be undone.
+ */
 @Component
 public class PurgeEmoteStats extends AbstractConditionableCommand {
 
@@ -35,8 +39,10 @@ public class PurgeEmoteStats extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());
+        // default 1.1.1970
         Instant since = Instant.EPOCH;
         if(parameters.size() > 1) {
+            // if a Duration is given, subtract it from the current point in time
             Duration parameter = (Duration) parameters.get(1);
             since = Instant.now().minus(parameter);
         }
@@ -52,7 +58,7 @@ public class PurgeEmoteStats extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("purgeEmoteStats")
-                .module(StatisticModule.STATISTIC)
+                .module(EmoteTrackingModule.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emotes.converter.EmoteStatsConverter;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.service.management.UsedEmoteManagementService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -86,14 +86,14 @@ public class UsedEmoteServiceBeanTest {
 
     @Test
     public void testPurgeEmoteUsagesSince() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         testUnit.purgeEmoteUsagesSince(trackedEmote, pointInTime);
         verify(usedEmoteManagementService, times(1)).purgeEmoteUsagesSince(trackedEmote, pointInTime);
     }
 
     @Test
     public void testPurgeEmoteUsages() {
-        when(trackedEmote.getTrackedEmoteId()).thenReturn(new TrackedEmoteServer(EMOTE_ID, SERVER_ID));
+        when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         testUnit.purgeEmoteUsages(trackedEmote);
         verify(usedEmoteManagementService, times(1)).purgeEmoteUsagesSince(trackedEmote, Instant.EPOCH);
     }

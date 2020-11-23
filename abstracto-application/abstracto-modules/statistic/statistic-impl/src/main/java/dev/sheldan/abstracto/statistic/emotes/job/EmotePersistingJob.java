@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Job responsible for persisting the emote usages found in {@link TrackedEmoteRuntimeService} to the database.
+ * This will create new instances, if there are non before, and increment past instances. This job runs for all servers globally.
+ */
 @Slf4j
 @DisallowConcurrentExecution
 @Component
@@ -33,24 +37,30 @@ public class EmotePersistingJob extends QuartzJobBean {
     @Override
     @Transactional
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        // acquire the lock, because we are modifying
         trackedEmoteRuntimeService.takeLock();
+        Long pastMinute = getPastMinute();
+        Map<Long, Map<Long, List<PersistingEmote>>> runtimeConfig = trackedEmoteRuntimeService.getRuntimeConfig();
         try {
-            Map<Long, Map<Long, List<PersistingEmote>>> runtimeConfig = trackedEmoteRuntimeService.getRuntimeConfig();
             log.info("Running statistic persisting job.");
-            Long pastMinute = getPastMinute();
+            // only take the emotes from the last minute, if there are any
             if(runtimeConfig.containsKey(pastMinute)) {
                 Map<Long, List<PersistingEmote>> foundStatistics = runtimeConfig.get(pastMinute);
                 log.info("Found emote statistics from {} servers to persist.", foundStatistics.size());
                 trackedEmoteService.storeEmoteStatistics(foundStatistics);
-                runtimeConfig.remove(pastMinute);
+                // remove it, because we processed it
+                // check for earlier entries which were missed
                 checkForPastEmoteStats(pastMinute, runtimeConfig);
             }
         } finally {
+            runtimeConfig.remove(pastMinute);
+            // release the lock, so other listeners can add onto it again
             trackedEmoteRuntimeService.releaseLock();
         }
     }
 
     private void checkForPastEmoteStats(Long minuteToCheck, Map<Long, Map<Long, List<PersistingEmote>>> runtimeConfig) {
+        // if there are any keys which have a lower minute, we need to process them, because they most likely have not been processed yet
         List<Long> missedMinutes = runtimeConfig.keySet().stream().filter(aLong -> aLong < minuteToCheck).collect(Collectors.toList());
         missedMinutes.forEach(pastMinute -> {
             log.info("Persisting emotes for a minute in the past, it should have been previously, but was not. Minute {}.", pastMinute);

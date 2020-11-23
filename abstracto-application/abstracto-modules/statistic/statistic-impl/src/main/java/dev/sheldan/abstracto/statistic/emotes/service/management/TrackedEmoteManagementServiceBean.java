@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.statistic.emotes.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.statistic.emotes.exception.TrackedEmoteNotFoundException;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
-import dev.sheldan.abstracto.statistic.emotes.model.database.embed.TrackedEmoteServer;
 import dev.sheldan.abstracto.statistic.emotes.repository.TrackedEmoteRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
@@ -40,7 +40,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     @Override
     public TrackedEmote createTrackedEmote(Emote emote, Guild guild, boolean external) {
         if(external) {
-            return createExternalEmote(emote, guild);
+            return createExternalTrackedEmote(emote, guild);
         } else {
             return createTrackedEmote(emote, guild);
         }
@@ -51,7 +51,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
         TrackedEmote emote = TrackedEmote
                 .builder()
                 .animated(animated)
-                .trackedEmoteId(new TrackedEmoteServer(emoteId, server.getId()))
+                .trackedEmoteId(new ServerSpecificId(server.getId(), emoteId))
                 .trackingEnabled(tracked)
                 .emoteName(emoteName)
                 .server(server)
@@ -63,11 +63,11 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote createExternalEmote(Long emoteId, String emoteName, String externalUrl, Boolean animated, AServer server) {
+    public TrackedEmote createExternalEmote(Long emoteId, String emoteName, String externalUrl, Boolean animated, AServer server, boolean trackingEnabled) {
         TrackedEmote emote = TrackedEmote
                 .builder()
                 .animated(animated)
-                .trackedEmoteId(new TrackedEmoteServer(emoteId, server.getId()))
+                .trackedEmoteId(new ServerSpecificId(server.getId(), emoteId))
                 .trackingEnabled(true)
                 .deleted(false)
                 .emoteName(emoteName)
@@ -85,15 +85,15 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote createExternalEmote(PersistingEmote persistingEmote) {
+    public TrackedEmote createExternalTrackedEmote(PersistingEmote persistingEmote) {
         AServer server = serverManagementService.loadServer(persistingEmote.getServerId());
-        return createExternalEmote(persistingEmote.getEmoteId(), persistingEmote.getEmoteName(), persistingEmote.getExternalUrl(), persistingEmote.getAnimated(), server);
+        return createExternalEmote(persistingEmote.getEmoteId(), persistingEmote.getEmoteName(), persistingEmote.getExternalUrl(), persistingEmote.getAnimated(), server, true);
     }
 
     @Override
-    public TrackedEmote createExternalEmote(Emote emote, Guild guild) {
+    public TrackedEmote createExternalTrackedEmote(Emote emote, Guild guild) {
         AServer server = serverManagementService.loadServer(guild.getIdLong());
-        return createExternalEmote(emote.getIdLong(), emote.getName(), emote.getImageUrl(), emote.isAnimated(), server);
+        return createExternalEmote(emote.getIdLong(), emote.getName(), emote.getImageUrl(), emote.isAnimated(), server, true);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
 
     @Override
     public void markAsDeleted(TrackedEmote trackedemote) {
-        log.info("Marking tracked emote {} in server {} as deleted.", trackedemote.getTrackedEmoteId().getEmoteId(), trackedemote.getTrackedEmoteId().getServerId());
+        log.info("Marking tracked emote {} in server {} as deleted.", trackedemote.getTrackedEmoteId().getId(), trackedemote.getTrackedEmoteId().getServerId());
         trackedemote.setDeleted(true);
     }
 
@@ -124,13 +124,13 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote loadByTrackedEmoteServer(TrackedEmoteServer trackedEmoteServer) {
-        return loadByEmoteId(trackedEmoteServer.getEmoteId(), trackedEmoteServer.getServerId());
+    public TrackedEmote loadByTrackedEmoteServer(ServerSpecificId trackedEmoteServer) {
+        return loadByEmoteId(trackedEmoteServer.getId(), trackedEmoteServer.getServerId());
     }
 
     @Override
     public Optional<TrackedEmote> loadByEmoteIdOptional(Long emoteId, Long serverId) {
-        return repository.findById(new TrackedEmoteServer(emoteId, serverId));
+        return repository.findById(new ServerSpecificId(serverId, emoteId));
     }
 
     @Override
@@ -154,25 +154,25 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
 
     @Override
     public void changeName(TrackedEmote emote, String newName) {
-        log.info("Changing name of emote {} in server {}.", emote.getTrackedEmoteId().getEmoteId(), emote.getTrackedEmoteId().getServerId());
+        log.info("Changing name of emote {} in server {}.", emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId());
         emote.setEmoteName(newName);
     }
 
     @Override
     public void disableTrackedEmote(TrackedEmote emote) {
-        log.info("Disabling tracking for tracked emote {} in server {}.", emote.getTrackedEmoteId().getEmoteId(), emote.getTrackedEmoteId().getServerId());
+        log.info("Disabling tracking for tracked emote {} in server {}.", emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId());
         emote.setTrackingEnabled(false);
     }
 
     @Override
     public void enableTrackedEmote(TrackedEmote emote) {
-        log.info("Enabling tracking for tracked emote {} in server {}.", emote.getTrackedEmoteId().getEmoteId(), emote.getTrackedEmoteId().getServerId());
+        log.info("Enabling tracking for tracked emote {} in server {}.", emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId());
         emote.setTrackingEnabled(true);
     }
 
     @Override
     public void deleteTrackedEmote(TrackedEmote emote) {
-        log.info("Deleting tracked emote {} in server {}.", emote.getTrackedEmoteId().getEmoteId(), emote.getTrackedEmoteId().getServerId());
+        log.info("Deleting tracked emote {} in server {}.", emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId());
         repository.delete(emote);
     }
 

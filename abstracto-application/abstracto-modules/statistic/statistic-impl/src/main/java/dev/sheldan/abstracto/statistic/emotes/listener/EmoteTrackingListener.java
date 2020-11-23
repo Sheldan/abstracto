@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * This listener listens to every received message, if the EMOTE_TRACKING feature is enabled, and stores *all* used emotes in
+ * the runtime storage for emote tracking.
+ */
 @Component
 public class EmoteTrackingListener implements MessageReceivedListener {
 
