@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.moderation.commands;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -106,11 +105,6 @@ public class WarningsTest {
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         verify(self, times(1)).renderWarnings(parameters, modelWarnings);
 
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

@@ -25,7 +25,6 @@ public class Suggest extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String text = (String) parameters.get(0);
         SuggestionLog suggestLogModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);

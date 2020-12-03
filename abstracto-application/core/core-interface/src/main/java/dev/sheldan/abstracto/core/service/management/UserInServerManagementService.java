@@ -17,4 +17,5 @@ public interface UserInServerManagementService {
     AUserInAServer createUserInServer(Member member);
     AUserInAServer createUserInServer(Long guildId, Long userId);
     List<AUserInAServer> getUserInAllServers(Long userId);
+    Optional<AUserInAServer> loadAUserInAServerOptional(Long serverId, Long userId);
 }

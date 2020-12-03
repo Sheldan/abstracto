@@ -11,6 +11,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface MessageService {
     void addReactionToMessage(String emoteKey, Long serverId, Message message);
+    void addDefaultReactionToMessage(String unicode, Message message);
+    CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Guild guild, Message message);
     CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Long serverId, Message message);

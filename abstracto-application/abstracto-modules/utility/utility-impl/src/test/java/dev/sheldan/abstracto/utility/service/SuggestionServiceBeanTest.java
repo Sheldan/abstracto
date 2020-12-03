@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -139,7 +139,7 @@ public class SuggestionServiceBeanTest {
         executeAcceptWithMember(null);
     }
 
-    @Test(expected = ChannelNotFoundException.class)
+    @Test(expected = ChannelNotInGuildException.class)
     public void testAcceptSuggestionInNoTextChannel() {
         setupForNoTextChannel();
         testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, SuggestionLog.builder().build());
@@ -157,7 +157,7 @@ public class SuggestionServiceBeanTest {
                 .build();
         when(server.getId()).thenReturn(SERVER_ID);
         when(channel.getId()).thenReturn(CHANNEL_ID);
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenThrow(new ChannelNotFoundException(CHANNEL_ID));
+        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenThrow(new ChannelNotInGuildException(CHANNEL_ID));
         when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.of(suggestionToAccept));
     }
 
@@ -199,7 +199,7 @@ public class SuggestionServiceBeanTest {
         executeRejectWithMember(null);
     }
 
-    @Test(expected = ChannelNotFoundException.class)
+    @Test(expected = ChannelNotInGuildException.class)
     public void testRejectSuggestionInNoTextChannel() {
         setupForNoTextChannel();
         testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, SuggestionLog.builder().build());

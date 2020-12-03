@@ -9,12 +9,13 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserInServerRepository extends JpaRepository<AUserInAServer, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    AUserInAServer findByServerReferenceAndUserReference(AServer serverId, AUser userId);
+    Optional<AUserInAServer> findByServerReferenceAndUserReference(AServer serverId, AUser userId);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByServerReferenceAndUserReference(AServer server, AUser user);

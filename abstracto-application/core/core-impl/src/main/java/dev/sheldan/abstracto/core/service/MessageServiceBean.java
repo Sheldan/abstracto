@@ -47,6 +47,16 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public void addDefaultReactionToMessage(String unicode, Message message) {
+        addDefaultReactionToMessageAsync(unicode, message);
+    }
+
+    @Override
+    public CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Message message) {
+        return message.addReaction(unicode).submit();
+    }
+
+    @Override
     public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message) {
         Guild guild = botService.getGuildById(serverId);
         return addReactionToMessageWithFuture(emoteKey, guild, message);

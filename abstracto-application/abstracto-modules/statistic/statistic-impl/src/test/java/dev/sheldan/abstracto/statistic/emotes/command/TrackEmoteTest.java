@@ -1,14 +1,13 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.command.parameter.TrackEmoteParameter;
@@ -52,16 +51,6 @@ public class TrackEmoteTest {
 
     private static final Long EMOTE_ID = 4L;
     private static final Long SERVER_ID = 5L;
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
-    }
 
     @Test
     public void testReTrackTrackedEmote(){
@@ -124,4 +113,10 @@ public class TrackEmoteTest {
     public void testFeature() {
         Assert.assertEquals(StatisticFeatures.EMOTE_TRACKING, testUnit.getFeature());
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 }

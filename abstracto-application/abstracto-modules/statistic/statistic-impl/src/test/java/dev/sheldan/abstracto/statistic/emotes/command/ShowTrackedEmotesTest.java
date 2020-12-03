@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
@@ -44,11 +44,6 @@ public class ShowTrackedEmotesTest {
     private FeatureModeService featureModeService;
 
     private static final Long SERVER_ID = 4L;
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
-    }
 
     @Test
     public void testShowTrackedEmotesNoStats() {
@@ -229,5 +224,11 @@ public class ShowTrackedEmotesTest {
     public void testFeature() {
         Assert.assertEquals(StatisticFeatures.EMOTE_TRACKING, testUnit.getFeature());
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 
 }

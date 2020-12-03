@@ -54,7 +54,6 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         // parameter is optional, in case its not present, we default to the 0th page
         Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 1;

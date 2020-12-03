@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import dev.sheldan.abstracto.core.service.BotService;
+import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,5 +36,10 @@ public class CoreConfig {
         ScheduledExecutorService scheduledExecutorService =
                 Executors.newScheduledThreadPool(threadCount);
         return new EventWaiter(scheduledExecutorService, true);
+    }
+
+    @Bean
+    public OkHttpClient client() {
+        return new OkHttpClient();
     }
 }

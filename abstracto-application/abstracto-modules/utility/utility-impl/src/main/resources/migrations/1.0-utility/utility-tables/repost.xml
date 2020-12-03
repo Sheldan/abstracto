@@ -1,0 +1,44 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="repost-table">
+        <createTable tableName="repost">
+            <column name="message_id" type="BIGINT" />
+            <column name="position" type="INTEGER" />
+            <column name="user_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <addPrimaryKey columnNames="message_id, position, user_in_server_id" tableName="repost" constraintName="pk_repost" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="repost-fk_repost_server">
+        <addForeignKeyConstraint baseColumnNames="user_in_server_id" baseTableName="repost" constraintName="fk_repost_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="repost-fk_repost_posted_image">
+        <addForeignKeyConstraint baseColumnNames="message_id, position" baseTableName="repost" constraintName="fk_repost_posted_image"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="message_id, position"
+                                 referencedTableName="posted_image" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="repost-fk_repost_user_in_server">
+        <addForeignKeyConstraint baseColumnNames="user_in_server_id" baseTableName="repost" constraintName="fk_repost_user_in_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id"
+                                 referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+
+
+</databaseChangeLog>

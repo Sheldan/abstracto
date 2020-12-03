@@ -40,7 +40,6 @@ public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
         // load the actual TrackedEmote instance

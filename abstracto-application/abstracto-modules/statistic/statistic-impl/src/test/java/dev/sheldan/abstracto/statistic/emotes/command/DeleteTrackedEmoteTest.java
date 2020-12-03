@@ -1,9 +1,8 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.exception.TrackedEmoteNotFoundException;
@@ -34,16 +33,6 @@ public class DeleteTrackedEmoteTest {
     @Mock
     private TrackedEmoteService trackedEmoteService;
 
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
-    }
-
     @Test
     public void testExecuteWithExistingTrackedEmote() {
         TrackedEmote fakedEmote = Mockito.mock(TrackedEmote.class);
@@ -69,4 +58,10 @@ public class DeleteTrackedEmoteTest {
     public void testFeature() {
         Assert.assertEquals(StatisticFeatures.EMOTE_TRACKING, testUnit.getFeature());
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 }

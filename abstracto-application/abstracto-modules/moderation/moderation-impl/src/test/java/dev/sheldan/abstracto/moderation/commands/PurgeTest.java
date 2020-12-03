@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
@@ -52,16 +50,6 @@ public class PurgeTest {
         when(purgeService.purgeMessagesInChannel(count, parameters.getChannel(), parameters.getMessage(), messageAuthor)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         Assert.assertEquals(ResultState.SELF_DESTRUCT, result.join().getResult());
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

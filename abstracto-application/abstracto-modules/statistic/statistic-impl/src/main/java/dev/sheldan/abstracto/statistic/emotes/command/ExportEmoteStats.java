@@ -65,7 +65,6 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Instant statsSince = Instant.EPOCH;
         // default is 1.1.1970

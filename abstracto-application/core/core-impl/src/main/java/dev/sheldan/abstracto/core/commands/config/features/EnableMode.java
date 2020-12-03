@@ -41,7 +41,6 @@ public class EnableMode extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         String featureName = (String) commandContext.getParameters().getParameters().get(0);
         String modeName = (String) commandContext.getParameters().getParameters().get(1);
         FeatureEnum featureEnum = featureConfigService.getFeatureEnum(featureName);

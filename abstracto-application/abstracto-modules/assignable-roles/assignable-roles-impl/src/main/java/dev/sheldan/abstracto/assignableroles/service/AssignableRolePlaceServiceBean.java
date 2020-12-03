@@ -14,7 +14,7 @@ import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePl
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterKeyValueWrongTypeException;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.EmoteNotUsableException;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.*;
@@ -185,7 +185,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                         return addNewMessageToAssignableRolePlace(placeId, fakeEmote, description, roleId, serverId, messageToSend, textChannel);
                     }
                 } else {
-                    throw new ChannelNotFoundException(latestPost.getUsedChannel().getId());
+                    throw new ChannelNotInGuildException(latestPost.getUsedChannel().getId());
                 }
             } else {
                 log.trace("Added emote to assignable place {} in server {}, but no message post yet.", placeId, serverId);
@@ -374,7 +374,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 log.info("Refreshing text for assignable role place {} in channel {} in post {}.", place.getId(), channelId, firstPost.getId());
                 return channelService.editEmbedMessageInAChannel(renderedMessage.getEmbeds().get(0), channelOptional.get(), firstPost.getId()).thenCompose(message -> CompletableFuture.completedFuture(null));
             }
-            throw new ChannelNotFoundException(channelId);
+            throw new ChannelNotInGuildException(channelId);
         }
         return CompletableFuture.completedFuture(null);
     }

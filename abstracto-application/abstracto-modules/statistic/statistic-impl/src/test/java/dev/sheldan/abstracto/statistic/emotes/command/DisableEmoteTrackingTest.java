@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
@@ -32,11 +32,6 @@ public class DisableEmoteTrackingTest {
     @Mock
     private TrackedEmoteManagementService trackedEmoteManagementService;
 
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
-    }
-
     @Test
     public void testDisableAllTracking() {
         CommandContext commandContext = CommandTestUtilities.getNoParameters();
@@ -60,4 +55,10 @@ public class DisableEmoteTrackingTest {
     public void testFeature() {
         Assert.assertEquals(StatisticFeatures.EMOTE_TRACKING, testUnit.getFeature());
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 }

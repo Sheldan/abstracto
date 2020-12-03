@@ -66,6 +66,4 @@ public class EmbeddedMessage implements Serializable {
     private void onInsert() {
         this.created = Instant.now();
     }
-
-
 }

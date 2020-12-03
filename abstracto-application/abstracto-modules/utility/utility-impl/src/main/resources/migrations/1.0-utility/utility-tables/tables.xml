@@ -8,7 +8,10 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <include file="embedded_message.xml" relativeToChangelogFile="true"/>
     <include file="reminder.xml" relativeToChangelogFile="true"/>
-    <include file="starboard.xml" relativeToChangelogFile="true"/>
     <include file="starboard_post.xml" relativeToChangelogFile="true"/>
+    <include file="starboard_post_reaction.xml" relativeToChangelogFile="true"/>
     <include file="suggestion.xml" relativeToChangelogFile="true"/>
+    <include file="repost_check_channel_group.xml" relativeToChangelogFile="true"/>
+    <include file="posted_image.xml" relativeToChangelogFile="true"/>
+    <include file="repost.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

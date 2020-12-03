@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.experience.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -33,16 +31,6 @@ public class DisableExpForRoleTest {
 
     @Mock
     private DisabledExpRoleManagementService disabledExpRoleManagementService;
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
-    }
 
     @Test
     public void testExecuteCommandForNotDisabledRole() {

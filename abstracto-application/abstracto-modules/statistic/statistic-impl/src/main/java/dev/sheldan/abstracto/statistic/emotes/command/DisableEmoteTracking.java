@@ -32,7 +32,6 @@ public class DisableEmoteTracking extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         if(!parameters.isEmpty()) {
             TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);

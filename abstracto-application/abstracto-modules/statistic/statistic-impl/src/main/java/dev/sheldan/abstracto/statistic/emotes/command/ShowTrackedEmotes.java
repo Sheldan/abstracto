@@ -50,7 +50,6 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
 
         // per default, do not show TrackedEmote for which tracking has been disabled
         Boolean showTrackingDisabled = false;

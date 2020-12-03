@@ -13,10 +13,18 @@
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="group_name" type="VARCHAR(255)"/>
-            <column name="group_server" type="BIGINT">
+            <column name="group_type_id" type="BIGINT"/>
+            <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+    </changeSet>
+    <changeSet author="Sheldan" id="channel_group-fk_channel_group_channel_group_type">
+        <addForeignKeyConstraint baseColumnNames="group_type_id" baseTableName="channel_group" constraintName="fk_channel_group_channel_group_type" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel_group_type" validate="true"/>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="channel_group-fk_channel_group_server">
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="channel_group" constraintName="fk_channel_group_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
     </changeSet>
     <changeSet author="Sheldan" id="channel_in_group-table">
         <createTable tableName="channel_in_group">
@@ -50,9 +58,6 @@
     </changeSet>
     <changeSet author="Sheldan" id="channel_in_group-fk_channel_in_group_group">
         <addForeignKeyConstraint baseColumnNames="group_id" baseTableName="channel_in_group" constraintName="fk_channel_in_group_group" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel_group" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="channel_group-fk_channel_group_server">
-        <addForeignKeyConstraint baseColumnNames="group_server" baseTableName="channel_group" constraintName="fk_channel_group_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
     </changeSet>
     <changeSet author="Sheldan" id="channel_group_command-fk_channel_group_command_command">
         <addForeignKeyConstraint baseColumnNames="command_id" baseTableName="channel_group_command" constraintName="fk_channel_group_command_command" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="command" validate="true"/>

@@ -11,5 +11,6 @@ import java.util.List;
 @Builder
 public class ChannelGroupModel {
     private String name;
+    private String typeKey;
     private List<ChannelGroupChannelModel> channels;
 }

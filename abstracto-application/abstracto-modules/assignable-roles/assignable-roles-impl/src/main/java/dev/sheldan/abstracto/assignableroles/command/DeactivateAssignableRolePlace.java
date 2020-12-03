@@ -23,7 +23,6 @@ public class DeactivateAssignableRolePlace extends AbstractConditionableCommand 
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         service.deactivateAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name);

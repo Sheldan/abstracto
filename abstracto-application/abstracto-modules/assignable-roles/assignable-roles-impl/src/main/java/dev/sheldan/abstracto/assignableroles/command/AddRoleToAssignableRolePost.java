@@ -32,7 +32,6 @@ public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         FullEmote emote = (FullEmote) parameters.get(1);

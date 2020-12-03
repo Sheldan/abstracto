@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands.mute;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
@@ -45,16 +43,6 @@ public class MuteTest {
         MuteContext muteLog = muteLogArgumentCaptor.getValue();
         Assert.assertEquals(mutedMember, muteLog.getMutedUser());
         Assert.assertEquals(parameters.getAuthor(), muteLog.getMutingUser());
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

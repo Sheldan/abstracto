@@ -42,28 +42,6 @@ public class CommandTestUtilities {
         com.execute(context);
     }
 
-    public static void executeNoParametersTestAsync(Command com) {
-        CommandContext context = CommandTestUtilities.getNoParameters();
-        com.executeAsync(context);
-    }
-
-    public static void executeWrongParametersTest(Command com) {
-        executeWrongParametersTest(com, new ArrayList<>());
-    }
-
-    public static void executeWrongParametersTest(Command com, Object value) {
-        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(value));
-        com.execute(context);
-    }
-
-    public static void executeWrongParametersTestAsync(Command com) {
-        executeWrongParametersTestAsync(com, new ArrayList<>());
-    }
-
-    public static void executeWrongParametersTestAsync(Command com, Object value) {
-        CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(value));
-        com.executeAsync(context);
-    }
 
     public static CommandContext getNoParameters() {
         AServer server = MockUtils.getServer();

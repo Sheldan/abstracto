@@ -30,7 +30,6 @@ public class ExpScale extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         Double scale = (Double) commandContext.getParameters().getParameters().get(0);
         Long guildId = commandContext.getGuild().getIdLong();
         configService.setDoubleValue(EXP_MULTIPLIER_KEY, guildId, scale);

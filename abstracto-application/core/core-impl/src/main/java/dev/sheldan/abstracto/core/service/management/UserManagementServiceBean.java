@@ -31,7 +31,12 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Override
     public AUser loadUser(Long userId) {
-        Optional<AUser> optional = userRepository.findById(userId);
+        Optional<AUser> optional = loadUserOptional(userId);
         return optional.orElseGet(() -> this.createUser(userId));
+    }
+
+    @Override
+    public Optional<AUser> loadUserOptional(Long userId) {
+        return userRepository.findById(userId);
     }
 }

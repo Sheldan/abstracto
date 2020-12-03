@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.commands.config.features;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
@@ -12,6 +11,7 @@ import dev.sheldan.abstracto.core.models.template.commands.FeatureModesModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,11 +50,6 @@ public class FeatureModesTest {
     private ArgumentCaptor<FeatureModesModel> modelCaptor;
 
     private static final String FEATURE_NAME = "feature";
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
-    }
 
     @Test
     public void testExecuteNoParameters() {
@@ -96,4 +91,10 @@ public class FeatureModesTest {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(FEATURE_NAME));
         testUnit.executeAsync(context);
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 }

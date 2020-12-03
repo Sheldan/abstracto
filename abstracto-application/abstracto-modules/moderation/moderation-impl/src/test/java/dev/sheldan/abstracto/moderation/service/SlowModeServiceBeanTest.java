@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -79,7 +79,7 @@ public class SlowModeServiceBeanTest {
         testUnit.setSlowMode(channel, duration);
     }
 
-    @Test(expected = ChannelNotFoundException.class)
+    @Test(expected = ChannelNotInGuildException.class)
     public void testSlowModeInAChannelNotFound() {
         AServer server = MockUtils.getServer();
         AChannel aChannel = MockUtils.getTextChannel(server, 5L);

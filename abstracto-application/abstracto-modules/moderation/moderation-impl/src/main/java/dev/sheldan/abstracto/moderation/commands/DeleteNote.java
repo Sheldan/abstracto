@@ -34,7 +34,6 @@ public class DeleteNote extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         Long id = (Long) commandContext.getParameters().getParameters().get(0);
         if(userNoteManagementService.noteExists(id, commandContext.getUserInitiatedContext().getServer())) {
            userNoteManagementService.deleteNote(id, commandContext.getUserInitiatedContext().getServer());

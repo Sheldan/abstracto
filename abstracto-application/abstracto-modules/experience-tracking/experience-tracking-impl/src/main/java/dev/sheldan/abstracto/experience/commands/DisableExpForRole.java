@@ -31,7 +31,6 @@ public class DisableExpForRole extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         ARole role = (ARole) parameters.get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());

@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
+import static dev.sheldan.abstracto.core.test.MockUtils.mockQueueDoubleVoidConsumer;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -114,7 +114,7 @@ public class PurgeServiceBeanTest {
 
         setupFirstMessageHistoryMocks();
         setupStatusMessageMocks();
-        mockConsumer(deleteMessagesAction);
+        mockQueueDoubleVoidConsumer(deleteMessagesAction);
         CompletableFuture<Void> futures = testUnit.purgeMessagesInChannel(amountToDelete, textChannel, START_MESSAGE_ID, null);
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
@@ -136,7 +136,7 @@ public class PurgeServiceBeanTest {
         setupStatusMessageMocks();
         AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
         when(firstMessage.delete()).thenReturn(auditableRestAction);
-        mockConsumer(auditableRestAction);
+        mockQueueDoubleVoidConsumer(auditableRestAction);
         CompletableFuture<Void> futures = testUnit.purgeMessagesInChannel(amountToDelete, textChannel, START_MESSAGE_ID, purgedMember);
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
@@ -194,7 +194,7 @@ public class PurgeServiceBeanTest {
         when(textChannel.deleteMessages(secondMessagesToDelete)).thenReturn(secondDeleteMessagesAction);
 
 
-        mockConsumer(secondDeleteMessagesAction);
+        mockQueueDoubleVoidConsumer(secondDeleteMessagesAction);
         CompletableFuture<Void> futures = testUnit.purgeMessagesInChannel(amountToDelete, textChannel, START_MESSAGE_ID, purgedMember);
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
@@ -233,7 +233,7 @@ public class PurgeServiceBeanTest {
         setupFirstMessages(firstMessage, deletableMessageId, secondMessage, deletableMessageId2, messageAuthor);
         setupMembersWithAuthorId();
         setupFirstMessageHistoryMocks();
-        mockConsumer(deleteMessagesAction);
+        mockQueueDoubleVoidConsumer(deleteMessagesAction);
         setupStatusMessageMocks();
     }
 
@@ -261,16 +261,7 @@ public class PurgeServiceBeanTest {
         when(secondMessageToMock.getAuthor()).thenReturn(author);
     }
 
-    private void mockConsumer(RestAction secondDeleteMessagesAction) {
-        doAnswer(invocationOnMock -> {
-            Object consumerObj = invocationOnMock.getArguments()[0];
-            if(consumerObj instanceof Consumer) {
-                Consumer<Void> consumer = (Consumer) consumerObj;
-                consumer.accept(null);
-            }
-            return null;
-        }).when(secondDeleteMessagesAction).queue(any(Consumer.class), any(Consumer.class));
-    }
+
 
     private Long getDeletableMessageId() {
         return TimeUtil.getDiscordTimestamp((System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)));

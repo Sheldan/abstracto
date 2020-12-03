@@ -71,14 +71,14 @@ Feature key: `suggestion`
 
 ==== Commands
 Creating a suggestion::
-* Usage `suggest <text>`
+* Usage: `suggest <text>`
 * Description: Posts the text to the `suggest` post target and places the emotes for up and down voting.
 Accepting a suggestion::
-* Usage `accept <suggestionId> [note]`
+* Usage: `accept <suggestionId> [note]`
 * Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `note` will be used in this re-post, if provided.
 * Example: `accept 1 okay` in order to accept the suggestion `1` with the reason `okay`
 Rejecting a suggestion::
-* Usage `reject <suggestionId> [note]`
+* Usage: `reject <suggestionId> [note]`
 * Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `note` will be used in this re-post, if provided.
 * Example: `deny 1 not okay` in order to reject the suggestion `1` with the reason `not okay`
 
@@ -90,7 +90,7 @@ Feature key: `utility`
 
 ==== Commands
 Retrieving the URL of an emote::
-* Usage `showEmote <emote>`
+* Usage: `showEmote <emote>`
 * Description: Posts the name of the emote accompanied with the URL where the image of the emote is stored.
 
 Displaying the avatar or a member::
@@ -101,7 +101,7 @@ Displaying information about members::
 * Usage: `userInfo [member]`
 * Description: Displays information about a member including: username, ID, activity, nickname (if any), date joined the server and date registered on discord.
 
-Displaying information about server::
+Displaying information about the server::
 * Usage: `serverInfo`
 * Description: Displays information about the server including: ID, server name, owner, member count, creation date, role count, server features and custom emotes of the server.
 
@@ -115,3 +115,47 @@ If a message contains a link to a discord message this will create an embed cont
 A reaction is placed on the embedded message which can be used to delete this embed. Only the original author and the person creating the embed can delete the embed this way.
 
 Feature key: `link_embeds`
+
+=== Repost detection and tracking
+
+This feature can be used to detect whether an image has been posted before on the server. Images are compared by the hash stored in the database, which makes it very strict.
+In order to calculate the hash, the image needs to be downloaded. It is possible to show a leaderboard of the most reposting users. Both of these features can be changed via feature modes.
+If a reaction has been detected a reaction will be added to the post. If a message contains multiple or the detected repost is not the first image in the message a reaction containing digit indicating the position of the repost will be added.
+For example if the repost is the second image in a message, a reaction representing the digit two will be added.
+
+While it can be configured that the feature is only active in certain channels, the detection whether an image is a repost checks all previously posted images from the server (given they have been posted in a channel where the repost check is active).
+
+Feature key: `repostDetection`
+
+==== Feature modes
+`download`:: If this is enabled, the images in the configured channels will be downloaded and the hash is calculated basd on the file content. The images are deleted immediately afterwards. If this is disabled, the proxy URL of the image will be used to calculate the hash. Enabled by default.
+`leaderboard`:: If this is enabled, the command `repostLeaderboard` will be available. This command shows the leaderboard of the user with the most reposts. Disabled by default.
+
+==== Emotes
+* `repostMarker` to indicate that a post has been identified as a repost
+
+==== Commands
+Remove stored image posts and reposts of whole server or specific member::
+* Usage: `purgeImagePosts [member]`
+* Description: If `member` is provided, this will delete all stored image hashes (and their reposts) from the database. If `member` is not provided, this will delete all stored image hashes (and their reposts) from the whole server.
+
+Remove reposts of whole server or specific member::
+* Usage: `purgeReposts [member]`
+* Description: If `member` is provided, this will delete all reposts of the given member. If `member` is not provided, this will delete all reposts in the whole server.
+
+Show the leaderboard of reposts::
+* Usage: `repostLeaderboard [page]`
+* Description: Shows the rank and the amount of reposts for a provided `page`, if `page` is not provided, it will show five users with the highest a mount of reposts. `page` is 1-indexed. It will also show the amount and rank of the user executing.
+* Mode Restriction: This command is only available when the feature mode `leaderboard` is enabled.
+
+Enable repost check for a channel group::
+* Usage: `enableRepostCheck <groupName>`
+* Description: Enables the repost checking for all channels in the channel group identified by `groupName`. This channel group needs to be of type `repostCheck`.
+
+Disable repost check for a channel group::
+* Usage: `disableRepostCheck <groupName>`
+* Description: Disables the repost checking for all channels in the channel group identified by `groupName`. This channel group needs to be of type `repostCheck`.
+
+Show the channels for which repost check has been enabled::
+* Usage: `showRepostCheckChannels`
+* Description: Shows the channel groups with their respective channels for which the repost check has been enabled. These can only be channel groups of type `repostCheck`. It can still be enabled if there are now channels in the channel group.

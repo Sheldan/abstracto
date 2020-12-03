@@ -33,7 +33,6 @@ public class UnSetExpRole extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
         // do not check for the existence of the role, because if the role was deleted, users should be able

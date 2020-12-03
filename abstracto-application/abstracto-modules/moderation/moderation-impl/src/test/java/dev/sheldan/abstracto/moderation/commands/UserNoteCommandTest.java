@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -45,11 +44,6 @@ public class UserNoteCommandTest {
         CommandResult result = testUnit.execute(parameters);
         verify(userNoteManagementService, times(1)).createUserNote(userInAServer, note);
         CommandTestUtilities.checkSuccessfulCompletion(result);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test

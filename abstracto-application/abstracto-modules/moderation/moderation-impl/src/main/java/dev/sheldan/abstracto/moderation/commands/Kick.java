@@ -32,7 +32,6 @@ public class Kick extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         String defaultReason = templateService.renderSimpleTemplate(KICK_DEFAULT_REASON_TEMPLATE);

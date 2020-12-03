@@ -24,7 +24,6 @@ public class TestAssignableRolePlace extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         return service.testAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name, commandContext.getChannel())

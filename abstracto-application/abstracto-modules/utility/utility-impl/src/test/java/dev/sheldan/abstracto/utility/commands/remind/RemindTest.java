@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.utility.commands.remind;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -38,22 +36,6 @@ public class RemindTest {
 
     @Captor
     private ArgumentCaptor<ReminderModel> captor;
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testOnlyRemindDateParameter() {
-        CommandContext durationParameter = CommandTestUtilities.getWithParameters(Arrays.asList(Duration.ofDays(4)));
-        testUnit.executeAsync(durationParameter);
-    }
 
     @Test
     public void executeCommand() {

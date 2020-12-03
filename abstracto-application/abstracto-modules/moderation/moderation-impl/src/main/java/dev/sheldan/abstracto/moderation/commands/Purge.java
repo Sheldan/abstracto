@@ -37,7 +37,6 @@ public class Purge extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         Integer amountOfMessages = (Integer) commandContext.getParameters().getParameters().get(0);
         Member memberToPurgeMessagesOf = null;
         if(commandContext.getParameters().getParameters().size() == 2) {

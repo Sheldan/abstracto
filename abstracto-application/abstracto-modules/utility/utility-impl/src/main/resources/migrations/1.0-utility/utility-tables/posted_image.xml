@@ -1,0 +1,46 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="posted_image-table">
+        <createTable tableName="posted_image">
+            <column name="message_id" type="BIGINT" />
+            <column name="position" type="INTEGER" />
+            <column name="posting_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="posted_channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_hash" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <addPrimaryKey columnNames="message_id, position" tableName="posted_image" constraintName="pk_posted_image" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="posted_image-fk_posted_image_user">
+        <addForeignKeyConstraint baseColumnNames="posting_user_id" baseTableName="posted_image" constraintName="fk_posted_image_user"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="posted_image-fk_posted_image_channel">
+        <addForeignKeyConstraint baseColumnNames="posted_channel_id" baseTableName="posted_image" constraintName="fk_posted_image_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="channel" validate="true"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="posted_image-fk_posted_image_server">
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="posted_image" constraintName="fk_posted_image_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="server" validate="true"/>
+    </changeSet>
+
+
+</databaseChangeLog>

@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands.mute;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -44,16 +42,6 @@ public class SetMuteRoleTest {
         CommandResult result = testUnit.execute(parameters);
         verify(muteRoleManagementService, times(1)).setMuteRoleForServer(parameters.getUserInitiatedContext().getServer(), aRole);
         CommandTestUtilities.checkSuccessfulCompletion(result);
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test

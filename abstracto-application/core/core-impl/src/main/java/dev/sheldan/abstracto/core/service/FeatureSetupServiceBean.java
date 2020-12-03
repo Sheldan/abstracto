@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interactive.*;
@@ -106,7 +106,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
             channelService.sendTextToChannel(text, textChannel);
             return executeFeatureSetup(featureConfig, steps, user, new ArrayList<>());
         }
-        throw new ChannelNotFoundException(user.getChannelId());
+        throw new ChannelNotInGuildException(user.getChannelId());
     }
 
     @Override

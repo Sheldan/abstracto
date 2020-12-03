@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
@@ -34,11 +34,6 @@ public class PurgeEmoteStatsTest {
     @Mock
     private UsedEmoteService usedEmoteService;
 
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
-    }
-
     @Test
     public void testPurgeEntireTimeLineOfEmote() {
         TrackedEmote fakeTrackedEmote = Mockito.mock(TrackedEmote.class);
@@ -63,10 +58,15 @@ public class PurgeEmoteStatsTest {
         verify(usedEmoteService, times(1)).purgeEmoteUsagesSince(eq(actualTrackedEmote), any(Instant.class));
     }
 
-
     @Test
     public void testFeature() {
         Assert.assertEquals(StatisticFeatures.EMOTE_TRACKING, testUnit.getFeature());
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 
 }

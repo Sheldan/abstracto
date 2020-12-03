@@ -2,10 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
-import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
-import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
-import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
+import dev.sheldan.abstracto.core.exception.*;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.DefaultPostTargetManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
@@ -70,7 +67,7 @@ public class PostTargetServiceBean implements PostTargetService {
             } else {
                 log.error("Incorrect post target configuration: {} points to {} on server {}", target.getName(),
                         target.getChannelReference().getId(), target.getServerReference().getId());
-                throw new ChannelNotFoundException(target.getChannelReference().getId());
+                throw new ChannelNotInGuildException(target.getChannelReference().getId());
             }
         } else {
             throw new GuildNotFoundException(target.getServerReference().getId());

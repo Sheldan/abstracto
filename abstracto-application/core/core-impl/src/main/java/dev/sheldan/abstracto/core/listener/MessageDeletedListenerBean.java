@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -82,7 +82,7 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
             GuildChannelMember authorMember = GuildChannelMember
                     .builder()
                     .guild(botService.getGuildById(cachedMessage.getServerId()))
-                    .textChannel(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotFoundException(cachedMessage.getChannelId())))
+                    .textChannel(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotInGuildException(cachedMessage.getChannelId())))
                     .member(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthorId()))
                     .build();
             listener.forEach(messageDeletedListener -> {

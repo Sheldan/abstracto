@@ -35,7 +35,6 @@ public class PurgeEmoteStats extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Object> parameters = commandContext.getParameters().getParameters();
         TrackedEmote fakeTrackedEmote = (TrackedEmote) parameters.get(0);
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId());

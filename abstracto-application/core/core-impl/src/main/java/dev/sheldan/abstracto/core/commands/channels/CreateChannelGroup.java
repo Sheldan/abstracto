@@ -8,7 +8,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
+import dev.sheldan.abstracto.core.service.management.ChannelGroupTypeManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,17 +23,24 @@ public class CreateChannelGroup extends AbstractConditionableCommand {
     @Autowired
     private ChannelGroupService channelGroupService;
 
+    @Autowired
+    private ChannelGroupTypeManagementService channelGroupTypeManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        String groupName = (String) commandContext.getParameters().getParameters().get(0);
-        channelGroupService.createChannelGroup(groupName, commandContext.getGuild().getIdLong());
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        String groupName = (String) parameters.get(0);
+        ChannelGroupType fakeChannelGroupType = (ChannelGroupType) parameters.get(1);
+        ChannelGroupType actualChannelGroupType = channelGroupTypeManagementService.findChannelGroupTypeByKey(fakeChannelGroupType.getGroupTypeKey());
+        channelGroupService.createChannelGroup(groupName, commandContext.getGuild().getIdLong(), actualChannelGroupType);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter channelGroupName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(channelGroupName);
+        Parameter channelGroupType = Parameter.builder().name("groupType").type(ChannelGroupType.class).templated(true).build();
+        List<Parameter> parameters = Arrays.asList(channelGroupName, channelGroupType);
         List<String> aliases = Arrays.asList("+ChGroup");
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

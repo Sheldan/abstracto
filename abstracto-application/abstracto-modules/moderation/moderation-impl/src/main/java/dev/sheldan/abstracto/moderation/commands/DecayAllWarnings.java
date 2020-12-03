@@ -25,7 +25,6 @@ public class DecayAllWarnings extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         return warnService.decayAllWarningsForServer(commandContext.getUserInitiatedContext().getServer())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }

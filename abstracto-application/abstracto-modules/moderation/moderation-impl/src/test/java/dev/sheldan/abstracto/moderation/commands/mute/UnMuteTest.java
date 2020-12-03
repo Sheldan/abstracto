@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands.mute;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -63,16 +61,6 @@ public class UnMuteTest {
         when(userInServerManagementService.loadUser(memberToUnMute)).thenReturn(user);
         when(muteService.unMuteUser(user)).thenThrow(new NoMuteFoundException());
         testUnit.executeAsync(parameters);
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

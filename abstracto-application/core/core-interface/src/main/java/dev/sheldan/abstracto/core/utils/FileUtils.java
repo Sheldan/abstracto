@@ -14,7 +14,10 @@ public class FileUtils {
             fw.write(content);
             fw.flush();
         }
+    }
 
+    public void writeBytesToFile(File file, byte[] content) throws IOException {
+        Files.write(content, file);
     }
 
     public File createTempFile(String fileName) {

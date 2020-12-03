@@ -7,10 +7,12 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="repostDetectionModule" value="(SELECT id FROM module WHERE name = 'repostDetection')"/>
     <property name="remindFeature" value="(SELECT id FROM feature WHERE key = 'remind')"/>
     <property name="starboardFeature" value="(SELECT id FROM feature WHERE key = 'starboard')"/>
     <property name="suggestionFeature" value="(SELECT id FROM feature WHERE key = 'suggestion')"/>
     <property name="utilityFeature" value="(SELECT id FROM feature WHERE key = 'utility')"/>
+    <property name="repostDetectionFeature" value="(SELECT id FROM feature WHERE key = 'repostDetection')"/>
     <property name="today" value="(SELECT NOW())"/>
 
     <changeSet  author="Sheldan"  id="utility_remind-commands">
@@ -87,6 +89,43 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
-
+    <changeSet  author="Sheldan"  id="utility_repostDetection-commands">
+        <insert tableName="command">
+            <column name="name" value="disableRepostCheck"/>
+            <column name="module_id" valueComputed="${repostDetectionModule}"/>
+            <column name="feature_id" valueComputed="${repostDetectionFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="enableRepostCheck"/>
+            <column name="module_id" valueComputed="${repostDetectionModule}"/>
+            <column name="feature_id" valueComputed="${repostDetectionFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="purgeImagePosts"/>
+            <column name="module_id" valueComputed="${repostDetectionModule}"/>
+            <column name="feature_id" valueComputed="${repostDetectionFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="purgeReposts"/>
+            <column name="module_id" valueComputed="${repostDetectionModule}"/>
+            <column name="feature_id" valueComputed="${repostDetectionFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="repostLeaderboard"/>
+            <column name="module_id" valueComputed="${repostDetectionModule}"/>
+            <column name="feature_id" valueComputed="${repostDetectionFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="showRepostCheckChannels"/>
+            <column name="module_id" valueComputed="${repostDetectionModule}"/>
+            <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
 
 </databaseChangeLog>

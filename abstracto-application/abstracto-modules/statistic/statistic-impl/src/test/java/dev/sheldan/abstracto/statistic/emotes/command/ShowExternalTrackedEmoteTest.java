@@ -1,12 +1,11 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
@@ -37,16 +36,6 @@ public class ShowExternalTrackedEmoteTest {
 
     @Mock
     private TrackedEmoteManagementService trackedEmoteManagementService;
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
-    }
 
     @Test
     public void testShowExternalEmote() {
@@ -84,4 +73,10 @@ public class ShowExternalTrackedEmoteTest {
     public void testFeatureModeLimitations() {
         Assert.assertTrue(testUnit.getFeatureModeLimitations().contains(EmoteTrackingMode.EXTERNAL_EMOTES));
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 }

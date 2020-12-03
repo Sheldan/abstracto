@@ -42,7 +42,6 @@ public class FeatureModes extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<FeatureModeDisplay> featureModes;
         if(commandContext.getParameters().getParameters().isEmpty()) {
             featureModes = featureModeService.getEffectiveFeatureModes(commandContext.getUserInitiatedContext().getServer());

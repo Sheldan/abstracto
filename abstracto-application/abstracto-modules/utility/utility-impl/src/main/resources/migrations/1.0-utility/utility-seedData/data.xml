@@ -13,4 +13,6 @@
     <include file="default_posttarget.xml" relativeToChangelogFile="true"/>
     <include file="command.xml" relativeToChangelogFile="true"/>
     <include file="reminder_job.xml" relativeToChangelogFile="true"/>
+    <include file="default_feature_mode.xml" relativeToChangelogFile="true"/>
+    <include file="channel_group_types.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

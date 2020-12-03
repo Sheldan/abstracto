@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -108,10 +109,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
         parsingFuture.thenAccept(parsedParameters ->
             self.executeCommand(event, foundCommand, parsedParameters)
         ).exceptionally(throwable -> {
-            reportException(event, foundCommand, throwable, "Exception when executing command.");
-            return null;
-        });
-        parsingFuture.exceptionally(throwable -> {
             self.reportException(event, foundCommand, throwable, "Exception when parsing command.");
             return null;
         });
@@ -255,9 +252,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
             boolean handlerMatched = false;
             for (CommandParameterHandler handler : orderedHandlers) {
                 try {
-                    if(handler.handles(param.getType())) {
+                    if (handler.handles(param.getType())) {
                         handlerMatched = true;
-                        if(handler.async()) {
+                        if (handler.async()) {
                             CompletableFuture future = handler.handleAsync(value, iterators, param.getType(), message);
                             futures.add(future);
                             parsedParameters.add(future);
@@ -266,6 +263,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         }
                         break;
                     }
+                } catch (AbstractoRunTimeException abstractoRunTimeException) {
+                    throw abstractoRunTimeException;
                 } catch (Exception e) {
                     log.warn("Failed to parse parameter with exception.", e);
                     throw new IncorrectParameterException(command, param.getName());
@@ -286,7 +285,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
         }
 
         if(!futures.isEmpty()) {
-            return FutureUtils.toSingleFuture(futures).thenApply(aVoid -> {
+            CompletableFuture<Parameters> multipleFuturesFuture = new CompletableFuture<>();
+            CompletableFuture<Void> combinedFuture = FutureUtils.toSingleFuture(futures);
+            combinedFuture.thenAccept(aVoid -> {
                 List<Object> usableParameters = parsedParameters.stream().map(o -> {
                     if(o instanceof CompletableFuture) {
                         return ((CompletableFuture) o).join();
@@ -294,8 +295,14 @@ public class CommandReceivedHandler extends ListenerAdapter {
                         return o;
                     }
                 }).collect(Collectors.toList());
-                return Parameters.builder().parameters(usableParameters).build();
+                multipleFuturesFuture.complete(Parameters.builder().parameters(usableParameters).build());
             });
+
+            combinedFuture.exceptionally(throwable -> {
+                multipleFuturesFuture.completeExceptionally(throwable);
+                return null;
+            });
+            return multipleFuturesFuture;
         } else {
             Parameters parameters = Parameters.builder().parameters(parsedParameters).build();
             return CompletableFuture.completedFuture(parameters);

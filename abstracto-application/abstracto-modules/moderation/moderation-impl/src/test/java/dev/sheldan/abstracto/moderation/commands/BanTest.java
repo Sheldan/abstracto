@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.moderation.models.template.commands.BanLog;
@@ -66,16 +64,6 @@ public class BanTest {
         Assert.assertEquals(bannedMember, usedModel.getBannedUser());
         Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTestAsync(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
     }
 
     @Test

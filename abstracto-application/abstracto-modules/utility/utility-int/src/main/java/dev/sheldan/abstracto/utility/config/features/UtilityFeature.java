@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum UtilityFeature implements FeatureEnum {
-    REMIND("remind"), STARBOARD("starboard"), SUGGEST("suggestion"), UTILITY("utility"), LINK_EMBEDS("link_embeds");
+    REMIND("remind"), STARBOARD("starboard"), SUGGEST("suggestion"), UTILITY("utility"),
+    LINK_EMBEDS("link_embeds"), REPOST_DETECTION("repostDetection");
 
     private String key;
 

@@ -8,12 +8,16 @@ import dev.sheldan.abstracto.core.command.service.management.CommandManagementSe
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ChannelGroupServiceBean implements ChannelGroupService {
@@ -33,10 +37,11 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     @Autowired
     private ServerManagementService serverManagementService;
 
+
     @Override
-    public AChannelGroup createChannelGroup(String name, Long serverId) {
+    public AChannelGroup createChannelGroup(String name, Long serverId, ChannelGroupType channelGroupType) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        return channelGroupManagementService.createChannelGroup(name, server);
+        return channelGroupManagementService.createChannelGroup(name, server, channelGroupType);
     }
 
     @Override
@@ -119,5 +124,14 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     public boolean doesGroupExist(String groupName, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return channelGroupManagementService.findByNameAndServer(groupName, server) != null;
+    }
+
+    @Override
+    public List<AChannelGroup> getChannelGroupsOfChannelWithType(AChannel channel, String groupTypeKey) {
+        List<AChannelGroup> channelGroups = channelGroupManagementService.getAllChannelGroupsOfChannel(channel);
+        return channelGroups
+                .stream()
+                .filter(aChannelGroup -> aChannelGroup.getChannelGroupType().getGroupTypeKey().equals(groupTypeKey))
+                .collect(Collectors.toList());
     }
 }

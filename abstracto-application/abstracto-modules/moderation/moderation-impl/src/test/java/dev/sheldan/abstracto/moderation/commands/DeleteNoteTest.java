@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.moderation.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
-import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
@@ -51,16 +49,6 @@ public class DeleteNoteTest {
         CommandResult result = testUnit.execute(parameters);
         Assert.assertEquals(ResultState.ERROR, result.getResult());
         Assert.assertNotNull(result.getMessage());
-    }
-
-    @Test(expected = InsufficientParametersException.class)
-    public void testTooLittleParameters() {
-        CommandTestUtilities.executeNoParametersTest(testUnit);
-    }
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTest(testUnit);
     }
 
     @Test

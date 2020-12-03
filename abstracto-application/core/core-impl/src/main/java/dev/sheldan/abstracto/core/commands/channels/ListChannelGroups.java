@@ -65,6 +65,7 @@ public class ListChannelGroups extends AbstractConditionableCommand {
             ChannelGroupModel channelGroup = ChannelGroupModel
                     .builder()
                     .name(group.getGroupName())
+                    .typeKey(group.getChannelGroupType().getGroupTypeKey())
                     .channels(convertedChannels)
                     .build();
             converted.add(channelGroup);

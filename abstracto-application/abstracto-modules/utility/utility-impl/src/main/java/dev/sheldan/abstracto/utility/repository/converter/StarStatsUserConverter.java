@@ -37,6 +37,7 @@ public class StarStatsUserConverter {
                     .builder()
                     .starCount(starStatsUserResult.getStarCount())
                     .member(member)
+                    // TODO properly load this instance instead of just building one
                     .user(AUser.builder().id(starStatsUserResult.getUserId()).build())
                     .build()
         );

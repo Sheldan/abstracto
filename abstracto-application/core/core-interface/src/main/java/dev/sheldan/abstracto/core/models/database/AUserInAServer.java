@@ -21,6 +21,7 @@ public class AUserInAServer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_in_server_id")
     private Long userInServerId;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})

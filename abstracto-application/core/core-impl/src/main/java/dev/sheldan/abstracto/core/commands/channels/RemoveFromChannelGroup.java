@@ -8,8 +8,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
-import net.dv8tion.jda.api.entities.TextChannel;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,22 +20,25 @@ import java.util.List;
 @Component
 public class RemoveFromChannelGroup extends AbstractConditionableCommand {
 
-
     @Autowired
     private ChannelGroupService channelGroupService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
-        TextChannel channel = (TextChannel) commandContext.getParameters().getParameters().get(1);
-        channelGroupService.removeChannelFromChannelGroup(name, channel);
+        AChannel fakeChannel = (AChannel) commandContext.getParameters().getParameters().get(1);
+        AChannel actualChannel = channelManagementService.loadChannel(fakeChannel.getId());
+        channelGroupService.removeChannelFromChannelGroup(name, actualChannel);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter channelGroupName = Parameter.builder().name("name").type(String.class).build();
-        Parameter channelToAdd = Parameter.builder().name("channel").type(TextChannel.class).build();
+        Parameter channelToAdd = Parameter.builder().name("channel").type(AChannel.class).build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
         List<String> aliases = Arrays.asList("rmChChgrp", "chGrpCh-");
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();

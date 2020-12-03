@@ -63,5 +63,10 @@
             <column name="name" value="🗑"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
+        <insert tableName="default_emote">
+            <column name="emote_key" value="repostMarker"/>
+            <column name="name" value="♻️"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
     </changeSet>
 </databaseChangeLog>

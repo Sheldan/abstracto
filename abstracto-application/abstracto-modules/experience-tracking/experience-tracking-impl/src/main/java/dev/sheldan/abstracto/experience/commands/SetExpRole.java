@@ -41,7 +41,6 @@ public class SetExpRole extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
         Role role = (Role) commandContext.getParameters().getParameters().get(1);
         log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, role.getGuild().getId());

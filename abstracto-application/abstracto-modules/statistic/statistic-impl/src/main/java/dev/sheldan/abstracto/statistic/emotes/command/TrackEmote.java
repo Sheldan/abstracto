@@ -44,7 +44,6 @@ public class TrackEmote extends AbstractConditionableCommand {
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        checkParameters(commandContext);
         TrackEmoteParameter emoteToTrack = (TrackEmoteParameter) commandContext.getParameters().getParameters().get(0);
         Long emoteId = emoteToTrack.getTrackedEmote().getTrackedEmoteId().getId();
         long serverId = commandContext.getGuild().getIdLong();

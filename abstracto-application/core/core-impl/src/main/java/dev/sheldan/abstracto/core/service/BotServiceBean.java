@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -57,7 +57,7 @@ public class BotServiceBean implements BotService {
                 Member member = guild.getMemberById(userId);
                 return GuildChannelMember.builder().guild(guild).textChannel(textChannel).member(member).build();
             } else {
-                throw new ChannelNotFoundException(channelId);
+                throw new ChannelNotInGuildException(channelId);
             }
     }
 
@@ -182,7 +182,12 @@ public class BotServiceBean implements BotService {
 
     @Override
     public TextChannel getTextChannelFromServer(Guild guild, Long textChannelId) {
-        return getTextChannelFromServerOptional(guild, textChannelId).orElseThrow(() -> new ChannelNotFoundException(textChannelId));
+        return getTextChannelFromServerOptional(guild, textChannelId).orElseThrow(() -> new ChannelNotInGuildException(textChannelId));
+    }
+
+    @Override
+    public TextChannel getTextChannelFromServerNullable(Guild guild, Long textChannelId) {
+        return getTextChannelFromServerOptional(guild, textChannelId).orElse(null);
     }
 
     @Override
@@ -197,7 +202,7 @@ public class BotServiceBean implements BotService {
 
     @Override
     public TextChannel getTextChannelFromServer(Long serverId, Long textChannelId) {
-        return getTextChannelFromServerOptional(serverId, textChannelId).orElseThrow(() -> new ChannelNotFoundException(textChannelId));
+        return getTextChannelFromServerOptional(serverId, textChannelId).orElseThrow(() -> new ChannelNotInGuildException(textChannelId));
     }
 
     @Override
@@ -217,6 +222,6 @@ public class BotServiceBean implements BotService {
     @Override
     public Member getBotInGuild(AServer server) {
         Guild guild = getGuildById(server.getId());
-        return guild.getMemberById(instance.getSelfUser().getId());
+        return guild.getSelfMember();
     }
 }

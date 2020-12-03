@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.core.utils.FileUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
@@ -67,10 +67,6 @@ public class ExportEmoteStatsTest {
     private static final String FILE_NAME = "name";
     private static final String FILE_CONTENT = "content";
 
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
-    }
 
     @Test
     public void testExportAllEmoteStats() throws IOException {
@@ -176,4 +172,10 @@ public class ExportEmoteStatsTest {
         when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY), modelArgumentCaptor.capture())).thenReturn(FILE_NAME);
         when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY), any())).thenReturn(FILE_CONTENT);
     }
+
+    @Test
+    public void validateCommand() {
+        CommandConfigValidator.validateCommandConfiguration(testUnit.getConfiguration());
+    }
+
 }

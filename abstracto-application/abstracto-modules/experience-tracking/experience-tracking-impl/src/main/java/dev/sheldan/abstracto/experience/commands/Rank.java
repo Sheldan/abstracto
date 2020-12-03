@@ -66,7 +66,6 @@ public class Rank extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         RankModel rankModel = (RankModel) ContextConverter.slimFromCommandContext(commandContext, RankModel.class);
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
         CompletableFuture<LeaderBoardEntryModel> future = converter.fromLeaderBoardEntry(userRank);

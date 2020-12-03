@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name="channelGroup")
+@Table(name="channel_group")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,10 +28,14 @@ public class AChannelGroup implements Serializable {
     private String groupName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Getter
     @Setter
-    @JoinColumn(name = "group_server", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Setter
+    @JoinColumn(name = "group_type_id")
+    private ChannelGroupType channelGroupType;
 
     @Column(name = "created")
     private Instant created;

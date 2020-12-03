@@ -52,7 +52,6 @@ public class Warnings extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        checkParameters(commandContext);
         List<Warning> warnsToDisplay;
         if(!commandContext.getParameters().getParameters().isEmpty()) {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);

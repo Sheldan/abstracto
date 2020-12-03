@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.experience.commands;
 
-import dev.sheldan.abstracto.core.command.exception.IncorrectParameterTypeException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -43,11 +42,6 @@ public class LeaderBoardCommandTest {
 
     @Mock
     private LeaderBoardModelConverter converter;
-
-    @Test(expected = IncorrectParameterTypeException.class)
-    public void testIncorrectParameterType() {
-        CommandTestUtilities.executeWrongParametersTestAsync(testUnit);
-    }
 
     @Test
     public void testLeaderBoardWithNoParameter() {

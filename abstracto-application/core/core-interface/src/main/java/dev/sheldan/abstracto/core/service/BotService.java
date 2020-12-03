@@ -32,7 +32,8 @@ public interface BotService {
     Optional<Emote> getEmote(Long serverId, AEmote emote);
     Optional<Emote> getEmote(AEmote emote);
     Optional<TextChannel> getTextChannelFromServerOptional(Guild serverId, Long textChannelId);
-    TextChannel getTextChannelFromServer(Guild serverId, Long textChannelId);
+    TextChannel getTextChannelFromServer(Guild guild, Long textChannelId);
+    TextChannel getTextChannelFromServerNullable(Guild guild, Long textChannelId);
     Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId);
     TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
     Optional<Guild> getGuildByIdOptional(Long serverId);
