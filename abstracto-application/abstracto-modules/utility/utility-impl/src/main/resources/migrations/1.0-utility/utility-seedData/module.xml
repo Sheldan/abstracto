@@ -13,4 +13,10 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
+    <changeSet  author="Sheldan"  id="entertainment-module-insertion">
+        <insert tableName="module">
+            <column name="name"  value="entertainment"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.config;
 
+import ch.qos.logback.core.net.ssl.SecureRandomFactoryBean;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -10,6 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,5 +45,10 @@ public class CoreConfig {
     @Bean
     public OkHttpClient client() {
         return new OkHttpClient();
+    }
+
+    @Bean
+    public SecureRandom secureRandom() throws NoSuchProviderException, NoSuchAlgorithmException {
+        return new SecureRandomFactoryBean().createSecureRandom();
     }
 }

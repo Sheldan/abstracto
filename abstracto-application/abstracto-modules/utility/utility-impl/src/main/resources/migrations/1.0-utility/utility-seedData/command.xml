@@ -8,11 +8,13 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
     <property name="repostDetectionModule" value="(SELECT id FROM module WHERE name = 'repostDetection')"/>
+    <property name="entertainmentModule" value="(SELECT id FROM module WHERE name = 'entertainment')"/>
     <property name="remindFeature" value="(SELECT id FROM feature WHERE key = 'remind')"/>
     <property name="starboardFeature" value="(SELECT id FROM feature WHERE key = 'starboard')"/>
     <property name="suggestionFeature" value="(SELECT id FROM feature WHERE key = 'suggestion')"/>
     <property name="utilityFeature" value="(SELECT id FROM feature WHERE key = 'utility')"/>
     <property name="repostDetectionFeature" value="(SELECT id FROM feature WHERE key = 'repostDetection')"/>
+    <property name="entertainmentFeature" value="(SELECT id FROM feature WHERE key = 'entertainment')"/>
     <property name="today" value="(SELECT NOW())"/>
 
     <changeSet  author="Sheldan"  id="utility_remind-commands">
@@ -124,6 +126,33 @@
             <column name="name" value="showRepostCheckChannels"/>
             <column name="module_id" valueComputed="${repostDetectionModule}"/>
             <column name="feature_id" valueComputed="${remindFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+
+    <changeSet  author="Sheldan"  id="utility_entertainment-commands">
+        <insert tableName="command">
+            <column name="name" value="8Ball"/>
+            <column name="module_id" valueComputed="${entertainmentModule}"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="loveCalc"/>
+            <column name="module_id" valueComputed="${entertainmentModule}"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="roll"/>
+            <column name="module_id" valueComputed="${entertainmentModule}"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="roulette"/>
+            <column name="module_id" valueComputed="${entertainmentModule}"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>

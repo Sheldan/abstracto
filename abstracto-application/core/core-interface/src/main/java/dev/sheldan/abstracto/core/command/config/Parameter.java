@@ -20,6 +20,8 @@ public class Parameter implements Serializable {
     @Builder.Default
     private boolean remainder = false;
     @Builder.Default
+    private boolean isListParam = false;
+    @Builder.Default
     private Boolean templated = false;
     @Builder.Default
     private List<ParameterValidator> validators = new ArrayList<>();

@@ -12,6 +12,7 @@
     <property name="utilityFeature" value="(SELECT id FROM feature WHERE key = 'utility')"/>
     <property name="linkEmbedFeature" value="(SELECT id FROM feature WHERE key = 'link_embeds')"/>
     <property name="repostDetectionFeature" value="(SELECT id FROM feature WHERE key = 'repostDetection')"/>
+    <property name="entertainmentFeature" value="(SELECT id FROM feature WHERE key = 'entertainment')"/>
     <property name="today" value="(SELECT NOW())"/>
     <changeSet author="Sheldan"  id="utility_default_feature_flag-insertion">
         <insert tableName="default_feature_flag">
@@ -42,6 +43,13 @@
         <insert tableName="default_feature_flag">
             <column name="enabled" value="false"/>
             <column name="feature_id" valueComputed="${repostDetectionFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+    <changeSet author="Sheldan"  id="utility_entertainment_default_feature_flag-insertion">
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}" />
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>

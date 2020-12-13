@@ -105,6 +105,10 @@ Displaying information about the server::
 * Usage: `serverInfo`
 * Description: Displays information about the server including: ID, server name, owner, member count, creation date, role count, server features and custom emotes of the server.
 
+Choose one of multiple options::
+* Usage: `choose [options separated by space]`
+* Description: Selects one of the given options and returns it. The options need to be separated by space. If you want to have a space in an option, the complete option needs to be wrapped by ". For example "this is a test" is one whole option.
+
 === Link embeds
 
 ==== Emotes
@@ -159,3 +163,31 @@ Disable repost check for a channel group::
 Show the channels for which repost check has been enabled::
 * Usage: `showRepostCheckChannels`
 * Description: Shows the channel groups with their respective channels for which the repost check has been enabled. These can only be channel groups of type `repostCheck`. It can still be enabled if there are now channels in the channel group.
+
+
+
+=== Entertainment commands
+
+This feature basically contains a few commands which can be used for entertainment purposes directly
+
+Feature key: `entertainment`
+
+==== Relevant system configuration
+`rouletteBullets` The amount of bullets the revolver for `roulette` can hold. Default: 6
+`rollDefaultHigh` The default sides of the die for `roll`. Default: 6
+
+Play a round of russian roulette::
+* Usage: `roulette`
+* Description: Decides, based on the configured amount of bullets possible, whether a shot happens. Shows the result as a message.
+
+Calculate the love chance between two texts::
+* Usage: `loveCalc <textA> <xtextB>`
+* Description: Decides, by a random chance, the percentage of love between the two given texts and displays it in a message.
+
+Ask a magic 8-ball a question::
+* Usage: `8ball <texŧ>`
+* Description: Decides the answer for the question, given on a set of pre-defined answers. This happens randomly.
+
+Roll a virtual die::
+* Usage: `role [max] [min]`
+* Description: Rolls a virtual die. Per default this is a six sided die. If `max` is provided, it changes the amount of sides possible and if `min` is provided, no value below this is possible. If `min` is larger than `max`, it is taken as `max` and vice-versa.

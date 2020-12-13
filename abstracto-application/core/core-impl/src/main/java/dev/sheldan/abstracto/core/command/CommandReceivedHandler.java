@@ -274,11 +274,22 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 if(!reminderActive) {
                     parsedParameters.add(value);
                 } else {
-                    if(parsedParameters.isEmpty()) {
-                        parsedParameters.add(value);
+                    if(!param.isListParam()) {
+                        if(parsedParameters.isEmpty()) {
+                            parsedParameters.add(value);
+                        } else {
+                            int lastIndex = parsedParameters.size() - 1;
+                            parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                        }
                     } else {
-                        int lastIndex = parsedParameters.size() - 1;
-                        parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                        if(parsedParameters.isEmpty()) {
+                            ArrayList<Object> list = new ArrayList<>();
+                            list.add(value);
+                            parsedParameters.add(list);
+                        } else {
+                            int lastIndex = parsedParameters.size() - 1;
+                            ((List)parsedParameters.get(lastIndex)).add(value);
+                        }
                     }
                 }
             }

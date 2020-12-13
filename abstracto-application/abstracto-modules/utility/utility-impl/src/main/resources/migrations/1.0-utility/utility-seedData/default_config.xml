@@ -34,5 +34,17 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
+    <changeSet  author="Sheldan"  id="entertainment_default_config-insert">
+        <insert tableName="default_config">
+            <column name="name"  value="rouletteBullets"/>
+            <column name="long_value"  value="6"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_config">
+            <column name="name"  value="rollDefaultHigh"/>
+            <column name="long_value"  value="6"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
 
 </databaseChangeLog>
