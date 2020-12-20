@@ -1,15 +1,16 @@
 package dev.sheldan.abstracto.utility.listener.repost;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
+import dev.sheldan.abstracto.core.models.cache.CachedEmbed;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.utility.service.RepostService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.EmbedType;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class RepostMessageReceivedListener implements MessageReceivedListener {
+public class RepostMessageReceivedListener implements AsyncMessageReceivedListener {
 
     @Autowired
     private RepostCheckChannelService repostCheckChannelService;
@@ -27,11 +28,15 @@ public class RepostMessageReceivedListener implements MessageReceivedListener {
     @Autowired
     private RepostService repostService;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
-    public void execute(Message message) {
-        if(repostCheckChannelService.duplicateCheckEnabledForChannel(message.getTextChannel())) {
+    public void execute(CachedMessage message) {
+        AChannel channel = channelManagementService.loadChannel(message.getChannelId());
+        if(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)) {
             repostService.processMessageAttachmentRepostCheck(message);
-            List<MessageEmbed> imageEmbeds = message.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());
+            List<CachedEmbed> imageEmbeds = message.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());
             repostService.processMessageEmbedsRepostCheck(imageEmbeds, message);
         }
     }
@@ -41,8 +46,4 @@ public class RepostMessageReceivedListener implements MessageReceivedListener {
         return UtilityFeature.REPOST_DETECTION;
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.MEDIUM;
-    }
 }

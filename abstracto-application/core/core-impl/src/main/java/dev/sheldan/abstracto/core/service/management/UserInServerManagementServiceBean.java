@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -29,9 +30,17 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
 
     @Override
     public AUserInAServer loadUser(Long serverId, Long userId) {
-        AUser user = userManagementService.loadUser(userId);
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        return loadUser(server, user);
+        return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
+    }
+
+    @Override
+    public AUserInAServer loadUser(ServerUser serverUser) {
+        return loadUser(serverUser.getServerId(), serverUser.getUserId());
+    }
+
+    @Override
+    public Optional<AUserInAServer> loadUserOptional(Long serverId, Long userId) {
+        return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId);
     }
 
     @Override
@@ -49,13 +58,13 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public Optional<AUserInAServer> loadUserConditional(Long userInServerId) {
+    public Optional<AUserInAServer> loadUserOptional(Long userInServerId) {
         return userInServerRepository.findById(userInServerId);
     }
 
     @Override
     public AUserInAServer loadUser(Long userInServerId) {
-        return loadUserConditional(userInServerId).orElseThrow(() -> new UserInServerNotFoundException(userInServerId));
+        return loadUserOptional(userInServerId).orElseThrow(() -> new UserInServerNotFoundException(userInServerId));
     }
 
     @Override

@@ -1,10 +1,7 @@
 package dev.sheldan.abstracto.modmail.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -22,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class ModMailMessageDeletedListener implements MessageDeletedListener {
+public class ModMailMessageDeletedListener implements AsyncMessageDeletedListener {
 
     @Autowired
     private ModMailMessageManagementService modMailMessageManagementService;
@@ -37,7 +34,7 @@ public class ModMailMessageDeletedListener implements MessageDeletedListener {
     private BotService botService;
 
     @Override
-    public void execute(CachedMessage messageBefore, AServerAChannelAUser authorUser, GuildChannelMember authorMember) {
+    public void execute(CachedMessage messageBefore) {
         Optional<ModMailMessage> messageOptional = modMailMessageManagementService.getByMessageIdOptional(messageBefore.getMessageId());
         messageOptional.ifPresent(modMailMessage -> {
             ModMailThread thread = modMailMessage.getThreadReference();
@@ -76,8 +73,4 @@ public class ModMailMessageDeletedListener implements MessageDeletedListener {
         return ModMailFeatures.MOD_MAIL;
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.MEDIUM;
-    }
 }

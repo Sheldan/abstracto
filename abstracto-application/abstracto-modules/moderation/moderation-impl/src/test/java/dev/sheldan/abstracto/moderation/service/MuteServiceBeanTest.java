@@ -302,6 +302,7 @@ public class MuteServiceBeanTest {
         when(muteManagementService.hasActiveMute(userBeingMuted)).thenReturn(true);
         when(muteManagementService.getAMuteOf(userBeingMuted)).thenReturn(mute);
         when(mute.getMuteId()).thenReturn(new ServerSpecificId(SERVER_ID, MUTE_ID));
+        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
         testUnit.unMuteUser(userBeingMuted);
         verifyNoUnMuteHappened();
     }

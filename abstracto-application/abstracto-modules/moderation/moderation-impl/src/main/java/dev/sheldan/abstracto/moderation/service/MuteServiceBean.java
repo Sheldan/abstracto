@@ -268,15 +268,11 @@ public class MuteServiceBean implements MuteService {
             throw new NoMuteFoundException();
         }
         Mute mute = muteManagementService.getAMuteOf(aUserInAServer);
-        if(Boolean.TRUE.equals(mute.getMuteEnded())) {
-            log.info("Mute {} has ended already, user {} does not need to be unMuted anymore.", mute.getMuteId().getId(), mute.getMutedUser().getUserReference().getId());
-            return CompletableFuture.completedFuture(null);
-        }
         Long muteId = mute.getMuteId().getId();
         CompletableFuture<Member> mutingMemberFuture = botService.getMemberInServerAsync(mute.getMutingUser());
         CompletableFuture<Member> mutedMemberFuture = botService.getMemberInServerAsync(mute.getMutedUser());
-        Guild guild = botService.getGuildById(mute.getServer().getId());
-        return endMute(mute).thenCompose(unused ->
+        Guild guild = botService.getGuildById(mute.getMuteId().getServerId());
+        return endMute(mute, false).thenCompose(unused ->
             CompletableFuture.allOf(mutingMemberFuture, mutedMemberFuture)
         ).thenCompose(unused -> self.sendUnMuteLogForManualUnMute(muteId, mutingMemberFuture, mutedMemberFuture, guild));
     }
@@ -296,7 +292,11 @@ public class MuteServiceBean implements MuteService {
     }
 
     @Override
-    public CompletableFuture<Void> endMute(Mute mute) {
+    public CompletableFuture<Void> endMute(Mute mute, Boolean sendNotification) {
+        if(mute.getMuteEnded()) {
+            log.info("Mute {} in server {} has already ended. Not unmuting.", mute.getMuteId().getId(), mute.getMuteId().getServerId());
+            return CompletableFuture.completedFuture(null);
+        }
         Long muteId = mute.getMuteId().getId();
         AServer mutingServer = mute.getServer();
         log.info("UnMuting {} in server {}", mute.getMutedUser().getUserReference().getId(), mutingServer.getId());
@@ -315,9 +315,13 @@ public class MuteServiceBean implements MuteService {
         CompletableFuture<Member> mutedMemberFuture = botService.getMemberInServerAsync(mute.getMutedUser());
         CompletableFuture<Void> finalFuture = new CompletableFuture<>();
         CompletableFuture.allOf(mutingMemberFuture, mutedMemberFuture, roleRemovalFuture, mutingMemberFuture, mutedMemberFuture).handle((aVoid, throwable) -> {
-            self.sendUnmuteLog(muteId, guild, mutingMemberFuture, mutedMemberFuture).thenAccept(aVoid1 ->
-                finalFuture.complete(null)
-            );
+            if(sendNotification) {
+                self.sendUnmuteLog(muteId, guild, mutingMemberFuture, mutedMemberFuture).thenAccept(aVoid1 ->
+                        finalFuture.complete(null)
+                );
+            } else {
+                finalFuture.complete(null);
+            }
             return null;
         });
 
@@ -357,7 +361,7 @@ public class MuteServiceBean implements MuteService {
         log.info("UnMuting the mute {} in server {}", muteId, serverId);
         Optional<Mute> muteOptional = muteManagementService.findMuteOptional(muteId, serverId);
         if(muteOptional.isPresent()) {
-            return endMute(muteOptional.get());
+            return endMute(muteOptional.get(), true);
         } else {
             throw new NoMuteFoundException();
         }

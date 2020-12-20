@@ -18,6 +18,9 @@ public interface UserInServerRepository extends JpaRepository<AUserInAServer, Lo
     Optional<AUserInAServer> findByServerReferenceAndUserReference(AServer serverId, AUser userId);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    Optional<AUserInAServer> findByServerReference_IdAndUserReference_Id(Long serverId, Long userId);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByServerReferenceAndUserReference(AServer server, AUser user);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))

@@ -1,11 +1,12 @@
 package dev.sheldan.abstracto.utility.listener.repost;
 
+import dev.sheldan.abstracto.core.models.cache.CachedEmbed;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.utility.service.RepostService;
 import net.dv8tion.jda.api.entities.EmbedType;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,16 +28,21 @@ public class RepostMessageReceivedListenerTest {
     private RepostCheckChannelService repostCheckChannelService;
 
     @Mock
+    private ChannelManagementService channelManagementService;
+
+    @Mock
     private RepostService repostService;
 
     @Mock
-    private Message message;
+    private CachedMessage message;
 
     @Mock
-    private TextChannel textChannel;
+    private AChannel channel;
 
     @Captor
-    private ArgumentCaptor<List<MessageEmbed>> embedListCaptor;
+    private ArgumentCaptor<List<CachedEmbed>> embedListCaptor;
+
+    private static final Long CHANNEL_ID = 4L;
 
     @Test
     public void testExecuteCheckDisabled() {
@@ -57,7 +63,7 @@ public class RepostMessageReceivedListenerTest {
     @Test
     public void testExecuteOnlyMessageOneImageAttachment() {
         setupRepostCheckEnabled(true);
-        MessageEmbed imageEmbed = Mockito.mock(MessageEmbed.class);
+        CachedEmbed imageEmbed = Mockito.mock(CachedEmbed.class);
         when(imageEmbed.getType()).thenReturn(EmbedType.IMAGE);
         when(message.getEmbeds()).thenReturn(Arrays.asList(imageEmbed));
         testUnit.execute(message);
@@ -67,9 +73,9 @@ public class RepostMessageReceivedListenerTest {
     @Test
     public void testExecuteOnlyMessageTwoEmbedsOneImageAttachment() {
         setupRepostCheckEnabled(true);
-        MessageEmbed imageEmbed = Mockito.mock(MessageEmbed.class);
+        CachedEmbed imageEmbed = Mockito.mock(CachedEmbed.class);
         when(imageEmbed.getType()).thenReturn(EmbedType.IMAGE);
-        MessageEmbed nonImageEmbed = Mockito.mock(MessageEmbed.class);
+        CachedEmbed nonImageEmbed = Mockito.mock(CachedEmbed.class);
         when(nonImageEmbed.getType()).thenReturn(EmbedType.LINK);
         when(message.getEmbeds()).thenReturn(Arrays.asList(imageEmbed, nonImageEmbed));
         testUnit.execute(message);
@@ -77,14 +83,15 @@ public class RepostMessageReceivedListenerTest {
     }
 
     private void setupRepostCheckEnabled(boolean b) {
-        when(message.getTextChannel()).thenReturn(textChannel);
-        when(repostCheckChannelService.duplicateCheckEnabledForChannel(textChannel)).thenReturn(b);
+        when(message.getChannelId()).thenReturn(CHANNEL_ID);
+        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
+        when(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)).thenReturn(b);
     }
 
-    private void verifySingleEmbed(MessageEmbed imageEmbed) {
+    private void verifySingleEmbed(CachedEmbed imageEmbed) {
         verify(repostService, times(1)).processMessageAttachmentRepostCheck(message);
         verify(repostService, times(1)).processMessageEmbedsRepostCheck(embedListCaptor.capture(), eq(message));
-        List<MessageEmbed> processedEmbeds = embedListCaptor.getValue();
+        List<CachedEmbed> processedEmbeds = embedListCaptor.getValue();
         Assert.assertEquals(1, processedEmbeds.size());
         Assert.assertEquals(imageEmbed, processedEmbeds.get(0));
     }

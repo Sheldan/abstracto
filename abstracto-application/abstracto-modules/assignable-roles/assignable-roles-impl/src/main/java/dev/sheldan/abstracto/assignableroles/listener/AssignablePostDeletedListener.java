@@ -5,10 +5,7 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +15,13 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-public class AssignablePostDeletedListener implements MessageDeletedListener {
+public class AssignablePostDeletedListener implements AsyncMessageDeletedListener {
 
     @Autowired
     private AssignableRolePlacePostManagementService service;
 
     @Override
-    public void execute(CachedMessage messageBefore, AServerAChannelAUser authorUser, GuildChannelMember authorMember) {
+    public void execute(CachedMessage messageBefore) {
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(messageBefore.getMessageId());
         messageOptional.ifPresent(post -> {
             AssignableRolePlace assignablePlace = post.getAssignablePlace();
@@ -39,8 +36,4 @@ public class AssignablePostDeletedListener implements MessageDeletedListener {
         return AssignableRoleFeature.ASSIGNABLE_ROLES;
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.LOW;
-    }
 }

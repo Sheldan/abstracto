@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.statistic.emotes.service.management;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.statistic.emotes.exception.TrackedEmoteNotFoundException;
@@ -35,6 +36,12 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     public TrackedEmote createTrackedEmote(Emote emote, Guild guild) {
         AServer server = serverManagementService.loadServer(guild.getIdLong());
         return createTrackedEmote(emote.getIdLong(), emote.getName(), emote.isAnimated(), true, server);
+    }
+
+    @Override
+    public TrackedEmote createTrackedEmote(CachedEmote emote) {
+        AServer server = serverManagementService.loadServer(emote.getServerId());
+        return createTrackedEmote(emote.getEmoteId(), emote.getEmoteName(), emote.getAnimated(), true, server);
     }
 
     @Override

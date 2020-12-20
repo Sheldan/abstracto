@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.utility.models.database.PostedImage;
 import dev.sheldan.abstracto.utility.models.database.embed.PostIdentifier;
 import dev.sheldan.abstracto.utility.repository.PostedImageRepository;
 import dev.sheldan.abstracto.utility.service.RepostServiceBean;
-import net.dv8tion.jda.api.entities.Message;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,12 +52,10 @@ public class PostedImageManagementBeanTest {
     public void testCreatePost() {
         AServerAChannelAUser serverAChannelAUser = Mockito.mock(AServerAChannelAUser.class);
         AChannel channel = Mockito.mock(AChannel.class);
-        Message message = Mockito.mock(Message.class);
-        when(message.getIdLong()).thenReturn(MESSAGE_ID);
         when(serverAChannelAUser.getGuild()).thenReturn(server);
         when(serverAChannelAUser.getChannel()).thenReturn(channel);
         when(serverAChannelAUser.getAUserInAServer()).thenReturn(aUserInAServer);
-        PostedImage createdPost = testUnit.createPost(serverAChannelAUser, message, HASH, INDEX);
+        PostedImage createdPost = testUnit.createPost(serverAChannelAUser, MESSAGE_ID, HASH, INDEX);
         Assert.assertEquals(HASH, createdPost.getImageHash());
         Assert.assertEquals(INDEX, createdPost.getPostId().getPosition());
         Assert.assertEquals(MESSAGE_ID, createdPost.getPostId().getMessageId());

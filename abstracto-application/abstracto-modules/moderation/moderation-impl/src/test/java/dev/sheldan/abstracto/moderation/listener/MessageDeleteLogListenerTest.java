@@ -1,24 +1,22 @@
 package dev.sheldan.abstracto.moderation.listener;
 
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.models.cache.CachedAttachment;
+import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.utils.ContextUtils;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedLog;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -26,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -35,16 +34,25 @@ public class MessageDeleteLogListenerTest {
     private MessageDeleteLogListener testUnit;
 
     @Mock
-    private ContextUtils contextUtils;
-
-    @Mock
     private TemplateService templateService;
 
     @Mock
     private PostTargetService postTargetService;
 
-    private AServerAChannelAUser authorUser;
-    private GuildChannelMember authorMember;
+    @Mock
+    private BotService botService;
+
+    @Mock
+    private ChannelManagementService channelManagementService;
+
+    @Mock
+    private ServerManagementService serverManagementService;
+
+    @Mock
+    private UserInServerManagementService userInServerManagementService;
+
+    @Mock
+    private MessageDeleteLogListener self;
 
     @Captor
     private ArgumentCaptor<MessageDeletedLog> captor;
@@ -55,46 +63,69 @@ public class MessageDeleteLogListenerTest {
     @Captor
     private ArgumentCaptor<MessageToSend> messageCaptor;
 
-    @Before
-    public void setup() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer aUserInAServer = MockUtils.getUserObject(4L, server);
-        AChannel channel = MockUtils.getTextChannel(server, 5L);
-        authorUser = AServerAChannelAUser.builder().guild(server).channel(channel).aUserInAServer(aUserInAServer).build();
-        Member member = Mockito.mock(Member.class);
-        Guild guild = Mockito.mock(Guild.class);
-        TextChannel textChannel = Mockito.mock(TextChannel.class);
-        authorMember = GuildChannelMember.builder().guild(guild).textChannel(textChannel).member(member).build();
+    private static final Long SERVER_ID = 1L;
+    private static final Long AUTHOR_ID = 2L;
+    private static final Long CHANNEL_ID = 3L;
+
+    @Mock
+    private CachedMessage deletedMessage;
+
+    @Mock
+    private CachedAuthor cachedAuthor;
+
+    @Mock
+    private TextChannel textChannel;
+
+    @Mock
+    private Member member;
+
+    @Mock
+    private Guild guild;
+
+    @Test
+    public void testExecuteListener() {
+        when(deletedMessage.getAuthor()).thenReturn(cachedAuthor);
+        when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
+        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(member));
+        testUnit.execute(deletedMessage);
+        verify(self, times(1)).executeListener(deletedMessage, member);
     }
 
     @Test
     public void testExecuteListenerWithSimpleMessage() {
-        CachedMessage message = CachedMessage.builder().serverId(authorUser.getGuild().getId()).build();
+        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
+        when(member.getGuild()).thenReturn(guild);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
-        testUnit.execute(message, authorUser, authorMember);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.DELETE_LOG, authorUser.getGuild().getId());
+        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        testUnit.executeListener(deletedMessage, member);
+        verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.DELETE_LOG, SERVER_ID);
         MessageDeletedLog messageDeletedLog = captor.getValue();
-        Assert.assertEquals(message, messageDeletedLog.getCachedMessage());
-        Assert.assertEquals(authorUser.getGuild(), messageDeletedLog.getServer());
-        Assert.assertEquals(authorUser.getChannel(), messageDeletedLog.getChannel());
-        Assert.assertEquals(authorUser.getUser(), messageDeletedLog.getUser());
-        Assert.assertEquals(authorUser.getAUserInAServer(), messageDeletedLog.getAUserInAServer());
-        Assert.assertEquals(authorMember.getGuild(), messageDeletedLog.getGuild());
-        Assert.assertEquals(authorMember.getTextChannel(), messageDeletedLog.getMessageChannel());
-        Assert.assertEquals(authorMember.getMember(), messageDeletedLog.getMember());
+        Assert.assertEquals(deletedMessage, messageDeletedLog.getCachedMessage());
+        Assert.assertEquals(guild, messageDeletedLog.getGuild());
+        Assert.assertEquals(textChannel, messageDeletedLog.getChannel());
+        Assert.assertEquals(member, messageDeletedLog.getMember());
     }
 
     @Test
     public void testExecuteListenerWithOneAttachment() {
         String attachmentUrl = "url";
-        CachedMessage message = CachedMessage.builder().serverId(authorUser.getGuild().getId()).attachmentUrls(Arrays.asList(attachmentUrl)).build();
+        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
+        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        CachedAttachment cachedAttachment = Mockito.mock(CachedAttachment.class);
+        when(cachedAttachment.getProxyUrl()).thenReturn(attachmentUrl);
+        List<CachedAttachment> attachmentList = Arrays.asList(cachedAttachment);
+        when(deletedMessage.getAttachments()).thenReturn(attachmentList);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         MessageToSend attachmentMessage = Mockito.mock(MessageToSend.class);
+        when(member.getGuild()).thenReturn(guild);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_ATTACHMENT_TEMPLATE), attachmentCaptor.capture())).thenReturn(attachmentMessage);
-        testUnit.execute(message, authorUser, authorMember);
-        verify(postTargetService, times(2)).sendEmbedInPostTarget(messageCaptor.capture(), eq(LoggingPostTarget.DELETE_LOG), eq(authorUser.getGuild().getId()));
+        testUnit.executeListener(deletedMessage, member);
+        verify(postTargetService, times(2)).sendEmbedInPostTarget(messageCaptor.capture(), eq(LoggingPostTarget.DELETE_LOG), eq(SERVER_ID));
         List<MessageToSend> messagesSent = messageCaptor.getAllValues();
         Assert.assertEquals(messageToSend, messagesSent.get(0));
         Assert.assertEquals(attachmentMessage, messagesSent.get(1));
@@ -105,15 +136,24 @@ public class MessageDeleteLogListenerTest {
 
     @Test
     public void testExecuteListenerWithTwoAttachment() {
+        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
+        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         String attachmentUrl = "url";
         String secondAttachmentUrl = "url2";
-        CachedMessage message = CachedMessage.builder().serverId(authorUser.getGuild().getId()).attachmentUrls(Arrays.asList(attachmentUrl, secondAttachmentUrl)).build();
+        CachedAttachment cachedAttachment = Mockito.mock(CachedAttachment.class);
+        when(cachedAttachment.getProxyUrl()).thenReturn(attachmentUrl);
+        CachedAttachment secondCachedAttachment = Mockito.mock(CachedAttachment.class);
+        when(secondCachedAttachment.getProxyUrl()).thenReturn(secondAttachmentUrl);
+        List<CachedAttachment> cachedAttachments = Arrays.asList(cachedAttachment, secondCachedAttachment);
+        when(deletedMessage.getAttachments()).thenReturn(cachedAttachments);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
+        when(member.getGuild()).thenReturn(guild);
         MessageToSend attachmentMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_ATTACHMENT_TEMPLATE), attachmentCaptor.capture())).thenReturn(attachmentMessage);
-        testUnit.execute(message, authorUser, authorMember);
-        verify(postTargetService, times(3)).sendEmbedInPostTarget(messageCaptor.capture(), eq(LoggingPostTarget.DELETE_LOG), eq(authorUser.getGuild().getId()));
+        testUnit.executeListener(deletedMessage, member);
+        verify(postTargetService, times(3)).sendEmbedInPostTarget(messageCaptor.capture(), eq(LoggingPostTarget.DELETE_LOG), eq(SERVER_ID));
         List<MessageToSend> messagesSent = messageCaptor.getAllValues();
         Assert.assertEquals(messageToSend, messagesSent.get(0));
         Assert.assertEquals(attachmentMessage, messagesSent.get(1));
@@ -125,25 +165,17 @@ public class MessageDeleteLogListenerTest {
 
     private void verifyMessageDeletedLog() {
         MessageDeletedLog messageDeletedLog = captor.getValue();
-        Assert.assertEquals(authorUser.getGuild(), messageDeletedLog.getServer());
-        Assert.assertEquals(authorUser.getChannel(), messageDeletedLog.getChannel());
-        Assert.assertEquals(authorUser.getUser(), messageDeletedLog.getUser());
-        Assert.assertEquals(authorUser.getAUserInAServer(), messageDeletedLog.getAUserInAServer());
-        Assert.assertEquals(authorMember.getGuild(), messageDeletedLog.getGuild());
-        Assert.assertEquals(authorMember.getTextChannel(), messageDeletedLog.getMessageChannel());
-        Assert.assertEquals(authorMember.getMember(), messageDeletedLog.getMember());
+        Assert.assertEquals(guild, messageDeletedLog.getGuild());
+        Assert.assertEquals(textChannel, messageDeletedLog.getChannel());
+        Assert.assertEquals(member, messageDeletedLog.getMember());
     }
 
     private void verifyAttachmentLog(String attachmentUrl, MessageDeletedAttachmentLog attachmentLog, Integer index) {
         Assert.assertEquals(attachmentUrl, attachmentLog.getImageUrl());
         Assert.assertEquals(index, attachmentLog.getCounter());
-        Assert.assertEquals(authorUser.getGuild(), attachmentLog.getServer());
-        Assert.assertEquals(authorUser.getChannel(), attachmentLog.getChannel());
-        Assert.assertEquals(authorUser.getUser(), attachmentLog.getUser());
-        Assert.assertEquals(authorUser.getAUserInAServer(), attachmentLog.getAUserInAServer());
-        Assert.assertEquals(authorMember.getGuild(), attachmentLog.getGuild());
-        Assert.assertEquals(authorMember.getTextChannel(), attachmentLog.getMessageChannel());
-        Assert.assertEquals(authorMember.getMember(), attachmentLog.getMember());
+        Assert.assertEquals(guild, attachmentLog.getGuild());
+        Assert.assertEquals(textChannel, attachmentLog.getChannel());
+        Assert.assertEquals(member, attachmentLog.getMember());
     }
 
 

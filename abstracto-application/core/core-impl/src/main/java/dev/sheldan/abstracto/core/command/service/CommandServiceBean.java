@@ -163,9 +163,14 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
+    public UnParsedCommandParameter getUnParsedCommandParameter(String messageContent) {
+        return new UnParsedCommandParameter(messageContent);
+    }
+
+    @Override
     public CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent) {
         String contentStripped = messageContainingContent.getContentRaw();
-        UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
+        UnParsedCommandParameter unParsedParameter = getUnParsedCommandParameter(contentStripped);
         Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter);
         return commandReceivedHandler.getParsedParameters(unParsedParameter, command, messageContainingContent);
     }

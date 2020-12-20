@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.utility.models.database.PostedImage;
 import dev.sheldan.abstracto.utility.models.database.embed.PostIdentifier;
 import dev.sheldan.abstracto.utility.repository.PostedImageRepository;
 import dev.sheldan.abstracto.utility.service.RepostServiceBean;
-import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +24,11 @@ public class PostedImageManagementBean implements PostedImageManagement {
     private RepostCheckChannelGroupManagement checkChannelBean;
 
     @Override
-    public PostedImage createPost(AServerAChannelAUser creation, Message source, String hash, Integer index) {
+    public PostedImage createPost(AServerAChannelAUser creation, Long messageId, String hash, Integer index) {
         PostedImage post = PostedImage
                 .builder()
                 .imageHash(hash)
-                .postId(new PostIdentifier(source.getIdLong(), index))
+                .postId(new PostIdentifier(messageId, index))
                 .poster(creation.getAUserInAServer())
                 .server(creation.getGuild())
                 .postedChannel(creation.getChannel())

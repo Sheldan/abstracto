@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.statistic.emotes.listener;
 
 import dev.sheldan.abstracto.core.config.ListenerPriority;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,9 +26,13 @@ public class UpdateTrackedEmoteListenerTest {
 
     @Test
     public void testEmoteUpdated() {
-        Emote changedEmote = Mockito.mock(Emote.class);
+        Long serverId = 1L;
+        Long emoteId = 2L;
+        CachedEmote changedEmote = Mockito.mock(CachedEmote.class);
+        when(changedEmote.getServerId()).thenReturn(serverId);
+        when(changedEmote.getEmoteId()).thenReturn(emoteId);
         TrackedEmote trackedEmote = Mockito.mock(TrackedEmote.class);
-        when(trackedEmoteManagementService.loadByEmote(changedEmote)).thenReturn(trackedEmote);
+        when(trackedEmoteManagementService.loadByEmoteId(emoteId, serverId)).thenReturn(trackedEmote);
         String newValue = "AFTER";
         testUnit.emoteUpdated(changedEmote, "BEFORE", newValue);
         verify(trackedEmoteManagementService, times(1)).changeName(trackedEmote, newValue);

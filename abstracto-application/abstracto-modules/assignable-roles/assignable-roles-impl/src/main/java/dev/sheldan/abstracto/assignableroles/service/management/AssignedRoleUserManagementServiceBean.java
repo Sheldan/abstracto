@@ -4,7 +4,9 @@ import dev.sheldan.abstracto.assignableroles.exceptions.AssignedUserNotFoundExce
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
 import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.repository.AssignedRoleUserRepository;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,9 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
 
     @Autowired
     private AssignedRoleUserRepository repository;
+
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
 
     @Override
     public void addAssignedRoleToUser(AssignableRole assignableRole, AUserInAServer aUserInAServer) {
@@ -64,6 +69,12 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
     @Override
     public Optional<AssignedRoleUser> findByUserInServerOptional(AUserInAServer aUserInAServer) {
         return repository.findById(aUserInAServer.getUserInServerId());
+    }
+
+    @Override
+    public Optional<AssignedRoleUser> findByUserInServerOptional(ServerUser serverUser) {
+        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(serverUser);
+        return findByUserInServerOptional(aUserInAServer);
     }
 
     @Override

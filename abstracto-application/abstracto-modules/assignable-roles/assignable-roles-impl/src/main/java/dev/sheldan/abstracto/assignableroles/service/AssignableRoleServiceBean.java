@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementServiceBean;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementServiceBean;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -51,6 +52,11 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     }
 
     @Override
+    public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, ServerUser serverUser) {
+        return botService.retrieveMemberInServer(serverUser).thenCompose(member -> assignAssignableRoleToUser(assignableRoleId, member));
+    }
+
+    @Override
     public void clearAllRolesOfUserInPlace(AssignableRolePlace place, AUserInAServer userInAServer) {
         AssignedRoleUser user = assignedRoleUserManagementServiceBean.findByUserInServer(userInAServer);
         log.info("Clearing all {} assignable roles in place {} for user {} in server {}.",
@@ -92,10 +98,11 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     }
 
     @Override
-    public CompletableFuture<Void> fullyRemoveAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
+    public CompletableFuture<Void> fullyRemoveAssignableRoleFromUser(AssignableRole assignableRole, ServerUser serverUser) {
         Long assignableRoleId = assignableRole.getId();
-        return this.removeAssignableRoleFromUser(assignableRole, member).thenAccept(aVoid ->
-            self.persistRoleRemovalFromUser(assignableRoleId, member)
+        return botService.retrieveMemberInServer(serverUser).thenCompose(member ->
+            this.removeAssignableRoleFromUser(assignableRole, member)
+                    .thenAccept(aVoid -> self.persistRoleRemovalFromUser(assignableRoleId, member))
         );
     }
 

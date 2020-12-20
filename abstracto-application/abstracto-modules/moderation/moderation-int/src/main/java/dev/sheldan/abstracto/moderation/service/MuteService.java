@@ -18,7 +18,7 @@ public interface MuteService {
     String startUnMuteJobFor(Instant unMuteDate, Long muteId, Long serverId);
     void cancelUnMuteJob(Mute mute);
     CompletableFuture<Void> unMuteUser(AUserInAServer aUserInAServer);
-    CompletableFuture<Void> endMute(Mute mute);
+    CompletableFuture<Void> endMute(Mute mute, Boolean sendNotification);
     CompletableFuture<Void> endMute(Long muteId, Long serverId);
     void completelyUnMuteUser(AUserInAServer aUserInAServer);
     void completelyUnMuteMember(Member member);

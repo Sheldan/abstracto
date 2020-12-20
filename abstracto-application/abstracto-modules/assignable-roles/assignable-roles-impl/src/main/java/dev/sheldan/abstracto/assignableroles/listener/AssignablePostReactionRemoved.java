@@ -5,15 +5,13 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionRemovedListener;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.MessageReaction;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +19,7 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-public class AssignablePostReactionRemoved implements ReactedRemovedListener {
+public class AssignablePostReactionRemoved implements AsyncReactionRemovedListener {
 
     @Autowired
     private AssignableRolePlacePostManagementService service;
@@ -41,31 +39,26 @@ public class AssignablePostReactionRemoved implements ReactedRemovedListener {
     }
 
     @Override
-    public void executeReactionRemoved(CachedMessage message, GuildMessageReactionRemoveEvent event, AUserInAServer userRemoving) {
+    public void executeReactionRemoved(CachedMessage message, CachedReactions reactions, ServerUser userRemoving) {
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(message.getMessageId());
         if(messageOptional.isPresent()) {
-            MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
             AssignableRolePlacePost assignablePlacePost = messageOptional.get();
             if(assignablePlacePost.getAssignablePlace().getActive()) {
                 assignablePlacePost.getAssignableRoles().forEach(assignableRole -> {
-                    if(emoteService.isReactionEmoteAEmote(reactionEmote, assignableRole.getEmote())) {
+                    if(emoteService.compareCachedEmoteWithAEmote(reactions.getEmote(), assignableRole.getEmote())) {
                         Long assignableRoleId = assignableRole.getId();
                         log.info("Removing assignable role {} for user {} in server {} from assignable role place {}.", assignableRoleId,
-                                userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), assignablePlacePost.getAssignablePlace().getId());
-                        assignableRoleService.fullyRemoveAssignableRoleFromUser(assignableRole, event.getMember()).exceptionally(throwable -> {
-                            log.error("Failed to remove assignable role {} from user {}.", assignableRoleId, event.getMember(), throwable);
+                                userRemoving.getUserId(), userRemoving.getServerId(), assignablePlacePost.getAssignablePlace().getId());
+                        assignableRoleService.fullyRemoveAssignableRoleFromUser(assignableRole, userRemoving).exceptionally(throwable -> {
+                            log.error("Failed to remove assignable role {} from user {} in server {}.", assignableRoleId, userRemoving.getUserId(), userRemoving.getServerId(), throwable);
                             return null;
                         });
                     }
                 });
             } else {
-                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), userRemoving.getServerReference().getId());
+                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), userRemoving.getServerId());
             }
         }
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.HIGH;
-    }
 }

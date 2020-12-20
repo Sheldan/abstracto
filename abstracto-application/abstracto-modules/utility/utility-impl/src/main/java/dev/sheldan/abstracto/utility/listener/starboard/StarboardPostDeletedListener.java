@@ -1,10 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.MessageDeletedListener;
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
@@ -17,18 +14,18 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-public class StarboardPostDeletedListener implements MessageDeletedListener {
+public class StarboardPostDeletedListener implements AsyncMessageDeletedListener {
 
     @Autowired
     private StarboardPostManagementService starboardPostManagementService;
 
     @Override
-    public void execute(CachedMessage messageBefore, AServerAChannelAUser authorUser, GuildChannelMember authorMember) {
+    public void execute(CachedMessage messageBefore) {
         Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostId(messageBefore.getMessageId());
         if(byStarboardPostId.isPresent()) {
             StarboardPost post = byStarboardPostId.get();
             log.info("Removing starboard post: message {}, channel {}, server {}, because the message was deleted",
-                    post.getPostMessageId(), post.getSourceChanel().getId(), post.getAuthor().getUserReference().getId());
+                    post.getPostMessageId(), post.getSourceChanel().getId(), messageBefore.getServerId());
             starboardPostManagementService.setStarboardPostIgnored(messageBefore.getMessageId(), true);
         }
     }
@@ -38,8 +35,4 @@ public class StarboardPostDeletedListener implements MessageDeletedListener {
         return UtilityFeature.STARBOARD;
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.HIGH;
-    }
 }

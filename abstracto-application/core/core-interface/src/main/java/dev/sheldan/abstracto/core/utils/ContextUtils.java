@@ -31,11 +31,11 @@ public class ContextUtils {
 
     public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(CachedMessage message, Class<T> clazz) {
         Method m = null;
-        GuildChannelMember guildChannelMember = botService.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthorId());
+        GuildChannelMember guildChannelMember = botService.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthor().getAuthorId());
         try {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
-            AUserInAServer aUserInAServer = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
+            AUserInAServer aUserInAServer = userInServerManagementService.loadUser(message.getServerId(), message.getAuthor().getAuthorId());
             AChannel channel = channelManagementService.loadChannel(message.getChannelId());
             return builder
                     .member(guildChannelMember.getMember())

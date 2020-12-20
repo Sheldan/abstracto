@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -10,10 +11,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.springframework.stereotype.Service;
@@ -93,6 +91,16 @@ public class BotServiceBean implements BotService {
         } else {
             throw new GuildNotFoundException(serverId);
         }
+    }
+
+    @Override
+    public CompletableFuture<Member> retrieveMemberInServer(ServerUser serverUser) {
+        return getMemberInServerAsync(serverUser.getServerId(), serverUser.getUserId());
+    }
+
+    @Override
+    public CompletableFuture<User> retrieveUserById(Long userId) {
+        return instance.retrieveUserById(userId).submit();
     }
 
     @Override
@@ -220,8 +228,18 @@ public class BotServiceBean implements BotService {
     }
 
     @Override
+    public CompletableFuture<Guild> retrieveGuildById(Long serverId) {
+        return null;
+    }
+
+    @Override
     public Member getBotInGuild(AServer server) {
         Guild guild = getGuildById(server.getId());
         return guild.getSelfMember();
+    }
+
+    @Override
+    public CompletableFuture<User> getUserViaId(Long userId) {
+        return instance.retrieveUserById(userId).submit();
     }
 }

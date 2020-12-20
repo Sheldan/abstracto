@@ -104,7 +104,7 @@ public class StarboardServiceBean implements StarboardService {
 
     @Transactional
     public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId) {
-        AUserInAServer innerStarredUser = userInServerManagementService.loadUserConditional(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
+        AUserInAServer innerStarredUser = userInServerManagementService.loadUserOptional(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
         AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
         Message message1 = completableFutures.get(0).join();
         AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
@@ -119,17 +119,18 @@ public class StarboardServiceBean implements StarboardService {
             log.warn("There are no user ids except the author for the reactions in post {} in guild {} for message {} in channel {}.", starboardPost.getId(), message.getChannelId(), message.getMessageId(), message.getChannelId());
         }
         userExceptAuthorIds.forEach(aLong -> {
-            AUserInAServer user = userInServerManagementService.loadUserConditional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
+            AUserInAServer user = userInServerManagementService.loadUserOptional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
             starboardPostReactorManagementService.addReactor(starboardPost, user);
         });
     }
 
     private CompletableFuture<StarboardPostModel> buildStarboardPostModel(CachedMessage message, Integer starCount)  {
-        return botService.getMemberInServerAsync(message.getServerId(), message.getAuthorId()).thenApply(member -> {
+        return botService.getMemberInServerAsync(message.getServerId(), message.getAuthor().getAuthorId()).thenApply(member -> {
             Optional<TextChannel> channel = botService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
             Optional<Guild> guild = botService.getGuildByIdOptional(message.getServerId());
+            // TODO use model objects instead of building entity models
             AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
-            AUser user = AUser.builder().id(message.getAuthorId()).build();
+            AUser user = AUser.builder().id(message.getAuthor().getAuthorId()).build();
             AServer server = AServer.builder().id(message.getServerId()).build();
             String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
             return StarboardPostModel

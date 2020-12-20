@@ -3,7 +3,8 @@ package dev.sheldan.abstracto.statistic.emotes.listener;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.EmoteDeletedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncEmoteDeletedListener;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
@@ -22,15 +23,15 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class DeleteTrackedEmoteListener implements EmoteDeletedListener {
+public class DeleteTrackedEmoteListener implements AsyncEmoteDeletedListener {
 
     @Autowired
     private TrackedEmoteManagementService trackedEmoteManagementService;
 
     @Override
-    public void emoteDeleted(Emote deletedEmote) {
-        log.info("Marking tracked emote {} in gild {} as deleted.", deletedEmote.getId(), deletedEmote.getGuild().getIdLong());
-        trackedEmoteManagementService.markAsDeleted(deletedEmote.getGuild().getIdLong(), deletedEmote.getIdLong());
+    public void emoteDeleted(CachedEmote deletedEmote) {
+        log.info("Marking tracked emote {} in gild {} as deleted.", deletedEmote.getEmoteId(), deletedEmote.getServerId());
+        trackedEmoteManagementService.markAsDeleted(deletedEmote.getServerId(), deletedEmote.getEmoteId());
     }
 
     @Override

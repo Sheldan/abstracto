@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ConfiguredEmoteNotUsableException;
 import dev.sheldan.abstracto.core.exception.EmoteNotInServerException;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -11,6 +12,7 @@ import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +56,13 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Message message) {
         return message.addReaction(unicode).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Long serverId, Long channelId, Long messageId) {
+        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
+        return channel.retrieveMessageById(messageId).submit()
+                .thenCompose(message -> self.addDefaultReactionToMessageAsync(unicode, message));
     }
 
     @Override
@@ -101,6 +110,13 @@ public class MessageServiceBean implements MessageService {
             throw new EmoteNotInServerException(emoteId);
         }
         return message.addReaction(emoteById).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Long channelId, Long messageId) {
+        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
+        return channel.retrieveMessageById(messageId).submit()
+                .thenCompose(message -> self.addReactionToMessageWithFuture(emoteKey, serverId, message));
     }
 
     @Override
@@ -267,6 +283,14 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public CompletableFuture<Message> sendSimpleTemplateToUser(Long userId, String templateKey) {
+        String text = templateService.renderSimpleTemplate(templateKey);
+        return botService.getUserViaId(userId)
+                .thenCompose(this::openPrivateChannelForUser)
+                .thenCompose(o -> channelService.sendTextToChannel(text, o));
+    }
+
+    @Override
     public CompletableFuture<Message> sendTemplateToUser(User user, String template, Object model) {
         String message = templateService.renderTemplate(template, model);
         return sendMessageToUser(user, message);
@@ -274,20 +298,25 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model) {
-        return user.openPrivateChannel().submit().thenCompose(privateChannel ->
+        return openPrivateChannelForUser(user).thenCompose(privateChannel ->
                 FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(template, model, privateChannel)));
+    }
+
+    @NotNull
+    public CompletableFuture<PrivateChannel> openPrivateChannelForUser(User user) {
+        return user.openPrivateChannel().submit();
     }
 
     @Override
     public CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model) {
         log.trace("Sending direct message with template {} to user {}.", template, user.getIdLong());
-        return user.openPrivateChannel().submit().thenCompose(privateChannel ->
+        return openPrivateChannelForUser(user).thenCompose(privateChannel ->
                 channelService.sendEmbedTemplateInChannel(template, model, privateChannel).get(0));
     }
 
     @Override
     public CompletableFuture<Message> sendMessageToSendToUser(User user, MessageToSend messageToSend) {
-        return user.openPrivateChannel().submit().thenCompose(privateChannel -> channelService.sendMessageToSendToChannel(messageToSend, privateChannel).get(0));
+        return openPrivateChannelForUser(user).thenCompose(privateChannel -> channelService.sendMessageToSendToChannel(messageToSend, privateChannel).get(0));
     }
 
     @Override
@@ -304,6 +333,16 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Void> editMessageInDMChannel(User user, MessageToSend messageToSend, Long messageId) {
-        return user.openPrivateChannel().submit().thenCompose(privateChannel -> channelService.editMessageInAChannelFuture(messageToSend, privateChannel, messageId).thenApply(message -> null));
+        return openPrivateChannelForUser(user).thenCompose(privateChannel -> channelService.editMessageInAChannelFuture(messageToSend, privateChannel, messageId).thenApply(message -> null));
+    }
+
+    @Override
+    public CompletableFuture<Message> loadMessageFromCachedMessage(CachedMessage cachedMessage) {
+        return loadMessage(cachedMessage.getServerId(), cachedMessage.getChannelId(), cachedMessage.getMessageId());
+    }
+
+    @Override
+    public CompletableFuture<Message> loadMessage(Long serverId, Long channelId, Long messageId) {
+        return channelService.getTextChannel(serverId, channelId).retrieveMessageById(messageId).submit();
     }
 }

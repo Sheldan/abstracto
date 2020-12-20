@@ -294,4 +294,15 @@ public class ChannelServiceBean implements ChannelService {
                 .server(server)
                 .build();
     }
+
+    @Override
+    public CompletableFuture<Message> sendSimpleTemplateToChannel(Long serverId, Long channelId, String template) {
+        TextChannel textChannel = getTextChannel(serverId, channelId);
+        return sendTextTemplateInChannel(template, new Object(), textChannel);
+    }
+
+    @Override
+    public TextChannel getTextChannel(Long serverId, Long channelId) {
+        return botService.getTextChannelFromServer(serverId, channelId);
+    }
 }

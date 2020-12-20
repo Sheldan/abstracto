@@ -12,17 +12,19 @@ import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePl
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionAddedListener;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.ReactionService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.MessageReaction;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class AssignablePostReactionAdded implements ReactedAddedListener {
+public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
 
     @Autowired
     private AssignableRolePlacePostManagementService service;
@@ -60,43 +62,49 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
     @Autowired
     private AssignableRoleManagementService assignableRoleManagementService;
 
+    @Autowired
+    private ReactionService reactionService;
+
     @Override
-    public void executeReactionAdded(CachedMessage message, GuildMessageReactionAddEvent event, AUserInAServer userAdding) {
+    public void executeReactionAdded(CachedMessage message, CachedReactions cachedReaction, ServerUser serverUser) {
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(message.getMessageId());
         if(messageOptional.isPresent()) {
-            MessageReaction reaction = event.getReaction();
             AssignableRolePlacePost assignablePlacePost = messageOptional.get();
-            if(reaction.isSelf()) {
+            if(cachedReaction.getSelf()) {
                 log.info("Ignoring self reaction on assignable role post in server {}.", message.getServerId());
                 return;
             }
-            MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
+            CachedReaction specificReaction = cachedReaction.getReactionForSpecificUser(serverUser);
+            Long assignableRolePlaceId = assignablePlacePost.getId();
             if(assignablePlacePost.getAssignablePlace().getActive()) {
-                log.info("User {} added reaction to assignable role place {} in server {}. Handling added event.", userAdding.getUserReference().getId(), assignablePlacePost.getId(), event.getGuild().getId());
-                addAppropriateRoles(event, reaction, assignablePlacePost, reactionEmote, userAdding);
+                log.info("User {} added reaction to assignable role place {} in server {}. Handling added event.", serverUser.getUserId(), assignablePlacePost.getId(), serverUser.getServerId());
+                addAppropriateRoles(specificReaction, assignablePlacePost, serverUser, message);
             } else {
-                reaction.removeReaction(event.getUser()).submit();
-                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), userAdding.getServerReference().getId());
+                reactionService.removeReactionFromMessage(specificReaction, message).exceptionally(throwable -> {
+                    log.error("Failed to remove reaction on place {} because place is inactive.", assignableRolePlaceId, throwable);
+                    return null;
+                });
+                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), serverUser.getServerId());
             }
         }
     }
 
-    private void addAppropriateRoles(GuildMessageReactionAddEvent event, MessageReaction reaction, AssignableRolePlacePost assignablePlacePost, MessageReaction.ReactionEmote reactionEmote, AUserInAServer userAdding) {
+    private void addAppropriateRoles(CachedReaction cachedReaction, AssignableRolePlacePost assignablePlacePost, ServerUser serverUser, CachedMessage message) {
         boolean validReaction = false;
         AssignableRolePlace assignableRolePlace = assignablePlacePost.getAssignablePlace();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (AssignableRole assignableRole : assignablePlacePost.getAssignableRoles()) {
             log.trace("Checking emote {} if it was reaction for assignable role place.", assignableRole.getEmote().getId());
-            if (emoteService.isReactionEmoteAEmote(reactionEmote, assignableRole.getEmote())) {
+            if (emoteService.compareCachedEmoteWithAEmote(cachedReaction.getEmote(), assignableRole.getEmote())) {
                 if(assignableRolePlace.getUniqueRoles()) {
                     log.trace("Assignable role place {} has unique roles configured. Removing existing reactions and roles.", assignableRolePlace.getId());
-                    Optional<AssignedRoleUser> byUserInServer = assignedRoleUserManagementService.findByUserInServerOptional(userAdding);
+                    Optional<AssignedRoleUser> byUserInServer = assignedRoleUserManagementService.findByUserInServerOptional(serverUser);
                     byUserInServer.ifPresent(user -> futures.add(assignableRolePlaceService.removeExistingReactionsAndRoles(assignableRolePlace, user)));
                 }
 
                 Long assignableRoleId = assignableRole.getId();
-                log.info("User added {} reaction {} and gets assignable role {} in server {}.", userAdding.getUserReference().getId(), assignableRole.getEmote().getId(), assignableRoleId, userAdding.getServerReference().getId());
-                CompletableFuture<Void> roleAdditionFuture = assignableRoleServiceBean.assignAssignableRoleToUser(assignableRoleId, event.getMember());
+                log.info("User added {} reaction {} and gets assignable role {} in server {}.", serverUser.getUserId(), assignableRole.getEmote().getId(), assignableRoleId, serverUser.getServerId());
+                CompletableFuture<Void> roleAdditionFuture = assignableRoleServiceBean.assignAssignableRoleToUser(assignableRoleId, serverUser);
 
                 futures.add(CompletableFuture.allOf(roleAdditionFuture));
                 validReaction = true;
@@ -105,23 +113,23 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
         }
         if(!validReaction) {
             log.trace("Reaction was not found in the configuration of assignable role place {}, removing reaction.", assignableRolePlace.getId());
-            futures.add(reaction.removeReaction(event.getUser()).submit());
+            futures.add(reactionService.removeReactionFromMessage(cachedReaction, message));
         }
         Long assignableRolePlaceId = assignableRolePlace.getId();
-        Long userInServerId = userAdding.getUserInServerId();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
-            self.updateStoredAssignableRoles(assignableRolePlaceId, userInServerId, reactionEmote)
+            self.updateStoredAssignableRoles(assignableRolePlaceId, serverUser, cachedReaction)
         );
     }
 
-    private void updateStoredAssignableRoles(Long assignableRolePlaceId, Long userAdding, MessageReaction.ReactionEmote reactionEmote) {
+    @Transactional
+    public void updateStoredAssignableRoles(Long assignableRolePlaceId, ServerUser serverUser, CachedReaction cachedReaction) {
         AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(assignableRolePlaceId);
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(userAdding);
+        AUserInAServer userInAServer = userInServerManagementService.loadUser(serverUser);
         if(place.getUniqueRoles()) {
             log.trace("Assignable role place {} has unique roles. Deleting all existing references.", assignableRolePlaceId);
             assignableRoleServiceBean.clearAllRolesOfUserInPlace(place, userInAServer);
         }
-        AssignableRole role = assignableRoleManagementService.getRoleForReactionEmote(reactionEmote, place);
+        AssignableRole role = assignableRoleManagementService.getRoleForReactionEmote(cachedReaction.getEmote(), place);
         log.info("Adding role to assignable role {} to user {} in server {}.", role.getId(), userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         assignableRoleServiceBean.addRoleToUser(role.getId(), userInAServer);
 
@@ -132,8 +140,4 @@ public class AssignablePostReactionAdded implements ReactedAddedListener {
         return AssignableRoleFeature.ASSIGNABLE_ROLES;
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.HIGH;
-    }
 }

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -48,24 +49,22 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     private BotService botService;
 
     @Override
-    public void addEmoteToRuntimeStorage(List<Emote> emotes, Guild guild) {
+    public void addEmoteToRuntimeStorage(List<CachedEmote> emotes, Guild guild) {
         boolean externalTrackingEnabled = featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, guild.getIdLong(), EmoteTrackingMode.EXTERNAL_EMOTES);
         emotes.forEach(emote -> {
-            boolean emoteIsFromGuild = emoteService.emoteIsFromGuild(emote, guild);
             // either the emote is from the current guild (we always add those) or external emote tracking is enabled (we should always add those)
-            if(externalTrackingEnabled || emoteIsFromGuild) {
-                trackedEmoteRuntimeService.addEmoteForServer(emote, guild, !emoteIsFromGuild);
+            if(externalTrackingEnabled || !emote.getExternal()) {
+                trackedEmoteRuntimeService.addEmoteForServer(emote, guild, emote.getExternal());
             }
         });
     }
 
     @Override
-    public void addEmoteToRuntimeStorage(Emote emote, Guild guild, Long count) {
+    public void addEmoteToRuntimeStorage(CachedEmote emote, Guild guild, Long count) {
         boolean externalTrackingEnabled = featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, guild.getIdLong(), EmoteTrackingMode.EXTERNAL_EMOTES);
-        boolean emoteIsFromGuild = emoteService.emoteIsFromGuild(emote, guild);
         // either the emote is from the current guild (we always add those) or external emote tracking is enabled (we should always add those)
-        if(externalTrackingEnabled || emoteIsFromGuild) {
-            trackedEmoteRuntimeService.addEmoteForServer(emote, guild, count, !emoteIsFromGuild);
+        if(externalTrackingEnabled || !emote.getExternal()) {
+            trackedEmoteRuntimeService.addEmoteForServer(emote, guild, count, emote.getExternal());
         }
     }
 

@@ -1,14 +1,13 @@
 package dev.sheldan.abstracto.experience.listener;
 
-import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,31 +31,38 @@ public class JoiningUserRoleListenerTest extends ExperienceRelatedTest {
     @Mock
     private AUserExperienceService userExperienceService;
 
+    @Mock
+    private UserInServerManagementService userInServerManagementService;
+
+    @Mock
+    private ServerUser serverUser;
+
+    @Mock
+    private AUserInAServer aUserInAServer;
+
+    private static final Long SERVER_ID = 1L;
+    private static final Long USER_ID = 2L;
+
+    @Before
+    public void setup() {
+        when(serverUser.getServerId()).thenReturn(SERVER_ID);
+        when(serverUser.getUserId()).thenReturn(USER_ID);
+        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(aUserInAServer);
+    }
+
     @Test
     public void testUserWithExperienceRejoining() {
-        AUser user = AUser.builder().id(1L).build();
-        AUserInAServer aUserInAServer = AUserInAServer.builder().userInServerId(2L).userReference(user).build();
-        Member member = Mockito.mock(Member.class);
-        User jdaUser = Mockito.mock(User.class);
-        when(member.getUser()).thenReturn(jdaUser);
-        when(jdaUser.getIdLong()).thenReturn(user.getId());
-        Guild guild = Mockito.mock(Guild.class);
-        AUserExperience experience = AUserExperience.builder().experience(3L).user(aUserInAServer).build();
+        AUserExperience experience = Mockito.mock(AUserExperience.class);
         when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(experience);
         when(userExperienceService.syncForSingleUser(experience)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.execute(member, guild, aUserInAServer);
+        testUnit.execute(serverUser);
     }
 
     @Test
     public void testUserWithOutExperienceRejoining() {
-        AUser user = AUser.builder().id(1L).build();
-        AUserInAServer aUserInAServer = AUserInAServer.builder().userInServerId(2L).userReference(user).build();
-        Member member = Mockito.mock(Member.class);
-        Guild guild = Mockito.mock(Guild.class);
-        AUserExperience experience = AUserExperience.builder().experience(3L).user(aUserInAServer).build();
         when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(null);
-        testUnit.execute(member, guild, aUserInAServer);
-        verify(userExperienceService, times(0)).syncForSingleUser(experience);
+        testUnit.execute(serverUser);
+        verify(userExperienceService, times(0)).syncForSingleUser(any());
     }
 
 }

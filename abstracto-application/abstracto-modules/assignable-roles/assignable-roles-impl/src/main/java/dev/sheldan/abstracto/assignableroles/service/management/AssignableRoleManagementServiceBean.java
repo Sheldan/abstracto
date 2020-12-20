@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRoleRepository;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.EmoteService;
@@ -88,6 +89,18 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
         for (AssignableRolePlacePost post : assignableRolePlace.getMessagePosts()) {
             for (AssignableRole assignableRole : post.getAssignableRoles()) {
                 if (emoteService.isReactionEmoteAEmote(emote, assignableRole.getEmote())) {
+                    return assignableRole;
+                }
+            }
+        }
+        throw new AbstractoRunTimeException("Role for reaction was not found.");
+    }
+
+    @Override
+    public AssignableRole getRoleForReactionEmote(CachedEmote cachedEmote, AssignableRolePlace assignableRolePlace) {
+        for (AssignableRolePlacePost post : assignableRolePlace.getMessagePosts()) {
+            for (AssignableRole assignableRole : post.getAssignableRoles()) {
+                if (emoteService.compareCachedEmoteWithAEmote(cachedEmote, assignableRole.getEmote())) {
                     return assignableRole;
                 }
             }

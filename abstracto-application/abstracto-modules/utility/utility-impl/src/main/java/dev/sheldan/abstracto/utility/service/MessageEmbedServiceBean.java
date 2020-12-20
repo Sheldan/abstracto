@@ -111,7 +111,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     @Override
     @Transactional
     public CompletableFuture<Void> embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
-        Optional<AUserInAServer> causeOpt = userInServerManagementService.loadUserConditional(userEmbeddingUserInServerId);
+        Optional<AUserInAServer> causeOpt = userInServerManagementService.loadUserOptional(userEmbeddingUserInServerId);
         if(causeOpt.isPresent()) {
             return buildTemplateParameter(embeddingMessage, cachedMessage).thenCompose(messageEmbeddedModel ->
                 self.sendEmbeddingMessage(cachedMessage, target, userEmbeddingUserInServerId, messageEmbeddedModel)
@@ -145,7 +145,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
-        return botService.getMemberInServerAsync(embeddedMessage.getServerId(), embeddedMessage.getAuthorId()).thenApply(member ->
+        return botService.getMemberInServerAsync(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId()).thenApply(member ->
             self.loadMessageEmbedModel(message, embeddedMessage, member)
         );
     }

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -55,10 +56,16 @@ public class TrackedEmoteServiceBeanTest {
     private BotService botService;
 
     @Mock
-    private Emote emote;
+    private CachedEmote emote;
 
     @Mock
-    private Emote secondEmote;
+    private CachedEmote secondEmote;
+
+    @Mock
+    private Emote actualEmote;
+
+    @Mock
+    private Emote secondActualEmote;
 
     @Mock
     private Guild guild;
@@ -88,7 +95,7 @@ public class TrackedEmoteServiceBeanTest {
     private ServerSpecificId secondTrackedEmoteServer;
 
     @Captor
-    private ArgumentCaptor<Emote> emoteArgumentCaptor;
+    private ArgumentCaptor<CachedEmote> emoteArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<Boolean> booleanArgumentCaptor;
@@ -131,7 +138,7 @@ public class TrackedEmoteServiceBeanTest {
         bothEmotesExternal(true, true);
         testUnit.addEmoteToRuntimeStorage(Arrays.asList(emote, secondEmote), guild);
         verify(trackedEmoteRuntimeService, times(2)).addEmoteForServer(emoteArgumentCaptor.capture(), eq(guild), eq(true));
-        List<Emote> usedEmotes = emoteArgumentCaptor.getAllValues();
+        List<CachedEmote> usedEmotes = emoteArgumentCaptor.getAllValues();
         Assert.assertEquals(2, usedEmotes.size());
         Assert.assertEquals(emote, usedEmotes.get(0));
         Assert.assertEquals(secondEmote, usedEmotes.get(1));
@@ -143,7 +150,7 @@ public class TrackedEmoteServiceBeanTest {
         bothEmotesExternal(true, false);
         testUnit.addEmoteToRuntimeStorage(Arrays.asList(emote, secondEmote), guild);
         verify(trackedEmoteRuntimeService, times(2)).addEmoteForServer(emoteArgumentCaptor.capture(), eq(guild), booleanArgumentCaptor.capture());
-        List<Emote> usedEmotes = emoteArgumentCaptor.getAllValues();
+        List<CachedEmote> usedEmotes = emoteArgumentCaptor.getAllValues();
         Assert.assertEquals(2, usedEmotes.size());
         Assert.assertEquals(emote, usedEmotes.get(0));
         Assert.assertEquals(secondEmote, usedEmotes.get(1));
@@ -167,7 +174,7 @@ public class TrackedEmoteServiceBeanTest {
         bothEmotesExternal(false, false);
         testUnit.addEmoteToRuntimeStorage(Arrays.asList(emote, secondEmote), guild);
         verify(trackedEmoteRuntimeService, times(2)).addEmoteForServer(emoteArgumentCaptor.capture(), eq(guild), booleanArgumentCaptor.capture());
-        List<Emote> usedEmotes = emoteArgumentCaptor.getAllValues();
+        List<CachedEmote> usedEmotes = emoteArgumentCaptor.getAllValues();
         Assert.assertEquals(2, usedEmotes.size());
         Assert.assertEquals(emote, usedEmotes.get(0));
         Assert.assertEquals(secondEmote, usedEmotes.get(1));
@@ -178,12 +185,12 @@ public class TrackedEmoteServiceBeanTest {
     }
 
     public void bothEmotesExternal(boolean external, boolean external2) {
-        when(emoteService.emoteIsFromGuild(emote, guild)).thenReturn(!external);
-        when(emoteService.emoteIsFromGuild(secondEmote, guild)).thenReturn(!external2);
+        when(emote.getExternal()).thenReturn(external);
+        when(secondEmote.getExternal()).thenReturn(external2);
     }
 
     public void isEmoteExternal(boolean external) {
-        when(emoteService.emoteIsFromGuild(emote, guild)).thenReturn(!external);
+        when(emote.getExternal()).thenReturn(external);
     }
 
     public void externalEmotesEnabled(boolean external) {
@@ -193,9 +200,9 @@ public class TrackedEmoteServiceBeanTest {
 
     @Test
     public void testCrateFakeEmote() {
-        when(emote.getIdLong()).thenReturn(EMOTE_ID);
+        when(actualEmote.getIdLong()).thenReturn(EMOTE_ID);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
-        TrackedEmote fakeTrackedEmote = testUnit.getFakeTrackedEmote(emote, guild);
+        TrackedEmote fakeTrackedEmote = testUnit.getFakeTrackedEmote(actualEmote, guild);
         Assert.assertTrue(fakeTrackedEmote.isFake());
         Assert.assertEquals(EMOTE_ID, fakeTrackedEmote.getTrackedEmoteId().getId());
         Assert.assertEquals(SERVER_ID, fakeTrackedEmote.getTrackedEmoteId().getServerId());
@@ -219,9 +226,9 @@ public class TrackedEmoteServiceBeanTest {
         when(secondTrackedEmote.getTrackedEmoteId()).thenReturn(secondTrackedEmoteServer);
         when(secondTrackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
         when(secondTrackedEmoteServer.getId()).thenReturn(EMOTE_ID_2);
-        when(guild.getEmotes()).thenReturn(Arrays.asList(emote, secondEmote));
-        when(emote.getIdLong()).thenReturn(EMOTE_ID);
-        when(secondEmote.getIdLong()).thenReturn(EMOTE_ID_2);
+        when(guild.getEmotes()).thenReturn(Arrays.asList(actualEmote, secondActualEmote));
+        when(actualEmote.getIdLong()).thenReturn(EMOTE_ID);
+        when(secondActualEmote.getIdLong()).thenReturn(EMOTE_ID_2);
         when(trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(SERVER_ID)).thenReturn(new ArrayList<>(Arrays.asList(trackedEmote, secondTrackedEmote)));
         TrackedEmoteSynchronizationResult result = testUnit.synchronizeTrackedEmotes(guild);
         Assert.assertEquals(0L, result.getEmotesAdded().longValue());
@@ -236,13 +243,13 @@ public class TrackedEmoteServiceBeanTest {
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
         when(trackedEmoteServer.getId()).thenReturn(EMOTE_ID);
-        when(guild.getEmotes()).thenReturn(Arrays.asList(emote, secondEmote));
-        when(emote.getIdLong()).thenReturn(EMOTE_ID);
+        when(guild.getEmotes()).thenReturn(Arrays.asList(actualEmote, secondActualEmote));
+        when(actualEmote.getIdLong()).thenReturn(EMOTE_ID);
         when(trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(SERVER_ID)).thenReturn(new ArrayList<>(Arrays.asList(trackedEmote)));
         TrackedEmoteSynchronizationResult result = testUnit.synchronizeTrackedEmotes(guild);
         Assert.assertEquals(1L, result.getEmotesAdded().longValue());
         Assert.assertEquals(0L, result.getEmotesMarkedDeleted().longValue());
-        verify(trackedEmoteManagementService, times(1)).createTrackedEmote(secondEmote, guild);
+        verify(trackedEmoteManagementService, times(1)).createTrackedEmote(secondActualEmote, guild);
         verify(trackedEmoteManagementService, times(0)).markAsDeleted(any(TrackedEmote.class));
     }
 
@@ -252,8 +259,8 @@ public class TrackedEmoteServiceBeanTest {
         when(trackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteServer.getServerId()).thenReturn(SERVER_ID);
         when(trackedEmoteServer.getId()).thenReturn(EMOTE_ID);
-        when(guild.getEmotes()).thenReturn(Arrays.asList(emote));
-        when(emote.getIdLong()).thenReturn(EMOTE_ID);
+        when(guild.getEmotes()).thenReturn(Arrays.asList(actualEmote));
+        when(actualEmote.getIdLong()).thenReturn(EMOTE_ID);
         when(trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(SERVER_ID)).thenReturn(new ArrayList<>(Arrays.asList(trackedEmote, secondTrackedEmote)));
         TrackedEmoteSynchronizationResult result = testUnit.synchronizeTrackedEmotes(guild);
         Assert.assertEquals(0L, result.getEmotesAdded().longValue());
@@ -277,7 +284,7 @@ public class TrackedEmoteServiceBeanTest {
     @Test
     public void testSynchronizeTrackedEmotesAllEmotesAreNew() {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
-        when(guild.getEmotes()).thenReturn(Arrays.asList(emote, secondEmote));
+        when(guild.getEmotes()).thenReturn(Arrays.asList(actualEmote, secondActualEmote));
         when(trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(SERVER_ID)).thenReturn(new ArrayList<>());
         TrackedEmoteSynchronizationResult result = testUnit.synchronizeTrackedEmotes(guild);
         Assert.assertEquals(2L, result.getEmotesAdded().longValue());
@@ -417,9 +424,9 @@ public class TrackedEmoteServiceBeanTest {
     }
 
     private void executeCreateFakeTrackedEmoteTest(boolean external) {
-        when(emoteService.emoteIsFromGuild(emote, guild)).thenReturn(!external);
-        testUnit.createTrackedEmote(emote, guild);
-        verify(trackedEmoteManagementService, times(1)).createTrackedEmote(emote, guild, external);
+        when(emoteService.emoteIsFromGuild(actualEmote, guild)).thenReturn(!external);
+        testUnit.createTrackedEmote(actualEmote, guild);
+        verify(trackedEmoteManagementService, times(1)).createTrackedEmote(actualEmote, guild, external);
     }
 
     @Test
@@ -464,12 +471,12 @@ public class TrackedEmoteServiceBeanTest {
         when(trackedEmote2.getAnimated()).thenReturn(true);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
         when(trackedEmote2.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID_2));
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote);
+        when(guild.getEmoteById(EMOTE_ID)).thenReturn(actualEmote);
         Emote emote2 = Mockito.mock(Emote.class);
         when(guild.getEmoteById(EMOTE_ID_2)).thenReturn(emote2);
         when(trackedEmoteManagementService.getTrackedEmoteForServer(SERVER_ID, true)).thenReturn(Arrays.asList(trackedEmote, trackedEmote2));
         TrackedEmoteOverview trackedEmoteOverview = testUnit.loadTrackedEmoteOverview(guild, true);
-        Assert.assertEquals(emote, trackedEmoteOverview.getStaticEmotes().get(0).getEmote());
+        Assert.assertEquals(actualEmote, trackedEmoteOverview.getStaticEmotes().get(0).getEmote());
         Assert.assertEquals(trackedEmote, trackedEmoteOverview.getStaticEmotes().get(0).getTrackedEmote());
         Assert.assertEquals(emote2, trackedEmoteOverview.getAnimatedEmotes().get(0).getEmote());
         Assert.assertEquals(trackedEmote2, trackedEmoteOverview.getAnimatedEmotes().get(0).getTrackedEmote());

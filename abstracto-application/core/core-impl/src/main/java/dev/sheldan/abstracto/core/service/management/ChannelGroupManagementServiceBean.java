@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.command.exception.ChannelAlreadyInChannelGroup
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupExistsException;
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
 import dev.sheldan.abstracto.core.command.exception.ChannelNotInChannelGroupException;
-import dev.sheldan.abstracto.core.listener.entity.ChannelGroupCreatedListenerManager;
-import dev.sheldan.abstracto.core.listener.entity.ChannelGroupDeletedListenerManager;
+import dev.sheldan.abstracto.core.listener.sync.entity.ChannelGroupCreatedListenerManager;
+import dev.sheldan.abstracto.core.listener.sync.entity.ChannelGroupDeletedListenerManager;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;

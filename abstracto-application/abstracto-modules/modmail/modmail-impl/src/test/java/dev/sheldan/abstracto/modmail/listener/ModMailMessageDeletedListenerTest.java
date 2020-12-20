@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.modmail.listener;
 
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -48,12 +46,6 @@ public class ModMailMessageDeletedListenerTest {
     private CachedMessage deletedMessage;
 
     @Mock
-    private AServerAChannelAUser origin;
-
-    @Mock
-    private GuildChannelMember jdaOrigin;
-
-    @Mock
     private ModMailMessage modMailMessage;
 
     @Mock
@@ -79,7 +71,7 @@ public class ModMailMessageDeletedListenerTest {
     public void testDeleteOutSideOfThread() {
         when(deletedMessage.getMessageId()).thenReturn(DELETED_MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(DELETED_MESSAGE_ID)).thenReturn(Optional.empty());
-        testUnit.execute(deletedMessage, origin, jdaOrigin);
+        testUnit.execute(deletedMessage);
         verify(botService, times(0)).getMemberInServerAsync(anyLong(), anyLong());
     }
 
@@ -102,7 +94,7 @@ public class ModMailMessageDeletedListenerTest {
         when(targetMember.getUser()).thenReturn(targetUser);
         when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(messageService.deleteMessageInChannelWithUser(targetUser, CREATED_MESSAGE_ID_2)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.execute(deletedMessage, origin, jdaOrigin);
+        testUnit.execute(deletedMessage);
         verify(messageService, times(0)).deleteMessageInChannelInServer(eq(SERVER_ID), anyLong(), any());
         verify(self, times(1)).removeMessageFromThread(DELETED_MESSAGE_ID);
     }
@@ -129,7 +121,7 @@ public class ModMailMessageDeletedListenerTest {
         when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(messageService.deleteMessageInChannelWithUser(targetUser, CREATED_MESSAGE_ID_2)).thenReturn(CompletableFuture.completedFuture(null));
         when(messageService.deleteMessageInChannelInServer(SERVER_ID, CHANNEL_ID, CREATED_MESSAGE_ID_1)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.execute(deletedMessage, origin, jdaOrigin);
+        testUnit.execute(deletedMessage);
         verify(self, times(1)).removeMessageFromThread(DELETED_MESSAGE_ID);
     }
 

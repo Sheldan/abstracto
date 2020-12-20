@@ -1,12 +1,7 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import org.junit.Test;
@@ -33,31 +28,26 @@ public class StarboardPostDeletedListenerTest {
     public void deleteNonStarboardPost() {
         Long messageId = 4L;
         when(starboardPostManagementService.findByStarboardPostId(messageId)).thenReturn(Optional.empty());
-        CachedMessage cachedMessage = CachedMessage
-                .builder()
-                .messageId(messageId)
-                .build();
-        AServerAChannelAUser user = Mockito.mock(AServerAChannelAUser.class);
-        GuildChannelMember member = Mockito.mock(GuildChannelMember.class);
-        testUnit.execute(cachedMessage, user, member);
+        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
+        when(cachedMessage.getMessageId()).thenReturn(messageId);
+        testUnit.execute(cachedMessage);
         verify( starboardPostManagementService, times(0)).setStarboardPostIgnored(messageId, true);
     }
 
     @Test
     public void deleteStarboardPost() {
         Long messageId = 4L;
-        AServer server = MockUtils.getServer();
-        AUserInAServer author = MockUtils.getUserObject(4L, server);
-        AChannel sourceChannel = MockUtils.getTextChannel(server, 6L);
-        StarboardPost post = StarboardPost.builder().author(author).postMessageId(5L).sourceChanel(sourceChannel).build();
+        Long postMessageId = 5L;
+        Long serverId = 3L;
+        AChannel sourceChannel = Mockito.mock(AChannel.class);
+        StarboardPost post = Mockito.mock(StarboardPost.class);
+        when(post.getSourceChanel()) .thenReturn(sourceChannel);
+        when(post.getPostMessageId()).thenReturn(postMessageId);
         when(starboardPostManagementService.findByStarboardPostId(messageId)).thenReturn(Optional.of(post));
-        CachedMessage cachedMessage = CachedMessage
-                .builder()
-                .messageId(messageId)
-                .build();
-        AServerAChannelAUser user = Mockito.mock(AServerAChannelAUser.class);
-        GuildChannelMember member = Mockito.mock(GuildChannelMember.class);
-        testUnit.execute(cachedMessage, user, member);
+        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
+        when(cachedMessage.getServerId()).thenReturn(serverId);
+        when(cachedMessage.getMessageId()).thenReturn(messageId);
+        testUnit.execute(cachedMessage);
         verify( starboardPostManagementService, times(1)).setStarboardPostIgnored(messageId, true);
     }
 

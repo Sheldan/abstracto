@@ -1,10 +1,9 @@
 package dev.sheldan.abstracto.statistic.emotes.listener;
 
 import dev.sheldan.abstracto.core.config.ListenerPriority;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Guild;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,11 +27,9 @@ public class DeleteTrackedEmoteListenerTest {
     public void testEmoteDeleted() {
         Long serverId = 4L;
         Long emoteId = 5L;
-        Emote emote = Mockito.mock(Emote.class);
-        Guild guild = Mockito.mock(Guild.class);
-        when(guild.getIdLong()).thenReturn(serverId);
-        when(emote.getIdLong()).thenReturn(emoteId);
-        when(emote.getGuild()).thenReturn(guild);
+        CachedEmote emote = Mockito.mock(CachedEmote.class);
+        when(emote.getEmoteId()).thenReturn(emoteId);
+        when(emote.getServerId()).thenReturn(serverId);
         testUnit.emoteDeleted(emote);
         verify(trackedEmoteManagementService, times(1)).markAsDeleted(serverId, emoteId);
     }

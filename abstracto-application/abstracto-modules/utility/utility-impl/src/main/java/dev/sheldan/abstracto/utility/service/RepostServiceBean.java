@@ -1,6 +1,10 @@
 package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
+import dev.sheldan.abstracto.core.models.ServerChannelMessageUser;
+import dev.sheldan.abstracto.core.models.cache.CachedAttachment;
+import dev.sheldan.abstracto.core.models.cache.CachedEmbed;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -85,8 +89,29 @@ public class RepostServiceBean implements RepostService {
     public static final String REPOST_MARKER_EMOTE_KEY = "repostMarker";
 
     @Override
-    public boolean isRepost(Message message, MessageEmbed messageEmbed, Integer index) {
+    public boolean isRepost(CachedMessage message, CachedEmbed messageEmbed, Integer index) {
         return getRepostFor(message, messageEmbed, index).isPresent();
+    }
+
+    @Override
+    public Optional<PostedImage> getRepostFor(CachedMessage message, CachedEmbed messageEmbed, Integer embedIndex) {
+        if(messageEmbed.getCachedThumbnail() == null && messageEmbed.getCachedImageInfo() == null) {
+            return Optional.empty();
+        }
+        String urlToUse = null;
+        if(messageEmbed.getCachedThumbnail() != null) {
+            urlToUse = messageEmbed.getCachedThumbnail().getProxyUrl();
+        } else if (messageEmbed.getCachedImageInfo() != null) {
+            urlToUse = messageEmbed.getCachedImageInfo().getProxyUrl();
+        }
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getServerId())
+                .channelId(message.getChannelId())
+                .userId(message.getAuthor().getAuthorId())
+                .messageId(message.getMessageId())
+                .build();
+        return checkForDuplicates(serverChannelMessageUser, EMBEDDED_LINK_POSITION_START_INDEX + embedIndex, urlToUse);
     }
 
     @Override
@@ -100,38 +125,52 @@ public class RepostServiceBean implements RepostService {
         } else if (messageEmbed.getImage() != null) {
             urlToUse = messageEmbed.getImage().getProxyUrl();
         }
-        return checkForDuplicates(message, EMBEDDED_LINK_POSITION_START_INDEX + embedIndex, urlToUse);
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getGuild().getIdLong())
+                .channelId(message.getChannel().getIdLong())
+                .userId(message.getAuthor().getIdLong())
+                .messageId(message.getIdLong())
+                .build();
+        return checkForDuplicates(serverChannelMessageUser, EMBEDDED_LINK_POSITION_START_INDEX + embedIndex, urlToUse);
     }
 
-    private Optional<PostedImage> checkForDuplicates(Message message, Integer index, String fileUrl)  {
-        String fileHash = calculateHashForPost(fileUrl, message.getGuild().getIdLong());
-        AServer aServer = serverManagementService.loadServer(message.getGuild().getIdLong());
+    private Optional<PostedImage> checkForDuplicates(ServerChannelMessageUser serverChannelMessageUser, Integer index, String fileUrl)  {
+        String fileHash = calculateHashForPost(fileUrl, serverChannelMessageUser.getServerId());
+        AServer aServer = serverManagementService.loadServer(serverChannelMessageUser.getServerId());
         Optional<PostedImage> potentialRepost = postedImageManagement.getPostWithHash(fileHash, aServer);
         if(potentialRepost.isPresent()) {
             PostedImage existingRepost = potentialRepost.get();
-            return existingRepost.getPostId().getMessageId() != message.getIdLong() ? Optional.of(existingRepost) : Optional.empty();
+            return !existingRepost.getPostId().getMessageId().equals(serverChannelMessageUser.getMessageId()) ? Optional.of(existingRepost) : Optional.empty();
         } else {
-            AUserInAServer aUserInAServer = userInServerManagementService.loadUser(message.getMember());
+            AUserInAServer aUserInAServer = userInServerManagementService.loadUser(serverChannelMessageUser.getServerId(), serverChannelMessageUser.getUserId());
             AServerAChannelAUser cause = AServerAChannelAUser
                     .builder()
                     .aUserInAServer(aUserInAServer)
-                    .channel(channelManagementService.loadChannel(message.getTextChannel().getIdLong()))
+                    .channel(channelManagementService.loadChannel(serverChannelMessageUser.getChannelId()))
                     .guild(aServer)
                     .user(aUserInAServer.getUserReference())
                     .build();
-            postedImageManagement.createPost(cause, message, fileHash, index);
+            postedImageManagement.createPost(cause, serverChannelMessageUser.getMessageId(), fileHash, index);
             return Optional.empty();
         }
     }
 
     @Override
-    public boolean isRepost(Message message, Message.Attachment attachment, Integer index) {
+    public boolean isRepost(CachedMessage message, CachedAttachment attachment, Integer index) {
        return getRepostFor(message, attachment, index).isPresent();
     }
 
     @Override
-    public Optional<PostedImage> getRepostFor(Message message, Message.Attachment attachment, Integer index) {
-        return checkForDuplicates(message, index, attachment.getProxyUrl());
+    public Optional<PostedImage> getRepostFor(CachedMessage message, CachedAttachment attachment, Integer index) {
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getServerId())
+                .channelId(message.getChannelId())
+                .userId(message.getAuthor().getAuthorId())
+                .messageId(message.getMessageId())
+                .build();
+        return checkForDuplicates(serverChannelMessageUser, index, attachment.getProxyUrl());
     }
 
     @Override
@@ -159,31 +198,38 @@ public class RepostServiceBean implements RepostService {
     }
 
     @Override
-    public void processMessageAttachmentRepostCheck(Message message) {
+    public void processMessageAttachmentRepostCheck(CachedMessage message) {
         boolean canThereBeMultipleReposts = message.getAttachments().size() > 1;
         for (int imageIndex = 0; imageIndex < message.getAttachments().size(); imageIndex++) {
             executeRepostCheckForAttachment(message, message.getAttachments().get(imageIndex), imageIndex, canThereBeMultipleReposts);
         }
     }
 
-    private void executeRepostCheckForAttachment(Message message, Message.Attachment attachment, Integer index, boolean moreRepostsPossible) {
+    private void executeRepostCheckForAttachment(CachedMessage message, CachedAttachment attachment, Integer index, boolean moreRepostsPossible) {
         Optional<PostedImage> originalPostOptional = getRepostFor(message, attachment, index);
-        originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(message, index, moreRepostsPossible, postedImage));
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getServerId())
+                .channelId(message.getChannelId())
+                .userId(message.getAuthor().getAuthorId())
+                .messageId(message.getMessageId())
+                .build();
+        originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(serverChannelMessageUser, index, moreRepostsPossible, postedImage));
     }
 
-    private void markMessageAndPersist(Message message, Integer index, boolean moreRepostsPossible, PostedImage originalPost) {
-        log.info("Detected repost in message embed {} of message {} in channel {} in server {}.", index, message.getIdLong(), message.getTextChannel().getIdLong(), message.getGuild().getIdLong());
-        CompletableFuture<Void> markerFuture = messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, message.getGuild().getIdLong(), message);
+    private void markMessageAndPersist(ServerChannelMessageUser messageUser, Integer index, boolean moreRepostsPossible, PostedImage originalPost) {
+        log.info("Detected repost in message embed {} of message {} in channel {} in server {}.", index, messageUser.getMessageId(), messageUser.getChannelId(), messageUser.getServerId());
+        CompletableFuture<Void> markerFuture = messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, messageUser.getServerId(), messageUser.getChannelId(), messageUser.getMessageId());
         CompletableFuture<Void> counterFuture;
         if (moreRepostsPossible) {
-            counterFuture = messageService.addDefaultReactionToMessageAsync(NUMBER_EMOJI.get(index), message);
+            counterFuture = messageService.addDefaultReactionToMessageAsync(NUMBER_EMOJI.get(index), messageUser.getServerId(), messageUser.getChannelId(), messageUser.getMessageId());
         } else {
             counterFuture = CompletableFuture.completedFuture(null);
         }
         Long messageId = originalPost.getPostId().getMessageId();
         Integer position = originalPost.getPostId().getPosition();
-        Long serverId = message.getGuild().getIdLong();
-        Long userId = message.getAuthor().getIdLong();
+        Long serverId = messageUser.getServerId();
+        Long userId = messageUser.getUserId();
         CompletableFuture.allOf(markerFuture, counterFuture).thenAccept(unused ->
             self.persistRepost(messageId, position, serverId, userId)
         );
@@ -199,6 +245,14 @@ public class RepostServiceBean implements RepostService {
             existingPost.get().setCount(previousRepost.getCount() + 1);
         } else {
             repostManagementService.createRepost(postedImage, userInAServer);
+        }
+    }
+
+    @Override
+    public void processMessageEmbedsRepostCheck(List<CachedEmbed> embeds, CachedMessage message) {
+        boolean canThereBeMultipleReposts = embeds.size() > 1 || !message.getAttachments().isEmpty();
+        for (int imageIndex = 0; imageIndex < embeds.size(); imageIndex++) {
+            executeRepostCheckForMessageEmbed(message, embeds.get(imageIndex), imageIndex + message.getAttachments().size(), canThereBeMultipleReposts);
         }
     }
 
@@ -228,8 +282,27 @@ public class RepostServiceBean implements RepostService {
         repostManagementService.deleteRepostsFromServer(server);
     }
 
+    private void executeRepostCheckForMessageEmbed(CachedMessage message, CachedEmbed messageEmbed, Integer index, boolean moreRepostsPossible) {
+        Optional<PostedImage> originalPostOptional = getRepostFor(message, messageEmbed, index);
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getServerId())
+                .channelId(message.getChannelId())
+                .userId(message.getAuthor().getAuthorId())
+                .messageId(message.getMessageId())
+                .build();
+        originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(serverChannelMessageUser, index, moreRepostsPossible, postedImage));
+    }
+
     private void executeRepostCheckForMessageEmbed(Message message, MessageEmbed messageEmbed, Integer index, boolean moreRepostsPossible) {
         Optional<PostedImage> originalPostOptional = getRepostFor(message, messageEmbed, index);
-        originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(message, index, moreRepostsPossible, postedImage));
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getGuild().getIdLong())
+                .channelId(message.getChannel().getIdLong())
+                .userId(message.getAuthor().getIdLong())
+                .messageId(message.getIdLong())
+                .build();
+        originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(serverChannelMessageUser, index, moreRepostsPossible, postedImage));
     }
 }

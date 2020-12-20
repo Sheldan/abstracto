@@ -1,19 +1,19 @@
 package dev.sheldan.abstracto.moderation.listener;
 
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
+import dev.sheldan.abstracto.moderation.listener.async.JoinLogger;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.MockUtils;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -29,17 +29,37 @@ public class JoinLoggerTest {
     @Mock
     private PostTargetService postTargetService;
 
+    @Mock
+    private BotService botService;
+
+    @Mock
+    private JoinLogger self;
+
+    @Mock
+    private ServerUser serverUser;
+
+    @Mock
+    private Member member;
+
+
+    private static final Long SERVER_ID = 1L;
+    private static final Long USER_ID = 2L;
+
     @Test
-    public void executeListener() {
-        Member joiningMember = Mockito.mock(Member.class);
-        Guild guild = Mockito.mock(Guild.class);
-        Long guildId = 6L;
-        when(guild.getIdLong()).thenReturn(guildId);
-        AServer server = MockUtils.getServer();
-        AUserInAServer aUserInAServer = MockUtils.getUserObject(5L, server);
+    public void testExecute() {
+        when(serverUser.getUserId()).thenReturn(USER_ID);
+        when(serverUser.getServerId()).thenReturn(SERVER_ID);
+        when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(member));
+        testUnit.execute(serverUser);
+        verify(self, times(1)).sendJoinLog(serverUser, member);
+    }
+
+    @Test
+    public void testJoinLog() {
         String message = "text";
+        when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(templateService.renderTemplateWithMap(eq(JoinLogger.USER_JOIN_TEMPLATE), any())).thenReturn(message);
-        testUnit.execute(joiningMember, guild, aUserInAServer);
-        verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.JOIN_LOG, guildId);
+        testUnit.sendJoinLog(serverUser, member);
+        verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.JOIN_LOG, SERVER_ID);
     }
 }

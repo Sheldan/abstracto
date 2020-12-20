@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.statistic.emotes.service.management;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emotes.exception.TrackedEmoteNotFoundException;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
@@ -32,6 +33,13 @@ public interface TrackedEmoteManagementService {
      * @return The created {@link TrackedEmote} instance in the database
      */
     TrackedEmote createTrackedEmote(Emote emote, Guild guild);
+
+    /**
+     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote} and {@link Guild}
+     * @param emote The {@link CachedEmote} to be used to create a {@link TrackedEmote}
+     * @return The created {@link TrackedEmote} instance in the database
+     */
+    TrackedEmote createTrackedEmote(CachedEmote emote);
 
     /**
      * Creates and persist a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote} and {@link Guild}

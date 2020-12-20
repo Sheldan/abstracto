@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
-import dev.sheldan.abstracto.core.listener.FeatureAware;
+import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagement;

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.listener.repost;
 
-import dev.sheldan.abstracto.core.listener.entity.ChannelGroupCreatedListener;
+import dev.sheldan.abstracto.core.listener.sync.entity.ChannelGroupCreatedListener;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.utility.service.RepostServiceBean;
 import dev.sheldan.abstracto.utility.service.management.RepostCheckChannelGroupManagement;

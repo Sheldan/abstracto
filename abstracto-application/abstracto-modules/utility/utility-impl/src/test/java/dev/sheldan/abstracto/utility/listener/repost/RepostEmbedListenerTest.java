@@ -1,6 +1,9 @@
 package dev.sheldan.abstracto.utility.listener.repost;
 
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
+import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.utility.service.RepostService;
 import dev.sheldan.abstracto.utility.service.management.PostedImageManagement;
@@ -34,6 +37,12 @@ public class RepostEmbedListenerTest {
     private PostedImageManagement repostManagement;
 
     @Mock
+    private ChannelManagementService channelManagementService;
+
+    @Mock
+    private BotService botService;
+
+    @Mock
     private GuildMessageEmbedEventModel model;
 
     @Mock
@@ -41,6 +50,9 @@ public class RepostEmbedListenerTest {
 
     @Mock
     private Message message;
+
+    @Mock
+    private AChannel channel;
 
     @Captor
     private ArgumentCaptor<List<MessageEmbed>> embedListsParameterCaptor;
@@ -51,8 +63,7 @@ public class RepostEmbedListenerTest {
 
     @Test
     public void testExecuteCheckDisabled() {
-        when(model.getChannel()).thenReturn(textChannel);
-        when(repostCheckChannelService.duplicateCheckEnabledForChannel(textChannel)).thenReturn(false);
+        when(model.getChannelId()).thenReturn(CHANNEL_ID);
         testUnit.execute(model);
         verify(repostManagement, times(0)).messageEmbedsHaveBeenCovered(anyLong());
     }
@@ -61,11 +72,8 @@ public class RepostEmbedListenerTest {
     public void testExecuteEmbedsHaveBeenCovered() {
         channelSetup();
         setupMessageHasBeenCovered(true);
-        Guild guild = Mockito.mock(Guild.class);
-        when(guild.getIdLong()).thenReturn(SERVER_ID);
-        when(textChannel.getGuild()).thenReturn(guild);
         testUnit.execute(model);
-        verify(repostService, times(0)).processMessageEmbedsRepostCheck(any(), any());
+        verify(repostService, times(0)).processMessageEmbedsRepostCheck(anyList(), any(Message.class));
     }
 
     @Test
@@ -75,7 +83,7 @@ public class RepostEmbedListenerTest {
         RestAction messageRestAction = Mockito.mock(RestAction.class);
         when(textChannel.retrieveMessageById(MESSAGE_ID)).thenReturn(messageRestAction);
         testUnit.execute(model);
-        verify(repostService, times(0)).processMessageEmbedsRepostCheck(any(), any());
+        verify(repostService, times(0)).processMessageEmbedsRepostCheck(anyList(), any(Message.class));
     }
 
     @Test
@@ -132,9 +140,11 @@ public class RepostEmbedListenerTest {
     }
 
     private void channelSetup() {
-        when(model.getChannel()).thenReturn(textChannel);
-        when(textChannel.getIdLong()).thenReturn(CHANNEL_ID);
-        when(repostCheckChannelService.duplicateCheckEnabledForChannel(textChannel)).thenReturn(true);
+        when(model.getChannelId()).thenReturn(CHANNEL_ID);
+        when(model.getServerId()).thenReturn(SERVER_ID);
+        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
+        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)).thenReturn(true);
     }
 
 

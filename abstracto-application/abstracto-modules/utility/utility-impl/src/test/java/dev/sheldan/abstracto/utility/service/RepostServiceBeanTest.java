@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
+import dev.sheldan.abstracto.core.models.cache.*;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -107,16 +108,10 @@ public class RepostServiceBeanTest {
     private Repost repost;
 
     @Mock
-    private Message message;
+    private CachedMessage message;
 
     @Mock
-    private TextChannel textChannel;
-
-    @Mock
-    private Member member;
-
-    @Mock
-    private User jdaUser;
+    private CachedAuthor author;
 
     private static final Long SERVER_ID = 4L;
     private static final Long CHANNEL_ID = 8L;
@@ -213,35 +208,38 @@ public class RepostServiceBeanTest {
     public void testProcessMessageAttachmentRepostCheckNoAttachment() {
         when(message.getAttachments()).thenReturn(new ArrayList<>());
         testUnit.processMessageAttachmentRepostCheck(message);
-        verify(message, times(0)).getTextChannel();
+        verify(message, times(0)).getChannelId();
     }
 
     @Test
     public void testProcessMessageAttachmentRepostCheckOneAttachmentNotExistingPost() {
         generalSetupForRepostTest();
-        when(message.getMember()).thenReturn(member);
-        Message.Attachment attachment = Mockito.mock(Message.Attachment.class);
+        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(author.getAuthorId()).thenReturn(USER_ID);
+        when(message.getAuthor()).thenReturn(author);
+        when(message.getMessageId()).thenReturn(MESSAGE_ID);
+        CachedAttachment attachment = Mockito.mock(CachedAttachment.class);
         when(message.getAttachments()).thenReturn(Arrays.asList(attachment));
         when(attachment.getProxyUrl()).thenReturn(URL);
         setupSingleRepost();
         testUnit.processMessageAttachmentRepostCheck(message);
-        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(message), eq(HASH), eq(0));
-        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, message);
+        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(0));
+        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
     }
 
     @Test
     public void testProcessMessageAttachmentRepostCheckOneAttachmentIsRepost() {
         generalSetupForRepostTest();
         setupForRepostCreation();
-        Message.Attachment attachment = Mockito.mock(Message.Attachment.class);
+        CachedAttachment attachment = Mockito.mock(CachedAttachment.class);
         when(message.getAttachments()).thenReturn(Arrays.asList(attachment));
         when(attachment.getProxyUrl()).thenReturn(URL);
         setupSingleHash(postedImage);
         Long originalPostMessageId = MESSAGE_ID + 1;
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, message)).thenReturn(CompletableFuture.completedFuture(null));
+        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.processMessageAttachmentRepostCheck(message);
-        verify(messageService, times(0)).addDefaultReactionToMessageAsync(anyString(), eq(message));
+        verify(messageService, times(0)).addDefaultReactionToMessageAsync(anyString(), eq(SERVER_ID), eq(CHANNEL_ID), eq(MESSAGE_ID));
         verify(self, times(1)).persistRepost(originalPostMessageId, POSITION, SERVER_ID, USER_ID);
     }
 
@@ -249,9 +247,10 @@ public class RepostServiceBeanTest {
     public void testProcessMessageAttachmentRepostCheckTwoAttachmentsOneIsRepost() {
         generalSetupForRepostTest();
         setupForRepostCreation();
-        when(message.getMember()).thenReturn(member);
-        Message.Attachment attachment = Mockito.mock(Message.Attachment.class);
-        Message.Attachment attachment2 = Mockito.mock(Message.Attachment.class);
+        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(message.getAuthor().getAuthorId()).thenReturn(USER_ID);
+        CachedAttachment attachment = Mockito.mock(CachedAttachment.class);
+        CachedAttachment attachment2 = Mockito.mock(CachedAttachment.class);
         when(message.getAttachments()).thenReturn(Arrays.asList(attachment, attachment2));
         when(attachment.getProxyUrl()).thenReturn(URL);
         setupSingleRepost();
@@ -262,30 +261,28 @@ public class RepostServiceBeanTest {
         when(postedImageManagement.getPostWithHash(secondAttachmentHash, server)).thenReturn(Optional.of(postedImage));
         Long originalPostMessageId = MESSAGE_ID + 1;
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, message)).thenReturn(CompletableFuture.completedFuture(null));
-        when(messageService.addDefaultReactionToMessageAsync(anyString(), eq(message))).thenReturn(CompletableFuture.completedFuture(null));
+        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(messageService.addDefaultReactionToMessageAsync(anyString(), eq(SERVER_ID), eq(CHANNEL_ID), eq(MESSAGE_ID))).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.processMessageAttachmentRepostCheck(message);
-        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(message), eq(HASH), eq(0));
+        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(0));
         verify(self, times(1)).persistRepost(originalPostMessageId, POSITION, SERVER_ID, USER_ID);
     }
 
     private void setupForRepostCreation() {
-        when(message.getIdLong()).thenReturn(MESSAGE_ID);
-        when(message.getAuthor()).thenReturn(jdaUser);
-        when(jdaUser.getIdLong()).thenReturn(USER_ID);
+        when(message.getMessageId()).thenReturn(MESSAGE_ID);
+        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(message.getAuthor()).thenReturn(author);
+        when(author.getAuthorId()).thenReturn(USER_ID);
+        when(message.getChannelId()).thenReturn(CHANNEL_ID);
     }
 
     private void generalSetupForRepostTest() {
-        when(message.getTextChannel()).thenReturn(textChannel);
-        when(textChannel.getIdLong()).thenReturn(CHANNEL_ID);
-        when(message.getGuild()).thenReturn(guild);
-        when(guild.getIdLong()).thenReturn(SERVER_ID);
+        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
         when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
     }
 
     private void setupSingleRepost() {
         setupSingleHash(null);
-        when(userInServerManagementService.loadUser(member)).thenReturn(userInAServer);
         when(userInAServer.getUserReference()).thenReturn(user);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
     }
@@ -299,56 +296,62 @@ public class RepostServiceBeanTest {
     @Test
     public void testProcessMessageEmbedsRepostCheckWithNotRepostedThumbnailNoAttachments() {
         generalSetupForRepostTest();
-        MessageEmbed firstEmbed = Mockito.mock(MessageEmbed.class);
-        MessageEmbed.Thumbnail thumbnail = Mockito.mock(MessageEmbed.Thumbnail.class);
+        CachedEmbed firstEmbed = Mockito.mock(CachedEmbed.class);
+        CachedThumbnail thumbnail = Mockito.mock(CachedThumbnail.class);
         when(thumbnail.getProxyUrl()).thenReturn(URL);
-        when(firstEmbed.getThumbnail()).thenReturn(thumbnail);
-        List<MessageEmbed> messageEmbeds = Arrays.asList(firstEmbed);
-        when(message.getMember()).thenReturn(member);
+        when(firstEmbed.getCachedThumbnail()).thenReturn(thumbnail);
+        List<CachedEmbed> messageEmbeds = Arrays.asList(firstEmbed);
+        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(message.getAuthor()).thenReturn(author);
+        when(author.getAuthorId()).thenReturn(USER_ID);
+        when(message.getMessageId()).thenReturn(MESSAGE_ID);
         when(message.getAttachments()).thenReturn(new ArrayList<>());
         setupSingleRepost();
         testUnit.processMessageEmbedsRepostCheck(messageEmbeds, message);
-        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(message), eq(HASH), eq(EMBEDDED_LINK_POSITION_START_INDEX));
-        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, message);
+        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(EMBEDDED_LINK_POSITION_START_INDEX));
+        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
     }
 
     @Test
     public void testProcessMessageEmbedsRepostCheckWithNotRepostedEmbedImageNoAttachments() {
         generalSetupForRepostTest();
-        MessageEmbed firstEmbed = Mockito.mock(MessageEmbed.class);
-        MessageEmbed.ImageInfo thumbnail = Mockito.mock(MessageEmbed.ImageInfo.class);
-        when(thumbnail.getProxyUrl()).thenReturn(URL);
-        when(firstEmbed.getImage()).thenReturn(thumbnail);
-        List<MessageEmbed> messageEmbeds = Arrays.asList(firstEmbed);
-        when(message.getMember()).thenReturn(member);
+        CachedEmbed firstEmbed = Mockito.mock(CachedEmbed.class);
+        CachedImageInfo image = Mockito.mock(CachedImageInfo.class);
+        when(image.getProxyUrl()).thenReturn(URL);
+        when(firstEmbed.getCachedImageInfo()).thenReturn(image);
+        List<CachedEmbed> messageEmbeds = Arrays.asList(firstEmbed);
+        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(author.getAuthorId()).thenReturn(USER_ID);
+        when(message.getAuthor()).thenReturn(author);
+        when(message.getMessageId()).thenReturn(MESSAGE_ID);
         when(message.getAttachments()).thenReturn(new ArrayList<>());
         setupSingleRepost();
         testUnit.processMessageEmbedsRepostCheck(messageEmbeds, message);
-        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(message), eq(HASH), eq(EMBEDDED_LINK_POSITION_START_INDEX));
-        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, message);
+        verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(EMBEDDED_LINK_POSITION_START_INDEX));
+        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
     }
 
     @Test
     public void testProcessMessageEmbedsRepostCheckWithRepostedThumbnailNoAttachments() {
         generalSetupForRepostTest();
         setupForRepostCreation();
-        MessageEmbed firstEmbed = Mockito.mock(MessageEmbed.class);
-        MessageEmbed.Thumbnail thumbnail = Mockito.mock(MessageEmbed.Thumbnail.class);
+        CachedEmbed firstEmbed = Mockito.mock(CachedEmbed.class);
+        CachedThumbnail thumbnail = Mockito.mock(CachedThumbnail.class);
         when(thumbnail.getProxyUrl()).thenReturn(URL);
-        when(firstEmbed.getThumbnail()).thenReturn(thumbnail);
-        List<MessageEmbed> messageEmbeds = Arrays.asList(firstEmbed);
+        when(firstEmbed.getCachedThumbnail()).thenReturn(thumbnail);
+        List<CachedEmbed> messageEmbeds = Arrays.asList(firstEmbed);
         when(message.getAttachments()).thenReturn(new ArrayList<>());
         setupSingleHash(postedImage);
         Long originalPostMessageId = MESSAGE_ID + 1;
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, message)).thenReturn(CompletableFuture.completedFuture(null));
+        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.processMessageEmbedsRepostCheck(messageEmbeds, message);
         verify(self, times(1)).persistRepost(originalPostMessageId, POSITION, SERVER_ID, USER_ID);
     }
 
     @Test
     public void testIsRepostEmptyEmbedMessage() {
-        MessageEmbed messageEmbed = Mockito.mock(MessageEmbed.class);
+        CachedEmbed messageEmbed = Mockito.mock(CachedEmbed.class);
         Optional<PostedImage> emptyOptional = testUnit.getRepostFor(message, messageEmbed, POSITION);
         Assert.assertFalse(emptyOptional.isPresent());
     }
@@ -364,7 +367,7 @@ public class RepostServiceBeanTest {
     }
 
     private void executeGetRepostForWithMessageId(Long originalPostMessageId, boolean shouldBePresent) {
-        MessageEmbed messageEmbed = setupSimpleRepostCheck(originalPostMessageId);
+        CachedEmbed messageEmbed = setupSimpleRepostCheck(originalPostMessageId);
         Optional<PostedImage> optional = testUnit.getRepostFor(message, messageEmbed, POSITION);
         Assert.assertEquals(shouldBePresent, optional.isPresent());
         if(shouldBePresent && optional.isPresent()) {
@@ -372,27 +375,27 @@ public class RepostServiceBeanTest {
         }
     }
 
-    private MessageEmbed setupSimpleRepostCheck(Long originalPostMessageId) {
+    private CachedEmbed setupSimpleRepostCheck(Long originalPostMessageId) {
         generalSetupForRepostTest();
         setupForRepostCreation();
         setupSingleHash(postedImage);
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        MessageEmbed messageEmbed = Mockito.mock(MessageEmbed.class);
-        MessageEmbed.Thumbnail thumbnail = Mockito.mock(MessageEmbed.Thumbnail.class);
+        CachedEmbed messageEmbed = Mockito.mock(CachedEmbed.class);
+        CachedThumbnail thumbnail = Mockito.mock(CachedThumbnail.class);
         when(thumbnail.getProxyUrl()).thenReturn(URL);
-        when(messageEmbed.getThumbnail()).thenReturn(thumbnail);
+        when(messageEmbed.getCachedThumbnail()).thenReturn(thumbnail);
         return messageEmbed;
     }
 
     @Test
     public void testIsRepostWithRepost() {
-        MessageEmbed messageEmbed = setupSimpleRepostCheck(MESSAGE_ID + 1);
+        CachedEmbed messageEmbed = setupSimpleRepostCheck(MESSAGE_ID + 1);
         Assert.assertTrue(testUnit.isRepost(message, messageEmbed, POSITION));
     }
 
     @Test
     public void testIsRepostWithSameMessage() {
-        MessageEmbed messageEmbed = setupSimpleRepostCheck(MESSAGE_ID);
+        CachedEmbed messageEmbed = setupSimpleRepostCheck(MESSAGE_ID);
         Assert.assertFalse(testUnit.isRepost(message, messageEmbed, POSITION));
     }
 
@@ -402,8 +405,11 @@ public class RepostServiceBeanTest {
         setupSingleRepost();
         setupSingleHash(postedImage);
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(MESSAGE_ID + 1, POSITION));
-        Message.Attachment attachment = Mockito.mock(Message.Attachment.class);
+        CachedAttachment attachment = Mockito.mock(CachedAttachment.class);
         when(attachment.getProxyUrl()).thenReturn(URL);
+        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(author.getAuthorId()).thenReturn(USER_ID);
+        when(message.getAuthor()).thenReturn(author);
         Assert.assertTrue(testUnit.isRepost(message, attachment, POSITION));
     }
 

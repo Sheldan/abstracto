@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -21,6 +22,8 @@ public interface BotService {
     CompletableFuture<GuildChannelMember> getServerChannelUserAsync(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
     CompletableFuture<Member> getMemberInServerAsync(Long serverId, Long memberId);
+    CompletableFuture<Member> retrieveMemberInServer(ServerUser serverUser);
+    CompletableFuture<User> retrieveUserById(Long userId);
     boolean isUserInGuild(AUserInAServer aUserInAServer);
     boolean isUserInGuild(Guild guild, AUserInAServer aUserInAServer);
     Member getMemberInServer(AUserInAServer aUserInAServer);
@@ -38,5 +41,7 @@ public interface BotService {
     TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
     Optional<Guild> getGuildByIdOptional(Long serverId);
     Guild getGuildById(Long serverId);
+    CompletableFuture<Guild> retrieveGuildById(Long serverId);
     Member getBotInGuild(AServer server);
+    CompletableFuture<User> getUserViaId(Long userId);
 }

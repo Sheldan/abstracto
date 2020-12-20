@@ -40,4 +40,6 @@ public interface ChannelService {
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
     Optional<TextChannel> getChannelFromAChannel(AChannel channel);
     AChannel getFakeChannelFromTextChannel(TextChannel textChannel);
+    CompletableFuture<Message> sendSimpleTemplateToChannel(Long serverId, Long channelId, String template);
+    TextChannel getTextChannel(Long serverId, Long channelId);
 }

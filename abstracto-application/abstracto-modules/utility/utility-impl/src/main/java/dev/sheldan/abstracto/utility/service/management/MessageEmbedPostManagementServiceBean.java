@@ -44,7 +44,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
         }
         AChannel embeddingChannel = channelManagementService.loadChannel(messageContainingEmbed.getChannel().getIdLong());
         AChannel embeddedChannel = channelManagementService.loadChannel(embeddedMessage.getChannelId());
-        AUserInAServer embeddedAuthor = userInServerManagementService.loadUser(embeddedMessage.getServerId(), embeddedMessage.getAuthorId());
+        AUserInAServer embeddedAuthor = userInServerManagementService.loadUser(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId());
         EmbeddedMessage messageEmbedPost = EmbeddedMessage
                 .builder()
                 .embeddedMessageId(embeddedMessage.getMessageId())
@@ -58,8 +58,8 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
                 .build();
 
         log.info("Saving embedded post: message {} by user {} in channel {} in server {} embedded message {} by user {} in channel {} in server {}.",
-                messageContainingEmbed.getIdLong(), embeddingUser.getUserReference().getId(), embeddingChannel.getId(), embeddingUser.getServerReference().getId(),
-                embeddedMessage.getMessageId(), embeddedMessage.getAuthorId(), embeddedMessage.getChannelId(), embeddedMessage.getServerId());
+                messageContainingEmbed.getIdLong(), messageContainingEmbed.getAuthor().getIdLong(), embeddingChannel.getId(), messageContainingEmbed.getChannel().getIdLong(),
+                embeddedMessage.getMessageId(), embeddedMessage.getAuthor().getAuthorId(), embeddedMessage.getChannelId(), embeddedMessage.getServerId());
 
         embeddedMessageRepository.save(messageEmbedPost);
     }

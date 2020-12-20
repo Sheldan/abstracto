@@ -34,7 +34,7 @@ public class HasLevelCondition implements SystemCondition {
         Long userId = (Long) parameters.get(USER_ID_VARIABLE);
         Integer level = (Integer) parameters.get(LEVEL_VARIABLE);
         log.info("Evaluating has level condition.");
-        Optional<AUserInAServer> userInServerOptional = userInServerManagementService.loadUserConditional(userId);
+        Optional<AUserInAServer> userInServerOptional = userInServerManagementService.loadUserOptional(userId);
         if(userInServerOptional.isPresent()) {
             AUserInAServer userInServer = userInServerOptional.get();
             log.info("Evaluating has level condition for user {} in server {} with level {}.",

@@ -73,7 +73,10 @@ public class ModMailMessageEditedListenerTest {
     private CachedMessage messageBefore;
 
     @Mock
-    private Message messageAfter;
+    private CachedMessage messageAfter;
+
+    @Mock
+    private Message loadedMessage;
 
     @Mock
     private ModMailMessage modMailMessage;
@@ -110,6 +113,15 @@ public class ModMailMessageEditedListenerTest {
     private static final Long AUTHOR_USER_ID = 9L;
 
     @Test
+    public void testMessageLoading() {
+        when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
+        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
+        when(messageService.loadMessageFromCachedMessage(messageAfter)).thenReturn(CompletableFuture.completedFuture(loadedMessage));
+        testUnit.execute(messageBefore, messageAfter);
+        verify(self, times(1)).executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
+    }
+
+    @Test
     public void testEditOutsideModMailThread() {
         when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(false);
         when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
@@ -119,17 +131,14 @@ public class ModMailMessageEditedListenerTest {
 
     @Test
     public void testEditNotTrackedMessage() {
-        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
-        when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
         when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.empty());
-        testUnit.execute(messageBefore, messageAfter);
+        testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
         verify(commandRegistry, times(0)).getCommandName(anyString(), anyLong());
     }
 
     @Test
     public void testEditMessageWithCorrectCommand() {
-        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
         when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
         when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
         when(messageBefore.getServerId()).thenReturn(SERVER_ID);
@@ -146,19 +155,18 @@ public class ModMailMessageEditedListenerTest {
         AUser authorUser = Mockito.mock(AUser.class);
         when(authorUser.getId()).thenReturn(AUTHOR_USER_ID);
         when(authorUserInAServer.getUserReference()).thenReturn(authorUser);
-        when(messageAfter.getContentRaw()).thenReturn(NEW_CONTENT);
+        when(messageAfter.getContent()).thenReturn(NEW_CONTENT);
         when(commandRegistry.getCommandName(NEW_COMMAND_PART, SERVER_ID)).thenReturn(NEW_COMMAND_PART);
         when(commandService.doesCommandExist(NEW_COMMAND_PART)).thenReturn(true);
-        when(commandService.getParametersForCommand(NEW_COMMAND_PART, messageAfter)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
+        when(commandService.getParametersForCommand(NEW_COMMAND_PART, loadedMessage)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
         when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
-        testUnit.execute(messageBefore, messageAfter);
-        verify(self, times(1)).updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
+        testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
+        verify(self, times(1)).updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
     }
 
     @Test
     public void testEditMessageWithInCorrectCommand() {
-        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
         when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
         when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
         when(messageBefore.getServerId()).thenReturn(SERVER_ID);
@@ -175,19 +183,19 @@ public class ModMailMessageEditedListenerTest {
         AUser authorUser = Mockito.mock(AUser.class);
         when(authorUser.getId()).thenReturn(AUTHOR_USER_ID);
         when(authorUserInAServer.getUserReference()).thenReturn(authorUser);
-        when(messageAfter.getContentRaw()).thenReturn(NEW_CONTENT);
+        when(messageAfter.getContent()).thenReturn(NEW_CONTENT);
         when(commandRegistry.getCommandName(NEW_COMMAND_PART, SERVER_ID)).thenReturn(NEW_COMMAND_PART);
         when(commandService.doesCommandExist(NEW_COMMAND_PART)).thenReturn(false);
-        when(commandService.getParametersForCommand(DEFAULT_COMMAND_FOR_MODMAIL_EDIT, messageAfter)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
+        when(commandService.getParametersForCommand(DEFAULT_COMMAND_FOR_MODMAIL_EDIT, loadedMessage)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
         when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
-        testUnit.execute(messageBefore, messageAfter);
-        verify(self, times(1)).updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
+        testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
+        verify(self, times(1)).updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
     }
 
     @Test
-    public void testUpdateAnonymousMessageInThreadNotDuplicated() {
-        when(messageAfter.getIdLong()).thenReturn(MESSAGE_ID);
+    public void testUpdateAnonymousMessageInThreadNotSentToModMailThreadChannel() {
+        when(loadedMessage.getIdLong()).thenReturn(MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         when(modMailMessage.getAnonymous()).thenReturn(true);
         when(modMailMessage.getCreatedMessageInChannel()).thenReturn(null);
@@ -199,15 +207,15 @@ public class ModMailMessageEditedListenerTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
         when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
-        testUnit.updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
+        testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(0)).editMessageInAChannel(eq(messageToSend), any(AChannel.class), anyLong());
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
         Assert.assertTrue(replyModelArgumentCaptor.getValue().getAnonymous());
     }
 
     @Test
-    public void testUpdateAnonymousMessageInThreadDuplicated() {
-        when(messageAfter.getIdLong()).thenReturn(MESSAGE_ID);
+    public void testUpdateAnonymousMessageInThreadAlsoSendToModMailThreadChannel() {
+        when(loadedMessage.getIdLong()).thenReturn(MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         when(modMailMessage.getAnonymous()).thenReturn(true);
         when(modMailMessage.getCreatedMessageInChannel()).thenReturn(CREATED_MESSAGE_ID);
@@ -220,9 +228,10 @@ public class ModMailMessageEditedListenerTest {
         AChannel channel = Mockito.mock(AChannel.class);
         when(thread.getChannel()).thenReturn(channel);
         when(channel.getId()).thenReturn(CHANNEL_ID);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
         when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
-        testUnit.updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
+        testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(1)).editMessageInAChannel(eq(messageToSend), eq(channel), eq(CREATED_MESSAGE_ID));
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
         Assert.assertTrue(replyModelArgumentCaptor.getValue().getAnonymous());
@@ -230,7 +239,7 @@ public class ModMailMessageEditedListenerTest {
 
     @Test
     public void testUpdateMessageInThreadNotDuplicated() {
-        when(messageAfter.getIdLong()).thenReturn(MESSAGE_ID);
+        when(loadedMessage.getIdLong()).thenReturn(MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         when(modMailMessage.getAnonymous()).thenReturn(false);
         when(modMailMessage.getCreatedMessageInChannel()).thenReturn(null);
@@ -242,7 +251,7 @@ public class ModMailMessageEditedListenerTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
         when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
-        testUnit.updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
+        testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(0)).editMessageInAChannel(eq(messageToSend), any(AChannel.class), anyLong());
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
         Assert.assertFalse(replyModelArgumentCaptor.getValue().getAnonymous());
@@ -250,7 +259,7 @@ public class ModMailMessageEditedListenerTest {
 
     @Test
     public void testUpdateMessageInThreadDuplicated() {
-        when(messageAfter.getIdLong()).thenReturn(MESSAGE_ID);
+        when(loadedMessage.getIdLong()).thenReturn(MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         when(modMailMessage.getAnonymous()).thenReturn(false);
         when(modMailMessage.getCreatedMessageInChannel()).thenReturn(CREATED_MESSAGE_ID);
@@ -265,7 +274,7 @@ public class ModMailMessageEditedListenerTest {
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
         when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
-        testUnit.updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
+        testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(1)).editMessageInAChannel(eq(messageToSend), eq(channel), eq(CREATED_MESSAGE_ID));
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
         Assert.assertFalse(replyModelArgumentCaptor.getValue().getAnonymous());

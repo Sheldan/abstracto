@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.utility.listener.repost;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.MessageEmbeddedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageEmbeddedListener;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
+import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.utility.service.RepostService;
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class RepostEmbedListener implements MessageEmbeddedListener {
+public class RepostEmbedListener implements AsyncMessageEmbeddedListener {
 
     @Autowired
     private RepostCheckChannelService repostCheckChannelService;
@@ -30,15 +32,22 @@ public class RepostEmbedListener implements MessageEmbeddedListener {
     @Autowired
     private PostedImageManagement repostManagement;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
+    @Autowired
+    private BotService botService;
+
     @Override
     public void execute(GuildMessageEmbedEventModel eventModel) {
-        if(repostCheckChannelService.duplicateCheckEnabledForChannel(eventModel.getChannel())) {
+        AChannel channel = channelManagementService.loadChannel(eventModel.getChannelId());
+        if(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)) {
             if(repostManagement.messageEmbedsHaveBeenCovered(eventModel.getMessageId())) {
                 log.info("The embeds of the message {} in channel {} in server {} have already been covered by repost check -- ignoring.",
-                        eventModel.getMessageId(), eventModel.getChannel().getIdLong(), eventModel.getChannel().getGuild().getIdLong());
+                        eventModel.getMessageId(), eventModel.getChannelId(), eventModel.getServerId());
                 return;
             }
-            eventModel.getChannel().retrieveMessageById(eventModel.getMessageId()).queue(message -> {
+            botService.getTextChannelFromServer(eventModel.getServerId(), eventModel.getChannelId()).retrieveMessageById(eventModel.getMessageId()).queue(message -> {
                 List<MessageEmbed> imageEmbeds = eventModel.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());
                 repostService.processMessageEmbedsRepostCheck(imageEmbeds, message);
             });
@@ -48,11 +57,6 @@ public class RepostEmbedListener implements MessageEmbeddedListener {
     @Override
     public FeatureEnum getFeature() {
         return UtilityFeature.REPOST_DETECTION;
-    }
-
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.MEDIUM;
     }
 
 }

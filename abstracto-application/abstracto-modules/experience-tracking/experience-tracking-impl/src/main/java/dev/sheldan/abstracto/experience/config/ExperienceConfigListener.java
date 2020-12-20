@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.config;
 
-import dev.sheldan.abstracto.core.listener.ServerConfigListener;
+import dev.sheldan.abstracto.core.listener.sync.entity.ServerConfigListener;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;

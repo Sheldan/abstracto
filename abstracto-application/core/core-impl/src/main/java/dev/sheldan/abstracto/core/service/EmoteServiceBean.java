@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.cache.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.DefaultEmoteManagementService;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -112,8 +114,8 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public Optional<CachedReaction> getReactionFromMessageByEmote(CachedMessage message, AEmote emote) {
-        return message.getReactions().stream().filter(reaction -> compareAEmote(reaction.getEmote(), emote)).findFirst();
+    public Optional<CachedReactions> getReactionFromMessageByEmote(CachedMessage message, AEmote emote) {
+        return message.getReactions().stream().filter(reaction -> compareCachedEmoteWithAEmote(reaction.getEmote(), emote)).findFirst();
     }
 
     @Override
@@ -123,6 +125,19 @@ public class EmoteServiceBean implements EmoteService {
         } else {
             if(Boolean.FALSE.equals(a.getCustom()) && Boolean.FALSE.equals(b.getCustom())) {
                 return a.getEmoteKey().equals(b.getEmoteKey());
+            } else {
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public boolean compareCachedEmoteWithAEmote(CachedEmote a, AEmote b) {
+        if(Boolean.TRUE.equals(a.getCustom()) && Boolean.TRUE.equals(b.getCustom())) {
+            return a.getEmoteId().equals(b.getEmoteId());
+        } else {
+            if(Boolean.FALSE.equals(a.getCustom()) && Boolean.FALSE.equals(b.getCustom())) {
+                return a.getEmoteName().equals(b.getEmoteKey());
             } else {
                 return false;
             }
@@ -161,6 +176,16 @@ public class EmoteServiceBean implements EmoteService {
     @Override
     public boolean emoteIsFromGuild(Emote emote, Guild guild) {
         return guild.getEmoteById(emote.getId()) != null;
+    }
+
+    @Override
+    public CompletableFuture<Emote> getEmoteFromCachedEmote(CachedEmote cachedEmote) {
+        if(!cachedEmote.getCustom()) {
+            throw new IllegalArgumentException("Given Emote was not a custom emote.");
+        }
+        return botService.retrieveGuildById(cachedEmote.getServerId()).thenCompose(guild ->
+            guild.retrieveEmoteById(cachedEmote.getEmoteId()).submit().thenApply(listedEmote -> listedEmote)
+        );
     }
 
 }

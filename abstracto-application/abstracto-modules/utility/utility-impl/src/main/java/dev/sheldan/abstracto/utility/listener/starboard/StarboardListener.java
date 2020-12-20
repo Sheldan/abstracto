@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.ReactedAddedListener;
-import dev.sheldan.abstracto.core.listener.ReactedRemovedListener;
-import dev.sheldan.abstracto.core.listener.ReactionClearedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionAddedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionClearedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionRemovedListener;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.cache.CachedReaction;
+import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -19,9 +19,6 @@ import dev.sheldan.abstracto.utility.service.StarboardService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.MessageReaction;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +30,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class StarboardListener implements ReactedAddedListener, ReactedRemovedListener, ReactionClearedListener {
+public class StarboardListener implements AsyncReactionAddedListener, AsyncReactionRemovedListener, AsyncReactionClearedListener {
 
     public static final String STAR_EMOTE = "star";
     public static final String FIRST_LEVEL_THRESHOLD_KEY = "starLvl1";
@@ -61,34 +58,34 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
 
     @Override
     @Transactional
-    public void executeReactionAdded(CachedMessage message, GuildMessageReactionAddEvent addedReaction, AUserInAServer userAdding) {
-        if(userAdding.getUserReference().getId().equals(message.getAuthorId())) {
+    public void executeReactionAdded(CachedMessage message, CachedReactions cachedReaction, ServerUser serverUser) {
+        if(serverUser.getUserId().equals(message.getAuthor().getAuthorId())) {
             return;
         }
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
-        MessageReaction.ReactionEmote reactionEmote = addedReaction.getReactionEmote();
-        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
-            log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.", userAdding.getUserReference().getId(), userAdding.getServerReference().getId(), message.getMessageId(), message.getChannelId());
-            Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
-                handleStarboardPostChange(message, reactionOptional.orElse(null), userAdding, true);
+        if(emoteService.compareCachedEmoteWithAEmote(cachedReaction.getEmote(), aEmote)) {
+            log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.", serverUser.getUserId(), message.getServerId(), message.getMessageId(), message.getChannelId());
+            Optional<CachedReactions> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
+                handleStarboardPostChange(message, reactionOptional.orElse(null), serverUser, true);
         }
     }
 
-    private void handleStarboardPostChange(CachedMessage message, CachedReaction reaction, AUserInAServer userReacting, boolean adding)  {
+    private void handleStarboardPostChange(CachedMessage message, CachedReactions reaction, ServerUser serverUser, boolean adding)  {
         Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
         if(reaction != null) {
-            AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthorId());
-            List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUserInServersIds(), author);
+            AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthor().getAuthorId());
+            List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUsers(), author);
             Long starMinimum = getFromConfig(FIRST_LEVEL_THRESHOLD_KEY, message.getServerId());
+            AUserInAServer userAddingReaction = userInServerManagementService.loadUser(serverUser);
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
                 if(starboardPostOptional.isPresent()) {
-                    updateStarboardPost(message, userReacting, adding, starboardPostOptional.get(), userExceptAuthor);
+                    updateStarboardPost(message, userAddingReaction, adding, starboardPostOptional.get(), userExceptAuthor);
                 } else {
                     log.info("Creating starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
-                    starboardService.createStarboardPost(message, userExceptAuthor, userReacting, author);
+                    starboardService.createStarboardPost(message, userExceptAuthor, userAddingReaction, author);
                 }
             } else {
                 if(starboardPostOptional.isPresent()) {
@@ -124,17 +121,16 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
 
     @Override
     @Transactional
-    public void executeReactionRemoved(CachedMessage message, GuildMessageReactionRemoveEvent removedReaction, AUserInAServer userRemoving) {
-        if(message.getAuthorId().equals(userRemoving.getUserReference().getId())) {
+    public void executeReactionRemoved(CachedMessage message, CachedReactions removedReaction, ServerUser userRemoving) {
+        if(message.getAuthor().getAuthorId().equals(userRemoving.getUserId())) {
             return;
         }
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
-        MessageReaction.ReactionEmote reactionEmote = removedReaction.getReactionEmote();
-        if(emoteService.isReactionEmoteAEmote(reactionEmote, aEmote)) {
+        if(emoteService.compareCachedEmoteWithAEmote(removedReaction.getEmote(), aEmote)) {
             log.info("User {} in server {} removed star reaction from message {} on starboard.",
-                    userRemoving.getUserReference().getId(), userRemoving.getServerReference().getId(), message.getMessageId());
-            Optional<CachedReaction> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
+                    userRemoving.getUserId(), message.getServerId(), message.getMessageId());
+            Optional<CachedReactions> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
             handleStarboardPostChange(message, reactionOptional.orElse(null), userRemoving, false);
         }
     }
@@ -143,9 +139,9 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         return configManagementService.loadConfig(guildId, key).getLongValue();
     }
 
-    private List<AUserInAServer> getUsersExcept(List<Long> users, AUserInAServer author) {
-        return users.stream().filter(user -> !user.equals(author.getUserInServerId())).map(aLong -> {
-            Optional<AUserInAServer> aUserInAServer = userInServerManagementService.loadUserConditional(aLong);
+    private List<AUserInAServer> getUsersExcept(List<ServerUser> users, AUserInAServer author) {
+        return users.stream().filter(user -> !(user.getServerId().equals(author.getServerReference().getId()) && user.getUserId().equals(author.getUserReference().getId()))).map(serverUser -> {
+            Optional<AUserInAServer> aUserInAServer = userInServerManagementService.loadUserOptional(serverUser.getServerId(), serverUser.getUserId());
             return aUserInAServer.orElse(null);
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
@@ -167,8 +163,4 @@ public class StarboardListener implements ReactedAddedListener, ReactedRemovedLi
         });
     }
 
-    @Override
-    public Integer getPriority() {
-        return ListenerPriority.HIGH;
-    }
 }

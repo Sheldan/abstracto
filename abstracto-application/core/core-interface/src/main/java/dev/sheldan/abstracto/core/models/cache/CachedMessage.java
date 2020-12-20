@@ -15,12 +15,13 @@ public class CachedMessage {
     private Long serverId;
     private Long channelId;
     private Long messageId;
-    private Long authorId;
+    private CachedAuthor author;
     private Instant timeCreated;
     private String content;
     private List<CachedEmbed> embeds;
-    private List<String> attachmentUrls;
-    private List<CachedReaction> reactions;
+    private List<CachedAttachment> attachments;
+    private List<CachedReactions> reactions;
+    private List<CachedEmote> emotes;
 
     public String getMessageUrl() {
         return MessageUtils.buildMessageUrl(this.serverId ,this.channelId, this.messageId);

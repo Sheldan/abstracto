@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.utils;
 
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
+import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -61,6 +62,6 @@ public class ContextUtilsTest {
     }
 
     private CachedMessage buildCachedMessage() {
-        return CachedMessage.builder().authorId(AUTHOR_ID).serverId(SERVER_ID).channelId(CHANNEL_ID).build();
+        return CachedMessage.builder().author(CachedAuthor.builder().authorId(AUTHOR_ID).build()).serverId(SERVER_ID).channelId(CHANNEL_ID).build();
     }
 }

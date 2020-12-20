@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -25,17 +26,17 @@ public interface TrackedEmoteRuntimeService {
      * @param guild The {@link Guild} in which the {@link Emote} is used
      * @param external Whether or not the emote is external
      */
-    void addEmoteForServer(Emote emote, Guild guild, boolean external);
+    void addEmoteForServer(CachedEmote emote, Guild guild, boolean external);
 
     /**
      * Adds the given {@link Emote} used in the {@link Guild} to the runtime storage.
      * The necessary lock will be acquired by this method.
-     * @param emote The {@link Emote} to add to the runtime storage
+     * @param emote The {@link CachedEmote} to add to the runtime storage
      * @param guild The {@link Guild} in which the {@link Emote} is used
      * @param count The amount of usages which should be added
      * @param external Whether or not the emote is external
      */
-    void addEmoteForServer(Emote emote, Guild guild, Long count, boolean external);
+    void addEmoteForServer(CachedEmote emote, Guild guild, Long count, boolean external);
 
     /**
      * Calculates the key used for the Map containing the emote statistics.
@@ -46,21 +47,21 @@ public interface TrackedEmoteRuntimeService {
     /**
      * Creates a {@link PersistingEmote} from the given parameters.
      * @param guild The {@link Guild} in which the {@link Emote} is used
-     * @param emote The {@link Emote} to create a {@link PersistingEmote} from
+     * @param emote The {@link CachedEmote} to create a {@link PersistingEmote} from
      * @param external Whether or not the {@link Emote} is external
      * @return A created {@link PersistingEmote} instance from the {@link Emote}
      */
-    PersistingEmote createFromEmote(Guild guild, Emote emote, boolean external);
+    PersistingEmote createFromEmote(Guild guild, CachedEmote emote, boolean external);
 
     /**
      * Creates a {@link PersistingEmote} from the given parameters.
      * @param guild The {@link Guild} in which the {@link Emote} is used
-     * @param emote The {@link Emote} to create a {@link PersistingEmote} from
+     * @param emote The {@link CachedEmote} to create a {@link PersistingEmote} from
      * @param count The amount of usages the {@link Emote} has been used
      * @param external Whether or not the {@link Emote} is external
      * @return A created {@link PersistingEmote} instance from the {@link Emote}
      */
-    PersistingEmote createFromEmote(Guild guild, Emote emote, Long count, boolean external);
+    PersistingEmote createFromEmote(Guild guild, CachedEmote emote, Long count, boolean external);
 
     /**
      * Acquires the lock which should be used when accessing the runtime storage

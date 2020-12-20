@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,5 +15,6 @@ public class GuildMessageEmbedEventModel {
     @Builder.Default
     private List<MessageEmbed> embeds = new ArrayList<>();
     private Long messageId;
-    private TextChannel channel;
+    private Long channelId;
+    private Long serverId;
 }

@@ -2,7 +2,9 @@ package dev.sheldan.abstracto.utility.listener.embed;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.MessageReceivedListener;
+import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
+import dev.sheldan.abstracto.core.execution.result.ExecutionResult;
+import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -11,6 +13,7 @@ import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.service.MessageEmbedService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.Event;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +39,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
     private MessageEmbedListener self;
 
     @Override
-    public void execute(Message message) {
+    public MessageReceivedListenerResult execute(Message message) {
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         if(!links.isEmpty()) {
@@ -59,7 +62,12 @@ public class MessageEmbedListener implements MessageReceivedListener {
         }
         if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
             message.delete().queue();
+            return MessageReceivedListenerResult.DELETED;
         }
+        if(!links.isEmpty()) {
+            return MessageReceivedListenerResult.PROCESSED;
+        }
+        return MessageReceivedListenerResult.IGNORED;
     }
 
     @Transactional
@@ -71,6 +79,11 @@ public class MessageEmbedListener implements MessageReceivedListener {
                     message.getId(), message.getChannel().getId(), message.getGuild().getId(), throwable);
             return null;
         });
+    }
+
+    @Override
+    public boolean shouldConsume(Event event, ExecutionResult result) {
+        return result.equals(MessageReceivedListenerResult.DELETED);
     }
 
     @Override
