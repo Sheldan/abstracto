@@ -2,8 +2,10 @@ package dev.sheldan.abstracto.moderation.commands;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.converter.UserNotesConverter;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
@@ -48,6 +50,9 @@ public class UserNotesTest {
     @Mock
     private UserNotesConverter userNotesConverter;
 
+    @Mock
+    private ServerManagementService serverManagementService;
+
     @Captor
     private ArgumentCaptor<ListNotesModel> captor;
 
@@ -55,7 +60,8 @@ public class UserNotesTest {
     public void testExecuteUserNotesCommandForMember() {
         Member member = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
-        AUserInAServer userNoteUser = MockUtils.getUserObject(4L, parameters.getUserInitiatedContext().getServer());
+        AServer server = Mockito.mock(AServer.class);
+        AUserInAServer userNoteUser = MockUtils.getUserObject(4L, server);
         when(userInServerManagementService.loadUser(member)).thenReturn(userNoteUser);
         UserNote firstNote = UserNote.builder().build();
         UserNote secondNote = UserNote.builder().build();
@@ -86,7 +92,9 @@ public class UserNotesTest {
         UserNote firstNote = UserNote.builder().build();
         UserNote secondNote = UserNote.builder().build();
         List<UserNote> userNotes = Arrays.asList(firstNote, secondNote);
-        when(userNoteManagementService.loadNotesForServer(parameters.getUserInitiatedContext().getServer())).thenReturn(userNotes);
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(parameters.getGuild())).thenReturn(server);
+        when(userNoteManagementService.loadNotesForServer(server)).thenReturn(userNotes);
         NoteEntryModel firstConvertedNote = NoteEntryModel.builder().build();
         NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
         CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));

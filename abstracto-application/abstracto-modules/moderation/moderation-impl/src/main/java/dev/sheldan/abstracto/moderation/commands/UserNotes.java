@@ -9,8 +9,10 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
@@ -47,6 +49,9 @@ public class UserNotes extends AbstractConditionableCommand {
     @Autowired
     private UserNotesConverter userNotesConverter;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -64,7 +69,8 @@ public class UserNotes extends AbstractConditionableCommand {
                     .build();
             model.setSpecifiedUser(specifiedUser);
         } else {
-            userNotes = userNoteManagementService.loadNotesForServer(commandContext.getUserInitiatedContext().getServer());
+            AServer server = serverManagementService.loadServer(commandContext.getGuild());
+            userNotes = userNoteManagementService.loadNotesForServer(server);
         }
         CompletableFuture<List<NoteEntryModel>> listCompletableFuture = userNotesConverter.fromNotes(userNotes);
         return listCompletableFuture.thenCompose(noteEntryModels -> {

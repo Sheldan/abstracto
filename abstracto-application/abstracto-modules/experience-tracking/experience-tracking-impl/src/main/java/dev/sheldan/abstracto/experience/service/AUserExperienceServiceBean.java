@@ -4,10 +4,8 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.*;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
@@ -78,6 +76,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
     @Autowired
     private ServerManagementService serverManagementService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
 
     @Autowired
     private AUserExperienceServiceBean self;
@@ -403,10 +404,11 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     /**
      * Synchronizes the roles of all the users and provides feedback to the user executing
      * @param server The {@link AServer} to update users for
-     * @param channel The {@link AChannel} in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel}
+     * @param channelId The ID of the channel in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel} should be posted to
      */
     @Override
-    public CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, AChannel channel) {
+    public CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, Long channelId) {
+        AChannel channel = channelManagementService.loadChannel(channelId);
         List<AUserExperience> aUserExperiences = userExperienceManagementService.loadAllUsers(server);
         log.info("Found {} users to synchronize", aUserExperiences.size());
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);

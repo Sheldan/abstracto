@@ -7,6 +7,8 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -34,10 +36,14 @@ public class UnSubscribe extends AbstractConditionableCommand {
     @Autowired
     private ModMailSubscriptionService modMailSubscriptionService;
 
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
-        modMailSubscriptionService.unsubscribeFromThread(commandContext.getUserInitiatedContext().getAUserInAServer(), modMailThread);
+        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        modMailSubscriptionService.unsubscribeFromThread(aUserInAServer, modMailThread);
         return CommandResult.fromSuccess();
     }
 

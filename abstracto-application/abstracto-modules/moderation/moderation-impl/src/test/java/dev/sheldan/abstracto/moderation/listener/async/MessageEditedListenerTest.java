@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.moderation.listener;
+package dev.sheldan.abstracto.moderation.listener.async;
 
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;

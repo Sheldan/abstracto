@@ -6,11 +6,13 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModesModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Assert;
@@ -44,6 +46,9 @@ public class FeatureModesTest {
     private FeatureConfigService featureConfigService;
 
     @Mock
+    private ServerManagementService serverManagementService;
+
+    @Mock
     private FeatureManagementService featureManagementService;
 
     @Captor
@@ -57,7 +62,9 @@ public class FeatureModesTest {
         FeatureModeDisplay display1 = Mockito.mock(FeatureModeDisplay.class);
         FeatureModeDisplay display2 = Mockito.mock(FeatureModeDisplay.class);
         List<FeatureModeDisplay> featureModeDisplays = Arrays.asList(display1, display2);
-        when(featureModeService.getEffectiveFeatureModes(noParameters.getUserInitiatedContext().getServer())).thenReturn(featureModeDisplays);
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
+        when(featureModeService.getEffectiveFeatureModes(server)).thenReturn(featureModeDisplays);
         when(channelService.sendEmbedTemplateInChannel(eq(FeatureModes.FEATURE_MODES_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(new ArrayList<>());
         CompletableFuture<CommandResult> commandResultCompletableFuture = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(commandResultCompletableFuture);
@@ -76,7 +83,9 @@ public class FeatureModesTest {
         AFeature feature = Mockito.mock(AFeature.class);
         when(featureManagementService.getFeature(FEATURE_NAME)).thenReturn(feature);
         List<FeatureModeDisplay> featureModeDisplays = Arrays.asList(display1);
-        when(featureModeService.getEffectiveFeatureModes(noParameters.getUserInitiatedContext().getServer(), feature)).thenReturn(featureModeDisplays);
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(noParameters.getGuild())).thenReturn(server);
+        when(featureModeService.getEffectiveFeatureModes(server, feature)).thenReturn(featureModeDisplays);
         when(channelService.sendEmbedTemplateInChannel(eq(FeatureModes.FEATURE_MODES_RESPONSE_TEMPLATE_KEY), modelCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(new ArrayList<>());
         CompletableFuture<CommandResult> commandResultCompletableFuture = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(commandResultCompletableFuture);

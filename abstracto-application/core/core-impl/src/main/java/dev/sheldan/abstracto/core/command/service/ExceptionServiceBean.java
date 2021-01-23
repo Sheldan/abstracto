@@ -94,7 +94,7 @@ public class ExceptionServiceBean implements ExceptionService {
     }
 
     private GenericExceptionModel buildCommandModel(Throwable throwable, CommandContext context) {
-        FullUserInServer fullUser = FullUserInServer.builder().member(context.getAuthor()).aUserInAServer(context.getUserInitiatedContext().getAUserInAServer()).build();
+        FullUserInServer fullUser = FullUserInServer.builder().member(context.getAuthor()).aUserInAServer(userInServerManagementService.loadUser(context.getAuthor())).build();
         return GenericExceptionModel
                 .builder()
                 .user(fullUser)

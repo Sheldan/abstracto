@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,9 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
 
     @Autowired
     private ChannelGroupCommandManagementService channelGroupCommandService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
 
     @Override
     public Boolean isCommandEnabled(ACommand command, AChannel channel) {
@@ -32,5 +36,10 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
         // empty -> no groups, command enabled
         // not empty -> has groups, command is disabled in all
         return allChannelGroupsOfCommand.isEmpty();
+    }
+
+    @Override
+    public Boolean isCommandEnabled(ACommand command, Long channelId) {
+        return isCommandEnabled(command, channelManagementService.loadChannel(channelId));
     }
 }

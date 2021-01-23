@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
@@ -68,6 +69,9 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     private TemplateService templateService;
 
     @Mock
+    private ChannelManagementService channelManagementService;
+
+    @Mock
     private DisabledExpRoleManagementService disabledExpRoleManagementService;
 
     @Mock
@@ -124,6 +128,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     private static final Long USER_IN_SERVER_ID = 4L;
     private static final Long USER_ID = 8L;
     private static final Long SERVER_ID = 9L;
+    private static final Long CHANNEL_ID = 7L;
 
     @Test
     public void testCalculateLevelTooLow() {
@@ -583,7 +588,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
 
     @Test
     public void testSyncRolesWithFeedBack() {
-        AChannel channel = AChannel.builder().id(2L).build();
+        AChannel channel = Mockito.mock(AChannel.class);
         List<AUserExperience> experiences = getUserExperiences(25, server);
 
         checkStatusMessages(server, channel, experiences, 13);
@@ -591,7 +596,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
 
     @Test
     public void testSyncRolesWithNoUsers() {
-        AChannel channel = AChannel.builder().id(2L).build();
+        AChannel channel = Mockito.mock(AChannel.class);
         List<AUserExperience> experiences = new ArrayList<>();
 
         checkStatusMessages(server, channel, experiences, 1);
@@ -631,7 +636,8 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
         Message statusMessageJDA = Mockito.mock(Message.class);
         when(statusMessageJDA.getIdLong()).thenReturn(messageId);
         when(messageService.createStatusMessage(statusMessage, channel)).thenReturn(CompletableFuture.completedFuture(statusMessageJDA));
-        testUnit.syncUserRolesWithFeedback(server, channel);
+        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
+        testUnit.syncUserRolesWithFeedback(server, CHANNEL_ID);
         verify(messageService, times(messageCount)).updateStatusMessage(channel, messageId, statusMessage);
     }
 

@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,11 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public AServer loadServer(Long id) {
         return loadServerOptional(id).orElseThrow(() -> new GuildNotFoundException(id));
+    }
+
+    @Override
+    public AServer loadServer(Guild guild) {
+        return loadServer(guild.getIdLong());
     }
 
     @Override

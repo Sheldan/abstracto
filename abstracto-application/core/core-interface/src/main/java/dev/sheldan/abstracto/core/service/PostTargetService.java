@@ -24,6 +24,7 @@ public interface PostTargetService {
     List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target);
     List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTarget, Long serverId);
     void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId);
+    boolean postTargetDefinedInServer(PostTargetEnum name, Long serverId);
     boolean validPostTarget(String name);
     List<PostTarget> getPostTargets(AServer server);
     List<String> getAvailablePostTargets();

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.service;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
@@ -42,6 +43,9 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     /**
      * UnSets the current configuration for the passed level, and sets the {@link ARole} to be used for this level
      * in the given {@link AServer}
@@ -49,10 +53,10 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      * @param level The level the {@link ARole} should be awarded at
      */
     @Override
-    public CompletableFuture<Void> setRoleToLevel(Role role, Integer level, AChannel feedbackChannel) {
+    public CompletableFuture<Void> setRoleToLevel(Role role, Integer level, Long channelId) {
         Long roleId = role.getIdLong();
         ARole aRole = roleManagementService.findRole(roleId);
-        return unsetRole(aRole, feedbackChannel).thenAccept(aVoid ->
+        return unsetRole(aRole, channelId).thenAccept(aVoid ->
             self.unsetRoleInDb(level, roleId)
         );
     }
@@ -73,7 +77,8 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
      *             configuration
      */
     @Override
-    public CompletableFuture<Void> unsetRole(ARole role, AChannel feedbackChannel) {
+    public CompletableFuture<Void> unsetRole(ARole role, Long feedbackChannelId) {
+        AChannel channel = channelManagementService.loadChannel(feedbackChannelId);
         Optional<AExperienceRole> roleInServerOptional = experienceRoleManagementService.getRoleInServerOptional(role);
         if(roleInServerOptional.isPresent()) {
             AExperienceRole roleInServer = roleInServerOptional.get();
@@ -82,7 +87,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
                 List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(role.getServer());
                 roles.removeIf(role1 -> role1.getId().equals(roleInServer.getId()));
                 Long roleId = role.getId();
-                CompletableFutureList<RoleCalculationResult> calculationResults = userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), feedbackChannel,
+                CompletableFutureList<RoleCalculationResult> calculationResults = userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), channel,
                         (AUserExperience ex) -> userExperienceService.updateUserRole(ex, roles, ex.getLevelOrDefault()));
                 return calculationResults.getMainFuture().thenAccept(aVoid ->
                         self.persistData(calculationResults, roleId)

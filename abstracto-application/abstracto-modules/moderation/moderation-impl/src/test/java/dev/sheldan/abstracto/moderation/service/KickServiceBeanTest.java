@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.ModerationMode;
+import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import dev.sheldan.abstracto.templating.model.MessageToSend;

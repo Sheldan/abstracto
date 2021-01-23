@@ -4,8 +4,10 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.PaginatorService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.converter.WarnEntryConverter;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
@@ -46,6 +48,9 @@ public class WarningsTest {
     private PaginatorService paginatorService;
 
     @Mock
+    private ServerManagementService serverManagementService;
+
+    @Mock
     private EventWaiter eventWaiter;
 
     @Captor
@@ -63,7 +68,9 @@ public class WarningsTest {
         WarnEntry secondModelWarning = Mockito.mock(WarnEntry.class);
         List<Warning> warningsToDisplay = Arrays.asList(firstWarning, secondWarning);
         List<WarnEntry> modelWarnings = Arrays.asList(firstModelWarning, secondModelWarning);
-        when(warnManagementService.getAllWarningsOfServer(noParams.getUserInitiatedContext().getServer())).thenReturn(warningsToDisplay);
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(noParams.getGuild())).thenReturn(server);
+        when(warnManagementService.getAllWarningsOfServer(server)).thenReturn(warningsToDisplay);
         when(warnEntryConverter.fromWarnings(warningsToDisplay)).thenReturn(CompletableFuture.completedFuture(modelWarnings));
 
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParams);

@@ -2,7 +2,9 @@ package dev.sheldan.abstracto.utility.commands.remind;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
@@ -11,10 +13,7 @@ import dev.sheldan.abstracto.utility.service.management.ReminderManagementServic
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -35,6 +34,9 @@ public class RemindersTest {
     @Mock
     private ChannelService channelService;
 
+    @Mock
+    private UserInServerManagementService userInServerManagementService;
+
     @Captor
     private ArgumentCaptor<RemindersModel> modelCaptor;
 
@@ -44,7 +46,9 @@ public class RemindersTest {
         Reminder reminder = Reminder.builder().build();
         Reminder secondReminder = Reminder.builder().build();
         List<Reminder> reminders = Arrays.asList(reminder, secondReminder);
-        when(reminderManagementService.getActiveRemindersForUser(context.getUserInitiatedContext().getAUserInAServer())).thenReturn(reminders);
+        AUserInAServer user = Mockito.mock(AUserInAServer.class);
+        when(userInServerManagementService.loadUser(context.getAuthor())).thenReturn(user);
+        when(reminderManagementService.getActiveRemindersForUser(user)).thenReturn(reminders);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Reminders.REMINDERS_RESPONSE_TEMPLATE), modelCaptor.capture(), eq(context.getChannel()));
         RemindersModel usedModel = modelCaptor.getValue();

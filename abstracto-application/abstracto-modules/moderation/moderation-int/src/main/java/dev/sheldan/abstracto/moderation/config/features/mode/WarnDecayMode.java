@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.moderation.config.features;
+package dev.sheldan.abstracto.moderation.config.features.mode;
 
 
 import dev.sheldan.abstracto.core.config.FeatureMode;

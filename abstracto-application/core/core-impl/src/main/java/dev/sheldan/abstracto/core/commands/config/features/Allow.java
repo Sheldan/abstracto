@@ -15,7 +15,9 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.database.AFeature;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -41,17 +43,21 @@ public class Allow extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
             feature.getCommands().forEach(command ->
-                commandService.unRestrictCommand(command, commandContext.getUserInitiatedContext().getServer())
+                commandService.unRestrictCommand(command, server)
             );
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
-            commandService.unRestrictCommand(command, commandContext.getUserInitiatedContext().getServer());
+            commandService.unRestrictCommand(command, server);
         } else {
             // TODO refactor to use exception
             return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE, new Object()));

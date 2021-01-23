@@ -11,9 +11,11 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.converter.FeatureFlagConverter;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeaturesModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -38,9 +40,13 @@ public class Features extends AbstractConditionableCommand {
     @Autowired
     private FeatureFlagConverter featureFlagConverter;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<AFeatureFlag> features = featureFlagManagementService.getFeatureFlagsOfServer(commandContext.getUserInitiatedContext().getServer());
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        List<AFeatureFlag> features = featureFlagManagementService.getFeatureFlagsOfServer(server);
         FeaturesModel featuresModel = (FeaturesModel) ContextConverter.fromCommandContext(commandContext, FeaturesModel.class);
         featuresModel.setFeatures(featureFlagConverter.fromFeatureFlags(features));
         MessageToSend messageToSend = templateService.renderEmbedTemplate("features_response", featuresModel);

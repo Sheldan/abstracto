@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
@@ -35,7 +34,7 @@ public class EnableExpGainTest {
     @Test
     public void testEnableExpForMember() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        AUserInAServer parameterUser = MockUtils.getUserObject(4L, noParameters.getUserInitiatedContext().getServer());
+        AUserInAServer parameterUser = Mockito.mock(AUserInAServer.class);
         Member member = Mockito.mock(Member.class);
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(member));
         when(userInServerManagementService.loadUser(member)).thenReturn(parameterUser);

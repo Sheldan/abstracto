@@ -9,6 +9,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +23,15 @@ public class ActivateAssignableRolePlace extends AbstractConditionableCommand {
     @Autowired
     private AssignableRolePlaceService service;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
-        service.activateAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name);
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        service.activateAssignableRolePlace(server, name);
         return CommandResult.fromSuccess();
     }
 

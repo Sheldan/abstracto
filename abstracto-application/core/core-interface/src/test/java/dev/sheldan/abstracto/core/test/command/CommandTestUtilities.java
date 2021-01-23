@@ -7,9 +7,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -44,8 +41,6 @@ public class CommandTestUtilities {
 
 
     public static CommandContext getNoParameters() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer author = MockUtils.getUserObject(3L, server);
         CommandContext context = CommandContext
                 .builder()
                 .build();
@@ -53,16 +48,11 @@ public class CommandTestUtilities {
         context.setGuild(guild);
         Member member = Mockito.mock(Member.class);
         context.setAuthor(member);
-        long channelId = 4L;
         TextChannel mockedTextChannel = Mockito.mock(TextChannel.class);
         UserInitiatedServerContext userInitiatedContext = UserInitiatedServerContext
                 .builder()
-                .server(server)
                 .guild(guild)
-                .aUserInAServer(author)
                 .member(member)
-                .user(author.getUserReference())
-                .channel(MockUtils.getTextChannel(server, channelId))
                 .messageChannel(mockedTextChannel)
                 .build();
         context.setUserInitiatedContext(userInitiatedContext);

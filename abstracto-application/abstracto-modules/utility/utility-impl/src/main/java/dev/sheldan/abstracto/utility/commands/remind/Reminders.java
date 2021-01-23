@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
@@ -33,10 +34,12 @@ public class Reminders extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        AUserInAServer aUserInAServer = commandContext.getUserInitiatedContext().getAUserInAServer();
+        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(aUserInAServer);
         RemindersModel model = (RemindersModel) ContextConverter.fromCommandContext(commandContext, RemindersModel.class);
         model.setReminders(activeReminders);

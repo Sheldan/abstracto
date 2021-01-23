@@ -13,7 +13,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.FullRole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,9 @@ public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -37,13 +42,14 @@ public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
         FullEmote emote = (FullEmote) parameters.get(1);
         String description = (String) parameters.get(2);
         FullRole role = (FullRole) parameters.get(3);
-        if(service.hasAssignableRolePlaceEmote(commandContext.getUserInitiatedContext().getServer(), name, emote.getFakeEmote())) {
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        if(service.hasAssignableRolePlaceEmote(server, name, emote.getFakeEmote())) {
             throw new AssignableRoleAlreadyDefinedException(emote, name);
         }
         if(!roleService.canBotInteractWithRole(role.getRole())) {
             throw new AssignableRoleNotUsableException(role, commandContext.getGuild());
         }
-        return service.addRoleToAssignableRolePlace(commandContext.getUserInitiatedContext().getServer(), name, role.getRole(), emote, description)
+        return service.addRoleToAssignableRolePlace(server, name, role.getRole(), emote, description)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

@@ -8,7 +8,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
@@ -28,11 +30,15 @@ public class SetMuteRole extends AbstractConditionableCommand {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Role jdaRole = (Role) commandContext.getParameters().getParameters().get(0);
         ARole role = roleManagementService.findRole(jdaRole.getIdLong());
-        muteRoleManagementService.setMuteRoleForServer(commandContext.getUserInitiatedContext().getServer(), role);
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        muteRoleManagementService.setMuteRoleForServer(server, role);
         return CommandResult.fromSuccess();
     }
 

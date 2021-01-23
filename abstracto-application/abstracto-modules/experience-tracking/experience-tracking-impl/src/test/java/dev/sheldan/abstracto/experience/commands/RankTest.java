@@ -68,7 +68,8 @@ public class RankTest {
     public void testRankExecution() {
         CommandContext context = CommandTestUtilities.getNoParameters();
         LeaderBoardEntry leaderBoardEntry = Mockito.mock(LeaderBoardEntry.class);
-        when(userExperienceService.getRankOfUserInServer(context.getUserInitiatedContext().getAUserInAServer())).thenReturn(leaderBoardEntry);
+        when(userInServerManagementService.loadUser(context.getAuthor())).thenReturn(aUserInAServer);
+        when(userExperienceService.getRankOfUserInServer(aUserInAServer)).thenReturn(leaderBoardEntry);
         LeaderBoardEntryModel leaderBoardEntryModel = Mockito.mock(LeaderBoardEntryModel.class);
         when(converter.fromLeaderBoardEntry(leaderBoardEntry)).thenReturn(CompletableFuture.completedFuture(leaderBoardEntryModel));
         when(self.renderAndSendRank(eq(context), any(RankModel.class), eq(leaderBoardEntryModel))).thenReturn(CompletableFuture.completedFuture(null));

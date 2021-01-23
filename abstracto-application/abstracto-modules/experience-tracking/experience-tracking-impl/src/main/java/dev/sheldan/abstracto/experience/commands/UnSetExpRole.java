@@ -37,7 +37,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
         ARole actualRole = roleManagementService.findRole(role.getId());
         // do not check for the existence of the role, because if the role was deleted, users should be able
         // to get rid of it in the configuration
-        return experienceRoleService.unsetRole(actualRole, commandContext.getUserInitiatedContext().getChannel())
+        return experienceRoleService.unsetRole(actualRole, commandContext.getChannel().getIdLong())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.ChannelRepository;
 import dev.sheldan.abstracto.core.service.LockService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,11 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     @Override
     public AChannel loadChannel(Long id) {
         return loadChannelOptional(id).orElseThrow(() -> new ChannelNotFoundException(id));
+    }
+
+    @Override
+    public AChannel loadChannel(TextChannel textChannel) {
+        return loadChannel(textChannel.getIdLong());
     }
 
     @Override

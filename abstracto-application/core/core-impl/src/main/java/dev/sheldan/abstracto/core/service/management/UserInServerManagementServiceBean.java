@@ -30,7 +30,11 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
 
     @Override
     public AUserInAServer loadUser(Long serverId, Long userId) {
-        return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
+        if(userInServerRepository.existsByServerReference_IdAndUserReference_Id(serverId, userId)) {
+            return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
+        } else {
+            return this.createUserInServer(serverId, userId);
+        }
     }
 
     @Override

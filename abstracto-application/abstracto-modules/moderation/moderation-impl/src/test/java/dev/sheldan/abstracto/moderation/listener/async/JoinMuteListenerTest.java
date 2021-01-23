@@ -1,9 +1,8 @@
-package dev.sheldan.abstracto.moderation.listener;
+package dev.sheldan.abstracto.moderation.listener.async;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.moderation.listener.async.JoinMuteListener;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import net.dv8tion.jda.api.entities.Guild;

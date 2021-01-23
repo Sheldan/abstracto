@@ -3,7 +3,9 @@ package dev.sheldan.abstracto.moderation.commands.mute;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
@@ -31,6 +33,9 @@ public class SetMuteRoleTest {
     @Mock
     private RoleManagementService roleManagementService;
 
+    @Mock
+    private ServerManagementService serverManagementService;
+
     @Test
     public void testExecuteCommand() {
         Role role = Mockito.mock(Role.class);
@@ -39,8 +44,10 @@ public class SetMuteRoleTest {
         ARole aRole = Mockito.mock(ARole.class);
         when(roleManagementService.findRole(roleId)).thenReturn(aRole);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(role));
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(parameters.getGuild())).thenReturn(server);
         CommandResult result = testUnit.execute(parameters);
-        verify(muteRoleManagementService, times(1)).setMuteRoleForServer(parameters.getUserInitiatedContext().getServer(), aRole);
+        verify(muteRoleManagementService, times(1)).setMuteRoleForServer(server, aRole);
         CommandTestUtilities.checkSuccessfulCompletion(result);
     }
 

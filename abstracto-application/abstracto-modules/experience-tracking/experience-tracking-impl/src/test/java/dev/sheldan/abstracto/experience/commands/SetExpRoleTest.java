@@ -35,14 +35,17 @@ public class SetExpRoleTest {
     @Mock
     private RoleManagementService roleManagementService;
 
+    private static final Long CHANNEL_ID = 4L;
+
     @Test
     public void setExpRole() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         Role roleToChange = Mockito.mock(Role.class);
         when(roleToChange.getGuild()).thenReturn(noParameters.getGuild());
         Integer levelToSetTo = 4;
+        when(noParameters.getChannel().getIdLong()).thenReturn(CHANNEL_ID);
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(levelToSetTo, roleToChange));
-        when(experienceRoleService.setRoleToLevel(roleToChange, levelToSetTo, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
+        when(experienceRoleService.setRoleToLevel(roleToChange, levelToSetTo, CHANNEL_ID)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }

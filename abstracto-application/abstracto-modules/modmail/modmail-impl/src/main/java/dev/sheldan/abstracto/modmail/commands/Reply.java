@@ -8,7 +8,9 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -39,11 +41,15 @@ public class Reply extends AbstractConditionableCommand {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String text = parameters.size() == 1 ? (String) parameters.get(0) : "";
-        ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
+        AChannel channel = channelManagementService.loadChannel(commandContext.getChannel());
+        ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
         Long threadId = thread.getId();
         return botService.getMemberInServerAsync(thread.getUser()).thenCompose(member ->
             modMailThreadService.relayMessageToDm(threadId, text, commandContext.getMessage(), false, commandContext.getChannel(), commandContext.getUndoActions(), member)

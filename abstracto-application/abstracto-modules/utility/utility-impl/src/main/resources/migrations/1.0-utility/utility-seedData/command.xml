@@ -155,6 +155,12 @@
             <column name="feature_id" valueComputed="${entertainmentFeature}"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
+        <insert tableName="command">
+            <column name="name" value="choose"/>
+            <column name="module_id" valueComputed="${entertainmentModule}"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

@@ -8,6 +8,8 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +22,13 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
     @Autowired
     private AssignableRolePlaceService service;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        return service.showAllAssignableRolePlaces(commandContext.getUserInitiatedContext().getServer(), commandContext.getChannel())
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        return service.showAllAssignableRolePlaces(server, commandContext.getChannel())
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

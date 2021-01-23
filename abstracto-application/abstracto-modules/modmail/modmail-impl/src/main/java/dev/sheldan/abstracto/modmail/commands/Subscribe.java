@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -34,10 +35,13 @@ public class Subscribe extends AbstractConditionableCommand {
     @Autowired
     private ModMailSubscriptionService modMailSubscriptionService;
 
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
-        modMailSubscriptionService.subscribeToThread(commandContext.getUserInitiatedContext().getAUserInAServer(), modMailThread);
+        modMailSubscriptionService.subscribeToThread(userInServerManagementService.loadUser(commandContext.getAuthor()), modMailThread);
         return CommandResult.fromSuccess();
     }
 

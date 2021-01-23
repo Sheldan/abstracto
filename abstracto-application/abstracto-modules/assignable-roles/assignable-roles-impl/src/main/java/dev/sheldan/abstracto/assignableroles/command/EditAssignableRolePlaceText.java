@@ -12,6 +12,8 @@ import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,14 +28,16 @@ public class EditAssignableRolePlaceText extends AbstractConditionableCommand {
     @Autowired
     private AssignableRolePlaceService service;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         String newText = (String) parameters.get(1);
-
-        return service.changeText(commandContext.getUserInitiatedContext().getServer(), name, newText)
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        return service.changeText(server, name, newText)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 

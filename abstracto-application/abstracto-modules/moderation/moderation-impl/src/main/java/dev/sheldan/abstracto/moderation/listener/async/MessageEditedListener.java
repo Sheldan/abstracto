@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.moderation.listener;
+package dev.sheldan.abstracto.moderation.listener.async;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;

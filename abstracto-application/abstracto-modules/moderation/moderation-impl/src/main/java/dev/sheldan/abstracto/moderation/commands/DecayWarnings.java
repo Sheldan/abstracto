@@ -7,6 +7,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.WarnService;
@@ -23,9 +25,13 @@ public class DecayWarnings extends AbstractConditionableCommand {
     @Autowired
     private WarnService warnService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        return warnService.decayWarningsForServer(commandContext.getUserInitiatedContext().getServer())
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        return warnService.decayWarningsForServer(server)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

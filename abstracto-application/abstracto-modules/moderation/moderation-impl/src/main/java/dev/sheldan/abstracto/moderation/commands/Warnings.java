@@ -10,7 +10,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.PaginatorService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
@@ -48,6 +50,9 @@ public class Warnings extends AbstractConditionableCommand {
     private EventWaiter eventWaiter;
 
     @Autowired
+    private ServerManagementService serverManagementService;
+
+    @Autowired
     private Warnings self;
 
     @Override
@@ -57,7 +62,8 @@ public class Warnings extends AbstractConditionableCommand {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);
             warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadUser(member));
         } else {
-            warnsToDisplay = warnManagementService.getAllWarningsOfServer(commandContext.getUserInitiatedContext().getServer());
+            AServer server = serverManagementService.loadServer(commandContext.getGuild());
+            warnsToDisplay = warnManagementService.getAllWarningsOfServer(server);
         }
         return warnEntryConverter.fromWarnings(warnsToDisplay).thenApply(warnEntries -> {
             self.renderWarnings(commandContext, warnEntries);

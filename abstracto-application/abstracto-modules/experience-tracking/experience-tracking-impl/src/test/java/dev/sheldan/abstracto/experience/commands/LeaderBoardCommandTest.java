@@ -2,7 +2,11 @@ package dev.sheldan.abstracto.experience.commands;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
@@ -17,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -43,6 +48,12 @@ public class LeaderBoardCommandTest {
     @Mock
     private LeaderBoardModelConverter converter;
 
+    @Mock
+    private UserInServerManagementService userInServerManagementService;
+
+    @Mock
+    private ServerManagementService serverManagementService;
+
     @Test
     public void testLeaderBoardWithNoParameter() {
         testLeaderBoardCommand(CommandTestUtilities.getNoParameters(), 1);
@@ -54,11 +65,15 @@ public class LeaderBoardCommandTest {
     }
 
     private void testLeaderBoardCommand(CommandContext context, int expectedPage) {
-        LeaderBoard leaderBoard = LeaderBoard.builder().build();
-        when(userExperienceService.findLeaderBoardData(context.getUserInitiatedContext().getServer(), expectedPage)).thenReturn(leaderBoard);
+        LeaderBoard leaderBoard = Mockito.mock(LeaderBoard.class);
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
+        when(userInServerManagementService.loadUser(context.getAuthor())).thenReturn(userInAServer);
+        when(userExperienceService.findLeaderBoardData(server, expectedPage)).thenReturn(leaderBoard);
         when(converter.fromLeaderBoard(leaderBoard)).thenReturn(new ArrayList<>());
         LeaderBoardEntry executingUserRank = LeaderBoardEntry.builder().build();
-        when(userExperienceService.getRankOfUserInServer(context.getUserInitiatedContext().getAUserInAServer())).thenReturn(executingUserRank);
+        when(userExperienceService.getRankOfUserInServer(userInAServer)).thenReturn(executingUserRank);
         LeaderBoardEntryModel leaderBoardEntryModel = LeaderBoardEntryModel.builder().build();
         when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(CompletableFuture.completedFuture(leaderBoardEntryModel));
         MessageToSend messageToSend = MessageToSend.builder().build();

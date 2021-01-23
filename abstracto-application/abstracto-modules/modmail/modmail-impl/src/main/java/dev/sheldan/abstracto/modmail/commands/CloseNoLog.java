@@ -8,6 +8,8 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.config.ModMailMode;
@@ -42,9 +44,13 @@ public class CloseNoLog extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        ModMailThread thread = modMailThreadManagementService.getByChannel(commandContext.getUserInitiatedContext().getChannel());
+        AChannel channel = channelManagementService.loadChannel(commandContext.getChannel());
+        ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
         // we don't have a note, therefore we cant pass any, the method handles this accordingly
         return modMailThreadService.closeModMailThread(thread, null, false, commandContext.getUndoActions(), false)
                 .thenApply(aVoid -> CommandResult.fromIgnored());

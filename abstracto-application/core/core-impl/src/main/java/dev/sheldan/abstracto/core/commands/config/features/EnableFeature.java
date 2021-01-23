@@ -13,10 +13,12 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,9 @@ public class EnableFeature extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
@@ -53,16 +58,17 @@ public class EnableFeature extends AbstractConditionableCommand {
         } else {
             String flagKey = (String) commandContext.getParameters().getParameters().get(0);
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
-            FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, commandContext.getUserInitiatedContext().getServer());
+            AServer server = serverManagementService.loadServer(commandContext.getUserInitiatedContext().getGuild().getIdLong());
+            FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, server);
             if(Boolean.FALSE.equals(featureSetup.getValidationResult())) {
                 log.info("Feature {} has failed the setup validation. Notifying user.", flagKey);
                 channelService.sendTextToChannelNotAsync(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
             }
-            featureFlagService.enableFeature(feature, commandContext.getUserInitiatedContext().getServer());
+            featureFlagService.enableFeature(feature, server);
             if(feature.getRequiredFeatures() != null) {
                 feature.getRequiredFeatures().forEach(featureDisplay -> {
                     log.info("Also enabling required feature {}.", featureDisplay.getFeature().getKey());
-                    featureFlagService.enableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer());
+                    featureFlagService.enableFeature(featureDisplay, server);
                 });
             }
             return CompletableFuture.completedFuture(CommandResult.fromSuccess());

@@ -37,4 +37,9 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
     public ACommandInAServer getCommandForServer(ACommand command, AServer server) {
         return repository.findByServerReferenceAndCommandReference(server, command);
     }
+
+    @Override
+    public ACommandInAServer getCommandForServer(ACommand command, Long serverId) {
+        return null;
+    }
 }

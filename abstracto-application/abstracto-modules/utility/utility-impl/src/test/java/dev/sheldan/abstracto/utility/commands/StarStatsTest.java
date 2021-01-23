@@ -32,7 +32,6 @@ public class StarStatsTest {
     @Test
     public void executeCommand() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        when(noParameters.getGuild().getIdLong()).thenReturn(noParameters.getUserInitiatedContext().getChannel().getId());
         StarStatsModel starStatsModel = StarStatsModel.builder().build();
         when(starboardService.retrieveStarStats(noParameters.getGuild().getIdLong())).thenReturn(CompletableFuture.completedFuture(starStatsModel));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);

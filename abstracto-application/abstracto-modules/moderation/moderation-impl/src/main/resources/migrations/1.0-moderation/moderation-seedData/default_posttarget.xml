@@ -44,5 +44,9 @@
             <column name="name" value="decayLog"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
+        <insert tableName="default_posttarget">
+            <column name="name" value="inviteDeleteLog"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
     </changeSet>
 </databaseChangeLog>

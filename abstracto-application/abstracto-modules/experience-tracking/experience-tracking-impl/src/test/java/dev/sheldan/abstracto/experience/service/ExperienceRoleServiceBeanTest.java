@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
@@ -49,16 +50,20 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
     private RoleManagementService roleManagementService;
 
     @Mock
+    private ChannelManagementService channelManagementService;
+
+    @Mock
     private ExperienceRoleServiceBean self;
 
     @Mock
     private AServer server;
 
+    private static final Long CHANNEL_ID = 4L;
 
     @Test
     public void testSettingRoleToLevelWithoutOldUsers() {
         Integer levelCount = 10;
-        AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
+        AExperienceLevel level = Mockito.mock(AExperienceLevel.class);
         Role roleToChange = Mockito.mock(Role.class);
         ARole role = Mockito.mock(ARole.class);
         Long roleId = 5L;
@@ -66,10 +71,11 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         when(roleManagementService.findRole(roleId)).thenReturn(role);
         AExperienceRole previousExperienceRole = AExperienceRole.builder().role(role).roleServer(server).level(level).build();
         when(experienceRoleManagementService.getRoleInServerOptional(role)).thenReturn(Optional.of(previousExperienceRole));
-        CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, getFeedbackChannel(server));
+        CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, CHANNEL_ID);
 
         future.join();
         verify(experienceRoleManagementService, times(1)).unsetRole(previousExperienceRole);
+        verify(self, times(1)).unsetRoleInDb(levelCount, roleId);
     }
 
     @Test
@@ -105,12 +111,13 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         AExperienceRole newExperienceRole = AExperienceRole.builder().role(newRoleToAward).id(newRoleToAward.getId()).roleServer(server).level(level).build();
         when(experienceRoleManagementService.getRoleInServerOptional(role)).thenReturn(Optional.of(previousExperienceRole));
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(new ArrayList<>(Arrays.asList(newExperienceRole, previousExperienceRole)));
-        AChannel feedBackChannel = getFeedbackChannel(server);
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
         futures.add(CompletableFuture.completedFuture(null));
+        AChannel feedbackChannel = Mockito.mock(AChannel.class);
+        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(feedbackChannel);
         CompletableFutureList<RoleCalculationResult> futuresList = new CompletableFutureList<>(futures);
-        when(userExperienceService.executeActionOnUserExperiencesWithFeedBack(eq(users), eq(feedBackChannel), any())).thenReturn(futuresList);
-        CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, feedBackChannel);
+        when(userExperienceService.executeActionOnUserExperiencesWithFeedBack(eq(users), eq(feedbackChannel), any())).thenReturn(futuresList);
+        CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, CHANNEL_ID);
         future.join();
         verify(experienceRoleManagementService, times(0)).unsetRole(previousExperienceRole);
     }

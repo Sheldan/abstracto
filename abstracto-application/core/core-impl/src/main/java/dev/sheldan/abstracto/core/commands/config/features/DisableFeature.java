@@ -12,10 +12,12 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,6 +41,8 @@ public class DisableFeature extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -53,8 +57,9 @@ public class DisableFeature extends AbstractConditionableCommand {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(flagKey);
             featureFlagService.disableFeature(feature, commandContext.getGuild().getIdLong());
             if(feature.getDependantFeatures() != null) {
+                AServer server = serverManagementService.loadServer(commandContext.getGuild());
                 feature.getDependantFeatures().forEach(featureDisplay ->
-                    featureFlagService.disableFeature(featureDisplay, commandContext.getUserInitiatedContext().getServer())
+                    featureFlagService.disableFeature(featureDisplay, server)
                 );
             }
             return CompletableFuture.completedFuture(CommandResult.fromSuccess());

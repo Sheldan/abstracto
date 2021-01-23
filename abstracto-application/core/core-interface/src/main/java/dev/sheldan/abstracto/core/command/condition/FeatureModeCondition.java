@@ -21,7 +21,7 @@ public class FeatureModeCondition implements CommandCondition {
             FeatureEnum feature = command.getFeature();
             if(feature != null) {
                 for (FeatureMode featureModeLimitation : command.getFeatureModeLimitations()) {
-                    if(modeService.featureModeActive(feature, context.getUserInitiatedContext().getServer(), featureModeLimitation)) {
+                    if(modeService.featureModeActive(feature, context.getUserInitiatedContext().getGuild().getIdLong(), featureModeLimitation)) {
                         return ConditionResult.builder().result(true).build();
                     }
                 }

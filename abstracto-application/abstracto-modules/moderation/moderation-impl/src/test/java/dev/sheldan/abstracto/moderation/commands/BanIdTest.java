@@ -35,14 +35,14 @@ public class BanIdTest {
 
     private static final String REASON = "reason";
     private static final Long BANNED_USER_ID = 4L;
+    private static final Long SERVER_ID = 3L;
 
     @Test
     public void testBanIdWithDefaultReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(BANNED_USER_ID));
-        Long guildId = parameters.getUserInitiatedContext().getServer().getId();
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        when(parameters.getGuild().getIdLong()).thenReturn(guildId);
-        when(banService.banUserViaId(eq(guildId), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(banService.banUserViaId(eq(SERVER_ID), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(REASON, usedModel.getReason());
@@ -55,10 +55,9 @@ public class BanIdTest {
     public void testBanWithReason() {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(BANNED_USER_ID, customReason));
-        Long guildId = parameters.getUserInitiatedContext().getServer().getId();
-        when(parameters.getGuild().getIdLong()).thenReturn(guildId);
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
-        when(banService.banUserViaId(eq(guildId), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        when(banService.banUserViaId(eq(SERVER_ID), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
         Assert.assertEquals(customReason, usedModel.getReason());

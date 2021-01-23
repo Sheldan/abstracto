@@ -13,6 +13,7 @@
     <property name="mutingFeature" value="(SELECT id FROM feature WHERE key = 'muting')"/>
     <property name="warnDecayFeature" value="(SELECT id FROM feature WHERE key = 'warnDecay')"/>
     <property name="userNotesFeature" value="(SELECT id FROM feature WHERE key = 'userNotes')"/>
+    <property name="inviteLinkFilteringFeature" value="(SELECT id FROM feature WHERE key = 'inviteFilter')"/>
     <property name="today" value="(SELECT NOW())"/>
 
     <changeSet  author="Sheldan"  id="moderation_moderation-commands">
@@ -127,6 +128,33 @@
             <column name="name" value="userNotes"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${userNotesFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+    </changeSet>
+
+    <changeSet  author="Sheldan"  id="moderation_inviteFilter-commands">
+        <insert tableName="command">
+            <column name="name" value="allowInvite"/>
+            <column name="module_id" valueComputed="${moderationModule}"/>
+            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disAllowInvite"/>
+            <column name="module_id" valueComputed="${moderationModule}"/>
+            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeTrackedInviteLinks"/>
+            <column name="module_id" valueComputed="${moderationModule}"/>
+            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="showTrackedInviteLinks"/>
+            <column name="module_id" valueComputed="${moderationModule}"/>
+            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>

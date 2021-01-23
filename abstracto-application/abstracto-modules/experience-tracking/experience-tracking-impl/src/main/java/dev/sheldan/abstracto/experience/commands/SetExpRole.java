@@ -44,7 +44,7 @@ public class SetExpRole extends AbstractConditionableCommand {
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
         Role role = (Role) commandContext.getParameters().getParameters().get(1);
         log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, role.getGuild().getId());
-        return experienceRoleService.setRoleToLevel(role, level, commandContext.getUserInitiatedContext().getChannel())
+        return experienceRoleService.setRoleToLevel(role, level, commandContext.getChannel().getIdLong())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.utility.service;
 
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.CounterService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -61,12 +63,17 @@ public class SuggestionServiceBean implements SuggestionService {
     @Autowired
     private CounterService counterService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<Void> createSuggestionMessage(Member member, String text, SuggestionLog suggestionLog)  {
-        Long newSuggestionId = counterService.getNextCounterValue(suggestionLog.getServer(), SUGGESTION_COUNTER_KEY);
+        AServer server = serverManagementService.loadServer(member.getGuild());
+        AUserInAServer suggester = userInServerManagementService.loadUser(member);
+        Long newSuggestionId = counterService.getNextCounterValue(server, SUGGESTION_COUNTER_KEY);
         suggestionLog.setSuggestionId(newSuggestionId);
         suggestionLog.setState(SuggestionState.NEW);
-        suggestionLog.setSuggesterUser(suggestionLog.getAUserInAServer());
+        suggestionLog.setSuggesterUser(suggester);
         suggestionLog.setText(text);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
         long guildId = member.getGuild().getIdLong();
@@ -136,7 +143,7 @@ public class SuggestionServiceBean implements SuggestionService {
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
             MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
-            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, suggestionLog.getServer().getId());
+            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, suggestionLog.getGuild().getIdLong());
             return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
         } else {
             log.warn("The message to update the suggestion for, did not contain an embed to update. Suggestions require an embed with a description as a container. MessageURL: {}", message.getJumpUrl());

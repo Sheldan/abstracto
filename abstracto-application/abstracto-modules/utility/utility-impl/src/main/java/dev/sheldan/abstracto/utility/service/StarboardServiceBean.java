@@ -131,7 +131,6 @@ public class StarboardServiceBean implements StarboardService {
             // TODO use model objects instead of building entity models
             AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
             AUser user = AUser.builder().id(message.getAuthor().getAuthorId()).build();
-            AServer server = AServer.builder().id(message.getServerId()).build();
             String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
             return StarboardPostModel
                     .builder()
@@ -142,7 +141,6 @@ public class StarboardServiceBean implements StarboardService {
                     .starCount(starCount)
                     .guild(guild.orElse(null))
                     .user(user)
-                    .server(server)
                     .starLevelEmote(starLevelEmote)
                     .build();
         });

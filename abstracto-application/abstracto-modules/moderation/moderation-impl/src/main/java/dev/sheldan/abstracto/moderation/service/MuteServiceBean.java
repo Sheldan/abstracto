@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.MutingMode;
+import dev.sheldan.abstracto.moderation.config.features.mode.MutingMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
 import dev.sheldan.abstracto.moderation.exception.MuteRoleNotSetupException;
 import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
@@ -252,7 +252,7 @@ public class MuteServiceBean implements MuteService {
         if(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)) {
             log.trace("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
             MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel);
-            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getServer().getId());
+            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
@@ -338,7 +338,6 @@ public class MuteServiceBean implements MuteService {
                 .mutingUser(mutingMemberFuture.join())
                 .unMutedUser(mutedMemberFuture.join())
                 .guild(guild)
-                .server(mutingServer)
                 .build();
         CompletableFuture<Void> notificationFuture = sendUnMuteLogMessage(unMuteLog, mutingServer);
         return CompletableFuture.allOf(notificationFuture).thenAccept(aVoid ->

@@ -13,7 +13,6 @@
             <column name="long_value"  value="90"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
-
     </changeSet>
 
 </databaseChangeLog>

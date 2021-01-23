@@ -36,7 +36,7 @@ public class ImmuneUserCondition implements CommandCondition {
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         ACommand aCommand = commandService.findCommandByName(command.getConfiguration().getName());
-        ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, context.getUserInitiatedContext().getServer());
+        ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, context.getUserInitiatedContext().getGuild().getIdLong());
         Optional<Member> any = context.getParameters().getParameters().stream().filter(o -> o instanceof Member).map(this::toMember).findAny();
         if(any.isPresent()) {
             Member member = any.get();

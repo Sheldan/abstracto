@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.modmail.commands.condition;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.condition.detail.NotInModMailThreadConditionDetail;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -26,9 +27,12 @@ public class RequiresModMailCondition implements ModMailContextCondition {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
     @Override
     public ConditionResult shouldExecute(CommandContext commandContext, Command command) {
-        Optional<ModMailThread> threadOptional = modMailThreadManagementService.getByChannelOptional(commandContext.getUserInitiatedContext().getChannel());
+        Optional<ModMailThread> threadOptional = modMailThreadManagementService.getByChannelOptional(channelManagementService.loadChannel(commandContext.getChannel()));
         if(threadOptional.isPresent()) {
             return ConditionResult.builder().result(true).build();
         }

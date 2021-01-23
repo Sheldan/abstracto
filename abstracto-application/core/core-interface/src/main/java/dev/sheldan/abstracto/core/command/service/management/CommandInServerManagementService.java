@@ -8,4 +8,5 @@ public interface CommandInServerManagementService {
     ACommandInAServer crateCommandInServer(ACommand command, AServer server);
     boolean doesCommandExistInServer(ACommand command, AServer server);
     ACommandInAServer getCommandForServer(ACommand command, AServer server);
+    ACommandInAServer getCommandForServer(ACommand command, Long serverId);
 }

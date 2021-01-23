@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
@@ -21,14 +20,14 @@ public interface ExperienceRoleService {
      * @param role The {@link ARole} to set the level to
      * @param level The level the {@link ARole} should be awarded at
      */
-    CompletableFuture<Void> setRoleToLevel(Role role, Integer level, AChannel channel);
+    CompletableFuture<Void> setRoleToLevel(Role role, Integer level, Long channelId);
 
     /**
      * Removes the role from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole} configuration
      * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}
      *             configuration
      */
-    CompletableFuture<Void> unsetRole(ARole role, AChannel feedbackChannel);
+    CompletableFuture<Void> unsetRole(ARole role, Long channelId);
 
     /**
      * Calculates the appropriate {@link AExperienceRole} based on the provided list of {@link AExperienceRole}

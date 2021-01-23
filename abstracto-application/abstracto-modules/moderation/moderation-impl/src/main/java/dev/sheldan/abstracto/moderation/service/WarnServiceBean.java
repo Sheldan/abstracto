@@ -7,9 +7,9 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.WarnDecayMode;
+import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
-import dev.sheldan.abstracto.moderation.config.features.WarningMode;
+import dev.sheldan.abstracto.moderation.config.features.mode.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
@@ -215,7 +215,6 @@ public class WarnServiceBean implements WarnService {
         WarnDecayLogModel warnDecayLogModel = WarnDecayLogModel
                 .builder()
                 .guild(botService.getGuildById(server.getId()))
-                .server(server)
                 .warnings(warnDecayWarnings)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_LOG_TEMPLATE_KEY, warnDecayLogModel);

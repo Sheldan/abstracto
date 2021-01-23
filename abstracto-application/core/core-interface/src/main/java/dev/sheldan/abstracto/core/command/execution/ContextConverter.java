@@ -25,10 +25,6 @@ public class ContextConverter {
                     .guild(commandContext.getGuild())
                     .message(commandContext.getMessage())
                     .messageChannel(commandContext.getChannel())
-                    .channel(commandContext.getUserInitiatedContext().getChannel())
-                    .server(commandContext.getUserInitiatedContext().getServer())
-                    .aUserInAServer(commandContext.getUserInitiatedContext().getAUserInAServer())
-                    .user(commandContext.getUserInitiatedContext().getUser())
                     .build();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);

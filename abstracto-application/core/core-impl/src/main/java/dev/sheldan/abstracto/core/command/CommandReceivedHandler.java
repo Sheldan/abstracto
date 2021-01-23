@@ -212,16 +212,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
-        AChannel channel = channelManagementService.loadChannel(event.getChannel().getIdLong());
-        AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
-        AUserInAServer user = userInServerManagementService.loadUser(event.getMember());
         return UserInitiatedServerContext
                 .builder()
-                .channel(channel)
-                .server(server)
                 .member(event.getMember())
-                .aUserInAServer(user)
-                .user(user.getUserReference())
                 .messageChannel(event.getTextChannel())
                 .guild(event.getGuild())
                 .build();

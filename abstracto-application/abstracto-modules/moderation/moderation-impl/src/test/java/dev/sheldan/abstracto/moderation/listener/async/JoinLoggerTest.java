@@ -1,10 +1,9 @@
-package dev.sheldan.abstracto.moderation.listener;
+package dev.sheldan.abstracto.moderation.listener.async;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
-import dev.sheldan.abstracto.moderation.listener.async.JoinLogger;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;

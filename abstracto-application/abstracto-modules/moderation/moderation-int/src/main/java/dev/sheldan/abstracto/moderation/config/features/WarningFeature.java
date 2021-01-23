@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
+import dev.sheldan.abstracto.moderation.config.features.mode.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

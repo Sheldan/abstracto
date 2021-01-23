@@ -11,11 +11,13 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AFeature;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModesModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,16 +42,20 @@ public class FeatureModes extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<FeatureModeDisplay> featureModes;
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
         if(commandContext.getParameters().getParameters().isEmpty()) {
-            featureModes = featureModeService.getEffectiveFeatureModes(commandContext.getUserInitiatedContext().getServer());
+            featureModes = featureModeService.getEffectiveFeatureModes(server);
         } else {
             String featureName = (String) commandContext.getParameters().getParameters().get(0);
             FeatureEnum featureEnum = featureConfigService.getFeatureEnum(featureName);
             AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
-            featureModes = featureModeService.getEffectiveFeatureModes(commandContext.getUserInitiatedContext().getServer(), feature);
+            featureModes = featureModeService.getEffectiveFeatureModes(server, feature);
         }
         FeatureModesModel model = FeatureModesModel.builder().featureModes(featureModes).build();
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(FEATURE_MODES_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))

@@ -6,8 +6,10 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Test;
@@ -34,6 +36,9 @@ public class DisableFeatureModeTest {
     @Mock
     private FeatureModeService featureModeService;
 
+    @Mock
+    private ServerManagementService serverManagementService;
+
     @Test
     public void testExecuteDisable() {
         String featureName = "text";
@@ -43,9 +48,11 @@ public class DisableFeatureModeTest {
         FeatureMode featureMode = Mockito.mock(FeatureMode.class);
         when(featureModeService.getFeatureModeForKey(modeName)).thenReturn(featureMode);
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
+        AServer server = Mockito.mock(AServer.class);
+        when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
         CommandResult commandResultCompletableFuture = testUnit.execute(context);
         CommandTestUtilities.checkSuccessfulCompletion(commandResultCompletableFuture);
-        verify(featureModeService, times(1)).disableFeatureModeForFeature(featureEnum, context.getUserInitiatedContext().getServer(), featureMode);
+        verify(featureModeService, times(1)).disableFeatureModeForFeature(featureEnum, server, featureMode);
     }
 
     @Test(expected = FeatureNotFoundException.class)

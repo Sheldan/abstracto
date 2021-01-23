@@ -10,7 +10,11 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
@@ -51,20 +55,26 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     @Autowired
     private LeaderBoardModelConverter converter;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // parameter is optional, in case its not present, we default to the 0th page
         Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 1;
-        LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(commandContext.getUserInitiatedContext().getServer(), page);
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(server, page);
         LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.slimFromCommandContext(commandContext, LeaderBoardModel.class);
         List<CompletableFuture<LeaderBoardEntryModel>> futures = new ArrayList<>();
         List<CompletableFuture<LeaderBoardEntryModel>> completableFutures = converter.fromLeaderBoard(leaderBoard);
         futures.addAll(completableFutures);
         log.info("Rendering leaderboard for page {} in server {} for user {}.", page, commandContext.getAuthor().getId(), commandContext.getGuild().getId());
-
-        LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(commandContext.getUserInitiatedContext().getAUserInAServer());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
         CompletableFuture<LeaderBoardEntryModel> userRankFuture = converter.fromLeaderBoardEntry(userRank);
         futures.add(userRankFuture);
         return FutureUtils.toSingleFutureGeneric(futures).thenCompose(aVoid -> {

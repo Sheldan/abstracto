@@ -32,5 +32,9 @@
             <column name="key" value="userNotes"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
+        <insert tableName="feature">
+            <column name="key" value="inviteFilter"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
     </changeSet>
 </databaseChangeLog>

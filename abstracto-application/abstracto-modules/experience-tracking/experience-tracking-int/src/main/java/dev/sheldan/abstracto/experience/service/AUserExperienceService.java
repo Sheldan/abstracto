@@ -88,7 +88,7 @@ public interface AUserExperienceService {
      * @param channel The {@link AChannel} in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel}
      *                should be posted to
      */
-    CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, AChannel channel);
+    CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, Long channelId);
 
     /**
      * Recalculates the role of a single user in a server and synchronize the {@link net.dv8tion.jda.api.entities.Role}

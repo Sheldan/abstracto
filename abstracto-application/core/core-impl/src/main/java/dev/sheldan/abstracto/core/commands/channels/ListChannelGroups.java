@@ -8,6 +8,8 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
@@ -37,9 +39,13 @@ public class ListChannelGroups extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(commandContext.getUserInitiatedContext().getServer());
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
         ListChannelGroupsModel template = (ListChannelGroupsModel) ContextConverter.fromCommandContext(commandContext, ListChannelGroupsModel.class);
         template.setGroups(convertAChannelGroupToChannelGroupChannel(channelGroups));
         MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template);

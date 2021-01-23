@@ -12,6 +12,7 @@
     <property name="loggingFeature" value="(SELECT id FROM feature WHERE key = 'logging')"/>
     <property name="mutingFeature" value="(SELECT id FROM feature WHERE key = 'muting')"/>
     <property name="userNotesFeature" value="(SELECT id FROM feature WHERE key = 'userNotes')"/>
+    <property name="inviteLinkFilteringFeature" value="(SELECT id FROM feature WHERE key = 'inviteFilter')"/>
     <property name="today" value="(SELECT NOW())"/>
     <changeSet author="Sheldan"  id="moderation_default_feature_flag-insertion">
         <insert tableName="default_feature_flag">
@@ -42,6 +43,11 @@
         <insert tableName="default_feature_flag">
             <column name="enabled" value="false"/>
             <column name="feature_id" valueComputed="${userNotesFeature}" />
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="default_feature_flag">
+            <column name="enabled" value="false"/>
+            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}" />
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>

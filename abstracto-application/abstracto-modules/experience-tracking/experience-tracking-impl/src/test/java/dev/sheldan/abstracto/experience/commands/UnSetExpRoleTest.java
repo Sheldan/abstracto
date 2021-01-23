@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Test;
@@ -32,14 +31,17 @@ public class UnSetExpRoleTest {
     @Mock
     private RoleManagementService roleManagementService;
 
+    private static final Long CHANNEL_ID = 4L;
+
     @Test
     public void setUnSetExpRole() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        ARole changedRole = MockUtils.getRole(4L, noParameters.getUserInitiatedContext().getServer());
+        ARole changedRole = Mockito.mock(ARole.class);
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(changedRole));
+        when(context.getChannel().getIdLong()).thenReturn(CHANNEL_ID);
         ARole actualRole = Mockito.mock(ARole.class);
         when(roleManagementService.findRole(changedRole.getId())).thenReturn(actualRole);
-        when(experienceRoleService.unsetRole(actualRole, context.getUserInitiatedContext().getChannel())).thenReturn(CompletableFuture.completedFuture(null));
+        when(experienceRoleService.unsetRole(actualRole, CHANNEL_ID)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }

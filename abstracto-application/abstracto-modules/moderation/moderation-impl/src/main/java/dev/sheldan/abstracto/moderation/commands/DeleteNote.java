@@ -9,6 +9,8 @@ import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
@@ -30,13 +32,15 @@ public class DeleteNote extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
-
+    @Autowired
+    private ServerManagementService serverManagementService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Long id = (Long) commandContext.getParameters().getParameters().get(0);
-        if(userNoteManagementService.noteExists(id, commandContext.getUserInitiatedContext().getServer())) {
-           userNoteManagementService.deleteNote(id, commandContext.getUserInitiatedContext().getServer());
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        if(userNoteManagementService.noteExists(id, server)) {
+           userNoteManagementService.deleteNote(id, server);
         } else {
             // TODO replace with exception
             return CommandResult.fromError(templateService.renderSimpleTemplate(NOTE_NOT_FOUND_EXCEPTION_TEMPLATE));

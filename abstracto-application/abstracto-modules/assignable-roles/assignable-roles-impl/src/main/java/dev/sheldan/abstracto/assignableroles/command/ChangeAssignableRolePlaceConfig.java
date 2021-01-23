@@ -10,6 +10,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,13 +27,18 @@ public class ChangeAssignableRolePlaceConfig extends AbstractConditionableComman
     @Autowired
     private AssignableRolePlaceService service;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         AssignableRolePlaceParameterKey configKey = (AssignableRolePlaceParameterKey) parameters.get(1);
         Object parameterValue = parameters.get(2);
-        return service.changeConfiguration(commandContext.getUserInitiatedContext().getServer(), name, configKey, parameterValue)
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        return service.changeConfiguration(server, name, configKey, parameterValue)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

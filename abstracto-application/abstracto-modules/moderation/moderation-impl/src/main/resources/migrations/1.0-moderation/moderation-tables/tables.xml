@@ -10,4 +10,6 @@
     <include file="mute_role.xml" relativeToChangelogFile="true"/>
     <include file="user_note.xml" relativeToChangelogFile="true"/>
     <include file="warning.xml" relativeToChangelogFile="true"/>
+    <include file="allowed_invite_link.xml" relativeToChangelogFile="true"/>
+    <include file="filtered_invite_link.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,13 +29,16 @@ public class SwapAssignableRolePosition extends AbstractConditionableCommand {
     @Autowired
     private EmoteService emoteService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         FullEmote firstEmote = (FullEmote) parameters.get(1);
         FullEmote secondEmote = (FullEmote) parameters.get(2);
-        AServer server = commandContext.getUserInitiatedContext().getServer();
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
         if(emoteService.compareAEmote(firstEmote.getFakeEmote(), secondEmote.getFakeEmote())) {
             return CommandResult.fromError("You cannot swap the same emote");
         }

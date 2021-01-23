@@ -15,6 +15,7 @@ import dev.sheldan.abstracto.core.models.template.commands.PostTargetModelEntry;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -48,12 +49,15 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             log.trace("Displaying existing post targets for guild {}.", commandContext.getGuild().getId());
             PostTargetDisplayModel posttargetDisplayModel = (PostTargetDisplayModel) ContextConverter.fromCommandContext(commandContext, PostTargetDisplayModel.class);
-            AServer server = commandContext.getUserInitiatedContext().getServer();
+            AServer server = serverManagementService.loadServer(commandContext.getGuild());
             List<PostTarget> postTargets = postTargetService.getPostTargets(server);
             posttargetDisplayModel.setPostTargets(new ArrayList<>());
             List<PostTargetModelEntry> postTargetEntries = posttargetDisplayModel.getPostTargets();

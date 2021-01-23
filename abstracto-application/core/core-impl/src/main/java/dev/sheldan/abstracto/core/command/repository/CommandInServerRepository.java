@@ -14,4 +14,7 @@ public interface CommandInServerRepository extends JpaRepository<ACommandInAServ
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     ACommandInAServer findByServerReferenceAndCommandReference(AServer server, ACommand command);
+
+    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
+    ACommandInAServer findByServerReference_IdAndCommandReference(Long serverId, ACommand command);
 }

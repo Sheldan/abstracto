@@ -203,6 +203,11 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
+    public boolean postTargetDefinedInServer(PostTargetEnum name, Long serverId) {
+        return postTargetManagement.postTargetExists(name.getKey(), serverId);
+    }
+
+    @Override
     public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
         PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
         return editEmbedInPostTarget(messageId, message, postTarget);

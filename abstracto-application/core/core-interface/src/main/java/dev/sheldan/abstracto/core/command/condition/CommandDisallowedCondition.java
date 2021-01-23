@@ -38,7 +38,7 @@ public class CommandDisallowedCondition implements CommandCondition {
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         ACommand aCommand = commandService.findCommandByName(command.getConfiguration().getName());
-        ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, context.getUserInitiatedContext().getServer());
+        ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, context.getUserInitiatedContext().getGuild().getIdLong());
         if(Boolean.FALSE.equals(commandForServer.getRestricted())) {
             return ConditionResult.builder().result(true).build();
         }

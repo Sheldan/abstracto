@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +32,14 @@ public class SyncRoles extends AbstractConditionableCommand {
     @Autowired
     private AUserExperienceService userExperienceService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        AServer server = commandContext.getUserInitiatedContext().getServer();
+        AServer server =  serverManagementService.loadServer(commandContext.getGuild());
         log.info("Synchronizing roles on server {}", server.getId());
-        return userExperienceService.syncUserRolesWithFeedback(server, commandContext.getUserInitiatedContext().getChannel())
+        return userExperienceService.syncUserRolesWithFeedback(server, commandContext.getChannel().getIdLong())
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

@@ -8,7 +8,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.MyWarningsModel;
@@ -30,12 +32,16 @@ public class MyWarnings extends AbstractConditionableCommand {
     @Autowired
     private WarnManagementService warnManagementService;
 
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         MyWarningsModel model = (MyWarningsModel) ContextConverter.fromCommandContext(commandContext, MyWarningsModel.class);
-        Long currentWarnCount = warnManagementService.getActiveWarnsForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
+        AUserInAServer userInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        Long currentWarnCount = warnManagementService.getActiveWarnsForUser(userInAServer);
         model.setCurrentWarnCount(currentWarnCount);
-        Long totalWarnCount = warnManagementService.getTotalWarnsForUser(commandContext.getUserInitiatedContext().getAUserInAServer());
+        Long totalWarnCount = warnManagementService.getTotalWarnsForUser(userInAServer);
         model.setTotalWarnCount(totalWarnCount);
         channelService.sendEmbedTemplateInChannel(MY_WARNINGS_RESPONSE_EMBED_TEMPLATE, model, commandContext.getChannel());
         return CommandResult.fromIgnored();

@@ -21,7 +21,7 @@ public class CommandDisabledCondition implements CommandCondition {
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
         ACommand acommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
-        Boolean commandEnabled = channelGroupCommandService.isCommandEnabled(acommand, context.getUserInitiatedContext().getChannel());
+        Boolean commandEnabled = channelGroupCommandService.isCommandEnabled(acommand, context.getUserInitiatedContext().getMessageChannel().getIdLong());
         if(!commandEnabled) {
             return ConditionResult.builder().result(false).conditionDetail(new CommandDisabledDetail()).build();
         }

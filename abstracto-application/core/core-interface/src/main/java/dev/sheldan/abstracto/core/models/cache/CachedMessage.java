@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.models.cache;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,5 +26,9 @@ public class CachedMessage {
 
     public String getMessageUrl() {
         return MessageUtils.buildMessageUrl(this.serverId ,this.channelId, this.messageId);
+    }
+
+    public ServerUser getAuthorAsServerUser() {
+        return ServerUser.builder().serverId(serverId).userId(author.getAuthorId()).build();
     }
 }

@@ -11,9 +11,11 @@ import dev.sheldan.abstracto.core.command.service.management.FeatureManagementSe
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,13 +41,17 @@ public class EnableMode extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String featureName = (String) commandContext.getParameters().getParameters().get(0);
         String modeName = (String) commandContext.getParameters().getParameters().get(1);
         FeatureEnum featureEnum = featureConfigService.getFeatureEnum(featureName);
         FeatureMode featureMode = featureModeService.getFeatureModeForKey(modeName);
-        featureModeService.enableFeatureModeForFeature(featureEnum, commandContext.getUserInitiatedContext().getServer(), featureMode);
+        AServer server = serverManagementService.loadServer(commandContext.getGuild().getIdLong());
+        featureModeService.enableFeatureModeForFeature(featureEnum, server, featureMode);
         return CommandResult.fromSuccess();
     }
 

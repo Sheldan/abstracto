@@ -7,7 +7,9 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
@@ -38,6 +40,9 @@ public class EmoteStats extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     public static final String EMOTE_STATS_STATIC_RESPONSE = "emoteStats_static_response";
     public static final String EMOTE_STATS_ANIMATED_RESPONSE = "emoteStats_animated_response";
     public static final String EMOTE_STATS_NO_STATS_AVAILABLE = "emoteStats_no_stats_available";
@@ -52,7 +57,8 @@ public class EmoteStats extends AbstractConditionableCommand {
             Duration duration = (Duration) parameters.get(0);
             statsSince = Instant.now().minus(duration);
         }
-        EmoteStatsModel emoteStatsModel = usedEmoteService.getActiveEmoteStatsForServerSince(commandContext.getUserInitiatedContext().getServer(), statsSince);
+        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        EmoteStatsModel emoteStatsModel = usedEmoteService.getActiveEmoteStatsForServerSince(server, statsSince);
         List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
         // only show embed if static emote stats are available
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {

@@ -165,3 +165,37 @@ Deleting a user note::
 Retrieving user notes::
 * Usage: `userNotes [user]`
 * Description: If `user` is not provided, this will list the user notes of the whole server, if `user` is provided, this will only list user notes from this particular `user`.
+
+=== Invite filter
+
+Feature key `inviteFilter`
+
+This feature provides the ability to automatically delete invites not allowed on the server. These illegal invites can be tracked in a specific feature mode, in order to analyze if allowing them would make sense.
+Another feature mode can send a notification to a post target in case an invite link has been deleted.
+
+==== Post targets
+`inviteDeleteLog`:: target for notifications about deleted invite links - if the feature mode `filterNotifications` is enabled.
+
+
+==== Feature modes
+`trackUses`:: if enabled, each filtered invite will be tracked in the database. Disabled by default.
+`filterNotifications`:: if enabled, sends a notification to the `inviteDeleteLog` post target in case a message was deleted because of an invite. This notification contains the detected invite link(s), the author and a link to where the message was. Enabled by default.
+
+==== Commands
+Allowing an invite::
+* Usage: `allowInvite <invite>`
+* Description: Adds the `invite` to the list of invites, which are allowed on the server. The `invite` can either be the full invite URL or only the last part. If the invite is already allowed, this command will do nothing.
+
+Disallowing an invite::
+* Usage: `disAllowInvite <invite>`
+* Description: Removes the `invite` from the list of invites, which are allowed on the server. The `invite` can either be the full invite URL or only the last part. In case the given invite is not allowed, this command will throw an error.
+
+Showing the tracked filtered invites::
+* Usage: `showTrackedInviteLinks [amount]`
+* Description: Shows the invites which were used and deleted on the server ordered by the amount of times they were deleted. The `amount` can be used to define how many invite links to display. The default is the top 5.
+* Mode Restriction: This command is only available when the feature mode `trackUses` is enabled.
+
+Remove all or individual invites from the tracked filtered invites::
+* Usage: `removeTrackedInviteLinks [invite]`
+* Description: Removes the stored statistic for the given `invite`. In case `invite` is not given, it will delete all tracked filtered invites from the server.
+* Mode Restriction: This command is only available when the feature mode `trackUses` is enabled.

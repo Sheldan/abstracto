@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.service.ReminderService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +28,13 @@ public class UnRemind extends AbstractConditionableCommand {
     @Autowired
     private ReminderService reminderService;
 
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Long reminderId = (Long) commandContext.getParameters().getParameters().get(0);
-        reminderService.unRemind(reminderId, commandContext.getUserInitiatedContext().getAUserInAServer());
+        reminderService.unRemind(reminderId, userInServerManagementService.loadUser(commandContext.getAuthor()));
         return CommandResult.fromSuccess();
     }
 
