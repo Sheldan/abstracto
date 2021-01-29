@@ -1,19 +1,19 @@
 package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
+import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AUser;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
-import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
@@ -24,7 +24,9 @@ import dev.sheldan.abstracto.utility.models.template.commands.starboard.Starboar
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +48,13 @@ public class StarboardServiceBean implements StarboardService {
     public static final String STAR_LEVELS_CONFIG_KEY = "starLvls";
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
+
+    @Autowired
+    private GuildService guildService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Autowired
     private PostTargetService postTargetService;
@@ -77,6 +85,9 @@ public class StarboardServiceBean implements StarboardService {
 
     @Autowired
     private DefaultConfigManagementService defaultConfigManagementService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Autowired
     private StarboardServiceBean self;
@@ -125,9 +136,9 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     private CompletableFuture<StarboardPostModel> buildStarboardPostModel(CachedMessage message, Integer starCount)  {
-        return botService.getMemberInServerAsync(message.getServerId(), message.getAuthor().getAuthorId()).thenApply(member -> {
-            Optional<TextChannel> channel = botService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
-            Optional<Guild> guild = botService.getGuildByIdOptional(message.getServerId());
+        return memberService.getMemberInServerAsync(message.getServerId(), message.getAuthor().getAuthorId()).thenApply(member -> {
+            Optional<TextChannel> channel = channelService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
+            Optional<Guild> guild = guildService.getGuildByIdOptional(message.getServerId());
             // TODO use model objects instead of building entity models
             AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
             AUser user = AUser.builder().id(message.getAuthor().getAuthorId()).build();
@@ -165,7 +176,7 @@ public class StarboardServiceBean implements StarboardService {
     public void deleteStarboardMessagePost(StarboardPost message)  {
         AChannel starboardChannel = message.getStarboardChannel();
         log.info("Deleting starboard post {} in server {}", message.getId(), message.getSourceChanel().getServer().getId());
-        botService.deleteMessage(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
+        messageService.deleteMessageInChannelInServer(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
     }
 
     @Override

@@ -3,7 +3,8 @@ package dev.sheldan.abstracto.moderation.listener.async;
 import dev.sheldan.abstracto.core.models.cache.CachedAttachment;
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -40,7 +41,10 @@ public class MessageDeleteLogListenerTest {
     private PostTargetService postTargetService;
 
     @Mock
-    private BotService botService;
+    private ChannelService channelService;
+
+    @Mock
+    private MemberService memberService;
 
     @Mock
     private ChannelManagementService channelManagementService;
@@ -87,7 +91,7 @@ public class MessageDeleteLogListenerTest {
         when(deletedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
         when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
-        when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(member));
+        when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(member));
         testUnit.execute(deletedMessage);
         verify(self, times(1)).executeListener(deletedMessage, member);
     }
@@ -99,7 +103,7 @@ public class MessageDeleteLogListenerTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(member.getGuild()).thenReturn(guild);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         testUnit.executeListener(deletedMessage, member);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.DELETE_LOG, SERVER_ID);
         MessageDeletedLog messageDeletedLog = captor.getValue();
@@ -114,7 +118,7 @@ public class MessageDeleteLogListenerTest {
         String attachmentUrl = "url";
         when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         CachedAttachment cachedAttachment = Mockito.mock(CachedAttachment.class);
         when(cachedAttachment.getProxyUrl()).thenReturn(attachmentUrl);
         List<CachedAttachment> attachmentList = Arrays.asList(cachedAttachment);
@@ -138,7 +142,7 @@ public class MessageDeleteLogListenerTest {
     public void testExecuteListenerWithTwoAttachment() {
         when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         String attachmentUrl = "url";
         String secondAttachmentUrl = "url2";
         CachedAttachment cachedAttachment = Mockito.mock(CachedAttachment.class);

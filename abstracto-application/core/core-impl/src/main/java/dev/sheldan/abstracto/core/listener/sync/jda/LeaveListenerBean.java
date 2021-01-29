@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +51,7 @@ public class LeaveListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualLeaveListener(@Nonnull GuildMemberRemoveEvent event, LeaveListener leaveListener) {
         log.trace("Executing leave listener {} for member {} in guild {}.", leaveListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
         leaveListener.execute(event.getMember(), event.getGuild());

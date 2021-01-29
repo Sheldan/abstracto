@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
         if(message.getAuthor().isBot()) {
             return;
         }
-        AUser user = userManagementService.loadUser(message.getAuthor().getIdLong());
+        AUser user = userManagementService.loadOrCreateUser(message.getAuthor().getIdLong());
         if(modMailThreadManagementService.hasOpenModMailThread(user)) {
             log.trace("User {} has an open modmail thread. Forwarding message {}.", user.getId(), message.getId());
             // there is only one open mod mail thread for a user at a time, so we can select the first one

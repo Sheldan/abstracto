@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.converter;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.models.RepostLeaderboardEntryModel;
@@ -23,7 +23,7 @@ public class RepostLeaderBoardConverter {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private RepostLeaderBoardConverter self;
@@ -40,11 +40,11 @@ public class RepostLeaderBoardConverter {
     }
 
     public CompletableFuture<RepostLeaderboardEntryModel> convertSingleUser(RepostLeaderboardResult result) {
-        AUserInAServer user = userInServerManagementService.loadUser(result.getUserInServerId());
+        AUserInAServer user = userInServerManagementService.loadOrCreateUser(result.getUserInServerId());
         Integer count = result.getRepostCount();
         Long userInServerId = result.getUserInServerId();
         Integer rank = result.getRank();
-        return botService.getMemberInServerAsync(user).thenApply(member ->
+        return memberService.getMemberInServerAsync(user).thenApply(member ->
             self.loadUserFromDatabase(member, count, userInServerId, rank)
         );
     }
@@ -54,7 +54,7 @@ public class RepostLeaderBoardConverter {
         return RepostLeaderboardEntryModel
                 .builder()
                 .member(member)
-                .user(userInServerManagementService.loadUser(userInServerId))
+                .user(userInServerManagementService.loadOrCreateUser(userInServerId))
                 .count(count)
                 .rank(rank)
                 .build();

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.converter;
 
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -25,7 +25,7 @@ public class UserNotesConverter {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private UserNotesConverter self;
@@ -38,7 +38,7 @@ public class UserNotesConverter {
         List<CompletableFuture<Member>> memberFutures = new ArrayList<>();
         HashMap<ServerSpecificId, CompletableFuture<Member>> noteMemberMap = new HashMap<>();
         userNotes.forEach(userNote -> {
-            CompletableFuture<Member> memberFuture = botService.getMemberInServerAsync(userNote.getUser());
+            CompletableFuture<Member> memberFuture = memberService.getMemberInServerAsync(userNote.getUser());
             memberFutures.add(memberFuture);
             noteMemberMap.put(userNote.getUserNoteId(), memberFuture);
         });

@@ -73,7 +73,7 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
 
     @Override
     public Optional<AssignedRoleUser> findByUserInServerOptional(ServerUser serverUser) {
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(serverUser);
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(serverUser);
         return findByUserInServerOptional(aUserInAServer);
     }
 

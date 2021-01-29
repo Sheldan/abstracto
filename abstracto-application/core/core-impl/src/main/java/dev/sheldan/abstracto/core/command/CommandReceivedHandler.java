@@ -6,20 +6,23 @@ import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterValidationException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
-import dev.sheldan.abstracto.core.command.execution.*;
-import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
+import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.*;
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
@@ -28,9 +31,14 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -80,6 +88,14 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private List<CommandParameterHandler> parameterHandlers;
 
+    @Autowired
+    private MetricService metricService;
+
+    public static final String COMMAND_PROCESSED = "command.processed";
+    public static final String STATUS_TAG = "status";
+    public static final CounterMetric COMMANDS_PROCESSED_COUNTER = CounterMetric.builder().name(COMMAND_PROCESSED).tagList(Arrays.asList(MetricTag.getTag(STATUS_TAG, "processed"))).build();
+    public static final CounterMetric COMMANDS_WRONG_PARAMETER_COUNTER = CounterMetric.builder().name(COMMAND_PROCESSED).tagList(Arrays.asList(MetricTag.getTag(STATUS_TAG, "parameter.wrong"))).build();
+
     @Override
     @Transactional
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -89,7 +105,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         if(!commandManager.isCommand(event.getMessage())) {
             return;
         }
-
+        metricService.incrementCounter(COMMANDS_PROCESSED_COUNTER);
         final Command foundCommand;
         try {
             String contentStripped = event.getMessage().getContentRaw();
@@ -134,9 +150,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
                         foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
-                foundCommand.executeAsync(commandContext).thenAccept(result ->
-                        executePostCommandListener(foundCommand, commandContext, result)
-                ).exceptionally(throwable -> {
+                self.executeAsyncCommand(foundCommand, commandContext).exceptionally(throwable -> {
                     log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
                     UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
                     CommandContext rebuildContext = CommandContext.builder()
@@ -161,6 +175,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
         if(commandResult != null) {
             self.executePostCommandListener(foundCommand, commandContext, commandResult);
         }
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public CompletableFuture<Void> executeAsyncCommand(Command foundCommand, CommandContext commandContext) {
+        return foundCommand.executeAsync(commandContext).thenAccept(result ->
+                executePostCommandListener(foundCommand, commandContext, result)
+        );
     }
 
     @Transactional
@@ -204,7 +225,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public CommandResult executeCommand(Command foundCommand, CommandContext commandContext) {
         log.info("Executing sync command {} for server {} in channel {} based on message {} by user {}.",
                 foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
@@ -260,6 +281,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     throw abstractoRunTimeException;
                 } catch (Exception e) {
                     log.warn("Failed to parse parameter with exception.", e);
+                    metricService.incrementCounter(COMMANDS_WRONG_PARAMETER_COUNTER);
                     throw new IncorrectParameterException(command, param.getName());
                 }
             }
@@ -311,5 +333,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
             Parameters parameters = Parameters.builder().parameters(parsedParameters).build();
             return CompletableFuture.completedFuture(parameters);
         }
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(COMMANDS_PROCESSED_COUNTER, "Commands processed");
+        metricService.registerCounter(COMMANDS_WRONG_PARAMETER_COUNTER, "Commands with incorrect parameter");
     }
 }

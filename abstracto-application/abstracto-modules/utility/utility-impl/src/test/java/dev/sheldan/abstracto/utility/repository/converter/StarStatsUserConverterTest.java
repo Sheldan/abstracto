@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.utility.repository.converter;
 
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
@@ -28,7 +28,7 @@ public class StarStatsUserConverterTest {
     private StarStatsUserConverter testUnit;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private UserInServerManagementService userInServerManagementService;
@@ -47,8 +47,8 @@ public class StarStatsUserConverterTest {
         AUser firstAUser = Mockito.mock(AUser.class);
         when(firstAUser.getId()).thenReturn(firstUserId);
         when(firstUser.getUserReference()).thenReturn(firstAUser);
-        when(userInServerManagementService.loadUser(firstUserId)).thenReturn(firstUser);
-        when(botService.getMemberInServerAsync(serverId, firstUserId)).thenReturn(CompletableFuture.completedFuture(firstMember));
+        when(userInServerManagementService.loadOrCreateUser(firstUserId)).thenReturn(firstUser);
+        when(memberService.getMemberInServerAsync(serverId, firstUserId)).thenReturn(CompletableFuture.completedFuture(firstMember));
         when(firstResult.getUserId()).thenReturn(firstUserId);
         when(firstResult.getStarCount()).thenReturn(firstStarCount);
         results.add(firstResult);
@@ -58,8 +58,8 @@ public class StarStatsUserConverterTest {
         AUser secondAUser = Mockito.mock(AUser.class);
         when(secondAUser.getId()).thenReturn(secondUserId);
         when(secondUser.getUserReference()).thenReturn(secondAUser);
-        when(userInServerManagementService.loadUser(secondUserId)).thenReturn(secondUser);
-        when(botService.getMemberInServerAsync(serverId, secondUserId)).thenReturn(CompletableFuture.completedFuture(secondMember));
+        when(userInServerManagementService.loadOrCreateUser(secondUserId)).thenReturn(secondUser);
+        when(memberService.getMemberInServerAsync(serverId, secondUserId)).thenReturn(CompletableFuture.completedFuture(secondMember));
 
         when(secondResult.getUserId()).thenReturn(secondUserId);
         when(secondResult.getStarCount()).thenReturn(secondStarCount);
@@ -83,7 +83,7 @@ public class StarStatsUserConverterTest {
         List<StarStatsUserResult> results = new ArrayList<>();
 
         List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
-        verify(botService, times(0)).getMemberInServer(eq(serverId), anyLong());
+        verify(memberService, times(0)).getMemberInServer(eq(serverId), anyLong());
         Assert.assertEquals(0, starStatsUsers.size());
 
     }

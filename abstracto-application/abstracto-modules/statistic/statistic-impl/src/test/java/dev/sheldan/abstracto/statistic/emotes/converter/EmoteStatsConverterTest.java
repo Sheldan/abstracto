@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.statistic.emotes.converter;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
@@ -27,7 +27,7 @@ public class EmoteStatsConverterTest {
     private EmoteStatsConverter testUnit;
 
     @Mock
-    private BotService botService;
+    private GuildService guildService;
 
     @Mock
     private TrackedEmoteManagementService trackedEmoteManagementService;
@@ -66,7 +66,7 @@ public class EmoteStatsConverterTest {
         when(trackedEmote.getAnimated()).thenReturn(false);
         when(trackedEmote2.getExternal()).thenReturn(true);
         when(trackedEmote2.getAnimated()).thenReturn(true);
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         EmoteStatsModel result = testUnit.fromEmoteStatsResults(Arrays.asList(emoteStatsResult, emoteStatsResult2));
 
         Assert.assertEquals(1, result.getStaticEmotes().size());
@@ -89,7 +89,7 @@ public class EmoteStatsConverterTest {
         when(trackedEmote2.getAnimated()).thenReturn(true);
         when(trackedEmote2.getDeleted()).thenReturn(false);
         when(trackedEmote2.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID_2));
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         Emote emote1 = Mockito.mock(Emote.class);
         when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote1);
         Emote emote2 = Mockito.mock(Emote.class);
@@ -114,7 +114,7 @@ public class EmoteStatsConverterTest {
         when(trackedEmote2.getExternal()).thenReturn(false);
         when(trackedEmote2.getAnimated()).thenReturn(true);
         when(trackedEmote2.getDeleted()).thenReturn(true);
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         EmoteStatsModel result = testUnit.fromEmoteStatsResults(Arrays.asList(emoteStatsResult, emoteStatsResult2));
 
         Assert.assertEquals(1, result.getStaticEmotes().size());

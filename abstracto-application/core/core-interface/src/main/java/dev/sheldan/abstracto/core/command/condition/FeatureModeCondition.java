@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.detail.IncorrectFeatureModeConditionDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.core.command.condition.detail.IncorrectFeatureModeConditionDetail;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

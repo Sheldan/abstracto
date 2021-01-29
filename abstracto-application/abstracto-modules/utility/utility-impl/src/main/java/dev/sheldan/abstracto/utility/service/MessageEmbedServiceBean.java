@@ -1,16 +1,13 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.MessageCache;
-import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
@@ -49,7 +46,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private TemplateService templateService;
@@ -67,7 +64,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private MessageEmbedPostManagementService messageEmbedPostManagementService;
 
     @Autowired
-    private MessageService messageService;
+    private ReactionService reactionService;
 
     @Override
     public List<MessageEmbedLink> getLinksInMessage(String message) {
@@ -123,14 +120,14 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     @Transactional
     public CompletionStage<Void> sendEmbeddingMessage(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, MessageEmbeddedModel messageEmbeddedModel) {
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
-        AUserInAServer cause = userInServerManagementService.loadUser(userEmbeddingUserInServerId);
+        AUserInAServer cause = userInServerManagementService.loadOrCreateUser(userEmbeddingUserInServerId);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
         log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
                 cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
         Long userInServerId = cause.getUserInServerId();
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
             Message createdMessage = completableFutures.get(0).join();
-            return messageService.addReactionToMessageWithFuture(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage).thenAccept(aVoid1 ->
+            return reactionService.addReactionToMessageAsync(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage).thenAccept(aVoid1 ->
                 self.loadUserAndPersistMessage(cachedMessage, userInServerId, createdMessage)
             );
         });
@@ -138,19 +135,19 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Transactional
     public void loadUserAndPersistMessage(CachedMessage cachedMessage, Long userInServerId, Message createdMessage) {
-        AUserInAServer innerCause = userInServerManagementService.loadUser(userInServerId);
+        AUserInAServer innerCause = userInServerManagementService.loadOrCreateUser(userInServerId);
         messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, innerCause);
     }
 
     private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
-        return botService.getMemberInServerAsync(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId()).thenApply(member ->
+        return memberService.getMemberInServerAsync(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId()).thenApply(member ->
             self.loadMessageEmbedModel(message, embeddedMessage, member)
         );
     }
 
     @Transactional
     public MessageEmbeddedModel loadMessageEmbedModel(Message message, CachedMessage embeddedMessage, Member member) {
-        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServerOptional(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
+        Optional<TextChannel> textChannelFromServer = channelService.getTextChannelFromServerOptional(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
         TextChannel sourceChannel = textChannelFromServer.orElse(null);
         return MessageEmbeddedModel
                 .builder()

@@ -4,8 +4,12 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
@@ -20,7 +24,9 @@ import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -41,6 +47,22 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private MetricService metricService;
+
+    @Autowired
+    private MessageService messageService;
+
+    public static final String MODERATION_PURGE_METRIC = "invite.filter";
+    public static final String CONSEQUENCE = "consequence";
+
+    private static final CounterMetric MESSAGE_INVITE_FILTERED =
+            CounterMetric
+                    .builder()
+                    .tagList(Arrays.asList(MetricTag.getTag(CONSEQUENCE, "filtered")))
+                    .name(MODERATION_PURGE_METRIC)
+                    .build();
+
     public static final String INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY = "invite_link_deleted_notification";
 
     @Override
@@ -60,7 +82,8 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
         }
 
         if(toDelete) {
-            message.delete().queue();
+            metricService.incrementCounter(MESSAGE_INVITE_FILTERED);
+            messageService.deleteMessage(message);
             boolean trackUsages = featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, serverId, InviteFilterMode.TRACK_USES);
             if(trackUsages) {
                 codesToTrack.forEach(s -> inviteLinkFilterService.storeFilteredInviteLinkUsage(s, author));
@@ -110,5 +133,10 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
     @Override
     public Integer getPriority() {
         return ListenerPriority.HIGH;
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(MESSAGE_INVITE_FILTERED, "Amount of messages containing an invite filtered");
     }
 }

@@ -3,38 +3,36 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.mode.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
-import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
-import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayWarning;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
+import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
+import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
+import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayWarning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -55,7 +53,10 @@ public class WarnServiceBean implements WarnService {
     private TemplateService templateService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
+
+    @Autowired
+    private GuildService guildService;
 
     @Autowired
     private MessageService messageService;
@@ -115,8 +116,8 @@ public class WarnServiceBean implements WarnService {
     public void persistWarning(WarnContext context) {
         log.info("Persisting warning {} in server {} for user {} by user {}.",
                 context.getWarnId(), context.getGuild().getId(), context.getWarnedMember().getId(), context.getMember().getId());
-        AUserInAServer warnedUser = userInServerManagementService.loadUser(context.getWarnedMember());
-        AUserInAServer warningUser = userInServerManagementService.loadUser(context.getMember());
+        AUserInAServer warnedUser = userInServerManagementService.loadOrCreateUser(context.getWarnedMember());
+        AUserInAServer warningUser = userInServerManagementService.loadOrCreateUser(context.getMember());
         warnManagementService.createWarning(warnedUser, warningUser, context.getReason(), context.getWarnId());
 
     }
@@ -179,8 +180,8 @@ public class WarnServiceBean implements WarnService {
         List<CompletableFuture<Member>> allFutures = new ArrayList<>();
         Long serverId = server.getId();
         warningsToDecay.forEach(warning -> {
-            CompletableFuture<Member> warningMember = botService.getMemberInServerAsync(warning.getWarningUser());
-            CompletableFuture<Member> warnedMember = botService.getMemberInServerAsync(warning.getWarnedUser());
+            CompletableFuture<Member> warningMember = memberService.getMemberInServerAsync(warning.getWarningUser());
+            CompletableFuture<Member> warnedMember = memberService.getMemberInServerAsync(warning.getWarnedUser());
             FutureMemberPair futurePair = FutureMemberPair.builder().firstMember(warningMember).secondMember(warnedMember).build();
             warningMembers.put(warning.getWarnId(), futurePair);
         });
@@ -214,7 +215,7 @@ public class WarnServiceBean implements WarnService {
         });
         WarnDecayLogModel warnDecayLogModel = WarnDecayLogModel
                 .builder()
-                .guild(botService.getGuildById(server.getId()))
+                .guild(guildService.getGuildById(server.getId()))
                 .warnings(warnDecayWarnings)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_LOG_TEMPLATE_KEY, warnDecayLogModel);

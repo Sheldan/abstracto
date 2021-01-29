@@ -47,7 +47,7 @@ public class RemindersTest {
         Reminder secondReminder = Reminder.builder().build();
         List<Reminder> reminders = Arrays.asList(reminder, secondReminder);
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
-        when(userInServerManagementService.loadUser(context.getAuthor())).thenReturn(user);
+        when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(user);
         when(reminderManagementService.getActiveRemindersForUser(user)).thenReturn(reminders);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Reminders.REMINDERS_RESPONSE_TEMPLATE), modelCaptor.capture(), eq(context.getChannel()));

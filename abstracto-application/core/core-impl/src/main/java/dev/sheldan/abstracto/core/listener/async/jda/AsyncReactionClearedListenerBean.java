@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +60,7 @@ public class AsyncReactionClearedListenerBean extends ListenerAdapter {
         if(clearedListenerList == null) return;
         clearedListenerList.forEach(reactionRemovedListener ->
             CompletableFuture.runAsync(() ->
-                self.callConcreteListener(cachedMessage, reactionRemovedListener)
+                self.executeIndividualListener(cachedMessage, reactionRemovedListener)
             , reactionClearedExecutor)
             .exceptionally(throwable -> {
                 log.error("Async reaction cleared listener {} failed with exception.", reactionRemovedListener, throwable);
@@ -68,8 +69,8 @@ public class AsyncReactionClearedListenerBean extends ListenerAdapter {
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void callConcreteListener(CachedMessage cachedMessage, AsyncReactionClearedListener reactionRemovedListener) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
+    public void executeIndividualListener(CachedMessage cachedMessage, AsyncReactionClearedListener reactionRemovedListener) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
         if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
             return;

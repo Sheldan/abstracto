@@ -25,6 +25,8 @@ public class PaginatorServiceBean implements PaginatorService {
     @Autowired
     private Gson gson;
 
+    @Autowired
+    private MessageService messageService;
 
     @Override
     public Paginator createPaginatorFromTemplate(String templateKey, Object model, EventWaiter waiter) {
@@ -42,7 +44,7 @@ public class PaginatorServiceBean implements PaginatorService {
                 .setEventWaiter(waiter)
                 .waitOnSinglePage(true)
                 .setTimeout(ObjectUtils.defaultIfNull(configuration.getTimeoutSeconds(), 120L), TimeUnit.SECONDS)
-                .setFinalAction(message -> message.delete().queue())
+                .setFinalAction(message -> messageService.deleteMessage(message))
                 .build();
     }
 

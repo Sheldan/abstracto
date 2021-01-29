@@ -39,7 +39,7 @@ public class Reminders extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(aUserInAServer);
         RemindersModel model = (RemindersModel) ContextConverter.fromCommandContext(commandContext, RemindersModel.class);
         model.setReminders(activeReminders);

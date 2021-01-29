@@ -2,9 +2,9 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
 import dev.sheldan.abstracto.moderation.repository.MuteRoleRepository;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 
 import java.util.Arrays;
 import java.util.List;

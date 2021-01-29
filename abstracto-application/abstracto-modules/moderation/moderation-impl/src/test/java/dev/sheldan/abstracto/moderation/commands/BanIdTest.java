@@ -2,21 +2,25 @@ package dev.sheldan.abstracto.moderation.commands;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.models.template.commands.BanIdLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BanIdTest {

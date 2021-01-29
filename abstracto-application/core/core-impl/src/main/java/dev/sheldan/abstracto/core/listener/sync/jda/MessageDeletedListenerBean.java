@@ -3,13 +3,13 @@ package dev.sheldan.abstracto.core.listener.sync.jda;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.FeatureConfigService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.core.service.MessageCache;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -19,13 +19,18 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListenerBean.ACTION;
+import static dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListenerBean.MESSAGE_METRIC;
 
 @Component
 @Slf4j
@@ -55,11 +60,27 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
     private ChannelManagementService channelManagementService;
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
+
+    @Autowired
+    private ChannelService channelService;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private MetricService metricService;
+
+    private static final CounterMetric MESSAGE_DELETED_COUNTER =
+            CounterMetric
+                    .builder().name(MESSAGE_METRIC)
+                    .tagList(Arrays.asList(MetricTag.getTag(ACTION, "deleted")))
+                    .build();
 
     @Override
     @Transactional
     public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
+        metricService.incrementCounter(MESSAGE_DELETED_COUNTER);
         if(listener == null) return;
         Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> self.executeListener(cachedMessage);
         messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong())
@@ -77,14 +98,14 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
                 .builder()
                 .guild(serverManagementService.loadOrCreate(cachedMessage.getServerId()))
                 .channel(channelManagementService.loadChannel(cachedMessage.getChannelId()))
-                .aUserInAServer(userInServerManagementService.loadUser(cachedMessage.getServerId(), cachedMessage.getAuthor().getAuthorId()))
+                .aUserInAServer(userInServerManagementService.loadOrCreateUser(cachedMessage.getServerId(), cachedMessage.getAuthor().getAuthorId()))
                 .build();
-        botService.getMemberInServerAsync(cachedMessage.getServerId(), cachedMessage.getAuthor().getAuthorId()).thenAccept(member -> {
+        memberService.getMemberInServerAsync(cachedMessage.getServerId(), cachedMessage.getAuthor().getAuthorId()).thenAccept(member -> {
             GuildChannelMember authorMember = GuildChannelMember
                     .builder()
-                    .guild(botService.getGuildById(cachedMessage.getServerId()))
-                    .textChannel(botService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotInGuildException(cachedMessage.getChannelId())))
-                    .member(botService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthor().getAuthorId()))
+                    .guild(guildService.getGuildById(cachedMessage.getServerId()))
+                    .textChannel(channelService.getTextChannelFromServerOptional(cachedMessage.getServerId(), cachedMessage.getChannelId()).orElseThrow(() -> new ChannelNotInGuildException(cachedMessage.getChannelId())))
+                    .member(memberService.getMemberInServer(cachedMessage.getServerId(), cachedMessage.getAuthor().getAuthorId()))
                     .build();
             listener.forEach(messageDeletedListener -> {
                 FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageDeletedListener.getFeature());
@@ -104,7 +125,7 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualMessageDeletedListener(CachedMessage cachedMessage, AServerAChannelAUser authorUser, GuildChannelMember authorMember, MessageDeletedListener messageDeletedListener) {
         log.trace("Executing message deleted listener {} for message {} in guild {}.", messageDeletedListener.getClass().getName(), cachedMessage.getMessageId(), cachedMessage.getMessageId());
         messageDeletedListener.execute(cachedMessage, authorUser, authorMember);
@@ -112,6 +133,7 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
 
     @PostConstruct
     public void postConstruct() {
+        metricService.registerCounter(MESSAGE_DELETED_COUNTER, "Messages deleted");
         BeanUtils.sortPrioritizedListeners(listener);
     }
 }

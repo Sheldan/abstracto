@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)

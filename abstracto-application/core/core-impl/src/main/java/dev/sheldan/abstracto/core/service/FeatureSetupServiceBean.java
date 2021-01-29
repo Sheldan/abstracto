@@ -1,9 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
-import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
-import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.template.commands.SetupCompletedNotificationModel;
@@ -49,6 +48,9 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
     private TemplateService templateService;
 
     @Autowired
+    private MemberService memberService;
+
+    @Autowired
     private BotService botService;
 
     @Autowired
@@ -58,7 +60,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
     public CompletableFuture<Void> performFeatureSetup(FeatureConfig featureConfig, AServerChannelUserId user, Long initialMessageId) {
         log.info("Performing setup of feature {} for user {} in channel {} in server {}.",
                 featureConfig.getFeature().getKey(), user.getUserId(), user.getChannelId(), user.getGuildId());
-        Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(user.getGuildId(), user.getChannelId());
+        Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(user.getGuildId(), user.getChannelId());
         if(textChannelInGuild.isPresent()) {
             List<String> requiredSystemConfigKeys = featureConfig.getRequiredSystemConfigKeys();
             List<SetupExecution> steps = new ArrayList<>();
@@ -142,8 +144,8 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
 
     @Transactional
     public void showExceptionMessage(Throwable throwable, AServerChannelUserId aServerChannelUserId) {
-        Optional<TextChannel> channelOptional = botService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
-        botService.getMemberInServerAsync(aServerChannelUserId.getGuildId(), aServerChannelUserId.getUserId()).thenAccept(member ->
+        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
+        memberService.getMemberInServerAsync(aServerChannelUserId.getGuildId(), aServerChannelUserId.getUserId()).thenAccept(member ->
             channelOptional.ifPresent(textChannel -> exceptionService.reportExceptionToChannel(throwable, textChannel, member))
         ).exceptionally(innserThrowable -> {
             log.error("Failed to report exception message for exception {} for user {} in channel {} in server {}.", throwable, aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), innserThrowable);
@@ -174,7 +176,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                 .featureConfig(featureConfig)
                 .build();
         String text = templateService.renderTemplate(templateName, model);
-        Optional<TextChannel> textChannel = channelService.getTextChannelInGuild(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
+        Optional<TextChannel> textChannel = channelService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
         textChannel.ifPresent(channel -> channelService.sendTextToChannel(text, channel));
     }
 

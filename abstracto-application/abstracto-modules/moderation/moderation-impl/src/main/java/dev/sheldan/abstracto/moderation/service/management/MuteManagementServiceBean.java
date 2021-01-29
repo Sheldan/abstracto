@@ -71,7 +71,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
 
     @Override
     public boolean hasActiveMute(Member member) {
-        return muteRepository.existsByMutedUserAndMuteEndedFalse(userInServerManagementService.loadUser(member));
+        return muteRepository.existsByMutedUserAndMuteEndedFalse(userInServerManagementService.loadOrCreateUser(member));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
 
     @Override
     public Mute getAMuteOf(Member member) {
-        return getAMuteOf(userInServerManagementService.loadUser(member));
+        return getAMuteOf(userInServerManagementService.loadOrCreateUser(member));
     }
 
     @Override

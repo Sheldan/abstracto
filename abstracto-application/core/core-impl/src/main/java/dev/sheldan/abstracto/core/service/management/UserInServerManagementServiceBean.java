@@ -9,7 +9,10 @@ import dev.sheldan.abstracto.core.repository.UserInServerRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +30,11 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     @Autowired
     private UserManagementService userManagementService;
 
+    @Autowired
+    private UserInServerManagementServiceBean self;
 
     @Override
-    public AUserInAServer loadUser(Long serverId, Long userId) {
+    public AUserInAServer loadOrCreateUser(Long serverId, Long userId) {
         if(userInServerRepository.existsByServerReference_IdAndUserReference_Id(serverId, userId)) {
             return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
         } else {
@@ -38,8 +43,13 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public AUserInAServer loadUser(ServerUser serverUser) {
-        return loadUser(serverUser.getServerId(), serverUser.getUserId());
+    public AUserInAServer onlyLoadUser(Long serverId, Long userId) {
+        return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
+    }
+
+    @Override
+    public AUserInAServer loadOrCreateUser(ServerUser serverUser) {
+        return loadOrCreateUser(serverUser.getServerId(), serverUser.getUserId());
     }
 
     @Override
@@ -48,7 +58,7 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public AUserInAServer loadUser(AServer server, AUser user) {
+    public AUserInAServer loadOrCreateUser(AServer server, AUser user) {
         if(userInServerRepository.existsByServerReferenceAndUserReference(server, user)) {
             return userInServerRepository.findByServerReferenceAndUserReference(server, user).orElseThrow(() -> new UserInServerNotFoundException(0L));
         } else {
@@ -57,8 +67,8 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public AUserInAServer loadUser(Member member) {
-        return this.loadUser(member.getGuild().getIdLong(), member.getIdLong());
+    public AUserInAServer loadOrCreateUser(Member member) {
+        return this.loadOrCreateUser(member.getGuild().getIdLong(), member.getIdLong());
     }
 
     @Override
@@ -67,7 +77,7 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public AUserInAServer loadUser(Long userInServerId) {
+    public AUserInAServer loadOrCreateUser(Long userInServerId) {
         return loadUserOptional(userInServerId).orElseThrow(() -> new UserInServerNotFoundException(userInServerId));
     }
 
@@ -77,8 +87,21 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
-    public AUserInAServer createUserInServer(Long guildId, Long userId) {
-        log.info("Creating user {} in server {}.", userId, guildId);
+    public AUserInAServer createUserInServer(Long serverId, Long userId) {
+        log.info("Creating user {} in server {}.", userId, serverId);
+        AUserInAServer aUserInAServer;
+        try {
+            // TODO there seems to be an issue, of trying to create the user a second time
+            aUserInAServer = self.tryToCreateAUserInAServer(serverId, userId);
+        } catch (DataIntegrityViolationException ex) {
+            log.info("Concurrency exception creating user - retrieving.");
+            aUserInAServer = onlyLoadUser(serverId, userId);
+        }
+        return aUserInAServer;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public AUserInAServer tryToCreateAUserInAServer(Long guildId, Long userId) {
         AUserInAServer aUserInAServer = serverManagementService.addUserToServer(guildId, userId);
         userInServerRepository.save(aUserInAServer);
         return aUserInAServer;
@@ -86,13 +109,13 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
 
     @Override
     public List<AUserInAServer> getUserInAllServers(Long userId) {
-        AUser user = userManagementService.loadUser(userId);
+        AUser user = userManagementService.loadOrCreateUser(userId);
         return userInServerRepository.findByUserReference(user);
     }
 
     @Override
     public Optional<AUserInAServer> loadAUserInAServerOptional(Long serverId, Long userId) {
-        AUser user = userManagementService.loadUser(userId);
+        AUser user = userManagementService.loadOrCreateUser(userId);
         AServer server = serverManagementService.loadServer(serverId);
         return userInServerRepository.findByServerReferenceAndUserReference(server, user);
     }

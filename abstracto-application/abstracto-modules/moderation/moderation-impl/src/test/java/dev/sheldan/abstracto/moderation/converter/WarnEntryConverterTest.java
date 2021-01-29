@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.converter;
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnEntry;
@@ -34,7 +34,7 @@ public class WarnEntryConverterTest {
     private WarnEntryConverter testUnit;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private WarnEntryConverter self;
@@ -61,8 +61,8 @@ public class WarnEntryConverterTest {
         AUserInAServer warningUser = Mockito.mock(AUserInAServer.class);
         Member warnedMember = Mockito.mock(Member.class);
         Member warningMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServerAsync(warnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
-        when(botService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
+        when(memberService.getMemberInServerAsync(warnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
+        when(memberService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
         Warning firstNote = Warning.builder().warnId(new ServerSpecificId(3L, 4L)).warnedUser(warnedUser).warningUser(warningUser).build();
         Warning secondNote = Warning.builder().warnId(new ServerSpecificId(3L, 5L)).warnedUser(warnedUser).warningUser(warningUser).build();
         testUnit.fromWarnings(Arrays.asList(firstNote, secondNote));
@@ -87,8 +87,8 @@ public class WarnEntryConverterTest {
         map.put(secondWarnId, memberPair);
         when(warnManagementService.findById(WARN_ID_1, SERVER_ID)).thenReturn(warning1);
         when(warnManagementService.findById(WARN_ID_2, SERVER_ID)).thenReturn(warning2);
-        when(userInServerManagementService.loadUser(warnedMember)).thenReturn(warnedUser);
-        when(userInServerManagementService.loadUser(warningMember)).thenReturn(warningUser);
+        when(userInServerManagementService.loadOrCreateUser(warnedMember)).thenReturn(warnedUser);
+        when(userInServerManagementService.loadOrCreateUser(warningMember)).thenReturn(warningUser);
         List<WarnEntry> models = testUnit.loadFullWarnEntries(map);
         Assert.assertEquals(2, models.size());
         WarnEntry firstEntry = models.get(0);

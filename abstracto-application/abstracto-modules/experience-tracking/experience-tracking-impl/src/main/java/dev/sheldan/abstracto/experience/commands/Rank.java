@@ -18,8 +18,8 @@ import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.experience.models.templates.RankModel;
-import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -67,7 +67,7 @@ public class Rank extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         RankModel rankModel = (RankModel) ContextConverter.slimFromCommandContext(commandContext, RankModel.class);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
         CompletableFuture<LeaderBoardEntryModel> future = converter.fromLeaderBoardEntry(userRank);
         return future.thenCompose(leaderBoardEntryModel ->
@@ -78,7 +78,7 @@ public class Rank extends AbstractConditionableCommand {
     @Transactional
     public CompletableFuture<Void> renderAndSendRank(CommandContext commandContext, RankModel rankModel, LeaderBoardEntryModel leaderBoardEntryModel) {
         rankModel.setRankUser(leaderBoardEntryModel);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         AUserExperience experienceObj = userExperienceManagementService.findUserInServer(aUserInAServer);
         log.info("Rendering rank for user {} in server {}.", commandContext.getAuthor().getId(), commandContext.getGuild().getId());
         rankModel.setExperienceToNextLevel(experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience()));

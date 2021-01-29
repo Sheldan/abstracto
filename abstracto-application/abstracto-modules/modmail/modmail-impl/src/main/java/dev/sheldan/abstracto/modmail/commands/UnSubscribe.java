@@ -42,7 +42,7 @@ public class UnSubscribe extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         modMailSubscriptionService.unsubscribeFromThread(aUserInAServer, modMailThread);
         return CommandResult.fromSuccess();
     }

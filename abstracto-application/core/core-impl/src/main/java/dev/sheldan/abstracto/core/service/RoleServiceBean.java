@@ -4,6 +4,9 @@ import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.exception.RoleDeletedException;
 import dev.sheldan.abstracto.core.exception.RoleNotFoundInDBException;
 import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -15,24 +18,45 @@ import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static dev.sheldan.abstracto.core.config.MetricConstants.DISCORD_API_INTERACTION_METRIC;
+import static dev.sheldan.abstracto.core.config.MetricConstants.INTERACTION_TYPE;
 
 @Component
 @Slf4j
 public class RoleServiceBean implements RoleService {
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private MetricService metricService;
+
+    public static final CounterMetric ROLE_ASSIGNED_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "role.assigned")))
+            .build();
+
+
+    public static final CounterMetric ROLE_REMOVED_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "role.removed")))
+            .build();
+
     @Override
     public void addRoleToUser(AUserInAServer aUserInAServer, ARole role) {
-        Optional<Guild> guildById = botService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
             addRoleToUser(guildById.get(), role, aUserInAServer.getUserReference().getId());
         } else {
@@ -42,9 +66,9 @@ public class RoleServiceBean implements RoleService {
 
     @Override
     public CompletableFuture<Void> addRoleToUserFuture(AUserInAServer aUserInAServer, ARole role) {
-        Optional<Guild> guildById = botService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
-            return addRoleToUserFuture(guildById.get(), role, aUserInAServer.getUserReference().getId());
+            return addRoleToUserFuture(guildById.get(), aUserInAServer.getUserReference().getId(), role);
         } else {
             throw new GuildNotFoundException(aUserInAServer.getServerReference().getId());
         }
@@ -56,7 +80,7 @@ public class RoleServiceBean implements RoleService {
         if(role == null) {
             throw new RoleNotFoundInGuildException(roleId, member.getGuild().getIdLong());
         }
-        return member.getGuild().addRoleToMember(member, role).submit();
+        return addRoleToUser(member.getGuild(), member.getIdLong(), role);
     }
 
 
@@ -90,7 +114,7 @@ public class RoleServiceBean implements RoleService {
         return member.getGuild().removeRoleFromMember(member, role).submit();
     }
 
-    private CompletableFuture<Void> addRoleToUserFuture(Guild guild, ARole role,  Long userId) {
+    private CompletableFuture<Void> addRoleToUserFuture(Guild guild, Long userId, ARole role) {
         if(role.getDeleted()) {
             log.warn("Not possible to add role to user. Role {} was marked as deleted.", role.getId());
             throw new RoleDeletedException(role);
@@ -98,15 +122,27 @@ public class RoleServiceBean implements RoleService {
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
             log.info("Adding role {} to user {} in server {}.", role.getId(), userId, guild.getId());
-            return guild.addRoleToMember(userId, roleById).submit();
+            return addRoleToUser(guild, userId, roleById);
         } else {
             throw new RoleNotFoundInGuildException(role.getId(), guild.getIdLong());
         }
     }
 
+    @Override
+    public CompletableFuture<Void> addRoleToUser(Guild guild, Long userId, Role roleById) {
+        metricService.incrementCounter(ROLE_ASSIGNED_METRIC);
+        return guild.addRoleToMember(userId, roleById).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> removeRoleFromUser(Guild guild, Long userId, Role roleById) {
+        metricService.incrementCounter(ROLE_REMOVED_METRIC);
+        return guild.removeRoleFromMember(userId, roleById).submit();
+    }
+
 
     private void addRoleToUser(Guild guild, ARole role,  Long userId) {
-        addRoleToUserFuture(guild, role, userId);
+        addRoleToUserFuture(guild, userId, role);
     }
 
     private CompletableFuture<Void> removeRoleFromUserFuture(Guild guild, ARole role,  Long userId) {
@@ -117,7 +153,7 @@ public class RoleServiceBean implements RoleService {
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
             log.info("Removing role {} from user {} in server {}.", role.getId(), userId, guild.getId());
-            return guild.removeRoleFromMember(userId, roleById).submit();
+            return removeRoleFromUser(guild, userId, roleById);
         } else {
             throw new RoleNotFoundInGuildException(role.getId(), guild.getIdLong());
         }
@@ -130,7 +166,7 @@ public class RoleServiceBean implements RoleService {
 
     @Override
     public void removeRoleFromUser(AUserInAServer aUserInAServer, ARole role) {
-        Optional<Guild> guildById = botService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
             removeRoleFromUser(guildById.get(), role, aUserInAServer.getUserReference().getId());
         } else {
@@ -140,7 +176,7 @@ public class RoleServiceBean implements RoleService {
 
     @Override
     public CompletableFuture<Void> removeRoleFromUserFuture(AUserInAServer aUserInAServer, ARole role) {
-        Optional<Guild> guildById = botService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
             return removeRoleFromUserFuture(guildById.get(), role, aUserInAServer.getUserReference().getId());
         } else {
@@ -166,7 +202,7 @@ public class RoleServiceBean implements RoleService {
             log.warn("Trying to load role {} which is marked as deleted.", role.getId());
             throw new RoleDeletedException(role);
         }
-        Optional<Guild> guildById = botService.getGuildByIdOptional(role.getServer().getId());
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(role.getServer().getId());
         if(guildById.isPresent()) {
             log.trace("Loading role {} from server {}.", role.getId(), role.getServer().getId());
             return guildById.get().getRoleById(role.getId());
@@ -226,5 +262,11 @@ public class RoleServiceBean implements RoleService {
                 .id(role.getIdLong())
                 .server(server)
                 .build();
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(ROLE_ASSIGNED_METRIC, "Amount of roles assigned");
+        metricService.registerCounter(ROLE_REMOVED_METRIC, "Amount of roles removed");
     }
 }

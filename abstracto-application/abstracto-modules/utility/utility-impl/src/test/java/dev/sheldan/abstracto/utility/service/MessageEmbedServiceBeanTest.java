@@ -4,10 +4,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.MessageCache;
-import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -46,7 +43,7 @@ public class MessageEmbedServiceBeanTest {
     private UserInServerManagementService userInServerManagementService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private TemplateService templateService;
@@ -210,7 +207,7 @@ public class MessageEmbedServiceBeanTest {
         when(cachedAuthor.getAuthorId()).thenReturn(USER_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(userInServerManagementService.loadUserOptional(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(Optional.of(embeddingUser));
-        when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddingMember));
+        when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddingMember));
         MessageEmbeddedModel model = Mockito.mock(MessageEmbeddedModel.class);
         when(self.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddingMember)).thenReturn(model);
         when(self.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, model)).thenReturn(CompletableFuture.completedFuture(null));

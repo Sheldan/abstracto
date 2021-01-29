@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.templating.Templatable;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 

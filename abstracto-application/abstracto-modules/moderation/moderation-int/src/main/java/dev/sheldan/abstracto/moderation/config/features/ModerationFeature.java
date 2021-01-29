@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.config.features;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;

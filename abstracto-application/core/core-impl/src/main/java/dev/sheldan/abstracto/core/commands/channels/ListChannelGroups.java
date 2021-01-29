@@ -3,20 +3,20 @@ package dev.sheldan.abstracto.core.commands.channels;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
 import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
 import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsModel;
-import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ public class ListChannelGroups extends AbstractConditionableCommand {
         channelGroups.forEach(group -> {
             List<ChannelGroupChannelModel> convertedChannels = new ArrayList<>();
             group.getChannels().forEach(channel -> {
-                Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(channel.getServer().getId(), channel.getId());
+                Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
                 if(textChannelInGuild.isPresent()) {
                     ChannelGroupChannelModel convertedChannel = ChannelGroupChannelModel
                             .builder()

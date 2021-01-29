@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,7 @@ public class AsyncEmoteUpdatedListenerBean extends ListenerAdapter {
     private CacheEntityService cacheEntityService;
 
     @Override
+    @Transactional
     public void onEmoteUpdateName(@NotNull EmoteUpdateNameEvent event) {
         if(updatedListeners == null) return;
         CachedEmote cachedEmote = cacheEntityService.getCachedEmoteFromEmote(event.getEmote(), event.getGuild());
@@ -61,7 +63,7 @@ public class AsyncEmoteUpdatedListenerBean extends ListenerAdapter {
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeUpdatedListener(AsyncEmoteUpdatedListener listener, CachedEmote updatedEmote, String oldName, String newName, Long serverId) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
         if (!featureFlagService.isFeatureEnabled(feature, serverId)) {

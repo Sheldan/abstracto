@@ -8,8 +8,8 @@ import dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service responsible to provide operations on {@link TrackedEmote}

@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
@@ -33,7 +33,7 @@ public class BanServiceBeanTest {
     private BanServiceBean testUnit;
 
     @Mock
-    private BotService botService;
+    private GuildService guildService;
 
     @Mock
     private TemplateService templateService;
@@ -99,7 +99,7 @@ public class BanServiceBeanTest {
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(BanServiceBean.BAN_ID_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
         when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(true);
-        when(botService.getGuildByIdOptional(serverId)).thenReturn(Optional.of(mockedGuild));
+        when(guildService.getGuildByIdOptional(serverId)).thenReturn(Optional.of(mockedGuild));
         testUnit.banUserViaId(serverId, userId, REASON, context);
         verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
@@ -110,7 +110,7 @@ public class BanServiceBeanTest {
         Long userId = 8L;
         Long serverId = 5L;
         ServerContext context = Mockito.mock(ServerContext.class);
-        when(botService.getGuildByIdOptional(serverId)).thenReturn(Optional.empty());
+        when(guildService.getGuildByIdOptional(serverId)).thenReturn(Optional.empty());
         testUnit.banUserViaId(serverId, userId, REASON, context);
     }
 

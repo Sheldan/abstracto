@@ -41,7 +41,7 @@ public class UnMute extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
-        AUserInAServer userToUnMute = userInServerManagementService.loadUser(member);
+        AUserInAServer userToUnMute = userInServerManagementService.loadOrCreateUser(member);
         return muteService.unMuteUser(userToUnMute).thenApply(aVoid ->
             CommandResult.fromSuccess()
         );

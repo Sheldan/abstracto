@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,11 +45,12 @@ public class AsyncMessageUpdatedListenerBean extends ListenerAdapter {
     private TaskExecutor messageUpdatedExecutor;
 
     @Override
+    @Transactional
     public void onGuildMessageUpdate(GuildMessageUpdateEvent event) {
         if(listener == null) return;
         Message message = event.getMessage();
         messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getTextChannel().getIdLong(), event.getMessageIdLong())
-                .thenAcceptBoth(messageCache.putMessageInCache(message), (oldCache, newCache) ->  self.executeListener(newCache, oldCache))
+                .thenAcceptBoth(messageCache.putMessageInCache(message), (oldCache, newCache) ->  self.executeListeners(newCache, oldCache))
         .exceptionally(throwable -> {
             log.error("Message retrieval {} from cache failed. ", event.getMessage().getId(), throwable);
             return null;
@@ -56,7 +58,7 @@ public class AsyncMessageUpdatedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void executeListener(CachedMessage updatedMessage, CachedMessage oldMessage) {
+    public void executeListeners(CachedMessage updatedMessage, CachedMessage oldMessage) {
         listener.forEach(messageTextUpdatedListener ->
             CompletableFuture
                 .runAsync(() ->  self.executeIndividualMessageUpdatedListener(updatedMessage, oldMessage, messageTextUpdatedListener), messageUpdatedExecutor)
@@ -67,7 +69,7 @@ public class AsyncMessageUpdatedListenerBean extends ListenerAdapter {
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualMessageUpdatedListener(CachedMessage updatedMessage, CachedMessage cachedMessage, AsyncMessageTextUpdatedListener messageTextUpdatedListener) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageTextUpdatedListener.getFeature());
         if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {

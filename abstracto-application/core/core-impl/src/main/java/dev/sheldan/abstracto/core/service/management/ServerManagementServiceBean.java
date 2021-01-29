@@ -67,6 +67,10 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Override
     public AUserInAServer addUserToServer(Long serverId, Long userId) {
         log.info("Adding user {} to server {}", userId, serverId);
+        // we need to reload the user, because the user already got persisted within this transaction (if the user didnt exist)
+        // but it seems the current transaction is not aware that it is already persisted, it tries to create again
+        // but fails with integrity constraint violation
+        userManagementService.loadOrCreateUser(userId);
         AUser user = userManagementService.loadUser(userId);
         AServer serverReference = loadServer(serverId);
         AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(serverReference).userReference(user).build();

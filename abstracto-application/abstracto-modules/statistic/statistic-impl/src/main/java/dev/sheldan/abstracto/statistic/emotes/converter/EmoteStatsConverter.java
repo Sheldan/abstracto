@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.statistic.emotes.converter;
 
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emotes.model.EmoteStatsResultDisplay;
@@ -22,7 +22,7 @@ import java.util.List;
 public class EmoteStatsConverter {
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     @Autowired
     private TrackedEmoteManagementService trackedEmoteManagementService;
@@ -33,7 +33,7 @@ public class EmoteStatsConverter {
             return EmoteStatsModel.builder().build();
         }
         // it is assumed all emotes are tracked in the same server
-        Guild relevantGuild = botService.getGuildById(resultList.get(0).getServerId());
+        Guild relevantGuild = guildService.getGuildById(resultList.get(0).getServerId());
         EmoteStatsModel resultingModel = EmoteStatsModel.builder().build();
         resultList.forEach(emoteStatsResult -> {
             TrackedEmote trackedEmote = trackedEmoteManagementService.loadByEmoteId(emoteStatsResult.getEmoteId(), emoteStatsResult.getServerId());

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.converter;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
@@ -16,15 +16,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Component
 public class WarnEntryConverter {
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
@@ -40,8 +40,8 @@ public class WarnEntryConverter {
         List<CompletableFuture<Member>> allFutures = new ArrayList<>();
         // TODO maybe optimize to not need to look into the cache twice
         warnings.forEach(warning -> {
-            CompletableFuture<Member> warningMemberFuture = botService.getMemberInServerAsync(warning.getWarningUser());
-            CompletableFuture<Member> warnedMemberFuture = botService.getMemberInServerAsync(warning.getWarnedUser());
+            CompletableFuture<Member> warningMemberFuture = memberService.getMemberInServerAsync(warning.getWarningUser());
+            CompletableFuture<Member> warnedMemberFuture = memberService.getMemberInServerAsync(warning.getWarnedUser());
             FutureMemberPair futurePair = FutureMemberPair.builder().firstMember(warningMemberFuture).secondMember(warnedMemberFuture).build();
             loadedWarnings.put(warning.getWarnId(), futurePair);
             allFutures.add(warningMemberFuture);
@@ -62,14 +62,14 @@ public class WarnEntryConverter {
             FullUserInServer warnedUser = FullUserInServer
                     .builder()
                     .member(warnedMember)
-                    .aUserInAServer(userInServerManagementService.loadUser(warnedMember))
+                    .aUserInAServer(userInServerManagementService.loadOrCreateUser(warnedMember))
                     .build();
 
             Member warningMember = memberPair.getFirstMember().join();
             FullUserInServer warningUser = FullUserInServer
                     .builder()
                     .member(warningMember)
-                    .aUserInAServer(userInServerManagementService.loadUser(warningMember))
+                    .aUserInAServer(userInServerManagementService.loadOrCreateUser(warningMember))
                     .build();
             WarnEntry entry = WarnEntry
                     .builder()

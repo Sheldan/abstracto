@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,7 +110,7 @@ public class AsyncReactionRemovedListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualReactionRemovedListener(@Nonnull CachedReactions reaction, CachedMessage cachedMessage, ServerUser userRemoving, AsyncReactionRemovedListener reactionRemovedListener) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
         if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {

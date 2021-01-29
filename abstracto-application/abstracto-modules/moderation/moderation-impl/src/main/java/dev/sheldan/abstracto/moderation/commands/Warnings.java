@@ -60,7 +60,7 @@ public class Warnings extends AbstractConditionableCommand {
         List<Warning> warnsToDisplay;
         if(!commandContext.getParameters().getParameters().isEmpty()) {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);
-            warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadUser(member));
+            warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadOrCreateUser(member));
         } else {
             AServer server = serverManagementService.loadServer(commandContext.getGuild());
             warnsToDisplay = warnManagementService.getAllWarningsOfServer(server);

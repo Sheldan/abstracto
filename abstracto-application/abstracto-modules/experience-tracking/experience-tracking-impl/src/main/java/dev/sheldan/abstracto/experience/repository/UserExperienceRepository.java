@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.experience.repository;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

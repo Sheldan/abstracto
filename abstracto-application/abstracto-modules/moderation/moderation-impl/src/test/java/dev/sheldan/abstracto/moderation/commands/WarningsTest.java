@@ -9,13 +9,13 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.converter.WarnEntryConverter;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnEntry;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarningsModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public class WarningsTest {
         WarnEntry secondModelWarning = Mockito.mock(WarnEntry.class);
         List<Warning> warningsToDisplay = Arrays.asList(firstWarning, secondWarning);
         List<WarnEntry> modelWarnings = Arrays.asList(firstModelWarning, secondModelWarning);
-        when(userInServerManagementService.loadUser(member)).thenReturn(warnedUser);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(warnedUser);
         when(warnManagementService.getAllWarnsForUser(warnedUser)).thenReturn(warningsToDisplay);
         when(warnEntryConverter.fromWarnings(warningsToDisplay)).thenReturn(CompletableFuture.completedFuture(modelWarnings));
 

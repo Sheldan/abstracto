@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener.async;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -29,7 +29,7 @@ public class JoinLoggerTest {
     private PostTargetService postTargetService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private JoinLogger self;
@@ -48,7 +48,7 @@ public class JoinLoggerTest {
     public void testExecute() {
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
-        when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(member));
+        when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(member));
         testUnit.execute(serverUser);
         verify(self, times(1)).sendJoinLog(serverUser, member);
     }

@@ -52,6 +52,7 @@ public class AsyncMessageEmbeddedListenerBean extends ListenerAdapter {
     private AsyncMessageEmbeddedListenerBean self;
 
     @Override
+    @Transactional
     public void onGuildMessageEmbed(@NotNull GuildMessageEmbedEvent event) {
         if(listenerList == null) return;
         GuildMessageEmbedEventModel model = buildModel(event);

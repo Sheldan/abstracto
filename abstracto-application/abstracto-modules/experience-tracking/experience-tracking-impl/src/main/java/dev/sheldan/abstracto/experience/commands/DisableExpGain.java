@@ -33,7 +33,7 @@ public class DisableExpGain extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Member para = (Member) commandContext.getParameters().getParameters().get(0);
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(para);
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(para);
         aUserExperienceService.disableExperienceForUser(userInAServer);
         return CommandResult.fromSuccess();
     }

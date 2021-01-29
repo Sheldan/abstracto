@@ -30,7 +30,7 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
                 AUserInAServer actualInstance;
                 if (throwable == null) {
                     Member member = (Member) o;
-                    actualInstance = userInServerManagementService.loadUser(member);
+                    actualInstance = userInServerManagementService.loadOrCreateUser(member);
                 } else {
                     Long userId = Long.parseLong(input);
                     actualInstance = userInServerManagementService.loadAUserInAServerOptional(context.getGuild().getIdLong(), userId).orElseThrow(() -> new UserInServerNotFoundException(0L));

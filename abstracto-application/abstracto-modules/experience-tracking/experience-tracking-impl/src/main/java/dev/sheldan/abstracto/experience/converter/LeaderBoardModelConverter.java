@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.experience.converter;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 public class LeaderBoardModelConverter {
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     /**
      * Converts the complete {@link LeaderBoard} into a list of {@link LeaderBoardEntryModel} which contain additional
@@ -50,7 +50,7 @@ public class LeaderBoardModelConverter {
      */
     public CompletableFuture<LeaderBoardEntryModel> fromLeaderBoardEntry(LeaderBoardEntry leaderBoardEntry) {
         AUserInAServer entryUser = leaderBoardEntry.getExperience().getUser();
-        return botService.getMemberInServerAsync(entryUser.getServerReference().getId(), entryUser.getUserReference().getId()).thenApply(member ->
+        return memberService.getMemberInServerAsync(entryUser.getServerReference().getId(), entryUser.getUserReference().getId()).thenApply(member ->
             LeaderBoardEntryModel
                     .builder()
                     .experience(leaderBoardEntry.getExperience())

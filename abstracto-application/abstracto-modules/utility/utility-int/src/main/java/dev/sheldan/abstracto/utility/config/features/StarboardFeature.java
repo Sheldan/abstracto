@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.config.features;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.service.FeatureValidator;
 import dev.sheldan.abstracto.utility.StarboardFeatureValidator;

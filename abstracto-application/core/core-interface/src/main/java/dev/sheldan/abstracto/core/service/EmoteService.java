@@ -28,4 +28,7 @@ public interface EmoteService {
     AEmote getFakeEmoteFromEmote(Emote emote);
     boolean emoteIsFromGuild(Emote emote, Guild guild);
     CompletableFuture<Emote> getEmoteFromCachedEmote(CachedEmote cachedEmote);
+
+    Optional<Emote> getEmote(Long serverId, AEmote emote);
+    Optional<Emote> getEmote(AEmote emote);
 }

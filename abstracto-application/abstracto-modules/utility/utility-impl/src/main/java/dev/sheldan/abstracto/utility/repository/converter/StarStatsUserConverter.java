@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.utility.repository.converter;
 
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
 import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class StarStatsUserConverter {
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
@@ -31,8 +31,8 @@ public class StarStatsUserConverter {
     }
 
     private CompletableFuture<StarStatsUser> createStarStatsUser(Long serverId, StarStatsUserResult starStatsUserResult) {
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(starStatsUserResult.getUserId());
-        return botService.getMemberInServerAsync(serverId, aUserInAServer.getUserReference().getId()).thenApply(member ->
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(starStatsUserResult.getUserId());
+        return memberService.getMemberInServerAsync(serverId, aUserInAServer.getUserReference().getId()).thenApply(member ->
             StarStatsUser
                     .builder()
                     .starCount(starStatsUserResult.getStarCount())

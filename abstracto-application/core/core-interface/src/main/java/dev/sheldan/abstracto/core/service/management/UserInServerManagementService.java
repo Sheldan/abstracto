@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserInServerManagementService {
-    AUserInAServer loadUser(Long serverId, Long userId);
-    AUserInAServer loadUser(ServerUser serverUser);
+    AUserInAServer loadOrCreateUser(Long serverId, Long userId);
+    AUserInAServer onlyLoadUser(Long serverId, Long userId);
+    AUserInAServer loadOrCreateUser(ServerUser serverUser);
     Optional<AUserInAServer> loadUserOptional(Long serverId, Long userId);
-    AUserInAServer loadUser(AServer server, AUser user);
-    AUserInAServer loadUser(Member member);
+    AUserInAServer loadOrCreateUser(AServer server, AUser user);
+    AUserInAServer loadOrCreateUser(Member member);
     Optional<AUserInAServer> loadUserOptional(Long userInServerId);
-    AUserInAServer loadUser(Long userInServerId);
+    AUserInAServer loadOrCreateUser(Long userInServerId);
     AUserInAServer createUserInServer(Member member);
     AUserInAServer createUserInServer(Long guildId, Long userId);
     List<AUserInAServer> getUserInAllServers(Long userId);

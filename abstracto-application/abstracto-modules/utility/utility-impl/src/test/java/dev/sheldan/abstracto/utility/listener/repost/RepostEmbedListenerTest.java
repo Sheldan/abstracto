@@ -2,13 +2,15 @@ package dev.sheldan.abstracto.utility.listener.repost;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.utility.service.RepostService;
 import dev.sheldan.abstracto.utility.service.management.PostedImageManagement;
-import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.entities.EmbedType;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -40,7 +42,7 @@ public class RepostEmbedListenerTest {
     private ChannelManagementService channelManagementService;
 
     @Mock
-    private BotService botService;
+    private ChannelService channelService;
 
     @Mock
     private GuildMessageEmbedEventModel model;
@@ -80,8 +82,7 @@ public class RepostEmbedListenerTest {
     public void testExecuteNoEmbeds() {
         channelSetup();
         setupMessageHasBeenCovered(false);
-        RestAction messageRestAction = Mockito.mock(RestAction.class);
-        when(textChannel.retrieveMessageById(MESSAGE_ID)).thenReturn(messageRestAction);
+        when(channelService.retrieveMessageInChannel(SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(message));
         testUnit.execute(model);
         verify(repostService, times(0)).processMessageEmbedsRepostCheck(anyList(), any(Message.class));
     }
@@ -90,12 +91,10 @@ public class RepostEmbedListenerTest {
     public void testExecuteOneImageEmbed() {
         channelSetup();
         setupMessageHasBeenCovered(false);
-        RestAction<Message> messageRestAction = Mockito.mock(RestAction.class);
         MessageEmbed imageEmbed = Mockito.mock(MessageEmbed.class);
         when(imageEmbed.getType()).thenReturn(EmbedType.IMAGE);
         when(model.getEmbeds()).thenReturn(Arrays.asList(imageEmbed));
-        mockMessageConsumer(messageRestAction, message);
-        when(textChannel.retrieveMessageById(MESSAGE_ID)).thenReturn(messageRestAction);
+        when(channelService.retrieveMessageInChannel(SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(message));
         testUnit.execute(model);
         verifySingleEmbedProcessed(imageEmbed);
     }
@@ -104,14 +103,12 @@ public class RepostEmbedListenerTest {
     public void testExecuteMultipleEmbedsOneImage() {
         channelSetup();
         setupMessageHasBeenCovered(false);
-        RestAction<Message> messageRestAction = Mockito.mock(RestAction.class);
         MessageEmbed imageEmbed = Mockito.mock(MessageEmbed.class);
         MessageEmbed nonImageEmbed = Mockito.mock(MessageEmbed.class);
         when(imageEmbed.getType()).thenReturn(EmbedType.IMAGE);
         when(nonImageEmbed.getType()).thenReturn(EmbedType.LINK);
         when(model.getEmbeds()).thenReturn(Arrays.asList(imageEmbed, nonImageEmbed));
-        mockMessageConsumer(messageRestAction, message);
-        when(textChannel.retrieveMessageById(MESSAGE_ID)).thenReturn(messageRestAction);
+        when(channelService.retrieveMessageInChannel(SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(message));
         testUnit.execute(model);
         verifySingleEmbedProcessed(imageEmbed);
     }
@@ -128,22 +125,11 @@ public class RepostEmbedListenerTest {
         Assert.assertEquals(imageEmbed, embeds.get(0));
     }
 
-    private void mockMessageConsumer(RestAction<Message> action, Message message) {
-        doAnswer(invocationOnMock -> {
-            Object consumerObj = invocationOnMock.getArguments()[0];
-            if(consumerObj instanceof Consumer) {
-                Consumer<Message> consumer = (Consumer<Message>) consumerObj;
-                consumer.accept(message);
-            }
-            return null;
-        }).when(action).queue(any(Consumer.class));
-    }
 
     private void channelSetup() {
         when(model.getChannelId()).thenReturn(CHANNEL_ID);
         when(model.getServerId()).thenReturn(SERVER_ID);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         when(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)).thenReturn(true);
     }
 

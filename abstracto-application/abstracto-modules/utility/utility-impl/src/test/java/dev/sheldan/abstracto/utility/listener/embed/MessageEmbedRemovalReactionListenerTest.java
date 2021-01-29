@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.listener.embed;
 
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -26,8 +27,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class MessageEmbedRemovalReactionListenerTest {
 
-    public static final long EMBEDDING_USER_ID = 6L;
-    public static final long EMBEDDED_USER_ID = 7L;
     @InjectMocks
     private MessageEmbedRemovalReactionListener testUnit;
 
@@ -39,6 +38,9 @@ public class MessageEmbedRemovalReactionListenerTest {
 
     @Mock
     private EmoteService emoteService;
+
+    @Mock
+    private MetricService metricService;
 
     @Mock
     private CachedReactions messageReaction;
@@ -92,6 +94,8 @@ public class MessageEmbedRemovalReactionListenerTest {
     public void testEmbeddedUserAddingReaction() {
         when(embeddedUser.getUserReference()).thenReturn(embeddedAUser);
         when(embeddedAUser.getId()).thenReturn(USER_ID + 1);
+        when(embeddingUser.getUserReference()).thenReturn(embeddingAUser);
+        when(embeddingAUser.getId()).thenReturn(USER_ID + 3);
         when(reactingUser.getUserId()).thenReturn(USER_ID + 1);
         executeDeletionTest(embeddingUser, embeddedUser, reactingUser, 1);
     }

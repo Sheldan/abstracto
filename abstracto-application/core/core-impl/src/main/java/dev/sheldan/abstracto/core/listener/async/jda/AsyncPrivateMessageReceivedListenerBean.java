@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
     private TaskExecutor privateMessageReceivedExecutor;
 
     @Override
+    @Transactional
     public void onPrivateMessageReceived(@Nonnull PrivateMessageReceivedEvent event) {
         if(privateMessageReceivedListeners == null) return;
         if(event.getAuthor().getId().equals(botService.getInstance().getSelfUser().getId())) {
@@ -65,7 +67,7 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualPrivateMessageReceivedListener(CachedMessage cachedMessage, AsyncPrivateMessageReceivedListener messageReceivedListener) {
         log.trace("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), cachedMessage.getAuthor().getAuthorId());
         messageReceivedListener.execute(cachedMessage);

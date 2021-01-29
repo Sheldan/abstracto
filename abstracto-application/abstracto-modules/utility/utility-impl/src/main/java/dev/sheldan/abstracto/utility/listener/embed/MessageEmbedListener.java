@@ -2,11 +2,15 @@ package dev.sheldan.abstracto.utility.listener.embed;
 
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.execution.result.ExecutionResult;
 import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
+import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.MessageCache;
+import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
@@ -19,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -38,13 +44,27 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Autowired
     private MessageEmbedListener self;
 
+    @Autowired
+    private MetricService metricService;
+
+    @Autowired
+    private MessageService messageService;
+
+    public static final String MESSAGE_EMBEDDED = "message.embedded";
+    public static final String MESSAGE_EMBED_ACTION = "action";
+    private static final CounterMetric MESSAGE_EMBED_CREATED = CounterMetric
+            .builder()
+            .name(MESSAGE_EMBEDDED)
+            .tagList(Arrays.asList(MetricTag.getTag(MESSAGE_EMBED_ACTION, "created")))
+            .build();
+
     @Override
     public MessageReceivedListenerResult execute(Message message) {
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         if(!links.isEmpty()) {
             log.trace("We found {} links to embed in message {} in channel {} in guild {}.", links.size(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
-            Long userEmbeddingUserInServerId = userInServerManagementService.loadUser(message.getMember()).getUserInServerId();
+            Long userEmbeddingUserInServerId = userInServerManagementService.loadOrCreateUser(message.getMember()).getUserInServerId();
             for (MessageEmbedLink messageEmbedLink : links) {
                 if(!messageEmbedLink.getServerId().equals(message.getGuild().getIdLong())) {
                     log.info("Link for message {} was from a foreign server {}. Do not embed.", messageEmbedLink.getMessageId(), messageEmbedLink.getServerId());
@@ -61,7 +81,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
             }
         }
         if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
-            message.delete().queue();
+            messageService.deleteMessage(message);
             return MessageReceivedListenerResult.DELETED;
         }
         if(!links.isEmpty()) {
@@ -74,7 +94,9 @@ public class MessageEmbedListener implements MessageReceivedListener {
     public void embedSingleLink(Message message, Long cause, CachedMessage cachedMessage) {
         log.info("Embedding link to message {} in channel {} in server {} to channel {} and server {}.",
                 cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), message.getChannel().getId(), message.getGuild().getId());
-        messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message).exceptionally(throwable -> {
+        messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message).thenAccept(unused ->
+            metricService.incrementCounter(MESSAGE_EMBED_CREATED)
+        ).exceptionally(throwable -> {
             log.error("Failed to embed link towards message {} in channel {} in sever {} linked from message {} in channel {} in server {}.", cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(),
                     message.getId(), message.getChannel().getId(), message.getGuild().getId(), throwable);
             return null;
@@ -94,5 +116,10 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Override
     public Integer getPriority() {
         return ListenerPriority.MEDIUM;
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(MESSAGE_EMBED_CREATED, "Message embeds created");
     }
 }

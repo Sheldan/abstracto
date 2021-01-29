@@ -11,6 +11,7 @@ import org.quartz.PersistJobDataAfterExecution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -35,7 +36,7 @@ public class EmotePersistingJob extends QuartzJobBean {
     private TrackedEmoteService trackedEmoteService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         // acquire the lock, because we are modifying
         trackedEmoteRuntimeService.takeLock();

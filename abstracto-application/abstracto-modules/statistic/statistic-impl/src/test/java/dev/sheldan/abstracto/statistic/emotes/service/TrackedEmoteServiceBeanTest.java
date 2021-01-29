@@ -1,10 +1,11 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
@@ -53,7 +54,10 @@ public class TrackedEmoteServiceBeanTest {
     private UsedEmoteManagementService usedEmoteManagementService;
 
     @Mock
-    private BotService botService;
+    private GuildService guildService;
+
+    @Mock
+    private MetricService metricService;
 
     @Mock
     private CachedEmote emote;
@@ -298,6 +302,7 @@ public class TrackedEmoteServiceBeanTest {
         HashMap<Long, List<PersistingEmote>> usagesToStore = new HashMap<>();
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(featureModeService, times(0)).featureModeActive(eq(StatisticFeatures.EMOTE_TRACKING), anyLong(), eq(EmoteTrackingMode.AUTO_TRACK));
+        verify(metricService, times(0)).incrementCounter(any());
     }
 
     @Test
@@ -314,6 +319,7 @@ public class TrackedEmoteServiceBeanTest {
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(usedEmote, times(1)).setAmount(2 * COUNT);
+        verify(metricService, times(1)).incrementCounter(any());
     }
 
     @Test
@@ -328,6 +334,7 @@ public class TrackedEmoteServiceBeanTest {
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(usedEmote, times(0)).setAmount(anyLong());
+        verify(metricService, times(1)).incrementCounter(any());
     }
 
     @Test
@@ -343,6 +350,7 @@ public class TrackedEmoteServiceBeanTest {
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(usedEmoteManagementService, times(1)).createEmoteUsageForToday(trackedEmote, COUNT);
+        verify(metricService, times(1)).incrementCounter(any());
     }
 
     @Test
@@ -355,6 +363,7 @@ public class TrackedEmoteServiceBeanTest {
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(usedEmoteManagementService, times(0)).createEmoteUsageForToday(any(TrackedEmote.class), anyLong());
+        verify(metricService, times(1)).incrementCounter(any());
     }
 
     @Test
@@ -367,6 +376,7 @@ public class TrackedEmoteServiceBeanTest {
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(usedEmoteManagementService, times(0)).createEmoteUsageForToday(any(TrackedEmote.class), anyLong());
+        verify(metricService, times(1)).incrementCounter(any());
     }
 
     @Test
@@ -374,7 +384,7 @@ public class TrackedEmoteServiceBeanTest {
         HashMap<Long, List<PersistingEmote>> usagesToStore = new HashMap<>();
         usagesToStore.put(SERVER_ID, Arrays.asList(persistingEmote));
         when(persistingEmote.getEmoteId()).thenReturn(EMOTE_ID);
-        when(botService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
+        when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
         when(persistingEmote.getCount()).thenReturn(COUNT);
         when(trackedEmoteManagementService.loadByEmoteIdOptional(EMOTE_ID, SERVER_ID)).thenReturn(Optional.empty());
         when(trackedEmoteManagementService.createExternalTrackedEmote(persistingEmote)).thenReturn(trackedEmote);
@@ -382,6 +392,7 @@ public class TrackedEmoteServiceBeanTest {
         when(featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, SERVER_ID, EmoteTrackingMode.EXTERNAL_EMOTES)).thenReturn(true);
         testUnit.storeEmoteStatistics(usagesToStore);
         verify(usedEmoteManagementService, times(1)).createEmoteUsageForToday(trackedEmote, COUNT);
+        verify(metricService, times(1)).incrementCounter(any());
     }
 
     @Test
@@ -411,6 +422,7 @@ public class TrackedEmoteServiceBeanTest {
 
         verify(usedEmoteManagementService, times(1)).createEmoteUsageForToday(eq(trackedEmote2), anyLong());
         verify(usedEmote, times(1)).setAmount(2 * COUNT);
+        verify(metricService, times(2)).incrementCounter(any());
     }
 
     @Test

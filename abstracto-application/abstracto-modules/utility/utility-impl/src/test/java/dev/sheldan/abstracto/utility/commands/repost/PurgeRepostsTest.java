@@ -37,7 +37,7 @@ public class PurgeRepostsTest {
         Long userInServerId = 1L;
         when(fakeUser.getUserInServerId()).thenReturn(userInServerId);
         CommandContext purgeImagePostsParameters = CommandTestUtilities.getWithParameters(Arrays.asList(fakeUser));
-        when(userInServerManagementService.loadUser(userInServerId)).thenReturn(actualUser);
+        when(userInServerManagementService.loadOrCreateUser(userInServerId)).thenReturn(actualUser);
         CommandResult result = testUnit.execute(purgeImagePostsParameters);
         CommandTestUtilities.checkSuccessfulCompletion(result);
         verify(repostService, times(1)).purgeReposts(actualUser);

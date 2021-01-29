@@ -7,10 +7,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedEmbed;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.FeatureModeService;
-import dev.sheldan.abstracto.core.service.HashService;
-import dev.sheldan.abstracto.core.service.HttpService;
-import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -25,7 +22,9 @@ import dev.sheldan.abstracto.utility.models.database.result.RepostLeaderboardRes
 import dev.sheldan.abstracto.utility.service.management.PostedImageManagement;
 import dev.sheldan.abstracto.utility.service.management.RepostManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +63,7 @@ public class RepostServiceBean implements RepostService {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private MessageService messageService;
+    private ReactionService reactionService;
 
     @Autowired
     private FeatureModeService featureModeService;
@@ -143,7 +142,7 @@ public class RepostServiceBean implements RepostService {
             PostedImage existingRepost = potentialRepost.get();
             return !existingRepost.getPostId().getMessageId().equals(serverChannelMessageUser.getMessageId()) ? Optional.of(existingRepost) : Optional.empty();
         } else {
-            AUserInAServer aUserInAServer = userInServerManagementService.loadUser(serverChannelMessageUser.getServerId(), serverChannelMessageUser.getUserId());
+            AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(serverChannelMessageUser.getServerId(), serverChannelMessageUser.getUserId());
             AServerAChannelAUser cause = AServerAChannelAUser
                     .builder()
                     .aUserInAServer(aUserInAServer)
@@ -219,10 +218,10 @@ public class RepostServiceBean implements RepostService {
 
     private void markMessageAndPersist(ServerChannelMessageUser messageUser, Integer index, boolean moreRepostsPossible, PostedImage originalPost) {
         log.info("Detected repost in message embed {} of message {} in channel {} in server {}.", index, messageUser.getMessageId(), messageUser.getChannelId(), messageUser.getServerId());
-        CompletableFuture<Void> markerFuture = messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, messageUser.getServerId(), messageUser.getChannelId(), messageUser.getMessageId());
+        CompletableFuture<Void> markerFuture = reactionService.addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, messageUser.getServerId(), messageUser.getChannelId(), messageUser.getMessageId());
         CompletableFuture<Void> counterFuture;
         if (moreRepostsPossible) {
-            counterFuture = messageService.addDefaultReactionToMessageAsync(NUMBER_EMOJI.get(index), messageUser.getServerId(), messageUser.getChannelId(), messageUser.getMessageId());
+            counterFuture = reactionService.addDefaultReactionToMessageAsync(NUMBER_EMOJI.get(index), messageUser.getServerId(), messageUser.getChannelId(), messageUser.getMessageId());
         } else {
             counterFuture = CompletableFuture.completedFuture(null);
         }
@@ -238,7 +237,7 @@ public class RepostServiceBean implements RepostService {
     @Transactional
     public void persistRepost(Long messageId, Integer position, Long serverId, Long userId) {
         PostedImage postedImage = postedImageManagement.getPostFromMessageAndPosition(messageId, position);
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(serverId, userId);
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(serverId, userId);
         Optional<Repost> existingPost = repostManagementService.findRepostOptional(postedImage, userInAServer);
         if(existingPost.isPresent()) {
             Repost previousRepost = existingPost.get();

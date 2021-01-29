@@ -3,8 +3,8 @@ package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 
 import java.util.List;
 import java.util.Optional;

@@ -49,7 +49,7 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
         String messageToSend = templateService.renderTemplate(FEATURE_SETUP_CONFIRMATION_TEMPLATE_KEY, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());
         Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
         log.info("Executing setup summary question step in server {} in channel {} from user {}.", user.getGuildId(), user.getChannelId(), user.getUserId());
         Consumer<Void> confirmation = (Void none) -> {

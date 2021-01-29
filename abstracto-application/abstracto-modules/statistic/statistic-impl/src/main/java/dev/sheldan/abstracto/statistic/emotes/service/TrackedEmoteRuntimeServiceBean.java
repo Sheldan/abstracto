@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.statistic.emotes.service;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

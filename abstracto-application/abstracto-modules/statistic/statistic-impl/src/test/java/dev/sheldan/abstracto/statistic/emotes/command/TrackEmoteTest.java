@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.statistic.emotes.command;
 
+import dev.sheldan.abstracto.core.command.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;

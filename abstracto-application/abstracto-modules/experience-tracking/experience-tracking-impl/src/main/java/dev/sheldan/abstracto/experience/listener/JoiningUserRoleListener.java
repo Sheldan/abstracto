@@ -34,7 +34,7 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
 
     @Override
     public void execute(ServerUser serverUser) {
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(serverUser.getServerId(), serverUser.getUserId());
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(serverUser.getServerId(), serverUser.getUserId());
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
         Long userInServerId = userInAServer.getUserInServerId();
         if(userExperience != null) {

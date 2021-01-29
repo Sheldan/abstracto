@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.context.ServerContext;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
@@ -31,7 +31,7 @@ public class BanServiceBean implements BanService {
     public static final String BAN_ID_LOG_TEMPLATE = "banId_log";
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     @Autowired
     private TemplateService templateService;
@@ -72,7 +72,7 @@ public class BanServiceBean implements BanService {
     }
 
     private CompletableFuture<Void> banUser(Long guildId, Long userId, String reason) {
-        Optional<Guild> guildByIdOptional = botService.getGuildByIdOptional(guildId);
+        Optional<Guild> guildByIdOptional = guildService.getGuildByIdOptional(guildId);
         if(guildByIdOptional.isPresent()) {
             return banUser(guildByIdOptional.get(), userId, reason);
         } else {

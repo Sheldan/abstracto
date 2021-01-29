@@ -1,10 +1,10 @@
-import json
-import os
 import jinja2
-import templates_deploy
+import json
 import liquibase_deploy
-from zipfile import ZipFile
+import os
 import sys
+import templates_deploy
+from zipfile import ZipFile
 
 if len(sys.argv) < 3:
     sys.exit('Wrong amount of parameters.')

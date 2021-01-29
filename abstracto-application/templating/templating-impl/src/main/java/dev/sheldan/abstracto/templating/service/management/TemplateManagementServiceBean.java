@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.templating.service.management;
 
-import dev.sheldan.abstracto.templating.repository.TemplateRepository;
 import dev.sheldan.abstracto.templating.model.database.Template;
+import dev.sheldan.abstracto.templating.repository.TemplateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

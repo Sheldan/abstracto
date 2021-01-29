@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +59,7 @@ public class AsyncLeaveListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualLeaveListener(ServerUser user, AsyncLeaveListener leaveListener) {
         log.trace("Executing leave listener {} for member {} in guild {}.", leaveListener.getClass().getName(), user.getUserId(), user.getServerId());
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(leaveListener.getFeature());

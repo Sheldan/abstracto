@@ -5,7 +5,9 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.execution.*;
+import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -44,7 +46,7 @@ public class Remind extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Duration remindTime = (Duration) parameters.get(0);
         String text = (String) parameters.get(1);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         ReminderModel remindModel = (ReminderModel) ContextConverter.fromCommandContext(commandContext, ReminderModel.class);
         remindModel.setRemindText(text);
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());

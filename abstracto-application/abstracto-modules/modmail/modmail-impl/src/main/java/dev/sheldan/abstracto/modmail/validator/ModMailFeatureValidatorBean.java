@@ -3,9 +3,9 @@ package dev.sheldan.abstracto.modmail.validator;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.modmail.models.template.ModMailCategoryValidationErrorModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     @Autowired
     private ConfigService configService;
@@ -42,7 +42,7 @@ public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
      */
     @Override
     public void featureIsSetup(FeatureConfig featureConfig, AServer server, FeatureValidationResult validationResult) {
-        Optional<Guild> guildById = botService.getGuildByIdOptional(server.getId());
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(server.getId());
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
             boolean checkSucceeded = featureValidatorService.checkSystemConfig(ModMailThreadServiceBean.MODMAIL_CATEGORY, server, validationResult);

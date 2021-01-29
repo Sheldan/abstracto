@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageEmbeddedListener;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.service.RepostCheckChannelService;
@@ -36,7 +36,7 @@ public class RepostEmbedListener implements AsyncMessageEmbeddedListener {
     private ChannelManagementService channelManagementService;
 
     @Autowired
-    private BotService botService;
+    private ChannelService channelService;
 
     @Override
     public void execute(GuildMessageEmbedEventModel eventModel) {
@@ -47,9 +47,11 @@ public class RepostEmbedListener implements AsyncMessageEmbeddedListener {
                         eventModel.getMessageId(), eventModel.getChannelId(), eventModel.getServerId());
                 return;
             }
-            botService.getTextChannelFromServer(eventModel.getServerId(), eventModel.getChannelId()).retrieveMessageById(eventModel.getMessageId()).queue(message -> {
+            channelService.retrieveMessageInChannel(eventModel.getServerId(), eventModel.getChannelId(), eventModel.getMessageId()).thenAccept(message -> {
                 List<MessageEmbed> imageEmbeds = eventModel.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());
-                repostService.processMessageEmbedsRepostCheck(imageEmbeds, message);
+                if(!imageEmbeds.isEmpty()) {
+                    repostService.processMessageEmbedsRepostCheck(imageEmbeds, message);
+                }
             });
         }
     }

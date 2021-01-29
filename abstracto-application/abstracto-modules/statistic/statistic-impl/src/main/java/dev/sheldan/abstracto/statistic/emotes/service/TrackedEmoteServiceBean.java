@@ -1,10 +1,12 @@
 package dev.sheldan.abstracto.statistic.emotes.service;
 
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emotes.model.PersistingEmote;
@@ -21,9 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -46,7 +49,18 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     private UsedEmoteManagementService usedEmoteManagementService;
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
+
+    @Autowired
+    private MetricService metricService;
+
+    public static final String EMOTE_USAGES_TRACKED_METRIC = "emote.usages";
+    private static final CounterMetric EMOTE_USAGES_TRACKED =
+            CounterMetric
+                    .builder()
+                    .name(EMOTE_USAGES_TRACKED_METRIC)
+                    .build();
+
 
     @Override
     public void addEmoteToRuntimeStorage(List<CachedEmote> emotes, Guild guild) {
@@ -76,6 +90,7 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
             boolean autoTrackExternalEmotes = featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, serverId, EmoteTrackingMode.AUTO_TRACK_EXTERNAL);
             boolean trackExternalEmotes = featureModeService.featureModeActive(StatisticFeatures.EMOTE_TRACKING, serverId, EmoteTrackingMode.EXTERNAL_EMOTES);
             persistingEmotes.forEach(persistingEmote -> {
+                metricService.incrementCounter(EMOTE_USAGES_TRACKED);
                 Optional<TrackedEmote> emoteOptional = trackedEmoteManagementService.loadByEmoteIdOptional(persistingEmote.getEmoteId(), serverId);
                 emoteOptional.ifPresent(trackedEmote -> {
                     // only track the record, if its enabled
@@ -109,7 +124,7 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
      * @param persistingEmote The {@link PersistingEmote} which contains all information necessary to create a {@link TrackedEmote}
      */
     private void createNewTrackedEmote(Long serverId, PersistingEmote persistingEmote) {
-        Optional<Guild> guildOptional = botService.getGuildByIdOptional(serverId);
+        Optional<Guild> guildOptional = guildService.getGuildByIdOptional(serverId);
         guildOptional.ifPresent(guild -> {
             TrackedEmote newCreatedTrackedEmote = trackedEmoteManagementService.createExternalTrackedEmote(persistingEmote);
             usedEmoteManagementService.createEmoteUsageForToday(newCreatedTrackedEmote, persistingEmote.getCount());
@@ -210,4 +225,8 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
         trackedEmotes.forEach(trackedEmote -> trackedEmote.setTrackingEnabled(false));
     }
 
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(EMOTE_USAGES_TRACKED, "Tracked emote usages stored");
+    }
 }

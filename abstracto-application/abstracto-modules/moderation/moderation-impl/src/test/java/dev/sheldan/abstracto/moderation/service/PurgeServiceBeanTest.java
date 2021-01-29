@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.moderation.exception.NoMessageFoundException;
 import dev.sheldan.abstracto.moderation.models.template.commands.PurgeStatusUpdateModel;
@@ -13,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -33,10 +36,16 @@ public class PurgeServiceBeanTest {
     private PurgeServiceBean testUnit;
 
     @Mock
+    private ChannelService channelService;
+
+    @Mock
     private MessageService messageService;
 
     @Mock
     private TemplateService templateService;
+
+    @Mock
+    private MetricService metricService;
 
     @Mock
     private TextChannel textChannel;
@@ -67,9 +76,6 @@ public class PurgeServiceBeanTest {
     private MessageHistory history;
 
     @Mock
-    private MessageHistory.MessageRetrieveAction retrieveAction;
-
-    @Mock
     private MessageToSend firstStatusUpdateMessage;
 
     @Mock
@@ -90,8 +96,7 @@ public class PurgeServiceBeanTest {
     @Test
     public void testPurgeMessageViaStartMessage() {
         Integer amountToDelete = 50;
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, amountToDelete)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete)).thenReturn(CompletableFuture.completedFuture(history));
 
         setupOneMessageBatch(getDeletableMessageId(), getDeletableMessageId());
 
@@ -101,13 +106,13 @@ public class PurgeServiceBeanTest {
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
         verify(messageService, times(1)).updateStatusMessage(eq(textChannel), anyLong(), any());
+        verify(metricService, times(1)).incrementCounter(any(), eq((long) amountToDelete));
     }
 
     @Test
     public void testPurgeMessageNotNoUser() {
         Integer amountToDelete = 50;
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, amountToDelete)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete)).thenReturn(CompletableFuture.completedFuture(history));
 
         when(firstMessage.getId()).thenReturn(getDeletableMessageId().toString());
         when(secondMessage.getId()).thenReturn(getDeletableMessageId().toString());
@@ -119,13 +124,13 @@ public class PurgeServiceBeanTest {
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
         verify(messageService, times(1)).updateStatusMessage(eq(textChannel), anyLong(), any());
+        verify(metricService, times(1)).incrementCounter(any(), eq((long) amountToDelete));
     }
 
     @Test
     public void testPurgeSingleMessage() {
         Integer amountToDelete = 50;
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, amountToDelete)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete)).thenReturn(CompletableFuture.completedFuture(history));
 
         when(firstMessage.getId()).thenReturn(getDeletableMessageId().toString());
         when(firstMessage.getAuthor()).thenReturn(messageAuthor);
@@ -135,24 +140,23 @@ public class PurgeServiceBeanTest {
         when(history.getRetrievedHistory()).thenReturn(messagesToDelete);
         setupStatusMessageMocks();
         AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(firstMessage.delete()).thenReturn(auditableRestAction);
+        when(messageService.deleteMessage(firstMessage)).thenReturn(auditableRestAction);
         mockQueueDoubleVoidConsumer(auditableRestAction);
         CompletableFuture<Void> futures = testUnit.purgeMessagesInChannel(amountToDelete, textChannel, START_MESSAGE_ID, purgedMember);
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
         verify(messageService, times(1)).updateStatusMessage(eq(textChannel), anyLong(), any());
+        verify(metricService, times(1)).incrementCounter(any(), eq((long) amountToDelete));
     }
 
     @Test
     public void testPurgeMessagesInTwoIterationsSecondIterationsTooOld() {
         Integer amountToDelete = 150;
         Long latestDeletedMessageId = getDeletableMessageId();
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, 100)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
-        MessageHistory.MessageRetrieveAction secondRetrieveAction = Mockito.mock(MessageHistory.MessageRetrieveAction.class);
-        when(textChannel.getHistoryBefore(latestDeletedMessageId, 50)).thenReturn(secondRetrieveAction);
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete - 50)).thenReturn(CompletableFuture.completedFuture(history));
+
         MessageHistory secondHistory = Mockito.mock(MessageHistory.class);
-        when(secondRetrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(secondHistory));
+        when(channelService.getHistoryOfChannel(textChannel, latestDeletedMessageId, 50)).thenReturn(CompletableFuture.completedFuture(secondHistory));
 
         when(secondMessage.getIdLong()).thenReturn(latestDeletedMessageId);
         when(thirdMessage.getId()).thenReturn(getNotDeletableMessageId().toString());
@@ -168,6 +172,12 @@ public class PurgeServiceBeanTest {
         futures.whenComplete((aVoid, throwable) -> Assert.assertTrue(throwable.getCause() instanceof NoMessageFoundException));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
         verify(messageService, times(1)).updateStatusMessage(eq(textChannel), anyLong(), any());
+        ArgumentCaptor<Long> deleted = ArgumentCaptor.forClass(Long.class);
+        verify(metricService, times(2)).incrementCounter(any(), deleted.capture());
+        List<Long> capturedValues = deleted.getAllValues();
+        Assert.assertEquals(2, capturedValues.size());
+        Assert.assertEquals(100, capturedValues.get(0).longValue());
+        Assert.assertEquals(50, capturedValues.get(1).longValue());
     }
 
 
@@ -175,12 +185,9 @@ public class PurgeServiceBeanTest {
     public void testPurgeMessagesInTwoIterations() {
         Integer amountToDelete = 150;
         Long latestDeletedMessageId = getDeletableMessageId();
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, 100)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
-        MessageHistory.MessageRetrieveAction secondRetrieveAction = Mockito.mock(MessageHistory.MessageRetrieveAction.class);
-        when(textChannel.getHistoryBefore(latestDeletedMessageId, 50)).thenReturn(secondRetrieveAction);
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete - 50)).thenReturn(CompletableFuture.completedFuture(history));
         MessageHistory secondHistory = Mockito.mock(MessageHistory.class);
-        when(secondRetrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(secondHistory));
+        when(channelService.getHistoryOfChannel(textChannel, latestDeletedMessageId, 50)).thenReturn(CompletableFuture.completedFuture(secondHistory));
 
         when(secondMessage.getIdLong()).thenReturn(latestDeletedMessageId);
 
@@ -191,7 +198,7 @@ public class PurgeServiceBeanTest {
         RestAction secondDeleteMessagesAction = Mockito.mock(RestAction.class);
         List<Message> secondMessagesToDelete = Arrays.asList(thirdMessage, fourthMessage);
         when(secondHistory.getRetrievedHistory()).thenReturn(secondMessagesToDelete);
-        when(textChannel.deleteMessages(secondMessagesToDelete)).thenReturn(secondDeleteMessagesAction);
+        when(channelService.deleteMessagesInChannel(textChannel, secondMessagesToDelete)).thenReturn(secondDeleteMessagesAction);
 
 
         mockQueueDoubleVoidConsumer(secondDeleteMessagesAction);
@@ -199,13 +206,18 @@ public class PurgeServiceBeanTest {
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
         verify(messageService, times(2)).updateStatusMessage(eq(textChannel), anyLong(), any());
+        ArgumentCaptor<Long> deleted = ArgumentCaptor.forClass(Long.class);
+        verify(metricService, times(2)).incrementCounter(any(), deleted.capture());
+        List<Long> capturedValues = deleted.getAllValues();
+        Assert.assertEquals(2, capturedValues.size());
+        Assert.assertEquals(100, capturedValues.get(0).longValue());
+        Assert.assertEquals(50, capturedValues.get(1).longValue());
     }
 
     @Test
     public void testPurgeMessagesInOneIteration() {
         Integer amountToDelete = 50;
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, amountToDelete)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete)).thenReturn(CompletableFuture.completedFuture(history));
 
         setupOneMessageBatch(getDeletableMessageId(), getDeletableMessageId());
 
@@ -213,13 +225,13 @@ public class PurgeServiceBeanTest {
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));
         verify(deleteStatusAction, times(1)).queueAfter(5, TimeUnit.SECONDS);
         verify(messageService, times(1)).updateStatusMessage(eq(textChannel), anyLong(), any());
+        verify(metricService, times(1)).incrementCounter(any(), eq((long) amountToDelete));
     }
 
     @Test
     public void testPurgeTooOldMessage() {
         Integer amountToDelete = 50;
-        when(textChannel.getHistoryBefore(START_MESSAGE_ID, amountToDelete)).thenReturn(retrieveAction);
-        when(retrieveAction.submit()).thenReturn(CompletableFuture.completedFuture(history));
+        when(channelService.getHistoryOfChannel(textChannel, START_MESSAGE_ID, amountToDelete)).thenReturn(CompletableFuture.completedFuture(history));
 
         when(firstMessage.getId()).thenReturn(getNotDeletableMessageId().toString());
 
@@ -240,7 +252,7 @@ public class PurgeServiceBeanTest {
     private void setupFirstMessageHistoryMocks() {
         List<Message> messagesToDelete = Arrays.asList(firstMessage, secondMessage);
         when(history.getRetrievedHistory()).thenReturn(messagesToDelete);
-        when(textChannel.deleteMessages(messagesToDelete)).thenReturn(deleteMessagesAction);
+        when(channelService.deleteMessagesInChannel(textChannel, messagesToDelete)).thenReturn(deleteMessagesAction);
     }
 
     private void setupStatusMessageMocks() {

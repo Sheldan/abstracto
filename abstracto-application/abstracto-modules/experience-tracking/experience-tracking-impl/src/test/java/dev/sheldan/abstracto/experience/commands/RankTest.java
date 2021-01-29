@@ -5,6 +5,8 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.experience.converter.LeaderBoardModelConverter;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
@@ -16,8 +18,6 @@ import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -68,7 +68,7 @@ public class RankTest {
     public void testRankExecution() {
         CommandContext context = CommandTestUtilities.getNoParameters();
         LeaderBoardEntry leaderBoardEntry = Mockito.mock(LeaderBoardEntry.class);
-        when(userInServerManagementService.loadUser(context.getAuthor())).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(aUserInAServer);
         when(userExperienceService.getRankOfUserInServer(aUserInAServer)).thenReturn(leaderBoardEntry);
         LeaderBoardEntryModel leaderBoardEntryModel = Mockito.mock(LeaderBoardEntryModel.class);
         when(converter.fromLeaderBoardEntry(leaderBoardEntry)).thenReturn(CompletableFuture.completedFuture(leaderBoardEntryModel));
@@ -89,7 +89,7 @@ public class RankTest {
         CommandContext context = CommandTestUtilities.getNoParameters();
         RankModel rankModel = Mockito.mock(RankModel.class);
         LeaderBoardEntryModel leaderBoardEntryModel = Mockito.mock(LeaderBoardEntryModel.class);
-        when(userInServerManagementService.loadUser(context.getAuthor())).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(aUserInAServer);
         when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(aUserExperience);
         when(experienceLevelService.calculateExperienceToNextLevel(currentLevelValue, currentExperience)).thenReturn(140L);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);

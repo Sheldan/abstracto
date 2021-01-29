@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,7 @@ public class AsyncMessageReceivedListenerBean extends ListenerAdapter {
     private AsyncMessageReceivedListenerBean self;
 
     @Override
+    @Transactional
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
         if(listenerList == null) return;
         messageCache.putMessageInCache(event.getMessage()).thenAccept(message -> {
@@ -63,7 +65,7 @@ public class AsyncMessageReceivedListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualGuildMessageReceivedListener(CachedMessage cachedMessage, AsyncMessageReceivedListener messageReceivedListener) {
         try {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());

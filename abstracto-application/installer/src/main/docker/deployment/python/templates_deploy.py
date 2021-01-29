@@ -1,6 +1,6 @@
-import sqlalchemy as db
 import glob
 import os
+import sqlalchemy as db
 from sqlalchemy.sql import text
 
 

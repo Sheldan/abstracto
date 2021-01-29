@@ -4,9 +4,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import net.dv8tion.jda.api.entities.Role;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SetExpRoleTest {

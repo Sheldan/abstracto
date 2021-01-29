@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.utility.commands;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
@@ -30,7 +30,7 @@ public class UserInfoTest {
     private ChannelService channelService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private UserInfo self;
@@ -56,7 +56,7 @@ public class UserInfoTest {
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(false);
         Member loadedAuthor = Mockito.mock(Member.class);
         when(noParameters.getAuthor().getGuild()).thenReturn(Mockito.mock(Guild.class));
-        when(botService.forceReloadMember(noParameters.getAuthor())).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
+        when(memberService.forceReloadMember(noParameters.getAuthor())).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(noParameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
@@ -83,7 +83,7 @@ public class UserInfoTest {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
         Member loadedAuthor = Mockito.mock(Member.class);
         when(member.getGuild()).thenReturn(Mockito.mock(Guild.class));
-        when(botService.forceReloadMember(member)).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
+        when(memberService.forceReloadMember(member)).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         UserInfoModel usedModel = modelArgumentCaptor.getValue();

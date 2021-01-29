@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MessageCache;
+import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
@@ -13,7 +14,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.internal.requests.restaction.AuditableRestActionImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,13 +47,13 @@ public class MessageEmbedListenerTest {
     private MessageEmbedService messageEmbedService;
 
     @Mock
+    private MessageService messageService;
+
+    @Mock
     private MessageEmbedListener self;
 
     @Mock
     private Message message;
-
-    @Mock
-    private AuditableRestActionImpl<Void> deletionRestAction;
 
     @Mock
     private TextChannel textChannel;
@@ -75,7 +75,7 @@ public class MessageEmbedListenerTest {
         List<MessageEmbedLink> foundMessageLinks = new ArrayList<>();
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
         testUnit.execute(message);
-        verify(message, times(0)).delete();
+        verify(messageService, times(0)).deleteMessage(message);
     }
 
     @Test
@@ -84,8 +84,7 @@ public class MessageEmbedListenerTest {
         String text = linkText;
         executeLinkTestForOneLink(text, linkText, ORIGIN_GUILD_ID, ORIGIN_GUILD_ID);
         verify(self, times(1)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
-        verify(message, times(1)).delete();
-        verify(deletionRestAction, times(1)).queue();
+        verify(messageService, times(1)).deleteMessage(message);
     }
 
     @Test
@@ -94,8 +93,7 @@ public class MessageEmbedListenerTest {
         String text = linkText + "more text";
         executeLinkTestForOneLink(text, linkText, ORIGIN_GUILD_ID, ORIGIN_GUILD_ID);
         verify(self, times(1)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
-        verify(message, times(0)).delete();
-        verify(deletionRestAction, times(0)).queue();
+        verify(messageService, times(0)).deleteMessage(message);
     }
 
     @Test
@@ -103,8 +101,7 @@ public class MessageEmbedListenerTest {
         String linkText = "link";
         String text = linkText + "more text";
         executeLinkTestForOneLink(text, linkText, ORIGIN_GUILD_ID, EMBEDDING_GUILD_ID);
-        verify(message, times(0)).delete();
-        verify(deletionRestAction, times(0)).queue();
+        verify(messageService, times(0)).deleteMessage(message);
         verify(self, times(0)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
         verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
     }
@@ -142,13 +139,12 @@ public class MessageEmbedListenerTest {
         when(message.getMember()).thenReturn(author);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(EMBEDDING_GUILD_ID);
-        when(userInServerManagementService.loadUser(author)).thenReturn(embeddingUser);
+        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(embeddingUser);
         CachedMessage cachedMessage = CachedMessage.builder().build();
         when(messageCache.getMessageFromCache(embeddingServer.getId(), embeddingChannel.getId(), secondMessageId)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageEmbedService.getLinksInMessage(completeMessage)).thenReturn(foundMessageLinks);
         testUnit.execute(message);
-        verify(message, times(0)).delete();
-        verify(deletionRestAction, times(0)).queue();
+        verify(messageService, times(0)).deleteMessage(message);
         verify(self, times(1)).embedSingleLink(message, embeddingUser.getUserInServerId(), cachedMessage);
     }
 
@@ -179,16 +175,14 @@ public class MessageEmbedListenerTest {
 
         Member author = Mockito.mock(Member.class);
         when(message.getMember()).thenReturn(author);
-        when(message.delete()).thenReturn(deletionRestAction);
-        when(userInServerManagementService.loadUser(author)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
         CachedMessage cachedMessage = CachedMessage.builder().build();
         CachedMessage secondCachedMessage = CachedMessage.builder().build();
         when(messageCache.getMessageFromCache(server.getId(), channel.getId(), messageId)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageCache.getMessageFromCache(server.getId(), channel.getId(), secondMessageId)).thenReturn(CompletableFuture.completedFuture(secondCachedMessage));
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
         testUnit.execute(message);
-        verify(message, times(1)).delete();
-        verify(deletionRestAction, times(1)).queue();
+        verify(messageService, times(1)).deleteMessage(message);
         verify(self, times(1)).embedSingleLink(message, userInAServer.getUserInServerId(), cachedMessage);
         verify(self, times(1)).embedSingleLink(message, userInAServer.getUserInServerId(), secondCachedMessage);
     }
@@ -219,8 +213,7 @@ public class MessageEmbedListenerTest {
         List<MessageEmbedLink> foundMessageLinks = Arrays.asList(foundLink);
         Member author = Mockito.mock(Member.class);
         when(message.getMember()).thenReturn(author);
-        when(message.delete()).thenReturn(deletionRestAction);
-        when(userInServerManagementService.loadUser(author)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
         CachedMessage cachedMessage = CachedMessage.builder().build();
         when(messageCache.getMessageFromCache(originServer.getId(), channel.getId(), messageId)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);

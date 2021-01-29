@@ -5,7 +5,10 @@ import dev.sheldan.abstracto.core.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -16,6 +19,9 @@ public class UserManagementServiceBean implements UserManagementService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserManagementServiceBean self;
+
     @Override
     public AUser createUser(Member member) {
         return createUser(member.getIdLong());
@@ -23,14 +29,30 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Override
     public AUser createUser(Long userId) {
+        AUser user;
+        try {
+            user = self.tryCreateUser(userId);
+        } catch (DataIntegrityViolationException ex) {
+            log.info("Concurrency exception creating user - retrieving.");
+            user = loadUser(userId);
+        }
+        return user;
+    }
+
+    @Override
+    public AUser loadUser(Long userId) {
+        return userRepository.getOne(userId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public AUser tryCreateUser(Long userId) {
         AUser aUser = AUser.builder().id(userId).build();
-        log.info("Creating user {}.", userId);
         userRepository.save(aUser);
         return aUser;
     }
 
     @Override
-    public AUser loadUser(Long userId) {
+    public AUser loadOrCreateUser(Long userId) {
         Optional<AUser> optional = loadUserOptional(userId);
         return optional.orElseGet(() -> this.createUser(userId));
     }

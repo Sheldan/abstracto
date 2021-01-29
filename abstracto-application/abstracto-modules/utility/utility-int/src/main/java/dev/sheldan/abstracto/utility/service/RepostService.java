@@ -6,7 +6,9 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.RepostLeaderboardEntryModel;
 import dev.sheldan.abstracto.utility.models.database.PostedImage;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.util.List;
 import java.util.Optional;

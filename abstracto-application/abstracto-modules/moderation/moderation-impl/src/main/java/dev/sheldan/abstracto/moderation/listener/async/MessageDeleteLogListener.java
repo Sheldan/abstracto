@@ -3,7 +3,8 @@ package dev.sheldan.abstracto.moderation.listener.async;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -39,7 +40,10 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
     private PostTargetService postTargetService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Autowired
     private ChannelManagementService channelManagementService;
@@ -55,7 +59,7 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
 
     @Override
     public void execute(CachedMessage messageFromCache) {
-        botService.getMemberInServerAsync(messageFromCache.getServerId(), messageFromCache.getAuthor().getAuthorId()).thenAccept(member ->
+        memberService.getMemberInServerAsync(messageFromCache.getServerId(), messageFromCache.getAuthor().getAuthorId()).thenAccept(member ->
             self.executeListener(messageFromCache, member)
         );
     }
@@ -64,7 +68,7 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
     public void executeListener(CachedMessage messageFromCache, Member authorMember) {
         log.trace("Message {} in channel {} in guild {} was deleted.", messageFromCache.getMessageId(), messageFromCache.getChannelId(), messageFromCache.getServerId());
 
-        TextChannel textChannel = botService.getTextChannelFromServer(messageFromCache.getServerId(), messageFromCache.getChannelId());
+        TextChannel textChannel = channelService.getTextChannelFromServer(messageFromCache.getServerId(), messageFromCache.getChannelId());
         MessageDeletedLog logModel = MessageDeletedLog
                 .builder()
                 .cachedMessage(messageFromCache)

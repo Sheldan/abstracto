@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.modmail.models.database;
 
-import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 

@@ -8,7 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ParseUtilsTest {

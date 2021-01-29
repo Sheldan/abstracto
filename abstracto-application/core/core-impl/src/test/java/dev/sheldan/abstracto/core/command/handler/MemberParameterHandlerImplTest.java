@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.command.handler;
 
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.junit.Assert;
 import org.junit.Test;

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +62,7 @@ public class AsyncJoinListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualJoinListener(AsyncJoinListener joinListener, ServerUser serverUser) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(joinListener.getFeature());
         if (!featureFlagService.isFeatureEnabled(feature, serverUser.getServerId())) {

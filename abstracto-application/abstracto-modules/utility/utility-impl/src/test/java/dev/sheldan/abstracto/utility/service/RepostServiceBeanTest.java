@@ -6,10 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.FeatureModeService;
-import dev.sheldan.abstracto.core.service.HashService;
-import dev.sheldan.abstracto.core.service.HttpService;
-import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -24,7 +21,7 @@ import dev.sheldan.abstracto.utility.models.database.embed.PostIdentifier;
 import dev.sheldan.abstracto.utility.models.database.result.RepostLeaderboardResult;
 import dev.sheldan.abstracto.utility.service.management.PostedImageManagement;
 import dev.sheldan.abstracto.utility.service.management.RepostManagementService;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,7 +69,7 @@ public class RepostServiceBeanTest {
     private UserInServerManagementService userInServerManagementService;
 
     @Mock
-    private MessageService messageService;
+    private ReactionService reactionService;
 
     @Mock
     private FeatureModeService featureModeService;
@@ -159,7 +156,7 @@ public class RepostServiceBeanTest {
     public void testPersistRepostWithExisting() {
         Integer count = 4;
         when(postedImageManagement.getPostFromMessageAndPosition(MESSAGE_ID, POSITION)).thenReturn(postedImage);
-        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
         when(repost.getCount()).thenReturn(count);
         when(repostManagementService.findRepostOptional(postedImage, userInAServer)).thenReturn(Optional.of(repost));
         testUnit.persistRepost(MESSAGE_ID, POSITION, SERVER_ID, USER_ID);
@@ -169,7 +166,7 @@ public class RepostServiceBeanTest {
     @Test
     public void testPersistRepostWithoutExisting() {
         when(postedImageManagement.getPostFromMessageAndPosition(MESSAGE_ID, POSITION)).thenReturn(postedImage);
-        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
         when(repostManagementService.findRepostOptional(postedImage, userInAServer)).thenReturn(Optional.empty());
         testUnit.persistRepost(MESSAGE_ID, POSITION, SERVER_ID, USER_ID);
         verify(repostManagementService, times(1)).createRepost(postedImage, userInAServer);
@@ -224,7 +221,7 @@ public class RepostServiceBeanTest {
         setupSingleRepost();
         testUnit.processMessageAttachmentRepostCheck(message);
         verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(0));
-        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
+        verify(reactionService, times(0)).addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
     }
 
     @Test
@@ -237,9 +234,9 @@ public class RepostServiceBeanTest {
         setupSingleHash(postedImage);
         Long originalPostMessageId = MESSAGE_ID + 1;
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(reactionService.addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.processMessageAttachmentRepostCheck(message);
-        verify(messageService, times(0)).addDefaultReactionToMessageAsync(anyString(), eq(SERVER_ID), eq(CHANNEL_ID), eq(MESSAGE_ID));
+        verify(reactionService, times(0)).addDefaultReactionToMessageAsync(anyString(), eq(SERVER_ID), eq(CHANNEL_ID), eq(MESSAGE_ID));
         verify(self, times(1)).persistRepost(originalPostMessageId, POSITION, SERVER_ID, USER_ID);
     }
 
@@ -261,8 +258,8 @@ public class RepostServiceBeanTest {
         when(postedImageManagement.getPostWithHash(secondAttachmentHash, server)).thenReturn(Optional.of(postedImage));
         Long originalPostMessageId = MESSAGE_ID + 1;
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
-        when(messageService.addDefaultReactionToMessageAsync(anyString(), eq(SERVER_ID), eq(CHANNEL_ID), eq(MESSAGE_ID))).thenReturn(CompletableFuture.completedFuture(null));
+        when(reactionService.addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(reactionService.addDefaultReactionToMessageAsync(anyString(), eq(SERVER_ID), eq(CHANNEL_ID), eq(MESSAGE_ID))).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.processMessageAttachmentRepostCheck(message);
         verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(0));
         verify(self, times(1)).persistRepost(originalPostMessageId, POSITION, SERVER_ID, USER_ID);
@@ -277,7 +274,7 @@ public class RepostServiceBeanTest {
     }
 
     private void generalSetupForRepostTest() {
-        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
         when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
     }
 
@@ -309,7 +306,7 @@ public class RepostServiceBeanTest {
         setupSingleRepost();
         testUnit.processMessageEmbedsRepostCheck(messageEmbeds, message);
         verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(EMBEDDED_LINK_POSITION_START_INDEX));
-        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
+        verify(reactionService, times(0)).addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
     }
 
     @Test
@@ -328,7 +325,7 @@ public class RepostServiceBeanTest {
         setupSingleRepost();
         testUnit.processMessageEmbedsRepostCheck(messageEmbeds, message);
         verify(postedImageManagement, times(1)).createPost(any(AServerAChannelAUser.class), eq(MESSAGE_ID), eq(HASH), eq(EMBEDDED_LINK_POSITION_START_INDEX));
-        verify(messageService, times(0)).addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
+        verify(reactionService, times(0)).addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID);
     }
 
     @Test
@@ -344,7 +341,7 @@ public class RepostServiceBeanTest {
         setupSingleHash(postedImage);
         Long originalPostMessageId = MESSAGE_ID + 1;
         when(postedImage.getPostId()).thenReturn(new PostIdentifier(originalPostMessageId, POSITION));
-        when(messageService.addReactionToMessageWithFuture(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(reactionService.addReactionToMessageAsync(REPOST_MARKER_EMOTE_KEY, SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.processMessageEmbedsRepostCheck(messageEmbeds, message);
         verify(self, times(1)).persistRepost(originalPostMessageId, POSITION, SERVER_ID, USER_ID);
     }

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class ServerJoinListener extends ListenerAdapter {
         configListeners.forEach(serverConfigListener -> self.executingIndividualServerConfigListener(server, serverConfigListener));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executingIndividualServerConfigListener(AServer server, ServerConfigListener serverConfigListener) {
         log.trace("Executing server config listener for server {}.", server.getId());
         serverConfigListener.updateServerConfig(server);

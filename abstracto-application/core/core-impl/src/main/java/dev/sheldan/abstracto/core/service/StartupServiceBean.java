@@ -1,14 +1,14 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.listener.sync.entity.ServerConfigListener;
-import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -18,9 +18,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.SetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.LoginException;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class StartupServiceBean implements Startup {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void synchronize() {
         log.info("Synchronizing servers.");
         synchronizeServers();

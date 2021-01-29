@@ -41,7 +41,7 @@ public class Subscribe extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
-        modMailSubscriptionService.subscribeToThread(userInServerManagementService.loadUser(commandContext.getAuthor()), modMailThread);
+        modMailSubscriptionService.subscribeToThread(userInServerManagementService.loadOrCreateUser(commandContext.getAuthor()), modMailThread);
         return CommandResult.fromSuccess();
     }
 

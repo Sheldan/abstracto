@@ -5,8 +5,8 @@ import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -56,7 +56,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
     private ModMailFeatureValidator modMailFeatureValidator;
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     /**
      * This setup method loads the existing mod mail category (if anything) and populates the model used to render the prompt.
@@ -78,7 +78,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                 .builder()
                 .build();
         if(configManagementService.configExists(user.getGuildId(), ModMailThreadServiceBean.MODMAIL_CATEGORY)) {
-            Guild guild = botService.getGuildById(user.getGuildId());
+            Guild guild = guildService.getGuildById(user.getGuildId());
             Long categoryId = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId());
             log.trace("Previous modmail category exists for server {}. Loading value {}.", guild.getId(), categoryId);
             Category category = guild.getCategoryById(categoryId);
@@ -88,7 +88,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
         String messageText = templateService.renderTemplate(messageTemplateKey, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());
 
         Runnable finalAction = getTimeoutRunnable(user.getGuildId(), user.getChannelId());
         Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
@@ -104,7 +104,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                     String messageContent = event.getMessage().getContentRaw();
                     // directly parse the long from the message, for *now*, only the category ID is supported
                     Long categoryId = Long.parseLong(messageContent);
-                    Guild guild = botService.getGuildById(user.getGuildId());
+                    Guild guild = guildService.getGuildById(user.getGuildId());
                     FeatureValidationResult featureValidationResult = FeatureValidationResult.builder().validationResult(true).build();
                     // directly validate whether or not the given category ID is a valid value
                     modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);

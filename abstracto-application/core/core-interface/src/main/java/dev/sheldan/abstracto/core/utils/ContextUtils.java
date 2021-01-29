@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +25,11 @@ public class ContextUtils {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(CachedMessage message, Class<T> clazz) {
         Method m = null;
-        GuildChannelMember guildChannelMember = botService.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthor().getAuthorId());
+        GuildChannelMember guildChannelMember = memberService.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthor().getAuthorId());
         try {
             m = clazz.getMethod("builder");
             UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);

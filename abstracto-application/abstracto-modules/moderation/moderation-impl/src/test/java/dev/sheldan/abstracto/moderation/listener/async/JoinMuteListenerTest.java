@@ -49,7 +49,7 @@ public class JoinMuteListenerTest {
     public void testNonMutedUserJoins() {
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(serverUser.getUserId()).thenReturn(USER_ID);
-        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
         when(muteManagementService.hasActiveMute(joiningUser)).thenReturn(false);
         testUnit.execute(serverUser);
         verify(muteService, times(0)).applyMuteRole(joiningUser);
@@ -59,7 +59,7 @@ public class JoinMuteListenerTest {
     public void testMutedUserJoins() {
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(serverUser.getUserId()).thenReturn(USER_ID);
-        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
         when(muteManagementService.hasActiveMute(joiningUser)).thenReturn(true);
         testUnit.execute(serverUser);
         verify(muteService, times(1)).applyMuteRole(joiningUser);

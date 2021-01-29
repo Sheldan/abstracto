@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.exceptions.AssignablePlacePostNotFoundException;
+import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRolePlacePostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

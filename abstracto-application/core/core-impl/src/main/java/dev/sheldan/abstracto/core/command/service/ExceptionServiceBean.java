@@ -94,7 +94,7 @@ public class ExceptionServiceBean implements ExceptionService {
     }
 
     private GenericExceptionModel buildCommandModel(Throwable throwable, CommandContext context) {
-        FullUserInServer fullUser = FullUserInServer.builder().member(context.getAuthor()).aUserInAServer(userInServerManagementService.loadUser(context.getAuthor())).build();
+        FullUserInServer fullUser = FullUserInServer.builder().member(context.getAuthor()).aUserInAServer(userInServerManagementService.loadUserOptional(context.getGuild().getIdLong(), context.getAuthor().getIdLong()).orElse(null)).build();
         return GenericExceptionModel
                 .builder()
                 .user(fullUser)
@@ -103,7 +103,7 @@ public class ExceptionServiceBean implements ExceptionService {
     }
 
     private GenericExceptionModel buildMemberContext(Throwable throwable, Member member) {
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(member);
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
         FullUserInServer fullUser = FullUserInServer
                 .builder()
                 .aUserInAServer(userInAServer)
@@ -117,7 +117,7 @@ public class ExceptionServiceBean implements ExceptionService {
     }
 
     private GenericExceptionModel buildPrivateMessageReceivedModel(Throwable throwable, User user) {
-        AUser aUser = userManagementService.loadUser(user.getIdLong());
+        AUser aUser = userManagementService.loadOrCreateUser(user.getIdLong());
         FullUser fullUser = FullUser
                 .builder()
                 .user(user)

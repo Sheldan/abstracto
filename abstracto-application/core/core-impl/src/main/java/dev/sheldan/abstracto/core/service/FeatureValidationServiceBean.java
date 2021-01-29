@@ -37,6 +37,9 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
     @Autowired
     private BotService botService;
 
+    @Autowired
+    private MemberService memberService;
+
     @Override
     public void checkPostTarget(PostTargetEnum name, AServer server, FeatureValidationResult featureValidationResult) {
         if(!postTargetManagement.postTargetExists(name.getKey(), server)) {
@@ -73,7 +76,7 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
                 if(emoteById == null) {
                     rejectEmote(emoteKey, featureValidationResult);
                 } else {
-                    Member selfMember = botService.getMemberInServer(server.getId(), botService.getInstance().getSelfUser().getIdLong());
+                    Member selfMember = memberService.getMemberInServer(server.getId(), botService.getInstance().getSelfUser().getIdLong());
                     if(!emoteById.canInteract(selfMember)) {
                         rejectEmote(emoteKey, featureValidationResult);
                     }

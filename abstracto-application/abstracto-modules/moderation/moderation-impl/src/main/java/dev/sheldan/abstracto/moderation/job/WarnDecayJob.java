@@ -13,6 +13,7 @@ import org.quartz.PersistJobDataAfterExecution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class WarnDecayJob extends QuartzJobBean {
     private WarnService warnService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void executeInternal(JobExecutionContext context) throws JobExecutionException {
         List<AServer> allServers = serverManagementService.getAllServers();
         log.info("Executing warn decay job.");

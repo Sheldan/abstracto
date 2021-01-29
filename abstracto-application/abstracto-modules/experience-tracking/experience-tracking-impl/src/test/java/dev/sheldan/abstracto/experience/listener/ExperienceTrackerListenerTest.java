@@ -37,7 +37,7 @@ public class ExperienceTrackerListenerTest extends ExperienceRelatedTest {
         CachedMessage mockedMessage = Mockito.mock(CachedMessage.class);
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
         when(mockedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(userInServerManagementService.loadUser(server.getId(), user.getId())).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(server.getId(), user.getId())).thenReturn(userInAServer);
         testUnit.execute(mockedMessage);
         verify(userExperienceService, times(1)).addExperience(userInAServer);
     }

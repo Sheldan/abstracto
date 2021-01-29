@@ -33,7 +33,7 @@ public class EnableExpGain extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Member para = (Member) commandContext.getParameters().getParameters().get(0);
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(para);
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(para);
         aUserExperienceService.enableExperienceForUser(userInAServer);
         return CommandResult.fromSuccess();
     }

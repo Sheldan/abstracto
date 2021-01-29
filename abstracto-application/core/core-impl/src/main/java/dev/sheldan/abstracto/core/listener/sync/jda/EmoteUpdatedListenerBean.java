@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ public class EmoteUpdatedListenerBean extends ListenerAdapter {
     private EmoteUpdatedListenerBean self;
 
     @Override
+    @Transactional
     public void onEmoteUpdateName(@NotNull EmoteUpdateNameEvent event) {
         if(updatedListeners == null) return;
         updatedListeners.forEach(emoteUpdatedListener -> {
@@ -54,7 +56,7 @@ public class EmoteUpdatedListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeUpdatedListener(EmoteUpdatedListener listener, Emote updatedEmote, String oldName, String newName) {
         listener.emoteUpdated(updatedEmote, oldName, newName);
     }

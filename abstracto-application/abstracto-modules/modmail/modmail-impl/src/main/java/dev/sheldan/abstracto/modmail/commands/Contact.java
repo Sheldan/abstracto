@@ -50,7 +50,7 @@ public class Contact extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Member targetUser = (Member) commandContext.getParameters().getParameters().get(0);
-        AUserInAServer user = userManagementService.loadUser(targetUser);
+        AUserInAServer user = userManagementService.loadOrCreateUser(targetUser);
         // if this AUserInAServer already has an open thread, we should instead post a message
         // containing a link to the channel, instead of opening a new one
         if(modMailThreadManagementService.hasOpenModMailThreadForUser(user)) {

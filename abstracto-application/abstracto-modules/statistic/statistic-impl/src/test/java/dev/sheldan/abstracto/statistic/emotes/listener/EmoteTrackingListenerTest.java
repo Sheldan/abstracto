@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.statistic.emotes.listener;
 
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.service.TrackedEmoteService;
 import net.dv8tion.jda.api.entities.Guild;
@@ -28,7 +28,7 @@ public class EmoteTrackingListenerTest {
     private TrackedEmoteService trackedEmoteService;
 
     @Mock
-    private BotService botService;
+    private GuildService guildService;
 
     @Mock
     private CachedMessage message;
@@ -49,7 +49,7 @@ public class EmoteTrackingListenerTest {
     public void testExecuteOneEmote() {
         List<CachedEmote> emotesBag = new ArrayList<>();
         emotesBag.add(emote1);
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         when(message.getServerId()).thenReturn(SERVER_ID);
         when(message.getEmotes()).thenReturn(emotesBag);
         testUnit.execute(message);
@@ -63,7 +63,7 @@ public class EmoteTrackingListenerTest {
         when(emote2.getEmoteId()).thenReturn(EMOTE_ID);
         emotesBag.add(emote1);
         emotesBag.add(emote2);
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         when(message.getServerId()).thenReturn(SERVER_ID);
         when(message.getEmotes()).thenReturn(emotesBag);
         testUnit.execute(message);
@@ -77,7 +77,7 @@ public class EmoteTrackingListenerTest {
         when(emote2.getEmoteId()).thenReturn(EMOTE_ID + 1);
         emotesBag.add(emote1);
         emotesBag.add(emote2);
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         when(message.getServerId()).thenReturn(SERVER_ID);
         when(message.getEmotes()).thenReturn(emotesBag);
         testUnit.execute(message);

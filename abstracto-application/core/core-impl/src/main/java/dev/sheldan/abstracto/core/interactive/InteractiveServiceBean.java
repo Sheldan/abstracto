@@ -5,7 +5,6 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -41,9 +40,6 @@ public class InteractiveServiceBean implements InteractiveService {
 
     @Autowired
     private EmoteService emoteService;
-
-    @Autowired
-    private BotService botService;
 
     @Override
     public void createMessageWithResponse(String messageText, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction) {
@@ -90,14 +86,14 @@ public class InteractiveServiceBean implements InteractiveService {
                     }
                 })
                 .build();
-        Optional<TextChannel> textChannelInGuild = channelService.getTextChannelInGuild(serverId, channel.getId());
+        Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(serverId, channel.getId());
         textChannelInGuild.ifPresent(menu::display);
     }
 
     private void addEmoteToBuilder(String key, Consumer<Void> consumer, Long serverId, ButtonMenu.Builder builder, HashMap<String, Consumer<Void>> actions) {
         AEmote emoteOrFakeEmote = emoteService.getEmoteOrDefaultEmote(key, serverId);
         if(Boolean.TRUE.equals(emoteOrFakeEmote.getCustom())){
-            Optional<Emote> emote = botService.getEmote(serverId, emoteOrFakeEmote);
+            Optional<Emote> emote = emoteService.getEmote(serverId, emoteOrFakeEmote);
             emote.ifPresent(emote1 -> {
                 builder.addChoice(emote1);
                 actions.put(emote1.getId(), consumer);

@@ -21,7 +21,7 @@ public class InteractiveUtils {
     @Transactional
     public void sendTimeoutMessage(Long serverId, Long channelId) {
         String s = templateService.renderSimpleTemplate("feature_setup_configuration_timeout");
-        Optional<TextChannel> channelOptional = channelService.getTextChannelInGuild(serverId, channelId);
+        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(serverId, channelId);
         channelOptional.ifPresent(channel -> channelService.sendTextToChannelNotAsync(s, channel));
     }
 }

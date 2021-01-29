@@ -3,7 +3,8 @@ package dev.sheldan.abstracto.moderation.listener.async;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
@@ -28,7 +29,10 @@ public class MessageEditedListener implements AsyncMessageTextUpdatedListener {
     private PostTargetService postTargetService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Override
     public void execute(CachedMessage messageBefore, CachedMessage messageAfter) {
@@ -36,9 +40,9 @@ public class MessageEditedListener implements AsyncMessageTextUpdatedListener {
             log.trace("Message content was the same. Possible reason was: message was not in cache.");
             return;
         }
-        botService.getMemberInServerAsync(messageAfter.getServerId(), messageAfter.getAuthor().getAuthorId()).thenAccept(author -> {
+        memberService.getMemberInServerAsync(messageAfter.getServerId(), messageAfter.getAuthor().getAuthorId()).thenAccept(author -> {
             log.trace("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), messageBefore.getServerId());
-            TextChannel textChannel = botService.getTextChannelFromServer(messageAfter.getServerId(), messageAfter.getChannelId());
+            TextChannel textChannel = channelService.getTextChannelFromServer(messageAfter.getServerId(), messageAfter.getChannelId());
             MessageEditedLog log = MessageEditedLog
                     .builder()
                     .messageAfter(messageAfter)

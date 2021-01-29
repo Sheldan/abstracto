@@ -4,6 +4,9 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionAddedListener;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionClearedListener;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionRemovedListener;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
@@ -23,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,6 +61,36 @@ public class StarboardListener implements AsyncReactionAddedListener, AsyncReact
     @Autowired
     private EmoteService emoteService;
 
+    @Autowired
+    private MetricService metricService;
+
+    public static final String STARBOARD_STARS = "starboard.stars";
+    public static final String STARBOARD_POSTS = "starboard.posts";
+    public static final String STAR_ACTION = "action";
+    private static final CounterMetric STARBOARD_STARS_ADDED = CounterMetric
+            .builder()
+            .name(STARBOARD_STARS)
+            .tagList(Arrays.asList(MetricTag.getTag(STAR_ACTION, "added")))
+            .build();
+
+    private static final CounterMetric STARBOARD_STARS_REMOVED = CounterMetric
+            .builder()
+            .name(STARBOARD_STARS)
+            .tagList(Arrays.asList(MetricTag.getTag(STAR_ACTION, "removed")))
+            .build();
+
+    private static final CounterMetric STARBOARD_STARS_THRESHOLD_REACHED = CounterMetric
+            .builder()
+            .name(STARBOARD_POSTS)
+            .tagList(Arrays.asList(MetricTag.getTag(STAR_ACTION, "threshold.reached")))
+            .build();
+
+    private static final CounterMetric STARBOARD_STARS_THRESHOLD_FELL = CounterMetric
+            .builder()
+            .name(STARBOARD_POSTS)
+            .tagList(Arrays.asList(MetricTag.getTag(STAR_ACTION, "threshold.below")))
+            .build();
+
     @Override
     @Transactional
     public void executeReactionAdded(CachedMessage message, CachedReactions cachedReaction, ServerUser serverUser) {
@@ -65,6 +100,7 @@ public class StarboardListener implements AsyncReactionAddedListener, AsyncReact
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
         if(emoteService.compareCachedEmoteWithAEmote(cachedReaction.getEmote(), aEmote)) {
+            metricService.incrementCounter(STARBOARD_STARS_ADDED);
             log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.", serverUser.getUserId(), message.getServerId(), message.getMessageId(), message.getChannelId());
             Optional<CachedReactions> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
                 handleStarboardPostChange(message, reactionOptional.orElse(null), serverUser, true);
@@ -74,21 +110,23 @@ public class StarboardListener implements AsyncReactionAddedListener, AsyncReact
     private void handleStarboardPostChange(CachedMessage message, CachedReactions reaction, ServerUser serverUser, boolean adding)  {
         Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
         if(reaction != null) {
-            AUserInAServer author = userInServerManagementService.loadUser(message.getServerId(), message.getAuthor().getAuthorId());
+            AUserInAServer author = userInServerManagementService.loadOrCreateUser(message.getServerId(), message.getAuthor().getAuthorId());
             List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUsers(), author);
             Long starMinimum = getFromConfig(FIRST_LEVEL_THRESHOLD_KEY, message.getServerId());
-            AUserInAServer userAddingReaction = userInServerManagementService.loadUser(serverUser);
+            AUserInAServer userAddingReaction = userInServerManagementService.loadOrCreateUser(serverUser);
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
                 if(starboardPostOptional.isPresent()) {
                     updateStarboardPost(message, userAddingReaction, adding, starboardPostOptional.get(), userExceptAuthor);
                 } else {
+                    metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_REACHED);
                     log.info("Creating starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
                     starboardService.createStarboardPost(message, userExceptAuthor, userAddingReaction, author);
                 }
             } else {
                 if(starboardPostOptional.isPresent()) {
+                    metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_FELL);
                     log.info("Removing starboard post for message {} in channel {} in server {}. It fell under the threshold {}", message.getMessageId(), message.getChannelId(), message.getServerId(), starMinimum);
                     starboardPostOptional.ifPresent(this::completelyRemoveStarboardPost);
                 }
@@ -128,6 +166,7 @@ public class StarboardListener implements AsyncReactionAddedListener, AsyncReact
         Long guildId = message.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(STAR_EMOTE, guildId);
         if(emoteService.compareCachedEmoteWithAEmote(removedReaction.getEmote(), aEmote)) {
+            metricService.incrementCounter(STARBOARD_STARS_REMOVED);
             log.info("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserId(), message.getServerId(), message.getMessageId());
             Optional<CachedReactions> reactionOptional = emoteService.getReactionFromMessageByEmote(message, aEmote);
@@ -161,6 +200,14 @@ public class StarboardListener implements AsyncReactionAddedListener, AsyncReact
             starboardPostReactorManagementService.removeReactors(starboardPost);
             completelyRemoveStarboardPost(starboardPost);
         });
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(STARBOARD_STARS_ADDED, "Star reaction added");
+        metricService.registerCounter(STARBOARD_STARS_REMOVED, "Star reaction removed");
+        metricService.registerCounter(STARBOARD_STARS_THRESHOLD_REACHED, "Starboard posts reaching threshold");
+        metricService.registerCounter(STARBOARD_STARS_THRESHOLD_FELL, "Starboard posts falling below threshold");
     }
 
 }

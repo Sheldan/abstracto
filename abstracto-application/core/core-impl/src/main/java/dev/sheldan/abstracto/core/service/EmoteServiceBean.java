@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.EmoteNotDefinedException;
+import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
@@ -25,6 +26,9 @@ public class EmoteServiceBean implements EmoteService {
 
     @Autowired
     private BotService botService;
+
+    @Autowired
+    private GuildService guildService;
 
     @Autowired
     private EmoteManagementService emoteManagementService;
@@ -58,7 +62,7 @@ public class EmoteServiceBean implements EmoteService {
     @Override
     public String getEmoteAsMention(AEmote emote, Long serverId, String defaultText)  {
         if(emote != null && emote.getCustom()) {
-            Optional<Emote> emoteOptional = botService.getEmote(serverId, emote);
+            Optional<Emote> emoteOptional = getEmote(serverId, emote);
             if (emoteOptional.isPresent()) {
                 return emoteOptional.get().getAsMention();
             } else {
@@ -183,9 +187,30 @@ public class EmoteServiceBean implements EmoteService {
         if(!cachedEmote.getCustom()) {
             throw new IllegalArgumentException("Given Emote was not a custom emote.");
         }
-        return botService.retrieveGuildById(cachedEmote.getServerId()).thenCompose(guild ->
-            guild.retrieveEmoteById(cachedEmote.getEmoteId()).submit().thenApply(listedEmote -> listedEmote)
-        );
+        Guild guild = guildService.getGuildById(cachedEmote.getServerId());
+        return guild.retrieveEmoteById(cachedEmote.getEmoteId()).submit().thenApply(listedEmote -> listedEmote);
+    }
+
+    @Override
+    public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
+        if(Boolean.FALSE.equals(emote.getCustom())) {
+            return Optional.empty();
+        }
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(serverId);
+        if(guildById.isPresent()) {
+            Guild guild = guildById.get();
+            Emote emoteById = guild.getEmoteById(emote.getEmoteId());
+            return Optional.ofNullable(emoteById);
+        }
+        throw new GuildNotFoundException(serverId);
+    }
+
+    @Override
+    public Optional<Emote> getEmote(AEmote emote) {
+        if(Boolean.FALSE.equals(emote.getCustom())) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(botService.getInstance().getEmoteById(emote.getEmoteId()));
     }
 
 }

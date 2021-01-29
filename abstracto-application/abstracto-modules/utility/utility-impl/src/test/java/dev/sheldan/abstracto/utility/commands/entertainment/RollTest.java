@@ -8,11 +8,13 @@ import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.utility.models.template.commands.RollResponseModel;
 import dev.sheldan.abstracto.utility.service.EntertainmentService;
-import net.dv8tion.jda.api.entities.Guild;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;

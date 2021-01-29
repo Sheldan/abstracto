@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static org.quartz.SimpleScheduleBuilder.*;
-import static org.quartz.CronScheduleBuilder.*;
-import static org.quartz.TriggerBuilder.*;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * Bean used to create the different types of jobs supported. The jobs include cron jobs and one-time jobs.

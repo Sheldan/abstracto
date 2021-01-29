@@ -60,7 +60,7 @@ public class UserNotes extends AbstractConditionableCommand {
         ListNotesModel model = (ListNotesModel) ContextConverter.fromCommandContext(commandContext, ListNotesModel.class);
         if(parameters.size() == 1) {
             Member member = (Member) parameters.get(0);
-            AUserInAServer userInAServer = userInServerManagementService.loadUser(member);
+            AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
             userNotes = userNoteManagementService.loadNotesForUser(userInAServer);
             FullUserInServer specifiedUser = FullUserInServer
                     .builder()

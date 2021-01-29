@@ -35,7 +35,7 @@ public class UnRemindTest {
         Long reminderId = 6L;
         CommandContext withParameters = CommandTestUtilities.getWithParameters(Arrays.asList(reminderId));
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
-        when(userInServerManagementService.loadUser(withParameters.getAuthor())).thenReturn(user);
+        when(userInServerManagementService.loadOrCreateUser(withParameters.getAuthor())).thenReturn(user);
         CommandResult result = testUnit.execute(withParameters);
         verify(reminderService, times(1)).unRemind(reminderId, user);
         CommandTestUtilities.checkSuccessfulCompletion(result);

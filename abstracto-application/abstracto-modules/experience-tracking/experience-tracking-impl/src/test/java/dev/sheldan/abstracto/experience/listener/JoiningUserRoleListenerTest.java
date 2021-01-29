@@ -47,7 +47,7 @@ public class JoiningUserRoleListenerTest extends ExperienceRelatedTest {
     public void setup() {
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(serverUser.getUserId()).thenReturn(USER_ID);
-        when(userInServerManagementService.loadUser(SERVER_ID, USER_ID)).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(aUserInAServer);
     }
 
     @Test

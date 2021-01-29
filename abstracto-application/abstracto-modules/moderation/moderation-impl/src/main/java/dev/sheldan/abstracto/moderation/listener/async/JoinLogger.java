@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.listener.async;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncJoinListener;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
@@ -30,7 +30,7 @@ public class JoinLogger implements AsyncJoinListener {
     private PostTargetService postTargetService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private JoinLogger self;
@@ -44,7 +44,7 @@ public class JoinLogger implements AsyncJoinListener {
     @Override
     public void execute(ServerUser serverUser) {
         log.info("User {} joined server {}.", serverUser.getUserId(), serverUser.getServerId());
-        botService.getMemberInServerAsync(serverUser.getServerId(), serverUser.getUserId()).thenAccept(member ->
+        memberService.getMemberInServerAsync(serverUser.getServerId(), serverUser.getUserId()).thenAccept(member ->
             self.sendJoinLog(serverUser, member)
         );
     }

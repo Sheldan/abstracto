@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.experience.converter;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.Assert;
@@ -31,7 +31,7 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
     public LeaderBoardModelConverter testUnit;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Test
     public void testFromLeaderBoard() {
@@ -45,8 +45,8 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
         List<LeaderBoardEntry> entries = Arrays.asList(entry, entry2);
         LeaderBoard leaderBoard = LeaderBoard.builder().entries(entries).build();
         Member member = Mockito.mock(Member.class);
-        when(botService.getMemberInServerAsync(server.getId(), entry.getExperience().getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
-        when(botService.getMemberInServerAsync(server.getId(), entry2.getExperience().getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
+        when(memberService.getMemberInServerAsync(server.getId(), entry.getExperience().getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
+        when(memberService.getMemberInServerAsync(server.getId(), entry2.getExperience().getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
         List<CompletableFuture<LeaderBoardEntryModel>> leaderBoardEntryModels = testUnit.fromLeaderBoard(leaderBoard);
         LeaderBoardEntryModel firstEntry = leaderBoardEntryModels.get(0).join();
         Assert.assertEquals(firstRank, firstEntry.getRank().intValue());
@@ -67,7 +67,7 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
         User user = Mockito.mock(User.class);
         when(user.getIdLong()).thenReturn(userId);
         when(member.getUser()).thenReturn(user);
-        when(botService.getMemberInServerAsync(server.getId(), experience.getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
+        when(memberService.getMemberInServerAsync(server.getId(), experience.getUser().getUserReference().getId())).thenReturn(CompletableFuture.completedFuture(member));
         CompletableFuture<LeaderBoardEntryModel> leaderBoardEntryModel = testUnit.fromLeaderBoardEntry(entry);
         LeaderBoardEntryModel entryModel = leaderBoardEntryModel.join();
         Assert.assertEquals(1, entryModel.getRank().intValue());

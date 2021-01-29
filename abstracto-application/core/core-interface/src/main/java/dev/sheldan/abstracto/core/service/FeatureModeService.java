@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
-import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;

@@ -73,7 +73,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         List<CompletableFuture<LeaderBoardEntryModel>> completableFutures = converter.fromLeaderBoard(leaderBoard);
         futures.addAll(completableFutures);
         log.info("Rendering leaderboard for page {} in server {} for user {}.", page, commandContext.getAuthor().getId(), commandContext.getGuild().getId());
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
         CompletableFuture<LeaderBoardEntryModel> userRankFuture = converter.fromLeaderBoardEntry(userRank);
         futures.add(userRankFuture);

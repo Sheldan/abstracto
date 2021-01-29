@@ -2,7 +2,8 @@ package dev.sheldan.abstracto.moderation.listener.async;
 
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageEditedLog;
@@ -37,7 +38,10 @@ public class MessageEditedListenerTest {
     private PostTargetService postTargetService;
 
     @Mock
-    private BotService botService;
+    private ChannelService channelService;
+
+    @Mock
+    private MemberService memberService;
 
     @Mock
     private CachedMessage messageAfter;
@@ -77,8 +81,8 @@ public class MessageEditedListenerTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         ArgumentCaptor<MessageEditedLog> captor = ArgumentCaptor.forClass(MessageEditedLog.class);
         when(templateService.renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
-        when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(author));
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(channel);
+        when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(author));
+        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(channel);
         testUnit.execute(messageBefore, messageAfter);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.EDIT_LOG, SERVER_ID);
         MessageEditedLog capturedValue = captor.getValue();

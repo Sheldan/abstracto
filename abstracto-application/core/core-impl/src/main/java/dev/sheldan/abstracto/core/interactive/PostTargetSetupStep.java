@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.template.commands.SetupPostTargetMessageModel;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
@@ -47,7 +47,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
     private TemplateService templateService;
 
     @Autowired
-    private BotService botService;
+    private ChannelService channelService;
 
     @Autowired
     private PostTargetManagement postTargetManagement;
@@ -58,7 +58,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
         TextChannel currentTextChannel;
         if(postTargetManagement.postTargetExists(postTargetStepParameter.getPostTargetKey(), user.getGuildId())) {
             PostTarget postTarget = postTargetManagement.getPostTarget(postTargetStepParameter.getPostTargetKey(), user.getGuildId());
-            currentTextChannel = botService.getTextChannelFromServerOptional(user.getGuildId(), postTarget.getChannelReference().getId()).orElse(null);
+            currentTextChannel = channelService.getTextChannelFromServerOptional(user.getGuildId(), postTarget.getChannelReference().getId()).orElse(null);
         } else {
             currentTextChannel = null;
         }
@@ -70,7 +70,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
         String messageText = templateService.renderTemplate(FEATURE_SETUP_POST_TARGET_MESSAGE_TEMPLATE_KEY, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());
         Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
         log.trace("Executing setup for post target {} in server {} for user {}.", postTargetStepParameter.getPostTargetKey(), user.getGuildId(), user.getUserId());
         Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {

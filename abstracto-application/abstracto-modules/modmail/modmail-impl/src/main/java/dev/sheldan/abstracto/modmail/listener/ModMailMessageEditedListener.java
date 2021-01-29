@@ -8,8 +8,8 @@ import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedList
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
@@ -41,7 +41,7 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
     private CommandService commandService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private TemplateService templateService;
@@ -84,8 +84,8 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
                 log.info("Edit did not contain the original command to retrieve the parameters for. Resulting to {}.", DEFAULT_COMMAND_FOR_MODMAIL_EDIT);
             }
             CompletableFuture<Parameters> parameterParseFuture = commandService.getParametersForCommand(commandName, loadedMessage);
-            CompletableFuture<Member> loadTargetUser = botService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId());
-            CompletableFuture<Member> loadEditingUser = botService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getAuthor().getUserReference().getId());
+            CompletableFuture<Member> loadTargetUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId());
+            CompletableFuture<Member> loadEditingUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getAuthor().getUserReference().getId());
             CompletableFuture.allOf(parameterParseFuture, loadTargetUser, loadEditingUser).thenAccept(unused ->
                     self.updateMessageInThread(loadedMessage, parameterParseFuture.join(), loadTargetUser.join(), loadEditingUser.join())
             );
@@ -110,7 +110,7 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
                     .anonymous(modMailMessage.getAnonymous())
                     .threadUser(fullThreadUser);
             if(modMailMessage.getAnonymous()) {
-                modMailModeratorReplyModelBuilder.moderator(botService.getBotInGuild(modMailMessage.getThreadReference().getServer()));
+                modMailModeratorReplyModelBuilder.moderator(memberService.getBotInGuild(modMailMessage.getThreadReference().getServer()));
             } else {
                 modMailModeratorReplyModelBuilder.moderator(editingUser);
             }

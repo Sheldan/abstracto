@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.service.TrackedEmoteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +25,13 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
     private TrackedEmoteService trackedEmoteService;
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     @Override
     public void execute(CachedMessage message) {
         Map<Long, List<CachedEmote>> collect = message.getEmotes().stream().collect(Collectors.groupingBy(CachedEmote::getEmoteId));
         collect.values().forEach(groupedEmotes ->
-            trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), botService.getGuildById(message.getServerId()), (long) groupedEmotes.size())
+            trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(message.getServerId()), (long) groupedEmotes.size())
         );
     }
 

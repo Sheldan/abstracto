@@ -6,9 +6,12 @@ import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementServiceBean;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementServiceBean;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -42,10 +47,30 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     private AssignableRoleServiceBean self;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
+
+    @Autowired
+    private MetricService metricService;
+
+    public static final String ASSIGNABLE_ROLES_METRIC = "assignable.roles";
+    public static final String ACTION = "action";
+    private static final CounterMetric ASSIGNABLE_ROLES_ASSIGNED =
+            CounterMetric
+                    .builder()
+                    .name(ASSIGNABLE_ROLES_METRIC)
+                    .tagList(Arrays.asList(MetricTag.getTag(ACTION, "assigned")))
+                    .build();
+
+    private static final CounterMetric ASSIGNABLE_ROLES_REMOVED =
+            CounterMetric
+                    .builder()
+                    .name(ASSIGNABLE_ROLES_METRIC)
+                    .tagList(Arrays.asList(MetricTag.getTag(ACTION, "removed")))
+                    .build();
 
     @Override
     public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member toAdd) {
+        metricService.incrementCounter(ASSIGNABLE_ROLES_ASSIGNED);
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         log.info("Assigning role {} to member {} in server {}.", assignableRoleId, toAdd.getId(), toAdd.getGuild().getId());
         return roleService.addRoleToMemberFuture(toAdd, role.getRole());
@@ -53,7 +78,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
 
     @Override
     public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, ServerUser serverUser) {
-        return botService.retrieveMemberInServer(serverUser).thenCompose(member -> assignAssignableRoleToUser(assignableRoleId, member));
+        return memberService.retrieveMemberInServer(serverUser).thenCompose(member -> assignAssignableRoleToUser(assignableRoleId, member));
     }
 
     @Override
@@ -79,6 +104,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Override
     public CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
         log.info("Removing assignable role {} from user {} in server {}.", assignableRole.getId(), member.getId(), member.getGuild().getId());
+        metricService.incrementCounter(ASSIGNABLE_ROLES_REMOVED);
         return roleService.removeRoleFromMemberAsync(member, assignableRole.getRole());
     }
 
@@ -92,7 +118,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Override
     public CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, AUserInAServer aUserInAServer) {
         Long assignableRoleId = assignableRole.getId();
-        return botService.getMemberInServerAsync(aUserInAServer).thenCompose(member ->
+        return memberService.getMemberInServerAsync(aUserInAServer).thenCompose(member ->
             self.removeAssignableRoleFromUser(assignableRoleId, member)
         );
     }
@@ -100,7 +126,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Override
     public CompletableFuture<Void> fullyRemoveAssignableRoleFromUser(AssignableRole assignableRole, ServerUser serverUser) {
         Long assignableRoleId = assignableRole.getId();
-        return botService.retrieveMemberInServer(serverUser).thenCompose(member ->
+        return memberService.retrieveMemberInServer(serverUser).thenCompose(member ->
             this.removeAssignableRoleFromUser(assignableRole, member)
                     .thenAccept(aVoid -> self.persistRoleRemovalFromUser(assignableRoleId, member))
         );
@@ -129,7 +155,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Transactional
     public void addRoleToUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(member);
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
         addRoleToUser(role, aUserInAServer);
     }
 
@@ -142,7 +168,13 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Transactional
     public void persistRoleRemovalFromUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(member);
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
         removeRoleFromUser(role, aUserInAServer);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(ASSIGNABLE_ROLES_ASSIGNED, "Assignable roles assigned.");
+        metricService.registerCounter(ASSIGNABLE_ROLES_REMOVED, "Assignable roles removed.");
     }
 }

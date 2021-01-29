@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ConfigurationKeyNotFoundException;
-import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.models.database.AConfig;
+import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

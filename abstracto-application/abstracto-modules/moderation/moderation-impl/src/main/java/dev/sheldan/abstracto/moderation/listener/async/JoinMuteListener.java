@@ -27,7 +27,7 @@ public class JoinMuteListener implements AsyncJoinListener {
 
     @Override
     public void execute(ServerUser serverUser) {
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(serverUser.getServerId(), serverUser.getUserId());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(serverUser.getServerId(), serverUser.getUserId());
         if(muteManagementService.hasActiveMute(aUserInAServer)) {
             log.info("Re-muting user {} which joined the server {}, because the mute has not ended yet.", serverUser.getUserId(), serverUser.getServerId());
             muteService.applyMuteRole(aUserInAServer);

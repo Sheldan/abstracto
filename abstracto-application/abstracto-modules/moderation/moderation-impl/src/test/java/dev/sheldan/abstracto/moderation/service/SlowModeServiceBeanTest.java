@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -26,10 +26,7 @@ public class SlowModeServiceBeanTest {
     private SlowModeServiceBean testUnit;
 
     @Mock
-    private BotService botService;
-
-    @Mock
-    private ChannelManager channelManager;
+    private ChannelService channelService;
 
     @Mock
     private ChannelManager returnedManager;
@@ -42,12 +39,10 @@ public class SlowModeServiceBeanTest {
 
     @Test
     public void setSlowModeInTextChannel() {
-        when(channelManager.setSlowmode(anyInt())).thenReturn(returnedManager);
         when(channel.getGuild()).thenReturn(guild);
-        when(channel.getManager()).thenReturn(channelManager);
         Duration duration = Duration.ofMinutes(5);
         testUnit.setSlowMode(channel, duration);
-        verify(channelManager, times(1)).setSlowmode((int)duration.getSeconds());
+        verify(channelService, times(1)).setSlowModeInChannel(channel,(int) duration.getSeconds());
     }
 
     @Test
@@ -55,21 +50,17 @@ public class SlowModeServiceBeanTest {
         AServer server = MockUtils.getServer();
         AChannel aChannel = MockUtils.getTextChannel(server, 5L);
         Duration duration = Duration.ofMinutes(5);
-        when(channelManager.setSlowmode(anyInt())).thenReturn(returnedManager);
         when(channel.getGuild()).thenReturn(guild);
-        when(channel.getManager()).thenReturn(channelManager);
-        when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
+        when(channelService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
         testUnit.setSlowMode(aChannel, duration);
-        verify(channelManager, times(1)).setSlowmode((int)duration.getSeconds());
+        verify(channelService, times(1)).setSlowModeInChannel(channel,(int) duration.getSeconds());
     }
 
     @Test
     public void testDisableSlowMode() {
-        when(channelManager.setSlowmode(anyInt())).thenReturn(returnedManager);
         when(channel.getGuild()).thenReturn(guild);
-        when(channel.getManager()).thenReturn(channelManager);
         testUnit.disableSlowMode(channel);
-        verify(channelManager, times(1)).setSlowmode(0);
+        verify(channelService, times(1)).setSlowModeInChannel(channel,0);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -84,7 +75,7 @@ public class SlowModeServiceBeanTest {
         AServer server = MockUtils.getServer();
         AChannel aChannel = MockUtils.getTextChannel(server, 5L);
         Duration duration = Duration.ofMinutes(5);
-        when(botService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
+        when(channelService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
         testUnit.setSlowMode(aChannel, duration);
     }
 }

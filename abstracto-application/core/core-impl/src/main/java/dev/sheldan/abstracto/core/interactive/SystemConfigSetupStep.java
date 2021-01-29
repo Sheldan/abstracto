@@ -61,7 +61,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
         String messageText =  templateService.renderTemplate(SETUP_SYSTEM_CONFIG_MESSAGE_TEMPLATE_KEY, model);
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(user.getGuildId(), user.getUserId());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());
         log.trace("Executing setup for system config {} in server {} for user {}.", systemConfigStepParameter.getConfigKey(), user.getGuildId(), user.getUserId());
 
         Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());

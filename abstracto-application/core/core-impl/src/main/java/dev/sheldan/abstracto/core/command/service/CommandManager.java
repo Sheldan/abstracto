@@ -1,12 +1,14 @@
 package dev.sheldan.abstracto.core.command.service;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.config.ModuleInterface;
-import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
+import dev.sheldan.abstracto.core.command.CommandReceivedHandler;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.ModuleInterface;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import net.dv8tion.jda.api.entities.Message;
@@ -30,6 +32,9 @@ public class CommandManager implements CommandRegistry {
     @Autowired
     private DefaultConfigManagementService defaultConfigManagementService;
 
+    @Autowired
+    private MetricService metricService;
+
     @Override
     public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter) {
         Optional<Command> commandOptional = commands.stream().filter((Command o )-> {
@@ -46,6 +51,7 @@ public class CommandManager implements CommandRegistry {
                 boolean hasRemainderParameter = commandConfiguration.getParameters().stream().anyMatch(Parameter::isRemainder);
                 if(unParsedCommandParameter.getParameters().size() < commandConfiguration.getNecessaryParameterCount()) {
                     String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
+                    metricService.incrementCounter(CommandReceivedHandler.COMMANDS_WRONG_PARAMETER_COUNTER);
                     throw new InsufficientParametersException(o, nextParameterName);
                 }
                 parameterFit = paramCountFits || hasRemainderParameter;

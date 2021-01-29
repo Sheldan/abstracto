@@ -6,10 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.CounterService;
-import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
@@ -22,7 +19,6 @@ import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.template.commands.SuggestionLog;
 import dev.sheldan.abstracto.utility.service.management.SuggestionManagementService;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.requests.RestAction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -56,10 +52,13 @@ public class SuggestionServiceBeanTest {
     private TemplateService templateService;
 
     @Mock
-    private BotService botService;
+    private ChannelService channelService;
 
     @Mock
-    private MessageService messageService;
+    private MemberService memberService;
+
+    @Mock
+    private ReactionService reactionService;
 
     @Mock
     private SuggestionServiceBean self;
@@ -115,12 +114,12 @@ public class SuggestionServiceBeanTest {
         Message suggestionMessage = Mockito.mock(Message.class);
         when(counterService.getNextCounterValue(server, SUGGESTION_COUNTER_KEY)).thenReturn(SUGGESTION_ID);
         AUserInAServer aUserInAServer = Mockito.mock(AUserInAServer.class);
-        when(userInServerManagementService.loadUser(suggestionCreator)).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(suggestionCreator)).thenReturn(aUserInAServer);
         List<CompletableFuture<Message>> postingFutures = Arrays.asList(CompletableFuture.completedFuture(suggestionMessage));
         when(postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, SERVER_ID)).thenReturn(postingFutures);
         testUnit.createSuggestionMessage(suggestionCreator, suggestionText, log);
-        verify( messageService, times(1)).addReactionToMessageWithFuture(SuggestionServiceBean.SUGGESTION_YES_EMOTE, SERVER_ID, suggestionMessage);
-        verify( messageService, times(1)).addReactionToMessageWithFuture(SuggestionServiceBean.SUGGESTION_NO_EMOTE, SERVER_ID, suggestionMessage);
+        verify(reactionService, times(1)).addReactionToMessageAsync(SuggestionServiceBean.SUGGESTION_YES_EMOTE, SERVER_ID, suggestionMessage);
+        verify(reactionService, times(1)).addReactionToMessageAsync(SuggestionServiceBean.SUGGESTION_NO_EMOTE, SERVER_ID, suggestionMessage);
     }
 
     @Test
@@ -167,7 +166,7 @@ public class SuggestionServiceBeanTest {
                 .build();
         when(server.getId()).thenReturn(SERVER_ID);
         when(channel.getId()).thenReturn(CHANNEL_ID);
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenThrow(new ChannelNotInGuildException(CHANNEL_ID));
+        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenThrow(new ChannelNotInGuildException(CHANNEL_ID));
         when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.of(suggestionToAccept));
     }
 
@@ -220,11 +219,9 @@ public class SuggestionServiceBeanTest {
         Long messageId = 7L;
         SuggestionLog logParameter = SuggestionLog.builder().build();
         Suggestion suggestionToAccept = setupClosing(messageId);
-        RestAction<Message> retrievalAction = Mockito.mock(RestAction.class);
-        when(textChannel.retrieveMessageById(messageId)).thenReturn(retrievalAction);
         Message suggestionMessage = Mockito.mock(Message.class);
-        when(retrievalAction.submit()).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
-        when(botService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(actualMember));
+        when(channelService.retrieveMessageInChannel(textChannel, messageId)).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
+        when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(actualMember));
         testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, logParameter);
         verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.ACCEPTED);
     }
@@ -233,11 +230,9 @@ public class SuggestionServiceBeanTest {
         Long messageId = 7L;
         SuggestionLog logParameter = SuggestionLog.builder().build();
         Suggestion suggestionToAccept = setupClosing(messageId);
-        RestAction<Message> retrievalAction = Mockito.mock(RestAction.class);
-        when(textChannel.retrieveMessageById(messageId)).thenReturn(retrievalAction);
         Message suggestionMessage = Mockito.mock(Message.class);
-        when(retrievalAction.submit()).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
-        when(botService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(actualMember));
+        when(channelService.retrieveMessageInChannel(textChannel, messageId)).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
+        when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(actualMember));
         testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, logParameter);
         verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.REJECTED);
     }
@@ -256,7 +251,7 @@ public class SuggestionServiceBeanTest {
         when(suggester.getUserReference()).thenReturn(suggesterUser);
         when(suggesterUser.getId()).thenReturn(SUGGESTER_ID);
         when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.of(suggestionToAccept));
-        when(botService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         return suggestionToAccept;
     }
 }

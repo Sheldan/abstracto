@@ -55,7 +55,7 @@ public class RepostLeaderboard extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Integer page = !parameters.isEmpty() ? (Integer) parameters.get(0) : 1;
-        AUserInAServer aUserInAServer = userInServerManagementService.loadUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         List<RepostLeaderboardResult> topRepostingUsersOfServer = repostManagementService.findTopRepostingUsersOfServer(commandContext.getGuild().getIdLong(), page, 5);
         RepostLeaderboardResult resultOfUser = repostManagementService.getRepostRankOfUser(aUserInAServer);
         CompletableFuture<List<RepostLeaderboardEntryModel>> leaderBoardFuture = converter.fromLeaderBoardResults(topRepostingUsersOfServer);

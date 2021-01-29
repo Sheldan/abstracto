@@ -7,8 +7,8 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
-
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -55,7 +54,7 @@ public class ModMailMessageEditedListenerTest {
     private CommandService commandService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private TemplateService templateService;
@@ -159,8 +158,8 @@ public class ModMailMessageEditedListenerTest {
         when(commandRegistry.getCommandName(NEW_COMMAND_PART, SERVER_ID)).thenReturn(NEW_COMMAND_PART);
         when(commandService.doesCommandExist(NEW_COMMAND_PART)).thenReturn(true);
         when(commandService.getParametersForCommand(NEW_COMMAND_PART, loadedMessage)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
-        when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
-        when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
+        when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
+        when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
         testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
         verify(self, times(1)).updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
     }
@@ -187,8 +186,8 @@ public class ModMailMessageEditedListenerTest {
         when(commandRegistry.getCommandName(NEW_COMMAND_PART, SERVER_ID)).thenReturn(NEW_COMMAND_PART);
         when(commandService.doesCommandExist(NEW_COMMAND_PART)).thenReturn(false);
         when(commandService.getParametersForCommand(DEFAULT_COMMAND_FOR_MODMAIL_EDIT, loadedMessage)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
-        when(botService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
-        when(botService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
+        when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
+        when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
         testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
         verify(self, times(1)).updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
     }

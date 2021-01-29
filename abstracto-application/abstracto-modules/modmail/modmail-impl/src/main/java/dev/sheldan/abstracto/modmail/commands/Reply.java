@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
@@ -39,7 +39,7 @@ public class Reply extends AbstractConditionableCommand {
     private ModMailThreadManagementService modMailThreadManagementService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private ChannelManagementService channelManagementService;
@@ -51,7 +51,7 @@ public class Reply extends AbstractConditionableCommand {
         AChannel channel = channelManagementService.loadChannel(commandContext.getChannel());
         ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
         Long threadId = thread.getId();
-        return botService.getMemberInServerAsync(thread.getUser()).thenCompose(member ->
+        return memberService.getMemberInServerAsync(thread.getUser()).thenCompose(member ->
             modMailThreadService.relayMessageToDm(threadId, text, commandContext.getMessage(), false, commandContext.getChannel(), commandContext.getUndoActions(), member)
         ).thenApply(aVoid -> CommandResult.fromSuccess());
     }

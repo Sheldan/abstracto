@@ -28,7 +28,7 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
 
     @Override
     public void execute(CachedMessage message) {
-        AUserInAServer cause = userInServerManagementService.loadUser(message.getServerId(), message.getAuthor().getAuthorId());
+        AUserInAServer cause = userInServerManagementService.loadOrCreateUser(message.getServerId(), message.getAuthor().getAuthorId());
         userExperienceService.addExperience(cause);
     }
 

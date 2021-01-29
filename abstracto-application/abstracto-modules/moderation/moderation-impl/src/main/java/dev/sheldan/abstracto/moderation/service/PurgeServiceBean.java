@@ -1,5 +1,8 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.moderation.exception.NoMessageFoundException;
 import dev.sheldan.abstracto.moderation.models.template.commands.PurgeStatusUpdateModel;
@@ -15,6 +18,7 @@ import net.dv8tion.jda.api.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -32,6 +36,20 @@ public class PurgeServiceBean implements PurgeService {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private MetricService metricService;
+
+    @Autowired
+    private ChannelService channelService;
+
+    public static final String MODERATION_PURGE_METRIC = "moderation.purge";
+
+    private static final CounterMetric PURGE_MESSAGE_COUNTER_METRIC =
+            CounterMetric
+                    .builder()
+                    .name(MODERATION_PURGE_METRIC)
+                    .build();
+
     @Override
     public CompletableFuture<Void> purgeMessagesInChannel(Integer amountToDelete, TextChannel channel, Long startId, Member purgedMember) {
         return purgeMessages(amountToDelete, channel, startId, purgedMember, amountToDelete, 0, 0L);
@@ -45,9 +63,10 @@ public class PurgeServiceBean implements PurgeService {
         } else {
             toDeleteInThisIteration = amountToDelete % PURGE_MAX_MESSAGES;
         }
+        metricService.incrementCounter(PURGE_MESSAGE_COUNTER_METRIC, (long) toDeleteInThisIteration);
         log.info("Purging {} this iteration ({}/{}) messages in channel {} in server {}.", toDeleteInThisIteration, currentCount, totalCount, channel.getId(), channel.getGuild().getId());
 
-        CompletableFuture<MessageHistory> historyFuture = channel.getHistoryBefore(startId, toDeleteInThisIteration).submit();
+        CompletableFuture<MessageHistory> historyFuture = channelService.getHistoryOfChannel(channel, startId, toDeleteInThisIteration);
         CompletableFuture<Long> statusMessageFuture = getOrCreatedStatusMessage(channel, totalCount, statusMessageId);
 
         CompletableFuture<Void> deletionFuture = new CompletableFuture<>();
@@ -60,6 +79,7 @@ public class PurgeServiceBean implements PurgeService {
                 if(messagesToDeleteNow.size() == 0) {
                     log.warn("No messages found to delete, all were filtered.");
                     deletionFuture.completeExceptionally(new NoMessageFoundException());
+                    // TODO move to message service
                     channel.deleteMessageById(currentStatusMessageId).queueAfter(5, TimeUnit.SECONDS);
                     return;
                 }
@@ -71,7 +91,7 @@ public class PurgeServiceBean implements PurgeService {
                 if (messagesToDeleteNow.size() > 1) {
                     bulkDeleteMessages(channel, deletionFuture, messagesToDeleteNow, consumer);
                 } else if (messagesToDeleteNow.size() == 1) {
-                    latestMessage.delete().queue(consumer, deletionFuture::completeExceptionally);
+                    messageService.deleteMessage(latestMessage).queue(consumer, deletionFuture::completeExceptionally);
                 }
 
             } catch (Exception e) {
@@ -88,9 +108,9 @@ public class PurgeServiceBean implements PurgeService {
 
     private void bulkDeleteMessages(TextChannel channel, CompletableFuture<Void> deletionFuture, List<Message> messagesToDeleteNow, Consumer<Void> consumer) {
         try {
-            channel.deleteMessages(messagesToDeleteNow).queue(consumer, deletionFuture::completeExceptionally);
+            channelService.deleteMessagesInChannel(channel, messagesToDeleteNow).queue(consumer, deletionFuture::completeExceptionally);
         } catch (IllegalArgumentException e) {
-            channel.sendMessage(e.getMessage()).queue();
+            channelService.sendTextToChannel(e.getMessage(), channel);
             log.warn("Failed to bulk delete, message was most likely too old to delete by bulk.", e);
             deletionFuture.complete(null);
         }
@@ -145,6 +165,7 @@ public class PurgeServiceBean implements PurgeService {
                 );
             } else {
                 log.trace("Completed purging of {} messages.", totalCount);
+                // Todo Move to message service
                 channel.deleteMessageById(currentStatusMessageId).queueAfter(5, TimeUnit.SECONDS);
                 deletionFuture.complete(null);
             }
@@ -158,5 +179,10 @@ public class PurgeServiceBean implements PurgeService {
     @Override
     public CompletableFuture<Void> purgeMessagesInChannel(Integer count, TextChannel channel, Message origin, Member purgingRestriction) {
         return purgeMessagesInChannel(count, channel, origin.getIdLong(), purgingRestriction);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(PURGE_MESSAGE_COUNTER_METRIC, "Amount of messages deleted by purge.");
     }
 }

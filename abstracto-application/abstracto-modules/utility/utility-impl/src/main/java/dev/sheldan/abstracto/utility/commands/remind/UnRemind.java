@@ -34,7 +34,7 @@ public class UnRemind extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Long reminderId = (Long) commandContext.getParameters().getParameters().get(0);
-        reminderService.unRemind(reminderId, userInServerManagementService.loadUser(commandContext.getAuthor()));
+        reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(commandContext.getAuthor()));
         return CommandResult.fromSuccess();
     }
 

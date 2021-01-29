@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
+import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.repository.SuggestionRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
@@ -36,7 +36,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
 
     @Override
     public Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId) {
-        AUserInAServer user = userInServerManagementService.loadUser(suggester);
+        AUserInAServer user = userInServerManagementService.loadOrCreateUser(suggester);
         return this.createSuggestion(user, text, message, suggestionId);
     }
 

@@ -4,7 +4,9 @@ import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
@@ -21,7 +23,10 @@ import java.util.concurrent.CompletableFuture;
 public class MessageCacheBean implements MessageCache {
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Autowired
     private EmoteService emoteService;
@@ -66,13 +71,13 @@ public class MessageCacheBean implements MessageCache {
     @Override
     public CompletableFuture<CachedMessage> loadMessage(Long guildId, Long textChannelId, Long messageId) {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
-        Optional<Guild> guildOptional = botService.getGuildByIdOptional(guildId);
+        Optional<Guild> guildOptional = guildService.getGuildByIdOptional(guildId);
         if(guildOptional.isPresent()) {
-            Optional<TextChannel> textChannelByIdOptional = botService.getTextChannelFromServerOptional(guildOptional.get(), textChannelId);
+            Optional<TextChannel> textChannelByIdOptional = channelService.getTextChannelFromServerOptional(guildOptional.get(), textChannelId);
             if(textChannelByIdOptional.isPresent()) {
                 TextChannel textChannel = textChannelByIdOptional.get();
-                textChannel.retrieveMessageById(messageId).queue(message ->
-
+                channelService.retrieveMessageInChannel(textChannel, messageId)
+                        .thenAccept(message ->
                             cacheEntityService.buildCachedMessageFromMessage(message)
                                     .thenAccept(future::complete)
                                     .exceptionally(throwable -> {
@@ -80,8 +85,7 @@ public class MessageCacheBean implements MessageCache {
                                         future.completeExceptionally(throwable);
                                         return null;
                                     })
-
-                );
+                        );
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
                 future.completeExceptionally(new ChannelNotInGuildException(textChannelId));

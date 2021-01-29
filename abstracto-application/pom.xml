@@ -64,7 +64,9 @@
         <mockito-core.version>3.3.3</mockito-core.version>
         <commons-collections.version>4.3</commons-collections.version>
         <spring-boot-starter.version>2.3.1.RELEASE</spring-boot-starter.version>
+        <prometheus.client.version>0.9.0</prometheus.client.version>
         <junit.version>4.13.1</junit.version>
+        <micrometer.prometheus.version>1.6.3</micrometer.prometheus.version>
     </properties>
 
     <build>
@@ -170,6 +172,17 @@
                 <artifactId>spring-boot-starter-test</artifactId>
                 <version>${spring-boot-starter.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>simpleclient</artifactId>
+                <version>${prometheus.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer.prometheus.version}</version>
             </dependency>
 
         </dependencies>

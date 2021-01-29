@@ -17,12 +17,13 @@ import dev.sheldan.abstracto.core.command.exception.CommandParameterKeyValueWron
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.EmoteNotUsableException;
 import dev.sheldan.abstracto.core.models.FullEmote;
-import dev.sheldan.abstracto.core.models.database.*;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.*;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,9 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     private AssignableRoleManagementService assignableRoleManagementServiceBean;
 
     @Autowired
+    private ReactionService reactionService;
+
+    @Autowired
     private MessageService messageService;
 
     @Autowired
@@ -59,7 +63,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private BotService botService;
+    private GuildService guildService;
 
     @Autowired
     private EmoteService emoteService;
@@ -172,7 +176,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 model.getRoles().add(newAssignableRole);
                 MessageToSend messageToSend = templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model);
                 // add it to the last currently existing post
-                Optional<TextChannel> channelOptional = channelService.getTextChannelInGuild(server.getId(), latestPost.getUsedChannel().getId());
+                Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(server.getId(), latestPost.getUsedChannel().getId());
                 if(channelOptional.isPresent()) {
                     TextChannel textChannel = channelOptional.get();
                     if(latestPost.getAssignableRoles().size() < 20) {
@@ -203,10 +207,10 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         Long placeId = latestPost.getAssignablePlace().getId();
         Long latestPostId = latestPost.getId();
         int messagePostSize = latestPost.getAssignablePlace().getMessagePosts().size();
-        return textChannel.retrieveMessageById(latestPost.getId()).submit()
+        return channelService.retrieveMessageInChannel(textChannel, latestPostId)
                 .thenCompose(message -> {
                     log.trace("Adding reaction to message {} in server {} for assignable role place {}.", message.getId(), serverId, placeId);
-                    return messageService.addReactionToMessageWithFuture(fakeEmote.getFakeEmote(), serverId, message);
+                    return reactionService.addReactionToMessageAsync(fakeEmote.getFakeEmote(), serverId, message);
                 }).thenCompose(aVoid -> {
                     log.trace("Editing embed for assignable role place post {} in assignable role place {} in server {}.", latestPostId, placeId, serverId);
                     MessageEmbed embedToUse = messageToSend.getEmbeds().get(messagePostSize - 1);
@@ -221,7 +225,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         return channelService.sendEmbedToChannel(embedToUse, textChannel)
                 .thenCompose(message -> {
                     log.trace("Adding reaction for role {} to newly created message {} for assignable role place {} in server {}.", roleId, message.getId(), placeId, serverId);
-                    return messageService.addReactionToMessageWithFuture(fakeEmote.getFakeEmote(), serverId, message)
+                    return reactionService.addReactionToMessageAsync(fakeEmote.getFakeEmote(), serverId, message)
                                 .thenAccept(aVoid ->
                                     self.addNewlyCreatedAssignablePlacePost(placeId, description, roleId, serverId, message, fakeEmote)
                                 );
@@ -297,14 +301,14 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         AssignableRolePlacePost post = role.getAssignableRolePlacePost();
         if(post != null) {
             AServer server = assignableRolePlace.getServer();
-            TextChannel textChannel = botService.getTextChannelFromServer(server.getId(), post.getUsedChannel().getId());
+            TextChannel textChannel = channelService.getTextChannelFromServer(server.getId(), post.getUsedChannel().getId());
             List<AssignableRole> assignableRoles = assignableRolePlace.getAssignableRoles();
             assignableRoles.sort(Comparator.comparing(AssignableRole::getPosition));
             Long messageId = post.getId();
             log.trace("Removing field describing assignable role {} in assignable role place {} from post {}.", role.getId(), assignableRolePlace.getId(), messageId);
             CompletableFuture<Message> fieldEditing = channelService.removeFieldFromMessage(textChannel, messageId, assignableRoles.indexOf(role));
             log.trace("Clearing reaction for emote {} on assignable role post {} in assignable role place {}.", role.getEmote().getId(), messageId, assignableRolePlace.getId());
-            CompletableFuture<Void> reactionRemoval  = messageService.clearReactionFromMessageWithFuture(role.getEmote(), assignableRolePlace.getServer().getId(), role.getAssignableRolePlacePost().getUsedChannel().getId(), role.getAssignableRolePlacePost().getId());
+            CompletableFuture<Void> reactionRemoval  = reactionService.clearReactionFromMessageWithFuture(role.getEmote(), assignableRolePlace.getServer().getId(), role.getAssignableRolePlacePost().getUsedChannel().getId(), role.getAssignableRolePlacePost().getId());
             return CompletableFuture.allOf(fieldEditing, reactionRemoval);
         } else {
             // this case comes from the situation in which, the emote was deleted and he initial post setup failed
@@ -324,8 +328,13 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         );
         Long serverId = server.getId();
         Long assignablePlaceId = assignableRolePlace.getId();
-        return CompletableFuture.allOf(oldPostDeletionFutures.toArray(new CompletableFuture[0]))
-                .thenCompose(aVoid -> self.createAssignableRolePlacePosts(serverId, assignablePlaceId));
+        CompletableFuture<Void> messageFuture = FutureUtils.toSingleFutureGeneric(oldPostDeletionFutures);
+        return messageFuture.whenComplete((unused, throwable) -> {
+            if(throwable != null) {
+                log.warn("Not able to delete old messages of assignable role place {} in server {}.", assignablePlaceId, serverId);
+            }
+            self.createAssignableRolePlacePosts(serverId, assignablePlaceId);
+        });
     }
 
     @Override
@@ -346,7 +355,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         existingMessagePosts.sort(Comparator.comparingLong(AssignableRolePlacePost::getId));
         AssignableRolePlacePost latestPost = existingMessagePosts.get(place.getMessagePosts().size() - 1);
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        Optional<TextChannel> channelOptional = channelService.getTextChannelInGuild(place.getServer().getId(), latestPost.getUsedChannel().getId());
+        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(place.getServer().getId(), latestPost.getUsedChannel().getId());
         if(channelOptional.isPresent()) {
             TextChannel textChannel = channelOptional.get();
             Iterator<MessageEmbed> iterator = messageToSend.getEmbeds().iterator();
@@ -369,7 +378,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             existingMessagePosts.sort(Comparator.comparingLong(AssignableRolePlacePost::getId));
             AssignableRolePlacePost firstPost = existingMessagePosts.get(0);
             Long channelId = firstPost.getUsedChannel().getId();
-            Optional<TextChannel> channelOptional = channelService.getTextChannelInGuild(place.getServer().getId(), channelId);
+            Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(place.getServer().getId(), channelId);
             if(channelOptional.isPresent()) {
                 log.info("Refreshing text for assignable role place {} in channel {} in post {}.", place.getId(), channelId, firstPost.getId());
                 return channelService.editEmbedMessageInAChannel(renderedMessage.getEmbeds().get(0), channelOptional.get(), firstPost.getId()).thenCompose(message -> CompletableFuture.completedFuture(null));
@@ -554,12 +563,12 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     public void showAssignablePlaceConfig(AServer server, String name, MessageChannel channel) {
         AssignableRolePlace place = rolePlaceManagementService.findByServerAndKey(server, name);
         List<AssignablePostConfigRole> roles = new ArrayList<>();
-        Guild guild = botService.getGuildById(server.getId());
+        Guild guild = guildService.getGuildById(server.getId());
         log.info("Showing assignable role place config for place {} in channel {} on server {}.", place.getId(), channel.getId(), server.getId());
         List<AssignableRole> assignableRoles = place.getAssignableRoles().stream().sorted(Comparator.comparingInt(AssignableRole::getPosition)).collect(Collectors.toList());
         for (AssignableRole role : assignableRoles) {
             AEmote emoteForRole = role.getEmote();
-            Emote jdaEmoteForRole = botService.getEmote(emoteForRole).orElse(null);
+            Emote jdaEmoteForRole = emoteService.getEmote(emoteForRole).orElse(null);
             Role jdaRole = guild.getRoleById(role.getRole().getId());
             AssignablePostConfigRole postRole = AssignablePostConfigRole
                     .builder()
@@ -617,7 +626,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             AEmote emoteToUseObject = emoteManagementService.loadEmote(assignableRole.getEmote().getId());
             AssignableRolePlacePost assignablePlacePost = assignableRole.getAssignableRolePlacePost();
             log.trace("Removing reaction with emote {} from user {} in server {} because of assignable role clearing.", emoteToUseObject.getId(), user.getUser().getUserReference().getId(), place.getServer().getId());
-            futures.add(messageService.removeReactionOfUserFromMessageWithFuture(emoteToUseObject, place.getServer().getId(),
+            futures.add(reactionService.removeReactionOfUserFromMessageWithFuture(emoteToUseObject, place.getServer().getId(),
                     assignablePlacePost.getUsedChannel().getId(), assignablePlacePost.getId(), user.getUser().getUserReference().getId()));
         });
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -690,7 +699,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 boolean startOfNewMessage = position > 0 && (position % 21) == 0;
                 if(legitEntry) {
                     AEmote emoteForRole = current.getEmote();
-                    Emote jdaEmoteForRole = botService.getEmote(emoteForRole).orElse(null);
+                    Emote jdaEmoteForRole = emoteService.getEmote(emoteForRole).orElse(null);
                     FullEmote fullEmote = FullEmote.builder().emote(jdaEmoteForRole).fakeEmote(emoteForRole).build();
                     AssignablePostRole postRole = AssignablePostRole
                             .builder()
@@ -721,7 +730,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     @Transactional
     public CompletableFuture<Void> createAssignableRolePlacePosts(Long serverId, Long assignablePlaceId) {
         AssignableRolePlace assignableRolePlace = rolePlaceManagementService.findByPlaceId(assignablePlaceId);
-        Optional<TextChannel> channelOptional = botService.getTextChannelFromServerOptional(serverId, assignableRolePlace.getChannel().getId());
+        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(serverId, assignableRolePlace.getChannel().getId());
         if(channelOptional.isPresent()) {
             MessageChannel channel = channelOptional.get();
             log.info("Sending assignable role place posts for place {} in channel {} in server {}.", assignableRolePlace.getId(), channel.getId(), serverId);
@@ -803,7 +812,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         log.info("Adding {} emotes to assignable role place post {} in server {}.", emotesToAdd.size(), message.getId(), server);
         emotesToAdd.forEach(emotesToUse -> {
             AEmote emoteToUseObject = emoteManagementService.loadEmote(emotesToUse);
-            futures.add(messageService.addReactionToMessageWithFuture(emoteToUseObject, server, message));
+            futures.add(reactionService.addReactionToMessageAsync(emoteToUseObject, server, message));
         });
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }

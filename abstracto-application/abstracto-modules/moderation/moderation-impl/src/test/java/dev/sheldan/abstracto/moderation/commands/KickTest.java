@@ -2,11 +2,11 @@ package dev.sheldan.abstracto.moderation.commands;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
 import dev.sheldan.abstracto.moderation.service.KickServiceBean;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
-import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +20,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KickTest {

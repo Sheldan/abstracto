@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class PrivateMessageReceivedListenerBean extends ListenerAdapter {
     private PrivateMessageReceivedListenerBean self;
 
     @Override
+    @Transactional
     public void onPrivateMessageReceived(@Nonnull PrivateMessageReceivedEvent event) {
         if(privateMessageReceivedListeners == null) return;
         if(event.getAuthor().getId().equals(botService.getInstance().getSelfUser().getId())) {
@@ -47,7 +49,7 @@ public class PrivateMessageReceivedListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualPrivateMessageReceivedListener(@Nonnull PrivateMessageReceivedEvent event, PrivateMessageReceivedListener messageReceivedListener) {
         // no feature flag check, because we are in no server context
         log.trace("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), event.getAuthor().getId());

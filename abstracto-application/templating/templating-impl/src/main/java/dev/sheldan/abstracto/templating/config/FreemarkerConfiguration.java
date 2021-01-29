@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.templating.config;
 
 import dev.sheldan.abstracto.templating.loading.DatabaseTemplateLoader;
-import dev.sheldan.abstracto.templating.methods.DurationMethod;
 import dev.sheldan.abstracto.templating.methods.DateMethod;
+import dev.sheldan.abstracto.templating.methods.DurationMethod;
 import dev.sheldan.abstracto.templating.methods.SafeFieldIterations;
 import dev.sheldan.abstracto.templating.model.database.AutoLoadMacro;
 import dev.sheldan.abstracto.templating.service.management.AutoLoadMacroManagementService;
@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;

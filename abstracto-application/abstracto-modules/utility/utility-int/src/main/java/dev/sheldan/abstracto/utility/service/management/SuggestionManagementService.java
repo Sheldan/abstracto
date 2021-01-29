@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
+import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 

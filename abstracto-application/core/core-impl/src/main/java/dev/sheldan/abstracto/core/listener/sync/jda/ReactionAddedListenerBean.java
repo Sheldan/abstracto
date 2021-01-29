@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,7 +107,7 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualReactionAddedListener(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser serverUser, ReactionAddedListener reactedAddedListener) {
         reactedAddedListener.executeReactionAdded(cachedMessage, event, serverUser);
     }

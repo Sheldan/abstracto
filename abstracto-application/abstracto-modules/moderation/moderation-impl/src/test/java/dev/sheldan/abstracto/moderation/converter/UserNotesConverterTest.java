@@ -3,12 +3,12 @@ package dev.sheldan.abstracto.moderation.converter;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.models.template.commands.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class UserNotesConverterTest {
     private UserInServerManagementService userInServerManagementService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private UserNotesConverter self;
@@ -55,7 +55,7 @@ public class UserNotesConverterTest {
         AServer server = MockUtils.getServer();
         AUserInAServer userInAServer = MockUtils.getUserObject(4L, server);
         Member member = Mockito.mock(Member.class);
-        when(botService.getMemberInServerAsync(userInAServer)).thenReturn(CompletableFuture.completedFuture(member));
+        when(memberService.getMemberInServerAsync(userInAServer)).thenReturn(CompletableFuture.completedFuture(member));
         UserNote firstNote = UserNote.builder().userNoteId(new ServerSpecificId(3L, 4L)).user(userInAServer).build();
         UserNote secondNote = UserNote.builder().userNoteId(new ServerSpecificId(3L, 5L)).user(userInAServer).build();
         testUnit.fromNotes(Arrays.asList(firstNote, secondNote));

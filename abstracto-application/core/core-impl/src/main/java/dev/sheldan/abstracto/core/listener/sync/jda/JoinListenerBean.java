@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,7 @@ public class JoinListenerBean extends ListenerAdapter {
                 return;
             }
             try {
-                AUserInAServer aUserInAServer = userInServerManagementService.loadUser(event.getMember());
+                AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
                 self.executeIndividualJoinListener(event, joinListener, aUserInAServer);
             } catch (Exception e) {
                 log.error("Listener {} failed with exception:", joinListener.getClass().getName(), e);
@@ -55,7 +56,7 @@ public class JoinListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualJoinListener(@Nonnull GuildMemberJoinEvent event, JoinListener joinListener, AUserInAServer aUserInAServer) {
         log.trace("Executing join listener {} for member {} in guild {}.", joinListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
         joinListener.execute(event.getMember(), event.getGuild(), aUserInAServer);

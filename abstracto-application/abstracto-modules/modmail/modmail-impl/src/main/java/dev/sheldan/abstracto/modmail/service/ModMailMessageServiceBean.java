@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.modmail.service;
 
 import dev.sheldan.abstracto.core.models.ServerChannelMessageUser;
 import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
 import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.models.dto.LoadedModmailThreadMessage;
@@ -24,7 +26,13 @@ import java.util.concurrent.CompletableFuture;
 public class ModMailMessageServiceBean implements ModMailMessageService {
 
     @Autowired
+    private MemberService memberService;
+
+    @Autowired
     private BotService botService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Override
     public LoadedModmailThreadMessageList loadModMailMessages(List<ModMailMessage> modMailMessages) {
@@ -57,7 +65,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         // the opening of a private channel is a rest operation it itself, so we need
         // to create the promises here already, else the list is empty for example
         modMailMessages.forEach(modMailMessage -> messageFutures.add(getLoadedModmailThreadMessage()));
-        Optional<TextChannel> textChannelFromServer = botService.getTextChannelFromServerOptional(thread.getServer().getId(), thread.getChannel().getId());
+        Optional<TextChannel> textChannelFromServer = channelService.getTextChannelFromServerOptional(thread.getServer().getId(), thread.getChannel().getId());
         if(textChannelFromServer.isPresent()) {
             TextChannel modMailThread = textChannelFromServer.get();
             Long userId = thread.getUser().getUserReference().getId();
@@ -66,11 +74,11 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                 messageIds.forEach(serverChannelMessage -> {
                     log.trace("Loading message {}.", serverChannelMessage.getMessageId());
                     CompletableFuture<Message> messageFuture;
-                    CompletableFuture<Member> memberFuture = botService.getMemberInServerAsync(serverChannelMessage.getServerId(), serverChannelMessage.getUserId());
+                    CompletableFuture<Member> memberFuture = memberService.getMemberInServerAsync(serverChannelMessage.getServerId(), serverChannelMessage.getUserId());
                     if(serverChannelMessage.getChannelId() == null){
-                        messageFuture = privateChannel.retrieveMessageById(serverChannelMessage.getMessageId()).submit();
+                        messageFuture = channelService.retrieveMessageInChannel(privateChannel, serverChannelMessage.getMessageId());
                     } else {
-                        messageFuture = modMailThread.retrieveMessageById(serverChannelMessage.getMessageId()).submit();
+                        messageFuture = channelService.retrieveMessageInChannel(modMailThread, serverChannelMessage.getMessageId());
                     }
                     CompletableFuture.allOf(messageFuture, memberFuture).whenComplete((aVoid, throwable) -> {
                         LoadedModmailThreadMessage next = iterator.next();

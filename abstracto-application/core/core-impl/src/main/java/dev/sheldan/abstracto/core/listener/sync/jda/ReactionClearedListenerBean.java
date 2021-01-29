@@ -9,8 +9,10 @@ import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,20 +52,24 @@ public class ReactionClearedListenerBean extends ListenerAdapter {
     @Autowired
     private EmoteService emoteService;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void callClearListeners(@Nonnull GuildMessageReactionRemoveAllEvent event, CachedMessage cachedMessage) {
         if(clearedListenerList == null) return;
-        clearedListenerList.forEach(reactionRemovedListener -> {
-            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
-            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                return;
-            }
-            try {
-                reactionRemovedListener.executeReactionCleared(cachedMessage);
-            } catch (AbstractoRunTimeException e) {
-                log.warn(String.format("Failed to execute reaction clear listener %s.", reactionRemovedListener.getClass().getName()), e);
-            }
-        });
+        clearedListenerList.forEach(reactionRemovedListener ->
+            self.executeIndividualListener(event, cachedMessage, reactionRemovedListener)
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
+    public void executeIndividualListener(@NotNull GuildMessageReactionRemoveAllEvent event, CachedMessage cachedMessage, ReactionClearedListener reactionRemovedListener) {
+        FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
+        if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
+            return;
+        }
+        try {
+            reactionRemovedListener.executeReactionCleared(cachedMessage);
+        } catch (AbstractoRunTimeException e) {
+            log.warn(String.format("Failed to execute reaction clear listener %s.", reactionRemovedListener.getClass().getName()), e);
+        }
     }
 
     @Override

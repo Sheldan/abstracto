@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,7 +109,7 @@ public class AsyncReactionAddedListenerBean extends ListenerAdapter {
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualReactionAddedListener(@Nonnull CachedReactions reaction, CachedMessage cachedMessage, ServerUser serverUser, AsyncReactionAddedListener reactedAddedListener) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
         if(!featureFlagService.isFeatureEnabled(feature, serverUser.getServerId())) {

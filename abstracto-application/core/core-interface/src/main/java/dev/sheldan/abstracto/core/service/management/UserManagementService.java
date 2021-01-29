@@ -9,5 +9,6 @@ public interface UserManagementService {
     AUser createUser(Member member);
     AUser createUser(Long userId);
     AUser loadUser(Long userId);
+    AUser loadOrCreateUser(Long userId);
     Optional<AUser> loadUserOptional(Long userId);
 }

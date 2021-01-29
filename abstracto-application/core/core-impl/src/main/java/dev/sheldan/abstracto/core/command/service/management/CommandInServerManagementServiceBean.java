@@ -15,6 +15,7 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
     @Autowired
     private CommandInServerRepository repository;
 
+
     @Override
     public ACommandInAServer crateCommandInServer(ACommand command, AServer server) {
         ACommandInAServer commandInAServer = ACommandInAServer
@@ -40,6 +41,6 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
 
     @Override
     public ACommandInAServer getCommandForServer(ACommand command, Long serverId) {
-        return null;
+        return repository.findByServerReference_IdAndCommandReference(serverId, command);
     }
 }

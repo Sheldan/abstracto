@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.modmail.listener;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
 import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
@@ -31,7 +31,7 @@ public class ModMailMessageDeletedListener implements AsyncMessageDeletedListene
     private ModMailMessageDeletedListener self;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Override
     public void execute(CachedMessage messageBefore) {
@@ -44,7 +44,7 @@ public class ModMailMessageDeletedListener implements AsyncMessageDeletedListene
             Long channelId = thread.getChannel().getId();
             Long serverId = thread.getServer().getId();
             log.info("Deleting message for mod mail thread {} in channel {} in server {}.", thread.getId(), channelId, serverId);
-            botService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId()).thenAccept(member -> {
+            memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId()).thenAccept(member -> {
                 CompletableFuture<Void> dmDeletePromise = messageService.deleteMessageInChannelWithUser(member.getUser(), dmMessageId);
                 CompletableFuture<Void> channelDeletePromise;
                 if(hasMessageInChannel) {

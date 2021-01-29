@@ -5,10 +5,7 @@ import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.*;
-import dev.sheldan.abstracto.core.service.BotService;
-import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
@@ -50,7 +47,13 @@ public class StarboardServiceBeanTest {
     private StarboardServiceBean testUnit;
 
     @Mock
-    private BotService botService;
+    private GuildService guildService;
+
+    @Mock
+    private ChannelService channelService;
+
+    @Mock
+    private MemberService memberService;
 
     @Mock
     private PostTargetService postTargetService;
@@ -78,6 +81,9 @@ public class StarboardServiceBeanTest {
 
     @Mock
     private UserInServerManagementService userInServerManagementService;
+
+    @Mock
+    private MessageService messageService;
 
     @Mock
     private EmoteService emoteService;
@@ -137,9 +143,9 @@ public class StarboardServiceBeanTest {
         when(message.getServerId()).thenReturn(SERVER_ID);
         when(message.getChannelId()).thenReturn(CHANNEL_ID);
         Member authorMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
-        when(botService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
-        when(botService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
+        when(memberService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
+        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
+        when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
         ADefaultConfig config = Mockito.mock(ADefaultConfig.class);
         when(config.getLongValue()).thenReturn(3L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
@@ -217,7 +223,7 @@ public class StarboardServiceBeanTest {
         when(config.getLongValue()).thenReturn(4L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
-        when(botService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredMember));
+        when(memberService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredMember));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
         testUnit.updateStarboardPost(post, message, userExceptAuthor);
         verify(postTargetService, times(1)).editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID);
@@ -236,7 +242,7 @@ public class StarboardServiceBeanTest {
         when(post.getSourceChanel()).thenReturn(channel);
         when(post.getStarboardChannel()).thenReturn(channel);
         testUnit.deleteStarboardMessagePost(post);
-        verify(botService, times(1)).deleteMessage(SERVER_ID, CHANNEL_ID, messageId);
+        verify(messageService, times(1)).deleteMessageInChannelInServer(SERVER_ID, CHANNEL_ID, messageId);
     }
 
     @Test(expected = UserInServerNotFoundException.class)

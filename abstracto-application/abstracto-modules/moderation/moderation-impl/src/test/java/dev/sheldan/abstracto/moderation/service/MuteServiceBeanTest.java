@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.MutingMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
@@ -25,8 +26,10 @@ import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementSer
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.MockUtils;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,7 +72,10 @@ public class MuteServiceBeanTest {
     private TemplateService templateService;
 
     @Mock
-    private BotService botService;
+    private GuildService guildService;
+
+    @Mock
+    private MemberService memberService;
 
     @Mock
     private MessageService messageService;
@@ -221,8 +227,8 @@ public class MuteServiceBeanTest {
 
     @Test
     public void testMuteMember() {
-        when(userInServerManagementService.loadUser(memberBeingMuted)).thenReturn(userBeingMuted);
-        when(userInServerManagementService.loadUser(memberMuting)).thenReturn(userMuting);
+        when(userInServerManagementService.loadOrCreateUser(memberBeingMuted)).thenReturn(userBeingMuted);
+        when(userInServerManagementService.loadOrCreateUser(memberMuting)).thenReturn(userMuting);
         Instant unMuteDate = shorterMute();
         when(memberBeingMuted.getGuild()).thenReturn(guild);
         when(memberBeingMuted.getUser()).thenReturn(jdaUserBeingMuted);
@@ -239,8 +245,8 @@ public class MuteServiceBeanTest {
 
     @Test
     public void testMuteMemberWithLog() {
-        when(userInServerManagementService.loadUser(memberBeingMuted)).thenReturn(userBeingMuted);
-        when(userInServerManagementService.loadUser(memberMuting)).thenReturn(userMuting);
+        when(userInServerManagementService.loadOrCreateUser(memberBeingMuted)).thenReturn(userBeingMuted);
+        when(userInServerManagementService.loadOrCreateUser(memberMuting)).thenReturn(userMuting);
         Instant unMuteDate = shorterMute();
         when(memberBeingMuted.getGuild()).thenReturn(guild);
         when(memberBeingMuted.getUser()).thenReturn(jdaUserBeingMuted);
@@ -269,8 +275,8 @@ public class MuteServiceBeanTest {
 
     @Test
     public void testMuteMemberWithoutLog() {
-        when(userInServerManagementService.loadUser(memberBeingMuted)).thenReturn(userBeingMuted);
-        when(userInServerManagementService.loadUser(memberMuting)).thenReturn(userMuting);
+        when(userInServerManagementService.loadOrCreateUser(memberBeingMuted)).thenReturn(userBeingMuted);
+        when(userInServerManagementService.loadOrCreateUser(memberMuting)).thenReturn(userMuting);
         Instant unMuteDate = shorterMute();
         when(memberBeingMuted.getGuild()).thenReturn(guild);
         when(memberBeingMuted.getUser()).thenReturn(jdaUserBeingMuted);
@@ -302,7 +308,7 @@ public class MuteServiceBeanTest {
         when(muteManagementService.hasActiveMute(userBeingMuted)).thenReturn(true);
         when(muteManagementService.getAMuteOf(userBeingMuted)).thenReturn(mute);
         when(mute.getMuteId()).thenReturn(new ServerSpecificId(SERVER_ID, MUTE_ID));
-        when(botService.getGuildById(SERVER_ID)).thenReturn(guild);
+        when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         testUnit.unMuteUser(userBeingMuted);
         verifyNoUnMuteHappened();
     }
@@ -315,8 +321,8 @@ public class MuteServiceBeanTest {
         when(mute.getServer()).thenReturn(server);
         when(muteManagementService.findMuteOptional(MUTE_ID, SERVER_ID)).thenReturn(Optional.of(mute));
         when(roleService.removeRoleFromUserFuture(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
-        when(botService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
-        when(botService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
+        when(memberService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
+        when(memberService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
         testUnit.endMute(MUTE_ID, SERVER_ID);
         verify(self, times(1)).sendUnmuteLog(eq(MUTE_ID), any(Guild.class), any(CompletableFuture.class), any(CompletableFuture.class));
     }
@@ -374,7 +380,7 @@ public class MuteServiceBeanTest {
     public void testCompletelyUnMuteMember() {
         when(mute.getTriggerKey()).thenReturn(TRIGGER);
         when(muteManagementService.getAllMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
-        when(userInServerManagementService.loadUser(memberBeingMuted)).thenReturn(userBeingMuted);
+        when(userInServerManagementService.loadOrCreateUser(memberBeingMuted)).thenReturn(userBeingMuted);
         testUnit.completelyUnMuteMember(memberBeingMuted);
         verify(muteManagementService, times(1)).saveMute(any(Mute.class));
         verify(schedulerService, times(1)).stopTrigger(TRIGGER);
@@ -407,8 +413,8 @@ public class MuteServiceBeanTest {
         when(mute.getServer()).thenReturn(server);
         setupUnMuteMocks(stillInGuild);
         when(roleService.removeRoleFromUserFuture(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
-        when(botService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
-        when(botService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
+        when(memberService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
+        when(memberService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
         testUnit.unMuteUser(userBeingMuted);
 
     }
@@ -418,8 +424,8 @@ public class MuteServiceBeanTest {
         when(muteManagementService.getAMuteOf(userBeingMuted)).thenReturn(mute);
         when(muteManagementService.hasActiveMute(userBeingMuted)).thenReturn(true);
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
-        when(botService.getGuildById(server.getId())).thenReturn(guild);
-        when(botService.isUserInGuild(guild, userBeingMuted)).thenReturn(stillInGuild);
+        when(guildService.getGuildById(server.getId())).thenReturn(guild);
+        when(memberService.isUserInGuild(guild, userBeingMuted)).thenReturn(stillInGuild);
     }
 
     private void verifyDirectMute() {

@@ -33,7 +33,7 @@ public class UserNoteCommand extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         String text = (String) parameters.get(1);
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(member);
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
         userNoteManagementService.createUserNote(userInAServer, text);
         return CommandResult.fromSuccess();
     }

@@ -45,7 +45,7 @@ public class RemindTest {
         Duration duration = Duration.ofMinutes(10);
         CommandContext withParameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration, reminderText));
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
-        when(userInServerManagementService.loadUser(withParameters.getAuthor())).thenReturn(user);
+        when(userInServerManagementService.loadOrCreateUser(withParameters.getAuthor())).thenReturn(user);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(withParameters);
         verify(remindService, times(1)).createReminderInForUser(user, reminderText, duration, withParameters.getMessage());
         verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Remind.REMINDER_EMBED_KEY), captor.capture(), eq(withParameters.getChannel()));

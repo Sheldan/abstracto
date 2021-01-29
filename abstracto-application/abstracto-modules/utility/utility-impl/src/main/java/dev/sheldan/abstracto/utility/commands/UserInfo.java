@@ -9,8 +9,8 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.UserInfoModel;
@@ -32,7 +32,7 @@ public class UserInfo extends AbstractConditionableCommand {
     private ChannelService channelService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
 
     @Autowired
     private UserInfo self;
@@ -44,7 +44,7 @@ public class UserInfo extends AbstractConditionableCommand {
         UserInfoModel model = (UserInfoModel) ContextConverter.slimFromCommandContext(commandContext, UserInfoModel.class);
         if(!memberToShow.hasTimeJoined()) {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
-            return botService.forceReloadMember(memberToShow).thenCompose(member -> {
+            return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
                 model.setMemberInfo(member);
                 return self.sendResponse(commandContext, model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());

@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.models.condition.GenericConditionModel
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.service.ReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class ConditionPostExecution implements PostCommandExecution {
     public static final String GENERIC_COMMAND_EXCEPTION_MODEL_KEY = "generic_condition_notification";
 
     @Autowired
-    private MessageService messageService;
+    private ReactionService reactionService;
 
     @Autowired
     private ChannelService channelService;
@@ -26,7 +26,7 @@ public class ConditionPostExecution implements PostCommandExecution {
     @Override
     public void execute(CommandContext commandContext, CommandResult commandResult, Command command) {
         if(commandResult.getResult().equals(ResultState.CONDITION) && commandResult.getConditionResult() != null && !commandResult.getConditionResult().isResult() && commandResult.getConditionResult().getConditionDetail() != null) {
-            messageService.addReactionToMessage(WARN_REACTION_EMOTE, commandContext.getGuild().getIdLong(), commandContext.getMessage());
+            reactionService.addReactionToMessage(WARN_REACTION_EMOTE, commandContext.getGuild().getIdLong(), commandContext.getMessage());
             GenericConditionModel conditionModel = GenericConditionModel
                     .builder()
                     .conditionDetail(commandResult.getConditionResult().getConditionDetail())

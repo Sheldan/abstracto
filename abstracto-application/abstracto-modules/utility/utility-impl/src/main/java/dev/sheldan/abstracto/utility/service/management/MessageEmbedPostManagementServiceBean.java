@@ -44,7 +44,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
         }
         AChannel embeddingChannel = channelManagementService.loadChannel(messageContainingEmbed.getChannel().getIdLong());
         AChannel embeddedChannel = channelManagementService.loadChannel(embeddedMessage.getChannelId());
-        AUserInAServer embeddedAuthor = userInServerManagementService.loadUser(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId());
+        AUserInAServer embeddedAuthor = userInServerManagementService.loadOrCreateUser(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId());
         EmbeddedMessage messageEmbedPost = EmbeddedMessage
                 .builder()
                 .embeddedMessageId(embeddedMessage.getMessageId())

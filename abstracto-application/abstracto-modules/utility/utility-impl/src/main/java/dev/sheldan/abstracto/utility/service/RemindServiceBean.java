@@ -1,15 +1,16 @@
 package dev.sheldan.abstracto.utility.service;
 
-import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.GuildService;
+import dev.sheldan.abstracto.core.service.MemberService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.utility.models.database.Reminder;
@@ -30,7 +31,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -50,7 +53,10 @@ public class RemindServiceBean implements ReminderService {
     private SchedulerService schedulerService;
 
     @Autowired
-    private BotService botService;
+    private MemberService memberService;
+
+    @Autowired
+    private GuildService guildService;
 
     @Autowired
     private RemindServiceBean self;
@@ -109,12 +115,12 @@ public class RemindServiceBean implements ReminderService {
         AChannel channel = reminderToRemindFor.getChannel();
         log.info("Executing reminder {} in channel {} in server {} for user {}.",
                 reminderId, channel.getId(), server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId());
-        Optional<Guild> guildToAnswerIn = botService.getGuildByIdOptional(server.getId());
+        Optional<Guild> guildToAnswerIn = guildService.getGuildByIdOptional(server.getId());
         if(guildToAnswerIn.isPresent()) {
-            Optional<TextChannel> channelToAnswerIn = botService.getTextChannelFromServerOptional(server.getId(), channel.getId());
+            Optional<TextChannel> channelToAnswerIn = channelService.getTextChannelFromServerOptional(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
-                botService.getMemberInServerAsync(server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId()).thenAccept(member ->
+                memberService.getMemberInServerAsync(server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId()).thenAccept(member ->
                     self.sendReminderText(reminderId, channelToAnswerIn.get(), member)
                 );
 

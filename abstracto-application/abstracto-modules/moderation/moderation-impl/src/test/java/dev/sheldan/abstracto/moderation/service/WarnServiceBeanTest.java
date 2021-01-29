@@ -5,9 +5,10 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.features.mode.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
@@ -17,13 +18,15 @@ import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Instant;
@@ -32,7 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static dev.sheldan.abstracto.moderation.service.WarnServiceBean.*;
+import static dev.sheldan.abstracto.moderation.service.WarnServiceBean.WARNINGS_COUNTER_KEY;
+import static dev.sheldan.abstracto.moderation.service.WarnServiceBean.WARN_LOG_TEMPLATE;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,7 +56,7 @@ public class WarnServiceBeanTest {
     private TemplateService templateService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private ConfigService configService;
@@ -228,9 +232,9 @@ public class WarnServiceBeanTest {
         setupWarnings();
         when(configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId())).thenReturn(5L);
         List<Warning> warnings = Arrays.asList(firstWarning, secondWarning);
-        when(botService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
-        when(botService.getMemberInServerAsync(firstWarnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
-        when(botService.getMemberInServerAsync(secondWarnedUser)).thenReturn(CompletableFuture.completedFuture(secondWarnedMember));
+        when(memberService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
+        when(memberService.getMemberInServerAsync(firstWarnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
+        when(memberService.getMemberInServerAsync(secondWarnedUser)).thenReturn(CompletableFuture.completedFuture(secondWarnedMember));
         when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
     }
 

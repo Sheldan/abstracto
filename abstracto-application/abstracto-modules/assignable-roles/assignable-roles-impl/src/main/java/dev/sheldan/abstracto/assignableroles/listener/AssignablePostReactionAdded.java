@@ -124,7 +124,7 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
     @Transactional
     public void updateStoredAssignableRoles(Long assignableRolePlaceId, ServerUser serverUser, CachedReaction cachedReaction) {
         AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(assignableRolePlaceId);
-        AUserInAServer userInAServer = userInServerManagementService.loadUser(serverUser);
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(serverUser);
         if(place.getUniqueRoles()) {
             log.trace("Assignable role place {} has unique roles. Deleting all existing references.", assignableRolePlaceId);
             assignableRoleServiceBean.clearAllRolesOfUserInPlace(place, userInAServer);

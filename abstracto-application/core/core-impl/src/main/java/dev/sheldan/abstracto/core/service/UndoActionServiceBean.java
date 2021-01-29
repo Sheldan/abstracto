@@ -21,6 +21,9 @@ public class UndoActionServiceBean implements UndoActionService {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private MessageService messageService;
+
     @Override
     public void performActions(List<UndoActionInstance> actionsToPerform) {
         performActionsFuture(actionsToPerform);
@@ -41,12 +44,12 @@ public class UndoActionServiceBean implements UndoActionService {
                 log.info("Deleting channel {} in guild {} because of an UNDO action.", ids.get(1), ids.get(0));
                 futures.add(deleteChannel(ids.get(0), ids.get(1)));
             } else if(action.equals(UndoAction.DELETE_MESSAGE)) {
-                if(ids.size() != 2) {
+                if(ids.size() != 3) {
                     log.error("Not the correct amount of ids provided for the message deletion undo action.");
                     return;
                 }
-                log.info("Deleting message {} in channel {} because of an UNDO action.", ids.get(1), ids.get(0));
-                futures.add(botService.deleteMessage(ids.get(0), ids.get(1)));
+                log.info("Deleting message {} in channel {} in server {} because of an UNDO action.", ids.get(2), ids.get(1), ids.get(0));
+                futures.add(messageService.deleteMessageInChannelInServer(ids.get(0), ids.get(1), ids.get(2)));
             }
         });
         return FutureUtils.toSingleFutureGeneric(futures);

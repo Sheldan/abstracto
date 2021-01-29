@@ -84,7 +84,7 @@ public class RepostLeaderboardTest {
 
     public void executeRepostLeaderboardTest(Integer page, CommandContext noParameters) {
         when(noParameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
-        when(userInServerManagementService.loadUser(noParameters.getAuthor())).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(noParameters.getAuthor())).thenReturn(aUserInAServer);
         when(repostManagementService.getRepostRankOfUser(aUserInAServer)).thenReturn(userResult);
         List<RepostLeaderboardResult> resultList = Arrays.asList(result);
         when(repostManagementService.findTopRepostingUsersOfServer(SERVER_ID, page, 5)).thenReturn(resultList);

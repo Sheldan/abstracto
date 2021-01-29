@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemove
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,7 +104,7 @@ public class ReactionRemovedListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualReactionRemovedListener(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, ServerUser serverUser, ReactionRemovedListener reactionRemovedListener) {
         reactionRemovedListener.executeReactionRemoved(cachedMessage, event, serverUser);
     }

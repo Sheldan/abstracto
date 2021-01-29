@@ -32,7 +32,7 @@ public class PurgeReposts extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         if(!parameters.isEmpty()) {
             AUserInAServer fakeUser = (AUserInAServer) parameters.get(0);
-            AUserInAServer actualUser = userInServerManagementService.loadUser(fakeUser.getUserInServerId());
+            AUserInAServer actualUser = userInServerManagementService.loadOrCreateUser(fakeUser.getUserInServerId());
             repostService.purgeReposts(actualUser);
         } else {
             repostService.purgeReposts(commandContext.getGuild());

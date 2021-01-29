@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.role.RoleDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ public class RoleListener extends ListenerAdapter {
     private ServerManagementService serverManagementService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void onRoleCreate(@Nonnull RoleCreateEvent event) {
         log.info("Creating role {} in server {}.", event.getRole().getId(), event.getGuild().getId());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());
@@ -36,7 +37,7 @@ public class RoleListener extends ListenerAdapter {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void onRoleDelete(@Nonnull RoleDeleteEvent event) {
         log.info("Marking role {} as deleted in server {}.", event.getRole().getId(), event.getGuild().getId());
         AServer server = serverManagementService.loadOrCreate(event.getGuild().getIdLong());

@@ -78,7 +78,7 @@ public class SuggestionManagementServiceBeanTest {
         when(message.getChannel()).thenReturn(messageChannel);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getId()).thenReturn("5");
-        when(userInServerManagementService.loadUser(member)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
         long suggestionId = 1L;
         Suggestion createdSuggestion = testUnit.createSuggestion(member, text, message, suggestionId);
         verify(suggestionRepository, times(1)).save(createdSuggestion);

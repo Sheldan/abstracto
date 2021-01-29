@@ -1,253 +1,73 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ConfiguredEmoteNotUsableException;
-import dev.sheldan.abstracto.core.exception.EmoteNotInServerException;
+import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
-import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.sheldan.abstracto.core.config.MetricConstants.DISCORD_API_INTERACTION_METRIC;
+import static dev.sheldan.abstracto.core.config.MetricConstants.INTERACTION_TYPE;
 
 @Component
 @Slf4j
 public class MessageServiceBean implements MessageService {
 
     @Autowired
-    private BotService botService;
-
-    @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
-    private EmoteService emoteService;
-
-    @Autowired
     private ChannelService channelService;
-
-    @Autowired
-    private MessageServiceBean self;
 
     @Autowired
     private TemplateService templateService;
 
-    @Override
-    public void addReactionToMessage(String emoteKey, Long serverId, Message message) {
-        addReactionToMessageWithFuture(emoteKey, serverId, message);
-    }
+    @Autowired
+    private MemberService memberService;
 
-    @Override
-    public void addDefaultReactionToMessage(String unicode, Message message) {
-        addDefaultReactionToMessageAsync(unicode, message);
-    }
+    @Autowired
+    private MetricService metricService;
 
-    @Override
-    public CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Message message) {
-        return message.addReaction(unicode).submit();
-    }
+    public static final CounterMetric MESSAGE_SEND_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "message.send")))
+            .build();
 
-    @Override
-    public CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Long serverId, Long channelId, Long messageId) {
-        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
-        return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message -> self.addDefaultReactionToMessageAsync(unicode, message));
-    }
+    public static final CounterMetric MESSAGE_EDIT_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "message.edit")))
+            .build();
 
-    @Override
-    public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Message message) {
-        Guild guild = botService.getGuildById(serverId);
-        return addReactionToMessageWithFuture(emoteKey, guild, message);
-    }
+    public static final CounterMetric MESSAGE_LOAD_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "message.load")))
+            .build();
 
-    @Override
-    public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Guild guild, Message message) {
-        AEmote emote = emoteService.getEmoteOrDefaultEmote(emoteKey, guild.getIdLong());
-        return addReactionToMessageWithFuture(emote, guild, message);
-    }
-
-    @Override
-    public CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Long serverId, Message message) {
-        if(Boolean.TRUE.equals(emote.getCustom())) {
-           return addReactionToMessageWithFuture(emote.getEmoteId(), serverId, message);
-        } else {
-            return message.addReaction(emote.getEmoteKey()).submit();
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> addReactionToMessageWithFuture(AEmote emote, Guild guild, Message message) {
-        if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
-            if(emoteById != null) {
-                log.trace("Adding custom emote {} as reaction to message {}.", emoteById.getId(), message.getId());
-                return message.addReaction(emoteById).submit();
-            } else {
-                log.error("Emote with key {} and id {} for guild {} was not found.", emote.getName() , emote.getEmoteId(), guild.getId());
-                throw new ConfiguredEmoteNotUsableException(emote);
-            }
-        } else {
-            log.trace("Adding default emote {} as reaction to message {}.", emote.getEmoteKey(), message.getId());
-            return message.addReaction(emote.getEmoteKey()).submit();
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> addReactionToMessageWithFuture(Long emoteId, Long serverId, Message message) {
-        Emote emoteById = botService.getInstance().getEmoteById(emoteId);
-        if(emoteById == null) {
-            throw new EmoteNotInServerException(emoteId);
-        }
-        return message.addReaction(emoteById).submit();
-    }
-
-    @Override
-    public CompletableFuture<Void> addReactionToMessageWithFuture(String emoteKey, Long serverId, Long channelId, Long messageId) {
-        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
-        return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message -> self.addReactionToMessageWithFuture(emoteKey, serverId, message));
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Message message) {
-        if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
-            if(emoteById == null) {
-                throw new EmoteNotInServerException(emote.getEmoteId());
-            }
-            log.trace("Removing single custom reaction for emote {} on message {}.", emoteById.getId(), message.getId());
-            return message.removeReaction(emoteById).submit();
-        } else {
-            log.trace("Removing single default emote {} reaction from message {}.", emote.getEmoteKey(), message.getId());
-            return message.removeReaction(emote.getEmoteKey()).submit();
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Message message) {
-        if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
-            if(emoteById == null) {
-                throw new EmoteNotInServerException(emote.getEmoteId());
-            }
-            log.trace("Clearing reactions for custom emote {} on message {}.", emoteById.getId(), message.getId());
-            return message.clearReactions(emoteById).submit();
-        } else {
-            log.trace("Clearing reactions for default emote {} on message {}.", emote.getEmoteKey(), message.getId());
-            return message.clearReactions(emote.getEmoteKey()).submit();
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(Integer emoteId, Message message) {
-        AEmote emote = emoteManagementService.loadEmote(emoteId);
-        return removeReactionFromMessageWithFuture(emote, message);
-    }
-
-    @Override
-    public CompletableFuture<Void> clearReactionFromMessageWithFuture(Integer emoteId, Message message) {
-        AEmote emote = emoteManagementService.loadEmote(emoteId);
-        return clearReactionFromMessageWithFuture(emote, message);
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId) {
-        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
-        Integer emoteId = emote.getId();
-        return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message -> self.removeReactionFromMessageWithFuture(emoteId, message));
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Long userId) {
-        Guild guild = botService.getGuildById(serverId);
-        Integer emoteId = emote.getId();
-        TextChannel textChannel = botService.getTextChannelFromServer(serverId, channelId);
-        CompletableFuture<Member> memberFuture = guild.retrieveMemberById(userId).submit();
-        CompletableFuture<Message> messageFuture = textChannel.retrieveMessageById(messageId).submit();
-
-        return CompletableFuture.allOf(memberFuture, messageFuture).thenCompose(aVoid ->
-            memberFuture.thenCompose(member ->
-                    self.removeReactionOfUserFromMessageWithFuture(emoteId, messageFuture.join(), memberFuture.join())
-            )
-        );
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Member member) {
-        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
-        Integer emoteId = emote.getId();
-        return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message -> self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member));
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Message message, Member member) {
-        if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
-            if(emoteById == null) {
-                throw new EmoteNotInServerException(emote.getEmoteId());
-            }
-            log.trace("Removing reaction for custom emote {} from user {} on message {}.", emoteById.getId(), member.getId(), member.getId());
-            return message.removeReaction(emoteById, member.getUser()).submit();
-        } else {
-            log.trace("Removing reaction for default emote {} from user {} on message {}.", emote.getEmoteKey(), member.getId(), member.getId());
-            return message.removeReaction(emote.getEmoteKey(), member.getUser()).submit();
-        }
-    }
-
-    @Override
-    @Transactional
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Member member) {
-        AEmote emote = emoteManagementService.loadEmote(emoteId);
-        return removeReactionOfUserFromMessageWithFuture(emote, message, member);
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Message message, Long userId) {
-        Integer emoteId = emote.getId();
-        return message.getGuild().retrieveMemberById(userId).submit().thenCompose(member ->
-            self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member)
-        );
-    }
-
-    @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Long userId) {
-        return message.getGuild().retrieveMemberById(userId).submit().thenCompose(member ->
-            self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member)
-        );
-    }
-
-    @Override
-    public CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId) {
-        TextChannel channel = botService.getTextChannelFromServer(serverId, channelId);
-        Integer emoteId = emote.getId();
-        return channel.retrieveMessageById(messageId).submit()
-                .thenCompose(message1 -> clearReactionFromMessageWithFuture(emoteId, message1));
-    }
-
-    @Override
-    public List<CompletableFuture<Void>> addReactionsToMessageWithFuture(List<String> emoteKeys, Long serverId, Message message) {
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        emoteKeys.forEach(s -> futures.add(addReactionToMessageWithFuture(s, serverId, message)));
-        return futures;
-    }
-
+    public static final CounterMetric MESSAGE_DELETE_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "message.delete")))
+            .build();
 
     @Override
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
-        return botService.deleteMessage(serverId, channelId, messageId);
+        metricService.incrementCounter(MESSAGE_DELETE_METRIC);
+        return channelService.getTextChannelFromServer(serverId, channelId).deleteMessageById(messageId).submit();
     }
 
     @Override
@@ -277,7 +97,7 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text) {
-        return botService.getMemberInServerAsync(userInAServer).thenCompose(member ->
+        return memberService.getMemberInServerAsync(userInAServer).thenCompose(member ->
             sendMessageToUser(member.getUser(), text)
         );
     }
@@ -285,7 +105,7 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Message> sendSimpleTemplateToUser(Long userId, String templateKey) {
         String text = templateService.renderSimpleTemplate(templateKey);
-        return botService.getUserViaId(userId)
+        return memberService.getUserViaId(userId)
                 .thenCompose(this::openPrivateChannelForUser)
                 .thenCompose(o -> channelService.sendTextToChannel(text, o));
     }
@@ -343,6 +163,32 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Message> loadMessage(Long serverId, Long channelId, Long messageId) {
-        return channelService.getTextChannel(serverId, channelId).retrieveMessageById(messageId).submit();
+        return channelService.retrieveMessageInChannel(serverId, channelId, messageId);
+    }
+
+    @Override
+    public MessageAction editMessage(Message message, MessageEmbed messageEmbed) {
+        metricService.incrementCounter(MESSAGE_EDIT_METRIC);
+        return message.editMessage(messageEmbed);
+    }
+
+    @Override
+    public MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed) {
+        metricService.incrementCounter(MESSAGE_EDIT_METRIC);
+        return message.editMessage(text).embed(messageEmbed);
+    }
+
+    @Override
+    public AuditableRestAction<Void> deleteMessage(Message message) {
+        metricService.incrementCounter(MESSAGE_DELETE_METRIC);
+        return message.delete();
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerCounter(MESSAGE_SEND_METRIC, "Messages send to discord");
+        metricService.registerCounter(MESSAGE_EDIT_METRIC, "Messages edited in discord");
+        metricService.registerCounter(MESSAGE_LOAD_METRIC, "Messages loaded from discord");
+        metricService.registerCounter(MESSAGE_DELETE_METRIC, "Messages deleted from discord");
     }
 }

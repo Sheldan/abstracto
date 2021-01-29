@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.utility.converter;
 import dev.sheldan.abstracto.core.models.FullChannel;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.utility.models.database.RepostCheckChannelGroup;
 import dev.sheldan.abstracto.utility.models.template.commands.RepostCheckChannelGroupDisplayModel;
 import dev.sheldan.abstracto.utility.models.template.commands.RepostCheckChannelsModel;
@@ -29,7 +29,7 @@ public class RepostCheckChannelModelConverterTest {
     private RepostCheckChannelModelConverter testUnit;
 
     @Mock
-    private BotService botService;
+    private ChannelService channelService;
 
     @Mock
     private Guild guild;
@@ -62,11 +62,11 @@ public class RepostCheckChannelModelConverterTest {
         AChannel channel1 = Mockito.mock(AChannel.class);
         when(channel1.getId()).thenReturn(channelId1);
         TextChannel textChannel = Mockito.mock(TextChannel.class);
-        when(botService.getTextChannelFromServerNullable(guild, channelId1)).thenReturn(textChannel);
+        when(channelService.getTextChannelFromServerNullable(guild, channelId1)).thenReturn(textChannel);
         Long channelId2 = 2L;
         AChannel channel2 = Mockito.mock(AChannel.class);
         when(channel2.getId()).thenReturn(channelId2);
-        when(botService.getTextChannelFromServerNullable(guild, channelId2)).thenReturn(null);
+        when(channelService.getTextChannelFromServerNullable(guild, channelId2)).thenReturn(null);
         when(group.getChannels()).thenReturn(Arrays.asList(channel1, channel2));
         RepostCheckChannelsModel model = testUnit.fromRepostCheckChannelGroups(Arrays.asList(element), guild);
         Assert.assertEquals(1, model.getRepostCheckChannelGroups().size());

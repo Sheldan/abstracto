@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.converter;
 
 import dev.sheldan.abstracto.core.models.FullChannel;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.utility.models.database.RepostCheckChannelGroup;
 import dev.sheldan.abstracto.utility.models.template.commands.RepostCheckChannelGroupDisplayModel;
 import dev.sheldan.abstracto.utility.models.template.commands.RepostCheckChannelsModel;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class RepostCheckChannelModelConverter {
 
     @Autowired
-    private BotService botService;
+    private ChannelService channelService;
 
     public RepostCheckChannelsModel fromRepostCheckChannelGroups(List<RepostCheckChannelGroup> channelGroups, Guild guild) {
         List<RepostCheckChannelGroupDisplayModel> repostCheckChannelGroups = new ArrayList<>();
@@ -26,7 +26,7 @@ public class RepostCheckChannelModelConverter {
                 FullChannel
                         .builder()
                         .channel(channel)
-                        .serverChannel(botService.getTextChannelFromServerNullable(guild, channel.getId()))
+                        .serverChannel(channelService.getTextChannelFromServerNullable(guild, channel.getId()))
                         .build()
             ).collect(Collectors.toList());
             repostCheckChannelGroups.add(

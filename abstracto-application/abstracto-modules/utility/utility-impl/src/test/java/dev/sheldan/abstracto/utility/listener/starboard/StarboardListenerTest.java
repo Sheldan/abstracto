@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.listener.starboard;
 
+import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
@@ -13,7 +14,6 @@ import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.service.StarboardService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
-import net.dv8tion.jda.api.entities.MessageReaction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -54,10 +54,10 @@ public class StarboardListenerTest {
     private EmoteService emoteService;
 
     @Mock
-    private CachedReactions cachedReaction;
+    private MetricService metricService;
 
     @Mock
-    private MessageReaction.ReactionEmote reactionEmote;
+    private CachedReactions cachedReaction;
 
     @Mock
     private CachedMessage cachedMessage;
@@ -140,6 +140,7 @@ public class StarboardListenerTest {
         Long requiredStars = 1L;
         setupActingAndAuthor();
         executeAddingTest(requiredStars, null);
+        verify(metricService, times(2)).incrementCounter(any());
         verify(starboardService, times(1)).createStarboardPost(any(CachedMessage.class), anyList(), eq(userInServerActing), eq(userInAServer));
     }
 
@@ -148,6 +149,7 @@ public class StarboardListenerTest {
         Long requiredStars = 1L;
         setupActingAndAuthor();
         executeAddingTest(requiredStars, post);
+        verify(metricService, times(1)).incrementCounter(any());
         verify(starboardService, times(1)).updateStarboardPost(eq(post), any(CachedMessage.class), anyList());
         verify(starboardPostReactorManagementService, times(1)).addReactor(post, userInServerActing);
     }
@@ -185,8 +187,9 @@ public class StarboardListenerTest {
         Long requiredStars = 0L;
         List<ServerUser> remainingUsers = Arrays.asList(serverUserActing);
         setupActingAndAuthor();
-        when(userInServerManagementService.loadUser(serverUserActing)).thenReturn(userInServerActing);
+        when(userInServerManagementService.loadOrCreateUser(serverUserActing)).thenReturn(userInServerActing);
         executeRemovalTest(requiredStars, remainingUsers);
+        verify(metricService, times(1)).incrementCounter(any());
         verify(starboardService, times(0)).deleteStarboardMessagePost(eq(post));
         verify(starboardPostManagementService, times(0)).removePost(eq(post));
     }
@@ -197,13 +200,14 @@ public class StarboardListenerTest {
         ArrayList<ServerUser> usersRemaining = new ArrayList<>();
         setupActingAndAuthor();
         executeRemovalTest(requiredStars, usersRemaining);
+        verify(metricService, times(2)).incrementCounter(any());
         verify(starboardService, times(1)).deleteStarboardMessagePost(eq(post));
         verify(starboardPostManagementService, times(1)).removePost(eq(post));
     }
 
     @Test
     public void testReactionsClearedOnStarredMessage() {
-        executeClearingTest(StarboardPost.builder().build());
+        executeClearingTest(Mockito.mock(StarboardPost.class));
     }
 
     @Test
@@ -244,7 +248,7 @@ public class StarboardListenerTest {
         when(reaction.getUsers()).thenReturn(remainingUsers);
         when(emoteService.getReactionFromMessageByEmote(cachedMessage, starEmote)).thenReturn(Optional.of(reaction));
         when(starboardPostManagementService.findByMessageId(MESSAGE_ID)).thenReturn(Optional.ofNullable(post));
-        when(userInServerManagementService.loadUser(SERVER_ID, AUTHOR_ID)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, AUTHOR_ID)).thenReturn(userInAServer);
         when(serverUserActing.getUserId()).thenReturn(USER_ACTING_ID);
         when(serverUserActing.getServerId()).thenReturn(SERVER_ID);
         if(!remainingUsers.isEmpty()) {
@@ -270,8 +274,8 @@ public class StarboardListenerTest {
         when(reaction.getUsers()).thenReturn(Arrays.asList(serverUserActing));
         when(emoteService.getReactionFromMessageByEmote(cachedMessage, starEmote)).thenReturn(Optional.of(reaction));
         when(starboardPostManagementService.findByMessageId(MESSAGE_ID)).thenReturn(Optional.ofNullable(postToUse));
-        when(userInServerManagementService.loadUser(SERVER_ID, AUTHOR_ID)).thenReturn(userInAServer);
-        when(userInServerManagementService.loadUser(serverUserActing)).thenReturn(userInServerActing);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, AUTHOR_ID)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(serverUserActing)).thenReturn(userInServerActing);
         when(userInServerManagementService.loadUserOptional(SERVER_ID, USER_ACTING_ID)).thenReturn(Optional.of(userInServerActing));
         AConfig starRequirementConfig = Mockito.mock(AConfig.class);
         when(starRequirementConfig.getLongValue()).thenReturn(requiredStars);

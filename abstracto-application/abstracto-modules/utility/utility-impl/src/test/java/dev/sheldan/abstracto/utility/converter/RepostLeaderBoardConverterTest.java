@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.converter;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.service.BotService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.RepostLeaderboardEntryModel;
 import dev.sheldan.abstracto.utility.models.database.result.RepostLeaderboardResult;
@@ -31,7 +31,7 @@ public class RepostLeaderBoardConverterTest {
     private UserInServerManagementService userInServerManagementService;
 
     @Mock
-    private BotService botService;
+    private MemberService memberService;
 
     @Mock
     private RepostLeaderBoardConverter self;
@@ -73,9 +73,9 @@ public class RepostLeaderBoardConverterTest {
         Integer secondRank = RANK + 1;
         when(result2.getRank()).thenReturn(secondRank);
         AUserInAServer secondAUserInAServer = Mockito.mock(AUserInAServer.class);
-        when(userInServerManagementService.loadUser(secondUserInServerId)).thenReturn(secondAUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(secondUserInServerId)).thenReturn(secondAUserInAServer);
         Member secondMember = Mockito.mock(Member.class);
-        when(botService.getMemberInServerAsync(secondAUserInAServer)).thenReturn(CompletableFuture.completedFuture(secondMember));
+        when(memberService.getMemberInServerAsync(secondAUserInAServer)).thenReturn(CompletableFuture.completedFuture(secondMember));
         CompletableFuture<List<RepostLeaderboardEntryModel>> future = testUnit.fromLeaderBoardResults(Arrays.asList(result, result2));
         Assert.assertTrue(future.isDone());
         Assert.assertEquals(2, future.join().size());
@@ -92,14 +92,14 @@ public class RepostLeaderBoardConverterTest {
         when(result.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
         when(result.getRepostCount()).thenReturn(REPOST_COUNT);
         when(result.getRank()).thenReturn(RANK);
-        when(userInServerManagementService.loadUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
-        when(botService.getMemberInServerAsync(aUserInAServer)).thenReturn(CompletableFuture.completedFuture(member));
+        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
+        when(memberService.getMemberInServerAsync(aUserInAServer)).thenReturn(CompletableFuture.completedFuture(member));
         return result;
     }
 
     @Test
     public void testLoadUserFromDatabase() {
-        when(userInServerManagementService.loadUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
         RepostLeaderboardEntryModel loadedModel = testUnit.loadUserFromDatabase(member, REPOST_COUNT, USER_IN_SERVER_ID, RANK);
         Assert.assertEquals(REPOST_COUNT, loadedModel.getCount());
         Assert.assertEquals(RANK, loadedModel.getRank());
