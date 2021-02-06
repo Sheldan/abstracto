@@ -35,7 +35,7 @@ jobs:
        -Dsonar.login=${{ secrets.SONAR_TOKEN }}
        -Dsonar.organization=sheldan
        -Dsonar.host.url=https://sonarcloud.io/
-       -Dsonar.projectKey=abstracto-abstracto
+       -Dsonar.projectKey=abstracto-core
        -Dsonar.java.binaries=**/target/classes
        -Dsonar.coverage.jacoco.xmlReportPaths=abstracto-application/coverage/target/site/jacoco-aggregate/jacoco.xml
        -Dsonar.coverage.exclusions=**/*Test.java
