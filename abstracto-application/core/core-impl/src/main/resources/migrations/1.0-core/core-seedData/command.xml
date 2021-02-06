@@ -33,12 +33,6 @@
             <column name="feature_id" valueComputed="${coreFeature}"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
-        <insert tableName="command">
-            <column name="name" value="setEmote"/>
-            <column name="module_id" valueComputed="${utilityModule}"/>
-            <column name="feature_id" valueComputed="${coreFeature}"/>
-            <column name="created" valueComputed="${today}"/>
-        </insert>
     </changeSet>
     <changeSet author="Sheldan" id="core-channels-commands" >
         <insert tableName="command">
@@ -183,6 +177,24 @@
         </insert>
         <insert tableName="command">
             <column name="name" value="featureModes"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="setEmote"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="allowMention"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disallowMention"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>
             <column name="created" valueComputed="${today}"/>

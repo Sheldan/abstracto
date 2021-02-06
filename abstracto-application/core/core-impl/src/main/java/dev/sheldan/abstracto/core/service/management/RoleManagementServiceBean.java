@@ -25,7 +25,6 @@ public class RoleManagementServiceBean implements RoleManagementService {
                 .server(server)
                 .deleted(false)
                 .build();
-        server.getRoles().add(build);
         log.info("Creating role {} in server {}.", id, server.getId());
         return repository.save(build);
     }

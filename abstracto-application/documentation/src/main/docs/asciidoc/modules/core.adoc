@@ -114,6 +114,14 @@ Listing all feature modes::
 Setting up a feature with an interactive wizard::
 Usage: `setupFeature <featureName>`
 * Description: Starts an interactive wizard to configure the necessary properties and post targets of a feature. Also includes custom steps. Closes with a summary page to see all changes.
+Allow the bot to use certain mentions::
+Usage: `allowMention <mentionType>`
+* Description: Allows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is enabled, this also enabled @here mentions.
+This change takes immediate effect and is only for the current server. Per default user and role mentions are enabled.
+Disallow the bot to use certain mentions::
+Usage: `disallowMention <mentionType>`
+* Description: Disallows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is disabled, this also disables @here mentions.
+This change takes immediate effect and is only for the current server. Per default everyone/here mentions are disabled.
 
 
 .What does it mean if a role is immune?

@@ -56,7 +56,7 @@ public class StartupServiceBean implements Startup {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional
     public void synchronize() {
         log.info("Synchronizing servers.");
         synchronizeServers();
@@ -70,7 +70,7 @@ public class StartupServiceBean implements Startup {
         availableServers.forEach(aLong -> {
             AServer newAServer = serverManagementService.loadOrCreate(aLong);
             Guild newGuild = instance.getGuildById(aLong);
-            log.trace("Synchronizing server: {}", aLong);
+            log.info("Synchronizing server: {}", aLong);
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
@@ -91,7 +91,6 @@ public class StartupServiceBean implements Startup {
         Set<Long> newRoles = SetUtils.difference(availableRoles, knownRolesId);
         newRoles.forEach(aLong -> {
             roleManagementService.createRole(aLong, existingAServer);
-            log.trace("Adding new role: {}", aLong);
         });
     }
 
@@ -103,7 +102,6 @@ public class StartupServiceBean implements Startup {
         Set<Long> newChannels = SetUtils.difference(existingChannelsIds, knownChannelsIds);
         newChannels.forEach(aLong -> {
             GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
-            log.trace("Adding new channel: {}", aLong);
             AChannelType type = AChannelType.getAChannelType(channel1.getType());
             channelManagementService.createChannel(channel1.getIdLong(), type, existingServer);
         });

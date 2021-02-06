@@ -27,4 +27,5 @@
     <include file="system_config.xml" relativeToChangelogFile="true"/>
     <include file="auser.xml" relativeToChangelogFile="true"/>
     <include file="counter.xml" relativeToChangelogFile="true"/>
+    <include file="allowed_mention.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -44,9 +44,14 @@ public class AServer implements SnowFlake, Serializable {
         this.updated = Instant.now();
     }
 
+    @OneToOne(mappedBy = "server", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private AllowedMention allowedMention;
+
     @OneToMany(
             fetch = FetchType.LAZY,
             orphanRemoval = true,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             mappedBy = "server")
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

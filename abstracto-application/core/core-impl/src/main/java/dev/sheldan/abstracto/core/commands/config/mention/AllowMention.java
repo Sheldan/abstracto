@@ -1,19 +1,16 @@
-package dev.sheldan.abstracto.core.commands.utility;
+package dev.sheldan.abstracto.core.commands.config.mention;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
-import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.models.database.AEmote;
-import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.service.AllowedMentionService;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,37 +18,30 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class SetEmote extends AbstractConditionableCommand {
-
+public class AllowMention extends AbstractConditionableCommand {
     @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
-    private EmoteService emoteService;
+    private AllowedMentionService allowedMentionService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        String emoteKey = (String) parameters.get(0);
-        AEmote emote = (AEmote) parameters.get(1);
-        emoteManagementService.setEmoteToAEmote(emoteKey, emote, commandContext.getGuild().getIdLong());
+        String mentionTypeInput = (String) commandContext.getParameters().getParameters().get(0);
+        Message.MentionType mentionType = allowedMentionService.getMentionTypeFromString(mentionTypeInput);
+        allowedMentionService.allowMentionForServer(mentionType, commandContext.getGuild().getIdLong());
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        List<ParameterValidator> emoteKeyValidators = Arrays.asList(MaxStringLengthValidator.max(255L));
-        Parameter emoteKey = Parameter.builder().name("emoteKey").validators(emoteKeyValidators).type(String.class).templated(true).build();
-        Parameter emote = Parameter.builder().name("emote").type(AEmote.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(emoteKey, emote);
+        Parameter mentionTypeParameter = Parameter.builder().name("mentionType").type(String.class).templated(true).build();
+        List<Parameter> parameters = Arrays.asList(mentionTypeParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("setEmote")
+                .name("allowMention")
                 .module(ConfigModuleInterface.CONFIG)
                 .parameters(parameters)
+                .templated(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
-                .templated(true)
                 .causesReaction(true)
                 .build();
     }

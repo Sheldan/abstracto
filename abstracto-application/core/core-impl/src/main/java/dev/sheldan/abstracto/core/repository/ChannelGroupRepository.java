@@ -5,11 +5,13 @@ import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface ChannelGroupRepository extends JpaRepository<AChannelGroup, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))

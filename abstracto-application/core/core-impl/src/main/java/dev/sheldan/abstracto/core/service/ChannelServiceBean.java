@@ -45,6 +45,9 @@ public class ChannelServiceBean implements ChannelService {
     private TemplateService templateService;
 
     @Autowired
+    private AllowedMentionService allowedMentionService;
+
+    @Autowired
     private MetricService metricService;
 
     public static final CounterMetric CHANNEL_CREATE_METRIC = CounterMetric
@@ -119,14 +122,21 @@ public class ChannelServiceBean implements ChannelService {
         log.trace("Sending message {} from channel {} and server {} to channel {}.",
                 message.getId(), message.getChannel().getId(), message.getGuild().getId(), channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(message).submit();
+        return channel.sendMessage(message).allowedMentions(getAllowedMentionsFor(channel)).submit();
+    }
+
+    private List<Message.MentionType> getAllowedMentionsFor(MessageChannel channel) {
+        if(channel instanceof GuildChannel) {
+            return allowedMentionService.getAllowedMentionTypesForServer(((GuildChannel) channel).getGuild().getIdLong());
+        }
+        return null;
     }
 
     @Override
     public CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel) {
         log.trace("Sending text to channel {}.", channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(text).submit();
+        return channel.sendMessage(text).allowedMentions(getAllowedMentionsFor(channel)).submit();
     }
 
     @Override
@@ -155,7 +165,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(embed);
+        return channel.sendMessage(embed).allowedMentions(getAllowedMentionsFor(channel));
     }
 
     @Override
@@ -213,8 +223,9 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
         allMessageActions.add(0, firstMessageAction);
+        List<Message.MentionType> allowedMentions = getAllowedMentionsFor(textChannel);
         allMessageActions.forEach(messageAction ->
-            futures.add(messageAction.submit())
+            futures.add(messageAction.allowedMentions(allowedMentions).submit())
         );
         return futures;
     }
