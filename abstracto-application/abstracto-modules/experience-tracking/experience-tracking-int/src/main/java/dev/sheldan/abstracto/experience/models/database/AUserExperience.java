@@ -29,6 +29,7 @@ public class AUserExperience implements Serializable {
      * The {@link AUserInAServer} id which is unique for each user in a server.
      */
     @Id
+    @Column(name = "id")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -38,16 +39,19 @@ public class AUserExperience implements Serializable {
     /**
      * The total amount of experience the user has in the guild
      */
+    @Column(name = "experience")
     private Long experience;
 
     /**
      * The total amount of messages the user has written in the guild resulting in the experience.
      */
+    @Column(name = "message_count")
     private Long messageCount;
 
     /**
      * Whether or not the experience gain has been disabled for this user
      */
+    @Column(name = "experience_gain_disabled")
     private Boolean experienceGainDisabled;
 
     /**
@@ -61,24 +65,14 @@ public class AUserExperience implements Serializable {
      * The {@link AExperienceRole} the user currently has. Can be null.
      */
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "experience_role_id")
+    @JoinColumn(name = "role_id")
     private AExperienceRole currentExperienceRole;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     public Integer getLevelOrDefault() {
         return currentLevel != null ? currentLevel.getLevel() : 0;

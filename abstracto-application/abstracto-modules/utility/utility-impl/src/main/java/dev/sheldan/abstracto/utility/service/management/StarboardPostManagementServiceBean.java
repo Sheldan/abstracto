@@ -36,6 +36,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
                 .postMessageId(starredMessage.getMessageId())
                 .sourceChanel(build)
                 .ignored(false)
+                .server(starboardPost.getServer())
                 .starboardMessageId(starboardPost.getMessageId())
                 .starboardChannel(starboardPost.getChannel())
                 .starredDate(Instant.now())
@@ -64,7 +65,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public List<StarboardPost> retrieveAllPosts(Long serverId) {
-        return repository.findByStarboardChannelServerId(serverId);
+        return repository.findByServer(serverId);
     }
 
     @Override
@@ -99,6 +100,5 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
         starboardPost.getReactions().clear();
         repository.delete(starboardPost);
     }
-
 
 }

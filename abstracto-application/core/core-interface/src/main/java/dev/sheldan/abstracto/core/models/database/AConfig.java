@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-@Table(name="systemConfig")
+@Table(name="system_config")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,18 +46,8 @@ public class AConfig implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     public String getValueAsString() {
         if(getLongValue() != null) {

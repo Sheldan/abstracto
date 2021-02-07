@@ -101,7 +101,7 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public CompletableFuture<Void> acceptSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
-        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
+        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId, suggestionLog.getGuild().getIdLong()).orElseThrow(() -> new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
         log.info("Accepting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         return updateSuggestion(text, suggestionLog, suggestion);
@@ -155,7 +155,7 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public CompletableFuture<Void> rejectSuggestion(Long suggestionId, String text, SuggestionLog suggestionLog) {
-        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId).orElseThrow(() ->  new SuggestionNotFoundException(suggestionId));
+        Suggestion suggestion = suggestionManagementService.getSuggestion(suggestionId, suggestionLog.getGuild().getIdLong()).orElseThrow(() ->  new SuggestionNotFoundException(suggestionId));
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
         log.info("Rejecting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         return updateSuggestion(text, suggestionLog, suggestion);

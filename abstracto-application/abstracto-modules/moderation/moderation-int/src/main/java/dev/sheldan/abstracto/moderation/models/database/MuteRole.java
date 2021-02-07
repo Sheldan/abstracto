@@ -29,6 +29,7 @@ public class MuteRole implements Serializable {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     /**
@@ -50,17 +51,7 @@ public class MuteRole implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface SuggestionManagementService {
     Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId);
     Suggestion createSuggestion(AUserInAServer suggester, String text, Message message, Long suggestionId);
-    Optional<Suggestion> getSuggestion(Long suggestionId);
+    Optional<Suggestion> getSuggestion(Long suggestionId, Long serverId);
     void setSuggestionState(Suggestion suggestion, SuggestionState newState);
 }

@@ -11,9 +11,13 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="posttarget_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="name" type="VARCHAR(255)"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
             <column name="channel_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -21,11 +25,20 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="posttarget-fk_posttarget_channel">
+        <createIndex indexName="idx_posttarget_name_server" tableName="posttarget">
+            <column name="name"/>
+            <column name="server_id"/>
+        </createIndex>
         <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="posttarget" constraintName="fk_posttarget_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="posttarget-fk_posttarget_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="posttarget" constraintName="fk_posttarget_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS posttarget_update_trigger ON posttarget;
+            CREATE TRIGGER posttarget_update_trigger BEFORE UPDATE ON posttarget FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS posttarget_insert_trigger ON posttarget;
+            CREATE TRIGGER posttarget_insert_trigger BEFORE INSERT ON posttarget FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
+
 </databaseChangeLog>

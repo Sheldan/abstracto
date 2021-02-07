@@ -42,7 +42,7 @@ public class Warning implements Serializable {
     @Getter
     @Setter
     @ManyToOne
-    @JoinColumn(name = "warnedUserId", nullable = false)
+    @JoinColumn(name = "warned_user_in_server_id", nullable = false)
     private AUserInAServer warnedUser;
 
     /**
@@ -51,7 +51,7 @@ public class Warning implements Serializable {
     @Getter
     @Setter
     @ManyToOne
-    @JoinColumn(name = "warningUserId", nullable = false)
+    @JoinColumn(name = "warning_user_in_server_id", nullable = false)
     private AUserInAServer warningUser;
 
     /**
@@ -59,6 +59,7 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
+    @Column(name = "reason")
     private String reason;
 
     /**
@@ -66,6 +67,7 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
+    @Column(name = "warn_date")
     private Instant warnDate;
 
     /**
@@ -73,6 +75,7 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
+    @Column(name = "decayed")
     private Boolean decayed;
 
     /**
@@ -80,22 +83,13 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
+    @Column(name = "decay_date")
     private Instant decayDate;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

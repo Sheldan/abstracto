@@ -6,6 +6,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <include file="trigger_functions.xml" relativeToChangelogFile="true"/>
     <include file="server.xml" relativeToChangelogFile="true"/>
     <include file="channel.xml" relativeToChangelogFile="true"/>
     <include file="default_post_target.xml" relativeToChangelogFile="true"/>

@@ -22,10 +22,11 @@ public class StarboardPostReaction implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "reactorId", nullable = false)
+    @JoinColumn(name = "reactor_user_in_server_id", nullable = false)
     private AUserInAServer reactor;
 
     @OneToOne
@@ -36,9 +37,7 @@ public class StarboardPostReaction implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
 
 }

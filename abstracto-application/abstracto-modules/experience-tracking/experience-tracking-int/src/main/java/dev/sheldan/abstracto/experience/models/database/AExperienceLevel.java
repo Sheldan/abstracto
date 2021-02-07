@@ -25,26 +25,18 @@ public class AExperienceLevel implements Serializable {
      * The unique level from 0 to as defined in the configuration. Will be created on startup.
      */
     @Id
+    @Column(name = "level")
     private Integer level;
     /**
      * The total amount of experience needed for this level.
      */
+    @Column(name = "experience_needed")
     private Long experienceNeeded;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

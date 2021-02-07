@@ -8,22 +8,45 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="tracked_emote-table">
         <createTable tableName="tracked_emote">
-            <column name="id" type="BIGINT" />
-            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="id" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="name" type="VARCHAR(32)"/>
-            <column name="animated" type="BOOLEAN"/>
-            <column name="tracking_enabled" type="BOOLEAN"/>
-            <column name="deleted" type="BOOLEAN"/>
-            <column name="external" type="BOOLEAN"/>
+            <column name="name" type="VARCHAR(32)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="animated" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="tracking_enabled" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="deleted" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="external" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
             <column name="external_url" type="VARCHAR(255)"/>
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <createIndex indexName="idx_tracked_emote_server_id" tableName="tracked_emote">
+            <column name="server_id"/>
+        </createIndex>
         <addPrimaryKey columnNames="server_id, id" tableName="tracked_emote" constraintName="pk_tracked_emote" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="tracked_emote-fk_tracked_emote_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="tracked_emote" constraintName="fk_tracked_emote_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS tracked_emote_update_trigger ON tracked_emote;
+            CREATE TRIGGER tracked_emote_update_trigger BEFORE UPDATE ON tracked_emote FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS tracked_emote_insert_trigger ON tracked_emote;
+            CREATE TRIGGER tracked_emote_insert_trigger BEFORE INSERT ON tracked_emote FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 </databaseChangeLog>

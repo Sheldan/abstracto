@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.utility.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -24,24 +25,30 @@ public class StarboardPost implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "poster", nullable = false)
+    @JoinColumn(name = "author_user_in_server_id", nullable = false)
     private AUserInAServer author;
 
-    @Column
+    @Column(name = "starboard_message_id")
     private Long starboardMessageId;
 
-    @Column
+    @Column(name = "post_message_id")
     private Long postMessageId;
 
     @ManyToOne
-    @JoinColumn(name = "channelId", nullable = false)
+    @JoinColumn(name = "channel_id", nullable = false)
     private AChannel starboardChannel;
 
+    @Getter
     @ManyToOne
-    @JoinColumn(name = "sourceChannelId", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
+    private AServer server;
+
+    @ManyToOne
+    @JoinColumn(name = "source_channel_id", nullable = false)
     private AChannel sourceChanel;
 
     @Transient
@@ -50,18 +57,8 @@ public class StarboardPost implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     @PostLoad
     private void onLoad() {
@@ -76,10 +73,10 @@ public class StarboardPost implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<StarboardPostReaction> reactions;
 
-    @Column
+    @Column(name = "starred_date")
     private Instant starredDate;
 
-    @Column
+    @Column(name = "ignored")
     private boolean ignored;
 
     public int getReactionCount() {

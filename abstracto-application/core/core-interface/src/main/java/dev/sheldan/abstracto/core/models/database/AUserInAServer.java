@@ -25,27 +25,17 @@ public class AUserInAServer implements Serializable {
     private Long userInServerId;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "userReference", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private AUser userReference;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "serverReference", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer serverReference;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

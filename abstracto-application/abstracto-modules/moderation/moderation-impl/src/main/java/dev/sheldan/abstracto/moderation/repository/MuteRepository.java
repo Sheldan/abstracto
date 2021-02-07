@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.repository;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MuteRepository extends JpaRepository<Mute, Long> {
+public interface MuteRepository extends JpaRepository<Mute, ServerSpecificId> {
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     boolean existsByMutedUserAndMuteEndedFalse(AUserInAServer userInAServer);
 

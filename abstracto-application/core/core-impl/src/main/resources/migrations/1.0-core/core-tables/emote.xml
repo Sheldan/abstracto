@@ -12,19 +12,38 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="emote_pkey"/>
             </column>
             <column name="animated" type="BOOLEAN"/>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="custom" type="BOOLEAN"/>
-            <column name="changeable" type="BOOLEAN"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="custom" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="changeable" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
             <column name="emote_id" type="BIGINT"/>
             <column name="emote_key" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="emote_server_id" type="BIGINT">
+            <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="emote-fk_emote_server">
-        <addForeignKeyConstraint baseColumnNames="emote_server_id" baseTableName="emote" constraintName="fk_emote_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <createIndex indexName="idx_emote_name_server_id" tableName="emote">
+            <column name="name"/>
+            <column name="server_id"/>
+        </createIndex>
+        <createIndex indexName="idx_emote_emote_id" tableName="emote">
+            <column name="emote_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="emote" constraintName="fk_emote_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS emote_update_trigger ON emote;
+            CREATE TRIGGER emote_update_trigger BEFORE UPDATE ON emote FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS emote_insert_trigger ON emote;
+            CREATE TRIGGER emote_insert_trigger BEFORE INSERT ON emote FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 </databaseChangeLog>

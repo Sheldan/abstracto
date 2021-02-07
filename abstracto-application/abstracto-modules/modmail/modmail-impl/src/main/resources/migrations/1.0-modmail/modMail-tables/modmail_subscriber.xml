@@ -6,26 +6,32 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet author="Sheldan" id="modmail_subscriber-table">
-        <createTable tableName="modmail_subscriber">
-            <column autoIncrement="true" name="subscriber_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_subscriber_pkey"/>
+    <changeSet author="Sheldan" id="mod_mail_subscriber-table">
+        <createTable tableName="mod_mail_subscriber">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mod_mail_subscriber_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="modmail_thread_subscriber" type="BIGINT">
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="mod_mail_thread" type="BIGINT">
+            <column name="mod_mail_thread_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="modmail_subscriber-fk_modmail_thread_subscriber_user">
-        <addForeignKeyConstraint baseColumnNames="modmail_thread_subscriber" baseTableName="modmail_subscriber" constraintName="fk_modmail_thread_subscriber_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-
-    <changeSet author="Sheldan" id="modmail_subscriber-fk_modmail_thread_thread">
-        <addForeignKeyConstraint baseColumnNames="mod_mail_thread" baseTableName="modmail_subscriber" constraintName="fk_modmail_thread_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="modmail_thread" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="user_in_server_id" baseTableName="mod_mail_subscriber" constraintName="fk_mod_mail_thread_subscriber_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="mod_mail_thread_id" baseTableName="mod_mail_subscriber" constraintName="fk_mod_mail_thread_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="mod_mail_thread" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS mod_mail_subscriber_update_trigger ON mod_mail_subscriber;
+            CREATE TRIGGER mod_mail_subscriber_update_trigger BEFORE UPDATE ON mod_mail_subscriber FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS mod_mail_subscriber_insert_trigger ON mod_mail_subscriber;
+            CREATE TRIGGER mod_mail_subscriber_insert_trigger BEFORE INSERT ON mod_mail_subscriber FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

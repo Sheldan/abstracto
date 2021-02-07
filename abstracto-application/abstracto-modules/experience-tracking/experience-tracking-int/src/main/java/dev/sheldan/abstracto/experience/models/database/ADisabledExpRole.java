@@ -6,6 +6,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
  * A role for which the experience gain in a particular server has been disabled.
@@ -14,21 +15,28 @@ import java.io.Serializable;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "disabled_experience_roles")
+@Table(name = "disabled_experience_role")
 @Getter
 @Setter
 @EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ADisabledExpRole implements Serializable {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @PrimaryKeyJoinColumn
+    private ARole role;
 
     /**
      * Reference to the actual {@link ARole} being marked as disabled for experience gain.
      */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
-    private ARole role;
+    @Column(name = "created")
+    private Instant created;
+
+    @Column(name = "updated")
+    private Instant updated;
 }

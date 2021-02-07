@@ -28,21 +28,21 @@ class DbConfig:
 
 db_config = DbConfig()
 if not use_folder:
-
+    print("Not deploying with folder.")
     postgres_driver_path = os.getenv('POSTGRES_DRIVER')
     liquibase_path = os.getenv('LIQUIBASE_PATH')
-
+    print("Loading versions.")
     with open('artifact_versions.json') as artifact_config_file:
         artifact_config = json.load(artifact_config_file)
 
 
-
+    print("Loading templates")
     templateLoader = jinja2.FileSystemLoader(searchpath="/python/templates")
     templateEnv = jinja2.Environment(loader=templateLoader)
     template = templateEnv.get_template("liquibase.properties.j2")
 
     if deploy_liquibase:
-
+        print("Starting liquibase deployment")
         for liquibase_artifact in artifact_config['liquibase_artifacts']:
             zip_file = liquibase_artifact['zip']
             target_folder = '/liquibase-zips/' + zip_file
@@ -57,15 +57,18 @@ if not use_folder:
             liquibase_deploy.deploy_liquibase(zip_file, property_path, liquibase_path)
 
     if deploy_templates:
+        print("Deploying templates.")
         for template_artifact in artifact_config['template_artifacts']:
             with ZipFile('templates/' + template_artifact + '.zip', 'r') as template_zip:
                 template_zip.extractall(template_artifact)
             templates_deploy.deploy_template_folder(db_config, template_artifact)
 
+        print("Deploying translation templates")
         for template_artifact in artifact_config['translation_artifacts']:
             with ZipFile('translations/' + template_artifact + '.zip', 'r') as template_zip:
                 template_zip.extractall(template_artifact)
             templates_deploy.deploy_template_folder(db_config, template_artifact)
 
 if use_folder:
+    print("Only deploying folder.")
     templates_deploy.deploy_template_folder(db_config, local_folder)

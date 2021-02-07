@@ -11,7 +11,9 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="feature_flag_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="enabled" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
@@ -23,11 +25,15 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="feature_flag-fk_feature_flag_feature">
         <addForeignKeyConstraint baseColumnNames="feature_id" baseTableName="feature_flag" constraintName="fk_feature_flag_feature" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="feature" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="feature_flag-fk_feature_flag_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="feature_flag" constraintName="fk_feature_flag_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS feature_flag_update_trigger ON feature_flag;
+            CREATE TRIGGER feature_flag_update_trigger BEFORE UPDATE ON feature_flag FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS feature_flag_insert_trigger ON feature_flag;
+            CREATE TRIGGER feature_flag_insert_trigger BEFORE INSERT ON feature_flag FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 </databaseChangeLog>

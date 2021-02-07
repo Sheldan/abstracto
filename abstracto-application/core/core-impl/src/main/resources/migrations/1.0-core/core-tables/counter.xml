@@ -22,8 +22,7 @@
                 columnNames="counter_key, server_id"
                 constraintName="pk_counter"
                 tableName="counter"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="counter-counter_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="counter" constraintName="fk_counter_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+
     </changeSet>
 </databaseChangeLog>

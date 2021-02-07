@@ -26,31 +26,22 @@ public class ARole implements SnowFlake, Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "role_server_id", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Getter
     @Setter
+    @Column(name = "deleted")
     private Boolean deleted;
 
     @Column(name = "created")
     private Instant created;
-
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
 
     @Column(name = "updated")
     private Instant updated;
 
     @Transient
     private boolean fake;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     public String getAsMention() {
         return "<@&" + getId() + '>';

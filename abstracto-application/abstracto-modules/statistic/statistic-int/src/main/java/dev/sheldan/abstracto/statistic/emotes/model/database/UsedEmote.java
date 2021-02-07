@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 /**
  * An actual instance which has been used on a certain date with a certain amount.
@@ -43,4 +44,10 @@ public class UsedEmote {
      */
     @Column(name = "amount")
     private Long amount;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @Column(name = "updated")
+    private Instant updated;
 }

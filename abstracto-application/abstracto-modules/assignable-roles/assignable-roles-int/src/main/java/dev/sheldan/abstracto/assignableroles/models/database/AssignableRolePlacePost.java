@@ -23,6 +23,7 @@ import java.util.List;
 public class AssignableRolePlacePost implements Serializable {
 
     @Id
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne
@@ -31,6 +32,9 @@ public class AssignableRolePlacePost implements Serializable {
 
     @Column(name = "created")
     private Instant created;
+
+    @Column(name = "updated")
+    private Instant updated;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Getter
@@ -45,10 +49,5 @@ public class AssignableRolePlacePost implements Serializable {
     @Builder.Default
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignableRole> assignableRoles = new ArrayList<>();
-
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
 
 }

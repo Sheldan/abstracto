@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.command.models.TableLocks;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.repository.UserRepository;
+import dev.sheldan.abstracto.core.service.LockService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Autowired
     private UserManagementServiceBean self;
+
+    @Autowired
+    private LockService lockService;
 
     @Override
     public AUser createUser(Member member) {
@@ -46,6 +51,7 @@ public class UserManagementServiceBean implements UserManagementService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AUser tryCreateUser(Long userId) {
+        lockService.lockTable(TableLocks.USER);
         AUser aUser = AUser.builder().id(userId).build();
         userRepository.save(aUser);
         return aUser;

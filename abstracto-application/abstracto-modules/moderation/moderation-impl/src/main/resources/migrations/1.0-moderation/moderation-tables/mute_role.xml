@@ -12,7 +12,9 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="mute_role_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="role_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -21,15 +23,19 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-
-
-    <changeSet author="Sheldan" id="1593469295954-78">
-        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="mute_role" constraintName="fk3m21mnle06e53wb4r1x5bfyxc" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
-    </changeSet>
-
-    <changeSet author="Sheldan" id="1593469295954-126">
-        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="mute_role" constraintName="fk8bveij4p6lnc2fkoascaeb28k" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <createIndex indexName="idx_mute_role_server" tableName="mute_role">
+            <column name="server_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="mute_role" constraintName="fk_mute_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="mute_role" constraintName="fk_mute_role_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS mute_role_update_trigger ON mute_role;
+            CREATE TRIGGER mute_role_update_trigger BEFORE UPDATE ON mute_role FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS mute_role_insert_trigger ON mute_role;
+            CREATE TRIGGER mute_role_insert_trigger BEFORE INSERT ON mute_role FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

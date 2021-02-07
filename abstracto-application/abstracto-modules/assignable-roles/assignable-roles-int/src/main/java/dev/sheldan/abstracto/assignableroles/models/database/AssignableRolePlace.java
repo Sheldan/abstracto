@@ -28,6 +28,7 @@ public class AssignableRolePlace implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @OneToOne
@@ -38,8 +39,8 @@ public class AssignableRolePlace implements Serializable {
     @JoinColumn(name="server_id")
     private AServer server;
 
+    @Column(name = "key")
     private String key;
-
 
     @OneToMany(
             fetch = FetchType.LAZY,
@@ -61,34 +62,29 @@ public class AssignableRolePlace implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignableRole> assignableRoles = new ArrayList<>();
 
+    @Column(name = "text")
     private String text;
 
     @Builder.Default
+    @Column(name = "active")
     private Boolean active = true;
 
     @Builder.Default
+    @Column(name = "inline")
     private Boolean inline = false;
 
     @Builder.Default
+    @Column(name = "unique_roles")
     private Boolean uniqueRoles = false;
 
     @Builder.Default
+    @Column(name = "auto_remove")
     private Boolean autoRemove = false;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

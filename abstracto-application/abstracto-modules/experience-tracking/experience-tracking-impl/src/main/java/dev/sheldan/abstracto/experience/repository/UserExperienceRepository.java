@@ -50,8 +50,8 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
      */
     @Query(value = "WITH user_experience_ranked AS" +
             "( " +
-            "    SELECT us.id, us.experience, us.experience_role_id, us.level_id, us.message_count, ROW_NUMBER() OVER ( ORDER BY experience DESC ) " +
-            "    FROM user_experience us INNER JOIN user_in_server uis ON us.id = uis.user_in_server_id INNER JOIN server s ON s.id = uis.server_reference WHERE s.id = :serverId" +
+            "    SELECT us.id, us.experience, us.role_id, us.level_id, us.message_count, ROW_NUMBER() OVER ( ORDER BY experience DESC ) " +
+            "    FROM user_experience us INNER JOIN user_in_server uis ON us.id = uis.user_in_server_id INNER JOIN server s ON s.id = uis.server_id WHERE s.id = :serverId" +
             ") " +
             "SELECT rank.id as \"id\", rank.experience as \"experience\", rank.message_count as \"messageCount\", rank.level_id as \"level\", rank.row_number as \"rank\"    " +
             "FROM user_experience_ranked rank " +

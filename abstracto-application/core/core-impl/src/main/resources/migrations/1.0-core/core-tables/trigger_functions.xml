@@ -6,11 +6,14 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet  author="Sheldan"  id="lock-insertion">
-        <insert tableName="lock">
-            <column name="id"  value="0"/>
-            <column name="id"  value="1"/>
-            <column name="id"  value="2"/>
-        </insert>
+    <changeSet author="Sheldan" id="insert_trigger" dbms="postgresql">
+        <sqlFile encoding="utf8" path="sql/insert_trigger.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"/>
+    </changeSet>
+    <changeSet author="Sheldan" id="update_trigger" dbms="postgresql">
+        <sqlFile encoding="utf8" path="sql/update_trigger.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"/>
     </changeSet>
 </databaseChangeLog>

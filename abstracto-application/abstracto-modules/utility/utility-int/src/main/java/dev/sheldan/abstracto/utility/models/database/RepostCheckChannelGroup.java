@@ -20,6 +20,7 @@ import java.time.Instant;
 public class RepostCheckChannelGroup {
 
     @Id
+    @Column(name = "id")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -32,16 +33,7 @@ public class RepostCheckChannelGroup {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
 
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 }

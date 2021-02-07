@@ -12,7 +12,10 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="allowed_invite_link_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="code" type="VARCHAR(32)">
                 <constraints nullable="false"/>
             </column>
@@ -20,11 +23,19 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-
-
-    <changeSet author="Sheldan" id="allowed_invite_link-fk_allowed_invite_link_server">
+        <createIndex indexName="idx_allowed_invite_code_server" tableName="allowed_invite_link">
+            <column name="code"/>
+            <column name="server_id"/>
+        </createIndex>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="allowed_invite_link" constraintName="fk_allowed_invite_link_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS allowed_invite_link_update_trigger ON allowed_invite_link;
+            CREATE TRIGGER allowed_invite_link_update_trigger BEFORE UPDATE ON allowed_invite_link FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS allowed_invite_link_insert_trigger ON allowed_invite_link;
+            CREATE TRIGGER allowed_invite_link_insert_trigger BEFORE INSERT ON allowed_invite_link FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

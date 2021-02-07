@@ -1,11 +1,13 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.command.models.TableLocks;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.repository.UserInServerRepository;
+import dev.sheldan.abstracto.core.service.LockService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
 
     @Autowired
     private UserManagementService userManagementService;
+
+    @Autowired
+    private LockService lockService;
 
     @Autowired
     private UserInServerManagementServiceBean self;
@@ -91,7 +96,6 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
         log.info("Creating user {} in server {}.", userId, serverId);
         AUserInAServer aUserInAServer;
         try {
-            // TODO there seems to be an issue, of trying to create the user a second time
             aUserInAServer = self.tryToCreateAUserInAServer(serverId, userId);
         } catch (DataIntegrityViolationException ex) {
             log.info("Concurrency exception creating user - retrieving.");
@@ -102,6 +106,7 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AUserInAServer tryToCreateAUserInAServer(Long guildId, Long userId) {
+        lockService.lockTable(TableLocks.USER_IN_SERVER);
         AUserInAServer aUserInAServer = serverManagementService.addUserToServer(guildId, userId);
         userInServerRepository.save(aUserInAServer);
         return aUserInAServer;

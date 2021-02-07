@@ -17,7 +17,7 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_role")
+@Table(name = "mod_mail_role")
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -29,6 +29,7 @@ public class ModMailRole implements Serializable {
      * Unique ID of the mod mail role
      */
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long modMailRoleId;
 
@@ -36,29 +37,20 @@ public class ModMailRole implements Serializable {
      * Which {@link AServer} this role is associated with, for convenience
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_role_server", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     /**
      * The actual {@link ARole} which this mod mail role references
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_role", nullable = false)
+    @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
 
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 }

@@ -44,7 +44,7 @@ public class AssignableRole implements Serializable {
     @Getter
     @Setter
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "assignable_role_place_post_id")
+    @JoinColumn(name = "place_post_id")
     private AssignableRolePlacePost assignableRolePlacePost;
 
     @Getter
@@ -54,24 +54,18 @@ public class AssignableRole implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignedRoleUser> assignedUsers = new ArrayList<>();
 
+    @Column(name = "description")
     private String description;
 
+    @Column(name = "required_level")
     private Integer requiredLevel;
+
+    @Column(name = "position")
     private Integer position;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 }

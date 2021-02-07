@@ -31,16 +31,16 @@ public class Suggestion implements Serializable {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "suggesterId",
-            nullable = false)
+    @JoinColumn(name = "suggester_user_in_server_id")
     private AUserInAServer suggester;
 
     @Getter
+    @Column(name = "message_id")
     private Long messageId;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "channelId")
+    @JoinColumn(name = "channel_id")
     private AChannel channel;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -49,26 +49,18 @@ public class Suggestion implements Serializable {
     private AServer server;
 
     @Getter
+    @Column(name = "suggestion_date")
     private Instant suggestionDate;
 
     @Getter
     @Enumerated(EnumType.STRING)
+    @Column(name = "state")
     private SuggestionState state;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

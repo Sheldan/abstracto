@@ -21,6 +21,7 @@ public class FilteredInviteLink {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "code")
@@ -39,16 +40,7 @@ public class FilteredInviteLink {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
 
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 }

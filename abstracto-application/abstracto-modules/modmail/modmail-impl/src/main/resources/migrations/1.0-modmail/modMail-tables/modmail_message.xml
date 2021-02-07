@@ -6,26 +6,42 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet author="Sheldan" id="modmail_message-table">
-        <createTable tableName="modmail_message">
-            <column name="message_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="modmail_message_pkey"/>
+    <changeSet author="Sheldan" id="mod_mail_message-table">
+        <createTable tableName="mod_mail_message">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mod_mail_message_pkey"/>
             </column>
-            <column name="anonymous" type="BOOLEAN"/>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="dm_channel" type="BOOLEAN"/>
-            <column name="modmail_message_author" type="BIGINT">
+            <column name="created_message_in_dm" type="BIGINT" />
+            <column name="created_message_in_channel" type="BIGINT" />
+            <column name="anonymous" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="dm_channel" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="author_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="thread_reference" type="BIGINT">
+            <column name="thread_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="modmail_message-fk_modmail_message_thread">
-        <addForeignKeyConstraint baseColumnNames="thread_reference" baseTableName="modmail_message" constraintName="fk_modmail_message_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="modmail_thread" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="modmail_message-fk_modmail_message_author">
-        <addForeignKeyConstraint baseColumnNames="modmail_message_author" baseTableName="modmail_message" constraintName="fk_modmail_message_author" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <createIndex indexName="idx_mod_mail_message_thread" tableName="mod_mail_message">
+            <column name="thread_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseColumnNames="thread_id" baseTableName="mod_mail_message" constraintName="fk_mod_mail_message_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="mod_mail_thread" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="author_user_in_server_id" baseTableName="mod_mail_message" constraintName="fk_mod_mail_message_author" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS mod_mail_message_update_trigger ON mod_mail_message;
+            CREATE TRIGGER mod_mail_message_update_trigger BEFORE UPDATE ON mod_mail_message FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS mod_mail_message_insert_trigger ON mod_mail_message;
+            CREATE TRIGGER mod_mail_message_insert_trigger BEFORE INSERT ON mod_mail_message FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 </databaseChangeLog>

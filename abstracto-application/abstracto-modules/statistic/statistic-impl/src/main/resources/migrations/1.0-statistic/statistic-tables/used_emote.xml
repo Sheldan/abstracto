@@ -8,17 +8,39 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="used_emote-table">
         <createTable tableName="used_emote">
-            <column name="emote_id" type="BIGINT" />
-            <column name="server_id" type="BIGINT" />
-            <column name="use_date" type="DATE" />
-            <column name="amount" type="BIGINT"/>
+            <column name="emote_id" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="server_id" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="use_date" type="DATE" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="amount" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
+        <createIndex indexName="idx_used_emote" tableName="used_emote">
+            <column name="emote_id"/>
+            <column name="server_id"/>
+            <column name="use_date"/>
+        </createIndex>
         <addPrimaryKey columnNames="server_id, emote_id, use_date" tableName="used_emote" constraintName="pk_used_emote" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="used_emote-fk_used_emote_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="used_emote" constraintName="fk_used_emote_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="used_emote-fk_used_emote_tracked_emote">
         <addForeignKeyConstraint baseColumnNames="emote_id, server_id" baseTableName="used_emote" constraintName="fk_used_emote_tracked_emote" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id, server_id" referencedTableName="tracked_emote" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS used_emote_update_trigger ON used_emote;
+            CREATE TRIGGER used_emote_update_trigger BEFORE UPDATE ON used_emote FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS used_emote_insert_trigger ON used_emote;
+            CREATE TRIGGER used_emote_insert_trigger BEFORE INSERT ON used_emote FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
+
 </databaseChangeLog>

@@ -11,9 +11,22 @@
             <column name="level" type="INTEGER">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="experience_level_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="experience_needed" type="BIGINT"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="experience_needed" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
+        <sql>
+            DROP TRIGGER IF EXISTS experience_level_update_trigger ON experience_level;
+            CREATE TRIGGER experience_level_update_trigger BEFORE UPDATE ON experience_level FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS experience_level_insert_trigger ON experience_level;
+            CREATE TRIGGER experience_level_insert_trigger BEFORE INSERT ON experience_level FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
+
 </databaseChangeLog>

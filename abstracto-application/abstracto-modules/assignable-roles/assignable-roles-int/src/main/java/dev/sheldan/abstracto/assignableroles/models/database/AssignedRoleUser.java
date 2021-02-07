@@ -23,6 +23,7 @@ import java.util.List;
 public class AssignedRoleUser implements Serializable {
 
     @Id
+    @Column(name = "id")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -38,12 +39,10 @@ public class AssignedRoleUser implements Serializable {
     @Builder.Default
     private List<AssignableRole> roles = new ArrayList<>();
 
-
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
+
 }

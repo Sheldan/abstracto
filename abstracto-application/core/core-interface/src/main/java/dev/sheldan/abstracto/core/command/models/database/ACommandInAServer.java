@@ -7,6 +7,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.List;
 
 @Entity(name = "command_in_server")
@@ -22,14 +23,15 @@ public class ACommandInAServer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "command_in_server_id")
     private Long commandInServerId;
 
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "commandReference", nullable = false)
+    @JoinColumn(name = "command_id", nullable = false)
     private ACommand commandReference;
 
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "serverReference", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer serverReference;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -46,8 +48,15 @@ public class ACommandInAServer implements Serializable {
 
     @Getter
     @Setter
-    @Column
+    @Column(name = "restricted")
     private Boolean restricted;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @Column(name = "updated")
+    private Instant updated;
+
 
 }
 

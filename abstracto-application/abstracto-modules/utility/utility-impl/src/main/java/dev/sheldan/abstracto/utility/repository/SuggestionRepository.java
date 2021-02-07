@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.utility.repository;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,9 +12,9 @@ import javax.persistence.QueryHint;
 import java.util.Optional;
 
 @Repository
-public interface SuggestionRepository extends JpaRepository<Suggestion, Long> {
+public interface SuggestionRepository extends JpaRepository<Suggestion, ServerSpecificId> {
     @NotNull
     @Override
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    Optional<Suggestion> findById(@NonNull Long aLong);
+    Optional<Suggestion> findById(@NonNull ServerSpecificId aLong);
 }

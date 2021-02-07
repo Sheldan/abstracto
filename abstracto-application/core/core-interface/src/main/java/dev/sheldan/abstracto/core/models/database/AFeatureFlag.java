@@ -44,23 +44,13 @@ public class AFeatureFlag implements Serializable {
 
     @Getter
     @Setter
+    @Column(name = "enabled")
     private boolean enabled;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updateTimestamp;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updateTimestamp = Instant.now();
-    }
-
 
 }

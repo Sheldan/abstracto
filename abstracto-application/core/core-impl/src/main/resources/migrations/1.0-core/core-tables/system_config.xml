@@ -11,18 +11,32 @@
             <column autoIncrement="true" name="id" type="INTEGER">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="system_config_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="double_value" type="FLOAT8"/>
             <column name="long_value" type="BIGINT"/>
-            <column name="name" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
             <column name="string_value" type="VARCHAR(255)"/>
-            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="system_config-fk_config_server">
+        <createIndex indexName="idx_system_config_name_server" tableName="system_config">
+            <column name="name"/>
+            <column name="server_id"/>
+        </createIndex>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="system_config" constraintName="fk_config_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS system_config_update_trigger ON system_config;
+            CREATE TRIGGER system_config_update_trigger BEFORE UPDATE ON system_config FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS system_config_insert_trigger ON system_config;
+            CREATE TRIGGER system_config_insert_trigger BEFORE INSERT ON system_config FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 </databaseChangeLog>

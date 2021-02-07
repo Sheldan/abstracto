@@ -24,33 +24,23 @@ public class ADefaultConfig implements Serializable {
     @Column
     private String name;
 
-    @Column
+    @Column(name = "string_value")
     @Setter
     private String stringValue;
 
-    @Column
+    @Column(name = "double_value")
     @Setter
     private Double doubleValue;
 
-    @Column
+    @Column(name = "long_value")
     @Setter
     private Long longValue;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     public String getValueAsString() {
         if(getLongValue() != null) {

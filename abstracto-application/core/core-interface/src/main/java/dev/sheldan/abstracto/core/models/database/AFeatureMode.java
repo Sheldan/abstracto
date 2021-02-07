@@ -40,7 +40,7 @@ public class AFeatureMode implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Column
+    @Column(name = "enabled")
     @Getter
     @Setter
     private Boolean enabled;
@@ -48,17 +48,7 @@ public class AFeatureMode implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updateTimestamp;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updateTimestamp = Instant.now();
-    }
 
 }

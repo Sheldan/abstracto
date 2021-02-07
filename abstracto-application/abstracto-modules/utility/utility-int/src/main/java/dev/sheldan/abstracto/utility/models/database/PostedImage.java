@@ -25,7 +25,7 @@ public class PostedImage {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "posting_user_id", nullable = false)
+    @JoinColumn(name = "author_user_in_server_id", nullable = false)
     private AUserInAServer poster;
 
     @Getter
@@ -49,6 +49,9 @@ public class PostedImage {
     @Column(name = "created")
     private Instant created;
 
+    @Column(name = "updated")
+    private Instant updated;
+
     @Getter
     @OneToMany(fetch = FetchType.LAZY,
             orphanRemoval = true,
@@ -57,8 +60,4 @@ public class PostedImage {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<Repost> reposts;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
 }

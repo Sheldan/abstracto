@@ -31,8 +31,12 @@ public class AExperienceRole implements Serializable {
      * The abstracto unique id of this experience role.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @PrimaryKeyJoinColumn
+    private ARole role;
 
     /**
      * Reference to the {@link AExperienceLevel} at which this role is awarded.
@@ -50,28 +54,11 @@ public class AExperienceRole implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer roleServer;
 
-    /**
-     * Reference to the actual {@link ARole} being awarded.
-     */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
-    private ARole role;
-
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     /**
      * Current list of {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} which were given this role.

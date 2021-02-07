@@ -11,11 +11,13 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="feature_mode_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="enabled" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="feature_mode_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -26,14 +28,24 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="feature_mode-fk_feature_mode_flag">
+        <createIndex indexName="idx_feature_mode_server" tableName="feature_mode">
+            <column name="server_id"/>
+        </createIndex>
+        <createIndex indexName="idx_feature_mode_flag_server_mode" tableName="feature_mode">
+            <column name="server_id"/>
+            <column name="feature_flag_id"/>
+            <column name="feature_mode_id"/>
+        </createIndex>
         <addForeignKeyConstraint baseColumnNames="feature_flag_id" baseTableName="feature_mode" constraintName="fk_feature_mode_flag" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="feature_flag" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="feature_mode-fk_feature_mode_mode">
         <addForeignKeyConstraint baseColumnNames="feature_mode_id" baseTableName="feature_mode" constraintName="fk_feature_mode_mode" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="default_feature_mode" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="feature_mode-fk_feature_mode_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="feature_mode" constraintName="fk_feature_mode_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS feature_mode_update_trigger ON feature_mode;
+            CREATE TRIGGER feature_mode_update_trigger BEFORE UPDATE ON feature_mode FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS feature_mode_insert_trigger ON feature_mode;
+            CREATE TRIGGER feature_mode_insert_trigger BEFORE INSERT ON feature_mode FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 </databaseChangeLog>

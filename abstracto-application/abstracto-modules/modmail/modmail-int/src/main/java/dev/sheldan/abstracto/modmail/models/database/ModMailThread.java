@@ -20,7 +20,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_thread")
+@Table(name = "mod_mail_thread")
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -30,46 +30,37 @@ public class ModMailThread implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     /**
      * The member who opened the thread or who got contacted
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_user", nullable = false)
+    @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer user;
 
     /**
      * The text channel in which this thread is dealt with
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_thread_channel", nullable = false)
+    @JoinColumn(name = "channel_id", nullable = false)
     private AChannel channel;
 
     /**
      * The server on which this mod mail thread is, for convenience
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_thread_server", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
 
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
-
-    @Column
+    @Column(name = "closed")
     private Instant closed;
 
     /**
@@ -101,7 +92,7 @@ public class ModMailThread implements Serializable {
      * The current state of the mod mail thread. Whether or not the last post was by staff or user.
      */
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(name = "state")
     private ModMailThreadState state;
 
 }

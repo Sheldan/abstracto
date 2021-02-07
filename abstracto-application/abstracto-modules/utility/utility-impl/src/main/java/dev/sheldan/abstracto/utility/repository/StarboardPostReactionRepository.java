@@ -18,12 +18,11 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     void deleteByStarboardPost(StarboardPost post);
 
-    @Query(value = "SELECT r.reactor_id as userId, COUNT(*) AS starCount \n" +
+    @Query(value = "SELECT r.reactor_user_in_server_id as userId, COUNT(*) AS starCount \n" +
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +
-            "INNER JOIN channel c ON c.id = p.channel_id\n" +
-            "WHERE c.server_id = :serverId\n" +
-            "GROUP BY r.reactor_id \n" +
+            "WHERE p.server_id = :serverId\n" +
+            "GROUP BY r.reactor_user_in_server_id \n" +
             "ORDER BY starCount DESC \n" +
             "LIMIT :count", nativeQuery = true)
     List<StarStatsUserResult> findTopStarGiverInServer(Long serverId, Integer count);
@@ -31,17 +30,15 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
     @Query(value = "SELECT COUNT(*) \n" +
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +
-            "INNER JOIN channel c ON c.id = p.channel_id\n" +
-            "WHERE c.server_id = :serverId\n"
+            "WHERE p.server_id = :serverId\n"
             , nativeQuery = true)
     Integer getReactionCountByServer(Long serverId);
 
-    @Query(value = "SELECT p.poster as userId, COUNT(*) AS starCount \n" +
+    @Query(value = "SELECT p.author_user_in_server_id as userId, COUNT(*) AS starCount \n" +
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +
-            "INNER JOIN channel c ON c.id = p.channel_id\n" +
-            "WHERE c.server_id = :serverId\n" +
-            "GROUP BY p.poster \n" +
+            "WHERE p.server_id = :serverId\n" +
+            "GROUP BY p.author_user_in_server_id \n" +
             "ORDER BY starCount DESC \n" +
             "LIMIT :count", nativeQuery = true)
     List<StarStatsUserResult> retrieveTopStarReceiverInServer(Long serverId, Integer count);

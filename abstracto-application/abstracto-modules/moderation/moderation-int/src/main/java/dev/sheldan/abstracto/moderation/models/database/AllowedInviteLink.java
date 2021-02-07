@@ -21,6 +21,7 @@ public class AllowedInviteLink {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "code")
@@ -30,12 +31,10 @@ public class AllowedInviteLink {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
+
 }

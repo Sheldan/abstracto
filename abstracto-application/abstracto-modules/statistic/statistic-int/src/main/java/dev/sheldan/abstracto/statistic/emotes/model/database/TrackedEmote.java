@@ -78,18 +78,8 @@ public class TrackedEmote implements Serializable, Fakeable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     /**
      * Some emotes are build on demand, and do not necessarily be persisted. This happens when the emote is being used as a

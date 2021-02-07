@@ -6,6 +6,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 
 @Entity
 @Table(name = "channel_group_command")
@@ -20,6 +21,7 @@ public class AChannelGroupCommand implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "command_in_group_id")
     private Long commandInGroupId;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -33,6 +35,13 @@ public class AChannelGroupCommand implements Serializable {
     private AChannelGroup group;
 
     @Setter
+    @Column(name = "enabled")
     private Boolean enabled;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @Column(name = "updated")
+    private Instant updated;
 
 }

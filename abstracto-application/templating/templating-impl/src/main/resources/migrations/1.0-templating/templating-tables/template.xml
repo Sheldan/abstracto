@@ -12,7 +12,9 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="template_pkey"/>
             </column>
             <column name="section" type="VARCHAR(255)"/>
-            <column name="last_modified" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="last_modified" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
             <column name="content" type="VARCHAR(4000)"/>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>

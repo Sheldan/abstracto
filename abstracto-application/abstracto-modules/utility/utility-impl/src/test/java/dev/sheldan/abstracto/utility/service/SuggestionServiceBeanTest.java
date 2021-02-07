@@ -139,8 +139,11 @@ public class SuggestionServiceBeanTest {
 
     @Test(expected = SuggestionNotFoundException.class)
     public void testAcceptNotExistingSuggestion() {
-        when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.empty());
-        testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, SuggestionLog.builder().build());
+        when(suggestionManagementService.getSuggestion(SUGGESTION_ID, SERVER_ID)).thenReturn(Optional.empty());
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
+        when(log.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
+        testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, log);
     }
 
     @Test
@@ -151,7 +154,10 @@ public class SuggestionServiceBeanTest {
     @Test(expected = ChannelNotInGuildException.class)
     public void testAcceptSuggestionInNoTextChannel() {
         setupForNoTextChannel();
-        testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, SuggestionLog.builder().build());
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
+        when(log.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
+        testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, log);
     }
 
     private void setupForNoTextChannel() {
@@ -167,7 +173,7 @@ public class SuggestionServiceBeanTest {
         when(server.getId()).thenReturn(SERVER_ID);
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenThrow(new ChannelNotInGuildException(CHANNEL_ID));
-        when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.of(suggestionToAccept));
+        when(suggestionManagementService.getSuggestion(SUGGESTION_ID, SERVER_ID)).thenReturn(Optional.of(suggestionToAccept));
     }
 
     @Test(expected = SuggestionUpdateException.class)
@@ -200,8 +206,11 @@ public class SuggestionServiceBeanTest {
 
     @Test(expected = SuggestionNotFoundException.class)
     public void testRejectNotExistingSuggestion() {
-        when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.empty());
-        testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, SuggestionLog.builder().build());
+        when(suggestionManagementService.getSuggestion(SUGGESTION_ID, SERVER_ID)).thenReturn(Optional.empty());
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
+        when(log.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
+        testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, log);
     }
 
     @Test
@@ -212,28 +221,35 @@ public class SuggestionServiceBeanTest {
     @Test(expected = ChannelNotInGuildException.class)
     public void testRejectSuggestionInNoTextChannel() {
         setupForNoTextChannel();
-        testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, SuggestionLog.builder().build());
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
+        when(log.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
+        testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, log);
     }
 
     private void executeAcceptWithMember(Member actualMember) {
         Long messageId = 7L;
-        SuggestionLog logParameter = SuggestionLog.builder().build();
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
+        when(log.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
         Suggestion suggestionToAccept = setupClosing(messageId);
         Message suggestionMessage = Mockito.mock(Message.class);
         when(channelService.retrieveMessageInChannel(textChannel, messageId)).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
         when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(actualMember));
-        testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, logParameter);
+        testUnit.acceptSuggestion(SUGGESTION_ID, CLOSING_TEXT, log);
         verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.ACCEPTED);
     }
 
     private void executeRejectWithMember(Member actualMember) {
         Long messageId = 7L;
-        SuggestionLog logParameter = SuggestionLog.builder().build();
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
+        when(log.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
         Suggestion suggestionToAccept = setupClosing(messageId);
         Message suggestionMessage = Mockito.mock(Message.class);
         when(channelService.retrieveMessageInChannel(textChannel, messageId)).thenReturn(CompletableFuture.completedFuture(suggestionMessage));
         when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(actualMember));
-        testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, logParameter);
+        testUnit.rejectSuggestion(SUGGESTION_ID, CLOSING_TEXT, log);
         verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.REJECTED);
     }
 
@@ -250,7 +266,7 @@ public class SuggestionServiceBeanTest {
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(suggester.getUserReference()).thenReturn(suggesterUser);
         when(suggesterUser.getId()).thenReturn(SUGGESTER_ID);
-        when(suggestionManagementService.getSuggestion(SUGGESTION_ID)).thenReturn(Optional.of(suggestionToAccept));
+        when(suggestionManagementService.getSuggestion(SUGGESTION_ID, SERVER_ID)).thenReturn(Optional.of(suggestionToAccept));
         when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         return suggestionToAccept;
     }

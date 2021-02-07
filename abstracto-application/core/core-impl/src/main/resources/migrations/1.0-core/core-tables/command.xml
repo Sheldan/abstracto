@@ -11,8 +11,12 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="command_pkey"/>
             </column>
-            <column name="name" type="VARCHAR(255)"/>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="feature_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -21,6 +25,16 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addForeignKeyConstraint baseColumnNames="feature_id" baseTableName="command" constraintName="fk_command_feature" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="feature" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="module_id" baseTableName="command" constraintName="fk_command_module" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="module" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS command_update_trigger ON command;
+            CREATE TRIGGER command_update_trigger BEFORE UPDATE ON command FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS command_insert_trigger ON command;
+            CREATE TRIGGER command_insert_trigger BEFORE INSERT ON command FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
     <changeSet author="Sheldan" id="command_in_server-table">
         <createTable tableName="command_in_server">
@@ -28,13 +42,29 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="command_in_server_pkey"/>
             </column>
             <column name="restricted" type="BOOLEAN"/>
-            <column name="command_reference" type="BIGINT">
+            <column name="command_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="server_reference" type="BIGINT">
+            <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
         </createTable>
+        <createIndex indexName="idx_command_in_server" tableName="command_in_server">
+            <column name="server_id"/>
+            <column name="command_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseColumnNames="command_id" baseTableName="command_in_server" constraintName="fk_command_command" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="command" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="command_in_server" constraintName="fk_command_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS command_in_server_update_trigger ON command_in_server;
+            CREATE TRIGGER command_in_server_update_trigger BEFORE UPDATE ON command_in_server FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS command_in_server_insert_trigger ON command_in_server;
+            CREATE TRIGGER command_in_server_insert_trigger BEFORE INSERT ON command_in_server FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
     <changeSet author="Sheldan" id="command_in_server_immune_roles-table">
         <createTable tableName="command_in_server_immune_roles">
@@ -45,6 +75,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_immune_roles" constraintName="fk_command_immune_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="immune_roles_id" baseTableName="command_in_server_immune_roles" constraintName="fk_immune_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+
     </changeSet>
     <changeSet author="Sheldan" id="command_in_server_allowed_roles-table">
         <createTable tableName="command_in_server_allowed_roles">
@@ -55,29 +88,32 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_command_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="allowed_roles_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_role_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+
     </changeSet>
     <changeSet author="Sheldan" id="command-fk_command_feature">
-        <addForeignKeyConstraint baseColumnNames="feature_id" baseTableName="command" constraintName="fk_command_feature" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="feature" validate="true"/>
-    </changeSet>
+      </changeSet>
     <changeSet author="Sheldan" id="command_in_server-command_in_server_immune_roles">
-        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_immune_roles" constraintName="fk_command_immune_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
-    </changeSet>
+      </changeSet>
     <changeSet author="Sheldan" id="command_in_server-command_in_server_allowed_roles">
-        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_command_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
-    </changeSet>
+     </changeSet>
     <changeSet author="Sheldan" id="command_in_server_immune_roles-command_in_server_allowed_roles">
-        <addForeignKeyConstraint baseColumnNames="allowed_roles_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_role_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
-    </changeSet>
+      </changeSet>
     <changeSet author="Sheldan" id="command-fk_command_module">
-        <addForeignKeyConstraint baseColumnNames="module_id" baseTableName="command" constraintName="fk_command_module" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="module" validate="true"/>
-    </changeSet>
+     </changeSet>
     <changeSet author="Sheldan" id="command_in_server-fk_command_command">
-        <addForeignKeyConstraint baseColumnNames="command_reference" baseTableName="command_in_server" constraintName="fk_command_command" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="command" validate="true"/>
-    </changeSet>
+        </changeSet>
     <changeSet author="Sheldan" id="command_in_server_allowed_roles-fk_immune_role_role">
-        <addForeignKeyConstraint baseColumnNames="immune_roles_id" baseTableName="command_in_server_immune_roles" constraintName="fk_immune_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
-    </changeSet>
+     </changeSet>
     <changeSet author="Sheldan" id="command_in_server-fk_command_server">
-        <addForeignKeyConstraint baseColumnNames="server_reference" baseTableName="command_in_server" constraintName="fk_command_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        </changeSet>
+
+    <changeSet author="Sheldan" id="command_triggers">
+
+    </changeSet>
+
+    <changeSet author="Sheldan" id="command_in_server_triggers">
+
     </changeSet>
 </databaseChangeLog>

@@ -91,6 +91,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
         } else {
             experienceRole = AExperienceRole
                     .builder()
+                    .id(role.getId())
                     .level(level)
                     .roleServer(role.getServer())
                     .role(role)

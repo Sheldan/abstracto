@@ -11,30 +11,54 @@
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="users_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
         </createTable>
+        <sql>
+            DROP TRIGGER IF EXISTS auser_update_trigger ON auser;
+            CREATE TRIGGER auser_update_trigger BEFORE UPDATE ON auser FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS auser_insert_trigger ON auser;
+            CREATE TRIGGER auser_insert_trigger BEFORE INSERT ON auser FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
     <changeSet author="Sheldan" id="user_in_server-table">
         <createTable tableName="user_in_server">
             <column autoIncrement="true" name="user_in_server_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="user_in_server_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="server_reference" type="BIGINT">
+            <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="user_reference" type="BIGINT">
+            <column name="user_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="Sheldan" id="user_in_server-fk_auser_user">
-        <addForeignKeyConstraint baseColumnNames="user_reference" baseTableName="user_in_server" constraintName="fk_auser_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="auser" validate="true"/>
+        <addUniqueConstraint columnNames="user_id, server_id"
+                             constraintName="uc_user_in_server"
+                             disabled="false"
+                             tableName="user_in_server"/>
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_in_server" constraintName="fk_auser_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="auser" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="user_in_server" constraintName="fk_user_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <createIndex indexName="idx_user_in_server" tableName="user_in_server">
+            <column name="server_id"/>
+            <column name="user_id"/>
+        </createIndex>
+        <sql>
+            DROP TRIGGER IF EXISTS user_in_server_update_trigger ON user_in_server;
+            CREATE TRIGGER user_in_server_update_trigger BEFORE UPDATE ON user_in_server FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS user_in_server_insert_trigger ON user_in_server;
+            CREATE TRIGGER user_in_server_insert_trigger BEFORE INSERT ON user_in_server FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
-    <changeSet author="Sheldan" id="user_in_server-fk_user_server">
-        <addForeignKeyConstraint baseColumnNames="server_reference" baseTableName="user_in_server" constraintName="fk_user_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
-    </changeSet>
 </databaseChangeLog>

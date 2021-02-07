@@ -38,25 +38,18 @@ public class DefaultFeatureMode implements Serializable {
 
     @Getter
     @Setter
+    @Column(name = "enabled")
     private boolean enabled;
 
     @Getter
     @Setter
+    @Column(name = "mode")
     private String mode;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
-    private Instant updateTimestamp;
+    private Instant updated;
 
-    @PreUpdate
-    private void onUpdate() {
-        this.updateTimestamp = Instant.now();
-    }
 }

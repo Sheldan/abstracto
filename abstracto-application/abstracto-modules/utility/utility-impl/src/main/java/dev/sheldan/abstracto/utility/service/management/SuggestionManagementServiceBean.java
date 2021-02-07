@@ -61,8 +61,8 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     }
 
     @Override
-    public Optional<Suggestion> getSuggestion(Long suggestionId) {
-        return suggestionRepository.findById(suggestionId);
+    public Optional<Suggestion> getSuggestion(Long suggestionId, Long serverId) {
+        return suggestionRepository.findById(new ServerSpecificId(serverId, suggestionId));
     }
 
 

@@ -8,34 +8,46 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="warning-table">
         <createTable tableName="warning">
-            <column autoIncrement="true" name="id" type="BIGINT" />
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="decay_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="decayed" type="BOOLEAN"/>
-            <column name="reason" type="VARCHAR(255)"/>
-            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="warn_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="warned_user_id" type="BIGINT">
+            <column name="reason" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="warn_date" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="warned_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="warning_user_id" type="BIGINT">
+            <column name="warning_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <createIndex indexName="idx_warning_user" tableName="warning">
+            <column name="warned_user_in_server_id"/>
+        </createIndex>
         <addPrimaryKey columnNames="server_id, id" tableName="warning" constraintName="pk_warning" validate="true"/>
-    </changeSet>
-
-    <changeSet author="Sheldan" id="warning-fk_warning_warned_user">
-        <addForeignKeyConstraint baseColumnNames="warned_user_id" baseTableName="warning" constraintName="fk_warning_warned_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="warning-fk_warning_warning_user">
-        <addForeignKeyConstraint baseColumnNames="warning_user_id" baseTableName="warning" constraintName="fk_warning_warning_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="warning-fk_warning_server_id">
+        <addForeignKeyConstraint baseColumnNames="warned_user_in_server_id" baseTableName="warning" constraintName="fk_warning_warned_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="warning_user_in_server_id" baseTableName="warning" constraintName="fk_warning_warning_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="warning" constraintName="fk_warning_server_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS warning_update_trigger ON warning;
+            CREATE TRIGGER warning_update_trigger BEFORE UPDATE ON warning FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS warning_insert_trigger ON warning;
+            CREATE TRIGGER warning_insert_trigger BEFORE INSERT ON warning FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

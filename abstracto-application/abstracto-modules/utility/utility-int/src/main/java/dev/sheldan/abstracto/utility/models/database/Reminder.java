@@ -25,53 +25,49 @@ public class Reminder implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
+    @Column(name = "id")
     private Long id;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "remindedUser", nullable = false)
+    @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer remindedUser;
 
     @Getter
+    @Column(name = "message_id")
     private Long messageId;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "channelId", nullable = false)
+    @JoinColumn(name = "channel_id", nullable = false)
     private AChannel channel;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "serverId", nullable = false)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Column(name = "created")
     private Instant reminderDate;
 
-    @PrePersist
-    private void onInsert() {
-        this.reminderDate = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
 
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
-
     @Getter
+    @Column(name = "target_date")
     private Instant targetDate;
 
     @Getter
+    @Column(name = "text")
     private String text;
 
     @Getter
+    @Column(name = "reminded")
     private boolean reminded;
 
     @Getter
     @Setter
+    @Column(name = "job_trigger_key")
     private String jobTriggerKey;
 
 }

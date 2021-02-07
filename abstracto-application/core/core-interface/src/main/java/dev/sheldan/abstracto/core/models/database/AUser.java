@@ -20,6 +20,7 @@ import java.util.List;
 public class AUser implements Serializable {
 
     @Id
+    @Column(name = "id")
     private Long id;
 
     @OneToMany(
@@ -32,17 +33,7 @@ public class AUser implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

@@ -29,7 +29,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class SuggestionManagementServiceBeanTest {
 
-    public static final long CHANNEL_ID = 6L;
     @InjectMocks
     private SuggestionManagementServiceBean testUnit;
 
@@ -44,6 +43,10 @@ public class SuggestionManagementServiceBeanTest {
 
     @Mock
     private ServerManagementService serverManagementService;
+
+    public static final long CHANNEL_ID = 6L;
+    public static final long SERVER_ID = 6L;
+    public static final long SUGGESTION_ID = 6L;
 
     @Test
     public void testCreateSuggestionViaUser() {
@@ -89,28 +92,36 @@ public class SuggestionManagementServiceBeanTest {
 
     @Test
     public void testGetSuggestion() {
-        Long suggestionId = 5L;
-        Suggestion foundSuggestion = Suggestion.builder().suggestionId(new ServerSpecificId(0L, suggestionId)).build();
-        when(suggestionRepository.findById(suggestionId)).thenReturn(Optional.of(foundSuggestion));
-        Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(suggestionId);
+        Suggestion foundSuggestion = buildSuggestion();
+        when(suggestionRepository.findById(new ServerSpecificId(SERVER_ID, SUGGESTION_ID))).thenReturn(Optional.of(foundSuggestion));
+        Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(SUGGESTION_ID, SERVER_ID);
         Assert.assertTrue(suggestionOptional.isPresent());
-        suggestionOptional.ifPresent(suggestion -> Assert.assertEquals(suggestionId, suggestion.getSuggestionId().getId()));
+        suggestionOptional.ifPresent(suggestion -> Assert.assertEquals(SUGGESTION_ID, suggestion.getSuggestionId().getId().longValue()));
     }
 
     @Test
     public void testGetSuggestionNotFound() {
-        Long suggestionId = 5L;
-        when(suggestionRepository.findById(suggestionId)).thenReturn(Optional.empty());
-        Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(suggestionId);
+        when(suggestionRepository.findById(new ServerSpecificId(SERVER_ID, SUGGESTION_ID))).thenReturn(Optional.empty());
+        Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(SUGGESTION_ID, SERVER_ID);
         Assert.assertFalse(suggestionOptional.isPresent());
     }
 
 
     @Test
     public void setSuggestionState() {
-        Suggestion suggestion = Suggestion.builder().suggestionId(new ServerSpecificId(0L, 4L)).build();
+        Suggestion suggestion = buildSuggestion();
         testUnit.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
-        Assert.assertEquals(suggestion.getState(), SuggestionState.ACCEPTED);
+        verify(suggestion, times(1)).setState(SuggestionState.ACCEPTED);
         verify(suggestionRepository, times(1)).save(suggestion);
+    }
+
+
+    private Suggestion buildSuggestion() {
+        Suggestion foundSuggestion = Mockito.mock(Suggestion.class);
+        ServerSpecificId suggestionId = Mockito.mock(ServerSpecificId.class);
+        when(suggestionId.getId()).thenReturn(SUGGESTION_ID);
+        when(suggestionId.getServerId()).thenReturn(SERVER_ID);
+        when(foundSuggestion.getSuggestionId()).thenReturn(suggestionId);
+        return foundSuggestion;
     }
 }

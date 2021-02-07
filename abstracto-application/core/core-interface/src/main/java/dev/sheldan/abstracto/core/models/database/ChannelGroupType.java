@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @Entity
 @Table(name = "channel_group_type")
@@ -24,4 +25,10 @@ public class ChannelGroupType {
 
     @Column(name = "group_type_key")
     private String groupTypeKey;
+
+    @Column(name = "created")
+    private Instant created;
+
+    @Column(name = "updated")
+    private Instant updated;
 }

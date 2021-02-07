@@ -41,40 +41,44 @@ public class Mute implements Serializable {
      * The {@link AUserInAServer} which was muted
      */
     @ManyToOne
-    @JoinColumn(name = "mutedUser", nullable = false)
+    @JoinColumn(name = "muted_user_in_server_id", nullable = false)
     private AUserInAServer mutedUser;
 
     /**
      * The {@link AUserInAServer} which casted the mute
      */
     @ManyToOne
-    @JoinColumn(name = "mutingUser", nullable = false)
+    @JoinColumn(name = "muting_user_in_server_id", nullable = false)
     private AUserInAServer mutingUser;
 
     /**
      * The reason of the mute which is stored
      */
+    @Column(name = "reason")
     private String reason;
 
     /**
      * The date when the mute was cast, and the start date
      */
+    @Column(name = "mute_date")
     private Instant muteDate;
 
     /**
      * The date at which this mute should be removed in the future
      */
+    @Column(name = "target_date")
     private Instant muteTargetDate;
 
     /**
      * Whether or not the mute already ended, be it manually or when the time passed
      */
+    @Column(name = "mute_ended")
     private Boolean muteEnded;
 
     /**
      * The message which contained the command which caused this mute
      */
-    @Column
+    @Column(name = "message_id")
     private Long messageId;
 
     /**
@@ -87,6 +91,7 @@ public class Mute implements Serializable {
     /**
      * When the mute is scheduled to be un-done with quartz, this stores the quartz trigger in order to cancel it, if need be.
      */
+    @Column(name = "trigger_key")
     private String triggerKey;
 
     @Column(name = "created")
@@ -94,16 +99,10 @@ public class Mute implements Serializable {
 
     @PrePersist
     private void onInsert() {
-        this.created = Instant.now();
         this.muteDate = Instant.now();
     }
 
     @Column(name = "updated")
     private Instant updated;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

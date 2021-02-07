@@ -28,21 +28,11 @@ public class AServer implements SnowFlake, Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
     private Instant updated;
 
     @Transient
     private boolean fake;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updated = Instant.now();
-    }
 
     @OneToOne(mappedBy = "server", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn

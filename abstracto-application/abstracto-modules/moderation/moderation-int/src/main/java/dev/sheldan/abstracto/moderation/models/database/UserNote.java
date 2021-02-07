@@ -31,17 +31,16 @@ public class UserNote implements Serializable {
     private AServer server;
 
     @ManyToOne
-    @JoinColumn(name = "noteUser", nullable = false)
+    @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer user;
 
-    @Column(length = 2000)
+    @Column(length = 2000, name = "note")
     private String note;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
+
 }

@@ -8,9 +8,13 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="posted_image-table">
         <createTable tableName="posted_image">
-            <column name="message_id" type="BIGINT" />
-            <column name="position" type="INTEGER" />
-            <column name="posting_user_id" type="BIGINT">
+            <column name="message_id" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="position" type="INTEGER" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="author_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="posted_channel_id" type="BIGINT">
@@ -22,25 +26,33 @@
             <column name="image_hash" type="VARCHAR(512)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
         </createTable>
+        <createIndex indexName="idx_posted_image_hash_server" tableName="posted_image">
+            <column name="image_hash"/>
+            <column name="server_id"/>
+        </createIndex>
         <addPrimaryKey columnNames="message_id, position" tableName="posted_image" constraintName="pk_posted_image" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="posted_image-fk_posted_image_user">
-        <addForeignKeyConstraint baseColumnNames="posting_user_id" baseTableName="posted_image" constraintName="fk_posted_image_user"
+        <addForeignKeyConstraint baseColumnNames="author_user_in_server_id" baseTableName="posted_image" constraintName="fk_posted_image_user"
                                  deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="posted_image-fk_posted_image_channel">
         <addForeignKeyConstraint baseColumnNames="posted_channel_id" baseTableName="posted_image" constraintName="fk_posted_image_channel"
                                  deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
                                  referencedTableName="channel" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="posted_image-fk_posted_image_server">
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="posted_image" constraintName="fk_posted_image_server"
                                  deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
                                  referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS posted_image_update_trigger ON posted_image;
+            CREATE TRIGGER posted_image_update_trigger BEFORE UPDATE ON posted_image FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS posted_image_insert_trigger ON posted_image;
+            CREATE TRIGGER posted_image_insert_trigger BEFORE INSERT ON posted_image FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
-
 
 </databaseChangeLog>

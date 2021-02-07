@@ -9,16 +9,24 @@
     <changeSet author="Sheldan" id="mute-table">
         <createTable tableName="mute">
             <column name="id" type="BIGINT" />
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="reason" type="VARCHAR(255)"/>
-            <column name="trigger_key" type="VARCHAR(255)"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="reason" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="trigger_key" type="VARCHAR(255)" />
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="mute_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="mute_target_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="muted_user" type="BIGINT">
+            <column name="mute_date" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="target_date" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="muted_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="muting_channel" type="BIGINT">
+            <column name="channel_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="server_id" type="BIGINT">
@@ -26,25 +34,23 @@
             </column>
             <column name="mute_ended" type="BOOLEAN"/>
             <column name="message_id" type="BIGINT"/>
-            <column name="muting_user" type="BIGINT">
+            <column name="muting_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
         <addPrimaryKey columnNames="server_id, id" tableName="mute" constraintName="pk_mute" validate="true"/>
-    </changeSet>
-
-    <changeSet author="Sheldan" id="mute-fk_mute_channel">
-        <addForeignKeyConstraint baseColumnNames="muting_channel" baseTableName="mute" constraintName="fk_mute_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
-    </changeSet>
-
-    <changeSet author="Sheldan" id="mute-fk_mute_muting_user">
-        <addForeignKeyConstraint baseColumnNames="muting_user" baseTableName="mute" constraintName="fk_mute_muting_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="mute-fk_mute_muted_user">
-        <addForeignKeyConstraint baseColumnNames="muted_user" baseTableName="mute" constraintName="fk_mute_muted_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="mute-fk_mute_server_id">
+        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="mute" constraintName="fk_mute_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="muting_user_in_server_id" baseTableName="mute" constraintName="fk_mute_muting_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="muted_user_in_server_id" baseTableName="mute" constraintName="fk_mute_muted_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="mute" constraintName="fk_mute_server_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS mute_update_trigger ON mute;
+            CREATE TRIGGER mute_update_trigger BEFORE UPDATE ON mute FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS mute_insert_trigger ON mute;
+            CREATE TRIGGER mute_insert_trigger BEFORE INSERT ON mute FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

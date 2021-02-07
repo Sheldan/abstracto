@@ -44,18 +44,8 @@ public class AllowedMention implements Serializable {
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
-
     @Column(name = "updated")
-    private Instant updateTimestamp;
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updateTimestamp = Instant.now();
-    }
+    private Instant updated;
 
     public boolean allAllowed() {
         return everyone && user && role;

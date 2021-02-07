@@ -15,7 +15,7 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_subscriber")
+@Table(name = "mod_mail_subscriber")
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -25,28 +25,27 @@ public class ModMailThreadSubscriber {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long subscriberId;
 
     /**
      * The staff member which is subscribed
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_thread_subscriber", nullable = false)
+    @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer subscriber;
 
     /**
      * The thread for which the member is subscribed to
      */
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "modMailThread", nullable = false)
+    @JoinColumn(name = "mod_mail_thread_id", nullable = false)
     private ModMailThread threadReference;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
 
 }

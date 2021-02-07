@@ -11,12 +11,25 @@
             <column autoIncrement="true" name="id" type="INTEGER">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="default_config_pkey"/>
             </column>
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="double_value" type="FLOAT8"/>
             <column name="long_value" type="BIGINT"/>
-            <column name="name" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
             <column name="string_value" type="VARCHAR(255)"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
         </createTable>
+        <sql>
+            DROP TRIGGER IF EXISTS default_config_update_trigger ON default_config;
+            CREATE TRIGGER default_config_update_trigger BEFORE UPDATE ON default_config FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS default_config_insert_trigger ON default_config;
+            CREATE TRIGGER default_config_insert_trigger BEFORE INSERT ON default_config FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
+
 </databaseChangeLog>

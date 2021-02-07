@@ -11,7 +11,22 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="channel_group_type_pkey"/>
             </column>
-            <column name="group_type_key" type="VARCHAR(255)"/>
+            <column name="group_type_key" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
         </createTable>
+        <sql>
+            DROP TRIGGER IF EXISTS channel_group_type_update_trigger ON channel_group_type;
+            CREATE TRIGGER channel_group_type_update_trigger BEFORE UPDATE ON channel_group_type FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS channel_group_type_insert_trigger ON channel_group_type;
+            CREATE TRIGGER channel_group_type_insert_trigger BEFORE INSERT ON channel_group_type FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
+
 </databaseChangeLog>

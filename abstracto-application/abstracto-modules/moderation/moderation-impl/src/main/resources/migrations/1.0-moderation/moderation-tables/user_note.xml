@@ -8,24 +8,35 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <changeSet author="Sheldan" id="user_note-table">
         <createTable tableName="user_note">
-            <column autoIncrement="true" name="id" type="BIGINT" />
-            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column autoIncrement="true" name="id" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="note" type="VARCHAR(2000)"/>
-            <column name="note_user" type="BIGINT">
+            <column name="user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <createIndex indexName="idx_user_note_user" tableName="user_note">
+            <column name="user_in_server_id"/>
+        </createIndex>
         <addPrimaryKey columnNames="server_id, id" tableName="user_note" constraintName="pk_user_note" validate="true"/>
-    </changeSet>
-
-    <changeSet author="Sheldan" id="user_note-fk_user_note_user">
-        <addForeignKeyConstraint baseColumnNames="note_user" baseTableName="user_note" constraintName="fk_user_note_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-    </changeSet>
-    <changeSet author="Sheldan" id="user_note-fk_user_note_server_id">
+        <addForeignKeyConstraint baseColumnNames="user_in_server_id" baseTableName="user_note" constraintName="fk_user_note_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="user_note" constraintName="fk_user_note_server_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS user_note_update_trigger ON user_note;
+            CREATE TRIGGER user_note_update_trigger BEFORE UPDATE ON user_note FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS user_note_insert_trigger ON user_note;
+            CREATE TRIGGER user_note_insert_trigger BEFORE INSERT ON user_note FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

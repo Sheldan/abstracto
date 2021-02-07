@@ -17,7 +17,7 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "modmail_message")
+@Table(name = "mod_mail_message")
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -29,6 +29,7 @@ public class ModMailMessage implements Serializable {
      * The ID of the message which caused this message to be created, either the message containing the command or the message received from the user
      */
     @Id
+    @Column(name = "id")
     private Long messageId;
 
     /**
@@ -38,41 +39,39 @@ public class ModMailMessage implements Serializable {
      */
     @Column(name = "created_message_in_dm")
     private Long createdMessageInDM;
-    @Column
+    @Column(name = "created_message_in_channel")
     private Long createdMessageInChannel;
 
     /**
      * The {@link AUserInAServer} which authored this message
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modmail_message_author", nullable = false)
+    @JoinColumn(name = "author_user_in_server_id", nullable = false)
     private AUserInAServer author;
 
     /**
      * The {@link ModMailThread} in whose context this message was sent and this message is related to
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "threadReference", nullable = false)
+    @JoinColumn(name = "thread_id", nullable = false)
     private ModMailThread threadReference;
 
     /**
      * true: message was send via command, false: message was send from the user
      * This is used to decide where to get the message from in case of logging, because the user might delete the message and we do not want to re-parse the command message
      */
-    @Column
+    @Column(name = "dm_channel")
     private Boolean dmChannel;
 
     /**
      * Staff only: Whether or not this message meant to be sent anonymous
      */
-    @Column
+    @Column(name = "anonymous")
     private Boolean anonymous;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
 }

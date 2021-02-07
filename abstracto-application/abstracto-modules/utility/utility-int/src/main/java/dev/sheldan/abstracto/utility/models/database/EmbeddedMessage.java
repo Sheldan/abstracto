@@ -24,30 +24,30 @@ public class EmbeddedMessage implements Serializable {
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddedUser", nullable = false)
+    @JoinColumn(name = "embedded_user_in_server_id", nullable = false)
     private AUserInAServer embeddedUser;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddingUser", nullable = false)
+    @JoinColumn(name = "embedding_user_in_server_id", nullable = false)
     private AUserInAServer embeddingUser;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "originalServer", nullable = false)
+    @JoinColumn(name = "embedded_server_id", nullable = false)
     private AServer embeddedServer;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "originalChannel", nullable = false)
+    @JoinColumn(name = "embedded_channel_id", nullable = false)
     private AChannel embeddedChannel;
 
-    @Column
+    @Column(name = "embedded_message_id")
     private Long embeddedMessageId;
 
     @Getter
     @ManyToOne
-    @JoinColumn(name = "embeddingServer", nullable = false)
+    @JoinColumn(name = "embedding_server_id", nullable = false)
     private AServer embeddingServer;
 
     @Getter
@@ -55,15 +55,14 @@ public class EmbeddedMessage implements Serializable {
     @JoinColumn(name = "embeddingChannel", nullable = false)
     private AChannel embeddingChannel;
 
-    @Column
+    @Column(name = "embedding_message_id")
     @Id
     private Long embeddingMessageId;
 
     @Column(name = "created")
     private Instant created;
 
-    @PrePersist
-    private void onInsert() {
-        this.created = Instant.now();
-    }
+    @Column(name = "updated")
+    private Instant updated;
+
 }
