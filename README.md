@@ -1,8 +1,8 @@
 # Abstracto
 
 ![Build](https://github.com/Sheldan/abstracto/workflows/Execute%20build%20and%20Sonar/badge.svg)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=abstracto-abstracto&metric=coverage)](https://sonarcloud.io/dashboard?id=abstracto-abstracto)
-[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/dashboard?id=abstracto-abstracto)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=abstracto-core&metric=coverage)](https://sonarcloud.io/dashboard?id=abstracto-core)
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/dashboard?id=abstracto-core)
 [![GitHub license](https://img.shields.io/github/license/Sheldan/abstracto)](https://github.com/Sheldan/abstracto/blob/master/LICENSE)
 
 
