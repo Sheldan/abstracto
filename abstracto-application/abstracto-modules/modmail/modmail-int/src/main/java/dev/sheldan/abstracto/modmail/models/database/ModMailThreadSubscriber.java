@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.database;
 
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -34,6 +35,10 @@ public class ModMailThreadSubscriber {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer subscriber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "server_id", nullable = false)
+    private AServer server;
 
     /**
      * The thread for which the member is subscribed to

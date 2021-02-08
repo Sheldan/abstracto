@@ -32,6 +32,7 @@ public class ModMailSubscriberManagementServiceBean implements ModMailSubscriber
 
         ModMailThreadSubscriber subscriber = ModMailThreadSubscriber
                 .builder()
+                .server(modMailThread.getServer())
                 .subscriber(aUserInAServer)
                 .threadReference(modMailThread)
                 .build();

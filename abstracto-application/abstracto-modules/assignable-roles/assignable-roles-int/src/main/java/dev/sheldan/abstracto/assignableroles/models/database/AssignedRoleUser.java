@@ -33,7 +33,7 @@ public class AssignedRoleUser implements Serializable {
     @ManyToMany
     @JoinTable(
             name = "assigned_role_in_user",
-            joinColumns = @JoinColumn(name = "user_id"),
+            joinColumns = @JoinColumn(name = "user_in_server_id"),
             inverseJoinColumns = @JoinColumn(name = "assigned_role_id"))
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @Builder.Default

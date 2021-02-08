@@ -66,54 +66,30 @@
             CREATE TRIGGER command_in_server_insert_trigger BEFORE INSERT ON command_in_server FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
         </sql>
     </changeSet>
-    <changeSet author="Sheldan" id="command_in_server_immune_roles-table">
-        <createTable tableName="command_in_server_immune_roles">
-            <column name="command_in_server_command_in_server_id" type="BIGINT">
+    <changeSet author="Sheldan" id="command_in_server_immune_role-table">
+        <createTable tableName="command_in_server_immune_role">
+            <column name="command_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="immune_roles_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_immune_roles" constraintName="fk_command_immune_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="immune_roles_id" baseTableName="command_in_server_immune_roles" constraintName="fk_immune_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
-
-    </changeSet>
-    <changeSet author="Sheldan" id="command_in_server_allowed_roles-table">
-        <createTable tableName="command_in_server_allowed_roles">
-            <column name="command_in_server_command_in_server_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="allowed_roles_id" type="BIGINT">
+            <column name="role_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addForeignKeyConstraint baseColumnNames="command_in_server_command_in_server_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_command_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="allowed_roles_id" baseTableName="command_in_server_allowed_roles" constraintName="fk_role_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="command_in_server_id" baseTableName="command_in_server_immune_role" constraintName="fk_command_immune_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="command_in_server_immune_role" constraintName="fk_immune_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
 
     </changeSet>
-    <changeSet author="Sheldan" id="command-fk_command_feature">
-      </changeSet>
-    <changeSet author="Sheldan" id="command_in_server-command_in_server_immune_roles">
-      </changeSet>
-    <changeSet author="Sheldan" id="command_in_server-command_in_server_allowed_roles">
-     </changeSet>
-    <changeSet author="Sheldan" id="command_in_server_immune_roles-command_in_server_allowed_roles">
-      </changeSet>
-    <changeSet author="Sheldan" id="command-fk_command_module">
-     </changeSet>
-    <changeSet author="Sheldan" id="command_in_server-fk_command_command">
-        </changeSet>
-    <changeSet author="Sheldan" id="command_in_server_allowed_roles-fk_immune_role_role">
-     </changeSet>
-    <changeSet author="Sheldan" id="command_in_server-fk_command_server">
-        </changeSet>
-
-    <changeSet author="Sheldan" id="command_triggers">
-
-    </changeSet>
-
-    <changeSet author="Sheldan" id="command_in_server_triggers">
+    <changeSet author="Sheldan" id="command_in_server_allowed_role-table">
+        <createTable tableName="command_in_server_allowed_role">
+            <column name="command_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="command_in_server_id" baseTableName="command_in_server_allowed_role" constraintName="fk_command_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="command_in_server_allowed_role" constraintName="fk_role_allowed_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
 
     </changeSet>
 </databaseChangeLog>

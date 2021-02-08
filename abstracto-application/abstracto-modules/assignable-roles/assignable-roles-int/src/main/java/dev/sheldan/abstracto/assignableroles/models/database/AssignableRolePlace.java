@@ -31,12 +31,12 @@ public class AssignableRolePlace implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="channel_id")
     private AChannel channel;
 
-    @OneToOne
-    @JoinColumn(name="server_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Column(name = "key")

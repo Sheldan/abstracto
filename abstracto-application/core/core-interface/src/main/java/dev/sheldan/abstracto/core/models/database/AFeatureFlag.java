@@ -11,6 +11,8 @@ import java.util.List;
 @Entity
 @Table(name="feature_flag")
 @Builder
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -20,30 +22,21 @@ public class AFeatureFlag implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @Column(name = "id")
     public Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Getter
-    @Setter
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Getter
-    @Setter
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feature_id", nullable = false)
     private AFeature feature;
 
-    @Getter
-    @Setter
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "featureFlag")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AFeatureMode> modes;
 
-    @Getter
-    @Setter
     @Column(name = "enabled")
     private boolean enabled;
 

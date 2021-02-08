@@ -11,8 +11,15 @@
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="mod_mail_message_pkey"/>
             </column>
-            <column name="created_message_in_dm" type="BIGINT" />
-            <column name="created_message_in_channel" type="BIGINT" />
+            <column name="created_message_in_dm" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_message_in_channel" type="BIGINT" >
+                <constraints nullable="true"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
             <column name="anonymous" type="BOOLEAN">
                 <constraints nullable="true"/>
             </column>
@@ -33,6 +40,7 @@
         <createIndex indexName="idx_mod_mail_message_thread" tableName="mod_mail_message">
             <column name="thread_id"/>
         </createIndex>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="mod_mail_message" constraintName="fk_mod_mail_message_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="thread_id" baseTableName="mod_mail_message" constraintName="fk_mod_mail_message_thread" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="mod_mail_thread" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="author_user_in_server_id" baseTableName="mod_mail_message" constraintName="fk_mod_mail_message_author" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <sql>

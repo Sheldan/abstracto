@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.models.database;
 
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -35,6 +36,10 @@ public class AUserExperience implements Serializable {
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @PrimaryKeyJoinColumn
     private AUserInAServer user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "server_id", nullable = false)
+    private AServer server;
 
     /**
      * The total amount of experience the user has in the guild

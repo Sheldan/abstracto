@@ -27,21 +27,21 @@
             <column name="embedded_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="embedding_channel" type="BIGINT">
+            <column name="embedding_channel_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="embedding_server" type="BIGINT">
+            <column name="embedding_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="embedding_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addForeignKeyConstraint baseColumnNames="embedding_channel" baseTableName="embedded_message" constraintName="fk_embed_channel_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="embedding_channel_id" baseTableName="embedded_message" constraintName="fk_embed_channel_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="embedded_channel_id" baseTableName="embedded_message" constraintName="fk_embed_embedded_channel_id_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="embedding_user_in_server_id" baseTableName="embedded_message" constraintName="fk_embedded_user_in_server_id_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="embedded_user_in_server_id" baseTableName="embedded_message" constraintName="fk_embedding_user_in_server_id_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="embedding_server" baseTableName="embedded_message" constraintName="fk_embedding_server_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="embedding_server_id" baseTableName="embedded_message" constraintName="fk_embedding_server_id_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="embedded_server_id" baseTableName="embedded_message" constraintName="fk_embed_embedded_server_id_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
         <sql>
             DROP TRIGGER IF EXISTS embedded_message_update_trigger ON embedded_message;

@@ -10,6 +10,8 @@ import java.time.Instant;
 @Entity
 @Table(name="feature_mode")
 @Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -18,31 +20,22 @@ import java.time.Instant;
 public class AFeatureMode implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @Column(name = "id")
     public Long id;
 
-    @Getter
-    @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feature_flag_id", nullable = false)
     private AFeatureFlag featureFlag;
 
-    @Getter
-    @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feature_mode_id", nullable = false)
     private DefaultFeatureMode featureMode;
 
-    @Getter
-    @Setter
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Column(name = "enabled")
-    @Getter
-    @Setter
     private Boolean enabled;
 
     @Column(name = "created")

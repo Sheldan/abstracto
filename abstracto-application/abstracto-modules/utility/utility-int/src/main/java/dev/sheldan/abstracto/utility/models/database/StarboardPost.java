@@ -38,16 +38,16 @@ public class StarboardPost implements Serializable {
     @Column(name = "post_message_id")
     private Long postMessageId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
     private AChannel starboardChannel;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_channel_id", nullable = false)
     private AChannel sourceChanel;
 

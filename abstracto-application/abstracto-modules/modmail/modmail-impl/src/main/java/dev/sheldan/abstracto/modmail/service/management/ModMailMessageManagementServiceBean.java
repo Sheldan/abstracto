@@ -28,6 +28,7 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
                 .author(author)
                 .messageId(userPostedMessage.getIdLong())
                 .createdMessageInDM(dmId)
+                .server(modMailThread.getServer())
                 .createdMessageInChannel(channelMessageId)
                 .dmChannel(dmChannel)
                 .threadReference(modMailThread)

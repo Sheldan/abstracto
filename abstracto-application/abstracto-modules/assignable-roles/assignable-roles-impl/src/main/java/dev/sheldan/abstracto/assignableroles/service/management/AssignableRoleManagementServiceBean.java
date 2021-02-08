@@ -51,6 +51,7 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
                 .emote(emote)
                 .role(role)
                 .requiredLevel(0)
+                .server(place.getServer())
                 .position(maxPosition)
                 .description(description)
                 .assignableRolePlacePost(post)

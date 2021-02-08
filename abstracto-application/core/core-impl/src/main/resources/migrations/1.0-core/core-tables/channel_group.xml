@@ -63,6 +63,9 @@
             <column name="enabled" type="BOOLEAN"/>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
             <column name="command_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -71,6 +74,7 @@
             </column>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="group_id" baseTableName="channel_group_command" constraintName="fk_channel_group_command_channel_group" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel_group" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="channel_group_command" constraintName="fk_channel_group_command_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="command_id" baseTableName="channel_group_command" constraintName="fk_channel_group_command_command" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="command" validate="true"/>
         <sql>
             DROP TRIGGER IF EXISTS channel_group_command_update_trigger ON channel_group_command;

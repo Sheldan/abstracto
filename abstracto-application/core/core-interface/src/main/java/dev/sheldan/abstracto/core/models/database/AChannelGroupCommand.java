@@ -24,12 +24,16 @@ public class AChannelGroupCommand implements Serializable {
     @Column(name = "command_in_group_id")
     private Long commandInGroupId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "command_id", nullable = false)
     @Setter
     private ACommand command;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="server_id")
+    private AServer server;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     @Setter
     private AChannelGroup group;

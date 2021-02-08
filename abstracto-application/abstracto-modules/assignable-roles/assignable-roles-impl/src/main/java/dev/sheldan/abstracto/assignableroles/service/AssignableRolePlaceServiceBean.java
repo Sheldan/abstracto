@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.assignableroles.models.templates.*;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlaceManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
+import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementServiceBean;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterKeyValueWrongTypeException;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
@@ -91,6 +92,9 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
 
     @Autowired
     private AssignableRoleService roleService;
+
+    @Autowired
+    private AssignableRolePlacePostManagementServiceBean assignableRolePlacePostManagementServiceBean;
 
     @Override
     public void createAssignableRolePlace(AServer server, String name, AChannel channel, String text) {
@@ -241,14 +245,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         emote.setChangeable(false);
         log.trace("Setting emote {} to not changeable, because it is part of an assignable role place {} in server {}.", emote.getId(), placeId, serverId);
 
-        AssignableRolePlacePost newPost = AssignableRolePlacePost
-                .builder()
-                .id(message.getIdLong())
-                .usedChannel(loadedPlace.getChannel())
-                .assignablePlace(loadedPlace)
-                .build();
-
-        loadedPlace.getMessagePosts().add(newPost);
+        AssignableRolePlacePost newPost = assignableRolePlacePostManagementServiceBean.createAssignableRolePlacePost(loadedPlace, message.getIdLong());
         assignableRoleManagementServiceBean.addRoleToPlace(loadedPlace, emote, role, description, newPost);
     }
 
@@ -789,16 +786,10 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 log.trace("Storing post {} with {} fields.", message.getId(), embed.getFields().size());
                 List<AssignableRole> firstRoles = rolesToAdd.subList(usedEmotes, usedEmotes +  embed.getFields().size());
                 usedEmotes += embed.getFields().size();
-                AssignableRolePlacePost post = AssignableRolePlacePost
-                        .builder()
-                        .id(message.getIdLong())
-                        .usedChannel(updatedPlace.getChannel())
-                        .assignablePlace(updatedPlace)
-                        .build();
+                AssignableRolePlacePost post = assignableRolePlacePostManagementServiceBean.createAssignableRolePlacePost(updatedPlace, message.getIdLong());
                 firstRoles.forEach(assignableRole ->
                     assignableRole.setAssignableRolePlacePost(post)
                 );
-                updatedPlace.getMessagePosts().add(post);
             } catch (Exception e) {
                 log.error("Failed to get future.", e);
             }

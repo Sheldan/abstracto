@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -26,7 +27,7 @@ public class AssignableRolePlacePost implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id")
     private AChannel usedChannel;
 
@@ -36,9 +37,11 @@ public class AssignableRolePlacePost implements Serializable {
     @Column(name = "updated")
     private Instant updated;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "server_id", nullable = false)
+    private AServer server;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @Getter
-    @Setter
     @JoinColumn(name = "assignable_place_id", nullable = false)
     private AssignableRolePlace assignablePlace;
 

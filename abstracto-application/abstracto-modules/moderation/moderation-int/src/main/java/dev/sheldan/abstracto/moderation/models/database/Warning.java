@@ -41,7 +41,7 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warned_user_in_server_id", nullable = false)
     private AUserInAServer warnedUser;
 
@@ -50,7 +50,7 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warning_user_in_server_id", nullable = false)
     private AUserInAServer warningUser;
 

@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -21,21 +22,22 @@ public class AChannelGroup implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "group_name")
-    @Setter
     private String groupName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Setter
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Setter
     @JoinColumn(name = "group_type_id")
     private ChannelGroupType channelGroupType;
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+    private List<AChannelGroupCommand> channelGroupCommands;
 
     @Column(name = "created")
     private Instant created;

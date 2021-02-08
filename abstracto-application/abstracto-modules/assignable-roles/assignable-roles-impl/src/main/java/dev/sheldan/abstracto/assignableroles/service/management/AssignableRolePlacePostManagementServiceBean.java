@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
 import dev.sheldan.abstracto.assignableroles.exceptions.AssignablePlacePostNotFoundException;
+import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRolePlacePostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,6 @@ public class AssignableRolePlacePostManagementServiceBean implements AssignableR
     @Autowired
     private AssignableRolePlacePostRepository repository;
 
-
     @Override
     public Optional<AssignableRolePlacePost> findByMessageIdOptional(Long messageId) {
         return repository.findById(messageId);
@@ -23,6 +23,19 @@ public class AssignableRolePlacePostManagementServiceBean implements AssignableR
     @Override
     public AssignableRolePlacePost findByMessageId(Long messageId) {
         return findByMessageIdOptional(messageId).orElseThrow(() -> new AssignablePlacePostNotFoundException(messageId));
+    }
+
+    @Override
+    public AssignableRolePlacePost createAssignableRolePlacePost(AssignableRolePlace updatedPlace, Long messageId) {
+        AssignableRolePlacePost post = AssignableRolePlacePost
+                .builder()
+                .id(messageId)
+                .usedChannel(updatedPlace.getChannel())
+                .server(updatedPlace.getServer())
+                .assignablePlace(updatedPlace)
+                .build();
+        repository.save(post);
+        return post;
     }
 
 }

@@ -25,7 +25,7 @@ public class DefaultFeatureFlag implements Serializable {
 
     @Getter
     @Setter
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feature_id", nullable = false)
     private AFeature feature;
 

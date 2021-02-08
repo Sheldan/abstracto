@@ -27,13 +27,13 @@ public class Repost {
     private RepostIdentifier repostId;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userInServerId")
     @JoinColumn(name = "user_in_server_id", referencedColumnName = "user_in_server_id", nullable = false)
     private AUserInAServer poster;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 

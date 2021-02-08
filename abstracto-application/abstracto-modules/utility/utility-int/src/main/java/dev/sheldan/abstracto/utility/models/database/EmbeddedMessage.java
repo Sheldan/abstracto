@@ -23,22 +23,22 @@ import java.time.Instant;
 public class EmbeddedMessage implements Serializable {
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "embedded_user_in_server_id", nullable = false)
     private AUserInAServer embeddedUser;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "embedding_user_in_server_id", nullable = false)
     private AUserInAServer embeddingUser;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "embedded_server_id", nullable = false)
     private AServer embeddedServer;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "embedded_channel_id", nullable = false)
     private AChannel embeddedChannel;
 
@@ -46,13 +46,13 @@ public class EmbeddedMessage implements Serializable {
     private Long embeddedMessageId;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "embedding_server_id", nullable = false)
     private AServer embeddingServer;
 
     @Getter
-    @ManyToOne
-    @JoinColumn(name = "embeddingChannel", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "embedding_channel_id", nullable = false)
     private AChannel embeddingChannel;
 
     @Column(name = "embedding_message_id")

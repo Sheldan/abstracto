@@ -34,15 +34,21 @@ public class ACommandInAServer implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer serverReference;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+            name = "command_in_server_allowed_role",
+            joinColumns = @JoinColumn(name = "command_in_server_id", referencedColumnName = "command_in_server_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     @Getter
-    @JoinColumn(name = "allowed_role_id")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ARole> allowedRoles;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+            name = "command_in_server_immune_role",
+            joinColumns = @JoinColumn(name = "command_in_server_id", referencedColumnName = "command_in_server_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     @Getter
-    @JoinColumn(name = "immune_role_id")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ARole> immuneRoles;
 

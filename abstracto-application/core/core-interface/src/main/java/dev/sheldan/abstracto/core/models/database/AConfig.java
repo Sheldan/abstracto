@@ -13,34 +13,31 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @EqualsAndHashCode
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AConfig implements Serializable {
 
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column
+    @Column(name = "name")
     private String name;
 
-    @Column
-    @Setter
+    @Column(name = "string_value")
     private String stringValue;
 
-    @Column
-    @Setter
+    @Column(name = "double_value")
     private Double doubleValue;
 
-    @Column
-    @Setter
+    @Column(name = "long_value")
     private Long longValue;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
-    @Getter
-    @Setter
     private AServer server;
 
     @Column(name = "created")

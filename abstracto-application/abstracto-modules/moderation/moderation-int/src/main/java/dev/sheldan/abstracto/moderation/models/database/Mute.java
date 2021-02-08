@@ -40,14 +40,14 @@ public class Mute implements Serializable {
     /**
      * The {@link AUserInAServer} which was muted
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "muted_user_in_server_id", nullable = false)
     private AUserInAServer mutedUser;
 
     /**
      * The {@link AUserInAServer} which casted the mute
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "muting_user_in_server_id", nullable = false)
     private AUserInAServer mutingUser;
 
@@ -84,7 +84,7 @@ public class Mute implements Serializable {
     /**
      * The channel in which this mute was cast
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mutingChannel", nullable = false)
     private AChannel mutingChannel;
 

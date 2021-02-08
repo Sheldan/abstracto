@@ -30,7 +30,7 @@ public class UserNote implements Serializable {
     @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
     private AServer server;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer user;
 

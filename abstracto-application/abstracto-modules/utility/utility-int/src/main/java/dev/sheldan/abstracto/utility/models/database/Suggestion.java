@@ -30,7 +30,7 @@ public class Suggestion implements Serializable {
     private ServerSpecificId suggestionId;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "suggester_user_in_server_id")
     private AUserInAServer suggester;
 
@@ -39,7 +39,7 @@ public class Suggestion implements Serializable {
     private Long messageId;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id")
     private AChannel channel;
 

@@ -27,7 +27,7 @@ public class FilteredInviteLink {
     @Column(name = "code")
     private String code;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 

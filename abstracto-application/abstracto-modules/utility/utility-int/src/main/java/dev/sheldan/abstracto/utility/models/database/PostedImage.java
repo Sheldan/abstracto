@@ -24,17 +24,17 @@ import java.util.List;
 public class PostedImage {
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_user_in_server_id", nullable = false)
     private AUserInAServer poster;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posted_channel_id", nullable = false)
     private AChannel postedChannel;
 

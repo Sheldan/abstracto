@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.modmail.models.database;
 
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -41,6 +42,10 @@ public class ModMailMessage implements Serializable {
     private Long createdMessageInDM;
     @Column(name = "created_message_in_channel")
     private Long createdMessageInChannel;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "server_id", nullable = false)
+    private AServer server;
 
     /**
      * The {@link AUserInAServer} which authored this message
