@@ -1,10 +1,11 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.models.database.DefaultPostTarget;
-import dev.sheldan.abstracto.core.repository.DefaultPostTargetRepository;
+import dev.sheldan.abstracto.core.config.DefaultConfigProperties;
+import dev.sheldan.abstracto.core.models.property.PostTargetProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,15 +13,15 @@ import java.util.stream.Collectors;
 public class DefaultPostTargetManagementServiceBean implements DefaultPostTargetManagementService {
 
     @Autowired
-    private DefaultPostTargetRepository repository;
+    private DefaultConfigProperties defaultConfigProperties;
 
     @Override
-    public List<DefaultPostTarget> getAllDefaultPostTargets() {
-        return repository.findAll();
+    public List<PostTargetProperty> getAllDefaultPostTargets() {
+        return new ArrayList<>(defaultConfigProperties.getPostTargets().values());
     }
 
     @Override
     public List<String> getDefaultPostTargetKeys() {
-        return getAllDefaultPostTargets().stream().map(DefaultPostTarget::getName).collect(Collectors.toList());
+        return getAllDefaultPostTargets().stream().map(PostTargetProperty::getName).collect(Collectors.toList());
     }
 }

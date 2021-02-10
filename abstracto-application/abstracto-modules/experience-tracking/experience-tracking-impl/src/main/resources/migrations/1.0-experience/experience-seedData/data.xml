@@ -10,7 +10,5 @@
     <include file="feature.xml" relativeToChangelogFile="true"/>
     <include file="module.xml" relativeToChangelogFile="true"/>
     <include file="command.xml" relativeToChangelogFile="true"/>
-    <include file="default_config.xml" relativeToChangelogFile="true"/>
     <include file="experience_job.xml" relativeToChangelogFile="true"/>
-    <include file="default_feature_flag.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

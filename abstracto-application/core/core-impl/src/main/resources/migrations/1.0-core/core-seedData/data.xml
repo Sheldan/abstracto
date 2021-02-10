@@ -9,8 +9,6 @@
     <include file="feature.xml" relativeToChangelogFile="true"/>
     <include file="module.xml" relativeToChangelogFile="true"/>
     <include file="command.xml" relativeToChangelogFile="true"/>
-    <include file="default_config.xml" relativeToChangelogFile="true"/>
     <include file="lock.xml" relativeToChangelogFile="true"/>
-    <include file="default_feature_flag.xml" relativeToChangelogFile="true"/>
     <include file="default_emote.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

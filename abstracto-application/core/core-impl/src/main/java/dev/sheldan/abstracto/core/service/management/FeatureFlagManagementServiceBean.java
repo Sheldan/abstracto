@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -45,8 +46,20 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
 
 
     @Override
-    public AFeatureFlag getFeatureFlag(AFeature feature, Long serverId) {
+    public Optional<AFeatureFlag>  getFeatureFlag(AFeature feature, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
+        return getFeatureFlag(feature, server);
+    }
+
+    @Override
+    public Optional<AFeatureFlag>  getFeatureFlag(String featureKey, Long serverId) {
+        AFeature feature = featureManagementService.getFeature(featureKey);
+        return getFeatureFlag(feature, serverId);
+    }
+
+    @Override
+    public Optional<AFeatureFlag>  getFeatureFlag(String featureKey, AServer server) {
+        AFeature feature = featureManagementService.getFeature(featureKey);
         return getFeatureFlag(feature, server);
     }
 
@@ -56,7 +69,7 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
     }
 
     @Override
-    public AFeatureFlag getFeatureFlag(AFeature feature, AServer server) {
+    public Optional<AFeatureFlag> getFeatureFlag(AFeature feature, AServer server) {
         return repository.findByServerAndFeature(server, feature);
     }
 
@@ -73,9 +86,15 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
 
     @Override
     public AFeatureFlag setFeatureFlagValue(AFeature feature, AServer server, Boolean newValue) {
-        AFeatureFlag featureFlag = getFeatureFlag(feature, server);
-        featureFlag.setEnabled(newValue);
-        log.info("Setting feature flag for feature {} in server {} to value {}.", feature.getKey(), server.getId(), newValue);
-        return featureFlag;
+        Optional<AFeatureFlag> featureFlagOptional = getFeatureFlag(feature, server);
+        if(!featureFlagOptional.isPresent()) {
+            log.info("Setting feature flag for feature {} in server {} to value {}.", feature.getKey(), server.getId(), newValue);
+            return createFeatureFlag(feature, server, newValue);
+        }
+        else {
+            AFeatureFlag featureFlag = featureFlagOptional.get();
+            featureFlag.setEnabled(newValue);
+            return featureFlag;
+        }
     }
 }

@@ -27,9 +27,8 @@ public class AFeatureMode implements Serializable {
     @JoinColumn(name = "feature_flag_id", nullable = false)
     private AFeatureFlag featureFlag;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feature_mode_id", nullable = false)
-    private DefaultFeatureMode featureMode;
+    @Column(name = "feature_mode")
+    private String featureMode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)

@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface FeatureModeRepository extends JpaRepository<AFeatureMode, Long> {
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
-    Optional<AFeatureMode> findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(AServer server, AFeature feature, String mode);
+    Optional<AFeatureMode> findByServerAndFeatureFlag_FeatureAndFeatureMode(AServer server, AFeature feature, String mode);
 
     @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AFeatureMode> findByServer(AServer server);

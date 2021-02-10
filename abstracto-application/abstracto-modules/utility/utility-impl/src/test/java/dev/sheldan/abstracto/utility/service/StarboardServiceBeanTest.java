@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.*;
@@ -146,7 +147,7 @@ public class StarboardServiceBeanTest {
         when(memberService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
         when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
-        ADefaultConfig config = Mockito.mock(ADefaultConfig.class);
+        SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
         when(config.getLongValue()).thenReturn(3L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(configService.getLongValue("starLvl3", SERVER_ID)).thenReturn(3L);
@@ -219,7 +220,7 @@ public class StarboardServiceBeanTest {
         when(templateService.renderEmbedTemplate(eq(STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
         when(postTargetService.editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(sendPost)));
         when(sendPost.getIdLong()).thenReturn(newPostId);
-        ADefaultConfig config = Mockito.mock(ADefaultConfig.class);
+        SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
         when(config.getLongValue()).thenReturn(4L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));

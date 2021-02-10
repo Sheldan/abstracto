@@ -18,7 +18,7 @@
             <column name="enabled" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
-            <column name="feature_mode_id" type="BIGINT">
+            <column name="feature_mode" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="feature_flag_id" type="BIGINT">
@@ -34,10 +34,9 @@
         <createIndex indexName="idx_feature_mode_flag_server_mode" tableName="feature_mode">
             <column name="server_id"/>
             <column name="feature_flag_id"/>
-            <column name="feature_mode_id"/>
+            <column name="feature_mode"/>
         </createIndex>
         <addForeignKeyConstraint baseColumnNames="feature_flag_id" baseTableName="feature_mode" constraintName="fk_feature_mode_flag" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="feature_flag" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="feature_mode_id" baseTableName="feature_mode" constraintName="fk_feature_mode_mode" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="default_feature_mode" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="feature_mode" constraintName="fk_feature_mode_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
         <sql>
             DROP TRIGGER IF EXISTS feature_mode_update_trigger ON feature_mode;

@@ -9,9 +9,7 @@
     <include file="trigger_functions.xml" relativeToChangelogFile="true"/>
     <include file="server.xml" relativeToChangelogFile="true"/>
     <include file="channel.xml" relativeToChangelogFile="true"/>
-    <include file="default_post_target.xml" relativeToChangelogFile="true"/>
     <include file="post_target.xml" relativeToChangelogFile="true"/>
-    <include file="default_config.xml" relativeToChangelogFile="true"/>
     <include file="default_emote.xml" relativeToChangelogFile="true"/>
     <include file="emote.xml" relativeToChangelogFile="true"/>
     <include file="feature.xml" relativeToChangelogFile="true"/>
@@ -20,8 +18,6 @@
     <include file="command.xml" relativeToChangelogFile="true"/>
     <include file="channel_group_type.xml" relativeToChangelogFile="true"/>
     <include file="channel_group.xml" relativeToChangelogFile="true"/>
-    <include file="default_feature_flag.xml" relativeToChangelogFile="true"/>
-    <include file="default_feature_mode.xml" relativeToChangelogFile="true" />
     <include file="feature_flag.xml" relativeToChangelogFile="true"/>
     <include file="feature_mode.xml" relativeToChangelogFile="true"/>
     <include file="lock.xml" relativeToChangelogFile="true"/>

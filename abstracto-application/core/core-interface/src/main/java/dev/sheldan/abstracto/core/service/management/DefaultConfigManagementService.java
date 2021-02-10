@@ -1,10 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 
 public interface DefaultConfigManagementService {
-    void createDefaultConfig(String key, String value);
-    void createDefaultConfig(String key, Long value);
-    void createDefaultConfig(String key, Double value);
-    ADefaultConfig getDefaultConfig(String key);
+    SystemConfigProperty getDefaultConfig(String key);
 }

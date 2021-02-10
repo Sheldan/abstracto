@@ -9,7 +9,7 @@ public enum StatisticFeatures implements FeatureEnum {
     /**
      * Feature responsible to track the emotes used in a message on a server.
      */
-    EMOTE_TRACKING("emote_tracking");
+    EMOTE_TRACKING("emoteTracking");
 
     private final String key;
 

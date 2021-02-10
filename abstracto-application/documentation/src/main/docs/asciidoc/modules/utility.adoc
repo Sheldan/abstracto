@@ -118,7 +118,7 @@ This feature enables the automatic embedding of messages containing a message li
 If a message contains a link to a discord message this will create an embed containing the the message content. This supports image attachments, but not videos or files.
 A reaction is placed on the embedded message which can be used to delete this embed. Only the original author and the person creating the embed can delete the embed this way.
 
-Feature key: `link_embeds`
+Feature key: `linkEmbeds`
 
 === Repost detection and tracking
 

@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.core.interactive;
 
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AConfig;
-import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.commands.SetupSystemConfigMessageModel;
 import dev.sheldan.abstracto.core.service.ConfigService;
@@ -52,7 +52,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
     @Override
     public CompletableFuture<SetupStepResult> execute(AServerChannelUserId user, SetupStepParameter parameter) {
         SystemConfigStepParameter systemConfigStepParameter = (SystemConfigStepParameter) parameter;
-        ADefaultConfig defaultConfig = defaultConfigManagementService.getDefaultConfig(systemConfigStepParameter.getConfigKey());
+        SystemConfigProperty defaultConfig = defaultConfigManagementService.getDefaultConfig(systemConfigStepParameter.getConfigKey());
         SetupSystemConfigMessageModel model = SetupSystemConfigMessageModel
                 .builder()
                 .configKey(systemConfigStepParameter.getConfigKey())
@@ -108,7 +108,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
     @Transactional
     public AConfig loadDefaultConfig(SystemConfigStepParameter systemConfigStepParameter) {
         AConfig config;
-        ADefaultConfig defaultConfig = defaultConfigManagementService.getDefaultConfig(systemConfigStepParameter.getConfigKey());
+        SystemConfigProperty defaultConfig = defaultConfigManagementService.getDefaultConfig(systemConfigStepParameter.getConfigKey());
         config = AConfig
                 .builder()
                 .name(defaultConfig.getName())

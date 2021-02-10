@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.property.FeatureModeProperty;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagement;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
@@ -64,7 +65,7 @@ public class FeatureModeServiceBeanTest {
     private AFeatureFlag featureFlag;
 
     @Mock
-    private DefaultFeatureMode defaultFeatureMode;
+    private FeatureModeProperty defaultFeatureMode;
 
     @Mock
     private FeatureConfig featureConfig;
@@ -86,7 +87,7 @@ public class FeatureModeServiceBeanTest {
         when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
         when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.empty());
-        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(featureFlag);
+        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(Optional.of(featureFlag));
         testUnit.enableFeatureModeForFeature(featureEnum, server, featureMode);
         verify(featureModeManagementService, times(1)).createMode(featureFlag, featureMode, true);
     }
@@ -123,7 +124,7 @@ public class FeatureModeServiceBeanTest {
         when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
         when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.empty());
-        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(featureFlag);
+        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(Optional.of(featureFlag));
         testUnit.disableFeatureModeForFeature(featureEnum, server, featureMode);
         verify(featureModeManagementService, times(1)).createMode(featureFlag, featureMode, false);
     }
@@ -145,7 +146,7 @@ public class FeatureModeServiceBeanTest {
         when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
         when(featureModeManagementService.doesFeatureModeExist(feature, server, featureMode)).thenReturn(false);
         when(defaultFeatureModeManagement.getFeatureMode(feature, FEATURE_MODE)).thenReturn(defaultFeatureMode);
-        when(defaultFeatureMode.isEnabled()).thenReturn(true);
+        when(defaultFeatureMode.getEnabled()).thenReturn(true);
         boolean actualResult = testUnit.featureModeActive(featureEnum, server, featureMode);
         Assert.assertTrue(actualResult);
     }
@@ -181,14 +182,13 @@ public class FeatureModeServiceBeanTest {
 
     @Test
     public void testEffectiveFeatureModesOnlyOneDefault() {
-        when(defaultFeatureMode.getFeature()).thenReturn(feature);
-        when(defaultFeatureMode.isEnabled()).thenReturn(true);
-        when(defaultFeatureMode.getFeature()).thenReturn(feature);
+        when(defaultFeatureMode.getEnabled()).thenReturn(true);
+        when(defaultFeatureMode.getFeatureName()).thenReturn(FEATURE_NAME);
         when(defaultFeatureModeManagement.getAll()).thenReturn(Arrays.asList(defaultFeatureMode));
-        when(featureConfigService.getFeatureConfigForFeature(feature)).thenReturn(featureConfig);
+        when(featureConfigService.getFeatureDisplayForFeature(FEATURE_NAME)).thenReturn(featureConfig);
         when(featureModeManagementService.getFeatureModesOfServer(server)).thenReturn(new ArrayList<>());
         when(defaultFeatureMode.getMode()).thenReturn(FEATURE_MODE);
-        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(featureFlag);
+        when(featureFlagManagementService.getFeatureFlag(FEATURE_NAME, server)).thenReturn(Optional.of(featureFlag));
         List<FeatureModeDisplay> effectiveFeatureModes = testUnit.getEffectiveFeatureModes(server);
         Assert.assertEquals(1, effectiveFeatureModes.size());
         FeatureModeDisplay featureModeDisplay = effectiveFeatureModes.get(0);
@@ -196,7 +196,7 @@ public class FeatureModeServiceBeanTest {
         Assert.assertTrue(featureModeDisplay.getFeatureMode().getEnabled());
         Assert.assertEquals(featureFlag, featureModeDisplay.getFeatureMode().getFeatureFlag());
         Assert.assertEquals(server, featureModeDisplay.getFeatureMode().getServer());
-        Assert.assertEquals(defaultFeatureMode, featureModeDisplay.getFeatureMode().getFeatureMode());
+        Assert.assertEquals(FEATURE_MODE, featureModeDisplay.getFeatureMode().getFeatureMode());
         Assert.assertEquals(featureConfig, featureModeDisplay.getFeatureConfig());
     }
 
@@ -205,10 +205,11 @@ public class FeatureModeServiceBeanTest {
         when(aFeatureMode.getEnabled()).thenReturn(true);
         when(aFeatureMode.getFeatureFlag()).thenReturn(featureFlag);
         when(aFeatureMode.getServer()).thenReturn(server);
-        when(aFeatureMode.getFeatureMode()).thenReturn(defaultFeatureMode);
+        when(aFeatureMode.getFeatureMode()).thenReturn(FEATURE_MODE);
         when(featureFlag.getFeature()).thenReturn(feature);
+        when(feature.getKey()).thenReturn(FEATURE_NAME);
         when(defaultFeatureModeManagement.getAll()).thenReturn(Arrays.asList(defaultFeatureMode));
-        when(featureConfigService.getFeatureConfigForFeature(feature)).thenReturn(featureConfig);
+        when(featureConfigService.getFeatureDisplayForFeature(FEATURE_NAME)).thenReturn(featureConfig);
         when(featureModeManagementService.getFeatureModesOfServer(server)).thenReturn(Arrays.asList(aFeatureMode));
         when(defaultFeatureMode.getMode()).thenReturn(FEATURE_MODE);
         List<FeatureModeDisplay> effectiveFeatureModes = testUnit.getEffectiveFeatureModes(server);
@@ -218,7 +219,7 @@ public class FeatureModeServiceBeanTest {
         Assert.assertTrue(featureModeDisplay.getFeatureMode().getEnabled());
         Assert.assertEquals(featureFlag, featureModeDisplay.getFeatureMode().getFeatureFlag());
         Assert.assertEquals(server, featureModeDisplay.getFeatureMode().getServer());
-        Assert.assertEquals(defaultFeatureMode, featureModeDisplay.getFeatureMode().getFeatureMode());
+        Assert.assertEquals(FEATURE_MODE, featureModeDisplay.getFeatureMode().getFeatureMode());
         Assert.assertEquals(featureConfig, featureModeDisplay.getFeatureConfig());
     }
 
@@ -227,48 +228,51 @@ public class FeatureModeServiceBeanTest {
         when(aFeatureMode.getEnabled()).thenReturn(true);
         when(aFeatureMode.getFeatureFlag()).thenReturn(featureFlag);
         when(aFeatureMode.getServer()).thenReturn(server);
-        when(aFeatureMode.getFeatureMode()).thenReturn(defaultFeatureMode);
+        when(aFeatureMode.getFeatureMode()).thenReturn(FEATURE_MODE);
         when(featureFlag.getFeature()).thenReturn(feature);
-        DefaultFeatureMode defaultFeatureMode2 = Mockito.mock(DefaultFeatureMode.class);
-        when(defaultFeatureMode2.getMode()).thenReturn("SECOND");
-        when(defaultFeatureMode2.getFeature()).thenReturn(feature);
-        when(defaultFeatureMode2.isEnabled()).thenReturn(false);
+        when(feature.getKey()).thenReturn(FEATURE_NAME);
+        FeatureModeProperty defaultFeatureMode2 = Mockito.mock(FeatureModeProperty.class);
+        String secondMode = "SECOND";
+        when(defaultFeatureMode2.getMode()).thenReturn(secondMode);
+        String feature2 = "FEATURE2";
+        when(defaultFeatureMode2.getFeatureName()).thenReturn(feature2);
+        when(defaultFeatureMode2.getEnabled()).thenReturn(false);
         when(defaultFeatureModeManagement.getAll()).thenReturn(Arrays.asList(defaultFeatureMode2, defaultFeatureMode));
-        when(featureConfigService.getFeatureConfigForFeature(feature)).thenReturn(featureConfig);
+        when(featureConfigService.getFeatureDisplayForFeature(FEATURE_NAME)).thenReturn(featureConfig);
+        when(featureConfigService.getFeatureDisplayForFeature(feature2)).thenReturn(featureConfig);
         when(featureModeManagementService.getFeatureModesOfServer(server)).thenReturn(Arrays.asList(aFeatureMode));
         when(defaultFeatureMode.getMode()).thenReturn(FEATURE_MODE);
-        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(featureFlag);
+        when(featureFlagManagementService.getFeatureFlag(feature2, server)).thenReturn(Optional.of(featureFlag));
 
         List<FeatureModeDisplay> effectiveFeatureModes = testUnit.getEffectiveFeatureModes(server);
 
         Assert.assertEquals(2, effectiveFeatureModes.size());
-        FeatureModeDisplay featureModeDisplay = effectiveFeatureModes.get(0);
-        Assert.assertEquals(false, featureModeDisplay.getIsDefaultValue());
-        Assert.assertTrue(featureModeDisplay.getFeatureMode().getEnabled());
-        Assert.assertEquals(featureFlag, featureModeDisplay.getFeatureMode().getFeatureFlag());
-        Assert.assertEquals(server, featureModeDisplay.getFeatureMode().getServer());
-        Assert.assertEquals(defaultFeatureMode, featureModeDisplay.getFeatureMode().getFeatureMode());
-        Assert.assertEquals(featureConfig, featureModeDisplay.getFeatureConfig());
+        FeatureModeDisplay activeFeaturemodeDisplay = effectiveFeatureModes.get(0);
+        Assert.assertEquals(false, activeFeaturemodeDisplay.getIsDefaultValue());
+        Assert.assertTrue(activeFeaturemodeDisplay.getFeatureMode().getEnabled());
+        Assert.assertEquals(featureFlag, activeFeaturemodeDisplay.getFeatureMode().getFeatureFlag());
+        Assert.assertEquals(server, activeFeaturemodeDisplay.getFeatureMode().getServer());
+        Assert.assertEquals(FEATURE_MODE, activeFeaturemodeDisplay.getFeatureMode().getFeatureMode());
+        Assert.assertEquals(featureConfig, activeFeaturemodeDisplay.getFeatureConfig());
 
-        FeatureModeDisplay featureModeDisplay2 = effectiveFeatureModes.get(1);
-        Assert.assertEquals(true, featureModeDisplay2.getIsDefaultValue());
-        Assert.assertFalse(featureModeDisplay2.getFeatureMode().getEnabled());
-        Assert.assertEquals(featureFlag, featureModeDisplay2.getFeatureMode().getFeatureFlag());
-        Assert.assertEquals(server, featureModeDisplay2.getFeatureMode().getServer());
-        Assert.assertEquals(defaultFeatureMode2, featureModeDisplay2.getFeatureMode().getFeatureMode());
-        Assert.assertEquals(featureConfig, featureModeDisplay2.getFeatureConfig());
+        FeatureModeDisplay defaultFeatureModeDisplay = effectiveFeatureModes.get(1);
+        Assert.assertEquals(true, defaultFeatureModeDisplay.getIsDefaultValue());
+        Assert.assertFalse(defaultFeatureModeDisplay.getFeatureMode().getEnabled());
+        Assert.assertEquals(featureFlag, defaultFeatureModeDisplay.getFeatureMode().getFeatureFlag());
+        Assert.assertEquals(server, defaultFeatureModeDisplay.getFeatureMode().getServer());
+        Assert.assertEquals(secondMode, defaultFeatureModeDisplay.getFeatureMode().getFeatureMode());
+        Assert.assertEquals(featureConfig, defaultFeatureModeDisplay.getFeatureConfig());
     }
 
     @Test
     public void testGetEffectiveFeatureModesForFeature() {
-        when(defaultFeatureMode.getFeature()).thenReturn(feature);
-        when(defaultFeatureMode.isEnabled()).thenReturn(true);
-        when(defaultFeatureMode.getFeature()).thenReturn(feature);
+        when(defaultFeatureMode.getEnabled()).thenReturn(true);
+        when(defaultFeatureMode.getFeatureName()).thenReturn(FEATURE_NAME);
         when(defaultFeatureModeManagement.getFeatureModesForFeature(feature)).thenReturn(Arrays.asList(defaultFeatureMode));
-        when(featureConfigService.getFeatureConfigForFeature(feature)).thenReturn(featureConfig);
+        when(featureConfigService.getFeatureDisplayForFeature(FEATURE_NAME)).thenReturn(featureConfig);
         when(featureModeManagementService.getFeatureModesOfFeatureInServer(server, feature)).thenReturn(new ArrayList<>());
         when(defaultFeatureMode.getMode()).thenReturn(FEATURE_MODE);
-        when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(featureFlag);
+        when(featureFlagManagementService.getFeatureFlag(FEATURE_NAME, server)).thenReturn(Optional.of(featureFlag));
         List<FeatureModeDisplay> effectiveFeatureModes = testUnit.getEffectiveFeatureModes(server, feature);
         Assert.assertEquals(1, effectiveFeatureModes.size());
         FeatureModeDisplay featureModeDisplay = effectiveFeatureModes.get(0);
@@ -276,7 +280,7 @@ public class FeatureModeServiceBeanTest {
         Assert.assertTrue(featureModeDisplay.getFeatureMode().getEnabled());
         Assert.assertEquals(featureFlag, featureModeDisplay.getFeatureMode().getFeatureFlag());
         Assert.assertEquals(server, featureModeDisplay.getFeatureMode().getServer());
-        Assert.assertEquals(defaultFeatureMode, featureModeDisplay.getFeatureMode().getFeatureMode());
+        Assert.assertEquals(FEATURE_MODE, featureModeDisplay.getFeatureMode().getFeatureMode());
         Assert.assertEquals(featureConfig, featureModeDisplay.getFeatureConfig());
     }
 }

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.utility.validator;
 
-import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
@@ -9,10 +9,7 @@ import dev.sheldan.abstracto.utility.service.StarboardServiceBean;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
@@ -38,7 +35,8 @@ public class StarboardFeatureValidatorServiceTest {
     public void testStarboardFeatureConfig() {
         AServer server = MockUtils.getServer();
         int levelCount = 4;
-        ADefaultConfig config = ADefaultConfig.builder().longValue((long)levelCount).build();
+        SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
+        when(config.getLongValue()).thenReturn((long) levelCount);
         when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
 
         testUnit.featureIsSetup(null, server, null);

@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.models.template.commands;
 
-import dev.sheldan.abstracto.core.models.database.ADefaultConfig;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,5 +10,5 @@ import lombok.Setter;
 @Builder
 public class SetupSystemConfigMessageModel {
     private String configKey;
-    private ADefaultConfig defaultConfig;
+    private SystemConfigProperty defaultConfig;
 }

@@ -7,7 +7,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <property name="statisticModule" value="(SELECT id FROM module WHERE name = 'statistic')"/>
-    <property name="emoteTrackingFeature" value="(SELECT id FROM feature WHERE key = 'emote_tracking')"/>
+    <property name="emoteTrackingFeature" value="(SELECT id FROM feature WHERE key = 'emoteTracking')"/>
     <property name="today" value="(SELECT NOW())"/>
 
     <changeSet  author="Sheldan"  id="statistic-commands">

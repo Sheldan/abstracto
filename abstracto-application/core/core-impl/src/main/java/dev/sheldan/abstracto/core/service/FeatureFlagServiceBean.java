@@ -7,10 +7,14 @@ import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.property.FeatureFlagProperty;
+import dev.sheldan.abstracto.core.service.management.DefaultFeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class FeatureFlagServiceBean implements FeatureFlagService {
@@ -26,6 +30,9 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Autowired
     private ServerManagementService serverManagementService;
+
+    @Autowired
+    private DefaultFeatureFlagManagementService defaultFeatureFlagManagementService;
 
     @Override
     public boolean isFeatureEnabled(FeatureConfig name, Long serverId) {
@@ -68,6 +75,18 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     }
 
     @Override
+    public AFeatureFlag createInstanceFromDefaultConfig(FeatureEnum name, Long serverId) {
+        FeatureFlagProperty defaultFeatureFlag = defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(name);
+        return updateFeatureFlag(name, serverId, defaultFeatureFlag.getEnabled());
+    }
+
+    @Override
+    public AFeatureFlag createInstanceFromDefaultConfig(FeatureEnum name, AServer server) {
+        FeatureFlagProperty defaultFeatureFlag = defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(name);
+        return updateFeatureFlag(name, server, defaultFeatureFlag.getEnabled());
+    }
+
+    @Override
     public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return getFeatureFlagValue(key, server);
@@ -76,8 +95,10 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     @Override
     public boolean getFeatureFlagValue(FeatureEnum key, AServer server) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
-        AFeatureFlag featureFlag = managementService.getFeatureFlag(feature, server);
-        return featureFlag.isEnabled();
+        Optional<AFeatureFlag> featureFlagOptional = managementService.getFeatureFlag(feature, server);
+        return featureFlagOptional
+                .map(AFeatureFlag::isEnabled)
+                .orElseGet(() -> defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(feature).getEnabled());
     }
 
     @Override

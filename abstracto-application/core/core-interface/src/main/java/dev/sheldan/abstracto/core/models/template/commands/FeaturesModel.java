@@ -12,4 +12,5 @@ import java.util.List;
 @Setter
 public class FeaturesModel extends UserInitiatedServerContext {
     private List<FeatureFlagDisplay> features;
+    private List<DefaultFeatureFlagDisplay> defaultFeatures;
 }

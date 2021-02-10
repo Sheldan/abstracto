@@ -104,10 +104,10 @@ Enforce the role restrictions of commands::
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
 Enabling a feature mode::
 * Usage: `enableMode <featureName> <mode>`
-* Description: Enables the mode `mode` in feature `featureName`.
+* Description: Enables the mode `mode` in feature `featureName`. If the enabled state of the feature `featureName` is part of the default config, it will no longer be default config that after executing `enableMode`.
 Disabling a feature mode::
 * Usage: `disableMode <featureName> <mode>`
-* Description: Disables the mode `mode` in feature `featureName`.
+* Description: Disables the mode `mode` in feature `featureName`. If the enabled state of the feature `featureName` is part of the default config, it will no longer be default config after executing `disableMode`.
 Listing all feature modes::
 * usage `featureModes [feature]`
 * Description: Lists all of the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether or not the current mode is enabled and if this value comes from the default configuration.

@@ -32,9 +32,6 @@ public class FeatureModeManagementServiceBeanTest {
     private AFeature feature;
 
     @Mock
-    private DefaultFeatureMode defaultFeatureMode;
-
-    @Mock
     private AFeatureFlag featureFlag;
 
     @Mock
@@ -51,12 +48,10 @@ public class FeatureModeManagementServiceBeanTest {
     @Test
     public void createModeWithModeAsString() {
         when(featureFlag.getServer()).thenReturn(server);
-        when(featureFlag.getFeature()).thenReturn(feature);
-        when(defaultFeatureModeManagement.getFeatureMode(feature, FEATURE_MODE)).thenReturn(defaultFeatureMode);
         AFeatureMode createdMode = testUnit.createMode(featureFlag, FEATURE_MODE, true);
         Assert.assertEquals(true, createdMode.getEnabled());
         Assert.assertEquals(featureFlag, createdMode.getFeatureFlag());
-        Assert.assertEquals(defaultFeatureMode, createdMode.getFeatureMode());
+        Assert.assertEquals(FEATURE_MODE, createdMode.getFeatureMode());
         Assert.assertEquals(server, createdMode.getServer());
         verify(featureModeRepository, times(1)).save(createdMode);
     }
@@ -64,13 +59,11 @@ public class FeatureModeManagementServiceBeanTest {
     @Test
     public void testCreateMode() {
         when(featureFlag.getServer()).thenReturn(server);
-        when(featureFlag.getFeature()).thenReturn(feature);
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
-        when(defaultFeatureModeManagement.getFeatureMode(feature, FEATURE_MODE)).thenReturn(defaultFeatureMode);
         AFeatureMode createdMode = testUnit.createMode(featureFlag, featureMode, true);
         Assert.assertEquals(true, createdMode.getEnabled());
         Assert.assertEquals(featureFlag, createdMode.getFeatureFlag());
-        Assert.assertEquals(defaultFeatureMode, createdMode.getFeatureMode());
+        Assert.assertEquals(FEATURE_MODE, createdMode.getFeatureMode());
         Assert.assertEquals(server, createdMode.getServer());
         verify(featureModeRepository, times(1)).save(createdMode);
     }
@@ -79,7 +72,7 @@ public class FeatureModeManagementServiceBeanTest {
     public void featureModeActive() {
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
         when(aFeatureMode.getEnabled()).thenReturn(true);
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
         Assert.assertTrue(testUnit.isFeatureModeActive(feature, server, featureMode));
     }
 
@@ -87,40 +80,40 @@ public class FeatureModeManagementServiceBeanTest {
     public void featureModeNotActive() {
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
         when(aFeatureMode.getEnabled()).thenReturn(false);
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
         Assert.assertFalse(testUnit.isFeatureModeActive(feature, server, featureMode));
     }
 
     @Test
     public void featureModeNotPresent() {
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.empty());
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.empty());
         Assert.assertFalse(testUnit.isFeatureModeActive(feature, server, featureMode));
     }
 
     @Test
     public void featureModeStringExists() {
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
         Assert.assertTrue(testUnit.doesFeatureModeExist(feature, server, FEATURE_MODE));
     }
 
     @Test
     public void featureModeObjectExists() {
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
         Assert.assertTrue(testUnit.doesFeatureModeExist(feature, server, featureMode));
     }
 
     @Test
     public void featureModeDoesNotExist() {
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.empty());
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.empty());
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
         Assert.assertFalse(testUnit.doesFeatureModeExist(feature, server, featureMode));
     }
 
     @Test
     public void testGetFeatureModeOptional() {
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.of(aFeatureMode));
         Optional<AFeatureMode> featureModeOptional = testUnit.getFeatureMode(feature, server, FEATURE_MODE);
         Assert.assertTrue(featureModeOptional.isPresent());
         featureModeOptional.ifPresent(aFeatureMode1 ->
@@ -130,7 +123,7 @@ public class FeatureModeManagementServiceBeanTest {
 
     @Test
     public void testGetFeatureModeOptionalNotExisting() {
-        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode_Mode(server, feature, FEATURE_MODE)).thenReturn(Optional.empty());
+        when(featureModeRepository.findByServerAndFeatureFlag_FeatureAndFeatureMode(server, feature, FEATURE_MODE)).thenReturn(Optional.empty());
         Optional<AFeatureMode> featureModeOptional = testUnit.getFeatureMode(feature, server, FEATURE_MODE);
         Assert.assertFalse(featureModeOptional.isPresent());
     }

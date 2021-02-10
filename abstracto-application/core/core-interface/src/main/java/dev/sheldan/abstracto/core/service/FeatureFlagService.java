@@ -12,6 +12,8 @@ public interface FeatureFlagService {
     void enableFeature(FeatureConfig name, AServer server);
     void disableFeature(FeatureConfig name, Long serverId);
     void disableFeature(FeatureConfig name, AServer server);
+    AFeatureFlag createInstanceFromDefaultConfig(FeatureEnum name, Long serverId);
+    AFeatureFlag createInstanceFromDefaultConfig(FeatureEnum name, AServer server);
     boolean getFeatureFlagValue(FeatureEnum key, Long serverId);
     boolean getFeatureFlagValue(FeatureEnum key, AServer server);
     AFeatureFlag updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue);
