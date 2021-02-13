@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface AssignedRoleUserManagementService {
     void addAssignedRoleToUser(AssignableRole assignableRole, AUserInAServer aUserInAServer);
     void removeAssignedRoleFromUser(AssignableRole assignableRole, AUserInAServer aUserInAServer);
+    void removeAssignedRoleFromUser(AssignableRole assignableRole, AssignedRoleUser user);
     AssignedRoleUser createAssignedRoleUser(AUserInAServer aUserInAServer);
     void clearAllAssignedRolesOfUser(AUserInAServer userInAServer);
     boolean doesAssignedRoleUserExist(AUserInAServer aUserInAServer);

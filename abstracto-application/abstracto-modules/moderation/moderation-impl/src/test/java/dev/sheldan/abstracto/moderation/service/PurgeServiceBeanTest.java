@@ -140,7 +140,7 @@ public class PurgeServiceBeanTest {
         when(history.getRetrievedHistory()).thenReturn(messagesToDelete);
         setupStatusMessageMocks();
         AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(messageService.deleteMessage(firstMessage)).thenReturn(auditableRestAction);
+        when(messageService.deleteMessageWithAction(firstMessage)).thenReturn(auditableRestAction);
         mockQueueDoubleVoidConsumer(auditableRestAction);
         CompletableFuture<Void> futures = testUnit.purgeMessagesInChannel(amountToDelete, textChannel, START_MESSAGE_ID, purgedMember);
         futures.whenComplete((aVoid, throwable) -> Assert.assertNull(throwable));

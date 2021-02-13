@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,8 +19,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AssignableRole implements Serializable {
 
     @Id
@@ -50,7 +47,6 @@ public class AssignableRole implements Serializable {
 
     @ManyToMany(mappedBy = "roles")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignedRoleUser> assignedUsers = new ArrayList<>();
 
     @Column(name = "description")

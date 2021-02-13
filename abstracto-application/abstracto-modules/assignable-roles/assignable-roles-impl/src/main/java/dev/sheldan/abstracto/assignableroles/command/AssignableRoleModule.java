@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AssignableRoleModule implements ModuleInterface {
-    public static final String ASSIGNABLE_ROLES = "assignableRoles";
+    public static final String ASSIGNABLE_ROLES = "assignableRole";
 
     @Override
     public ModuleInfo getInfo() {

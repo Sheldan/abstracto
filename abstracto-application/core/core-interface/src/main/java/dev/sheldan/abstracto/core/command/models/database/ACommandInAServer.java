@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.core.command.models.database;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,8 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ACommandInAServer implements Serializable {
 
     @Id
@@ -40,7 +37,6 @@ public class ACommandInAServer implements Serializable {
             joinColumns = @JoinColumn(name = "command_in_server_id", referencedColumnName = "command_in_server_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     @Getter
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ARole> allowedRoles;
 
     @ManyToMany
@@ -49,7 +45,6 @@ public class ACommandInAServer implements Serializable {
             joinColumns = @JoinColumn(name = "command_in_server_id", referencedColumnName = "command_in_server_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     @Getter
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ARole> immuneRoles;
 
     @Getter

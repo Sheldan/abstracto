@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.assignableroles.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,8 +17,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AssignedRoleUser implements Serializable {
 
     @Id
@@ -35,7 +32,6 @@ public class AssignedRoleUser implements Serializable {
             name = "assigned_role_in_user",
             joinColumns = @JoinColumn(name = "user_in_server_id"),
             inverseJoinColumns = @JoinColumn(name = "assigned_role_id"))
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @Builder.Default
     private List<AssignableRole> roles = new ArrayList<>();
 

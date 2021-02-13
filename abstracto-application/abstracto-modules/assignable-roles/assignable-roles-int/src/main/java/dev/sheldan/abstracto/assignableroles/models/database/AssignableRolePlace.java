@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.assignableroles.models.database;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,8 +18,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AssignableRolePlace implements Serializable {
 
     public static final Long ASSIGNABLE_PLACE_NAME_LIMIT = 255L;
@@ -49,7 +46,6 @@ public class AssignableRolePlace implements Serializable {
             mappedBy = "assignablePlace"
     )
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignableRolePlacePost> messagePosts = new ArrayList<>();
 
     @OneToMany(
@@ -59,7 +55,6 @@ public class AssignableRolePlace implements Serializable {
             mappedBy = "assignablePlace"
     )
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AssignableRole> assignableRoles = new ArrayList<>();
 
     @Column(name = "text")

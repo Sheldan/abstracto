@@ -7,12 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +25,6 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
      * @param server The {@link AServer} to retrieve ethe {@link AUserExperience} for
      * @return A complete list of {@link AUserExperience} of the given {@link AServer}
      */
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AUserExperience> findByUser_ServerReference(AServer server);
 
     /**
@@ -37,7 +34,6 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
      * @return A list of {@link AUserExperience} of the given {@link AServer} ordered by the experience of the users, paginated by the given
      * configuration
      */
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AUserExperience> findTop10ByUser_ServerReferenceOrderByExperienceDesc(AServer server, Pageable pageable);
 
     /**
@@ -60,6 +56,5 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
 
     @NotNull
     @Override
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Optional<AUserExperience> findById(@NonNull Long aLong);
 }

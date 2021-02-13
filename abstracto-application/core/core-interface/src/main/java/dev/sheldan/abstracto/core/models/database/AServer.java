@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.core.models.database;
 
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,8 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AServer implements SnowFlake, Serializable {
 
     @Id
@@ -44,7 +41,6 @@ public class AServer implements SnowFlake, Serializable {
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             mappedBy = "server")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ARole> roles = new ArrayList<>();
 
     @OneToMany(
@@ -53,7 +49,6 @@ public class AServer implements SnowFlake, Serializable {
             orphanRemoval = true,
             mappedBy = "server")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AChannel> channels = new ArrayList<>();
 
     @OneToMany(
@@ -62,7 +57,6 @@ public class AServer implements SnowFlake, Serializable {
             orphanRemoval = true,
             mappedBy = "server")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AChannelGroup> channelGroups = new ArrayList<>();
 
     @OneToMany(
@@ -71,7 +65,6 @@ public class AServer implements SnowFlake, Serializable {
             orphanRemoval = true,
             mappedBy = "serverReference")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AUserInAServer> users = new ArrayList<>();
 
     @OneToMany(
@@ -80,7 +73,6 @@ public class AServer implements SnowFlake, Serializable {
             orphanRemoval = true,
             mappedBy = "serverRef")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AEmote> emotes = new ArrayList<>();
 
 

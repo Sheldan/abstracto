@@ -6,11 +6,9 @@ import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +22,6 @@ public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole,
      * @param role The {@link ARole} to filter for
      * @return The {@link AExperienceRole} found or null if the query did not return any results
      */
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Optional<AExperienceRole> findByRole(ARole role);
 
     /**
@@ -34,7 +31,6 @@ public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole,
      * @param server The {@link AServer} to search for
      * @return The list of {@link AExperienceRole} found by the given parameters
      */
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AExperienceRole> findByLevelAndRoleServer(AExperienceLevel level, AServer server);
 
     /**
@@ -42,11 +38,9 @@ public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole,
      * @param server The {@link AServer} to load the list of {@link AExperienceRole} for
      * @return A list of {@link AExperienceRole} configured to be used on the given {@link AServer}
      */
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     List<AExperienceRole> findByRoleServer(AServer server);
 
     @NotNull
     @Override
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Optional<AExperienceRole> findById(@NonNull Long aLong);
 }

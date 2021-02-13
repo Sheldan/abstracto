@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,8 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AFeatureFlag implements Serializable {
 
     @Id
@@ -34,7 +31,6 @@ public class AFeatureFlag implements Serializable {
     private AFeature feature;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "featureFlag")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AFeatureMode> modes;
 
     @Column(name = "enabled")

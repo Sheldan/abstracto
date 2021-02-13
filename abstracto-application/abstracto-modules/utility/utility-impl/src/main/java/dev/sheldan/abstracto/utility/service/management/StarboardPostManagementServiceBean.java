@@ -65,7 +65,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public List<StarboardPost> retrieveAllPosts(Long serverId) {
-        return repository.findByServer(serverId);
+        return repository.findByServer_Id(serverId);
     }
 
     @Override

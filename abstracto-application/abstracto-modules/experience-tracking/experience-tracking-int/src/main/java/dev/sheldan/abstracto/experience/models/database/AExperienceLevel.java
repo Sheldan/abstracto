@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.experience.models.database;
 
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,8 +17,6 @@ import java.time.Instant;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AExperienceLevel implements Serializable {
     /**
      * The unique level from 0 to as defined in the configuration. Will be created on startup.

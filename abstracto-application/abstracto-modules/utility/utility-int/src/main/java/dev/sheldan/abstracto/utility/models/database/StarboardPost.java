@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,8 +18,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class StarboardPost implements Serializable {
 
     @Id
@@ -70,7 +67,6 @@ public class StarboardPost implements Serializable {
             orphanRemoval = true,
             cascade =  {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             mappedBy = "starboardPost")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<StarboardPostReaction> reactions;
 
     @Column(name = "starred_date")

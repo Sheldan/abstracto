@@ -18,7 +18,7 @@ An example implementation of this bot can be seen [here](https://github.com/Shel
 * [Spring boot](https://github.com/spring-projects/spring-boot) is used as a framework to create standalone application in Java with Java EE methods. (including Dependency injection and more)
 * [Hibernate](https://github.com/hibernate/hibernate-orm) is used as a reference implementation of JPA.
 * [Freemarker](https://github.com/apache/freemarker) is used as a templating engine. This is used to provide internationalization for user facing text and enable dynamic embed configuration.
-* [Ehcache](https://github.com/ehcache/ehcache3) is used as a caching implementation for the database and other caches.
+* [Ehcache](https://github.com/ehcache/ehcache3) is used as a caching implementation.
 * [Lombok](https://github.com/rzwitserloot/lombok) is used as a framework in order to speed up creation of container classes and builders.
 * [Quartz](https://github.com/quartz-scheduler/quartz) is used as a scheduling framework in order to provide functionalities which either require a delayed or cronjob behaviour.
 * [Docker](https://github.com/docker) is used to package the application into a container and [Docker Compose](https://github.com/docker/compose) is used to connect the required containers together.

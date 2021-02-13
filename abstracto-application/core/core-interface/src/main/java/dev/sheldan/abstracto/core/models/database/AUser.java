@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -15,8 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AUser implements Serializable {
 
     @Id
@@ -27,7 +24,6 @@ public class AUser implements Serializable {
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             mappedBy = "serverReference")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AUserInAServer> servers;
 
     @Column(name = "created")

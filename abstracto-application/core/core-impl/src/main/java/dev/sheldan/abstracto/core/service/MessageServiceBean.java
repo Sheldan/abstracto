@@ -179,9 +179,14 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public AuditableRestAction<Void> deleteMessage(Message message) {
+    public AuditableRestAction<Void> deleteMessageWithAction(Message message) {
         metricService.incrementCounter(MESSAGE_DELETE_METRIC);
         return message.delete();
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteMessage(Message message) {
+        return deleteMessageWithAction(message).submit();
     }
 
     @PostConstruct

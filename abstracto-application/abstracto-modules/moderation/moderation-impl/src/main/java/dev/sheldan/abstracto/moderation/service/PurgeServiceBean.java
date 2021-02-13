@@ -91,7 +91,7 @@ public class PurgeServiceBean implements PurgeService {
                 if (messagesToDeleteNow.size() > 1) {
                     bulkDeleteMessages(channel, deletionFuture, messagesToDeleteNow, consumer);
                 } else if (messagesToDeleteNow.size() == 1) {
-                    messageService.deleteMessage(latestMessage).queue(consumer, deletionFuture::completeExceptionally);
+                    messageService.deleteMessageWithAction(latestMessage).queue(consumer, deletionFuture::completeExceptionally);
                 }
 
             } catch (Exception e) {

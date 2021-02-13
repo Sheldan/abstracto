@@ -34,7 +34,7 @@ public class AssignableRolePlacePostManagementServiceBean implements AssignableR
                 .server(updatedPlace.getServer())
                 .assignablePlace(updatedPlace)
                 .build();
-        repository.save(post);
+        updatedPlace.getMessagePosts().add(post);
         return post;
     }
 

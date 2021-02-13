@@ -1,6 +1,6 @@
 === Assignable roles
 
-This feature enables creating and maintaining so-called 'assignable role places'. These places are messages at which reactions are added, and when a member reacts a configured role is assigned to the user.
+This feature enables creating and maintaining so-called 'assignable role places'. These places are messages at which reactions are added, and when a member reacts, a configured role, is assigned to the user.
 These places can consist of multiple messages (reactions are limited to 20 per message) and assignable roles can be added/removed. A place can be disabled, which causes any reaction to be removed and no role to be assigned.
 There are several configurations possible for each individual assignable role place.
 * `inline`: tries to display the embed as compact as possible and when this is disabled, every assignable role is displayed in a separate line. Default: `false`
@@ -10,7 +10,7 @@ There are several configurations possible for each individual assignable role pl
 
 If there are reactions added by members, which are not used within an assignable role place, the reaction gets removed automatically.
 
-If the emote is deleted, the assignable role place is still functional, but if you set it up again, it fail to do so. You need to remove the emote from the assignable role place via its ID. The ID will be displayed for the emotes which were removed.
+If the emote is deleted, the assignable role place is still functional, but if you set it up again, it fails to do so. You need to remove the emote from the assignable role place via its ID. The ID will be displayed for the emotes which were removed.
 Deleting the actual role behind an assignable role causes the assignable role place to become non-functional: the added reaction will remain and reactions can still be added, but nothing will happen.
 
 Feature key: `assignableRole`

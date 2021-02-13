@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -26,6 +28,8 @@ public interface ReactionService {
     CompletableFuture<Void> removeReaction(Message message, String key, User user);
     CompletableFuture<Void> removeReaction(Message message, Emote emoteById);
     CompletableFuture<Void> removeReaction(Message message, Emote emoteById, User user);
+    CompletableFuture<Void> removeReaction(Message message, CachedEmote cachedEmote, User user);
+    CompletableFuture<Void> removeReaction(CachedMessage message, CachedEmote cachedEmote, ServerUser user);
     CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Message message);
     CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Message message);
     CompletableFuture<Void> clearReaction(Message message, String key);

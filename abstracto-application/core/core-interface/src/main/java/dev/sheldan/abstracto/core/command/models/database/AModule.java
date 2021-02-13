@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.command.models.database;
 
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,8 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AModule implements Serializable {
 
     @Id
@@ -32,7 +29,6 @@ public class AModule implements Serializable {
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             orphanRemoval = true, mappedBy = "module")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ACommand> commands = new ArrayList<>();
 
     @Column(name = "created")

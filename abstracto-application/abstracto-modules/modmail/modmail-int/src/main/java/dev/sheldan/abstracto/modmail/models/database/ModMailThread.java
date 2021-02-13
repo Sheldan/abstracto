@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -24,8 +23,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ModMailThread implements Serializable {
 
     @Id
@@ -73,7 +70,6 @@ public class ModMailThread implements Serializable {
             orphanRemoval = true,
             mappedBy = "threadReference")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ModMailMessage> messages = new ArrayList<>();
 
     /**
@@ -85,7 +81,6 @@ public class ModMailThread implements Serializable {
             orphanRemoval = true,
             mappedBy = "threadReference")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ModMailThreadSubscriber> subscribers = new ArrayList<>();
 
     /**

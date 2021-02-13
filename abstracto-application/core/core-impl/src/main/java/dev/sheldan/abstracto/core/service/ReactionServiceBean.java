@@ -5,10 +5,13 @@ import dev.sheldan.abstracto.core.exception.EmoteNotInServerException;
 import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
 import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.metrics.service.MetricTag;
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,6 +212,22 @@ public class ReactionServiceBean implements ReactionService {
     public CompletableFuture<Void> removeReaction(Message message, Emote emoteById, User user) {
         metricService.incrementCounter(REACTION_REMOVED_METRIC);
         return message.removeReaction(emoteById, user).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> removeReaction(Message message, CachedEmote cachedEmote, User user) {
+        metricService.incrementCounter(REACTION_REMOVED_METRIC);
+        String customEmoteAsUnicode = cachedEmote.getEmoteName() + ":" + cachedEmote.getEmoteId();
+        return ((TextChannel) message.getChannel()).removeReactionById(message.getId(), customEmoteAsUnicode, user).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> removeReaction(CachedMessage message, CachedEmote cachedEmote, ServerUser user) {
+        CompletableFuture<Message> messageFuture = messageService.loadMessageFromCachedMessage(message);
+        CompletableFuture<Member> memberFuture = memberService.retrieveMemberInServer(user);
+        return FutureUtils.toSingleFuture(Arrays.asList(messageFuture, memberFuture)).thenCompose(unused -> {
+            return removeReaction(messageFuture.join(), cachedEmote, memberFuture.join().getUser());
+        });
     }
 
     @Override

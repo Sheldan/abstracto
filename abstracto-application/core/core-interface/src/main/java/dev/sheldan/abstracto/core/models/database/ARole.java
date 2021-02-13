@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.core.models.database;
 
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -14,8 +13,6 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ARole implements SnowFlake, Serializable {
 
     @Id

@@ -5,17 +5,13 @@ import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 
-import javax.persistence.QueryHint;
 import java.util.List;
 
 public interface StarboardPostReactionRepository extends JpaRepository<StarboardPostReaction, Long> {
 
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     void deleteByReactorAndStarboardPost(AUserInAServer user, StarboardPost post);
 
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     void deleteByStarboardPost(StarboardPost post);
 
     @Query(value = "SELECT r.reactor_user_in_server_id as userId, COUNT(*) AS starCount \n" +

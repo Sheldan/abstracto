@@ -88,7 +88,7 @@ public class StarboardPostManagementServiceBeanTest {
         StarboardPost starboardPost2 = StarboardPost.builder().reactions(Arrays.asList(reaction)).build();
         StarboardPost starboardPost3 = StarboardPost.builder().reactions(new ArrayList<>()).build();
         List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2, starboardPost3);
-        when(repository.findByServer(server.getId())).thenReturn(posts);
+        when(repository.findByServer_Id(server.getId())).thenReturn(posts);
         List<StarboardPost> topPosts = testUnit.retrieveTopPosts(server.getId(), count);
         Assert.assertEquals(count.intValue(), topPosts.size());
         StarboardPost topMostPost = topPosts.get(0);
@@ -107,7 +107,7 @@ public class StarboardPostManagementServiceBeanTest {
         StarboardPost starboardPost2 = StarboardPost.builder().reactions(Arrays.asList(reaction)).build();
         StarboardPost starboardPost3 = StarboardPost.builder().reactions(new ArrayList<>()).build();
         List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2, starboardPost3);
-        when(repository.findByServer(server.getId())).thenReturn(posts);
+        when(repository.findByServer_Id(server.getId())).thenReturn(posts);
         List<StarboardPost> topPosts = testUnit.retrieveTopPosts(server.getId(), count);
         StarboardPost topMostPost = topPosts.get(0);
         StarboardPost secondTop = topPosts.get(1);
@@ -190,7 +190,7 @@ public class StarboardPostManagementServiceBeanTest {
         StarboardPost starboardPost1 = StarboardPost.builder().build();
         StarboardPost starboardPost2 = StarboardPost.builder().build();
         List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2);
-        when(repository.findByServer(server.getId())).thenReturn(posts);
+        when(repository.findByServer_Id(server.getId())).thenReturn(posts);
         Integer retrievedPostCount = testUnit.getPostCount(server.getId());
         Assert.assertEquals(posts.size(), retrievedPostCount.intValue());
     }

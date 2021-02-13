@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.Fakeable;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,8 +22,6 @@ import java.time.Instant;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class TrackedEmote implements Serializable, Fakeable {
 
     @EmbeddedId

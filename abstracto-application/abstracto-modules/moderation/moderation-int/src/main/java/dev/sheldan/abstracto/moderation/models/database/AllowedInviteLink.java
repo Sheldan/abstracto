@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.moderation.models.database;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -15,8 +14,6 @@ import java.time.Instant;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AllowedInviteLink {
 
     @Id

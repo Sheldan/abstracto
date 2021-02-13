@@ -40,6 +40,10 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
                 assignableRole.getId(), aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId(),
                 assignableRole.getAssignablePlace().getId());
         AssignedRoleUser user = findByUserInServer(aUserInAServer);
+        removeAssignedRoleFromUser(assignableRole, user);
+    }
+
+    public void removeAssignedRoleFromUser(AssignableRole assignableRole, AssignedRoleUser user) {
         assignableRole.getAssignedUsers().remove(user);
         user.getRoles().remove(assignableRole);
     }

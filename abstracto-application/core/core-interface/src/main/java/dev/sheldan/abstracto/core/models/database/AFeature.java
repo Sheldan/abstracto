@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.core.models.database;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,8 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AFeature implements SnowFlake, Serializable {
 
     @Id
@@ -34,7 +31,6 @@ public class AFeature implements SnowFlake, Serializable {
     @Getter
     @Setter
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "feature")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ACommand> commands;
 
     @Column(name = "created")

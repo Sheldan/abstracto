@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.ReactionService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,9 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
 
     @Autowired
     private ReactionService reactionService;
+
+    @Autowired
+    private MemberService memberService;
 
     @Override
     public void executeReactionAdded(CachedMessage message, CachedReactions cachedReaction, ServerUser serverUser) {
@@ -113,12 +117,15 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
         }
         if(!validReaction) {
             log.trace("Reaction was not found in the configuration of assignable role place {}, removing reaction.", assignableRolePlace.getId());
-            futures.add(reactionService.removeReactionFromMessage(cachedReaction, message));
+            futures.add(reactionService.removeReaction(message, cachedReaction.getEmote(), serverUser));
         }
         Long assignableRolePlaceId = assignableRolePlace.getId();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
             self.updateStoredAssignableRoles(assignableRolePlaceId, serverUser, cachedReaction)
-        );
+        ).exceptionally(throwable -> {
+            log.error("Failed to add role or remove emote for assignable role place {}.", assignableRolePlaceId, throwable);
+            return null;
+        });
     }
 
     @Transactional

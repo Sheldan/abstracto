@@ -4,19 +4,15 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.moderation.models.database.FilteredInviteLink;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FilteredInviteLinkRepository extends JpaRepository<FilteredInviteLink, Long> {
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Optional<FilteredInviteLink> findByCodeAndServer(String code, AServer server);
 
-    @QueryHints(@QueryHint(name = org.hibernate.annotations.QueryHints.CACHEABLE, value = "true"))
     Optional<FilteredInviteLink> findByCodeAndServer_Id(String code, Long serverId);
 
     void deleteByServer_Id(Long serverId);

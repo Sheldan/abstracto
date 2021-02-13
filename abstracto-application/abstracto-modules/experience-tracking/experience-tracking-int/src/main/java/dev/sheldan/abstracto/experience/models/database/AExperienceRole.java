@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.experience.models.database;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,8 +22,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AExperienceRole implements Serializable {
 
     /**
@@ -65,7 +62,6 @@ public class AExperienceRole implements Serializable {
      */
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "currentExperienceRole")
     @Builder.Default
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AUserExperience> users = new ArrayList<>();
 
 

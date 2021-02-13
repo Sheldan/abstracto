@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.statistic.emotes.model.database;
 
 import dev.sheldan.abstracto.statistic.emotes.model.database.embed.UsedEmoteDay;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -18,8 +17,6 @@ import java.time.Instant;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UsedEmote {
 
     /**

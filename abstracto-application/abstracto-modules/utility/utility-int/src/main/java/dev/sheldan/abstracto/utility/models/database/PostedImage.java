@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.embed.PostIdentifier;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -19,8 +18,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PostedImage {
 
     @Getter
@@ -57,7 +54,6 @@ public class PostedImage {
             orphanRemoval = true,
             cascade =  {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             mappedBy = "originalPost")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<Repost> reposts;
 
 }

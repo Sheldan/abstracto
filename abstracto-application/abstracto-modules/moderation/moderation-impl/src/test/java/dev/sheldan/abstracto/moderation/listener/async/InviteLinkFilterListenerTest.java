@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +25,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.concurrent.CompletableFuture;
 
 import static dev.sheldan.abstracto.moderation.listener.async.InviteLinkFilterListener.INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,8 +96,7 @@ public class InviteLinkFilterListenerTest {
     @Test
     public void testExecutionWithOneNotAllowedInviteNoTrackNoNotification() {
         when(message.getContentRaw()).thenReturn(INVITE_LINK);
-        AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(messageService.deleteMessage(message)).thenReturn(auditableRestAction);
+        when(messageService.deleteMessage(message)).thenReturn(CompletableFuture.completedFuture(null));
         when(inviteLinkFilterService.isCodeFiltered(eq(INVITE_CODE), any(ServerUser.class))).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(false);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(false);
@@ -109,8 +109,7 @@ public class InviteLinkFilterListenerTest {
     @Test
     public void testExecutionWithOneNotAllowedInviteTrackNoNotification() {
         when(message.getContentRaw()).thenReturn(INVITE_LINK);
-        AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(messageService.deleteMessage(message)).thenReturn(auditableRestAction);
+        when(messageService.deleteMessage(message)).thenReturn(CompletableFuture.completedFuture(null));
         when(inviteLinkFilterService.isCodeFiltered(eq(INVITE_CODE), any(ServerUser.class))).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(false);
@@ -124,8 +123,7 @@ public class InviteLinkFilterListenerTest {
     @Test
     public void testExecutionWithOneNotAllowedInviteTrackNotification() {
         when(message.getContentRaw()).thenReturn(INVITE_LINK);
-        AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(messageService.deleteMessage(message)).thenReturn(auditableRestAction);
+        when(messageService.deleteMessage(message)).thenReturn(CompletableFuture.completedFuture(null));
         when(inviteLinkFilterService.isCodeFiltered(eq(INVITE_CODE), any(ServerUser.class))).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(true);
@@ -140,8 +138,7 @@ public class InviteLinkFilterListenerTest {
     @Test
     public void testExecutionWithOneNotAllowedInviteNoTrackNotification() {
         when(message.getContentRaw()).thenReturn(INVITE_LINK);
-        AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(messageService.deleteMessage(message)).thenReturn(auditableRestAction);
+        when(messageService.deleteMessage(message)).thenReturn(CompletableFuture.completedFuture(null));
         when(inviteLinkFilterService.isCodeFiltered(eq(INVITE_CODE), any(ServerUser.class))).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(false);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(true);
@@ -156,8 +153,7 @@ public class InviteLinkFilterListenerTest {
     @Test
     public void testExecutionWithOneNotAllowedInviteNoTrackNotificationNoPostTarget() {
         when(message.getContentRaw()).thenReturn(INVITE_LINK);
-        AuditableRestAction auditableRestAction = Mockito.mock(AuditableRestAction.class);
-        when(messageService.deleteMessage(message)).thenReturn(auditableRestAction);
+        when(messageService.deleteMessage(message)).thenReturn(CompletableFuture.completedFuture(null));
         when(inviteLinkFilterService.isCodeFiltered(eq(INVITE_CODE), any(ServerUser.class))).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(false);
         when(featureModeService.featureModeActive(ModerationFeatures.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(true);

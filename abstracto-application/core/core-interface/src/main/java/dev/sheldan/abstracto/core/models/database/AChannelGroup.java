@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,8 +15,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AChannelGroup implements Serializable {
 
     @Id
@@ -50,7 +47,6 @@ public class AChannelGroup implements Serializable {
             name = "channel_in_group",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "channel_id"))
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<AChannel> channels;
 
 

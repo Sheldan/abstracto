@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.core.command.models.database;
 import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import lombok.*;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,9 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@Cacheable
 @EqualsAndHashCode
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ACommand implements Serializable {
     @Id
     @Column(name = "id")
