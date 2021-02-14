@@ -160,14 +160,20 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                 .delayedActionList(delayedActionConfigs)
                 .previousMessageId(initialMessage)
                 .build();
-        setupSummaryStep.execute(user, parameter).thenAccept(ignored -> self.notifyAboutCompletion(user, featureConfig));
+        setupSummaryStep.execute(user, parameter).thenAccept(setupStepResult -> self.notifyAboutCompletion(user, featureConfig, setupStepResult));
     }
 
     @Transactional
-    public void notifyAboutCompletion(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
+    public void notifyAboutCompletion(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig, SetupStepResult result) {
         log.trace("Notifying user {} in channel {} in server {} about completion of setup for feature {}.",
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
-        notifyUserWithTemplate(aServerChannelUserId, featureConfig, FEATURE_SETUP_COMPLETION_NOTIFICATION_TEMPLATE);
+        String templateKey;
+        if(result.getResult().equals(SetupStepResultType.CANCELLED)) {
+            templateKey = FEATURE_SETUP_CANCELLATION_NOTIFICATION_TEMPLATE;
+        } else {
+            templateKey = FEATURE_SETUP_COMPLETION_NOTIFICATION_TEMPLATE;
+        }
+        notifyUserWithTemplate(aServerChannelUserId, featureConfig, templateKey);
     }
 
     private void notifyUserWithTemplate(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig, String templateName) {
