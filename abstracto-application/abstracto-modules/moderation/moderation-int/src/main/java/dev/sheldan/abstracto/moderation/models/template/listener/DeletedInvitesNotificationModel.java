@@ -13,10 +13,10 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class InviteDeletedModel {
+public class DeletedInvitesNotificationModel {
     private Guild guild;
     private TextChannel channel;
     private Member author;
     private Message message;
-    private List<String> invites;
+    private List<DeletedInvite> invites;
 }

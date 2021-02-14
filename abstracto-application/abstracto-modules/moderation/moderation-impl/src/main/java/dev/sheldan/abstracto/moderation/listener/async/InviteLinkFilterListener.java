@@ -15,7 +15,8 @@ import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.InviteFilterMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.InviteFilterPostTarget;
-import dev.sheldan.abstracto.moderation.models.template.listener.InviteDeletedModel;
+import dev.sheldan.abstracto.moderation.models.template.listener.DeletedInvite;
+import dev.sheldan.abstracto.moderation.models.template.listener.DeletedInvitesNotificationModel;
 import dev.sheldan.abstracto.moderation.service.InviteLinkFilterService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
@@ -29,7 +30,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -104,13 +107,13 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
             log.info("Post target {} not defined for server {} - not sending invite link deletion notification.", InviteFilterPostTarget.INVITE_DELETE_LOG.getKey(), serverId);
             return;
         }
-        InviteDeletedModel model = InviteDeletedModel
+        DeletedInvitesNotificationModel model = DeletedInvitesNotificationModel
                 .builder()
                 .author(message.getMember())
                 .guild(message.getGuild())
                 .message(message)
                 .channel(message.getTextChannel())
-                .invites(codes)
+                .invites(groupInvites(codes))
                 .build();
         log.info("Sending notification about {} deleted invite links in guild {} from user {} in channel {} in message {}.",
                 codes.size(), serverId, message.getAuthor().getIdLong(), message.getTextChannel().getIdLong(), message.getIdLong());
@@ -122,7 +125,16 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
             log.error("Failed to send notification about deleted invite link in message {}.", message.getIdLong());
             return null;
         });
+    }
 
+    private List<DeletedInvite> groupInvites(List<String> codes) {
+        return codes
+                .stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .map(functionLongEntry -> new DeletedInvite(functionLongEntry.getKey(), functionLongEntry.getValue()))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -36,7 +36,7 @@ public class FeatureValidationResult implements Templatable {
     @Override
     public Object getTemplateModel() {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("featureTemplate", this.feature.getFeature().getKey() + "_feature");
+        params.put("featureTemplate", "feature_" + this.feature.getFeature().getKey());
         params.put("errors", this.validationErrorModels);
         return params;
     }
