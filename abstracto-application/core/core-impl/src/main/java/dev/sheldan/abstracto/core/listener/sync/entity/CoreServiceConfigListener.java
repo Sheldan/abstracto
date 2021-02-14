@@ -22,6 +22,6 @@ public class CoreServiceConfigListener implements ServerConfigListener {
     public void updateServerConfig(AServer server) {
         log.info("Creating prefix config for server {}.", server.getId());
         String defaultPrefix = defaultConfigManagementService.getDefaultConfig(CommandManager.PREFIX).getStringValue();
-        configManagementService.createIfNotExists(server.getId(), CommandManager.PREFIX, defaultPrefix);
+        configManagementService.loadOrCreateIfNotExists(server.getId(), CommandManager.PREFIX, defaultPrefix);
     }
 }

@@ -6,12 +6,13 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 public interface ConfigManagementService {
     AConfig setOrCreateStringValue(Long serverId, String name, String value);
     AConfig setOrCreateDoubleValue(Long serverId, String name, Double value);
+    AConfig setOrCreateLongValue(Long serverId, String name, Long value);
     AConfig createConfig(Long serverId, String name, String value);
     AConfig createConfig(Long serverId, String name, Double value);
     AConfig createConfig(Long serverId, String name, Long value);
-    AConfig createIfNotExists(Long serverId, String name, String value);
-    AConfig createIfNotExists(Long serverId, String name, Long value);
-    AConfig createIfNotExists(Long serverId, String name, Double value);
+    AConfig loadOrCreateIfNotExists(Long serverId, String name, String value);
+    AConfig loadOrCreateIfNotExists(Long serverId, String name, Long value);
+    AConfig loadOrCreateIfNotExists(Long serverId, String name, Double value);
     AConfig loadConfig(Long serverId, String name);
     boolean configExists(Long serverId, String name);
     boolean configExists(AServer server, String name);

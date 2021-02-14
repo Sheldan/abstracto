@@ -17,4 +17,9 @@ public class DefaultConfigManagementServiceBean implements DefaultConfigManageme
     public SystemConfigProperty getDefaultConfig(String key) {
         return defaultConfigProperties.getSystemConfigs().get(key);
     }
+
+    @Override
+    public boolean configKeyExists(String key) {
+        return defaultConfigProperties.getSystemConfigs().containsKey(key);
+    }
 }

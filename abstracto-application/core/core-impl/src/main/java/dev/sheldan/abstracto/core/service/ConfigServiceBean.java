@@ -2,15 +2,20 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ConfigurationKeyNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AConfig;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConfigServiceBean implements ConfigService{
+public class ConfigServiceBean implements ConfigService {
 
     @Autowired
     private ConfigManagementService configManagementService;
+
+    @Autowired
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Override
     public Double getDoubleValue(String name, Long serverId) {
@@ -85,6 +90,27 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
+    public AConfig setOrCreateConfigValue(String name, Long serverId, String value) {
+        if(defaultConfigManagementService.configKeyExists(name)) {
+            AConfig fakeConfigValue = getFakeConfigForValue(name, value);
+            return setOrCreateConfigValue(serverId, name, fakeConfigValue);
+        } else {
+            throw new ConfigurationKeyNotFoundException(name);
+        }
+    }
+
+    @Override
+    public AConfig setOrCreateConfigValue(Long serverId, String name, AConfig value) {
+        if(value.getDoubleValue() != null) {
+            return configManagementService.setOrCreateDoubleValue(serverId, name, value.getDoubleValue());
+        } else if(value.getLongValue() != null) {
+            return configManagementService.setOrCreateLongValue(serverId, name, value.getLongValue());
+        } else {
+            return configManagementService.setOrCreateStringValue(serverId, name, value.getStringValue());
+        }
+    }
+
+    @Override
     public void setConfigValue(String name, Long serverId, AConfig value) {
         if(value.getDoubleValue() != null) {
             setDoubleValue(name, serverId, value.getDoubleValue());
@@ -105,9 +131,9 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
-    public boolean configIsFitting(String name, Long serverId, String value) {
+    public boolean configurationIsValid(String name, String value) {
         try {
-            getFakeConfigForValue(name, serverId, value);
+            getFakeConfigForValue(name, value);
             return true;
         } catch (Exception e) {
             return false;
@@ -115,13 +141,13 @@ public class ConfigServiceBean implements ConfigService{
     }
 
     @Override
-    public AConfig getFakeConfigForValue(String name, Long serverId, String value) {
-        if(configManagementService.configExists(serverId, name)) {
+    public AConfig getFakeConfigForValue(String name, String value) {
+        if(defaultConfigManagementService.configKeyExists(name)) {
             AConfig newConfig = AConfig.builder().name(value).build();
-            AConfig existing = configManagementService.loadConfig(serverId, name);
-            if(existing.getDoubleValue() != null) {
+            SystemConfigProperty defaultConfig = defaultConfigManagementService.getDefaultConfig(name);
+            if(defaultConfig.getDoubleValue() != null) {
                 newConfig.setDoubleValue(Double.parseDouble(value));
-            } else if(existing.getLongValue() != null) {
+            } else if(defaultConfig.getLongValue() != null) {
                 newConfig.setLongValue(Long.parseLong(value));
             } else {
                 newConfig.setStringValue(value);

@@ -22,6 +22,6 @@ public class WarnDecayConfigListener implements ServerConfigListener {
     @Override
     public void updateServerConfig(AServer server) {
         log.info("Updating decay day configuration for server {}.", server.getId());
-        configManagementService.createIfNotExists(server.getId(), WarningDecayFeature.DECAY_DAYS_KEY, defaultConfigManagementService.getDefaultConfig(WarningDecayFeature.DECAY_DAYS_KEY).getLongValue());
+        configManagementService.loadOrCreateIfNotExists(server.getId(), WarningDecayFeature.DECAY_DAYS_KEY, defaultConfigManagementService.getDefaultConfig(WarningDecayFeature.DECAY_DAYS_KEY).getLongValue());
     }
 }

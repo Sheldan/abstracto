@@ -6,7 +6,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <property name="modmailModule" value="(SELECT id FROM module WHERE name = 'modMail')"/>
+    <property name="modmailModule" value="(SELECT id FROM module WHERE name = 'modmail')"/>
     <property name="modmailFeature" value="(SELECT id FROM feature WHERE key = 'modmail')"/>
     <property name="today" value="(SELECT NOW())"/>
 

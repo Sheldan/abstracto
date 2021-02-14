@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.utility.config.features.StarboardFeature;
 import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static dev.sheldan.abstracto.utility.service.StarboardServiceBean.STARBOARD_POST_TEMPLATE;
+import static dev.sheldan.abstracto.utility.config.features.StarboardFeature.STAR_EMOTE_PREFIX;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -148,14 +149,18 @@ public class StarboardServiceBeanTest {
         when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
-        when(config.getLongValue()).thenReturn(3L);
-        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
-        when(configService.getLongValue("starLvl3", SERVER_ID)).thenReturn(3L);
-        when(configService.getLongValue("starLvl2", SERVER_ID)).thenReturn(2L);
-        when(emoteService.getUsableEmoteOrDefault(SERVER_ID, "star2")).thenReturn("b");
+        Long defaultValue = 3L;
+        when(config.getLongValue()).thenReturn(defaultValue);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
+        when(configService.getLongValue(StarboardFeature.STAR_LVL_CONFIG_PREFIX + "2", SERVER_ID, defaultValue)).thenReturn(2L);
+        when(configService.getLongValue(StarboardFeature.STAR_LVL_CONFIG_PREFIX + "3", SERVER_ID, defaultValue)).thenReturn(3L);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + "2")).thenReturn(config);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + "3")).thenReturn(config);
+        when(emoteService.getUsableEmoteOrDefault(SERVER_ID, STAR_EMOTE_PREFIX + "2")).thenReturn("b");
         when(self.sendStarboardPostAndStore(eq(message), eq(STARRED_SERVER_USER_ID), anyList(), any())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<Void> createPostFuture = testUnit.createStarboardPost(message, userExceptAuthor, userReacting, starredUser);
-        Assert.assertTrue(createPostFuture.isDone());
+        createPostFuture.join();
+        Assert.assertFalse(createPostFuture.isCompletedExceptionally());
     }
 
     @Test
@@ -163,7 +168,7 @@ public class StarboardServiceBeanTest {
         CachedMessage message = Mockito.mock(CachedMessage.class);
         when(message.getServerId()).thenReturn(SERVER_ID);
         StarboardPostModel model = Mockito.mock(StarboardPostModel.class);
-        when(templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, model)).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(StarboardServiceBean.STARBOARD_POST_TEMPLATE, model)).thenReturn(messageToSend);
         PostTarget postTarget = Mockito.mock(PostTarget.class);
         when(postTarget.getChannelReference()).thenReturn(starboardChannel);
         when(starboardChannel.getId()).thenReturn(STARBOARD_CHANNEL_ID);
@@ -217,16 +222,19 @@ public class StarboardServiceBeanTest {
         when(post.getSourceChanel()).thenReturn(sourceChannel);
         when(post.getId()).thenReturn(starboardPostId);
         MessageToSend postMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
+        when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
         when(postTargetService.editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(sendPost)));
         when(sendPost.getIdLong()).thenReturn(newPostId);
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
-        when(config.getLongValue()).thenReturn(4L);
-        when(defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
+        when(config.getLongValue()).thenReturn(1L);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
+        when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + 1)).thenReturn(config);
         when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
         when(memberService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredMember));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
-        testUnit.updateStarboardPost(post, message, userExceptAuthor);
+        CompletableFuture<Void> future = testUnit.updateStarboardPost(post, message, userExceptAuthor);
+        future.join();
+        Assert.assertFalse(future.isCompletedExceptionally());
         verify(postTargetService, times(1)).editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID);
         verify(starboardPostManagementService, times(1)).setStarboardPostMessageId(post, newPostId);
     }

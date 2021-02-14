@@ -30,7 +30,7 @@ public class ModMailConfigListener implements ServerConfigListener {
     @Override
     public void updateServerConfig(AServer server) {
         log.info("Updating modmail related configuration for server {}.", server.getId());
-        configService.createIfNotExists(server.getId(), ModMailThreadServiceBean.MODMAIL_CATEGORY, 0L);
-        configService.createIfNotExists(server.getId(), MODMAIL_CLOSING_MESSAGE_TEXT, templateService.renderSimpleTemplate("modmail_closing_user_message_description"));
+        configService.loadOrCreateIfNotExists(server.getId(), ModMailThreadServiceBean.MODMAIL_CATEGORY, 0L);
+        configService.loadOrCreateIfNotExists(server.getId(), MODMAIL_CLOSING_MESSAGE_TEXT, templateService.renderSimpleTemplate("modmail_closing_user_message_description"));
     }
 }

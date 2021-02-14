@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.utility.StarboardFeatureValidator;
-import dev.sheldan.abstracto.utility.service.StarboardServiceBean;
+import dev.sheldan.abstracto.utility.config.features.StarboardFeature;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,10 +23,10 @@ public class StarboardFeatureValidatorService implements StarboardFeatureValidat
 
     @Override
     public void featureIsSetup(FeatureConfig featureConfig, AServer server, FeatureValidationResult validationResult) {
-        int levelAmount = defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY).getLongValue().intValue();
+        int levelAmount = defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LEVELS_CONFIG_KEY).getLongValue().intValue();
         log.info("Validating starboard feature for server {}.", server.getId());
         for(int i = 1; i <= levelAmount; i++) {
-            featureValidatorService.checkSystemConfig("starLvl" + i, server, validationResult);
+            featureValidatorService.checkSystemConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + i, server, validationResult);
         }
     }
 }

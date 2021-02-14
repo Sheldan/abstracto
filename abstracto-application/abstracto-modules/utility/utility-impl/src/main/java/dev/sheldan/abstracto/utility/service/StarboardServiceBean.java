@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
@@ -15,6 +16,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.utility.config.features.StarboardFeature;
 import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
@@ -44,8 +46,6 @@ import java.util.stream.Collectors;
 public class StarboardServiceBean implements StarboardService {
 
     public static final String STARBOARD_POST_TEMPLATE = "starboard_post";
-    public static final String STAR_LVL_CONFIG_PREFIX = "starLvl";
-    public static final String STAR_LEVELS_CONFIG_KEY = "starLvls";
 
     @Autowired
     private MemberService memberService;
@@ -227,17 +227,19 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     private String buildBadgeName(Integer position) {
-        return "starboardBadge" + position;
+        return StarboardFeature.STAR_BADGE_EMOTE_PREFIX + position;
     }
 
     private String getAppropriateEmote(Long serverId, Integer starCount) {
-        int maxLevels = defaultConfigManagementService.getDefaultConfig(StarboardServiceBean.STAR_LEVELS_CONFIG_KEY).getLongValue().intValue();
+        int maxLevels = defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LEVELS_CONFIG_KEY).getLongValue().intValue();
         for(int i = maxLevels; i > 0; i--) {
-            Long starMinimum = configService.getLongValue(STAR_LVL_CONFIG_PREFIX + i, serverId);
+            String key = StarboardFeature.STAR_LVL_CONFIG_PREFIX + i;
+            SystemConfigProperty defaultStars = defaultConfigManagementService.getDefaultConfig(key);
+            Long starMinimum = configService.getLongValue(key, serverId, defaultStars.getLongValue());
             if(starCount >= starMinimum) {
-                return emoteService.getUsableEmoteOrDefault(serverId, "star" + i);
+                return emoteService.getUsableEmoteOrDefault(serverId, StarboardFeature.STAR_EMOTE_PREFIX + i);
             }
         }
-        return emoteService.getUsableEmoteOrDefault(serverId, "star0");
+        return emoteService.getUsableEmoteOrDefault(serverId, StarboardFeature.STAR_EMOTE_PREFIX);
     }
 }

@@ -40,6 +40,17 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
+    public AConfig setOrCreateLongValue(Long serverId, String name, Long value) {
+        AConfig config = loadConfig(serverId, name);
+        if(config == null) {
+            config = createConfig(serverId, name, value);
+        } else {
+            config.setLongValue(value);
+        }
+        return config;
+    }
+
+    @Override
     public AConfig createConfig(Long serverId, String name, String value) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         AConfig config = AConfig
@@ -82,7 +93,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
-    public AConfig createIfNotExists(Long serverId, String name, String value) {
+    public AConfig loadOrCreateIfNotExists(Long serverId, String name, String value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
             return this.createConfig(serverId, name, value);
@@ -91,7 +102,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
-    public AConfig createIfNotExists(Long serverId, String name, Long value) {
+    public AConfig loadOrCreateIfNotExists(Long serverId, String name, Long value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
             return this.createConfig(serverId, name, value);
@@ -100,7 +111,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
     }
 
     @Override
-    public AConfig createIfNotExists(Long serverId, String name, Double value) {
+    public AConfig loadOrCreateIfNotExists(Long serverId, String name, Double value) {
         AConfig config = loadConfig(serverId, name);
         if(config == null) {
             return this.createConfig(serverId, name, value);

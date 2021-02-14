@@ -78,7 +78,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
                         config = self.loadDefaultConfig(systemConfigStepParameter);
                         log.info("It was decided to keep the original value for key {} in server {}.", systemConfigStepParameter.getConfigKey(), user.getGuildId());
                     } else {
-                        config = self.checkValidity(user, systemConfigStepParameter, event);
+                        config = self.checkValidity(systemConfigStepParameter, event);
                         log.trace("The given value for key {} in server {} was valid.", systemConfigStepParameter.getConfigKey(), user.getGuildId());
                     }
                     SystemConfigDelayedActionConfig build = SystemConfigDelayedActionConfig
@@ -120,8 +120,8 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
     }
 
     @Transactional
-    public AConfig checkValidity(AServerChannelUserId user, SystemConfigStepParameter systemConfigStepParameter, MessageReceivedEvent event) {
-        return  configService.getFakeConfigForValue(systemConfigStepParameter.getConfigKey(), user.getGuildId(), event.getMessage().getContentRaw());
+    public AConfig checkValidity(SystemConfigStepParameter systemConfigStepParameter, MessageReceivedEvent event) {
+        return configService.getFakeConfigForValue(systemConfigStepParameter.getConfigKey(), event.getMessage().getContentRaw());
     }
 
 

@@ -26,7 +26,7 @@ public class SetConfig extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         String key = (String) commandContext.getParameters().getParameters().get(0);
         String value = (String) commandContext.getParameters().getParameters().get(1);
-        configService.setConfigValue(key, commandContext.getGuild().getIdLong(), value);
+        configService.setOrCreateConfigValue(key, commandContext.getGuild().getIdLong(), value);
 
         return CommandResult.fromSuccess();
     }
