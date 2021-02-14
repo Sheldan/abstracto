@@ -11,7 +11,7 @@ public class ModerationModule implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(MODERATION).description("Utilities to moderate the server").build();
+        return ModuleInfo.builder().name(MODERATION).templated(true).build();
     }
 
     @Override

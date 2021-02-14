@@ -10,7 +10,7 @@ public class AssignableRoleModule implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(ASSIGNABLE_ROLES).description("Module containing commands for creating and maintaining assignable role posts.").build();
+        return ModuleInfo.builder().name(ASSIGNABLE_ROLES).templated(true).build();
     }
 
     @Override

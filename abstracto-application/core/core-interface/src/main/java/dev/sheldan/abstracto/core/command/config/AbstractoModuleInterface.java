@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 public class AbstractoModuleInterface implements ModuleInterface {
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name("default").description("Default module provided by abstracto").build();
+        return ModuleInfo.builder().name("default").templated(true).build();
     }
 
     @Override

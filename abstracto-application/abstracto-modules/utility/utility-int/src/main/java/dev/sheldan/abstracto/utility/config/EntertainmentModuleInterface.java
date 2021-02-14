@@ -11,7 +11,7 @@ public class EntertainmentModuleInterface implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(ENTERTAINMENT).description("Entertainment commands").build();
+        return ModuleInfo.builder().name(ENTERTAINMENT).templated(true).build();
     }
 
     @Override

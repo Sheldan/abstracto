@@ -11,7 +11,7 @@ public class ChannelsModuleInterface implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(CHANNELS).description("Includes utilities to configure the channel configuration stored in the database").build();
+        return ModuleInfo.builder().name(CHANNELS).templated(true).build();
     }
 
     @Override

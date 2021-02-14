@@ -9,7 +9,7 @@
     <property name="today" value="(SELECT NOW())"/>
     <changeSet author="Sheldan" id="modMail-module-insertion">
         <insert tableName="module">
-            <column name="name" value="modMail"/>
+            <column name="name" value="modmail"/>
             <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>

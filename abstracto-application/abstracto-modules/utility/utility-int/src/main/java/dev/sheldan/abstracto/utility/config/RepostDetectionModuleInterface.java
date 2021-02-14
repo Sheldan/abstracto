@@ -12,7 +12,7 @@ public class RepostDetectionModuleInterface implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(REPOST_DETECTION).description("Commands related to repost detection").build();
+        return ModuleInfo.builder().name(REPOST_DETECTION).templated(true).build();
     }
 
     @Override

@@ -14,7 +14,7 @@ public class EmoteTrackingModule implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(EMOTE_TRACKING).description("Module containing commands related to emote tracking.").build();
+        return ModuleInfo.builder().name(EMOTE_TRACKING).templated(true).build();
     }
 
     @Override

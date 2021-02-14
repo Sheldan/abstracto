@@ -11,7 +11,7 @@ public class ConfigModuleInterface implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(CONFIG).description("Utilities to configure the bot.").build();
+        return ModuleInfo.builder().name(CONFIG).templated(true).build();
     }
 
     @Override

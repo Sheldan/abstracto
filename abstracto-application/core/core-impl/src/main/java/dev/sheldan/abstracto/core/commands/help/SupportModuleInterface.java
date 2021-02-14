@@ -12,7 +12,7 @@ public class SupportModuleInterface implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(SUPPORT).description("Utilities for support").build();
+        return ModuleInfo.builder().name(SUPPORT).templated(true).build();
     }
 
     @Override

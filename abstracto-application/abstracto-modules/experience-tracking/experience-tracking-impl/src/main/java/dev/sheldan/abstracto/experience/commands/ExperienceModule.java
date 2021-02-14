@@ -11,7 +11,7 @@ public class ExperienceModule implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(EXPERIENCE).description("Module containing commands related to experience tracking.").build();
+        return ModuleInfo.builder().name(EXPERIENCE).templated(true).build();
     }
 
     @Override

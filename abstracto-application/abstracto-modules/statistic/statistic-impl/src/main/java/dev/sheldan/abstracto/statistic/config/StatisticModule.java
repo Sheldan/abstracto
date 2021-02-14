@@ -14,7 +14,7 @@ public class StatisticModule implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(STATISTIC).description("Module containing commands related to statistic.").build();
+        return ModuleInfo.builder().name(STATISTIC).templated(true).build();
     }
 
     @Override

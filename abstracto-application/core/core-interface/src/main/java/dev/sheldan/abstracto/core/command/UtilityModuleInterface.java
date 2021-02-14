@@ -11,7 +11,7 @@ public class UtilityModuleInterface implements ModuleInterface {
 
     @Override
     public ModuleInfo getInfo() {
-        return ModuleInfo.builder().name(UTILITY).description("General utilities").build();
+        return ModuleInfo.builder().name(UTILITY).templated(true).build();
     }
 
     @Override
