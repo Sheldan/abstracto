@@ -2,15 +2,19 @@ package dev.sheldan.abstracto.utility.service;
 
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.templating.model.MessageToSend;
 import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.models.MessageEmbedLink;
 import dev.sheldan.abstracto.utility.service.management.MessageEmbedPostManagementService;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -24,7 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
+import static dev.sheldan.abstracto.utility.service.MessageEmbedServiceBean.MESSAGE_EMBED_TEMPLATE;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,13 +67,19 @@ public class MessageEmbedServiceBeanTest {
     private MessageEmbedPostManagementService messageEmbedPostManagementService;
 
     @Mock
-    private MessageService messageService;
+    private ReactionService reactionService;
 
     @Mock
     private TextChannel textChannel;
 
     @Mock
     private Message embeddingMessage;
+
+    @Mock
+    private Guild guild;
+
+    @Mock
+    private CachedMessage cachedMessage;
 
     @Captor
     private ArgumentCaptor<CachedMessage> cachedMessageArgumentCaptor;
@@ -86,6 +98,9 @@ public class MessageEmbedServiceBeanTest {
 
     @Mock
     private Member embeddingMember;
+
+    @Mock
+    private Member embeddedMember;
 
     @Test
     public void testNoLinkInString(){
@@ -138,6 +153,7 @@ public class MessageEmbedServiceBeanTest {
     @Test
     public void testEmbedNoLinks() {
         testUnit.embedLinks(new ArrayList<>(), textChannel, 5L, embeddingMessage);
+        verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
     }
 
     @Test
@@ -183,25 +199,8 @@ public class MessageEmbedServiceBeanTest {
         Assert.assertEquals(secondMessageId, secondEmbeddedMessage.getMessageId());
     }
 
-    private MessageEmbedLink mockMessageEmbedLink(Long messageId) {
-        MessageEmbedLink secondMessageEmbedLink = Mockito.mock(MessageEmbedLink.class);
-        when(secondMessageEmbedLink.getServerId()).thenReturn(SERVER_ID);
-        when(secondMessageEmbedLink.getChannelId()).thenReturn(CHANNEL_ID);
-        when(secondMessageEmbedLink.getMessageId()).thenReturn(messageId);
-        return secondMessageEmbedLink;
-    }
-
-    private CachedMessage mockCachedMessage(Long secondMessageId) {
-        CachedMessage secondCacheMessage = Mockito.mock(CachedMessage.class);
-        when(secondCacheMessage.getServerId()).thenReturn(SERVER_ID);
-        when(secondCacheMessage.getChannelId()).thenReturn(CHANNEL_ID);
-        when(secondCacheMessage.getMessageId()).thenReturn(secondMessageId);
-        return secondCacheMessage;
-    }
-
     @Test
     public void testLoadingEmbeddingModel() {
-        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
         when(cachedAuthor.getAuthorId()).thenReturn(USER_ID);
@@ -222,8 +221,51 @@ public class MessageEmbedServiceBeanTest {
         Long userEmbeddingUserInServerId = 5L;
         when(userInServerManagementService.loadUserOptional(userEmbeddingUserInServerId)).thenReturn(Optional.empty());
         testUnit.embedLink(cachedMessage, textChannel, userEmbeddingUserInServerId, embeddingMessage);
+        verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
     }
 
+    @Test
+    public void testSendEmbeddingMessage() {
+        MessageEmbeddedModel embeddedModel = Mockito.mock(MessageEmbeddedModel.class);
+        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
+        when(templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, embeddedModel)).thenReturn(messageToSend);
+        AUser user = Mockito.mock(AUser.class);
+        when(embeddingUser.getUserReference()).thenReturn(user);
+        when(userInServerManagementService.loadOrCreateUser(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(embeddingUser);
+        List<CompletableFuture<Message>> messageFutures = CommandTestUtilities.messageFutureList();
+        when(channelService.sendMessageToSendToChannel(messageToSend, textChannel)).thenReturn(messageFutures);
+        Message createdMessage = messageFutures.get(0).join();
+        when(reactionService.addReactionToMessageAsync(MessageEmbedServiceBean.REMOVAL_EMOTE, cachedMessage.getServerId(),
+                createdMessage)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<Void> future = testUnit.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, embeddedModel);
+        Assert.assertFalse(future.isCompletedExceptionally());
+        verify(self, times(1)).loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, createdMessage);
+    }
+
+    @Test
+    public void testLoadUserAndPersistMessage() {
+        when(userInServerManagementService.loadOrCreateUser(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(embeddingUser);
+        testUnit.loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage);
+        verify(messageEmbedPostManagementService, times(1)).createMessageEmbed(cachedMessage, embeddingMessage, embeddingUser);
+    }
+
+    @Test
+    public void testLoadMessageEmbedModel() {
+        when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(cachedMessage.getChannelId()).thenReturn(CHANNEL_ID);
+        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(textChannel));
+        when(embeddingMessage.getGuild()).thenReturn(guild);
+        when(embeddingMessage.getChannel()).thenReturn(textChannel);
+        when(embeddingMessage.getMember()).thenReturn(embeddingMember);
+        MessageEmbeddedModel createdModel = testUnit.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedMember);
+        Assert.assertEquals(textChannel, createdModel.getSourceChannel());
+        Assert.assertEquals(guild, createdModel.getGuild());
+        Assert.assertEquals(textChannel, createdModel.getMessageChannel());
+        Assert.assertEquals(embeddedMember, createdModel.getAuthor());
+        Assert.assertEquals(embeddingMember, createdModel.getMember());
+        Assert.assertEquals(embeddingMember, createdModel.getEmbeddingUser());
+        Assert.assertEquals(cachedMessage, createdModel.getEmbeddedMessage());
+    }
     private void executeTestWithTwoLinks(String message) {
         List<MessageEmbedLink> linksInMessage = testUnit.getLinksInMessage(message);
         Assert.assertEquals(2, linksInMessage.size());
@@ -236,5 +278,21 @@ public class MessageEmbedServiceBeanTest {
         Assert.assertEquals(2, secondLink.getServerId().intValue());
         Assert.assertEquals(3, secondLink.getChannelId().intValue());
         Assert.assertEquals(4, secondLink.getMessageId().intValue());
+    }
+
+    private MessageEmbedLink mockMessageEmbedLink(Long messageId) {
+        MessageEmbedLink secondMessageEmbedLink = Mockito.mock(MessageEmbedLink.class);
+        when(secondMessageEmbedLink.getServerId()).thenReturn(SERVER_ID);
+        when(secondMessageEmbedLink.getChannelId()).thenReturn(CHANNEL_ID);
+        when(secondMessageEmbedLink.getMessageId()).thenReturn(messageId);
+        return secondMessageEmbedLink;
+    }
+
+    private CachedMessage mockCachedMessage(Long secondMessageId) {
+        CachedMessage secondCacheMessage = Mockito.mock(CachedMessage.class);
+        when(secondCacheMessage.getServerId()).thenReturn(SERVER_ID);
+        when(secondCacheMessage.getChannelId()).thenReturn(CHANNEL_ID);
+        when(secondCacheMessage.getMessageId()).thenReturn(secondMessageId);
+        return secondCacheMessage;
     }
 }

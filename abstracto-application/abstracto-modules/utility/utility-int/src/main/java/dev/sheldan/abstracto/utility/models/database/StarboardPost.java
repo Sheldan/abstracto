@@ -46,7 +46,7 @@ public class StarboardPost implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_channel_id", nullable = false)
-    private AChannel sourceChanel;
+    private AChannel sourceChannel;
 
     @Transient
     private Integer reactionCount;

@@ -12,6 +12,9 @@ public interface StarboardPostManagementService {
     StarboardPost createStarboardPost(CachedMessage starredMessage, AUserInAServer starredUser, AServerAChannelMessage starboardPost);
     void setStarboardPostMessageId(StarboardPost post, Long messageId);
     List<StarboardPost> retrieveTopPosts(Long serverId, Integer count);
+    List<StarboardPost> retrieveTopPostsForUserInServer(Long serverId, Long userId, Integer count);
+    Long retrieveGivenStarsOfUserInServer(Long serverId, Long userId);
+    Long retrieveReceivedStarsOfUserInServer(Long serverId, Long userId);
     List<StarboardPost> retrieveAllPosts(Long serverId);
     Integer getPostCount(Long serverId);
     Optional<StarboardPost> findByMessageId(Long messageId);

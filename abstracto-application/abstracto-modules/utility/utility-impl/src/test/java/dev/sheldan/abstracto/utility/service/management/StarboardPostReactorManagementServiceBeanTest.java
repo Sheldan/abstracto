@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
-import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
+import dev.sheldan.abstracto.utility.repository.StarStatsGuildUserResult;
 import dev.sheldan.abstracto.utility.repository.StarboardPostReactionRepository;
 import dev.sheldan.abstracto.utility.repository.converter.StarStatsUserConverter;
 import org.junit.Assert;
@@ -131,9 +131,9 @@ public class StarboardPostReactorManagementServiceBeanTest {
     }
 
     private void setupStarStatsGiverResult(Integer amountToRetrieve, Long serverId, StarStatsUser user1, StarStatsUser user2) {
-        StarStatsUserResult result1 = Mockito.mock(StarStatsUserResult.class);
-        StarStatsUserResult result2 = Mockito.mock(StarStatsUserResult.class);
-        List<StarStatsUserResult> results = Arrays.asList(result1, result2);
+        StarStatsGuildUserResult result1 = Mockito.mock(StarStatsGuildUserResult.class);
+        StarStatsGuildUserResult result2 = Mockito.mock(StarStatsGuildUserResult.class);
+        List<StarStatsGuildUserResult> results = Arrays.asList(result1, result2);
         when(repository.findTopStarGiverInServer(serverId, amountToRetrieve)).thenReturn(results);
         List<CompletableFuture<StarStatsUser>> statsUser = new ArrayList<>();
         statsUser.add(CompletableFuture.completedFuture(user1));
@@ -144,9 +144,9 @@ public class StarboardPostReactorManagementServiceBeanTest {
     }
 
     private void setupStarStatsReceiverResult(Integer amountToRetrieve, Long serverId, StarStatsUser user1, StarStatsUser user2) {
-        StarStatsUserResult result1 = Mockito.mock(StarStatsUserResult.class);
-        StarStatsUserResult result2 = Mockito.mock(StarStatsUserResult.class);
-        List<StarStatsUserResult> results = Arrays.asList(result1, result2);
+        StarStatsGuildUserResult result1 = Mockito.mock(StarStatsGuildUserResult.class);
+        StarStatsGuildUserResult result2 = Mockito.mock(StarStatsGuildUserResult.class);
+        List<StarStatsGuildUserResult> results = Arrays.asList(result1, result2);
         when(repository.retrieveTopStarReceiverInServer(serverId, amountToRetrieve)).thenReturn(results);
         List<CompletableFuture<StarStatsUser>> statsUser = new ArrayList<>();
         statsUser.add(CompletableFuture.completedFuture(user1));

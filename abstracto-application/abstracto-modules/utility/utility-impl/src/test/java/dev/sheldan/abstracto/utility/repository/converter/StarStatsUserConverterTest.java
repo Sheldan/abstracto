@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
-import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
+import dev.sheldan.abstracto.utility.repository.StarStatsGuildUserResult;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,8 +40,8 @@ public class StarStatsUserConverterTest {
         Integer firstStarCount = 5;
         Long secondUserId = 9L;
         Integer secondStarCount = 10;
-        List<StarStatsUserResult> results = new ArrayList<>();
-        StarStatsUserResult firstResult = Mockito.mock(StarStatsUserResult.class);
+        List<StarStatsGuildUserResult> results = new ArrayList<>();
+        StarStatsGuildUserResult firstResult = Mockito.mock(StarStatsGuildUserResult.class);
         Member firstMember = Mockito.mock(Member.class);
         AUserInAServer firstUser = Mockito.mock(AUserInAServer.class);
         AUser firstAUser = Mockito.mock(AUser.class);
@@ -52,7 +52,7 @@ public class StarStatsUserConverterTest {
         when(firstResult.getUserId()).thenReturn(firstUserId);
         when(firstResult.getStarCount()).thenReturn(firstStarCount);
         results.add(firstResult);
-        StarStatsUserResult secondResult = Mockito.mock(StarStatsUserResult.class);
+        StarStatsGuildUserResult secondResult = Mockito.mock(StarStatsGuildUserResult.class);
         Member secondMember = Mockito.mock(Member.class);
         AUserInAServer secondUser = Mockito.mock(AUserInAServer.class);
         AUser secondAUser = Mockito.mock(AUser.class);
@@ -80,7 +80,7 @@ public class StarStatsUserConverterTest {
     @Test
     public void testConversionOfEmptyList() {
         Long serverId = 5L;
-        List<StarStatsUserResult> results = new ArrayList<>();
+        List<StarStatsGuildUserResult> results = new ArrayList<>();
 
         List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
         verify(memberService, times(0)).getMemberInServer(eq(serverId), anyLong());

@@ -53,8 +53,8 @@ Feature key: `starboard`
 
 ==== Commands
 Showing starboard statistics::
-* Usage `starStats`
-* Description: Shows the most starred posts, the member with the most received stars and the members rewarding the most stars.
+* Usage `starStats [member]`
+* Description: Shows the most starred posts, the member with the most received stars and the members rewarding the most stars. If `member` is provided, this command will show the top posts, received stars and given stars for this member. The user is still required to be part of the server.
 
 === Suggestions
 

@@ -41,7 +41,7 @@ public class StarboardPostDeletedListenerTest {
         Long serverId = 3L;
         AChannel sourceChannel = Mockito.mock(AChannel.class);
         StarboardPost post = Mockito.mock(StarboardPost.class);
-        when(post.getSourceChanel()) .thenReturn(sourceChannel);
+        when(post.getSourceChannel()) .thenReturn(sourceChannel);
         when(post.getPostMessageId()).thenReturn(postMessageId);
         when(starboardPostManagementService.findByStarboardPostId(messageId)).thenReturn(Optional.of(post));
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);

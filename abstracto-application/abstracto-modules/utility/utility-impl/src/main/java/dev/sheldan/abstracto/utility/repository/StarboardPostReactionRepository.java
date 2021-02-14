@@ -21,7 +21,7 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
             "GROUP BY r.reactor_user_in_server_id \n" +
             "ORDER BY starCount DESC \n" +
             "LIMIT :count", nativeQuery = true)
-    List<StarStatsUserResult> findTopStarGiverInServer(Long serverId, Integer count);
+    List<StarStatsGuildUserResult> findTopStarGiverInServer(Long serverId, Integer count);
 
     @Query(value = "SELECT COUNT(*) \n" +
             "FROM starboard_post_reaction r \n" +
@@ -37,5 +37,5 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
             "GROUP BY p.author_user_in_server_id \n" +
             "ORDER BY starCount DESC \n" +
             "LIMIT :count", nativeQuery = true)
-    List<StarStatsUserResult> retrieveTopStarReceiverInServer(Long serverId, Integer count);
+    List<StarStatsGuildUserResult> retrieveTopStarReceiverInServer(Long serverId, Integer count);
 }

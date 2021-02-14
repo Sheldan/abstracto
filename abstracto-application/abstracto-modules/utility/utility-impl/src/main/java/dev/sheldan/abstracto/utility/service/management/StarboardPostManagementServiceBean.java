@@ -34,7 +34,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
                 .builder()
                 .author(starredUser)
                 .postMessageId(starredMessage.getMessageId())
-                .sourceChanel(build)
+                .sourceChannel(build)
                 .ignored(false)
                 .server(starboardPost.getServer())
                 .starboardMessageId(starboardPost.getMessageId())
@@ -61,6 +61,22 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
         posts.sort(Comparator.comparingInt(o -> o.getReactions().size()));
         Collections.reverse(posts);
         return posts.subList(0, Math.min(count, posts.size()));
+    }
+
+    @Override
+    public List<StarboardPost> retrieveTopPostsForUserInServer(Long serverId, Long userId, Integer count) {
+        List<Long> topPostIds = repository.getTopStarboardPostsForUser(serverId, userId, count);
+        return repository.findAllById(topPostIds);
+    }
+
+    @Override
+    public Long retrieveGivenStarsOfUserInServer(Long serverId, Long userId) {
+        return repository.getGivenStarsOfUserInServer(serverId, userId);
+    }
+
+    @Override
+    public Long retrieveReceivedStarsOfUserInServer(Long serverId, Long userId) {
+        return repository.getReceivedStarsOfUserInServer(serverId, userId);
     }
 
     @Override

@@ -19,14 +19,12 @@ import dev.sheldan.abstracto.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.features.StarboardFeature;
 import dev.sheldan.abstracto.utility.config.posttargets.StarboardPostTarget;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
-import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsModel;
-import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsPost;
-import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
-import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarboardPostModel;
+import dev.sheldan.abstracto.utility.models.template.commands.starboard.*;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.utility.service.management.StarboardPostReactorManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,7 +158,7 @@ public class StarboardServiceBean implements StarboardService {
     @Override
     public CompletableFuture<Void> updateStarboardPost(StarboardPost post, CachedMessage message, List<AUserInAServer> userExceptAuthor)  {
         int starCount = userExceptAuthor.size();
-        log.info("Updating starboard post {} in server {} with reactors {}.", post.getId(), post.getSourceChanel().getServer().getId(), starCount);
+        log.info("Updating starboard post {} in server {} with reactors {}.", post.getId(), post.getSourceChannel().getServer().getId(), starCount);
         return buildStarboardPostModel(message, starCount).thenCompose(starboardPostModel -> {
             MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
             List<CompletableFuture<Message>> futures = postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
@@ -175,12 +173,12 @@ public class StarboardServiceBean implements StarboardService {
     @Override
     public void deleteStarboardMessagePost(StarboardPost message)  {
         AChannel starboardChannel = message.getStarboardChannel();
-        log.info("Deleting starboard post {} in server {}", message.getId(), message.getSourceChanel().getServer().getId());
+        log.info("Deleting starboard post {} in server {}", message.getId(), message.getSourceChannel().getServer().getId());
         messageService.deleteMessageInChannelInServer(starboardChannel.getServer().getId(), starboardChannel.getId(), message.getStarboardMessageId());
     }
 
     @Override
-    public CompletableFuture<StarStatsModel> retrieveStarStats(Long serverId)  {
+    public CompletableFuture<GuildStarStatsModel> retrieveStarStats(Long serverId)  {
         int count = 3;
         List<CompletableFuture<StarStatsUser>> topStarGiverFutures = starboardPostReactorManagementService.retrieveTopStarGiver(serverId, count);
         List<CompletableFuture<StarStatsUser>> topStarReceiverFutures = starboardPostReactorManagementService.retrieveTopStarReceiver(serverId, count);
@@ -198,7 +196,7 @@ public class StarboardServiceBean implements StarboardService {
             }
             List<StarStatsUser> topStarGivers = topStarGiverFutures.stream().map(CompletableFuture::join).collect(Collectors.toList());
             List<StarStatsUser> topStarReceiver = topStarReceiverFutures.stream().map(CompletableFuture::join).collect(Collectors.toList());
-            return StarStatsModel
+            return GuildStarStatsModel
                     .builder()
                     .badgeEmotes(emotes)
                     .starGiver(topStarGivers)
@@ -211,11 +209,32 @@ public class StarboardServiceBean implements StarboardService {
 
     }
 
+    @Override
+    public MemberStarStatsModel retrieveStarStatsForMember(Member member) {
+        int count = 3;
+        Long receivedStars = starboardPostManagementService.retrieveReceivedStarsOfUserInServer(member.getGuild().getIdLong(), member.getIdLong());
+        Long givenStars = starboardPostManagementService.retrieveGivenStarsOfUserInServer(member.getGuild().getIdLong(), member.getIdLong());
+        List<StarboardPost> topPosts = starboardPostManagementService.retrieveTopPostsForUserInServer(member.getGuild().getIdLong(), member.getIdLong(), count);
+        List<StarStatsPost> starStatsPosts = topPosts.stream().map(this::fromStarboardPost).collect(Collectors.toList());
+        List<String> emotes = new ArrayList<>();
+        for (int i = 1; i < count + 1; i++) {
+            emotes.add(getStarboardRankingEmote(member.getGuild().getIdLong(), i));
+        }
+        return MemberStarStatsModel
+                .builder()
+                .member(member)
+                .topPosts(starStatsPosts)
+                .badgeEmotes(emotes)
+                .receivedStars(receivedStars)
+                .givenStars(givenStars)
+                .build();
+    }
+
     public StarStatsPost fromStarboardPost(StarboardPost starboardPost) {
         AChannel channel = starboardPost.getStarboardChannel();
         return StarStatsPost
                 .builder()
-                .serverId(channel.getServer().getId())
+                .serverId(starboardPost.getServer().getId())
                 .channelId(channel.getId())
                 .messageId(starboardPost.getPostMessageId())
                 .starCount(starboardPost.getReactions().size())

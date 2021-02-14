@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -118,17 +117,16 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     @Transactional
-    public CompletionStage<Void> sendEmbeddingMessage(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, MessageEmbeddedModel messageEmbeddedModel) {
+    public CompletableFuture<Void> sendEmbeddingMessage(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, MessageEmbeddedModel messageEmbeddedModel) {
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel);
         AUserInAServer cause = userInServerManagementService.loadOrCreateUser(userEmbeddingUserInServerId);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
         log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
                 cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
-        Long userInServerId = cause.getUserInServerId();
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
             Message createdMessage = completableFutures.get(0).join();
             return reactionService.addReactionToMessageAsync(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage).thenAccept(aVoid1 ->
-                self.loadUserAndPersistMessage(cachedMessage, userInServerId, createdMessage)
+                self.loadUserAndPersistMessage(cachedMessage, userEmbeddingUserInServerId, createdMessage)
             );
         });
     }

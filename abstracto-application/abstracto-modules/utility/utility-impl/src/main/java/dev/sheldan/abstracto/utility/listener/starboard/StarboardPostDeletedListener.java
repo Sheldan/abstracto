@@ -25,7 +25,7 @@ public class StarboardPostDeletedListener implements AsyncMessageDeletedListener
         if(byStarboardPostId.isPresent()) {
             StarboardPost post = byStarboardPostId.get();
             log.info("Removing starboard post: message {}, channel {}, server {}, because the message was deleted",
-                    post.getPostMessageId(), post.getSourceChanel().getId(), messageBefore.getServerId());
+                    post.getPostMessageId(), post.getSourceChannel().getId(), messageBefore.getServerId());
             starboardPostManagementService.setStarboardPostIgnored(messageBefore.getMessageId(), true);
         }
     }

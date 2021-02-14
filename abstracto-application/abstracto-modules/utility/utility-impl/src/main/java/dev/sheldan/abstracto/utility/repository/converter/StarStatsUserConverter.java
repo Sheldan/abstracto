@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
-import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
+import dev.sheldan.abstracto.utility.repository.StarStatsGuildUserResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,7 @@ public class StarStatsUserConverter {
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
-    public List<CompletableFuture<StarStatsUser>> convertToStarStatsUser(List<StarStatsUserResult> users, Long serverId) {
+    public List<CompletableFuture<StarStatsUser>> convertToStarStatsUser(List<StarStatsGuildUserResult> users, Long serverId) {
         List<CompletableFuture<StarStatsUser>> result = new ArrayList<>();
         users.forEach(starStatsUserResult ->
             result.add(createStarStatsUser(serverId, starStatsUserResult))
@@ -30,15 +30,15 @@ public class StarStatsUserConverter {
         return result;
     }
 
-    private CompletableFuture<StarStatsUser> createStarStatsUser(Long serverId, StarStatsUserResult starStatsUserResult) {
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(starStatsUserResult.getUserId());
+    private CompletableFuture<StarStatsUser> createStarStatsUser(Long serverId, StarStatsGuildUserResult starStatsGuildUserResult) {
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(starStatsGuildUserResult.getUserId());
         return memberService.getMemberInServerAsync(serverId, aUserInAServer.getUserReference().getId()).thenApply(member ->
             StarStatsUser
                     .builder()
-                    .starCount(starStatsUserResult.getStarCount())
+                    .starCount(starStatsGuildUserResult.getStarCount())
                     .member(member)
                     // TODO properly load this instance instead of just building one
-                    .user(AUser.builder().id(starStatsUserResult.getUserId()).build())
+                    .user(AUser.builder().id(starStatsGuildUserResult.getUserId()).build())
                     .build()
         );
     }

@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
-import dev.sheldan.abstracto.utility.repository.StarStatsUserResult;
+import dev.sheldan.abstracto.utility.repository.StarStatsGuildUserResult;
 import dev.sheldan.abstracto.utility.repository.StarboardPostReactionRepository;
 import dev.sheldan.abstracto.utility.repository.converter.StarStatsUserConverter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,13 +55,13 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
 
     @Override
     public List<CompletableFuture<StarStatsUser>> retrieveTopStarGiver(Long serverId, Integer count) {
-        List<StarStatsUserResult> starGivers = repository.findTopStarGiverInServer(serverId, count);
+        List<StarStatsGuildUserResult> starGivers = repository.findTopStarGiverInServer(serverId, count);
         return converter.convertToStarStatsUser(starGivers, serverId);
     }
 
     @Override
     public List<CompletableFuture<StarStatsUser>> retrieveTopStarReceiver(Long serverId, Integer count) {
-        List<StarStatsUserResult> starReceivers = repository.retrieveTopStarReceiverInServer(serverId, count);
+        List<StarStatsGuildUserResult> starReceivers = repository.retrieveTopStarReceiverInServer(serverId, count);
         return converter.convertToStarStatsUser(starReceivers, serverId);
     }
 

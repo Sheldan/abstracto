@@ -64,7 +64,7 @@ public class StarboardPostManagementServiceBeanTest {
         Assert.assertEquals(starboardPostId, createdStarboardPost.getStarboardMessageId());
         Assert.assertEquals(starredMessageId, createdStarboardPost.getPostMessageId());
         Assert.assertEquals(userInAServer.getUserInServerId(), createdStarboardPost.getAuthor().getUserInServerId());
-        Assert.assertEquals(sourceChannel.getId(), createdStarboardPost.getSourceChanel().getId());
+        Assert.assertEquals(sourceChannel.getId(), createdStarboardPost.getSourceChannel().getId());
         Assert.assertFalse(createdStarboardPost.isIgnored());
     }
 
