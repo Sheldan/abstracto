@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
                 return null;
             });
         } else {
-            log.info("User {} does not have an open modmail thread. Crating prompt.", user.getId());
+            log.info("User {} does not have an open modmail thread. Creating prompt.", user.getId());
             modMailThreadService.createModMailPrompt(user, message);
         }
     }

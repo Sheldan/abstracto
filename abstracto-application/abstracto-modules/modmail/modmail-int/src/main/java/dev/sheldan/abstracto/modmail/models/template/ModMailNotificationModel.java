@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.List;
 
@@ -31,4 +32,8 @@ public class ModMailNotificationModel extends ServerContext {
      * A list of roles which will be notified upon creation of the mod mail thread.
      */
     private List<ModMailRole> roles;
+    /**
+     * The {@link TextChannel} in which the mod mail thread is handled
+     */
+    private TextChannel channel;
 }

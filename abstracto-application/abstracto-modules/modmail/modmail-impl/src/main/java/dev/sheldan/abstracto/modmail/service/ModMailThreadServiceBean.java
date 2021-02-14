@@ -169,7 +169,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     /**
      * The emoji used when the user can decide for a server to open a mod mail thread in.
      */
-    private List<String> NUMBER_EMOJI = Arrays.asList("\u0031\u20e3", "\u0032\u20e3", "\u0033\u20e3",
+    private static List<String> NUMBER_EMOJI = Arrays.asList("\u0031\u20e3", "\u0032\u20e3", "\u0033\u20e3",
             "\u0034\u20e3", "\u0035\u20e3", "\u0036\u20e3",
             "\u0037\u20e3", "\u0038\u20e3", "\u0039\u20e3",
             "\u0040\u20e3");
@@ -213,7 +213,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         }
         CompletableFuture notificationFuture;
         if (userInitiated) {
-            notificationFuture = self.sendModMailNotification(member);
+            notificationFuture = self.sendModMailNotification(member, channel);
         } else {
             notificationFuture = CompletableFuture.completedFuture(null);
         }
@@ -239,7 +239,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param member The {@link FullUserInServer} which opened the thread
      */
     @Transactional
-    public CompletableFuture<Void> sendModMailNotification(Member member) {
+    public CompletableFuture<Void> sendModMailNotification(Member member, TextChannel channel) {
         Long serverId = member.getGuild().getIdLong();
         log.info("Sending modmail notification for new modmail thread about user {} in server {}.", member.getId(), serverId);
         AServer server = serverManagementService.loadServer(serverId);
@@ -249,6 +249,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .builder()
                 .member(member)
                 .roles(rolesToPing)
+                .channel(channel)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel);
         List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId);
