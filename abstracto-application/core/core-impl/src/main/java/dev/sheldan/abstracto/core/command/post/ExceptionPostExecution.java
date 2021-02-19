@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,9 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ExceptionPostExecution implements PostCommandExecution {
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private ExceptionService exceptionService;

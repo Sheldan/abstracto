@@ -39,7 +39,7 @@ public class StarStatsTest {
         GuildStarStatsModel guildStarStatsModel = GuildStarStatsModel.builder().build();
         when(starboardService.retrieveStarStats(noParameters.getGuild().getIdLong())).thenReturn(CompletableFuture.completedFuture(guildStarStatsModel));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(StarStats.STARSTATS_RESPONSE_TEMPLATE, guildStarStatsModel, noParameters.getChannel());
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(StarStats.STARSTATS_RESPONSE_TEMPLATE, guildStarStatsModel, noParameters.getChannel());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
@@ -50,7 +50,7 @@ public class StarStatsTest {
         MemberStarStatsModel model = Mockito.mock(MemberStarStatsModel.class);
         when(starboardService.retrieveStarStatsForMember(member)).thenReturn(model);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(memberParameter);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(StarStats.STARSTATS_SINGLE_MEMBER_RESPONSE_TEMPLATE, model, memberParameter.getChannel());
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(StarStats.STARSTATS_SINGLE_MEMBER_RESPONSE_TEMPLATE, model, memberParameter.getChannel());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 

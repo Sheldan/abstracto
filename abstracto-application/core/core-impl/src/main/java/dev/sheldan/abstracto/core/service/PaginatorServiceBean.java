@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
 import dev.sheldan.abstracto.core.model.PaginatorConfiguration;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class PaginatorServiceBean implements PaginatorService {
     private MessageService messageService;
 
     @Override
-    public Paginator createPaginatorFromTemplate(String templateKey, Object model, EventWaiter waiter) {
+    public Paginator createPaginatorFromTemplate(String templateKey, Object model, EventWaiter waiter, Long server) {
         String embedConfig = templateService.renderTemplate(templateKey + "_paginator", model);
         PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
         List<String> items = configuration.getItems();

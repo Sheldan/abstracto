@@ -48,7 +48,7 @@ public class ShowExternalTrackedEmote extends AbstractConditionableCommand {
         if(!trackedEmote.getExternal()) {
             throw new AbstractoTemplatedException("Emote is not external", "showExternalTrackedEmote_emote_is_not_external");
         }
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, trackedEmote, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, trackedEmote, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

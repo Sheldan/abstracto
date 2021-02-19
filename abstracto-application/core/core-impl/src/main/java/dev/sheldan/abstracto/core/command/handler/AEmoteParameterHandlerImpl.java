@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AEmoteParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -25,12 +26,12 @@ public class AEmoteParameterHandlerImpl implements AEmoteParameterHandler {
     }
 
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
         Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
         if(emote != null) {
             return emoteService.getFakeEmoteFromEmote(emote);
         } else {
-            return emoteService.getFakeEmote(input);
+            return emoteService.getFakeEmote(input.getValue());
         }
     }
 

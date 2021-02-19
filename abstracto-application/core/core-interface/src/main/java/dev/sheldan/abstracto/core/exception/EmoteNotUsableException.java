@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.exception.EmoteNotUsableExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 import net.dv8tion.jda.api.entities.Emote;
 
 public class EmoteNotUsableException extends AbstractoRunTimeException implements Templatable {

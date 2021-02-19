@@ -37,7 +37,7 @@ public class ConditionPostExecution implements PostCommandExecution {
                             .member(commandContext.getAuthor())
                             .build())
                     .build();
-            channelService.sendEmbedTemplateInChannel(GENERIC_COMMAND_EXCEPTION_MODEL_KEY, conditionModel, commandContext.getChannel());
+            channelService.sendEmbedTemplateInTextChannelList(GENERIC_COMMAND_EXCEPTION_MODEL_KEY, conditionModel, commandContext.getChannel());
         }
     }
 }

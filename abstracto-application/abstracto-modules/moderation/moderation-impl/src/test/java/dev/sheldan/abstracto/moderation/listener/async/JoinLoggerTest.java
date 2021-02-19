@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +57,7 @@ public class JoinLoggerTest {
     public void testJoinLog() {
         String message = "text";
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
-        when(templateService.renderTemplateWithMap(eq(JoinLogger.USER_JOIN_TEMPLATE), any())).thenReturn(message);
+        when(templateService.renderTemplateWithMap(eq(JoinLogger.USER_JOIN_TEMPLATE), any(), eq(SERVER_ID))).thenReturn(message);
         testUnit.sendJoinLog(serverUser, member);
         verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.JOIN_LOG, SERVER_ID);
     }

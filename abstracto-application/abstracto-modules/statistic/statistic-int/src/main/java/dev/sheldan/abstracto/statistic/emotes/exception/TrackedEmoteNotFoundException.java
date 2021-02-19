@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.statistic.emotes.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 /**
  * Exception which is cased in a case the {@link dev.sheldan.abstracto.statistic.emotes.model.database.TrackedEmote} could not be found.

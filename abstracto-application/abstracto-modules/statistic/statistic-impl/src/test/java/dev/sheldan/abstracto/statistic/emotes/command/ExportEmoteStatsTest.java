@@ -3,19 +3,19 @@ package dev.sheldan.abstracto.statistic.emotes.command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.UploadFileTooLargeException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
-import dev.sheldan.abstracto.core.utils.FileUtils;
+import dev.sheldan.abstracto.core.utils.FileService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
-import dev.sheldan.abstracto.statistic.emotes.exception.DownloadEmoteStatsFileTooBigException;
 import dev.sheldan.abstracto.statistic.emotes.model.DownloadEmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.management.UsedEmoteManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +55,7 @@ public class ExportEmoteStatsTest {
     private UsedEmoteManagementService usedEmoteManagementService;
 
     @Mock
-    private FileUtils fileUtils;
+    private FileService fileService;
 
     @Captor
     private ArgumentCaptor<DownloadEmoteStatsModel> modelArgumentCaptor;
@@ -74,16 +74,16 @@ public class ExportEmoteStatsTest {
         when(commandContext.getGuild().getMaxFileSize()).thenReturn(4L);
         mockServerAndFileRendering(commandContext);
         File file = Mockito.mock(File.class);
-        when(fileUtils.createTempFile(FILE_NAME)).thenReturn(file);
+        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
         when(file.length()).thenReturn(3L);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY), any())).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(fileUtils, times(1)).writeContentToFile(file, FILE_CONTENT);
+        verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
         verify(messageToSend, times(1)).setFileToSend(file);
-        verify(fileUtils, times(1)).safeDelete(file);
+        verify(fileService, times(1)).safeDelete(file);
         verifyModel();
     }
 
@@ -99,16 +99,16 @@ public class ExportEmoteStatsTest {
         when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY), modelArgumentCaptor.capture())).thenReturn(FILE_NAME);
         when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY), any())).thenReturn(FILE_CONTENT);
         File file = Mockito.mock(File.class);
-        when(fileUtils.createTempFile(FILE_NAME)).thenReturn(file);
+        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
         when(file.length()).thenReturn(3L);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY), any())).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(fileUtils, times(1)).writeContentToFile(file, FILE_CONTENT);
+        verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
         verify(messageToSend, times(1)).setFileToSend(file);
-        verify(fileUtils, times(1)).safeDelete(file);
+        verify(fileService, times(1)).safeDelete(file);
         verifyModel();
     }
 
@@ -122,7 +122,7 @@ public class ExportEmoteStatsTest {
         when(usedEmoteManagementService.loadEmoteUsagesForServerSince(server, Instant.EPOCH)).thenReturn(usedEmotes);
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY), any(), eq(commandContext.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY), any(), eq(commandContext.getChannel()));
     }
 
     @Test(expected = AbstractoRunTimeException.class)
@@ -130,25 +130,25 @@ public class ExportEmoteStatsTest {
         CommandContext commandContext = CommandTestUtilities.getNoParameters();
         mockServerAndFileRendering(commandContext);
         File file = Mockito.mock(File.class);
-        when(fileUtils.createTempFile(FILE_NAME)).thenReturn(file);
-        doThrow(new IOException()).when(fileUtils).writeContentToFile(file, FILE_CONTENT);
+        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
+        doThrow(new IOException()).when(fileService).writeContentToFile(file, FILE_CONTENT);
         testUnit.executeAsync(commandContext);
     }
 
-    @Test(expected = DownloadEmoteStatsFileTooBigException.class)
+    @Test(expected = UploadFileTooLargeException.class)
     public void testExportAllEmoteStatsTooBig() throws IOException {
         CommandContext commandContext = CommandTestUtilities.getNoParameters();
         when(commandContext.getGuild().getMaxFileSize()).thenReturn(2L);
         mockServerAndFileRendering(commandContext);
         File file = Mockito.mock(File.class);
-        when(fileUtils.createTempFile(FILE_NAME)).thenReturn(file);
+        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
         when(file.length()).thenReturn(3L);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(fileUtils, times(1)).writeContentToFile(file, FILE_CONTENT);
+        verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
         verify(messageToSend, times(1)).setFileToSend(file);
-        verify(fileUtils, times(1)).safeDelete(file);
+        verify(fileService, times(1)).safeDelete(file);
         verifyModel();
     }
 

@@ -18,8 +18,8 @@ import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManage
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -450,19 +450,20 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Override
     public CompletableFutureList<RoleCalculationResult> executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Function<AUserExperience, CompletableFuture<RoleCalculationResult>> toExecute) {
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
-        MessageToSend status = getUserSyncStatusUpdateModel(0, experiences.size());
+        Long serverId = channel.getServer().getId();
+        MessageToSend status = getUserSyncStatusUpdateModel(0, experiences.size(), serverId);
         Message statusMessage = messageService.createStatusMessage(status, channel).join();
         int interval = Math.min(Math.max(experiences.size() / 10, 1), 100);
         for (int i = 0; i < experiences.size(); i++) {
             if((i % interval) == 1) {
                 log.trace("Updating feedback message with new index {} out of {}", i, experiences.size());
-                status = getUserSyncStatusUpdateModel(i, experiences.size());
+                status = getUserSyncStatusUpdateModel(i, experiences.size(), serverId);
                 messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
             }
             futures.add(toExecute.apply(experiences.get(i)));
             log.trace("Synchronizing {} out of {}", i, experiences.size());
         }
-        status = getUserSyncStatusUpdateModel(experiences.size(), experiences.size());
+        status = getUserSyncStatusUpdateModel(experiences.size(), experiences.size(), serverId);
         messageService.updateStatusMessage(channel, statusMessage.getIdLong(), status);
 
         return new CompletableFutureList<>(futures);
@@ -482,9 +483,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         userExperience.setExperienceGainDisabled(false);
     }
 
-    private MessageToSend getUserSyncStatusUpdateModel(Integer current, Integer total) {
+    private MessageToSend getUserSyncStatusUpdateModel(Integer current, Integer total, Long serverId) {
         UserSyncStatusModel statusModel = UserSyncStatusModel.builder().currentCount(current).totalUserCount(total).build();
-        return templateService.renderEmbedTemplate("user_sync_status_message", statusModel);
+        return templateService.renderEmbedTemplate("user_sync_status_message", statusModel, serverId);
     }
 
     /**

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.modmail.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.modmail.models.exception.ModMailCategoryIdExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.utility.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class SuggestionUpdateException extends AbstractoRunTimeException implements Templatable {
     public SuggestionUpdateException() {

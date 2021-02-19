@@ -26,6 +26,6 @@ public interface CommandService {
     void disAllowCommandForRole(ACommand aCommand, ARole role);
     void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role);
     ConditionResult isCommandExecutable(Command command, CommandContext commandContext);
-    UnParsedCommandParameter getUnParsedCommandParameter(String messageContent);
+    UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message);
     CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent);
 }

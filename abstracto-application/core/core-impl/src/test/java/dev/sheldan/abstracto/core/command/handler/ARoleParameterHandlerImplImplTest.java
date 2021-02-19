@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -15,7 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ARoleParameterHandlerImplImplTest {
+public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private ARoleParameterHandlerImpl testUnit;
@@ -50,10 +51,10 @@ public class ARoleParameterHandlerImplImplTest {
 
     @Test
     public void testProperRoleMention() {
-        String input = "test";
-        when(roleParameterHandler.handle(input, iterators, Role.class, message)).thenReturn(role);
+        UnparsedCommandParameterPiece piece = getPieceWithValue("test");
+        when(roleParameterHandler.handle(piece, iterators, Role.class, message)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
-        ARole parsed = (ARole) testUnit.handle(input, iterators, AEmote.class, message);
+        ARole parsed = (ARole) testUnit.handle(piece, iterators, AEmote.class, message);
         Assert.assertEquals(aRole, parsed);
     }
 

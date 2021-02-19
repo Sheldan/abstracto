@@ -16,8 +16,8 @@ import dev.sheldan.abstracto.experience.models.templates.RankModel;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -58,6 +58,8 @@ public class RankTest {
     @Mock
     private Rank self;
 
+    private static final Long SERVER_ID = 4L;
+
     @Mock
     private AUserInAServer aUserInAServer;
 
@@ -87,13 +89,14 @@ public class RankTest {
         when(aUserExperience.getCurrentLevel()).thenReturn(currentLevel);
         when(aUserExperience.getExperience()).thenReturn(currentExperience);
         CommandContext context = CommandTestUtilities.getNoParameters();
+        when(context.getGuild().getIdLong()).thenReturn(SERVER_ID);
         RankModel rankModel = Mockito.mock(RankModel.class);
         LeaderBoardEntryModel leaderBoardEntryModel = Mockito.mock(LeaderBoardEntryModel.class);
         when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(aUserInAServer);
         when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(aUserExperience);
         when(experienceLevelService.calculateExperienceToNextLevel(currentLevelValue, currentExperience)).thenReturn(140L);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel)).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel, SERVER_ID)).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, context.getChannel())).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
         testUnit.renderAndSendRank(context, rankModel, leaderBoardEntryModel).join();
     }

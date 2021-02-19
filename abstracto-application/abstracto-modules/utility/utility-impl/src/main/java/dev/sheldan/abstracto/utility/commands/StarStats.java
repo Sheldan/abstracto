@@ -39,12 +39,12 @@ public class StarStats extends AbstractConditionableCommand {
         if(parameters.isEmpty()) {
             return starboardService.retrieveStarStats(commandContext.getGuild().getIdLong())
                     .thenCompose(starStatsModel ->
-                            FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(STARSTATS_RESPONSE_TEMPLATE, starStatsModel, commandContext.getChannel()))
+                            FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(STARSTATS_RESPONSE_TEMPLATE, starStatsModel, commandContext.getChannel()))
                     ).thenApply(o -> CommandResult.fromIgnored());
         } else {
             Member targetMember = (Member) parameters.get(0);
             MemberStarStatsModel memberStarStatsModel = starboardService.retrieveStarStatsForMember(targetMember);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(STARSTATS_SINGLE_MEMBER_RESPONSE_TEMPLATE, memberStarStatsModel, commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(STARSTATS_SINGLE_MEMBER_RESPONSE_TEMPLATE, memberStarStatsModel, commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());
         }
     }

@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.RepostDetectionModuleInterface;
 import dev.sheldan.abstracto.utility.config.features.RepostDetectionFeatureMode;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
@@ -69,7 +69,7 @@ public class RepostLeaderboard extends AbstractConditionableCommand {
                     .userExecuting(userFuture.join())
                     .member(commandContext.getAuthor())
                     .build();
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REPOST_LEADERBOARD_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()));
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(REPOST_LEADERBOARD_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()));
         }).thenApply(o -> CommandResult.fromIgnored());
     }
 

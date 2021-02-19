@@ -15,7 +15,6 @@ import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.models.template.commands.ListNotesModel;
 import dev.sheldan.abstracto.moderation.models.template.commands.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,9 +36,6 @@ public class UserNotesTest {
 
     @Mock
     private UserNoteManagementService userNoteManagementService;
-
-    @Mock
-    private TemplateService templateService;
 
     @Mock
     private UserInServerManagementService userInServerManagementService;
@@ -72,7 +68,7 @@ public class UserNotesTest {
         CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
         List<NoteEntryModel> notes = convertedNotes.join();
         Assert.assertEquals(notes.size(), usedModel.getUserNotes().size());
@@ -101,7 +97,7 @@ public class UserNotesTest {
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         List<NoteEntryModel> notes = convertedNotes.join();
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(UserNotes.USER_NOTES_RESPONSE_TEMPLATE), captor.capture(), eq(parameters.getChannel()));
         ListNotesModel usedModel = captor.getValue();
         Assert.assertEquals(notes.size(), usedModel.getUserNotes().size());
         for (int i = 0; i < usedModel.getUserNotes().size(); i++) {

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.statistic.emotes.command.parameter.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
@@ -50,14 +51,14 @@ public class TrackedEmoteParameterParameterHandler implements CommandParameterHa
      * used directly. In every successful case, it will contain a faked {@link TrackedEmote}.
      */
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
         TrackEmoteParameter parameter = TrackEmoteParameter.builder().build();
         Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
         if(emote != null) {
             parameter.setEmote(emote);
             parameter.setTrackedEmote(trackedEmoteService.getFakeTrackedEmote(emote, context.getGuild()));
         } else {
-            long trackedEmoteId = Long.parseLong(input);
+            long trackedEmoteId = Long.parseLong((String) input.getValue());
             parameter.setTrackedEmote(trackedEmoteService.getFakeTrackedEmote(trackedEmoteId, context.getGuild()));
         }
         return parameter;

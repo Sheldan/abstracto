@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,9 +29,6 @@ public class UnMute extends AbstractConditionableCommand {
 
     @Autowired
     private MuteManagementService muteManagementService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;

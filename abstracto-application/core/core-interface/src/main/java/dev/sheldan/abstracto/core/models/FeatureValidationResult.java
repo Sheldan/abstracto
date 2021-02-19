@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.models;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

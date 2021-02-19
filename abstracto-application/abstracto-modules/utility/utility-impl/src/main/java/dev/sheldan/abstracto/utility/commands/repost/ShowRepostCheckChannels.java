@@ -37,7 +37,7 @@ public class ShowRepostCheckChannels extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<RepostCheckChannelGroup> channelGroups = checkChannelService.getChannelGroupsWithEnabledCheck(commandContext.getGuild().getIdLong());
         RepostCheckChannelsModel model = converter.fromRepostCheckChannelGroups(channelGroups, commandContext.getGuild());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_REPOST_CHECK_CHANNELS_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(SHOW_REPOST_CHECK_CHANNELS_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

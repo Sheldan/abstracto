@@ -23,8 +23,8 @@ import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardModel;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -81,7 +81,7 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
             List<LeaderBoardEntryModel> finalModels = completableFutures.stream().map(CompletableFuture::join).collect(Collectors.toList());
             leaderBoardModel.setUserExperiences(finalModels);
             leaderBoardModel.setUserExecuting(userRankFuture.join());
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel, commandContext.getGuild().getIdLong());
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));
         }).thenApply(aVoid -> CommandResult.fromIgnored());
 

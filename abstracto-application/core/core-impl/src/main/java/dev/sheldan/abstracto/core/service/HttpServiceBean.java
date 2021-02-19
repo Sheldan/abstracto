@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 
-import dev.sheldan.abstracto.core.utils.FileUtils;
+import dev.sheldan.abstracto.core.utils.FileService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,14 +18,14 @@ public class HttpServiceBean implements HttpService {
     private OkHttpClient client;
 
     @Autowired
-    private FileUtils fileUtils;
+    private FileService fileService;
 
     @Override
     public File downloadFileToTempFile(String url) throws IOException {
         Request request = new Request.Builder().url(url).get().build();
-        File tempFile = fileUtils.createTempFile(Math.random() + "");
+        File tempFile = fileService.createTempFile(Math.random() + "");
         Response execute = client.newCall(request).execute();
-        fileUtils.writeBytesToFile(tempFile, execute.body().bytes());
+        fileService.writeBytesToFile(tempFile, execute.body().bytes());
         return tempFile;
     }
 }

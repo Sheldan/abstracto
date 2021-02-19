@@ -18,8 +18,8 @@ import dev.sheldan.abstracto.moderation.config.posttargets.InviteFilterPostTarge
 import dev.sheldan.abstracto.moderation.models.template.listener.DeletedInvite;
 import dev.sheldan.abstracto.moderation.models.template.listener.DeletedInvitesNotificationModel;
 import dev.sheldan.abstracto.moderation.service.InviteLinkFilterService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +117,7 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
                 .build();
         log.info("Sending notification about {} deleted invite links in guild {} from user {} in channel {} in message {}.",
                 codes.size(), serverId, message.getAuthor().getIdLong(), message.getTextChannel().getIdLong(), message.getIdLong());
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY, model, message.getGuild().getIdLong());
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, InviteFilterPostTarget.INVITE_DELETE_LOG, serverId);
         FutureUtils.toSingleFutureGeneric(messageFutures).thenAccept(unused ->
             log.trace("Successfully send notification about deleted invite link in message {}.", message.getIdLong())

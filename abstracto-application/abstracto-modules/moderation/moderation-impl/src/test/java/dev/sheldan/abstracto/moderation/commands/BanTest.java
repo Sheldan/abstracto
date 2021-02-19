@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.models.template.commands.BanLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,6 +39,7 @@ public class BanTest {
     private ArgumentCaptor<BanLog> banLogModelCaptor;
 
     private static final String REASON = "reason";
+    private static final Long SERVER_ID = 1L;
 
     @Mock
     private Member bannedMember;
@@ -46,7 +47,8 @@ public class BanTest {
     @Test
     public void testBanWithDefaultReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember));
-        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
         when(banService.banMember(eq(bannedMember), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanLog usedModel = banLogModelCaptor.getValue();
@@ -60,7 +62,8 @@ public class BanTest {
     public void testBanWithReason() {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember, customReason));
-        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
         when(banService.banMember(eq(bannedMember), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanLog usedModel = banLogModelCaptor.getValue();

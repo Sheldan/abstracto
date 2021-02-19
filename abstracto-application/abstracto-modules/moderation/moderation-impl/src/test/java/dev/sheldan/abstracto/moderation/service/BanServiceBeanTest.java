@@ -8,8 +8,8 @@ import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
@@ -29,6 +29,8 @@ import static org.mockito.Mockito.*;
 public class BanServiceBeanTest {
 
     public static final String REASON = "reason";
+    private static final Long SERVER_ID = 4L;
+    private static final Long USER_ID = 5L;
     @InjectMocks
     private BanServiceBean testUnit;
 
@@ -46,72 +48,64 @@ public class BanServiceBeanTest {
 
     @Test
     public void testBanMemberByMemberWithoutLog() {
-        Long userId = 8L;
-        Long serverId = 9L;
         Member memberToBan = Mockito.mock(Member.class);
-        when(memberToBan.getIdLong()).thenReturn(userId);
+        when(memberToBan.getIdLong()).thenReturn(USER_ID);
         ServerContext context = Mockito.mock(ServerContext.class);
         Guild mockedGuild = Mockito.mock(Guild.class);
         when(memberToBan.getGuild()).thenReturn(mockedGuild);
-        when(mockedGuild.getIdLong()).thenReturn(serverId);
+        when(mockedGuild.getIdLong()).thenReturn(SERVER_ID);
         AuditableRestAction mockedAction = mock(AuditableRestAction.class);
         when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
-        when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
+        when(mockedGuild.ban(USER_ID.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(false);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.BAN_LOG)).thenReturn(false);
         testUnit.banMember(memberToBan, REASON, context);
-        verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
-        verify(postTargetService, times(0)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
+        verify(mockedGuild, times(1)).ban(USER_ID.toString(), 0, REASON);
+        verify(postTargetService, times(0)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, SERVER_ID);
         verify(templateService, times(0)).renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context);
     }
 
     @Test
     public void testBanMemberWithLog() {
-        Long userId = 8L;
-        Long serverId = 9L;
         Member memberToBan = Mockito.mock(Member.class);
-        when(memberToBan.getIdLong()).thenReturn(userId);
+        when(memberToBan.getIdLong()).thenReturn(USER_ID);
         ServerContext context = Mockito.mock(ServerContext.class);
         Guild mockedGuild = Mockito.mock(Guild.class);
         when(memberToBan.getGuild()).thenReturn(mockedGuild);
-        when(mockedGuild.getIdLong()).thenReturn(serverId);
+        when(mockedGuild.getIdLong()).thenReturn(SERVER_ID);
         AuditableRestAction mockedAction = mock(AuditableRestAction.class);
         when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
-        when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
+        when(mockedGuild.ban(USER_ID.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(true);
+        when(templateService.renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context, SERVER_ID)).thenReturn(mockedMessage);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.BAN_LOG)).thenReturn(true);
         testUnit.banMember(memberToBan, REASON, context);
-        verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
+        verify(mockedGuild, times(1)).ban(USER_ID.toString(), 0, REASON);
+        verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, SERVER_ID);
     }
 
 
     @Test
     public void testBanMemberById() {
-        Long userId = 8L;
-        Long serverId = 5L;
         ServerContext context = Mockito.mock(ServerContext.class);
         Guild mockedGuild = Mockito.mock(Guild.class);
         AuditableRestAction mockedAction = mock(AuditableRestAction.class);
         when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
-        when(mockedGuild.ban(userId.toString(), 0, REASON)).thenReturn(mockedAction);
+        when(mockedGuild.ban(USER_ID.toString(), 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(BanServiceBean.BAN_ID_LOG_TEMPLATE, context)).thenReturn(mockedMessage);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, serverId, ModerationMode.BAN_LOG)).thenReturn(true);
-        when(guildService.getGuildByIdOptional(serverId)).thenReturn(Optional.of(mockedGuild));
-        testUnit.banUserViaId(serverId, userId, REASON, context);
-        verify(mockedGuild, times(1)).ban(userId.toString(), 0, REASON);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, serverId);
+        when(templateService.renderEmbedTemplate(BanServiceBean.BAN_ID_LOG_TEMPLATE, context, SERVER_ID)).thenReturn(mockedMessage);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.BAN_LOG)).thenReturn(true);
+        when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(mockedGuild));
+        testUnit.banUserViaId(SERVER_ID, USER_ID, REASON, context);
+        verify(mockedGuild, times(1)).ban(USER_ID.toString(), 0, REASON);
+        verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, SERVER_ID);
     }
 
     @Test(expected = GuildNotFoundException.class)
     public void tryToBanInNonExistentGuild() {
-        Long userId = 8L;
-        Long serverId = 5L;
         ServerContext context = Mockito.mock(ServerContext.class);
-        when(guildService.getGuildByIdOptional(serverId)).thenReturn(Optional.empty());
-        testUnit.banUserViaId(serverId, userId, REASON, context);
+        when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.empty());
+        testUnit.banUserViaId(SERVER_ID, USER_ID, REASON, context);
     }
 
 }

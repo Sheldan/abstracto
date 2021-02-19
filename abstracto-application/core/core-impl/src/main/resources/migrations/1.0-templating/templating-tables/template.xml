@@ -1,0 +1,39 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="template-table">
+        <createTable tableName="template">
+            <column name="key" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="template_pkey"/>
+            </column>
+            <column name="section" type="VARCHAR(255)"/>
+            <column name="last_modified" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="VARCHAR(4000)"/>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <sql>
+            DROP TRIGGER IF EXISTS template_update_trigger ON template;
+            CREATE TRIGGER template_update_trigger BEFORE UPDATE ON template FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS template_insert_trigger ON template;
+            CREATE TRIGGER template_insert_trigger BEFORE INSERT ON template FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS template_last_modified_trigger ON template;
+            CREATE TRIGGER template_last_modified_trigger BEFORE UPDATE ON template FOR EACH ROW EXECUTE PROCEDURE last_modified_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS template_last_modified_insert_trigger ON template;
+            CREATE TRIGGER template_last_modified_insert_trigger BEFORE INSERT ON template FOR EACH ROW EXECUTE PROCEDURE last_modified_trigger_procedure();
+        </sql>
+    </changeSet>
+</databaseChangeLog>

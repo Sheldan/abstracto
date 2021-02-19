@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.assignableroles.models.exception;
 
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 import lombok.Builder;
 import lombok.Getter;
 

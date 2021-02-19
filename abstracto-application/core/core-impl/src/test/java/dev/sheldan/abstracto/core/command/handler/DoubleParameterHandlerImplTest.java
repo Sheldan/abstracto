@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DoubleParameterHandlerImplTest {
+public class DoubleParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private DoubleParameterHandlerImpl testUnit;
@@ -24,32 +24,32 @@ public class DoubleParameterHandlerImplTest {
 
     @Test
     public void testSuccessfulParse() {
-        Assert.assertEquals(5D, testUnit.handle("5", null, null, null));
+        Assert.assertEquals(5D, testUnit.handle(getPieceWithValue("5"), null, null, null));
     }
 
     @Test
     public void testNegativeNumber() {
-        Assert.assertEquals(-5D, testUnit.handle("-5", null, null, null));
+        Assert.assertEquals(-5D, testUnit.handle(getPieceWithValue("-5"), null, null, null));
     }
 
 
     public void testDecimal() {
-        Assert.assertEquals(3.14D, testUnit.handle("3.14", null, null, null));
+        Assert.assertEquals(3.14D, testUnit.handle(getPieceWithValue("3.14"), null, null, null));
     }
 
     @Test(expected = NumberFormatException.class)
     public void testTextAsInput() {
-        testUnit.handle("someText", null, null, null);
+        testUnit.handle(getPieceWithValue("someText"), null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testNullInput() {
-        testUnit.handle(null, null, null, null);
+        testUnit.handle(getPieceWithValue(null), null, null, null);
     }
 
     @Test(expected = NumberFormatException.class)
     public void testEmptyStringAsInput() {
-        testUnit.handle("", null, null, null);
+        testUnit.handle(getPieceWithValue(""), null, null, null);
     }
 
 }

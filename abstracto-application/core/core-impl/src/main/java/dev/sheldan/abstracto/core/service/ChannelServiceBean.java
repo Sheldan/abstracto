@@ -1,15 +1,14 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.CategoryNotFoundException;
-import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
-import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
+import dev.sheldan.abstracto.core.exception.*;
 import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
 import dev.sheldan.abstracto.core.metrics.service.MetricService;
 import dev.sheldan.abstracto.core.metrics.service.MetricTag;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +47,9 @@ public class ChannelServiceBean implements ChannelService {
 
     @Autowired
     private AllowedMentionService allowedMentionService;
+
+    @Autowired
+    private FileService fileService;
 
     @Autowired
     private MetricService metricService;
@@ -330,13 +334,27 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     @Transactional
-    public List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
+    public List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, TextChannel channel) {
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model, channel.getGuild().getIdLong());
+        return sendMessageToSendToChannel(messageToSend, channel);
+    }
+
+    @Override
+    public List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannelList(String templateKey, Object model, MessageChannel channel) {
+        // message channel on its own, does not have a guild, so we cant say for which server we want to render the template
         MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model);
         return sendMessageToSendToChannel(messageToSend, channel);
     }
 
     @Override
-    public CompletableFuture<Message> sendTextTemplateInChannel(String templateKey, Object model, MessageChannel channel) {
+    public CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, TextChannel channel) {
+        String text = templateService.renderTemplate(templateKey, model, channel.getGuild().getIdLong());
+        return sendTextToChannel(text, channel);
+    }
+
+    @Override
+    public CompletableFuture<Message> sendTextTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel) {
+        // message channel on its own, does not have a guild, so we cant say for which server we want to render the template
         String text = templateService.renderTemplate(templateKey, model);
         return sendTextToChannel(text, channel);
     }
@@ -386,7 +404,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> sendSimpleTemplateToChannel(Long serverId, Long channelId, String template) {
         TextChannel textChannel = getTextChannelFromServer(serverId, channelId);
-        return sendTextTemplateInChannel(template, new Object(), textChannel);
+        return sendTextTemplateInTextChannel(template, new Object(), textChannel);
     }
 
     @Override
@@ -428,6 +446,32 @@ public class ChannelServiceBean implements ChannelService {
     public CompletableFuture<Void> setSlowModeInChannel(TextChannel textChannel, Integer seconds) {
         metricService.incrementCounter(CHANNEL_CHANGE_SLOW_MODE);
         return textChannel.getManager().setSlowmode(seconds).submit();
+    }
+
+    @Override
+    public List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, TextChannel channel) {
+        String fileName = templateService.renderTemplate(fileNameTemplate, model);
+        File tempFile = fileService.createTempFile(fileName);
+        try {
+            fileService.writeContentToFile(tempFile, fileContent);
+            long maxFileSize = channel.getGuild().getMaxFileSize();
+            // in this case, we cannot upload the file, so we need to fail
+            if(tempFile.length() > maxFileSize) {
+                throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
+            }
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(messageTemplate, model);
+            messageToSend.setFileToSend(tempFile);
+            return sendMessageToSendToChannel(messageToSend, channel);
+        } catch (IOException e) {
+            log.error("Failed to write local temporary file for template download.", e);
+            throw new AbstractoRunTimeException(e);
+        } finally {
+            try {
+                fileService.safeDelete(tempFile);
+            } catch (IOException e) {
+                log.error("Failed to safely delete local temporary file for template download.", e);
+            }
+        }
     }
 
 

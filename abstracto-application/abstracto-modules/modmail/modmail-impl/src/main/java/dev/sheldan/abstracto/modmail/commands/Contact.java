@@ -58,7 +58,7 @@ public class Contact extends AbstractConditionableCommand {
             ModMailThreadExistsModel model = (ModMailThreadExistsModel) ContextConverter.fromCommandContext(commandContext, ModMailThreadExistsModel.class);
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
             model.setExistingModMailThread(existingThread);
-            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInChannel("modmail_thread_already_exists", model, commandContext.getChannel());
+            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList("modmail_thread_already_exists", model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
         } else {
             return modMailThreadService.createModMailThreadForUser(targetUser, null, commandContext.getChannel(), false, commandContext.getUndoActions())

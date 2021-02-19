@@ -16,7 +16,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TextChannelParameterHandlerImplTest {
+public class TextChannelParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private TextChannelParameterHandlerImpl testUnit;
@@ -49,7 +49,7 @@ public class TextChannelParameterHandlerImplTest {
     public void testProperChannelMention() {
         oneChannelInIterator();
         String input = getChannelMention();
-        TextChannel parsed = (TextChannel) testUnit.handle(input, iterators, TextChannel.class, null);
+        TextChannel parsed = (TextChannel) testUnit.handle(getPieceWithValue(input), iterators, TextChannel.class, null);
         Assert.assertEquals(parsed, channel);
     }
 
@@ -57,14 +57,14 @@ public class TextChannelParameterHandlerImplTest {
     public void testChannelMentionById() {
         setupMessage();
         String input = CHANNEL_ID.toString();
-        TextChannel parsed = (TextChannel) testUnit.handle(input, null, TextChannel.class, message);
+        TextChannel parsed = (TextChannel) testUnit.handle(getPieceWithValue(input), null, TextChannel.class, message);
         Assert.assertEquals(parsed, channel);
     }
 
     @Test(expected = NumberFormatException.class)
     public void testInvalidChannelMention() {
         String input = "test";
-        testUnit.handle(input, null, TextChannel.class, null);
+        testUnit.handle(getPieceWithValue(input), null, TextChannel.class, null);
     }
 
     private String getChannelMention() {

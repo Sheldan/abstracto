@@ -17,8 +17,8 @@ import dev.sheldan.abstracto.moderation.config.features.mode.InviteFilterMode;
 import dev.sheldan.abstracto.moderation.models.database.FilteredInviteLink;
 import dev.sheldan.abstracto.moderation.models.template.commands.TrackedInviteLinksModel;
 import dev.sheldan.abstracto.moderation.service.InviteLinkFilterService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +53,7 @@ public class ShowTrackedInviteLinks extends AbstractConditionableCommand {
             inviteLinks = inviteLinkFilterService.getTopFilteredInviteLinks(commandContext.getGuild().getIdLong());
         }
         model.setInviteLinks(inviteLinks);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRACKED_INVITE_LINKS_EMBED_TEMPLATE_KEY, model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRACKED_INVITE_LINKS_EMBED_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }

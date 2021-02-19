@@ -13,7 +13,7 @@ import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.models.template.commands.BanLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class Ban extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
-        String defaultReason = templateService.renderSimpleTemplate(BAN_DEFAULT_REASON_TEMPLATE);
+        String defaultReason = templateService.renderSimpleTemplate(BAN_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
         BanLog banLogModel = (BanLog) ContextConverter.fromCommandContext(commandContext, BanLog.class);

@@ -7,8 +7,8 @@ import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -44,7 +44,7 @@ public class KickServiceBean implements KickService {
     private CompletableFuture<Void> sendKickLog(KickLogModel kickLogModel)  {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatures.MODERATION, kickLogModel.getGuild().getIdLong(), ModerationMode.KICK_LOG)) {
-            MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel);
+            MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, kickLogModel.getGuild().getIdLong());
             log.trace("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
             completableFuture = FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
         } else {

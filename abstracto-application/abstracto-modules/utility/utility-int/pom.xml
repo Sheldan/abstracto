@@ -11,12 +11,5 @@
 
     <artifactId>utility-int</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>dev.sheldan.abstracto.templating</groupId>
-            <artifactId>templating-interface</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 
 </project>

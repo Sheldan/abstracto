@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,9 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class FeatureEnabledCondition implements CommandCondition {
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private FeatureConfigService featureConfigService;

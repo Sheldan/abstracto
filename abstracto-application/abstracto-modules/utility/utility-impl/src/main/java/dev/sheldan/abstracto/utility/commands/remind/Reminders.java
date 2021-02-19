@@ -44,7 +44,7 @@ public class Reminders extends AbstractConditionableCommand {
         RemindersModel model = (RemindersModel) ContextConverter.fromCommandContext(commandContext, RemindersModel.class);
         model.setReminders(activeReminders);
         log.info("Showing {} reminders for user {} in server {}.", activeReminders.size(), commandContext.getAuthor().getId(), commandContext.getGuild().getId());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REMINDERS_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(REMINDERS_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

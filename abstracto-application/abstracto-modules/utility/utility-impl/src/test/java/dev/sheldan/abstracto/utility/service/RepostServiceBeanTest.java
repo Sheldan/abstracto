@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.utils.FileUtils;
+import dev.sheldan.abstracto.core.utils.FileService;
 import dev.sheldan.abstracto.utility.config.features.RepostDetectionFeatureMode;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.converter.RepostLeaderBoardConverter;
@@ -51,7 +51,7 @@ public class RepostServiceBeanTest {
     private HashService hashService;
 
     @Mock
-    private FileUtils fileUtils;
+    private FileService fileService;
 
     @Mock
     private PostedImageManagement postedImageManagement;
@@ -183,7 +183,7 @@ public class RepostServiceBeanTest {
         when(hashService.sha256HashFileContent(file)).thenReturn(HASH);
         String calculatedHash = testUnit.calculateHashForPost(URL, SERVER_ID);
         Assert.assertEquals(HASH, calculatedHash);
-        verify(fileUtils, times(1)).safeDelete(file);
+        verify(fileService, times(1)).safeDelete(file);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class RepostServiceBeanTest {
         when(httpService.downloadFileToTempFile(URL)).thenReturn(file);
         when(hashService.sha256HashFileContent(file)).thenThrow(new IOException());
         testUnit.calculateHashForPost(URL, SERVER_ID);
-        verify(fileUtils, times(1)).safeDelete(file);
+        verify(fileService, times(1)).safeDelete(file);
     }
 
     @Test

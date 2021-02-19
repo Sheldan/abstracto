@@ -24,7 +24,7 @@ Changing emotes Abstracto uses::
 This allows both built in emotes and custom emotes, but Abstracto must be in the server of the custom emote in order to use them.
 Clearing the cache::
 * Usage: `clearCache`
-* Description: Clears the internal cache used by Abstracto. This is necessary if things in the databases were changed and need to be in effect immediately.
+* Description: Clears the internal cache used by Abstracto. This mostly affects template changes directly done in the database.
 Ping::
 * Usage: `ping`
 * Description: Prints the latency of Abstracto to the Discord servers.
@@ -112,16 +112,28 @@ Listing all feature modes::
 * usage `featureModes [feature]`
 * Description: Lists all of the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether or not the current mode is enabled and if this value comes from the default configuration.
 Setting up a feature with an interactive wizard::
-Usage: `setupFeature <featureName>`
+* Usage: `setupFeature <featureName>`
 * Description: Starts an interactive wizard to configure the necessary properties and post targets of a feature. Also includes custom steps. Closes with a summary page to see all changes.
 Allow the bot to use certain mentions::
-Usage: `allowMention <mentionType>`
-* Description: Allows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is enabled, this also enabled @here mentions.
+* Usage: `allowMention <mentionType>`
+* Description: Allows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is enabled, this also enables @here mentions.
 This change takes immediate effect and is only for the current server. Per default user and role mentions are enabled.
 Disallow the bot to use certain mentions::
-Usage: `disallowMention <mentionType>`
+* Usage: `disallowMention <mentionType>`
 * Description: Disallows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is disabled, this also disables @here mentions.
 This change takes immediate effect and is only for the current server. Per default everyone/here mentions are disabled.
+Setting a custom template for this server::
+* Usage: `setTemplate <templateKey>`
+* Description: Adds or updates the given template identified by `templateKey` only for the current server. The content of the template needs to be attached to the message as a file and is required to be a plaintext file. The file can be named anything. The template needs to be in https://freemarker.apache.org/[Freemarker] format. This change is only in effect for this server and is called a 'customized template'. This will take effect immediately.
+Retrieving the current default template::
+* Usage: `getTemplate <templateKey>`
+* Description: Loads the current global template identified by `templateKey` and returns the content as an attached file to the response of the command.
+Retrieving the current customized template for this server::
+* Usage: `getCustomTemplate <templateKey>`
+* Description: Loads the current customized tempalte identified by `templateKey` and returns the content as an attached file to the response of the command. Shows an error message, if there exists no customized template for this server for the provided `templateKey`.
+Resetting a customized template to the default template::
+* Usage `resetTemplate <templateKey>`
+* Description: Resets the template identified by `templateKey` to the default content.
 
 
 .What does it mean if a role is immune?

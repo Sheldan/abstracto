@@ -54,7 +54,7 @@ public class Remind extends AbstractConditionableCommand {
 
         log.info("Notifying user {} about reminder being scheduled.", commandContext.getAuthor().getId());
 
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(REMINDER_EMBED_KEY, remindModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(REMINDER_EMBED_KEY, remindModel, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -67,7 +67,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                 .postTargetKey(postTargetStepParameter.getPostTargetKey())
                 .currentTextChannel(currentTextChannel)
                 .build();
-        String messageText = templateService.renderTemplate(FEATURE_SETUP_POST_TARGET_MESSAGE_TEMPLATE_KEY, model);
+        String messageText = templateService.renderTemplate(FEATURE_SETUP_POST_TARGET_MESSAGE_TEMPLATE_KEY, model, user.getGuildId());
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());

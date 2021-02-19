@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
@@ -15,7 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FullEmoteParameterHandlerImplImplTest {
+public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private FullEmoteParameterHandlerImpl testUnit;
@@ -51,9 +52,10 @@ public class FullEmoteParameterHandlerImplImplTest {
     @Test
     public void testProperEmoteMention() {
         String input = "test";
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, message)).thenReturn(emote);
+        UnparsedCommandParameterPiece piece = getPieceWithValue(input);
+        when(emoteParameterHandler.handle(piece, iterators, Emote.class, message)).thenReturn(emote);
         when(emoteService.getFakeEmoteFromEmote(emote)).thenReturn(aEmote);
-        FullEmote parsed = (FullEmote) testUnit.handle(input, iterators, FullEmote.class, message);
+        FullEmote parsed = (FullEmote) testUnit.handle(piece, iterators, FullEmote.class, message);
         Assert.assertEquals(aEmote, parsed.getFakeEmote());
         Assert.assertEquals(emote, parsed.getEmote());
     }
@@ -62,9 +64,10 @@ public class FullEmoteParameterHandlerImplImplTest {
     @Test
     public void testDefaultEmoteHandling() {
         String input = "test";
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, message)).thenReturn(null);
+        UnparsedCommandParameterPiece piece = getPieceWithValue(input);
+        when(emoteParameterHandler.handle(piece, iterators, Emote.class, message)).thenReturn(null);
         when(emoteService.getFakeEmote(input)).thenReturn(aEmote);
-        FullEmote parsed = (FullEmote) testUnit.handle(input, iterators, AEmote.class, message);
+        FullEmote parsed = (FullEmote) testUnit.handle(piece, iterators, AEmote.class, message);
         Assert.assertNull(parsed.getEmote());
         Assert.assertEquals(aEmote, parsed.getFakeEmote());
     }

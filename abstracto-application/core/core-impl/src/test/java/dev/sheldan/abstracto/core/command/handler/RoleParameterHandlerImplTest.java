@@ -16,7 +16,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RoleParameterHandlerImplTest {
+public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private RoleParameterHandlerImpl testUnit;
@@ -49,7 +49,7 @@ public class RoleParameterHandlerImplTest {
     public void testProperRoleMention() {
         oneRoleIterator();
         String input = getRoleMention();
-        Role parsed = (Role) testUnit.handle(input, iterators, Role.class, null);
+        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, Role.class, null);
         Assert.assertEquals(parsed, role);
     }
 
@@ -57,14 +57,14 @@ public class RoleParameterHandlerImplTest {
     public void testRoleById() {
         setupMessage();
         String input = ROLE_ID.toString();
-        Role parsed = (Role) testUnit.handle(input, null, Role.class, message);
+        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), null, Role.class, message);
         Assert.assertEquals(parsed, role);
     }
 
     @Test(expected = NumberFormatException.class)
     public void testInvalidRoleMention() {
         String input = "test";
-        testUnit.handle(input, null, Role.class, null);
+        testUnit.handle(getPieceWithValue(input), null, Role.class, null);
     }
 
     private String getRoleMention() {

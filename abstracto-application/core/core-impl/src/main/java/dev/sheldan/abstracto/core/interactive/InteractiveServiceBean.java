@@ -8,8 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -25,9 +24,6 @@ import java.util.function.Consumer;
 @Component
 @Slf4j
 public class InteractiveServiceBean implements InteractiveService {
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private ChannelService channelService;

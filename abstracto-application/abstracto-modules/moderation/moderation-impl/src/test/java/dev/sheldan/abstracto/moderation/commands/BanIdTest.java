@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.models.template.commands.BanIdLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,8 +44,8 @@ public class BanIdTest {
     @Test
     public void testBanIdWithDefaultReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(BANNED_USER_ID));
-        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
         when(banService.banUserViaId(eq(SERVER_ID), eq(BANNED_USER_ID), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();
@@ -60,7 +60,7 @@ public class BanIdTest {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(BANNED_USER_ID, customReason));
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
-        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE)).thenReturn(REASON);
+        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
         when(banService.banUserViaId(eq(SERVER_ID), eq(BANNED_USER_ID), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         BanIdLog usedModel = banLogModelCaptor.getValue();

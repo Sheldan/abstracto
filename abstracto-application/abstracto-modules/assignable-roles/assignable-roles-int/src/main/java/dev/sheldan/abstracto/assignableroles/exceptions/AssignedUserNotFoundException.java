@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.assignableroles.exceptions;
 import dev.sheldan.abstracto.assignableroles.models.exception.AssignedUserNotFoundExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class AssignedUserNotFoundException extends AbstractoRunTimeException implements Templatable {
 

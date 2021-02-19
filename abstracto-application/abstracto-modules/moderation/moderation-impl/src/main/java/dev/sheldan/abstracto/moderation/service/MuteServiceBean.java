@@ -24,8 +24,8 @@ import dev.sheldan.abstracto.moderation.models.template.commands.UnMuteLog;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -159,7 +159,7 @@ public class MuteServiceBean implements MuteService {
     private CompletableFuture<Void> sendMuteNotification(ServerChannelMessage message, Member memberBeingMuted, MuteNotification muteNotification) {
         log.info("Notifying the user about the mute.");
         CompletableFuture<Void> notificationFuture = new CompletableFuture<>();
-        String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification);
+        String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification, message.getServerId());
         CompletableFuture<Message> messageCompletableFuture = messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage);
         messageCompletableFuture.exceptionally(throwable -> {
             TextChannel feedBackChannel = channelService.getTextChannelFromServer(message.getServerId(), message.getChannelId());
@@ -246,7 +246,7 @@ public class MuteServiceBean implements MuteService {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)) {
             log.trace("Sending mute log to the mute post target.");
-            MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel);
+            MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {
@@ -260,7 +260,7 @@ public class MuteServiceBean implements MuteService {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)) {
             log.trace("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
-            MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel);
+            MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {

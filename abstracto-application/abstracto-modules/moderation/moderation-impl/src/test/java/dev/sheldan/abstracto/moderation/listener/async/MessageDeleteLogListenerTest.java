@@ -12,8 +12,8 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.moderation.models.template.listener.MessageDeletedLog;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -102,7 +102,7 @@ public class MessageDeleteLogListenerTest {
         when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(member.getGuild()).thenReturn(guild);
-        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         testUnit.executeListener(deletedMessage, member);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.DELETE_LOG, SERVER_ID);
@@ -126,8 +126,8 @@ public class MessageDeleteLogListenerTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         MessageToSend attachmentMessage = Mockito.mock(MessageToSend.class);
         when(member.getGuild()).thenReturn(guild);
-        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
-        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_ATTACHMENT_TEMPLATE), attachmentCaptor.capture())).thenReturn(attachmentMessage);
+        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_ATTACHMENT_TEMPLATE), attachmentCaptor.capture(), eq(SERVER_ID))).thenReturn(attachmentMessage);
         testUnit.executeListener(deletedMessage, member);
         verify(postTargetService, times(2)).sendEmbedInPostTarget(messageCaptor.capture(), eq(LoggingPostTarget.DELETE_LOG), eq(SERVER_ID));
         List<MessageToSend> messagesSent = messageCaptor.getAllValues();
@@ -154,8 +154,8 @@ public class MessageDeleteLogListenerTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(member.getGuild()).thenReturn(guild);
         MessageToSend attachmentMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture())).thenReturn(messageToSend);
-        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_ATTACHMENT_TEMPLATE), attachmentCaptor.capture())).thenReturn(attachmentMessage);
+        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_ATTACHMENT_TEMPLATE), attachmentCaptor.capture(), eq(SERVER_ID))).thenReturn(attachmentMessage);
         testUnit.executeListener(deletedMessage, member);
         verify(postTargetService, times(3)).sendEmbedInPostTarget(messageCaptor.capture(), eq(LoggingPostTarget.DELETE_LOG), eq(SERVER_ID));
         List<MessageToSend> messagesSent = messageCaptor.getAllValues();

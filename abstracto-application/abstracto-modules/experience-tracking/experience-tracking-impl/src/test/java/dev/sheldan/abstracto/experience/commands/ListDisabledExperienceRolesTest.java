@@ -51,7 +51,7 @@ public class ListDisabledExperienceRolesTest {
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
         when(disabledExpRoleManagementService.getDisabledRolesForServer(server)).thenReturn(new ArrayList<>());
-        when(channelService.sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
+        when(channelService.sendEmbedTemplateInTextChannelList(eq("list_disabled_experience_roles"),
                 any(DisabledExperienceRolesModel.class), eq(context.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
@@ -70,7 +70,7 @@ public class ListDisabledExperienceRolesTest {
         when(roleService.getRoleFromGuild(disabledExpRole1.getRole())).thenReturn(role1);
         when(roleService.getRoleFromGuild(disabledExpRole2.getRole())).thenReturn(role2);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
-        when(channelService.sendEmbedTemplateInChannel(eq("list_disabled_experience_roles"),
+        when(channelService.sendEmbedTemplateInTextChannelList(eq("list_disabled_experience_roles"),
                 any(DisabledExperienceRolesModel.class), eq(context.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);

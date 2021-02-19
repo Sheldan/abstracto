@@ -16,7 +16,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +39,7 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
-        MessageChannel channel = (TextChannel) parameters.get(1);
+        TextChannel channel = (TextChannel) parameters.get(1);
         String text =  (String) parameters.get(2);
         AChannel chosenChannel = channelManagementService.loadChannel(channel.getIdLong());
         AServer server = serverManagementService.loadServer(commandContext.getGuild());

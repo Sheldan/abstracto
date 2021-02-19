@@ -58,7 +58,7 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
                     .build();
             disabledExperienceRolesModel.getRoles().add(role);
         });
-        List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInChannel("list_disabled_experience_roles", disabledExperienceRolesModel, commandContext.getChannel());
+        List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList("list_disabled_experience_roles", disabledExperienceRolesModel, commandContext.getChannel());
         return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

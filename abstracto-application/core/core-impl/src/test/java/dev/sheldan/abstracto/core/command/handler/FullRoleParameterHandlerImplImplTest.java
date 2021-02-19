@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -15,7 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FullRoleParameterHandlerImplImplTest {
+public class FullRoleParameterHandlerImplImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private FullRoleParameterHandlerImpl testUnit;
@@ -51,9 +52,10 @@ public class FullRoleParameterHandlerImplImplTest {
     @Test
     public void testProperEmoteMention() {
         String input = "test";
-        when(roleParameterHandler.handle(input, iterators, Role.class, message)).thenReturn(role);
+        UnparsedCommandParameterPiece piece = getPieceWithValue(input);
+        when(roleParameterHandler.handle(piece, iterators, Role.class, message)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
-        FullRole parsed = (FullRole) testUnit.handle(input, iterators, FullRole.class, message);
+        FullRole parsed = (FullRole) testUnit.handle(piece, iterators, FullRole.class, message);
         Assert.assertEquals(aRole, parsed.getRole());
         Assert.assertEquals(role, parsed.getServerRole());
     }

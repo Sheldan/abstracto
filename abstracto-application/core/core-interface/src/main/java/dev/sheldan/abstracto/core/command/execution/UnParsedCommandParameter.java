@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.execution;
 
 import lombok.Getter;
+import net.dv8tion.jda.api.entities.Message;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ public class UnParsedCommandParameter {
 
     private static Pattern SPLIT_REGEX  = Pattern.compile("\"([^\"]*)\"|(\\S+)");
 
-    public UnParsedCommandParameter(String parameters) {
+    public UnParsedCommandParameter(String parameters, Message message) {
         this.parameters = new ArrayList<>();
         Matcher m = SPLIT_REGEX.matcher(parameters);
         boolean skippedCommand = false;
@@ -24,15 +25,17 @@ public class UnParsedCommandParameter {
             if (m.group(1) != null) {
                 String group = m.group(1);
                 if(!group.equals("")) {
-                    this.parameters.add(group);
+                    this.parameters.add(UnparsedCommandParameterPiece.builder().value(group).build());
                 }
             } else {
                 String group = m.group(2);
                 if(!group.equals("")) {
-                    this.parameters.add(group);
+                    this.parameters.add(UnparsedCommandParameterPiece.builder().value(group).build());
                 }
             }
         }
+        message.getAttachments().forEach(attachment ->
+                this.parameters.add(UnparsedCommandParameterPiece.builder().value(attachment).type(ParameterPieceType.ATTACHMENT).build()));
     }
-    private List<String> parameters;
+    private List<UnparsedCommandParameterPiece> parameters;
 }

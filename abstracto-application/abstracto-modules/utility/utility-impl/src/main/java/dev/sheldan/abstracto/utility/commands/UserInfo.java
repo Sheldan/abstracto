@@ -58,7 +58,7 @@ public class UserInfo extends AbstractConditionableCommand {
 
     @Transactional
     public CompletableFuture<Void> sendResponse(CommandContext commandContext, UserInfoModel model) {
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel("userInfo_response", model, commandContext.getChannel()));
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList("userInfo_response", model, commandContext.getChannel()));
     }
 
     @Override

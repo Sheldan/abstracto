@@ -50,7 +50,7 @@ public class RemindersTest {
         when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(user);
         when(reminderManagementService.getActiveRemindersForUser(user)).thenReturn(reminders);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Reminders.REMINDERS_RESPONSE_TEMPLATE), modelCaptor.capture(), eq(context.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(Reminders.REMINDERS_RESPONSE_TEMPLATE), modelCaptor.capture(), eq(context.getChannel()));
         RemindersModel usedModel = modelCaptor.getValue();
         Assert.assertEquals(reminder, usedModel.getReminders().get(0));
         Assert.assertEquals(secondReminder, usedModel.getReminders().get(1));

@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
@@ -110,7 +111,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         try {
             String contentStripped = event.getMessage().getContentRaw();
             List<String> parameters = Arrays.asList(contentStripped.split(" "));
-            UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped);
+            UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped, event.getMessage());
             String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
             foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter);
             tryToExecuteFoundCommand(event, foundCommand, unParsedParameter);
@@ -254,7 +255,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Parameter param = command.getConfiguration().getParameters().get(0);
         CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
         boolean reminderActive = false;
-        List<CommandParameterHandler> orderedHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
         List<CompletableFuture> futures = new ArrayList<>();
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
             if(i < command.getConfiguration().getParameters().size() && !param.isRemainder()) {
@@ -262,9 +262,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
             } else {
                 reminderActive = true;
             }
-            String value = unParsedCommandParameter.getParameters().get(i);
+            UnparsedCommandParameterPiece value = unParsedCommandParameter.getParameters().get(i);
             boolean handlerMatched = false;
-            for (CommandParameterHandler handler : orderedHandlers) {
+            for (CommandParameterHandler handler : parameterHandlers) {
                 try {
                     if (handler.handles(param.getType())) {
                         handlerMatched = true;
@@ -286,24 +286,25 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 }
             }
             if(!handlerMatched) {
+                Object valueAsString = value.getValue().toString();
                 if(!reminderActive) {
-                    parsedParameters.add(value);
+                    parsedParameters.add(valueAsString);
                 } else {
                     if(!param.isListParam()) {
                         if(parsedParameters.isEmpty()) {
-                            parsedParameters.add(value);
+                            parsedParameters.add(valueAsString);
                         } else {
                             int lastIndex = parsedParameters.size() - 1;
-                            parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + value);
+                            parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + valueAsString);
                         }
                     } else {
                         if(parsedParameters.isEmpty()) {
                             ArrayList<Object> list = new ArrayList<>();
-                            list.add(value);
+                            list.add(valueAsString);
                             parsedParameters.add(list);
                         } else {
                             int lastIndex = parsedParameters.size() - 1;
-                            ((List)parsedParameters.get(lastIndex)).add(value);
+                            ((List)parsedParameters.get(lastIndex)).add(valueAsString);
                         }
                     }
                 }
@@ -339,5 +340,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
     public void postConstruct() {
         metricService.registerCounter(COMMANDS_PROCESSED_COUNTER, "Commands processed");
         metricService.registerCounter(COMMANDS_WRONG_PARAMETER_COUNTER, "Commands with incorrect parameter");
+        this.parameterHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
     }
 }

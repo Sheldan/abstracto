@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.command.models.exception.ChannelAlreadyInChann
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class ChannelAlreadyInChannelGroupException extends AbstractoRunTimeException implements Templatable {
 

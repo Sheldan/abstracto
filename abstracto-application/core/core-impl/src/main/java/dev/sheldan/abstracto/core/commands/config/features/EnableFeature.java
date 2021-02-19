@@ -19,7 +19,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,7 +52,7 @@ public class EnableFeature extends AbstractConditionableCommand {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureConfigService.getAllFeatures());
-            String response = templateService.renderTemplate("enable_features_response", model);
+            String response = templateService.renderTemplate("enable_features_response", model, commandContext.getGuild().getIdLong());
             return channelService.sendTextToChannel(response, commandContext.getChannel())
                     .thenApply(message -> CommandResult.fromSuccess());
         } else {
@@ -62,7 +62,8 @@ public class EnableFeature extends AbstractConditionableCommand {
             FeatureValidationResult featureSetup = featureConfigService.validateFeatureSetup(feature, server);
             if(Boolean.FALSE.equals(featureSetup.getValidationResult())) {
                 log.info("Feature {} has failed the setup validation. Notifying user.", flagKey);
-                channelService.sendTextToChannelNotAsync(templateService.renderTemplatable(featureSetup), commandContext.getChannel());
+                channelService.sendTextToChannelNotAsync(templateService.renderTemplatable(featureSetup, commandContext.getGuild().getIdLong()),
+                        commandContext.getChannel());
             }
             featureFlagService.enableFeature(feature, server);
             if(feature.getRequiredFeatures() != null) {

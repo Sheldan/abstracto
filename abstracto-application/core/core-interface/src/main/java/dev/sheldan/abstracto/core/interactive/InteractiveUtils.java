@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.interactive;
 
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ public class InteractiveUtils {
 
     @Transactional
     public void sendTimeoutMessage(Long serverId, Long channelId) {
-        String s = templateService.renderSimpleTemplate("feature_setup_configuration_timeout");
+        String s = templateService.renderSimpleTemplate("feature_setup_configuration_timeout", serverId);
         Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(serverId, channelId);
         channelOptional.ifPresent(channel -> channelService.sendTextToChannelNotAsync(s, channel));
     }

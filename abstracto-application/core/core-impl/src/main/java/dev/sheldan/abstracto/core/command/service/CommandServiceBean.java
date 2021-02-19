@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -120,6 +121,9 @@ public class CommandServiceBean implements CommandService {
             builder.append(" ");
         }
         commandConfig.getParameters().forEach(parameter -> {
+            if(parameter.getType().equals(File.class)) {
+                return;
+            }
             String[] enclosing = parameter.isOptional() ? OPTIONAL_ENCLOSING : MANDATORY_ENCLOSING;
             builder.append(enclosing[0]);
             builder.append(parameter.getName());
@@ -163,14 +167,14 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
-    public UnParsedCommandParameter getUnParsedCommandParameter(String messageContent) {
-        return new UnParsedCommandParameter(messageContent);
+    public UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message) {
+        return new UnParsedCommandParameter(messageContent, message);
     }
 
     @Override
     public CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent) {
         String contentStripped = messageContainingContent.getContentRaw();
-        UnParsedCommandParameter unParsedParameter = getUnParsedCommandParameter(contentStripped);
+        UnParsedCommandParameter unParsedParameter = getUnParsedCommandParameter(contentStripped, messageContainingContent);
         Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter);
         return commandReceivedHandler.getParsedParameters(unParsedParameter, command, messageContainingContent);
     }

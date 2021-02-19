@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.command.models.exception.ChannelNotInChannelGr
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class ChannelNotInChannelGroupException extends AbstractoRunTimeException implements Templatable {
 

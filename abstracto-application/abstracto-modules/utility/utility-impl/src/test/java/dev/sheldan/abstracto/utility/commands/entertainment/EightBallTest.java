@@ -44,7 +44,7 @@ public class EightBallTest {
         String chosenKey = "key";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(inputText));
         when(entertainmentService.getEightBallValue(inputText)).thenReturn(chosenKey);
-        when(channelService.sendEmbedTemplateInChannel(eq(EIGHT_BALL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(parameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(EIGHT_BALL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(parameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         Assert.assertEquals(chosenKey, responseModelArgumentCaptor.getValue().getChosenKey());

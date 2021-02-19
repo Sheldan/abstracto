@@ -16,11 +16,12 @@ import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
 import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -192,7 +193,9 @@ public class WarnServiceBeanTest {
         setupWarnContext();
         when(featureModeService.featureModeActive(ModerationFeatures.WARNING, SERVER_ID, WarningMode.WARN_LOG)).thenReturn(true);
         setupMocksForWarning();
-        testUnit.notifyAndLogFullUserWarning(context);
+        CompletableFuture<Void> future = testUnit.notifyAndLogFullUserWarning(context);
+        future.join();
+        Assert.assertFalse(future.isCompletedExceptionally());
     }
 
     private void setupWarnContext() {
@@ -210,10 +213,10 @@ public class WarnServiceBeanTest {
         when(guild.getName()).thenReturn(GUILD_NAME);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(warnedMember.getUser()).thenReturn(warnedSimpleUser);
-        when(templateService.renderEmbedTemplate(eq(WARN_LOG_TEMPLATE), warnDecayLogModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(WARN_LOG_TEMPLATE), warnDecayLogModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         when(messageService.sendMessageToUser(eq(warnedMember.getUser()), any())).thenReturn(CompletableFuture.completedFuture(null));
-        when(postTargetService.sendEmbedInPostTarget(messageToSend, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong())).thenReturn(CommandTestUtilities.messageFutureList());
-        when(templateService.renderTemplate(eq(WarnServiceBean.WARN_NOTIFICATION_TEMPLATE), notificationCaptor.capture())).thenReturn(NOTIFICATION_TEXT);
+        when(postTargetService.sendEmbedInPostTarget(messageToSend, WarningPostTarget.WARN_LOG, SERVER_ID)).thenReturn(CommandTestUtilities.messageFutureList());
+        when(templateService.renderTemplate(eq(WarnServiceBean.WARN_NOTIFICATION_TEMPLATE), notificationCaptor.capture(), eq(SERVER_ID))).thenReturn(NOTIFICATION_TEXT);
         when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
     }
 

@@ -22,8 +22,8 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.*;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.apache.commons.lang3.BooleanUtils;
@@ -174,7 +174,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                         .forceNewMessage(forceNewMessage)
                         .build();
                 model.getRoles().add(newAssignableRole);
-                MessageToSend messageToSend = templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model);
+                MessageToSend messageToSend = templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model, server.getId());
                 // add it to the last currently existing post
                 Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(server.getId(), latestPost.getUsedChannel().getId());
                 if(channelOptional.isPresent()) {
@@ -547,7 +547,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Override
-    public CompletableFuture<Void> testAssignableRolePlace(AServer server, String name, MessageChannel channel) {
+    public CompletableFuture<Void> testAssignableRolePlace(AServer server, String name, TextChannel channel) {
         AssignableRolePlace place = rolePlaceManagementService.findByServerAndKey(server, name);
         MessageToSend messageToSend = renderAssignablePlacePosts(place);
         log.info("Testing assignable role place {} in channel {} on server {}.", place.getId(), channel.getId(), server.getId());
@@ -556,7 +556,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Override
-    public void showAssignablePlaceConfig(AServer server, String name, MessageChannel channel) {
+    public void showAssignablePlaceConfig(AServer server, String name, TextChannel channel) {
         AssignableRolePlace place = rolePlaceManagementService.findByServerAndKey(server, name);
         List<AssignablePostConfigRole> roles = new ArrayList<>();
         Guild guild = guildService.getGuildById(server.getId());
@@ -581,7 +581,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 .roles(roles)
                 .place(place)
                 .build();
-        channelService.sendEmbedTemplateInChannel(ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY, configModel, channel);
+        channelService.sendEmbedTemplateInTextChannelList(ASSIGNABLE_ROLES_CONFIG_POST_TEMPLATE_KEY, configModel, channel);
     }
 
     @Override
@@ -652,11 +652,11 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     }
 
     @Override
-    public CompletableFuture<Void> showAllAssignableRolePlaces(AServer server, MessageChannel channel) {
+    public CompletableFuture<Void> showAllAssignableRolePlaces(AServer server, TextChannel channel) {
         List<AssignableRolePlace> assignableRolePlaces = rolePlaceManagementService.findAllByServer(server);
         AssignablePlaceOverview overViewModel = AssignablePlaceOverview.builder().places(assignableRolePlaces).build();
         log.info("Showing overview over all assignable role places for server {} in channel {}.", server.getId(), channel.getId());
-        List<CompletableFuture<Message>> promises = channelService.sendEmbedTemplateInChannel(ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY, overViewModel, channel);
+        List<CompletableFuture<Message>> promises = channelService.sendEmbedTemplateInTextChannelList(ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY, overViewModel, channel);
         return CompletableFuture.allOf(promises.toArray(new CompletableFuture[0]));
     }
 
@@ -671,7 +671,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         );
     }
 
-    private List<CompletableFuture<Message>> sendAssignablePostMessages(AssignableRolePlace place, MessageChannel channel) {
+    private List<CompletableFuture<Message>> sendAssignablePostMessages(AssignableRolePlace place, TextChannel channel) {
         MessageToSend messageToSend = renderAssignablePlacePosts(place);
         return channelService.sendMessageToSendToChannel(messageToSend, channel);
     }
@@ -728,7 +728,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         AssignableRolePlace assignableRolePlace = rolePlaceManagementService.findByPlaceId(assignablePlaceId);
         Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(serverId, assignableRolePlace.getChannel().getId());
         if(channelOptional.isPresent()) {
-            MessageChannel channel = channelOptional.get();
+            TextChannel channel = channelOptional.get();
             log.info("Sending assignable role place posts for place {} in channel {} in server {}.", assignableRolePlace.getId(), channel.getId(), serverId);
             List<CompletableFuture<Message>> messageFutures = sendAssignablePostMessages(assignableRolePlace, channel);
             return CompletableFuture.allOf(messageFutures.toArray(new CompletableFuture[0]))

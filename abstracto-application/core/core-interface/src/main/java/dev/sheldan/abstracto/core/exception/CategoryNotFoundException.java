@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.exception.CategoryNotFoundExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class CategoryNotFoundException extends AbstractoRunTimeException implements Templatable {
 

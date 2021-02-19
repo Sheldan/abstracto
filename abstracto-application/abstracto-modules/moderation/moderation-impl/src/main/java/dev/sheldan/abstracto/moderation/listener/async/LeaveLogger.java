@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -55,7 +55,7 @@ public class LeaveLogger implements AsyncLeaveListener {
 
     @Transactional
     public void executeJoinLogging(ServerUser serverUser, Member member) {
-        String text = templateService.renderTemplateWithMap(USER_LEAVE_TEMPLATE, getUserParameter(member.getUser()));
+        String text = templateService.renderTemplateWithMap(USER_LEAVE_TEMPLATE, getUserParameter(member.getUser()), serverUser.getServerId());
         postTargetService.sendTextInPostTarget(text, LoggingPostTarget.LEAVE_LOG, serverUser.getServerId());
     }
 

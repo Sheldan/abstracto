@@ -37,7 +37,7 @@ public class Choose extends AbstractConditionableCommand {
         String choice = entertainmentService.takeChoice(choices, commandContext.getAuthor());
         ChooseResponseModel responseModel = (ChooseResponseModel) ContextConverter.slimFromCommandContext(commandContext, ChooseResponseModel.class);
         responseModel.setChosenValue(choice);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(CHOOSE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(CHOOSE_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
             .thenApply(unused -> CommandResult.fromIgnored());
     }
 

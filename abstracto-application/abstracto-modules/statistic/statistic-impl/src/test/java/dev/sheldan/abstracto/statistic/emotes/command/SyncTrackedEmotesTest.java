@@ -37,7 +37,7 @@ public class SyncTrackedEmotesTest {
         CommandContext commandContext = CommandTestUtilities.getNoParameters();
         TrackedEmoteSynchronizationResult result = Mockito.mock(TrackedEmoteSynchronizationResult.class);
         when(trackedEmoteService.synchronizeTrackedEmotes(commandContext.getGuild())).thenReturn(result);
-        when(channelService.sendEmbedTemplateInChannel(SYNC_TRACKED_EMOTES_RESULT_RESPONSE, result, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(SYNC_TRACKED_EMOTES_RESULT_RESPONSE, result, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
     }

@@ -19,7 +19,6 @@ import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
@@ -44,9 +43,6 @@ public class PostTargetCommand extends AbstractConditionableCommand {
 
     @Autowired
     private PostTargetService postTargetService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private ChannelService channelService;
@@ -76,7 +72,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
                     postTargetEntries.add(postTargetEntry);
                 }
             });
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(POST_TARGET_SHOW_TARGETS, posttargetDisplayModel, commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(POST_TARGET_SHOW_TARGETS, posttargetDisplayModel, commandContext.getChannel()))
                     .thenApply(aVoid -> CommandResult.fromSuccess());
         }
         String targetName = (String) commandContext.getParameters().getParameters().get(0);

@@ -34,7 +34,7 @@ public class ShowAvatarTest {
     public void executeWithoutParameter() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(ShowAvatar.SHOW_AVATAR_RESPONSE_TEMPLATE), argumentCaptor.capture(), eq(noParameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(ShowAvatar.SHOW_AVATAR_RESPONSE_TEMPLATE), argumentCaptor.capture(), eq(noParameters.getChannel()));
         ShowAvatarModel usedModel = argumentCaptor.getValue();
         Assert.assertEquals(noParameters.getAuthor(), usedModel.getMemberInfo());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
@@ -45,7 +45,7 @@ public class ShowAvatarTest {
         Member target = Mockito.mock(Member.class);
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(target));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(ShowAvatar.SHOW_AVATAR_RESPONSE_TEMPLATE), argumentCaptor.capture(), eq(noParameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(ShowAvatar.SHOW_AVATAR_RESPONSE_TEMPLATE), argumentCaptor.capture(), eq(noParameters.getChannel()));
         ShowAvatarModel usedModel = argumentCaptor.getValue();
         Assert.assertEquals(target, usedModel.getMemberInfo());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);

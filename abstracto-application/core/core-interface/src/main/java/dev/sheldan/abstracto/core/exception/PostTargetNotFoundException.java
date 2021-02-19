@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.exception.PostTargetNotFoundExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class PostTargetNotFoundException extends AbstractoRunTimeException implements Templatable {
 

@@ -6,8 +6,8 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.moderation.exception.NoMessageFoundException;
 import dev.sheldan.abstracto.moderation.models.template.commands.PurgeStatusUpdateModel;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -76,7 +76,7 @@ public class PurgeServiceBean implements PurgeService {
                 List<Message> retrievedHistory = historyFuture.get().getRetrievedHistory();
                 List<Message> messagesToDeleteNow = filterMessagesToDelete(retrievedHistory, purgedMember);
                 Long currentStatusMessageId = statusMessageFuture.get();
-                if(messagesToDeleteNow.size() == 0) {
+                if(messagesToDeleteNow.isEmpty()) {
                     log.warn("No messages found to delete, all were filtered.");
                     deletionFuture.completeExceptionally(new NoMessageFoundException());
                     // TODO move to message service
@@ -121,7 +121,7 @@ public class PurgeServiceBean implements PurgeService {
         if(statusMessageId == 0) {
             log.trace("Creating new status message in channel {} in server {} because of puring.", channel.getIdLong(), channel.getGuild().getId());
             PurgeStatusUpdateModel model = PurgeStatusUpdateModel.builder().currentlyDeleted(0).totalToDelete(totalCount).build();
-            MessageToSend messageToSend = templateService.renderTemplateToMessageToSend("purge_status_update", model);
+            MessageToSend messageToSend = templateService.renderTemplateToMessageToSend("purge_status_update", model, channel.getGuild().getIdLong());
             statusMessageFuture = messageService.createStatusMessageId(messageToSend, channel);
         } else {
             log.trace("Using existing status message {}.", statusMessageId);

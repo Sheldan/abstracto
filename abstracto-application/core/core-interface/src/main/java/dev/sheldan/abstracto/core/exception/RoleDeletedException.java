@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.exception.RoleDeletedExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class RoleDeletedException extends AbstractoRunTimeException implements Templatable {
 

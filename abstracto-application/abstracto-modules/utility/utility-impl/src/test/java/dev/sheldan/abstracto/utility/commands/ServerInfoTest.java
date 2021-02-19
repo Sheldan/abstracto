@@ -29,7 +29,7 @@ public class ServerInfoTest {
     public void executeCommand() {
         CommandContext context = CommandTestUtilities.getNoParameters();
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq("serverinfo_response"), any(ServerInfoModel.class), eq(context.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq("serverinfo_response"), any(ServerInfoModel.class), eq(context.getChannel()));
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 

@@ -18,7 +18,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +49,7 @@ public class DisableFeature extends AbstractConditionableCommand {
         if(commandContext.getParameters().getParameters().isEmpty()) {
             EnableModel model = (EnableModel) ContextConverter.fromCommandContext(commandContext, EnableModel.class);
             model.setFeatures(featureConfigService.getAllFeatures());
-            String response = templateService.renderTemplate("disable_features_response", model);
+            String response = templateService.renderTemplate("disable_features_response", model, commandContext.getGuild().getIdLong());
             return channelService.sendTextToChannel(response, commandContext.getChannel())
                     .thenApply(aVoid -> CommandResult.fromSuccess());
         } else {

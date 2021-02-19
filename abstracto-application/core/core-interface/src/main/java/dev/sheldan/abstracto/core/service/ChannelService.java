@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
@@ -46,8 +46,10 @@ public interface ChannelService {
     CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index, Integer embedIndex);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
-    List<CompletableFuture<Message>> sendEmbedTemplateInChannel(String templateKey, Object model, MessageChannel channel);
-    CompletableFuture<Message> sendTextTemplateInChannel(String templateKey, Object model, MessageChannel channel);
+    List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, TextChannel channel);
+    List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannelList(String templateKey, Object model, MessageChannel channel);
+    CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, TextChannel channel);
+    CompletableFuture<Message> sendTextTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel);
     RestAction<Void> deleteMessagesInChannel(TextChannel textChannel, List<Message> messages);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
@@ -61,4 +63,5 @@ public interface ChannelService {
     Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId);
     TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
     CompletableFuture<Void> setSlowModeInChannel(TextChannel textChannel, Integer seconds);
+    List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, TextChannel channel);
 }

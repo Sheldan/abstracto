@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.assignableroles.exceptions;
 import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRoleNotUsableExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.FullRole;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class AssignableRoleNotUsableException extends AbstractoRunTimeException implements Templatable {

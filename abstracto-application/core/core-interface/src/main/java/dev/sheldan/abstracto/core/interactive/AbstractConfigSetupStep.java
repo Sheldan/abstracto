@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.interactive;
 
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Message;

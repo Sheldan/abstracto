@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.ChannelGroupTypeParameterHandler;
 import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupTypeManagementService;
@@ -24,8 +25,8 @@ public class ChannelGroupTypeParameterHandlerImpl implements ChannelGroupTypePar
     }
 
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
-        ChannelGroupType actualGroupType = channelGroupTypeManagementService.findChannelGroupTypeByKey(input);
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+        ChannelGroupType actualGroupType = channelGroupTypeManagementService.findChannelGroupTypeByKey((String) input.getValue());
         return ChannelGroupType
                 .builder()
                 .groupTypeKey(actualGroupType.getGroupTypeKey())

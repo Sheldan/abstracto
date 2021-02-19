@@ -34,8 +34,8 @@ import dev.sheldan.abstracto.modmail.service.management.ModMailRoleManagementSer
 import dev.sheldan.abstracto.modmail.service.management.ModMailSubscriberManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.modmail.validator.ModMailFeatureValidator;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
@@ -344,7 +344,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             } else {
                 log.info("No server available to open a modmail thread in.");
                 // in case there is no server available, send an error message
-                channelService.sendEmbedTemplateInChannel("modmail_no_server_available", new Object(), initialMessage.getChannel());
+                channelService.sendEmbedTemplateInMessageChannelList("modmail_no_server_available", new Object(), initialMessage.getChannel());
             }
         } else {
             log.warn("User which was not known in any of the servers tried to contact the bot. {}", user.getId());
@@ -369,7 +369,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .latestModMailThread(latestThread)
                 .pastModMailThreadCount((long)oldThreads.size())
                 .build();
-        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInChannel("modmail_thread_header", header, channel);
+        List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInTextChannelList("modmail_thread_header", header, channel);
         return CompletableFuture.allOf(messages.toArray(new CompletableFuture[0]));
     }
 

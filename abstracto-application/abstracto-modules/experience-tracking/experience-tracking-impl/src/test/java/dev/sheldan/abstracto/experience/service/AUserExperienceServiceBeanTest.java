@@ -20,8 +20,8 @@ import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManage
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.junit.Assert;
@@ -589,6 +589,8 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     @Test
     public void testSyncRolesWithFeedBack() {
         AChannel channel = Mockito.mock(AChannel.class);
+        when(channel.getServer()).thenReturn(server);
+        when(server.getId()).thenReturn(SERVER_ID);
         List<AUserExperience> experiences = getUserExperiences(25, server);
 
         checkStatusMessages(server, channel, experiences, 13);
@@ -598,7 +600,8 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     public void testSyncRolesWithNoUsers() {
         AChannel channel = Mockito.mock(AChannel.class);
         List<AUserExperience> experiences = new ArrayList<>();
-
+        when(channel.getServer()).thenReturn(server);
+        when(server.getId()).thenReturn(SERVER_ID);
         checkStatusMessages(server, channel, experiences, 1);
     }
 
@@ -631,7 +634,7 @@ public class AUserExperienceServiceBeanTest extends ExperienceRelatedTest {
     private void checkStatusMessages(AServer server, AChannel channel, List<AUserExperience> experiences, int messageCount) {
         when(userExperienceManagementService.loadAllUsers(server)).thenReturn(experiences);
         MessageToSend statusMessage = MessageToSend.builder().message("text").build();
-        when(templateService.renderEmbedTemplate(eq("user_sync_status_message"), any(UserSyncStatusModel.class))).thenReturn(statusMessage);
+        when(templateService.renderEmbedTemplate(eq("user_sync_status_message"), any(UserSyncStatusModel.class), eq(SERVER_ID))).thenReturn(statusMessage);
         long messageId = 5L;
         Message statusMessageJDA = Mockito.mock(Message.class);
         when(statusMessageJDA.getIdLong()).thenReturn(messageId);

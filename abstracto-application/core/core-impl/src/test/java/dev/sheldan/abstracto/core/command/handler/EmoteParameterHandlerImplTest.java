@@ -16,7 +16,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EmoteParameterHandlerImplTest {
+public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private EmoteParameterHandlerImpl testUnit;
@@ -50,7 +50,7 @@ public class EmoteParameterHandlerImplTest {
     public void testProperEmoteMention() {
         oneEmoteInIterator();
         String input = getEmoteMention();
-        Emote parsed = (Emote) testUnit.handle(input, iterators, Emote.class, null);
+        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), iterators, Emote.class, null);
         Assert.assertEquals(parsed, emote);
     }
 
@@ -58,13 +58,13 @@ public class EmoteParameterHandlerImplTest {
     public void testEmoteById() {
         setupMessage();
         String input = EMOTE_ID.toString();
-        Emote parsed = (Emote) testUnit.handle(input, null, Emote.class, message);
+        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), null, Emote.class, message);
         Assert.assertEquals(parsed, emote);
     }
 
     @Test
     public void testInvalidEmoteMention() {
-        Assert.assertNull(testUnit.handle("test", null, Emote.class, null));
+        Assert.assertNull(testUnit.handle(getPieceWithValue("test"), null, Emote.class, null));
     }
 
     private String getEmoteMention() {

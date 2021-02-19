@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import net.dv8tion.jda.api.entities.Emote;
@@ -14,8 +15,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AEmoteParameterHandlerImplImplTest {
+public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandlerTest {
 
+    public static final String INPUT = "input";
     @InjectMocks
     private AEmoteParameterHandlerImpl testUnit;
 
@@ -49,19 +51,19 @@ public class AEmoteParameterHandlerImplImplTest {
 
     @Test
     public void testProperEmoteMention() {
-        String input = "test";
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, message)).thenReturn(emote);
+        UnparsedCommandParameterPiece piece = getPieceWithValue(INPUT);
+        when(emoteParameterHandler.handle(piece, iterators, Emote.class, message)).thenReturn(emote);
         when(emoteService.getFakeEmoteFromEmote(emote)).thenReturn(aEmote);
-        AEmote parsed = (AEmote) testUnit.handle(input, iterators, AEmote.class, message);
+        AEmote parsed = (AEmote) testUnit.handle(piece, iterators, AEmote.class, message);
         Assert.assertEquals(aEmote, parsed);
     }
 
     @Test
     public void testDefaultEmoteHandling() {
-        String input = "test";
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, message)).thenReturn(null);
-        when(emoteService.getFakeEmote(input)).thenReturn(aEmote);
-        AEmote parsed = (AEmote) testUnit.handle(input, iterators, AEmote.class, message);
+        UnparsedCommandParameterPiece piece = getPieceWithValue(INPUT);
+        when(emoteParameterHandler.handle(piece, iterators, Emote.class, message)).thenReturn(null);
+        when(emoteService.getFakeEmote(INPUT)).thenReturn(aEmote);
+        AEmote parsed = (AEmote) testUnit.handle(piece, iterators, AEmote.class, message);
         Assert.assertEquals(aEmote, parsed);
     }
 

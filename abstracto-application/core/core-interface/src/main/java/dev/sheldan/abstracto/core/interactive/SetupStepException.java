@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.interactive;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class SetupStepException extends AbstractoRunTimeException implements Templatable {
 

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.modmail.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.modmail.models.template.exception.ModMailThreadNotFoundExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 /**
  * This exception is raised, when for some reason the mod mail thread is not found in the database anymore, but the context which is executed stems from a mod mail thread.

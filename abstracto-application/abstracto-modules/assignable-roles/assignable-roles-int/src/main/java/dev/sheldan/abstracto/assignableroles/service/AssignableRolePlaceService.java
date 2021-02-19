@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.concurrent.CompletableFuture;
@@ -53,8 +52,8 @@ public interface AssignableRolePlaceService {
     void keepReactionsAssignableRolePlace(AssignableRolePlace place);
 
     void swapPositions(AServer server, String name, FullEmote firstEmote, FullEmote secondEmote);
-    CompletableFuture<Void> testAssignableRolePlace(AServer server, String name, MessageChannel channel);
-    void showAssignablePlaceConfig(AServer server, String name, MessageChannel channel);
+    CompletableFuture<Void> testAssignableRolePlace(AServer server, String name, TextChannel channel);
+    void showAssignablePlaceConfig(AServer server, String name, TextChannel channel);
     void moveAssignableRolePlace(AServer server, String name, TextChannel newChannel);
     void changeAssignablePlaceDescription(AServer server, String name, String newDescription);
     CompletableFuture<Void> deleteAssignableRolePlace(AServer server, String name);
@@ -69,5 +68,5 @@ public interface AssignableRolePlaceService {
     CompletableFuture<Void> removeExistingReactionsAndRoles(AssignableRolePlace place, AssignedRoleUser user);
     CompletableFuture<Void> changeConfiguration(AServer server, String name, AssignableRolePlaceParameterKey keyToChange, Object newValue);
 
-    CompletableFuture<Void> showAllAssignableRolePlaces(AServer server, MessageChannel channel);
+    CompletableFuture<Void> showAllAssignableRolePlaces(AServer server, TextChannel channel);
 }

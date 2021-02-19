@@ -12,8 +12,8 @@ import dev.sheldan.abstracto.moderation.config.features.mode.InviteFilterMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.InviteFilterPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.listener.DeletedInvitesNotificationModel;
 import dev.sheldan.abstracto.moderation.service.InviteLinkFilterService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -163,7 +163,7 @@ public class InviteLinkFilterListenerTest {
         verify(metricService, times(1)).incrementCounter(any());
         Assert.assertEquals(MessageReceivedListenerResult.DELETED, result);
         verify(inviteLinkFilterService, times(0)).storeFilteredInviteLinkUsage(eq(INVITE_CODE), any(ServerUser.class));
-        verify(templateService, times(0)).renderEmbedTemplate(eq(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY), any(DeletedInvitesNotificationModel.class));
+        verify(templateService, times(0)).renderEmbedTemplate(eq(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY), any(DeletedInvitesNotificationModel.class), eq(SERVER_ID));
     }
 
     private void verifyTracking() {
@@ -173,7 +173,7 @@ public class InviteLinkFilterListenerTest {
     private void setupForNotification() {
         when(postTargetService.postTargetDefinedInServer(InviteFilterPostTarget.INVITE_DELETE_LOG, SERVER_ID)).thenReturn(true);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY), any(DeletedInvitesNotificationModel.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY), any(DeletedInvitesNotificationModel.class), eq(SERVER_ID))).thenReturn(messageToSend);
         when(postTargetService.sendEmbedInPostTarget(messageToSend, InviteFilterPostTarget.INVITE_DELETE_LOG, SERVER_ID)).thenReturn(CommandTestUtilities.messageFutureList());
         when(textChannel.getIdLong()).thenReturn(CHANNEL_ID);
         when(message.getIdLong()).thenReturn(MESSAGE_ID);

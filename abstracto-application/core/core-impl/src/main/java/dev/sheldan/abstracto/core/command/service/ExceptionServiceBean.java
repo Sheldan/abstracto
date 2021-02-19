@@ -11,8 +11,8 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.templating.Templatable;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -46,13 +46,13 @@ public class ExceptionServiceBean implements ExceptionService {
                 GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
                 log.info("Reporting generic exception {} of command {} towards channel {} in server {}.",
                         throwable.getClass().getSimpleName(), command.getConfiguration().getName(), context.getChannel().getId(), context.getGuild().getId());
-                channelService.sendEmbedTemplateInChannel("generic_command_exception", exceptionModel, context.getChannel());
+                channelService.sendEmbedTemplateInTextChannelList("generic_command_exception", exceptionModel, context.getChannel());
             } catch (Exception e) {
                 log.error("Failed to notify about exception.", e);
             }
         } else if(throwable instanceof Templatable){
             GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
-            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, exceptionModel);
+            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, exceptionModel, context.getGuild().getIdLong());
             channelService.sendTextToChannel(text, context.getChannel());
         } else {
             channelService.sendTextToChannel(throwable.getLocalizedMessage(), context.getChannel());

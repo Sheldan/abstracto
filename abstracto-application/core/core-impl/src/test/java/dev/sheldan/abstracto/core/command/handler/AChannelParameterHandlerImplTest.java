@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import net.dv8tion.jda.api.entities.Message;
@@ -14,7 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AChannelParameterHandlerImplTest {
+public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private AChannelParameterHandlerImpl testUnit;
@@ -49,10 +50,10 @@ public class AChannelParameterHandlerImplTest {
 
     @Test
     public void testProperChannelMention() {
-        String input = "test";
-        when(textChannelParameterHandler.handle(input, iterators, TextChannel.class, message)).thenReturn(channel);
+        UnparsedCommandParameterPiece piece = getPieceWithValue("input");
+        when(textChannelParameterHandler.handle(piece, iterators, TextChannel.class, message)).thenReturn(channel);
         when(channelService.getFakeChannelFromTextChannel(channel)).thenReturn(aChannel);
-        AChannel parsed = (AChannel) testUnit.handle(input, iterators, TextChannel.class, message);
+        AChannel parsed = (AChannel) testUnit.handle(piece, iterators, TextChannel.class, message);
         Assert.assertEquals(aChannel, parsed);
     }
 

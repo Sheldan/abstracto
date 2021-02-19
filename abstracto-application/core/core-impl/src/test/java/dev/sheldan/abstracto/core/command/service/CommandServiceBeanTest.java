@@ -79,8 +79,8 @@ public class CommandServiceBeanTest {
     }
 
     private CommandConfiguration getMixedParameterConfig() {
-        Parameter param1 = Parameter.builder().name(PARAMETER_1_NAME).optional(false).build();
-        Parameter param2 = Parameter.builder().name(PARAMETER_2_NAME).optional(true).build();
+        Parameter param1 = Parameter.builder().name(PARAMETER_1_NAME).type(Object.class).optional(false).build();
+        Parameter param2 = Parameter.builder().name(PARAMETER_2_NAME).type(Object.class).optional(true).build();
         return CommandConfiguration
                 .builder()
                 .name(COMMAND_NAME)
@@ -89,7 +89,7 @@ public class CommandServiceBeanTest {
     }
 
     private Parameter getOptionalParameter(boolean b) {
-        return Parameter.builder().name(PARAMETER_1_NAME).optional(b).build();
+        return Parameter.builder().name(PARAMETER_1_NAME).type(Object.class).optional(b).build();
     }
 
 }

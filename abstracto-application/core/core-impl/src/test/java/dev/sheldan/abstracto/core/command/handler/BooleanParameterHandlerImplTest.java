@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BooleanParameterHandlerImplTest {
+public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private BooleanParameterHandlerImpl testUnit;
@@ -24,22 +25,26 @@ public class BooleanParameterHandlerImplTest {
 
     @Test
     public void testTrueParsing() {
-        Assert.assertTrue((Boolean)testUnit.handle("true", null, null, null));
+        UnparsedCommandParameterPiece piece = getPieceWithValue("true");
+        Assert.assertTrue((Boolean)testUnit.handle(piece, null, null, null));
     }
 
     @Test
     public void testAnyOtherText() {
-        Assert.assertFalse((Boolean)testUnit.handle("test", null, null, null));
+        UnparsedCommandParameterPiece piece = getPieceWithValue("test");
+        Assert.assertFalse((Boolean)testUnit.handle(piece, null, null, null));
     }
 
     @Test
     public void testNullInput() {
-        Assert.assertFalse((Boolean)testUnit.handle(null, null, null, null));
+        UnparsedCommandParameterPiece piece = getPieceWithValue(null);
+        Assert.assertFalse((Boolean)testUnit.handle(piece, null, null, null));
     }
 
     @Test
     public void testEmptyStringAsInput() {
-        Assert.assertFalse((Boolean)testUnit.handle("", null, null, null));
+        UnparsedCommandParameterPiece piece = getPieceWithValue("");
+        Assert.assertFalse((Boolean)testUnit.handle(piece, null, null, null));
     }
 
 }

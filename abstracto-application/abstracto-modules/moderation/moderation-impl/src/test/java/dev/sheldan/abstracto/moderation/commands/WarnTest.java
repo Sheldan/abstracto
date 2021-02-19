@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
 import dev.sheldan.abstracto.moderation.service.WarnService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,12 +35,15 @@ public class WarnTest {
     @Captor
     private ArgumentCaptor<WarnContext> parameterCaptor;
 
+    private static final Long SERVER_ID = 1L;
+
     @Test
     public void testExecuteWarnCommandWithReason() {
         Member warnedMember = Mockito.mock(Member.class);
         String reason = "reason";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(warnedMember, reason));
-        when(templateService.renderSimpleTemplate(Warn.WARN_DEFAULT_REASON_TEMPLATE)).thenReturn(DEFAULT_REASON);
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(templateService.renderSimpleTemplate(Warn.WARN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(DEFAULT_REASON);
         when(warnService.warnUserWithLog(parameterCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         WarnContext value = parameterCaptor.getValue();
@@ -54,7 +57,8 @@ public class WarnTest {
     public void testExecuteWarnCommandWithDefaultReason() {
         Member warnedMember = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(warnedMember));
-        when(templateService.renderSimpleTemplate(Warn.WARN_DEFAULT_REASON_TEMPLATE)).thenReturn(DEFAULT_REASON);
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(templateService.renderSimpleTemplate(Warn.WARN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(DEFAULT_REASON);
         when(warnService.warnUserWithLog(parameterCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         WarnContext value = parameterCaptor.getValue();

@@ -45,7 +45,7 @@ public class LoveCalcTest {
         Integer loveResult = 2;
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(inputText, inputText2));
         when(entertainmentService.getLoveCalcValue(inputText, inputText2)).thenReturn(loveResult);
-        when(channelService.sendEmbedTemplateInChannel(eq(LOVE_CALC_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(parameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(LOVE_CALC_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(parameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         Assert.assertEquals(loveResult, responseModelArgumentCaptor.getValue().getRolled());

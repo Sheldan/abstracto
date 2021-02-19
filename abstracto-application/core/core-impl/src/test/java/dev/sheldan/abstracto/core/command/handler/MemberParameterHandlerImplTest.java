@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MemberParameterHandlerImplTest {
+public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private MemberParameterHandlerImpl testUnit;
@@ -53,7 +53,7 @@ public class MemberParameterHandlerImplTest {
     public void testProperMemberMention() {
         oneMemberInIterator();
         String input = getUserMention();
-        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(input, iterators, Member.class, null);
+        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), iterators, Member.class, null);
         Assert.assertEquals(parsed.join(), member);
     }
 
@@ -62,14 +62,14 @@ public class MemberParameterHandlerImplTest {
     public void testMemberById() {
         setupMessage();
         String input = USER_ID.toString();
-        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(input, null, Member.class, message);
+        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
         Assert.assertEquals(parsed.join(), member);
     }
 
     @Test(expected = NumberFormatException.class)
     public void testInvalidMemberMention() {
         String input = "test";
-        testUnit.handleAsync(input, null, Member.class, null);
+        testUnit.handleAsync(getPieceWithValue(input), null, Member.class, null);
     }
 
     private String getUserMention() {

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.statistic.emotes.command.parameter.handler;
 
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
@@ -47,12 +48,12 @@ public class TrackedEmoteParameterHandler implements CommandParameterHandler {
      * does not need to actually exist.
      */
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
         Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
         if(emote != null) {
             return trackedEmoteService.getFakeTrackedEmote(emote, context.getGuild());
         } else {
-            long trackedEmoteId = Long.parseLong(input);
+            long trackedEmoteId = Long.parseLong((String) input.getValue());
             return trackedEmoteService.getFakeTrackedEmote(trackedEmoteId, context.getGuild());
         }
     }

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.exception.GuildNotFoundExceptionModel;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class GuildNotFoundException extends AbstractoRunTimeException implements Templatable {
     private final GuildNotFoundExceptionModel model;

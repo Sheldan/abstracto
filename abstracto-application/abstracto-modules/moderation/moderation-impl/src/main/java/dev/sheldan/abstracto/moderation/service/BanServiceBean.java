@@ -9,8 +9,8 @@ import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -53,7 +53,7 @@ public class BanServiceBean implements BanService {
     public CompletableFuture<Void> sendBanLogMessage(ServerContext banLog, Long guildId, String template) {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatures.MODERATION, guildId, ModerationMode.BAN_LOG)) {
-            MessageToSend banLogMessage = templateService.renderEmbedTemplate(template, banLog);
+            MessageToSend banLogMessage = templateService.renderEmbedTemplate(template, banLog, guildId);
             log.trace("Sending ban log message in guild {}.", guildId);
             List<CompletableFuture<Message>> notificationFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId);
             completableFuture = FutureUtils.toSingleFutureGeneric(notificationFutures);

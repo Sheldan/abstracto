@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class LeaveLoggerTest {
         when(member.getUser()).thenReturn(user);
         String message = "text";
         when(leavingUser.getServerId()).thenReturn(SERVER_ID);
-        when(templateService.renderTemplateWithMap(eq(LeaveLogger.USER_LEAVE_TEMPLATE), any())).thenReturn(message);
+        when(templateService.renderTemplateWithMap(eq(LeaveLogger.USER_LEAVE_TEMPLATE), any(), eq(SERVER_ID))).thenReturn(message);
         testUnit.executeJoinLogging(leavingUser, member);
         verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.LEAVE_LOG, SERVER_ID);
 

@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DurationParameterHandlerImplTest {
+public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTest {
 
     @InjectMocks
     private DurationParameterHandlerImpl testUnit;
@@ -28,23 +28,23 @@ public class DurationParameterHandlerImplTest {
 
     @Test
     public void testSimpleParsing() {
-        Assert.assertEquals(Duration.ofMinutes(1), testUnit.handle("1m", null, null, null));
+        Assert.assertEquals(Duration.ofMinutes(1), testUnit.handle(getPieceWithValue("1m"), null, null, null));
     }
 
     @Test
     public void testMoreComplicatedParsing() {
         Duration targetDuration = Duration.ofDays(4).plus(5, ChronoUnit.HOURS).plus(5, ChronoUnit.MINUTES);
-        Assert.assertEquals(targetDuration, testUnit.handle("5m5h4d", null, null, null));
+        Assert.assertEquals(targetDuration, testUnit.handle(getPieceWithValue("5h5m4d"), null, null, null));
     }
 
     @Test(expected = DurationFormatException.class)
     public void testNullInput() {
-        testUnit.handle(null, null, null, null);
+        testUnit.handle(getPieceWithValue(null), null, null, null);
     }
 
     @Test(expected = DurationFormatException.class)
     public void testEmptyStringAsInput() {
-        testUnit.handle("", null, null, null);
+        testUnit.handle(getPieceWithValue(""), null, null, null);
     }
 
 }

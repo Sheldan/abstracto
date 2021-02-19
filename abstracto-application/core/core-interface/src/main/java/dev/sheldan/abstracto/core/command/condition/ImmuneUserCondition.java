@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.service.management.CommandInServerMana
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +28,6 @@ public class ImmuneUserCondition implements CommandCondition {
 
     @Autowired
     private RoleService roleService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {

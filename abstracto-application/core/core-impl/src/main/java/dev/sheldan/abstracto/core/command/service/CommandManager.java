@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandReceivedHandler;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.ModuleInterface;
-import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -47,14 +46,12 @@ public class CommandManager implements CommandRegistry {
             }
             boolean parameterFit;
             if(commandConfiguration.getParameters() != null){
-                boolean paramCountFits = unParsedCommandParameter.getParameters().size() >= commandConfiguration.getNecessaryParameterCount();
-                boolean hasRemainderParameter = commandConfiguration.getParameters().stream().anyMatch(Parameter::isRemainder);
-                if(unParsedCommandParameter.getParameters().size() < commandConfiguration.getNecessaryParameterCount()) {
+                if(commandConfiguration.getNecessaryParameterCount() > unParsedCommandParameter.getParameters().size()) {
                     String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
                     metricService.incrementCounter(CommandReceivedHandler.COMMANDS_WRONG_PARAMETER_COUNTER);
                     throw new InsufficientParametersException(o, nextParameterName);
                 }
-                parameterFit = paramCountFits || hasRemainderParameter;
+                parameterFit = true;
             } else {
                 parameterFit = unParsedCommandParameter.getParameters().isEmpty();
             }

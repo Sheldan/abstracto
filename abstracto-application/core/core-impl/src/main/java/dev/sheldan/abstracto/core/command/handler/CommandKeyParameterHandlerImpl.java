@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.execution.CommandParameterKey;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.CommandKeyParameterHandler;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.stereotype.Component;
@@ -15,8 +16,8 @@ public class CommandKeyParameterHandlerImpl implements CommandKeyParameterHandle
     }
 
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
-        return CommandParameterKey.getEnumFromKey(clazz, input);
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+        return CommandParameterKey.getEnumFromKey(clazz, (String) input.getValue());
     }
 
     @Override

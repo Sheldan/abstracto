@@ -1,15 +1,13 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
 import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -40,15 +38,16 @@ public class KickServiceBeanTest {
     @Mock
     private FeatureModeService featureModeService;
 
+    private static final Long SERVER_ID = 1L;
+
     @Test
     public void testKickMemberWithoutLog() {
-        AServer server = MockUtils.getServer();
         User user = Mockito.mock(User.class);
         Member member = Mockito.mock(Member.class);
         when(member.getUser()).thenReturn(user);
         when(user.getIdLong()).thenReturn(6L);
         Guild mockedGuild = Mockito.mock(Guild.class);
-        when(mockedGuild.getIdLong()).thenReturn(server.getId());
+        when(mockedGuild.getIdLong()).thenReturn(SERVER_ID);
         when(member.getGuild()).thenReturn(mockedGuild);
         String reason = "reason";
         AuditableRestAction<Void> mockedAction = Mockito.mock(AuditableRestAction.class);
@@ -56,21 +55,20 @@ public class KickServiceBeanTest {
         when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
         KickLogModel model = Mockito.mock(KickLogModel.class);
         when(model.getGuild()).thenReturn(mockedGuild);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, server.getId(), ModerationMode.KICK_LOG)).thenReturn(false);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.KICK_LOG)).thenReturn(false);
         testUnit.kickMember(member, reason, model);
-        verify(postTargetService, times(0)).sendEmbedInPostTarget(any(MessageToSend.class), eq(ModerationPostTarget.KICK_LOG), eq(server.getId()));
-        verify(templateService, times(0)).renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model);
+        verify(postTargetService, times(0)).sendEmbedInPostTarget(any(MessageToSend.class), eq(ModerationPostTarget.KICK_LOG), eq(SERVER_ID));
+        verify(templateService, times(0)).renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model, SERVER_ID);
     }
 
     @Test
     public void testKickMemberWithLog() {
-        AServer server = MockUtils.getServer();
         User user = Mockito.mock(User.class);
         Member member = Mockito.mock(Member.class);
         when(member.getUser()).thenReturn(user);
         when(user.getIdLong()).thenReturn(6L);
         Guild mockedGuild = Mockito.mock(Guild.class);
-        when(mockedGuild.getIdLong()).thenReturn(server.getId());
+        when(mockedGuild.getIdLong()).thenReturn(SERVER_ID);
         when(member.getGuild()).thenReturn(mockedGuild);
         String reason = "reason";
         AuditableRestAction<Void> mockedAction = Mockito.mock(AuditableRestAction.class);
@@ -79,9 +77,9 @@ public class KickServiceBeanTest {
         KickLogModel model = Mockito.mock(KickLogModel.class);
         when(model.getGuild()).thenReturn(mockedGuild);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model)).thenReturn(messageToSend);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, server.getId(), ModerationMode.KICK_LOG)).thenReturn(true);
+        when(templateService.renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model, SERVER_ID)).thenReturn(messageToSend);
+        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.KICK_LOG)).thenReturn(true);
         testUnit.kickMember(member, reason, model);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, ModerationPostTarget.KICK_LOG, server.getId());
+        verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, ModerationPostTarget.KICK_LOG, SERVER_ID);
     }
 }

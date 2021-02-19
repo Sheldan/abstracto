@@ -5,8 +5,8 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.moderation.exception.NoMessageFoundException;
 import dev.sheldan.abstracto.moderation.models.template.commands.PurgeStatusUpdateModel;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
@@ -87,10 +87,13 @@ public class PurgeServiceBeanTest {
     @Mock
     private Guild guild;
 
+    private static final Long SERVER_ID = 1L;
+
     @Before
     public void setup() {
         when(textChannel.getGuild()).thenReturn(guild);
-        when(guild.getId()).thenReturn("1");
+        when(guild.getId()).thenReturn(SERVER_ID.toString());
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
     }
 
     @Test
@@ -256,7 +259,7 @@ public class PurgeServiceBeanTest {
     }
 
     private void setupStatusMessageMocks() {
-        when(templateService.renderTemplateToMessageToSend(eq("purge_status_update"), any(PurgeStatusUpdateModel.class))).thenReturn(firstStatusUpdateMessage);
+        when(templateService.renderTemplateToMessageToSend(eq("purge_status_update"), any(PurgeStatusUpdateModel.class), eq(SERVER_ID))).thenReturn(firstStatusUpdateMessage);
         when(messageService.createStatusMessageId(firstStatusUpdateMessage, textChannel)).thenReturn(CompletableFuture.completedFuture(STATUS_MESSAGE_ID));
         when(textChannel.deleteMessageById(STATUS_MESSAGE_ID)).thenReturn(deleteStatusAction);
     }

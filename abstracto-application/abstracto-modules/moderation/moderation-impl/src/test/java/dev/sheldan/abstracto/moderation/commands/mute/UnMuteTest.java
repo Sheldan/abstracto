@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,9 +32,6 @@ public class UnMuteTest {
 
     @Mock
     private MuteManagementService muteManagementService;
-
-    @Mock
-    private TemplateService templateService;
 
     @Mock
     private Member memberToUnMute;

@@ -8,19 +8,19 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.exception.UploadFileTooLargeException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.utils.FileUtils;
+import dev.sheldan.abstracto.core.utils.FileService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatures;
 import dev.sheldan.abstracto.statistic.emotes.config.EmoteTrackingModule;
-import dev.sheldan.abstracto.statistic.emotes.exception.DownloadEmoteStatsFileTooBigException;
 import dev.sheldan.abstracto.statistic.emotes.model.DownloadEmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emotes.model.database.UsedEmote;
 import dev.sheldan.abstracto.statistic.emotes.service.management.UsedEmoteManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * This command renders a file containing information about emote statistics and provides the file as a download.
  * If the file size is over the size limit of the {@link net.dv8tion.jda.api.entities.Guild}, this command will fail, but
- * throw an {@link DownloadEmoteStatsFileTooBigException}.
+ * throw an {@link UploadFileTooLargeException}.
  * This will create a temporary file on the server, which will be deleted after it has been send.
  */
 @Component
@@ -61,7 +61,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
     private UsedEmoteManagementService usedEmoteManagementService;
 
     @Autowired
-    private FileUtils fileUtils;
+    private FileService fileService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -77,7 +77,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         List<UsedEmote> usedEmotes = usedEmoteManagementService.loadEmoteUsagesForServerSince(actualServer, statsSince);
         // if there are no stats available, render a message indicating so
         if(usedEmotes.isEmpty()) {
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY, new Object(), commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());
         }
         // info might not be nice to handle in the template, and 1970 would look weird to users
@@ -93,13 +93,13 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
                 .build();
         String fileName = templateService.renderTemplate(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY, model);
         String fileContent = templateService.renderTemplate(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY, model);
-        File tempFile = fileUtils.createTempFile(fileName);
+        File tempFile = fileService.createTempFile(fileName);
         try {
-            fileUtils.writeContentToFile(tempFile, fileContent);
+            fileService.writeContentToFile(tempFile, fileContent);
             long maxFileSize = commandContext.getGuild().getMaxFileSize();
             // in this case, we cannot upload the file, so we need to fail
-            if(maxFileSize < tempFile.length()) {
-                throw new DownloadEmoteStatsFileTooBigException(tempFile.length(), maxFileSize);
+            if(tempFile.length() > maxFileSize) {
+                throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
             }
             MessageToSend messageToSend = templateService.renderEmbedTemplate(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY, model);
             messageToSend.setFileToSend(tempFile);
@@ -109,7 +109,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
             throw new AbstractoRunTimeException(e);
         } finally {
             try {
-                fileUtils.safeDelete(tempFile);
+                fileService.safeDelete(tempFile);
             } catch (IOException e) {
                 log.error("Failed to delete temporary export emote statistics file {}.", tempFile.getAbsoluteFile(), e);
             }

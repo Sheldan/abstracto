@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.utility.config.EntertainmentModuleInterface;
 import dev.sheldan.abstracto.utility.config.features.UtilityFeature;
 import dev.sheldan.abstracto.utility.models.template.commands.EightBallResponseModel;
@@ -41,7 +41,7 @@ public class EightBall extends AbstractConditionableCommand {
         String chosenKey = entertainmentService.getEightBallValue(text);
         EightBallResponseModel responseModel = (EightBallResponseModel) ContextConverter.slimFromCommandContext(commandContext, EightBallResponseModel.class);
         responseModel.setChosenKey(chosenKey);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(EIGHT_BALL_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(EIGHT_BALL_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

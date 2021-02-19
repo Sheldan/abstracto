@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.exception;
 
 import dev.sheldan.abstracto.core.command.models.exception.ChannelGroupExistsExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class ChannelGroupExistsException extends AbstractoRunTimeException implements Templatable {
 

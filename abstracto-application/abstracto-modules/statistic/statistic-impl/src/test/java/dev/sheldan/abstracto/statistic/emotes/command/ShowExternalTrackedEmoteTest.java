@@ -46,7 +46,7 @@ public class ShowExternalTrackedEmoteTest {
         when(fakeTrackedEmote.getTrackedEmoteId()).thenReturn(trackedEmoteServer);
         when(trackedEmoteManagementService.loadByTrackedEmoteServer(fakeTrackedEmote.getTrackedEmoteId())).thenReturn(actualTrackedEmote);
         CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(fakeTrackedEmote));
-        when(channelService.sendEmbedTemplateInChannel(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, actualTrackedEmote, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(SHOW_EXTERNAL_TRACKED_EMOTE_RESPONSE_TEMPLATE_KEY, actualTrackedEmote, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> resultFuture = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(resultFuture);
     }

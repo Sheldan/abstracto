@@ -38,7 +38,7 @@ public class ShowAvatar extends AbstractConditionableCommand {
         log.info("Showing avatar for member {} towards user {} in channel {} in server {}.",
                 memberToShow.getId(), commandContext.getAuthor().getId(), commandContext.getChannel().getId(), commandContext.getGuild().getId());
         model.setMemberInfo(memberToShow);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(SHOW_AVATAR_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

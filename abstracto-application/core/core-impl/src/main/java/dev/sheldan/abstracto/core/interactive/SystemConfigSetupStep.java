@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -58,7 +58,7 @@ public class SystemConfigSetupStep extends AbstractConfigSetupStep {
                 .configKey(systemConfigStepParameter.getConfigKey())
                 .defaultConfig(defaultConfig)
                 .build();
-        String messageText =  templateService.renderTemplate(SETUP_SYSTEM_CONFIG_MESSAGE_TEMPLATE_KEY, model);
+        String messageText =  templateService.renderTemplate(SETUP_SYSTEM_CONFIG_MESSAGE_TEMPLATE_KEY, model, user.getGuildId());
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());

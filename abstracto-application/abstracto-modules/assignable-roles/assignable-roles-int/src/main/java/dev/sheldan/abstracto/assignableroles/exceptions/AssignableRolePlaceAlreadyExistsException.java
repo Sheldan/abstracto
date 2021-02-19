@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.assignableroles.exceptions;
 
 import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRolePlaceAlreadyExistsExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class AssignableRolePlaceAlreadyExistsException extends AbstractoRunTimeException implements Templatable {
 

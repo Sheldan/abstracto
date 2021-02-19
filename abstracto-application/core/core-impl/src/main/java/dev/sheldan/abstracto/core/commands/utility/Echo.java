@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.template.commands.EchoModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +36,7 @@ public class Echo extends AbstractConditionableCommand {
             sb.append(o.toString())
         );
         EchoModel model = EchoModel.builder().text(sb.toString()).build();
-        String textToSend = templateService.renderTemplate(TEMPLATE_NAME, model);
+        String textToSend = templateService.renderTemplate(TEMPLATE_NAME, model, commandContext.getGuild().getIdLong());
         channelService.sendTextToChannel(textToSend, commandContext.getChannel());
         return CommandResult.fromIgnored();
     }

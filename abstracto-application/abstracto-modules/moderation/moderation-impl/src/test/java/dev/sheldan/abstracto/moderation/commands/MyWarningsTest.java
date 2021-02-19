@@ -53,7 +53,7 @@ public class MyWarningsTest {
         Long totalWarnCount = 10L;
         when(warnManagementService.getTotalWarnsForUser(aUserInAServer)).thenReturn(totalWarnCount);
         CommandResult result = testUnit.execute(noParameter);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(MyWarnings.MY_WARNINGS_RESPONSE_EMBED_TEMPLATE), argumentCaptor.capture(), eq(noParameter.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(MyWarnings.MY_WARNINGS_RESPONSE_EMBED_TEMPLATE), argumentCaptor.capture(), eq(noParameter.getChannel()));
         CommandTestUtilities.checkSuccessfulCompletion(result);
         MyWarningsModel usedModel = argumentCaptor.getValue();
         Assert.assertEquals(activeWarnCount, usedModel.getCurrentWarnCount());

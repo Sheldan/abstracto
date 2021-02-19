@@ -52,7 +52,7 @@ public class RollTest {
         when(noParameters.getGuild().getIdLong()).thenReturn(serverId);
         when(configService.getLongValue(ROLL_DEFAULT_HIGH_KEY, serverId)).thenReturn(max.longValue());
         when(entertainmentService.calculateRollResult(1, max)).thenReturn(result);
-        when(channelService.sendEmbedTemplateInChannel(eq(ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> futureResult = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(futureResult);
         Assert.assertEquals(4, responseModelArgumentCaptor.getValue().getRolled().intValue());
@@ -63,7 +63,7 @@ public class RollTest {
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(20));
         Integer result = 4;
         when(entertainmentService.calculateRollResult(1, 20)).thenReturn(result);
-        when(channelService.sendEmbedTemplateInChannel(eq(ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> futureResult = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(futureResult);
         Assert.assertEquals(4, responseModelArgumentCaptor.getValue().getRolled().intValue());
@@ -74,7 +74,7 @@ public class RollTest {
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(20, 10));
         Integer result = 4;
         when(entertainmentService.calculateRollResult(10, 20)).thenReturn(result);
-        when(channelService.sendEmbedTemplateInChannel(eq(ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> futureResult = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(futureResult);
         Assert.assertEquals(4, responseModelArgumentCaptor.getValue().getRolled().intValue());

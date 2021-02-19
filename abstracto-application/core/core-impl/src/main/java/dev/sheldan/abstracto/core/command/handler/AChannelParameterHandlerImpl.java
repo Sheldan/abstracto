@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AChannelParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.TextChannelParameterHandler;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -29,10 +30,10 @@ public class AChannelParameterHandlerImpl implements AChannelParameterHandler {
     }
 
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
         TextChannel textChannel = (TextChannel) textChannelParameterHandler.handle(input, iterators, clazz, context);
         if(textChannel == null) {
-            Long channelId = Long.parseLong(input);
+            Long channelId = Long.parseLong((String) input.getValue());
             AChannel actualInstance = channelManagementService.loadChannel(channelId);
             return AChannel.builder().fake(true).id(actualInstance.getId()).build();
         } else {

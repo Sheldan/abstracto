@@ -48,7 +48,7 @@ public class RemindTest {
         when(userInServerManagementService.loadOrCreateUser(withParameters.getAuthor())).thenReturn(user);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(withParameters);
         verify(remindService, times(1)).createReminderInForUser(user, reminderText, duration, withParameters.getMessage());
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(Remind.REMINDER_EMBED_KEY), captor.capture(), eq(withParameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(Remind.REMINDER_EMBED_KEY), captor.capture(), eq(withParameters.getChannel()));
         ReminderModel reminderModel = captor.getValue();
         Assert.assertEquals(reminderText, reminderModel.getRemindText());
         Assert.assertEquals(withParameters.getMessage(), reminderModel.getMessage());

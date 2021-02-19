@@ -22,7 +22,6 @@ import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.models.template.commands.ListNotesModel;
 import dev.sheldan.abstracto.moderation.models.template.commands.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,9 +35,6 @@ public class UserNotes extends AbstractConditionableCommand {
     public static final String USER_NOTES_RESPONSE_TEMPLATE = "user_notes_response";
     @Autowired
     private UserNoteManagementService userNoteManagementService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
@@ -75,7 +71,7 @@ public class UserNotes extends AbstractConditionableCommand {
         CompletableFuture<List<NoteEntryModel>> listCompletableFuture = userNotesConverter.fromNotes(userNotes);
         return listCompletableFuture.thenCompose(noteEntryModels -> {
             model.setUserNotes(noteEntryModels);
-            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
+            return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(USER_NOTES_RESPONSE_TEMPLATE, model, commandContext.getChannel()))
                     .thenApply(aVoid -> CommandResult.fromIgnored());
         });
     }

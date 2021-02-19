@@ -42,7 +42,7 @@ public class LoveCalc extends AbstractConditionableCommand {
         model.setRolled(rolled);
         model.setFirstPart(firstPart);
         model.setSecondPart(secondPart);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(LOVE_CALC_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(LOVE_CALC_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

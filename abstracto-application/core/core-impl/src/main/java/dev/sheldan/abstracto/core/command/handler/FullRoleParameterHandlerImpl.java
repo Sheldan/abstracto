@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.FullRoleParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.RoleParameterHandler;
 import dev.sheldan.abstracto.core.models.FullRole;
@@ -26,7 +27,7 @@ public class FullRoleParameterHandlerImpl implements FullRoleParameterHandler {
     }
 
     @Override
-    public Object handle(String input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
         Role role = (Role) roleParameterHandler.handle(input, iterators, Role.class, context);
         ARole aRole = roleService.getFakeRoleFromRole(role);
         return FullRole.builder().role(aRole).serverRole(role).build();

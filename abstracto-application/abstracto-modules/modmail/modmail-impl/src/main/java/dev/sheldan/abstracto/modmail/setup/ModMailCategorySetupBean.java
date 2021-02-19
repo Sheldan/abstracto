@@ -13,7 +13,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.modmail.models.template.SetupModMailCategoryMessageModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import dev.sheldan.abstracto.modmail.validator.ModMailFeatureValidator;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;

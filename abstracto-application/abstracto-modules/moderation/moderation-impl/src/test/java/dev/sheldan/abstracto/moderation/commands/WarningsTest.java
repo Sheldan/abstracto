@@ -59,6 +59,8 @@ public class WarningsTest {
     @Mock
     private Warnings self;
 
+    private static final Long SERVER_ID = 1L;
+
     @Test
     public void testNoParametersForWarningsCommand(){
         CommandContext noParams = CommandTestUtilities.getNoParameters();
@@ -85,7 +87,8 @@ public class WarningsTest {
         WarnEntry firstModelWarning = Mockito.mock(WarnEntry.class);
         WarnEntry secondModelWarning = Mockito.mock(WarnEntry.class);
         Paginator paginator = Mockito.mock(Paginator.class);
-        when(paginatorService.createPaginatorFromTemplate(eq(Warnings.WARNINGS_RESPONSE_TEMPLATE), captor.capture(), eq(eventWaiter))).thenReturn(paginator);
+        when(noParams.getGuild().getIdLong()).thenReturn(SERVER_ID);
+        when(paginatorService.createPaginatorFromTemplate(eq(Warnings.WARNINGS_RESPONSE_TEMPLATE), captor.capture(), eq(eventWaiter), eq(SERVER_ID))).thenReturn(paginator);
         List<WarnEntry> modelWarnings = Arrays.asList(firstModelWarning, secondModelWarning);
         testUnit.renderWarnings(noParams, modelWarnings);
         WarningsModel warningsModel = captor.getValue();

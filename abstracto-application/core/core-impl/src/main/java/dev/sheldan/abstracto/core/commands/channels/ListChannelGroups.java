@@ -16,8 +16,8 @@ import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsMode
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,7 +48,7 @@ public class ListChannelGroups extends AbstractConditionableCommand {
         List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
         ListChannelGroupsModel template = (ListChannelGroupsModel) ContextConverter.fromCommandContext(commandContext, ListChannelGroupsModel.class);
         template.setGroups(convertAChannelGroupToChannelGroupChannel(channelGroups));
-        MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template);
+        MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template, commandContext.getGuild().getIdLong());
         channelService.sendMessageToSendToChannel(response, commandContext.getChannel());
         return CommandResult.fromIgnored();
     }

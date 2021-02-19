@@ -8,8 +8,8 @@ import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.models.database.FilteredInviteLink;
 import dev.sheldan.abstracto.moderation.models.template.commands.TrackedInviteLinksModel;
 import dev.sheldan.abstracto.moderation.service.InviteLinkFilterService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -38,13 +38,16 @@ public class ShowTrackedInviteLinksTest {
     @Mock
     private TemplateService templateService;
 
+    private static final Long SERVER_ID = 1L;
+
     @Test
     public void testExecuteCommandNoParameter() {
         CommandContext parameters = CommandTestUtilities.getNoParameters();
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         FilteredInviteLink filteredInviteLink = Mockito.mock(FilteredInviteLink.class);
         when(inviteLinkFilterService.getTopFilteredInviteLinks(parameters.getGuild().getIdLong())).thenReturn(Arrays.asList(filteredInviteLink));
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(TRACKED_INVITE_LINKS_EMBED_TEMPLATE_KEY), any(TrackedInviteLinksModel.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(TRACKED_INVITE_LINKS_EMBED_TEMPLATE_KEY), any(TrackedInviteLinksModel.class), eq(SERVER_ID))).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, parameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> resultFuture = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(resultFuture);
@@ -54,10 +57,11 @@ public class ShowTrackedInviteLinksTest {
     public void testExecuteCommandAmountParameter() {
         Integer amount = 4;
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(amount));
+        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         FilteredInviteLink filteredInviteLink = Mockito.mock(FilteredInviteLink.class);
         when(inviteLinkFilterService.getTopFilteredInviteLinks(parameters.getGuild().getIdLong(), amount)).thenReturn(Arrays.asList(filteredInviteLink));
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(TRACKED_INVITE_LINKS_EMBED_TEMPLATE_KEY), any(TrackedInviteLinksModel.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(TRACKED_INVITE_LINKS_EMBED_TEMPLATE_KEY), any(TrackedInviteLinksModel.class), eq(SERVER_ID))).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, parameters.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> resultFuture = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(resultFuture);

@@ -78,7 +78,7 @@ public class Warnings extends AbstractConditionableCommand {
         WarningsModel model = (WarningsModel) ContextConverter.slimFromCommandContext(commandContext, WarningsModel.class);
         model.setWarnings(warnEntries);
 
-        Paginator paginator = paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, eventWaiter);
+        Paginator paginator = paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, eventWaiter, commandContext.getGuild().getIdLong());
         paginator.display(commandContext.getChannel());
     }
 

@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.execution.ResultState;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.service.PurgeService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,9 +28,6 @@ public class PurgeTest {
 
     @Mock
     private PurgeService purgeService;
-
-    @Mock
-    private TemplateService templateService;
 
     @Test
     public void testExecutePurgeOfNoMemberCommand() {

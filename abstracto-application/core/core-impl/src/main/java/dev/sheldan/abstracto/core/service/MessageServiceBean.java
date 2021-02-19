@@ -7,8 +7,8 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
@@ -119,7 +119,7 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model) {
         return openPrivateChannelForUser(user).thenCompose(privateChannel ->
-                FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(template, model, privateChannel)));
+                FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(template, model, privateChannel)));
     }
 
     @NotNull
@@ -131,7 +131,7 @@ public class MessageServiceBean implements MessageService {
     public CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model) {
         log.trace("Sending direct message with template {} to user {}.", template, user.getIdLong());
         return openPrivateChannelForUser(user).thenCompose(privateChannel ->
-                channelService.sendEmbedTemplateInChannel(template, model, privateChannel).get(0));
+                channelService.sendEmbedTemplateInMessageChannelList(template, model, privateChannel).get(0));
     }
 
     @Override

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 /**
  * This exception is thrown then you try to subscribe to a mod mail thread, to which you are already subscribed to

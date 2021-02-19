@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.config.posttargets.LoggingPostTarget;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -52,7 +52,7 @@ public class JoinLogger implements AsyncJoinListener {
     @Transactional
     public void sendJoinLog(ServerUser serverUser, Member member) {
         HashMap<String, Object> parameters = getUserParameter(member.getUser());
-        String text = templateService.renderTemplateWithMap(USER_JOIN_TEMPLATE, parameters);
+        String text = templateService.renderTemplateWithMap(USER_JOIN_TEMPLATE, parameters, serverUser.getServerId());
         postTargetService.sendTextInPostTarget(text, LoggingPostTarget.JOIN_LOG, serverUser.getServerId());
     }
 

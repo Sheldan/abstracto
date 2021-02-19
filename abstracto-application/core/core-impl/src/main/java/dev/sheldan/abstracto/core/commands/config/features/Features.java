@@ -19,8 +19,8 @@ import dev.sheldan.abstracto.core.service.management.DefaultFeatureFlagManagemen
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -69,7 +69,7 @@ public class Features extends AbstractConditionableCommand {
                 .collect(Collectors.toList());
         defaultFeatureFlagProperties.sort(Comparator.comparing(FeatureFlagProperty::getFeatureName));
         featuresModel.setDefaultFeatures(featureFlagConverter.fromFeatureFlagProperties(defaultFeatureFlagProperties));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("features_response", featuresModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("features_response", featuresModel, commandContext.getGuild().getIdLong());
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }

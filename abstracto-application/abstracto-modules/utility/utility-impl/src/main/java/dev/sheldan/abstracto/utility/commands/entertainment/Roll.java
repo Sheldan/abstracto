@@ -55,7 +55,7 @@ public class Roll extends AbstractConditionableCommand {
         Integer rolled = entertainmentService.calculateRollResult(low, high);
         RollResponseModel model = (RollResponseModel) ContextConverter.slimFromCommandContext(commandContext, RollResponseModel.class);
         model.setRolled(rolled);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInChannel(ROLL_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(ROLL_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
     }
 

@@ -9,11 +9,9 @@ import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.utils.ExceptionUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModule;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
 import dev.sheldan.abstracto.moderation.service.PurgeService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,12 +26,6 @@ public class Purge extends AbstractConditionableCommand {
 
     @Autowired
     private PurgeService purgeService;
-
-    @Autowired
-    private TemplateService templateService;
-
-    @Autowired
-    private ExceptionUtils exceptionUtils;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {

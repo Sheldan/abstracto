@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.template.commands.SetupCompletedNotificationModel;
 import dev.sheldan.abstracto.core.models.template.commands.SetupInitialMessageModel;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +104,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                     .featureConfig(featureConfig)
                     .build();
             TextChannel textChannel = textChannelInGuild.get();
-            String text = templateService.renderTemplate(FEATURE_SETUP_INITIAL_MESSAGE_TEMPLATE_KEY, setupInitialMessageModel);
+            String text = templateService.renderTemplate(FEATURE_SETUP_INITIAL_MESSAGE_TEMPLATE_KEY, setupInitialMessageModel, user.getGuildId());
             channelService.sendTextToChannel(text, textChannel);
             return executeFeatureSetup(featureConfig, steps, user, new ArrayList<>());
         }
@@ -181,7 +181,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                 .builder()
                 .featureConfig(featureConfig)
                 .build();
-        String text = templateService.renderTemplate(templateName, model);
+        String text = templateService.renderTemplate(templateName, model, aServerChannelUserId.getGuildId());
         Optional<TextChannel> textChannel = channelService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
         textChannel.ifPresent(channel -> channelService.sendTextToChannel(text, channel));
     }

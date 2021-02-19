@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.exception;
 
 import dev.sheldan.abstracto.core.command.models.exception.CommandParameterKeyValueWrongTypeExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 import java.util.List;
 

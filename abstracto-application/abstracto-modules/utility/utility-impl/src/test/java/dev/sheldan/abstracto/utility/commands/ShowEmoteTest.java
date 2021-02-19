@@ -35,7 +35,7 @@ public class ShowEmoteTest {
         Emote emote = Mockito.mock(Emote.class);
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(emote));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(ShowEmote.SHOW_EMOTE_RESPONSE_TEMPLATE), emoteLogArgumentCaptor.capture(), eq(noParameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(ShowEmote.SHOW_EMOTE_RESPONSE_TEMPLATE), emoteLogArgumentCaptor.capture(), eq(noParameters.getChannel()));
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         ShowEmoteLog usedLog = emoteLogArgumentCaptor.getValue();
         Assert.assertEquals(emote, usedLog.getEmote());
@@ -47,7 +47,7 @@ public class ShowEmoteTest {
         Emote secondEmote = Mockito.mock(Emote.class);
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(emote, secondEmote));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
-        verify(channelService, times(1)).sendEmbedTemplateInChannel(eq(ShowEmote.SHOW_EMOTE_RESPONSE_TEMPLATE), emoteLogArgumentCaptor.capture(), eq(noParameters.getChannel()));
+        verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(ShowEmote.SHOW_EMOTE_RESPONSE_TEMPLATE), emoteLogArgumentCaptor.capture(), eq(noParameters.getChannel()));
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         ShowEmoteLog usedLog = emoteLogArgumentCaptor.getValue();
         Assert.assertEquals(emote, usedLog.getEmote());

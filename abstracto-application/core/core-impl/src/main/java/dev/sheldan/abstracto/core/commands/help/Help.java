@@ -23,8 +23,8 @@ import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOvervi
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -124,7 +124,7 @@ public class Help implements Command {
                 HelpModuleDetailsModel model = (HelpModuleDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpModuleDetailsModel.class);
                 model.setModule(module);
                 model.setSubModules(subModules);
-                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model);
+                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model, commandContext.getGuild().getIdLong());
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             } else if(commandRegistry.commandExists(parameter)) {
@@ -141,7 +141,7 @@ public class Help implements Command {
                 }
                 model.setUsage(commandService.generateUsage(command));
                 model.setCommand(command.getConfiguration());
-                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model);
+                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model, commandContext.getGuild().getIdLong());
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             } else {

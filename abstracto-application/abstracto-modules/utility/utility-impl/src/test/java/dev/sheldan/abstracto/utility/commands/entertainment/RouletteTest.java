@@ -42,7 +42,7 @@ public class RouletteTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         Boolean result = false;
         when(entertainmentService.executeRoulette(noParameters.getAuthor())).thenReturn(result);
-        when(channelService.sendEmbedTemplateInChannel(eq(ROULETTE_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(ROULETTE_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> futureResult = testUnit.executeAsync(noParameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(futureResult);
         Assert.assertEquals(result, responseModelArgumentCaptor.getValue().getResult());

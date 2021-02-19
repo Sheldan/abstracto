@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AUserInAServerParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
@@ -23,7 +24,7 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
     private UserInServerManagementService userInServerManagementService;
 
     @Override
-    public CompletableFuture handleAsync(String input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public CompletableFuture handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
         CompletableFuture<AUserInAServer> future = new CompletableFuture<>();
         memberParameterHandler.handleAsync(input, iterators, Member.class, context).whenComplete((o, throwable) -> {
             try {
@@ -32,7 +33,7 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
                     Member member = (Member) o;
                     actualInstance = userInServerManagementService.loadOrCreateUser(member);
                 } else {
-                    Long userId = Long.parseLong(input);
+                    Long userId = Long.parseLong((String) input.getValue());
                     actualInstance = userInServerManagementService.loadAUserInAServerOptional(context.getGuild().getIdLong(), userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
                 }
                 future.complete(AUserInAServer.builder().userInServerId(actualInstance.getUserInServerId()).build());

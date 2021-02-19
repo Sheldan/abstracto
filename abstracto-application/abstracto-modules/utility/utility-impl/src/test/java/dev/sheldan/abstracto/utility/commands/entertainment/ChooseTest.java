@@ -44,7 +44,7 @@ public class ChooseTest {
         List<String> choices = Arrays.asList("choice1", "choice2");
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(choices));
         when(entertainmentService.takeChoice(choices, parameters.getAuthor())).thenReturn(choices.get(0));
-        when(channelService.sendEmbedTemplateInChannel(eq(CHOOSE_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(parameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
+        when(channelService.sendEmbedTemplateInTextChannelList(eq(CHOOSE_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(parameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
         Assert.assertEquals(choices.get(0), responseModelArgumentCaptor.getValue().getChosenValue());

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.command.exception;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.models.exception.IncorrectParameterExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class IncorrectParameterException extends AbstractoRunTimeException implements Templatable {
 

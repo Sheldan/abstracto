@@ -16,7 +16,6 @@ import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,9 +36,6 @@ public class EnableMode extends AbstractConditionableCommand {
 
     @Autowired
     private FeatureModeManagementService featureModeManagementService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private ServerManagementService serverManagementService;

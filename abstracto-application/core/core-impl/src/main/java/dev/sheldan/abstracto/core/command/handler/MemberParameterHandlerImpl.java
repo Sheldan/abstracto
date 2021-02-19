@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -22,13 +23,14 @@ public class MemberParameterHandlerImpl implements MemberParameterHandler {
     }
 
     @Override
-    public CompletableFuture<Object> handleAsync(String input, CommandParameterIterators iterators, Class clazz, Message context) {
-        Matcher matcher = Message.MentionType.USER.getPattern().matcher(input);
+    public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+        String inputString = (String) input.getValue();
+        Matcher matcher = Message.MentionType.USER.getPattern().matcher(inputString);
         if(matcher.matches()) {
             return CompletableFuture.completedFuture(iterators.getMemberIterator().next());
         } else {
             // TODO add handling for names
-            long userId = Long.parseLong(input);
+            long userId = Long.parseLong(inputString);
             return context.getGuild().retrieveMemberById(userId).submit().thenApply(member -> member);
         }
     }

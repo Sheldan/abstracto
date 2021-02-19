@@ -15,8 +15,8 @@ import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardModel;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
-import dev.sheldan.abstracto.templating.model.MessageToSend;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -54,6 +54,8 @@ public class LeaderBoardCommandTest {
     @Mock
     private ServerManagementService serverManagementService;
 
+    private static final Long SERVER_ID = 45L;
+
     @Test
     public void testLeaderBoardWithNoParameter() {
         testLeaderBoardCommand(CommandTestUtilities.getNoParameters(), 1);
@@ -65,6 +67,7 @@ public class LeaderBoardCommandTest {
     }
 
     private void testLeaderBoardCommand(CommandContext context, int expectedPage) {
+        when(context.getGuild().getIdLong()).thenReturn(SERVER_ID);
         LeaderBoard leaderBoard = Mockito.mock(LeaderBoard.class);
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
@@ -77,7 +80,7 @@ public class LeaderBoardCommandTest {
         LeaderBoardEntryModel leaderBoardEntryModel = LeaderBoardEntryModel.builder().build();
         when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(CompletableFuture.completedFuture(leaderBoardEntryModel));
         MessageToSend messageToSend = MessageToSend.builder().build();
-        when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADER_BOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADER_BOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class), eq(SERVER_ID))).thenReturn(messageToSend);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendMessageToSendToChannel(messageToSend, context.getChannel());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);

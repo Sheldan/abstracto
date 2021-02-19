@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.models.template.commands.SetupSummaryModel;
 import dev.sheldan.abstracto.core.service.DelayedActionService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -46,7 +46,7 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
                 .builder()
                 .actionConfigs(parameter.getDelayedActionList())
                 .build();
-        String messageToSend = templateService.renderTemplate(FEATURE_SETUP_CONFIRMATION_TEMPLATE_KEY, model);
+        String messageToSend = templateService.renderTemplate(FEATURE_SETUP_CONFIRMATION_TEMPLATE_KEY, model, user.getGuildId());
         AChannel channel = channelManagementService.loadChannel(user.getChannelId());
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());

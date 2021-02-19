@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.setup;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.templating.Templatable;
+import dev.sheldan.abstracto.core.templating.Templatable;
 
 /**
  * This exception is thrown when the provided category used for creating mod mail thread is not valid.
