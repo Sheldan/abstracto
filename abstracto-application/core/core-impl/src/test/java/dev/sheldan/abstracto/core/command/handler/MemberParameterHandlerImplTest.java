@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -54,7 +56,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         oneMemberInIterator();
         String input = getUserMention();
         CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), iterators, Member.class, null);
-        Assert.assertEquals(parsed.join(), member);
+        Assert.assertEquals(member, parsed.join());
     }
 
     @Test
@@ -63,13 +65,35 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         setupMessage();
         String input = USER_ID.toString();
         CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
-        Assert.assertEquals(parsed.join(), member);
+        Assert.assertEquals(member, parsed.join());
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testInvalidMemberMention() {
+    @Test(expected = AbstractoTemplatedException.class)
+    public void testNotExistingMember() {
         String input = "test";
-        testUnit.handleAsync(getPieceWithValue(input), null, Member.class, null);
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getMembersByName(input, true)).thenReturn(new ArrayList<>());
+        testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+    }
+
+    @Test(expected = AbstractoTemplatedException.class)
+    public void testMultipleFoundMemberByName() {
+        String input = "test";
+        Member secondMember = Mockito.mock(Member.class);
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getMembersByName(input, true)).thenReturn(Arrays.asList(member, secondMember));
+        testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+    }
+
+    @Test
+    public void testFindMemberByName() {
+        String input = "test";
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getMembersByName(input, true)).thenReturn(Arrays.asList(member));
+        CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+        Member returnedMember = (Member) future.join();
+        Assert.assertFalse(future.isCompletedExceptionally());
+        Assert.assertEquals(member, returnedMember);
     }
 
     private String getUserMention() {

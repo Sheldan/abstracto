@@ -41,23 +41,28 @@ public class ExceptionServiceBean implements ExceptionService {
 
     @Override
     public CommandResult reportExceptionToContext(Throwable throwable, CommandContext context, Command command) {
-        if(command != null && command.getConfiguration().isSupportsEmbedException()) {
+        if(command != null) {
+            log.info("Reporting generic exception {} of command {} towards channel {} in server {}.",
+                    throwable.getClass().getSimpleName(), command.getConfiguration().getName(), context.getChannel().getId(), context.getGuild().getId());
+        } else {
+            log.info("Reporting generic exception {} towards channel {} in server {}.",
+                    throwable.getClass().getSimpleName(), context.getChannel().getId(), context.getGuild().getId());
+        }
+        if((command != null && command.getConfiguration().isSupportsEmbedException()) || throwable instanceof Templatable) {
             try {
-                GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
-                log.info("Reporting generic exception {} of command {} towards channel {} in server {}.",
-                        throwable.getClass().getSimpleName(), command.getConfiguration().getName(), context.getChannel().getId(), context.getGuild().getId());
-                channelService.sendEmbedTemplateInTextChannelList("generic_command_exception", exceptionModel, context.getChannel());
+                reportGenericException(throwable, context);
             } catch (Exception e) {
                 log.error("Failed to notify about exception.", e);
             }
-        } else if(throwable instanceof Templatable){
-            GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
-            String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, exceptionModel, context.getGuild().getIdLong());
-            channelService.sendTextToChannel(text, context.getChannel());
         } else {
             channelService.sendTextToChannel(throwable.getLocalizedMessage(), context.getChannel());
         }
         return CommandResult.fromReportedError();
+    }
+
+    private void reportGenericException(Throwable throwable, CommandContext context) {
+        GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
+        channelService.sendEmbedTemplateInTextChannelList("generic_command_exception", exceptionModel, context.getChannel());
     }
 
     @Override

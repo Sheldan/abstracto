@@ -88,9 +88,9 @@ public class StartupServiceBean implements Startup {
         Set<Long> knownRolesId = SnowflakeUtils.getOwnItemsIds(knownARoles);
         Set<Long> availableRoles = SnowflakeUtils.getSnowflakeIds(existingRoles);
         Set<Long> newRoles = SetUtils.difference(availableRoles, knownRolesId);
-        newRoles.forEach(aLong -> {
-            roleManagementService.createRole(aLong, existingAServer);
-        });
+        newRoles.forEach(aLong ->
+            roleManagementService.createRole(aLong, existingAServer)
+        );
     }
 
     private void synchronizeChannelsOf(Guild guild, AServer existingServer){

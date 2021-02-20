@@ -225,9 +225,9 @@ public class ReactionServiceBean implements ReactionService {
     public CompletableFuture<Void> removeReaction(CachedMessage message, CachedEmote cachedEmote, ServerUser user) {
         CompletableFuture<Message> messageFuture = messageService.loadMessageFromCachedMessage(message);
         CompletableFuture<Member> memberFuture = memberService.retrieveMemberInServer(user);
-        return FutureUtils.toSingleFuture(Arrays.asList(messageFuture, memberFuture)).thenCompose(unused -> {
-            return removeReaction(messageFuture.join(), cachedEmote, memberFuture.join().getUser());
-        });
+        return FutureUtils.toSingleFuture(Arrays.asList(messageFuture, memberFuture)).thenCompose(unused ->
+            removeReaction(messageFuture.join(), cachedEmote, memberFuture.join().getUser())
+        );
     }
 
     @Override

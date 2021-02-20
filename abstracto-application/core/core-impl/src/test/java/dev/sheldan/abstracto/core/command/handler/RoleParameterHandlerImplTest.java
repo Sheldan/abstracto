@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -8,8 +9,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,7 +53,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         oneRoleIterator();
         String input = getRoleMention();
         Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, Role.class, null);
-        Assert.assertEquals(parsed, role);
+        Assert.assertEquals(role, parsed);
     }
 
     @Test
@@ -58,13 +61,33 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         setupMessage();
         String input = ROLE_ID.toString();
         Role parsed = (Role) testUnit.handle(getPieceWithValue(input), null, Role.class, message);
-        Assert.assertEquals(parsed, role);
+        Assert.assertEquals(role, parsed);
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test(expected = AbstractoTemplatedException.class)
     public void testInvalidRoleMention() {
         String input = "test";
-        testUnit.handle(getPieceWithValue(input), null, Role.class, null);
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getRolesByName(input, true)).thenReturn(new ArrayList<>());
+        testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+    }
+
+    @Test(expected = AbstractoTemplatedException.class)
+    public void testMultipleRolesFoundByName() {
+        String input = "test";
+        Role secondRole = Mockito.mock(Role.class);
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role, secondRole));
+        testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+    }
+
+    @Test
+    public void testFindRoleByName() {
+        String input = "test";
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role));
+        Role returnedRole =  (Role) testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+        Assert.assertEquals(role, returnedRole);
     }
 
     private String getRoleMention() {

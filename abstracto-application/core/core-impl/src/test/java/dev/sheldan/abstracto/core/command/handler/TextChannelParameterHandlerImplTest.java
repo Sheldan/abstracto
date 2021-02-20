@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -8,8 +9,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,7 +53,7 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
         oneChannelInIterator();
         String input = getChannelMention();
         TextChannel parsed = (TextChannel) testUnit.handle(getPieceWithValue(input), iterators, TextChannel.class, null);
-        Assert.assertEquals(parsed, channel);
+        Assert.assertEquals(channel, parsed);
     }
 
     @Test
@@ -58,14 +61,35 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
         setupMessage();
         String input = CHANNEL_ID.toString();
         TextChannel parsed = (TextChannel) testUnit.handle(getPieceWithValue(input), null, TextChannel.class, message);
-        Assert.assertEquals(parsed, channel);
+        Assert.assertEquals(channel, parsed);
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testInvalidChannelMention() {
+    @Test(expected = AbstractoTemplatedException.class)
+    public void testInvalidChannelName() {
         String input = "test";
-        testUnit.handle(getPieceWithValue(input), null, TextChannel.class, null);
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getTextChannelsByName(input, true)).thenReturn(new ArrayList<>());
+        testUnit.handle(getPieceWithValue(input), null, TextChannel.class, message);
     }
+
+    @Test(expected = AbstractoTemplatedException.class)
+    public void testFoundMultipleChannelsByName() {
+        String input = "test";
+        TextChannel secondChannel = Mockito.mock(TextChannel.class);
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getTextChannelsByName(input, true)).thenReturn(Arrays.asList(channel, secondChannel));
+        testUnit.handle(getPieceWithValue(input), null, TextChannel.class, message);
+    }
+
+    @Test
+    public void testFindChannelByName() {
+        String input = "test";
+        when(message.getGuild()).thenReturn(guild);
+        when(guild.getTextChannelsByName(input, true)).thenReturn(Arrays.asList(channel));
+        TextChannel returnedChannel =  (TextChannel) testUnit.handle(getPieceWithValue(input), null, TextChannel.class, message);
+        Assert.assertEquals(channel, returnedChannel);
+    }
+
 
     private String getChannelMention() {
         return String.format("<#%d>", CHANNEL_ID);

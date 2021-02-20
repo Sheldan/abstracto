@@ -286,7 +286,7 @@ public class TemplateServiceBean implements TemplateService {
     public String renderSimpleTemplate(String key, Long serverId) {
         try {
             serverContext.setServerId(serverId);
-            return renderSimpleTemplate(key, serverId);
+            return renderSimpleTemplate(key);
         } finally {
             serverContext.clear();
         }

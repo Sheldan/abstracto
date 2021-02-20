@@ -1,12 +1,15 @@
 package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.TextChannelParameterHandler;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.regex.Matcher;
 
 @Component
@@ -23,8 +26,19 @@ public class TextChannelParameterHandlerImpl implements TextChannelParameterHand
         if(matcher.matches()) {
             return iterators.getChannelIterator().next();
         } else {
-            long channelId = Long.parseLong(inputString);
-            return context.getGuild().getTextChannelById(channelId);
+            if(NumberUtils.isParsable(inputString)) {
+                long channelId = Long.parseLong(inputString);
+                return context.getGuild().getTextChannelById(channelId);
+            } else {
+                List<TextChannel> possibleTextChannels = context.getGuild().getTextChannelsByName(inputString, true);
+                if(possibleTextChannels.isEmpty()) {
+                    throw new AbstractoTemplatedException("No channel found with name.", "no_channel_found_by_name_exception");
+                }
+                if(possibleTextChannels.size() > 1) {
+                    throw new AbstractoTemplatedException("Multiple channels found with name.", "multiple_channels_found_by_name_exception");
+                }
+                return possibleTextChannels.get(0);
+            }
         }
     }
 
