@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactory;
 
@@ -127,7 +128,7 @@ public class TemplateServiceBeanTest {
     }
 
     @Test
-    public void testEmbedWithTooLongDescription() throws IOException, TemplateException {
+    public void testEmbedWithTooLongDescriptionNoSpace() throws IOException, TemplateException {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
         int tooMuchCharacterCount = 1024;
         String descriptionText = RandomStringUtils.randomAlphabetic(MessageEmbed.TEXT_MAX_LENGTH + tooMuchCharacterCount);
@@ -158,7 +159,7 @@ public class TemplateServiceBeanTest {
     }
 
     @Test
-    public void testEmbedWithTooLongField() throws IOException, TemplateException {
+    public void testEmbedWithTooLongFieldNoSpace() throws IOException, TemplateException {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
         String fieldValue = RandomStringUtils.randomAlphabetic(1500);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithTooLongField(fieldValue));
@@ -168,6 +169,119 @@ public class TemplateServiceBeanTest {
         Assert.assertEquals(2, firstEmbed.getFields().size());
         Assert.assertEquals(fieldValue.substring(0, MessageEmbed.VALUE_MAX_LENGTH), firstEmbed.getFields().get(0).getValue());
         Assert.assertEquals(fieldValue.substring(MessageEmbed.VALUE_MAX_LENGTH), firstEmbed.getFields().get(1).getValue());
+    }
+
+    @Test
+    public void testEmbedWithTooLongFieldWithSpace() throws IOException, TemplateException {
+        when(serverContext.getServerId()).thenReturn(SERVER_ID);
+        int partsLength = 750;
+        String firstPart = RandomStringUtils.randomAlphabetic(partsLength);
+        String secondPart = RandomStringUtils.randomAlphabetic(partsLength);
+        String fieldValue = firstPart + " " + secondPart;
+        when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithTooLongField(fieldValue));
+        when(gson.fromJson(getSingleFieldWithValue(fieldValue), EmbedConfiguration.class)).thenReturn(getEmbedWithSingleFieldOfValue(fieldValue));
+        MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
+        MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
+        Assert.assertEquals(2, firstEmbed.getFields().size());
+        Assert.assertEquals(firstPart, firstEmbed.getFields().get(0).getValue());
+        Assert.assertEquals(secondPart, firstEmbed.getFields().get(1).getValue());
+    }
+
+    @Test
+    public void testDescriptionWithOneSpace() throws IOException, TemplateException {
+        when(serverContext.getServerId()).thenReturn(SERVER_ID);
+        int partLengths = 1024;
+        String firstPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String secondPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String descriptionText = firstPart + " " + secondPart;
+        when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
+        when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
+        Assert.assertEquals(2, messageToSend.getEmbeds().size());
+        MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
+        Assert.assertEquals(partLengths, firstEmbed.getDescription().length());
+        Assert.assertEquals(firstPart, firstEmbed.getDescription());
+        MessageEmbed secondEmbed = messageToSend.getEmbeds().get(1);
+        Assert.assertEquals(partLengths + 1, secondEmbed.getDescription().length());
+        Assert.assertEquals(" " + secondPart, secondEmbed.getDescription());
+    }
+
+    @Test
+    public void testDescriptionWithTwoSpacesAndLongChunks() throws IOException, TemplateException {
+        when(serverContext.getServerId()).thenReturn(SERVER_ID);
+        int partLengths = 1024;
+        String firstPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String secondPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String thirdPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String descriptionText = firstPart + " " + secondPart + " " + thirdPart;
+        when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
+        when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
+        Assert.assertEquals(3, messageToSend.getEmbeds().size());
+        MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
+        Assert.assertEquals(partLengths, firstEmbed.getDescription().length());
+        Assert.assertEquals(firstPart, firstEmbed.getDescription());
+        MessageEmbed secondEmbed = messageToSend.getEmbeds().get(1);
+        Assert.assertEquals(partLengths + 1, secondEmbed.getDescription().length());
+        Assert.assertEquals(" " + secondPart, secondEmbed.getDescription());
+        MessageEmbed thirdEmbed = messageToSend.getEmbeds().get(2);
+        Assert.assertEquals(partLengths + 1, thirdEmbed.getDescription().length());
+        Assert.assertEquals(" " + thirdPart, thirdEmbed.getDescription());
+    }
+
+    @Test
+    public void testDescriptionWithMultipleSpacesSplitIntoTwo() throws IOException, TemplateException {
+        when(serverContext.getServerId()).thenReturn(SERVER_ID);
+        int partLengths = 750;
+        String firstPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String secondPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String thirdPart = RandomStringUtils.randomAlphabetic(partLengths);
+        String descriptionText = firstPart + " " + secondPart + " " + thirdPart;
+        when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
+        when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
+        Assert.assertEquals(2, messageToSend.getEmbeds().size());
+        MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
+        Assert.assertEquals(partLengths + partLengths + 1, firstEmbed.getDescription().length());
+        Assert.assertEquals(firstPart + " " + secondPart, firstEmbed.getDescription());
+        MessageEmbed secondEmbed = messageToSend.getEmbeds().get(1);
+        Assert.assertEquals(1 + partLengths, secondEmbed.getDescription().length());
+        Assert.assertEquals(" " + thirdPart, secondEmbed.getDescription());
+    }
+
+    @Test
+    public void testFieldLengthTooLongForEmbed()  throws IOException, TemplateException {
+        when(serverContext.getServerId()).thenReturn(SERVER_ID);
+        int partLengths = 1000;
+        String fieldValue = RandomStringUtils.randomAlphabetic(partLengths);
+        String firstField = fieldValue + "a";
+        String secondField = fieldValue + "b";
+        String thirdField = fieldValue + "c";
+        String fourthField = fieldValue + "d";
+        String fifthField = fieldValue + "e";
+        String sixthField = fieldValue + "f";
+        List<String> fieldValues = Arrays.asList(firstField, secondField, thirdField, fourthField, fifthField, sixthField);
+
+        when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithFieldValues(fieldValues));
+        when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
+        when(gson.fromJson(getFields(fieldValues), EmbedConfiguration.class)).thenReturn(getEmbedWithFields(fieldValues));
+        MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
+        Assert.assertEquals(2, messageToSend.getEmbeds().size());
+        MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
+        List<MessageEmbed.Field> firstFields = firstEmbed.getFields();
+        Assert.assertEquals(5, firstFields.size());
+        Assert.assertEquals(firstField, firstFields.get(0).getValue());
+        Assert.assertEquals(secondField, firstFields.get(1).getValue());
+        Assert.assertEquals(thirdField, firstFields.get(2).getValue());
+        Assert.assertEquals(fourthField, firstFields.get(3).getValue());
+        Assert.assertEquals(fifthField, firstFields.get(4).getValue());
+        MessageEmbed secondEmbed = messageToSend.getEmbeds().get(1);
+        List<MessageEmbed.Field> secondFields = secondEmbed.getFields();
+        Assert.assertEquals(1, secondFields.size());
+        Assert.assertEquals(sixthField, secondFields.get(0).getValue());
     }
 
     @Test(expected = TemplatingException.class)
@@ -202,6 +316,14 @@ public class TemplateServiceBeanTest {
     private EmbedConfiguration getEmbedWithSingleFieldOfValue(String value) {
         List<EmbedField> fields = new ArrayList<>();
         fields.add(EmbedField.builder().name("name").value(value).build());
+        return EmbedConfiguration.builder().fields(fields).build();
+    }
+
+    private EmbedConfiguration getEmbedWithFields(List<String> fieldValues) {
+        List<EmbedField> fields = new ArrayList<>();
+        fieldValues.forEach(s -> {
+            fields.add(EmbedField.builder().name("name").value(s).build());
+        });
         return EmbedConfiguration.builder().fields(fields).build();
     }
 
@@ -289,6 +411,10 @@ public class TemplateServiceBeanTest {
         return new Template(getEmbedTemplateKey(), embedTemplateWithDescription(description), getNonMockedConfiguration());
     }
 
+    private Template getEmbedTemplateWithFieldValues(List<String> fieldValues) throws IOException, TemplateException {
+        return new Template(getEmbedTemplateKey(), getFields(fieldValues), getNonMockedConfiguration());
+    }
+
     private Template getPageCountTemplate(Integer page) throws IOException, TemplateException {
         return new Template(EMBED_PAGE_COUNT_TEMPLATE, getEmbedPageCount(page), getNonMockedConfiguration());
     }
@@ -305,18 +431,29 @@ public class TemplateServiceBeanTest {
         return new Template(getEmbedTemplateKey(), getSingleFieldWithValue(value), getNonMockedConfiguration());
     }
 
-    private String getFullEmbedConfigString() throws IOException {
+    private String getFullEmbedConfigString() {
         return IOUtils.toString(this.getClass().getResourceAsStream("/src/test/resources/full_embed.json"), StandardCharsets.UTF_8);
     }
 
     private String getFieldsEmbedConfigAsString(Integer count) {
-       StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append("{\"fields\": [");
         for (int i = 0; i < count - 1; i++) {
             sb.append(FIELD_TEMPLATE + ",");
         }
         sb.append(FIELD_TEMPLATE +
                 "]\n" +
+                "}");
+        return sb.toString();
+    }
+
+    private String getFields(List<String> fieldValues) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"fields\": [");
+        for (String fieldValue: fieldValues) {
+            sb.append(getSingleFieldWithValue(fieldValue));
+        }
+        sb.append("]\n" +
                 "}");
         return sb.toString();
     }

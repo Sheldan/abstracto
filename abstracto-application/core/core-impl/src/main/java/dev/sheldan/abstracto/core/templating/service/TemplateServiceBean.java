@@ -8,6 +8,9 @@ import dev.sheldan.abstracto.core.templating.model.*;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -17,8 +20,7 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,12 +74,7 @@ public class TemplateServiceBean implements TemplateService {
         embedBuilders.add(new EmbedBuilder());
         String description = embedConfiguration.getDescription();
         if (description != null) {
-            double neededIndices = Math.ceil(description.length() / (double) MessageEmbed.TEXT_MAX_LENGTH) - 1;
-            extendIfNecessary(embedBuilders, neededIndices);
-            for (int i = 0; i < neededIndices + 1; i++) {
-                String descriptionText = description.substring(MessageEmbed.TEXT_MAX_LENGTH * i, Math.min(MessageEmbed.TEXT_MAX_LENGTH * (i + 1), description.length()));
-                embedBuilders.get(i).setDescription(descriptionText);
-            }
+            handleEmbedDescription(embedBuilders, description);
         }
         EmbedAuthor author = embedConfiguration.getAuthor();
         EmbedBuilder firstBuilder = embedBuilders.get(0);
@@ -110,6 +107,8 @@ public class TemplateServiceBean implements TemplateService {
             embedBuilders.forEach(embedBuilder -> embedBuilder.setColor(colorToSet));
         }
 
+        setPagingFooters(embedBuilders);
+
         List<MessageEmbed> embeds = new ArrayList<>();
         if ((embedBuilders.size() > 1 || !embedBuilders.get(0).isEmpty()) && !isEmptyEmbed(embedConfiguration)) {
             embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
@@ -119,6 +118,38 @@ public class TemplateServiceBean implements TemplateService {
                 .embeds(embeds)
                 .message(embedConfiguration.getAdditionalMessage())
                 .build();
+    }
+
+    private void setPagingFooters(List<EmbedBuilder> embedBuilders) {
+        // the first footer comes from the configuration
+        for (int i = 1; i < embedBuilders.size(); i++) {
+            embedBuilders.get(i).setFooter(getPageString(i + 1));
+        }
+    }
+
+    private void handleEmbedDescription(List<EmbedBuilder> embedBuilders, String description) {
+        int segmentCounter = 0;
+        int segmentStart = 0;
+        int segmentEnd = MessageEmbed.TEXT_MAX_LENGTH;
+        int handledIndex = 0;
+        while(handledIndex < description.length()) {
+            int segmentLength = description.length() - segmentStart;
+            if(segmentLength > MessageEmbed.TEXT_MAX_LENGTH) {
+                int lastSpace = description.substring(segmentStart, segmentEnd).lastIndexOf(" ");
+                if(lastSpace != -1) {
+                    segmentEnd = segmentStart + lastSpace;
+                }
+            } else {
+                segmentEnd = description.length();
+            }
+            String descriptionText = description.substring(segmentStart, segmentEnd);
+            extendIfNecessary(embedBuilders, segmentCounter);
+            embedBuilders.get(segmentCounter).setDescription(descriptionText);
+            segmentCounter++;
+            handledIndex = segmentEnd;
+            segmentStart = segmentEnd;
+            segmentEnd += MessageEmbed.TEXT_MAX_LENGTH;
+        }
     }
 
     @Override
@@ -153,16 +184,56 @@ public class TemplateServiceBean implements TemplateService {
         }
     }
 
-    private void createFieldsForEmbed(List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
+    private void splitFieldsIntoAppropriateLengths(EmbedConfiguration configuration) {
+        Comparator<AdditionalEmbedField> comparator = Comparator.comparing(o -> o.fieldIndex);
+        // we need to reverse this, because the insertion need to be done from the back to the front, because we only insert according to field index
+        // and we need to insert the "first" element last, so it actually gets the correct field index
+        comparator = comparator.thenComparing(additionalEmbedField -> additionalEmbedField.innerFieldIndex).reversed();
+        TreeSet<AdditionalEmbedField> toInsert = new TreeSet<>(comparator);
         for (int i = 0; i < configuration.getFields().size(); i++) {
             EmbedField field = configuration.getFields().get(i);
             if (field != null && field.getValue() != null && field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
-                String substring = field.getValue().substring(MessageEmbed.VALUE_MAX_LENGTH);
-                field.setValue(field.getValue().substring(0, MessageEmbed.VALUE_MAX_LENGTH));
-                EmbedField secondPart = EmbedField.builder().inline(field.getInline()).name(field.getName() + " 2").value(substring).build();
-                configuration.getFields().add(i + 1, secondPart);
+                int segmentCounter = 0;
+                int segmentStart = 0;
+                int segmentEnd = MessageEmbed.VALUE_MAX_LENGTH;
+                int handledIndex = 0;
+                String fullFieldValue = field.getValue();
+                while(handledIndex < fullFieldValue.length()) {
+                    int segmentLength = fullFieldValue.length() - segmentStart;
+                    if(segmentLength > MessageEmbed.VALUE_MAX_LENGTH) {
+                        int lastSpace = fullFieldValue.substring(segmentStart, segmentEnd).lastIndexOf(" ");
+                        if(lastSpace != -1) {
+                            segmentEnd = segmentStart + lastSpace;
+                        }
+                    } else {
+                        segmentEnd = fullFieldValue.length();
+                    }
+                    String fieldValue = fullFieldValue.substring(segmentStart, segmentEnd);
+                    if(segmentCounter == 0) {
+                        field.setValue(fieldValue);
+                    } else {
+                        EmbedField newField = EmbedField
+                                .builder()
+                                .inline(field.getInline())
+                                .name(field.getName() + " " + (segmentCounter + 1))
+                                .value(fieldValue).build();
+                        AdditionalEmbedField additionalField = new AdditionalEmbedField(i, segmentCounter, newField);
+                        toInsert.add(additionalField);
+                    }
+                    segmentCounter++;
+                    handledIndex = segmentEnd;
+                    segmentStart = segmentEnd;
+                    segmentEnd += MessageEmbed.VALUE_MAX_LENGTH;
+                }
             }
         }
+        for (AdditionalEmbedField field : toInsert) {
+            configuration.getFields().add(field.getFieldIndex() + 1, field.getField());
+        }
+    }
+
+    private void createFieldsForEmbed(List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
+        splitFieldsIntoAppropriateLengths(configuration);
         int actualCurrentIndex = 0;
         int neededMessages = 0;
         for (int i = 0; i < configuration.getFields().size(); i++) {
@@ -182,6 +253,67 @@ public class TemplateServiceBean implements TemplateService {
             boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
             embedBuilders.get(neededMessages).addField(embedField.getName(), embedField.getValue(), inline);
         }
+        Comparator<AdditionalEmbed> comparator = Comparator.comparing(o -> o.embedIndex);
+        // we need to reverse this, because the insertion need to be done from the back to the front, because we only insert according to field index
+        // and we need to insert the "first" element last, so it actually gets the correct field index
+        comparator = comparator.thenComparing(additionalEmbedField -> additionalEmbedField.innerEmbedIndex).reversed();
+        TreeSet<AdditionalEmbed> toInsert = new TreeSet<>(comparator);
+
+        for (int i = 0; i < embedBuilders.size(); i++) {
+            EmbedBuilder embedBuilder = embedBuilders.get(i);
+            if(!embedBuilder.isValidLength()) {
+                int totalFieldLength = 0;
+                // we need to calculate the length without fields this way, because the title property is not public
+                for (MessageEmbed.Field field: embedBuilder.getFields()) {
+                    totalFieldLength += getFieldLength(field);
+                }
+                int currentEmbedLength = embedBuilder.length() - totalFieldLength;
+                List<MessageEmbed.Field> toRemove = new ArrayList<>();
+                EmbedBuilder newlyAddedEmbed = new EmbedBuilder();
+                boolean addToNew = false;
+                boolean createNewEmbed;
+                int additionalEmbedIndex = 0;
+                for (int j = 0; j < embedBuilder.getFields().size(); j++) {
+                    MessageEmbed.Field field = embedBuilder.getFields().get(j);
+                    int fieldLength = getFieldLength(field);
+                    if(currentEmbedLength + fieldLength > MessageEmbed.EMBED_MAX_LENGTH_BOT) {
+                         createNewEmbed = true;
+                         addToNew = true;
+                         currentEmbedLength = 0;
+                         additionalEmbedIndex++;
+                    } else {
+                        createNewEmbed = false;
+                    }
+                    if(createNewEmbed) {
+                        // TODO this always creates a new embed, and does not re-use the existing ones
+                        newlyAddedEmbed = new EmbedBuilder();
+                        toInsert.add(new AdditionalEmbed(i, additionalEmbedIndex, newlyAddedEmbed));
+
+                    }
+                    if(addToNew) {
+                        toRemove.add(field);
+                        newlyAddedEmbed.addField(field);
+                    }
+                    currentEmbedLength += fieldLength;
+                }
+                embedBuilder.getFields().removeAll(toRemove);
+            }
+        }
+        for (AdditionalEmbed embed : toInsert) {
+            embedBuilders.add(embed.getEmbedIndex() + embed.getInnerEmbedIndex(), embed.getEmbedBuilder());
+        }
+    }
+
+    private int getFieldLength(MessageEmbed.Field field) {
+        int nameLength = 0;
+        if(field.getName() != null) {
+            nameLength = field.getName().length();
+        }
+        int valueLength = 0;
+        if(field.getValue() != null) {
+            valueLength = field.getValue().length();
+        }
+        return nameLength + valueLength;
     }
 
     /**
@@ -316,5 +448,27 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public void clearCache() {
         configuration.getCacheStorage().clear();
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    private class AdditionalEmbedField {
+        // this is the index of the field where this additional field came from
+        private Integer fieldIndex;
+        // this is the index within the field, which means, a field might have been split into three fields
+        // and in this case this value defines which respective part of that field it is, this is required to
+        // keep the order of the created fields
+        private Integer innerFieldIndex;
+        private EmbedField field;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    private class AdditionalEmbed {
+        private Integer embedIndex;
+        private Integer innerEmbedIndex;
+        private EmbedBuilder embedBuilder;
     }
 }
