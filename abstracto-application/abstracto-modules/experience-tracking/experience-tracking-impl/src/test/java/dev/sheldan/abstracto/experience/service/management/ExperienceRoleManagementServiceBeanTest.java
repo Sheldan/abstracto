@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.experience.service.management;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.test.MockUtils;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.repository.ExperienceRoleRepository;
@@ -25,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExperienceRoleManagementServiceBeanTest extends ExperienceRelatedTest {
+public class ExperienceRoleManagementServiceBeanTest {
 
     @InjectMocks
     private ExperienceRoleManagementServiceBean testUnit;

@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.experience.config.features.ExperienceFeatureConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -31,7 +32,7 @@ public class ExpScaleTest {
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(newScale));
         CommandResult result = testUnit.execute(context);
         CommandTestUtilities.checkSuccessfulCompletion(result);
-        verify(configService, times(1)).setDoubleValue(ExpScale.EXP_MULTIPLIER_KEY, context.getGuild().getIdLong(), newScale);
+        verify(configService, times(1)).setDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, context.getGuild().getIdLong(), newScale);
     }
 
     @Test

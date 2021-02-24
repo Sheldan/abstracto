@@ -15,11 +15,11 @@ public class DefaultConfigManagementServiceBean implements DefaultConfigManageme
 
     @Override
     public SystemConfigProperty getDefaultConfig(String key) {
-        return defaultConfigProperties.getSystemConfigs().get(key);
+        return defaultConfigProperties.getSystemConfigs().get(key.toLowerCase());
     }
 
     @Override
     public boolean configKeyExists(String key) {
-        return defaultConfigProperties.getSystemConfigs().containsKey(key);
+        return defaultConfigProperties.getSystemConfigs().containsKey(key.toLowerCase());
     }
 }

@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -71,6 +72,9 @@ public class WarnServiceBean implements WarnService {
     private ServerManagementService serverManagementService;
 
     @Autowired
+    private DefaultConfigManagementService defaultConfigManagementService;
+
+    @Autowired
     private FeatureModeService featureModeService;
 
     @Autowired
@@ -124,8 +128,9 @@ public class WarnServiceBean implements WarnService {
 
     @Override
     @Transactional
-    public CompletableFuture<Void>  decayWarningsForServer(AServer server) {
-        Long days = configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId());
+    public CompletableFuture<Void> decayWarningsForServer(AServer server) {
+        Long defaultDays = defaultConfigManagementService.getDefaultConfig(WarningDecayFeature.DECAY_DAYS_KEY).getLongValue();
+        Long days = configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId(), defaultDays);
         Instant cutOffDay = Instant.now().minus(days, ChronoUnit.DAYS);
         log.info("Decaying warnings on server {} which are older than {}.", server.getId(), cutOffDay);
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);

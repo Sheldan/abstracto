@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.exception.ConfigurationKeyNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
@@ -16,6 +17,9 @@ public class ConfigServiceBean implements ConfigService {
 
     @Autowired
     private DefaultConfigManagementService defaultConfigManagementService;
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
 
     @Override
     public Double getDoubleValue(String name, Long serverId) {
@@ -93,7 +97,7 @@ public class ConfigServiceBean implements ConfigService {
     public AConfig setOrCreateConfigValue(String name, Long serverId, String value) {
         if(defaultConfigManagementService.configKeyExists(name)) {
             AConfig fakeConfigValue = getFakeConfigForValue(name, value);
-            return setOrCreateConfigValue(serverId, name, fakeConfigValue);
+            return setOrCreateConfigValue(serverId, fakeConfigValue.getName(), fakeConfigValue);
         } else {
             throw new ConfigurationKeyNotFoundException(name);
         }
@@ -143,8 +147,8 @@ public class ConfigServiceBean implements ConfigService {
     @Override
     public AConfig getFakeConfigForValue(String name, String value) {
         if(defaultConfigManagementService.configKeyExists(name)) {
-            AConfig newConfig = AConfig.builder().name(value).build();
             SystemConfigProperty defaultConfig = defaultConfigManagementService.getDefaultConfig(name);
+            AConfig newConfig = AConfig.builder().name(defaultConfig.getName()).build();
             if(defaultConfig.getDoubleValue() != null) {
                 newConfig.setDoubleValue(Double.parseDouble(value));
             } else if(defaultConfig.getLongValue() != null) {
@@ -156,5 +160,25 @@ public class ConfigServiceBean implements ConfigService {
         } else {
             throw new ConfigurationKeyNotFoundException(name);
         }
+    }
+
+    @Override
+    public void resetConfigForKey(String configKey, Long serverId) {
+        configManagementService.deleteConfig(serverId, configKey);
+    }
+
+    @Override
+    public void resetConfigForFeature(String featureKey, Long serverId) {
+        FeatureConfig featureConfig = featureConfigService.getFeatureDisplayForFeature(featureKey);
+        featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
+            if(configManagementService.configExists(serverId, s)) {
+                resetConfigForKey(s, serverId);
+            }
+        });
+    }
+
+    @Override
+    public void resetConfigForServer(Long serverId) {
+        configManagementService.deleteConfigForServer(serverId);
     }
 }

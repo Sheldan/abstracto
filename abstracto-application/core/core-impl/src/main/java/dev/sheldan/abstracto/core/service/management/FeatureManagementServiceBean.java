@@ -32,6 +32,6 @@ public class FeatureManagementServiceBean implements FeatureManagementService {
 
     @Override
     public AFeature getFeature(String key) {
-        return featureRepository.findByKey(key);
+        return featureRepository.findByKeyIgnoreCase(key);
     }
 }

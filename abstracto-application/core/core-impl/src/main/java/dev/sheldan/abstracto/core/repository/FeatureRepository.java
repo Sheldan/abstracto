@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FeatureRepository extends JpaRepository<AFeature, Long> {
 
-    AFeature findByKey(String key);
+    AFeature findByKeyIgnoreCase(String key);
 }

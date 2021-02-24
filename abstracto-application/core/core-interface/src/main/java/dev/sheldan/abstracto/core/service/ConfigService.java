@@ -17,5 +17,7 @@ public interface ConfigService {
     void setStringValue(String name, Long serverId, String value);
     boolean configurationIsValid(String name, String value);
     AConfig getFakeConfigForValue(String name, String value);
-
+    void resetConfigForKey(String configKey, Long serverId);
+    void resetConfigForFeature(String featureKey, Long serverId);
+    void resetConfigForServer(Long serverId);
 }

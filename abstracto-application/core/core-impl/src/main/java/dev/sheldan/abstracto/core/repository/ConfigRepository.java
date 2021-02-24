@@ -9,9 +9,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConfigRepository extends JpaRepository<AConfig, Long> {
 
-    AConfig findAConfigByServerIdAndName(Long serverId, String name);
+    AConfig findAConfigByServerIdAndNameIgnoreCase(Long serverId, String name);
+    void deleteAConfigByServerId(Long serverId);
 
-    boolean existsAConfigByServerIdAndName(Long serverId, String name);
+    boolean existsAConfigByServerIdAndNameIgnoreCase(Long serverId, String name);
 
-    boolean existsAConfigByServerAndName(AServer server, String name);
+    boolean existsAConfigByServerAndNameIgnoreCase(AServer server, String name);
 }

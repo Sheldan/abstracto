@@ -19,4 +19,6 @@ public interface ConfigManagementService {
     AConfig setDoubleValue(Long serverId, String name, Double value);
     AConfig setLongValue(Long serverId, String name, Long value);
     AConfig setStringValue(Long serverId, String name, String value);
+    void deleteConfig(Long serverId, String name);
+    void deleteConfigForServer(Long serverId);
 }

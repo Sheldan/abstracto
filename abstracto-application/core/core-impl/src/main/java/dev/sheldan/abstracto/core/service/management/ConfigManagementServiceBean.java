@@ -121,17 +121,17 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
 
     @Override
     public AConfig loadConfig(Long serverId, String name) {
-        return configRepository.findAConfigByServerIdAndName(serverId, name);
+        return configRepository.findAConfigByServerIdAndNameIgnoreCase(serverId, name);
     }
 
     @Override
     public boolean configExists(Long serverId, String name) {
-        return configRepository.existsAConfigByServerIdAndName(serverId, name);
+        return configRepository.existsAConfigByServerIdAndNameIgnoreCase(serverId, name);
     }
 
     @Override
     public boolean configExists(AServer server, String name) {
-        return configRepository.existsAConfigByServerAndName(server, name);
+        return configRepository.existsAConfigByServerAndNameIgnoreCase(server, name);
     }
 
     @Override
@@ -156,6 +156,17 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
         config.setStringValue(value);
         log.trace("Setting string value of key {} in server {}.", name, serverId);
         return config;
+    }
+
+    @Override
+    public void deleteConfig(Long serverId, String name) {
+        AConfig config = loadConfig(serverId, name);
+        configRepository.delete(config);
+    }
+
+    @Override
+    public void deleteConfigForServer(Long serverId) {
+        configRepository.deleteAConfigByServerId(serverId);
     }
 
 }

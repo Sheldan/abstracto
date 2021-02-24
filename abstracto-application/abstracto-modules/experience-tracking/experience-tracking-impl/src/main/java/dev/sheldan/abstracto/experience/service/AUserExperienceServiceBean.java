@@ -4,8 +4,10 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
@@ -79,6 +81,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
     @Autowired
     private ChannelManagementService channelManagementService;
+
+    @Autowired
+    private DefaultConfigManagementService defaultConfigManagementService;
 
     @Autowired
     private AUserExperienceServiceBean self;
@@ -169,13 +174,16 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         List<ExperienceGainResult> resultFutures = new ArrayList<>();
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
         List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
+        SystemConfigProperty defaultExpMultiplier = defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY);
+        SystemConfigProperty defaultMinExp = defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.MIN_EXP_KEY);
+        SystemConfigProperty defaultMaxExp = defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.MAX_EXP_KEY);
         // TODO what if there are a lot in here...., transaction size etc
         servers.forEach(serverExp -> {
             AServer server = serverManagementService.loadOrCreate(serverExp.getServerId());
             log.info("Handling {} experience for server {}", serverExp.getUserInServerIds().size(), serverExp.getServerId());
-            int minExp = configService.getLongValue(ExperienceFeatureConfig.MIN_EXP_KEY, serverExp.getServerId()).intValue();
-            int maxExp = configService.getLongValue(ExperienceFeatureConfig.MAX_EXP_KEY, serverExp.getServerId()).intValue();
-            Double multiplier = configService.getDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverExp.getServerId());
+            int minExp = configService.getLongValue(ExperienceFeatureConfig.MIN_EXP_KEY, serverExp.getServerId(), defaultMinExp.getLongValue()).intValue();
+            int maxExp = configService.getLongValue(ExperienceFeatureConfig.MAX_EXP_KEY, serverExp.getServerId(), defaultMaxExp.getLongValue()).intValue();
+            Double multiplier = configService.getDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverExp.getServerId(), defaultExpMultiplier.getDoubleValue());
             PrimitiveIterator.OfInt iterator = new Random().ints(serverExp.getUserInServerIds().size(), minExp, maxExp + 1).iterator();
             levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
             List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);

@@ -1,11 +1,12 @@
 package dev.sheldan.abstracto.experience.converter;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.test.MockUtils;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
 import net.dv8tion.jda.api.entities.Member;
@@ -25,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
+public class LeaderBoardModelConverterTest {
 
     @InjectMocks
     public LeaderBoardModelConverter testUnit;
@@ -79,4 +80,20 @@ public class LeaderBoardModelConverterTest extends ExperienceRelatedTest {
         AUserExperience firstExperience = getUserExperienceObject(server, experienceParameter);
         return LeaderBoardEntry.builder().rank(rank).experience(firstExperience).build();
     }
+
+    private AUserExperience getUserExperienceObject(AServer server, long i) {
+        AUserInAServer userObject = MockUtils.getUserObject(i, server);
+        AExperienceLevel level = AExperienceLevel
+                .builder()
+                .level((int)i)
+                .experienceNeeded(i * 100)
+                .build();
+        return AUserExperience
+                .builder()
+                .user(userObject)
+                .experience(i)
+                .currentLevel(level)
+                .build();
+    }
+
 }

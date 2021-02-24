@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExperienceTrackerListenerTest extends ExperienceRelatedTest {
+public class ExperienceTrackerListenerTest {
 
     @InjectMocks
     public ExperienceTrackerListener testUnit;

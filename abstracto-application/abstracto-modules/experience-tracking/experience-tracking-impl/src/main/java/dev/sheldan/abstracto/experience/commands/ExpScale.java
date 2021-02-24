@@ -9,12 +9,14 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
+import dev.sheldan.abstracto.experience.config.features.ExperienceFeatureConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Command used to change the experience multiplier on the server.
@@ -23,8 +25,6 @@ import java.util.List;
 @Slf4j
 public class ExpScale extends AbstractConditionableCommand {
 
-    public static final String EXP_MULTIPLIER_KEY = "expMultiplier";
-
     @Autowired
     private ConfigService configService;
 
@@ -32,7 +32,7 @@ public class ExpScale extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         Double scale = (Double) commandContext.getParameters().getParameters().get(0);
         Long guildId = commandContext.getGuild().getIdLong();
-        configService.setDoubleValue(EXP_MULTIPLIER_KEY, guildId, scale);
+        configService.setDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, guildId, scale);
         log.info("Setting experience scale to {} for {}", scale, guildId);
         return CommandResult.fromSuccess();
     }

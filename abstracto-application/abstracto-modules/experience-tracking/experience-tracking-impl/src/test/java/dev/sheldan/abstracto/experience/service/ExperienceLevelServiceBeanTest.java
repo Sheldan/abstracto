@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import org.junit.Assert;
@@ -16,7 +15,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExperienceLevelServiceBeanTest extends ExperienceRelatedTest {
+public class ExperienceLevelServiceBeanTest {
 
     @InjectMocks
     private ExperienceLevelServiceBean testingUnit;

@@ -3,7 +3,9 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.*;
+import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
@@ -24,10 +26,7 @@ import net.dv8tion.jda.api.entities.User;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Instant;
@@ -122,6 +121,9 @@ public class WarnServiceBeanTest {
     @Mock
     private FeatureModeService featureModeService;
 
+    @Mock
+    private DefaultConfigManagementService defaultConfigManagementService;
+
     private static final String NOTIFICATION_TEXT = "text";
     private static final String GUILD_NAME = "guild";
     private static final Long SERVER_ID = 4L;
@@ -129,7 +131,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayWarning() {
         Instant date = Instant.now();
-        when(firstWarning.getWarnId()).thenReturn(new ServerSpecificId(3L, 4L));
+        when(firstWarning.getWarnId()).thenReturn(new ServerSpecificId(SERVER_ID, 4L));
         testUnit.decayWarning(firstWarning, date);
         verify(firstWarning, times(1)).setDecayed(true);
         verify(firstWarning, times(1)).setDecayDate(date);
@@ -233,7 +235,11 @@ public class WarnServiceBeanTest {
 
     private void setupWarnDecay() {
         setupWarnings();
-        when(configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, server.getId())).thenReturn(5L);
+        SystemConfigProperty defaultDecayDays = Mockito.mock(SystemConfigProperty.class);
+        Long defaultDayCount = 4L;
+        when(defaultDecayDays.getLongValue()).thenReturn(defaultDayCount);
+        when(defaultConfigManagementService.getDefaultConfig(WarningDecayFeature.DECAY_DAYS_KEY)).thenReturn(defaultDecayDays);
+        when(configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, SERVER_ID, defaultDayCount)).thenReturn(5L);
         List<Warning> warnings = Arrays.asList(firstWarning, secondWarning);
         when(memberService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
         when(memberService.getMemberInServerAsync(firstWarnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));

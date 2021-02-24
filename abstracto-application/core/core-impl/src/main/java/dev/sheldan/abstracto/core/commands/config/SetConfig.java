@@ -21,7 +21,6 @@ public class SetConfig extends AbstractConditionableCommand {
     @Autowired
     private ConfigService configService;
 
-
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String key = (String) commandContext.getParameters().getParameters().get(0);

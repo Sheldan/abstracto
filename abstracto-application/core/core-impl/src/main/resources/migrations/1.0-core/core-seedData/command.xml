@@ -98,6 +98,12 @@
             <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
+            <column name="name" value="resetConfig"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+            <column name="created" valueComputed="${today}"/>
+        </insert>
+        <insert tableName="command">
             <column name="name" value="setPrefix"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>

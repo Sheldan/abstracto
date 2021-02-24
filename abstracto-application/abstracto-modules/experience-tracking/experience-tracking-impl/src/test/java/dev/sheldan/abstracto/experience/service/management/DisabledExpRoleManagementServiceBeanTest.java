@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.database.ADisabledExpRole;
 import dev.sheldan.abstracto.experience.repository.DisabledExpRoleRepository;
 import org.junit.Assert;
@@ -15,7 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DisabledExpRoleManagementServiceBeanTest extends ExperienceRelatedTest {
+public class DisabledExpRoleManagementServiceBeanTest {
 
     @InjectMocks
     private DisabledExpRoleManagementServiceBean testUnit;

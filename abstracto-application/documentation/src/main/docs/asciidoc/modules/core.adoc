@@ -18,6 +18,9 @@ Changing the system configuration::
 * Usage `setConfig <key> <value>`
 * Description: Changes the value of this configuration identified by `key` to `value`. Some of these configurations have separate commands, but this works in general.
 * Example: `setConfig expMin 15` to set the minimum experience to 15
+Resetting the configuration to default values::
+* Usage `resetConfig [key/feature]`
+* Description: Resets the configuration of the given `key` or for the complete feature identified by `feature`. If this is not provided, it will reset the entire server to the default configuration.
 Changing emotes Abstracto uses::
 * Usage: `setEmote <key> <emote>`
 * Description: Sets the emote identified by `key` used by Abstracto on this server to `emote`.

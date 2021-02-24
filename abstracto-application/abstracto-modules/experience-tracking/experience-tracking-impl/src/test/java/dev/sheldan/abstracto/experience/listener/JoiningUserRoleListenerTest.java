@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.experience.listener;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
@@ -20,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JoiningUserRoleListenerTest extends ExperienceRelatedTest {
+public class JoiningUserRoleListenerTest {
 
     @InjectMocks
     private JoiningUserRoleListener testUnit;

@@ -4,12 +4,10 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.test.MockUtils;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.repository.UserExperienceRepository;
-import dev.sheldan.abstracto.experience.service.LeaderBoardEntryTestImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +24,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTest {
+public class UserExperienceManagementServiceBeanTest {
 
     @InjectMocks
     private UserExperienceManagementServiceBean testUnit;
@@ -113,10 +111,8 @@ public class UserExperienceManagementServiceBeanTest extends ExperienceRelatedTe
         AServer server = MockUtils.getServer();
         AUserInAServer user = MockUtils.getUserObject(6L, server);
         AUserExperience experience = AUserExperience.builder().experience(experienceValue).user(user).id(3L).build();
-        LeaderBoardEntryTestImpl leaderBoardEntryTest = LeaderBoardEntryTestImpl
-                .builder()
-                .experience(experienceValue)
-                .build();
+        LeaderBoardEntryResult leaderBoardEntryTest = Mockito.mock(LeaderBoardEntryResult.class);
+        when(leaderBoardEntryTest.getExperience()).thenReturn(experienceValue);
         when(repository.getRankOfUserInServer(experience.getId(), server.getId())).thenReturn(leaderBoardEntryTest);
         LeaderBoardEntryResult rankOfUserInServer = testUnit.getRankOfUserInServer(experience);
         Assert.assertEquals(experienceValue, rankOfUserInServer.getExperience().longValue());

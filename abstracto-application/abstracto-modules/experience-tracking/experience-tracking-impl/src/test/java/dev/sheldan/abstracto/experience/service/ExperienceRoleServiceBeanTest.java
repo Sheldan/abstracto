@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
-import dev.sheldan.abstracto.experience.ExperienceRelatedTest;
 import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
@@ -32,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
+public class ExperienceRoleServiceBeanTest {
 
     @InjectMocks
     private ExperienceRoleServiceBean testingUnit;
@@ -127,7 +126,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(6).build()).build();
         AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
-        Assert.assertEquals(aExperienceRole.getLevel().getLevel().intValue(), 5);
+        Assert.assertEquals(5, aExperienceRole.getLevel().getLevel().intValue());
     }
 
     @Test
@@ -143,7 +142,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(11).build()).build();
         AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
-        Assert.assertEquals(aExperienceRole.getLevel().getLevel().intValue(), 10);
+        Assert.assertEquals(10, aExperienceRole.getLevel().getLevel().intValue());
     }
 
     @Test
@@ -151,7 +150,7 @@ public class ExperienceRoleServiceBeanTest extends ExperienceRelatedTest {
         List<AExperienceRole> roles = getExperienceRoles();
         AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(10).build()).build();
         AExperienceRole aExperienceRole = testingUnit.calculateRole(roles,  userExperience.getLevelOrDefault());
-        Assert.assertEquals(aExperienceRole.getLevel().getLevel().intValue(), 10);
+        Assert.assertEquals(10, aExperienceRole.getLevel().getLevel().intValue());
     }
 
     @Test
