@@ -38,7 +38,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
 
     @Override
     public void unsetRole(AExperienceRole role) {
-        log.info("Deleting experience role {} in server {}.", role.getId(), role.getRoleServer().getId());
+        log.info("Deleting experience role {} in server {}.", role.getId(), role.getServer().getId());
         experienceRoleRepository.delete(role);
     }
 
@@ -93,7 +93,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
                     .builder()
                     .id(role.getId())
                     .level(level)
-                    .roleServer(role.getServer())
+                    .server(role.getServer())
                     .role(role)
                     .build();
             log.trace("Role did not exist. Creating new.");

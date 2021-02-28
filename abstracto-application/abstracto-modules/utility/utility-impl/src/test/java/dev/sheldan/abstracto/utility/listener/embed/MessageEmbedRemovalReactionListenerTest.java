@@ -111,21 +111,17 @@ public class MessageEmbedRemovalReactionListenerTest {
     }
 
     private void executeDeletionTest(AUserInAServer embeddingUser, AUserInAServer embeddedUser, ServerUser userAddingReaction, int wantedDeletions) {
-        CachedMessage cachedMessage = CachedMessage
-                .builder()
-                .serverId(SERVER_ID)
-                .messageId(MESSAGE_ID)
-                .channelId(CHANNEL_ID)
-                .build();
-        AEmote reactedEmote = AEmote.builder().build();
+        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
+        when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(cachedMessage.getChannelId()).thenReturn(CHANNEL_ID);
+        when(cachedMessage.getMessageId()).thenReturn(MESSAGE_ID);
+        AEmote reactedEmote = Mockito.mock(AEmote.class);
         when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, SERVER_ID)).thenReturn(reactedEmote);
         when(messageReaction.getEmote()).thenReturn(reactionEmote);
         when(emoteService.compareCachedEmoteWithAEmote(reactionEmote, reactedEmote)).thenReturn(true);
-        EmbeddedMessage message = EmbeddedMessage
-                .builder()
-                .embeddingUser(embeddingUser)
-                .embeddedUser(embeddedUser)
-                .build();
+        EmbeddedMessage message = Mockito.mock(EmbeddedMessage.class);
+        when(message.getEmbeddingUser()).thenReturn(embeddingUser);
+        when(message.getEmbeddedUser()).thenReturn(embeddedUser);
         when(messageEmbedPostManagementService.findEmbeddedPostByMessageId(MESSAGE_ID)).thenReturn(Optional.of(message));
         when(messageService.deleteMessageInChannelInServer(SERVER_ID, CHANNEL_ID, MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         when(messageEmbedPostManagementService.findEmbeddedPostByMessageId(MESSAGE_ID)).thenReturn(Optional.of(message));
@@ -137,19 +133,16 @@ public class MessageEmbedRemovalReactionListenerTest {
     }
 
     private void executeRemovalEmoteAddedTest(boolean wasCorrectEmote) {
-        CachedMessage cachedMessage = CachedMessage
-                .builder()
-                .serverId(SERVER_ID)
-                .messageId(MESSAGE_ID)
-                .channelId(CHANNEL_ID)
-                .build();
+        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
+        when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
+        when(cachedMessage.getMessageId()).thenReturn(MESSAGE_ID);
         ServerUser serverUser = Mockito.mock(ServerUser.class);
-        AEmote reactedEmote = AEmote.builder().build();
+        AEmote reactedEmote = Mockito.mock(AEmote.class);
         when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, SERVER_ID)).thenReturn(reactedEmote);
         when(messageReaction.getEmote()).thenReturn(reactionEmote);
         when(emoteService.compareCachedEmoteWithAEmote(reactionEmote, reactedEmote)).thenReturn(wasCorrectEmote);
         testUnit.executeReactionAdded(cachedMessage, messageReaction, serverUser);
-        verify(messageService, times(0)).deleteMessageInChannelInServer(SERVER_ID, CHANNEL_ID, MESSAGE_ID);
+        verify(messageService, times(0)).deleteMessageInChannelInServer(anyLong(), anyLong(), anyLong());
     }
 
 }

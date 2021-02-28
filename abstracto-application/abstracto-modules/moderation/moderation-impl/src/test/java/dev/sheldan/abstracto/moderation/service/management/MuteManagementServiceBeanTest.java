@@ -4,9 +4,9 @@ import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.Mute;
 import dev.sheldan.abstracto.moderation.repository.MuteRepository;
 import net.dv8tion.jda.api.entities.Member;
@@ -38,17 +38,28 @@ public class MuteManagementServiceBeanTest {
     @Captor
     private ArgumentCaptor<Mute> muteArgumentCaptor;
 
+    private static final Long SERVER_ID = 1L;
+    private static final Long MUTE_ID = 2L;
+
     @Test
     public void testCreateMute() {
-        AServer server = MockUtils.getServer();
+        AServer server = Mockito.mock(AServer.class);
         long messageId = 9L;
-        AChannel channel = MockUtils.getTextChannel(server, 8L);
-        AUserInAServer mutingUser = MockUtils.getUserObject(5L, server);
-        AUserInAServer mutedUser = MockUtils.getUserObject(7L, server);
+        AChannel channel = Mockito.mock(AChannel.class);
+        AUserInAServer mutingUser = Mockito.mock(AUserInAServer.class);
+        AUserInAServer mutedUser = Mockito.mock(AUserInAServer.class);
+        AUser user = Mockito.mock(AUser.class);
+        when(mutedUser.getUserReference()).thenReturn(user);
+        when(mutedUser.getServerReference()).thenReturn(server);
+        AUser secondUser = Mockito.mock(AUser.class);
+        when(mutingUser.getUserReference()).thenReturn(secondUser);
         String reason = "reason";
         String triggerKey = "key";
         Instant unMuteDate = Instant.now();
-        AServerAChannelMessage muteMessage = AServerAChannelMessage.builder().server(server).channel(channel).messageId(messageId).build();
+        AServerAChannelMessage muteMessage = Mockito.mock(AServerAChannelMessage.class);
+        when(muteMessage.getMessageId()).thenReturn(messageId);
+        when(muteMessage.getServer()).thenReturn(server);
+        when(muteMessage.getChannel()).thenReturn(channel);
 
         testUnit.createMute(mutedUser, mutingUser, reason, unMuteDate, muteMessage, triggerKey, 8L);
         verify(muteRepository, times(1)).save(muteArgumentCaptor.capture());
@@ -65,36 +76,34 @@ public class MuteManagementServiceBeanTest {
 
     @Test
     public void testFindMute() {
-        Long id = 5L;
-        Long serverId = 7L;
-        Mute mute = Mute.builder().muteId(new ServerSpecificId(serverId, id)).build();
-        when(muteRepository.findByMuteId_IdAndMuteId_ServerId(id, serverId)).thenReturn(Optional.of(mute));
-        Optional<Mute> foundMuteOptional = testUnit.findMuteOptional(id, serverId);
+        Mute mute = Mockito.mock(Mute.class);
+        ServerSpecificId muteId = Mockito.mock(ServerSpecificId.class);
+        when(mute.getMuteId()).thenReturn(muteId);
+        when(muteId.getId()).thenReturn(MUTE_ID);
+        when(muteRepository.findByMuteId_IdAndMuteId_ServerId(MUTE_ID, SERVER_ID)).thenReturn(Optional.of(mute));
+        Optional<Mute> foundMuteOptional = testUnit.findMuteOptional(MUTE_ID, SERVER_ID);
         Assert.assertTrue(foundMuteOptional.isPresent());
-        foundMuteOptional.ifPresent(foundMute -> Assert.assertEquals(id, foundMute.getMuteId().getId()));
+        foundMuteOptional.ifPresent(foundMute -> Assert.assertEquals(MUTE_ID, foundMute.getMuteId().getId()));
     }
 
     @Test
     public void testFindNonExistingMute() {
-        Long id = 5L;
-        Long serverId = 7L;
-        when(muteRepository.findByMuteId_IdAndMuteId_ServerId(id, serverId)).thenReturn(Optional.empty());
-        Optional<Mute> foundMuteOptional = testUnit.findMuteOptional(id, serverId);
+        when(muteRepository.findByMuteId_IdAndMuteId_ServerId(MUTE_ID, SERVER_ID)).thenReturn(Optional.empty());
+        Optional<Mute> foundMuteOptional = testUnit.findMuteOptional(MUTE_ID, SERVER_ID);
         Assert.assertFalse(foundMuteOptional.isPresent());
     }
 
     @Test
     public void testSaveMute() {
-        Mute mute = Mute.builder().build();
+        Mute mute = Mockito.mock(Mute.class);
         testUnit.saveMute(mute);
         verify(muteRepository, times(1)).save(mute);
     }
 
     @Test
     public void testGetMuteOfUser() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(9L, server);
-        Mute mute = Mute.builder().build();
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
+        Mute mute = Mockito.mock(Mute.class);
         when(muteRepository.findTopByMutedUserAndMuteEndedFalse(userInAServer)).thenReturn(mute);
         Mute aMuteOf = testUnit.getAMuteOf(userInAServer);
         Assert.assertEquals(mute, aMuteOf);
@@ -102,11 +111,10 @@ public class MuteManagementServiceBeanTest {
 
     @Test
     public void testGetMuteOfMember() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(9L, server);
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
+        Mute mute = Mockito.mock(Mute.class);
         Member member = Mockito.mock(Member.class);
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
-        Mute mute = Mute.builder().build();
         when(muteRepository.findTopByMutedUserAndMuteEndedFalse(userInAServer)).thenReturn(mute);
         Mute aMuteOf = testUnit.getAMuteOf(member);
         Assert.assertEquals(mute, aMuteOf);
@@ -114,14 +122,13 @@ public class MuteManagementServiceBeanTest {
 
     @Test
     public void testGetAllMutesOf() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(9L, server);
-        Mute mute1 = Mute.builder().build();
-        Mute mute2 = Mute.builder().build();
-        when(muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(userInAServer)).thenReturn(Arrays.asList(mute1, mute2));
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
+        Mute mute = Mockito.mock(Mute.class);
+        Mute mute2 = Mockito.mock(Mute.class);
+        when(muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(userInAServer)).thenReturn(Arrays.asList(mute, mute2));
         List<Mute> allMutesOf = testUnit.getAllMutesOf(userInAServer);
         Assert.assertEquals(2, allMutesOf.size());
-        Assert.assertEquals(mute1, allMutesOf.get(0));
+        Assert.assertEquals(mute, allMutesOf.get(0));
         Assert.assertEquals(mute2, allMutesOf.get(1));
     }
 
@@ -136,8 +143,7 @@ public class MuteManagementServiceBeanTest {
     }
 
     private void checkExist(boolean value) {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(9L, server);
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         when(muteRepository.existsByMutedUserAndMuteEndedFalse(userInAServer)).thenReturn(value);
         boolean result = testUnit.hasActiveMute(userInAServer);
         Assert.assertEquals(value, result);

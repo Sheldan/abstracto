@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -42,7 +43,7 @@ public class UnMuteTest {
     @Test
     public void testUnMuteCommand() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToUnMute));
-        AUserInAServer user = AUserInAServer.builder().build();
+        AUserInAServer user = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(memberToUnMute)).thenReturn(user);
         when(muteService.unMuteUser(user)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
@@ -52,7 +53,7 @@ public class UnMuteTest {
     @Test(expected = NoMuteFoundException.class)
     public void testUnMuteCommandWithoutExistingMute() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToUnMute));
-        AUserInAServer user = AUserInAServer.builder().build();
+        AUserInAServer user = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(memberToUnMute)).thenReturn(user);
         when(muteService.unMuteUser(user)).thenThrow(new NoMuteFoundException());
         testUnit.executeAsync(parameters);

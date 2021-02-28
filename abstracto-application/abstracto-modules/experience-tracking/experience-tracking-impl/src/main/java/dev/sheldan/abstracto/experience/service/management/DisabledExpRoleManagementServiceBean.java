@@ -23,7 +23,7 @@ public class DisabledExpRoleManagementServiceBean implements DisabledExpRoleMana
                 .builder()
                 .role(role)
                 .build();
-        log.info("Adding disabled exp role {} for server {}.", role.getId(),role.getServer().getId());
+        log.info("Adding disabled exp role {} for server {}.", role.getId(), role.getServer().getId());
         return disabledExpRoleRepository.save(newRole);
     }
 

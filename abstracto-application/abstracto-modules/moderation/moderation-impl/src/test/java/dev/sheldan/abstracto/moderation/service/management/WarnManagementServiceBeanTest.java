@@ -2,16 +2,16 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Instant;
@@ -30,19 +30,22 @@ public class WarnManagementServiceBeanTest {
     @Mock
     private WarnRepository warnRepository;
 
+    @Mock
     private AUserInAServer warnedUser;
+
+    @Mock
     private AServer server;
 
-
-    @Before
-    public void setup() {
-        this.server = MockUtils.getServer();
-        this.warnedUser = MockUtils.getUserObject(5L, server);
-    }
+    private static final Long SERVER_ID = 1L;
+    private static final Long WARN_ID = 2L;
 
     @Test
     public void testCreateWarning() {
-        AUserInAServer warningUser = MockUtils.getUserObject(7L, server);
+        AUserInAServer warningUser = Mockito.mock(AUserInAServer.class);
+        AUser user = Mockito.mock(AUser.class);
+        when(warningUser.getServerReference()).thenReturn(server);
+        when(warningUser.getUserReference()).thenReturn(user);
+        when(warnedUser.getUserReference()).thenReturn(user);
         String reason = "REASON";
         Warning warning = testUnit.createWarning(warnedUser, warningUser, reason, 8L);
         Assert.assertEquals(warningUser, warning.getWarningUser());
@@ -55,7 +58,7 @@ public class WarnManagementServiceBeanTest {
     @Test
     public void testRetrieveWarningsOlderThan() {
         Instant date = Instant.now();
-        List<Warning> existingWarnings = Arrays.asList(getWarning(), getWarning());
+        List<Warning> existingWarnings = Arrays.asList(Mockito.mock(Warning.class), Mockito.mock(Warning.class));
         when(warnRepository.findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateLessThan(server, date)).thenReturn(existingWarnings);
         List<Warning> activeWarningsInServerOlderThan = testUnit.getActiveWarningsInServerOlderThan(server, date);
         checkFoundWarns(existingWarnings, activeWarningsInServerOlderThan);
@@ -71,7 +74,7 @@ public class WarnManagementServiceBeanTest {
 
     @Test
     public void testGetAllWarningsOfUser() {
-        List<Warning> existingWarnings = Arrays.asList(getWarning(), getWarning());
+        List<Warning> existingWarnings = Arrays.asList(Mockito.mock(Warning.class), Mockito.mock(Warning.class));
         when(warnRepository.findByWarnedUser(warnedUser)).thenReturn(existingWarnings);
         List<Warning> foundWarnings = testUnit.getAllWarnsForUser(warnedUser);
         checkFoundWarns(existingWarnings, foundWarnings);
@@ -79,7 +82,7 @@ public class WarnManagementServiceBeanTest {
 
     @Test
     public void testGetAllWarningsOfServer() {
-        List<Warning> existingWarnings = Arrays.asList(getWarning(), getWarning());
+        List<Warning> existingWarnings = Arrays.asList(Mockito.mock(Warning.class), Mockito.mock(Warning.class));
         when(warnRepository.findAllByWarnedUser_ServerReference(server)).thenReturn(existingWarnings);
         List<Warning> foundWarnings = testUnit.getAllWarningsOfServer(server);
         checkFoundWarns(existingWarnings, foundWarnings);
@@ -95,11 +98,9 @@ public class WarnManagementServiceBeanTest {
 
     @Test
     public void testFindByIdExisting() {
-        Long warnId = 6L;
-        Long serverId = 8L;
-        Warning existingWarning = getWarning();
-        when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, serverId)).thenReturn(Optional.ofNullable(existingWarning));
-        Optional<Warning> warningOptional = testUnit.findByIdOptional(warnId, serverId);
+        Warning existingWarning = Mockito.mock(Warning.class);
+        when(warnRepository.findByWarnId_IdAndWarnId_ServerId(WARN_ID, SERVER_ID)).thenReturn(Optional.ofNullable(existingWarning));
+        Optional<Warning> warningOptional = testUnit.findByIdOptional(WARN_ID, SERVER_ID);
         Assert.assertTrue(warningOptional.isPresent());
         warningOptional.ifPresent(foundWarning -> Assert.assertEquals(existingWarning, foundWarning));
     }
@@ -107,15 +108,18 @@ public class WarnManagementServiceBeanTest {
     @Test
     public void testFindByIdNotExisting() {
         Long warnId = 6L;
-        Long serverId = 8L;
-        when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, serverId)).thenReturn(Optional.ofNullable(null));
-        Optional<Warning> warningOptional = testUnit.findByIdOptional(warnId, serverId);
+        when(warnRepository.findByWarnId_IdAndWarnId_ServerId(warnId, SERVER_ID)).thenReturn(Optional.ofNullable(null));
+        Optional<Warning> warningOptional = testUnit.findByIdOptional(warnId, SERVER_ID);
         Assert.assertFalse(warningOptional.isPresent());
     }
 
     @Test
     public void testDeleteWarning() {
-        Warning warning = getWarning();
+        Warning warning = Mockito.mock(Warning.class);
+        ServerSpecificId warnId = Mockito.mock(ServerSpecificId.class);
+        when(warnId.getServerId()).thenReturn(SERVER_ID);
+        when(warnId.getId()).thenReturn(WARN_ID);
+        when(warning.getWarnId()).thenReturn(warnId);
         testUnit.deleteWarning(warning);
         verify(warnRepository, times(1)).delete(warning);
     }
@@ -130,7 +134,5 @@ public class WarnManagementServiceBeanTest {
         }
     }
 
-    private Warning getWarning() {
-        return Warning.builder().warnId(new ServerSpecificId(3L, 4L)).build();
-    }
+
 }

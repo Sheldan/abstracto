@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.exception.CrossServerEmbedException;
 import dev.sheldan.abstracto.utility.models.database.EmbeddedMessage;
 import dev.sheldan.abstracto.utility.repository.EmbeddedMessageRepository;
@@ -98,19 +97,20 @@ public class MessageEmbedPostManagementServiceBeanTest {
 
     @Test(expected = CrossServerEmbedException.class)
     public void testToCreateEmbedForDifferentServers() {
-        AServer originalServer = MockUtils.getServer(7L);
-        AServer embeddingServer = MockUtils.getServer(9L);
-        AUserInAServer embeddingUser = MockUtils.getUserObject(5L, embeddingServer);
-        when(serverManagementService.loadOrCreate(embeddingServer.getId())).thenReturn(embeddingServer);
-        when(serverManagementService.loadOrCreate(originalServer.getId())).thenReturn(originalServer);
-        CachedMessage cachedMessage = CachedMessage
-                .builder()
-                .serverId(originalServer.getId())
-                .build();
+        Long originServerId = 4L;
+        AServer originalServer = Mockito.mock(AServer.class);
+        when(originalServer.getId()).thenReturn(originServerId);
+        AServer embeddingServer = Mockito.mock(AServer.class);
+        when(embeddingServer.getId()).thenReturn(SERVER_ID);
+        AUserInAServer embeddingUser = Mockito.mock(AUserInAServer.class);
+        when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(embeddingServer);
+        when(serverManagementService.loadOrCreate(originServerId)).thenReturn(originalServer);
+        CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
+        when(cachedMessage.getServerId()).thenReturn(originServerId);
         Message message = Mockito.mock(Message.class);
         Guild guild = Mockito.mock(Guild.class);
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getIdLong()).thenReturn(embeddingServer.getId());
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
         testUnit.createMessageEmbed(cachedMessage, message, embeddingUser);
     }
 

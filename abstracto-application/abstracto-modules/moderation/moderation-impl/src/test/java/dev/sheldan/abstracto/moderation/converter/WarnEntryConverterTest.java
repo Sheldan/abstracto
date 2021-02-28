@@ -18,10 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
@@ -56,21 +53,30 @@ public class WarnEntryConverterTest {
     }
 
     @Test
-    public void testWithSomeUserNotes() {
+    public void testWithSomeWarnings() {
         AUserInAServer warnedUser = Mockito.mock(AUserInAServer.class);
         AUserInAServer warningUser = Mockito.mock(AUserInAServer.class);
         Member warnedMember = Mockito.mock(Member.class);
         Member warningMember = Mockito.mock(Member.class);
         when(memberService.getMemberInServerAsync(warnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
         when(memberService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
-        Warning firstNote = Warning.builder().warnId(new ServerSpecificId(3L, 4L)).warnedUser(warnedUser).warningUser(warningUser).build();
-        Warning secondNote = Warning.builder().warnId(new ServerSpecificId(3L, 5L)).warnedUser(warnedUser).warningUser(warningUser).build();
-        testUnit.fromWarnings(Arrays.asList(firstNote, secondNote));
+        Warning firstWarning = Mockito.mock(Warning.class);
+        when(firstWarning.getWarningUser()).thenReturn(warningUser);
+        when(firstWarning.getWarnedUser()).thenReturn(warnedUser);
+        Warning secondWarning = Mockito.mock(Warning.class);
+        when(secondWarning.getWarningUser()).thenReturn(warningUser);
+        when(secondWarning.getWarnedUser()).thenReturn(warnedUser);
+        List<WarnEntry> loaded = new ArrayList<>();
+        when(self.loadFullWarnEntries(any())).thenReturn(loaded);
+        CompletableFuture<List<WarnEntry>> future = testUnit.fromWarnings(Arrays.asList(firstWarning, secondWarning));
+        List<WarnEntry> entries = future.join();
+        Assert.assertFalse(future.isCompletedExceptionally());
+        Assert.assertEquals(loaded, entries);
         verify(self, times(1)).loadFullWarnEntries(any());
     }
 
     @Test
-    public void testLoadingFullNotes() {
+    public void testLoadingFullWarnings() {
         AUserInAServer warnedUser = Mockito.mock(AUserInAServer.class);
         AUserInAServer warningUser = Mockito.mock(AUserInAServer.class);
         Member warningMember = Mockito.mock(Member.class);
@@ -82,7 +88,9 @@ public class WarnEntryConverterTest {
         ServerSpecificId secondWarnId = new ServerSpecificId(SERVER_ID, WARN_ID_2);
         when(warning2.getWarnId()).thenReturn(secondWarnId);
         HashMap<ServerSpecificId, FutureMemberPair> map = new HashMap<>();
-        FutureMemberPair memberPair = FutureMemberPair.builder().firstMember(CompletableFuture.completedFuture(warningMember)).secondMember(CompletableFuture.completedFuture(warnedMember)).build();
+        FutureMemberPair memberPair = Mockito.mock(FutureMemberPair.class);
+        when(memberPair.getFirstMember()).thenReturn(CompletableFuture.completedFuture(warningMember));
+        when(memberPair.getSecondMember()).thenReturn(CompletableFuture.completedFuture(warnedMember));
         map.put(firstWarnId, memberPair);
         map.put(secondWarnId, memberPair);
         when(warnManagementService.findById(WARN_ID_1, SERVER_ID)).thenReturn(warning1);

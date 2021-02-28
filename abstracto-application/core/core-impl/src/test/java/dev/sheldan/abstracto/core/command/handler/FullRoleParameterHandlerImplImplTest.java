@@ -51,8 +51,7 @@ public class FullRoleParameterHandlerImplImplTest extends AbstractParameterHandl
 
     @Test
     public void testProperEmoteMention() {
-        String input = "test";
-        UnparsedCommandParameterPiece piece = getPieceWithValue(input);
+        UnparsedCommandParameterPiece piece = getPiece();
         when(roleParameterHandler.handle(piece, iterators, Role.class, message)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
         FullRole parsed = (FullRole) testUnit.handle(piece, iterators, FullRole.class, message);

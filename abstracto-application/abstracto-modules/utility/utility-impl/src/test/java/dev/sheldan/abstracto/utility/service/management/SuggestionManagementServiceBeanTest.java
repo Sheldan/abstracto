@@ -2,11 +2,11 @@ package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.SuggestionState;
 import dev.sheldan.abstracto.utility.models.database.Suggestion;
 import dev.sheldan.abstracto.utility.repository.SuggestionRepository;
@@ -44,15 +44,24 @@ public class SuggestionManagementServiceBeanTest {
     @Mock
     private ServerManagementService serverManagementService;
 
+    @Mock
+    private AServer server;
+
+    @Mock
+    private AUserInAServer aUserInAServer;
+
+    @Mock
+    private AUser aUser;
+
     public static final long CHANNEL_ID = 6L;
     public static final long SERVER_ID = 6L;
     public static final long SUGGESTION_ID = 6L;
 
     @Test
     public void testCreateSuggestionViaUser() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
         String text = "text";
+        when(aUserInAServer.getServerReference()).thenReturn(server);
+        when(aUserInAServer.getUserReference()).thenReturn(aUser);
         Guild guild = Mockito.mock(Guild.class);
         Message message = Mockito.mock(Message.class);
         MessageChannel messageChannel = Mockito.mock(MessageChannel.class);
@@ -61,38 +70,38 @@ public class SuggestionManagementServiceBeanTest {
         when(message.getGuild()).thenReturn(guild);
         when(guild.getId()).thenReturn("8");
         long suggestionId = 1L;
-        Suggestion createdSuggestion = testUnit.createSuggestion(userInAServer, text, message, suggestionId);
+        Suggestion createdSuggestion = testUnit.createSuggestion(aUserInAServer, text, message, suggestionId);
         verify(suggestionRepository, times(1)).save(createdSuggestion);
         Assert.assertEquals(SuggestionState.NEW, createdSuggestion.getState());
-        Assert.assertEquals(userInAServer.getUserInServerId(), createdSuggestion.getSuggester().getUserInServerId());
-        Assert.assertEquals(server.getId(), createdSuggestion.getServer().getId());
+        Assert.assertEquals(aUserInAServer, createdSuggestion.getSuggester());
+        Assert.assertEquals(server, createdSuggestion.getServer());
     }
 
     @Test
     public void testCreateSuggestionViaMember() {
         Member member = Mockito.mock(Member.class);
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
         String text = "text";
         Guild guild = Mockito.mock(Guild.class);
         Message message = Mockito.mock(Message.class);
         MessageChannel messageChannel = Mockito.mock(MessageChannel.class);
         when(messageChannel.getIdLong()).thenReturn(CHANNEL_ID);
+        when(aUserInAServer.getServerReference()).thenReturn(server);
+        when(aUserInAServer.getUserReference()).thenReturn(aUser);
         when(message.getChannel()).thenReturn(messageChannel);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getId()).thenReturn("5");
-        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(aUserInAServer);
         long suggestionId = 1L;
         Suggestion createdSuggestion = testUnit.createSuggestion(member, text, message, suggestionId);
         verify(suggestionRepository, times(1)).save(createdSuggestion);
         Assert.assertEquals(SuggestionState.NEW, createdSuggestion.getState());
-        Assert.assertEquals(userInAServer.getUserInServerId(), createdSuggestion.getSuggester().getUserInServerId());
-        Assert.assertEquals(server.getId(), createdSuggestion.getServer().getId());
+        Assert.assertEquals(aUserInAServer, createdSuggestion.getSuggester());
+        Assert.assertEquals(server, createdSuggestion.getServer());
     }
 
     @Test
     public void testGetSuggestion() {
-        Suggestion foundSuggestion = buildSuggestion();
+        Suggestion foundSuggestion = createSuggestion();
         when(suggestionRepository.findById(new ServerSpecificId(SERVER_ID, SUGGESTION_ID))).thenReturn(Optional.of(foundSuggestion));
         Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(SUGGESTION_ID, SERVER_ID);
         Assert.assertTrue(suggestionOptional.isPresent());
@@ -109,14 +118,14 @@ public class SuggestionManagementServiceBeanTest {
 
     @Test
     public void setSuggestionState() {
-        Suggestion suggestion = buildSuggestion();
+        Suggestion suggestion = createSuggestion();
         testUnit.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
         verify(suggestion, times(1)).setState(SuggestionState.ACCEPTED);
         verify(suggestionRepository, times(1)).save(suggestion);
     }
 
 
-    private Suggestion buildSuggestion() {
+    private Suggestion createSuggestion() {
         Suggestion foundSuggestion = Mockito.mock(Suggestion.class);
         ServerSpecificId suggestionId = Mockito.mock(ServerSpecificId.class);
         when(suggestionId.getId()).thenReturn(SUGGESTION_ID);

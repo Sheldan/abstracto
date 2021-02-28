@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.experience.service.management;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
@@ -35,13 +34,19 @@ public class UserExperienceManagementServiceBeanTest {
     @Mock
     private ExperienceLevelManagementService experienceLevelManagementService;
 
+    private static final Long SERVER_ID = 2L;
+    private static final Long USER_IN_SERVER_ID = 3L;
+    private static final Long USER_ID = 4L;
+    private static final Integer START_LEVEL = 0;
+
     @Test
     public void testFindUserInServer() {
-        AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
-        AUserExperience experience = AUserExperience.builder().user(user).experience(2L).build();
-        when(repository.findById(user.getUserInServerId())).thenReturn(Optional.of(experience));
-        AUserExperience userInServer = testUnit.findUserInServer(user);
-        Assert.assertEquals(experience.getExperience(), userInServer.getExperience());
+        AUserInAServer user = Mockito.mock(AUserInAServer.class);
+        when(user.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        AUserExperience experience = Mockito.mock(AUserExperience.class);
+        when(repository.findById(USER_IN_SERVER_ID)).thenReturn(Optional.of(experience));
+        AUserExperience retrievedExperience = testUnit.findUserInServer(user);
+        Assert.assertEquals(experience, retrievedExperience);
     }
 
     @Test
@@ -49,17 +54,20 @@ public class UserExperienceManagementServiceBeanTest {
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
         AServer server = Mockito.mock(AServer.class);
         when(user.getServerReference()).thenReturn(server);
-        when(server.getId()).thenReturn(2L);
+        when(server.getId()).thenReturn(SERVER_ID);
         AUser aUser = Mockito.mock(AUser.class);
-        when(aUser.getId()).thenReturn(4L);
+        when(user.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(aUser.getId()).thenReturn(USER_ID);
         when(user.getUserReference()).thenReturn(aUser);
-        when(repository.findById(user.getUserInServerId())).thenReturn(Optional.empty());
-        AExperienceLevel startLevel = mockInitialLevel();
+        when(repository.findById(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
+        AExperienceLevel startLevel = Mockito.mock(AExperienceLevel.class);
+        when(startLevel.getLevel()).thenReturn(START_LEVEL);
+        when(experienceLevelManagementService.getLevel(START_LEVEL)).thenReturn(Optional.of(startLevel));
         AUserExperience userInServer = testUnit.findUserInServer(user);
         Assert.assertEquals(0L, userInServer.getExperience().longValue());
         Assert.assertEquals(0L, userInServer.getMessageCount().longValue());
         Assert.assertFalse(userInServer.getExperienceGainDisabled());
-        Assert.assertEquals(startLevel.getLevel(), userInServer.getCurrentLevel().getLevel());
+        Assert.assertEquals(START_LEVEL, userInServer.getCurrentLevel().getLevel());
     }
 
     @Test
@@ -67,76 +75,70 @@ public class UserExperienceManagementServiceBeanTest {
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
         AServer server = Mockito.mock(AServer.class);
         when(user.getServerReference()).thenReturn(server);
-        when(server.getId()).thenReturn(2L);
+        when(server.getId()).thenReturn(SERVER_ID);
         AUser aUser = Mockito.mock(AUser.class);
-        when(aUser.getId()).thenReturn(4L);
+        when(aUser.getId()).thenReturn(USER_ID);
         when(user.getUserReference()).thenReturn(aUser);
-        AExperienceLevel startLevel = mockInitialLevel();
+        AExperienceLevel startLevel = Mockito.mock(AExperienceLevel.class);
+        when(startLevel.getLevel()).thenReturn(START_LEVEL);
+        when(experienceLevelManagementService.getLevel(START_LEVEL)).thenReturn(Optional.of(startLevel));
         AUserExperience userInServer = testUnit.createUserInServer(user);
         Assert.assertEquals(0L, userInServer.getExperience().longValue());
         Assert.assertEquals(0L, userInServer.getMessageCount().longValue());
         Assert.assertFalse(userInServer.getExperienceGainDisabled());
-        Assert.assertEquals(startLevel.getLevel(), userInServer.getCurrentLevel().getLevel());
+        Assert.assertEquals(START_LEVEL, userInServer.getCurrentLevel().getLevel());
     }
 
 
     @Test
     public void testLoadAllUsers() {
-        AServer server = MockUtils.getServer();
-        List<AUserExperience> experiences = getUserExperiences();
+        AServer server = Mockito.mock(AServer.class);
+        AUserExperience experience = Mockito.mock(AUserExperience.class);
+        AUserExperience experience2 = Mockito.mock(AUserExperience.class);
+        List<AUserExperience> experiences = Arrays.asList(experience, experience2);
         when(repository.findByUser_ServerReference(server)).thenReturn(experiences);
         List<AUserExperience> loadedExperiences = testUnit.loadAllUsers(server);
         Assert.assertEquals(experiences.size(), loadedExperiences.size());
-        Assert.assertEquals(experiences.get(0).getExperience(), loadedExperiences.get(0).getExperience());
-        Assert.assertEquals(experiences.get(1).getExperience(), loadedExperiences.get(1).getExperience());
+        Assert.assertEquals(experience, loadedExperiences.get(0));
+        Assert.assertEquals(experience2, loadedExperiences.get(1));
     }
 
     @Test
     public void testLoadPaginated() {
-        AServer server = MockUtils.getServer();
+        AServer server = Mockito.mock(AServer.class);
         int endIndex = 20;
         int startIndex = 11;
-        List<AUserExperience> userExperiences = getUserExperiences();
-        when(repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(server, PageRequest.of(startIndex, endIndex))).thenReturn(userExperiences);
+        AUserExperience experience = Mockito.mock(AUserExperience.class);
+        AUserExperience experience2 = Mockito.mock(AUserExperience.class);
+        List<AUserExperience> experiences = Arrays.asList(experience, experience2);
+        when(repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(server, PageRequest.of(startIndex, endIndex))).thenReturn(experiences);
         List<AUserExperience> leaderBoardUsersPaginated = testUnit.findLeaderBoardUsersPaginated(server, startIndex, endIndex);
-        Assert.assertEquals(userExperiences.size(), leaderBoardUsersPaginated.size());
-        for (int i = 0; i < userExperiences.size(); i++) {
-            Assert.assertEquals(userExperiences.get(i).getExperience(), leaderBoardUsersPaginated.get(i).getExperience());
-        }
+        Assert.assertEquals(experiences.size(), leaderBoardUsersPaginated.size());
+        Assert.assertEquals(experience, leaderBoardUsersPaginated.get(0));
+        Assert.assertEquals(experience2, leaderBoardUsersPaginated.get(1));
     }
 
     @Test
     public void testLoadRankOfUser() {
         long experienceValue = 2L;
-        AServer server = MockUtils.getServer();
-        AUserInAServer user = MockUtils.getUserObject(6L, server);
-        AUserExperience experience = AUserExperience.builder().experience(experienceValue).user(user).id(3L).build();
+        AServer server = Mockito.mock(AServer.class);
+        when(server.getId()).thenReturn(SERVER_ID);
+        AUserExperience experience = Mockito.mock(AUserExperience.class);
+        when(experience.getServer()).thenReturn(server);
+        when(experience.getId()).thenReturn(USER_IN_SERVER_ID);
         LeaderBoardEntryResult leaderBoardEntryTest = Mockito.mock(LeaderBoardEntryResult.class);
         when(leaderBoardEntryTest.getExperience()).thenReturn(experienceValue);
-        when(repository.getRankOfUserInServer(experience.getId(), server.getId())).thenReturn(leaderBoardEntryTest);
+        when(repository.getRankOfUserInServer(USER_IN_SERVER_ID, SERVER_ID)).thenReturn(leaderBoardEntryTest);
         LeaderBoardEntryResult rankOfUserInServer = testUnit.getRankOfUserInServer(experience);
         Assert.assertEquals(experienceValue, rankOfUserInServer.getExperience().longValue());
     }
 
     @Test
     public void testSaveUser() {
-        AUserInAServer user = AUserInAServer.builder().userInServerId(1L).userReference(AUser.builder().id(2L).build()).build();
-        AUserExperience experience = AUserExperience.builder().user(user).experience(2L).build();
+        AUserExperience experience =  Mockito.mock(AUserExperience.class);
         when(repository.save(experience)).thenReturn(experience);
         AUserExperience createdInstance = testUnit.saveUser(experience);
-        Assert.assertEquals(experience.getExperience(), createdInstance.getExperience());
-        Assert.assertEquals(experience.getUser().getUserReference().getId(), createdInstance.getUser().getUserReference().getId());
+        Assert.assertEquals(experience, createdInstance);
     }
 
-    private AExperienceLevel mockInitialLevel() {
-        AExperienceLevel startLevel = AExperienceLevel.builder().level(0).experienceNeeded(0L).build();
-        when(experienceLevelManagementService.getLevel(startLevel.getLevel())).thenReturn(Optional.of(startLevel));
-        return startLevel;
-    }
-
-    private List<AUserExperience> getUserExperiences() {
-        AUserExperience experience = AUserExperience.builder().experience(2L).build();
-        AUserExperience experience2 = AUserExperience.builder().experience(2L).build();
-        return Arrays.asList(experience, experience2);
-    }
 }

@@ -59,7 +59,7 @@ public class TrackedEmoteParameterHandlerTest {
     public void testHandleWithEmote() {
         when(contextMessage.getGuild()).thenReturn(guild);
         Emote emote = Mockito.mock(Emote.class);
-        UnparsedCommandParameterPiece input = UnparsedCommandParameterPiece.builder().value(WRONG_FORMATTED_INPUT).build();
+        UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(emote);
         when(trackedEmoteService.getFakeTrackedEmote(emote, guild)).thenReturn(trackedEmote);
         TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
@@ -70,7 +70,8 @@ public class TrackedEmoteParameterHandlerTest {
     public void testHandleWithId() {
         Long emoteId = 5L;
         when(contextMessage.getGuild()).thenReturn(guild);
-        UnparsedCommandParameterPiece input = UnparsedCommandParameterPiece.builder().value(emoteId.toString()).build();
+        UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
+        when(input.getValue()).thenReturn(emoteId.toString());
         when(trackedEmoteService.getFakeTrackedEmote(emoteId, guild)).thenReturn(trackedEmote);
         when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(null);
         TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
@@ -80,7 +81,8 @@ public class TrackedEmoteParameterHandlerTest {
 
     @Test(expected = NumberFormatException.class)
     public void testWithIllegalInput() {
-        UnparsedCommandParameterPiece input = UnparsedCommandParameterPiece.builder().value(WRONG_FORMATTED_INPUT).build();
+        UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
+        when(input.getValue()).thenReturn(WRONG_FORMATTED_INPUT);
         when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(null);
         testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
     }

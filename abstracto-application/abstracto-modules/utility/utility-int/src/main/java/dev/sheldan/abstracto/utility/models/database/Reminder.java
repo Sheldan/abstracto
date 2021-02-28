@@ -21,25 +21,20 @@ public class Reminder implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @Column(name = "id")
     private Long id;
 
-    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer remindedUser;
 
-    @Getter
     @Column(name = "message_id")
     private Long messageId;
 
-    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
     private AChannel channel;
 
-    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
@@ -50,20 +45,15 @@ public class Reminder implements Serializable {
     @Column(name = "updated")
     private Instant updated;
 
-    @Getter
     @Column(name = "target_date")
     private Instant targetDate;
 
-    @Getter
     @Column(name = "text")
     private String text;
 
-    @Getter
     @Column(name = "reminded")
     private boolean reminded;
 
-    @Getter
-    @Setter
     @Column(name = "job_trigger_key")
     private String jobTriggerKey;
 

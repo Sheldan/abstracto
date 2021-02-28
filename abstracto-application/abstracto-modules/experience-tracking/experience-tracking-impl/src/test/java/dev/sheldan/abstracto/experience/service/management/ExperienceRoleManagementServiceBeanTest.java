@@ -2,17 +2,13 @@ package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.repository.ExperienceRoleRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -35,29 +31,39 @@ public class ExperienceRoleManagementServiceBeanTest {
     @Captor
     private ArgumentCaptor<AExperienceRole> roleArgumentCaptor;
 
+    @Mock
+    private AExperienceRole experienceRole;
+
+    @Mock
+    private ARole role;
+
+    @Mock
+    private AServer server;
+
+    @Mock
+    private AExperienceLevel level;
+
+    private static final Long SERVER_ID = 3L;
+    private static final Long ROLE_ID = 4L;
+
     @Test
     public void testRemovingAllRoleAssignmentsForLevel() {
-        AServer server = MockUtils.getServer();
-        AExperienceLevel level = getLevel(10, 100L);
-        List<AExperienceRole> experienceRoles = getExperienceRoles();
+        when(level.getLevel()).thenReturn(10);
+        AExperienceRole secondRole = Mockito.mock(AExperienceRole.class);
+        List<AExperienceRole> experienceRoles = Arrays.asList(experienceRole, secondRole);
         when(experienceRoleRepository.findByLevelAndRoleServer(level, server)).thenReturn(experienceRoles);
         testUnit.removeAllRoleAssignmentsForLevelInServer(level, server);
         verify(experienceRoleRepository, times(1)).findByLevelAndRoleServer(level, server);
         verify(experienceRoleRepository, times(experienceRoles.size())).delete(roleArgumentCaptor.capture());
         List<AExperienceRole> allValues = roleArgumentCaptor.getAllValues();
-        for (int i = 0; i < allValues.size(); i++) {
-            AExperienceRole role = allValues.get(i);
-            AExperienceRole innerRole = experienceRoles.get(i);
-            Assert.assertEquals(innerRole.getLevel().getLevel(), role.getLevel().getLevel());
-            Assert.assertEquals(innerRole.getRole().getId(), role.getRole().getId());
-        }
+        Assert.assertEquals(experienceRole, allValues.get(0));
+        Assert.assertEquals(secondRole, allValues.get(1));
         Assert.assertEquals(2, allValues.size());
     }
 
     @Test
     public void removeRoleAssignmentsForLevelWithoutAny() {
-        AServer server = MockUtils.getServer();
-        AExperienceLevel level = getLevel(10, 100L);
+        when(level.getLevel()).thenReturn(10);
         List<AExperienceRole> experienceRoles = new ArrayList<>();
         when(experienceRoleRepository.findByLevelAndRoleServer(level, server)).thenReturn(experienceRoles);
         testUnit.removeAllRoleAssignmentsForLevelInServer(level, server);
@@ -69,79 +75,61 @@ public class ExperienceRoleManagementServiceBeanTest {
 
     @Test
     public void testUnsetRole() {
-        AExperienceRole role = getExperienceRoleForLevel(37);
-        testUnit.unsetRole(role);
-        verify(experienceRoleRepository, times(1)).delete(role);
+        when(experienceRole.getServer()).thenReturn(server);
+        testUnit.unsetRole(experienceRole);
+        verify(experienceRoleRepository, times(1)).delete(experienceRole);
     }
 
     @Test
     public void testFindExperienceRoleForRoleInServer() {
-        AExperienceRole expRole = getExperienceRoleForLevel(37);
-        when((experienceRoleRepository.findByRole(expRole.getRole()))).thenReturn(Optional.of(expRole));
-        AExperienceRole roleInServer = testUnit.getRoleInServer(expRole.getRole());
-        Assert.assertEquals(expRole.getRole().getId(), roleInServer.getRole().getId());
-        verify(experienceRoleRepository, times(1)).findByRole(expRole.getRole());
+        when((experienceRoleRepository.findByRole(role))).thenReturn(Optional.of(experienceRole));
+        AExperienceRole roleInServer = testUnit.getRoleInServer(role);
+        Assert.assertEquals(experienceRole, roleInServer);
     }
 
     @Test
     public void testFindExperienceRolesForServer() {
-        AServer server = MockUtils.getServer();
-        List<AExperienceRole> experienceRoles = getExperienceRoles();
+        AExperienceRole secondRole = Mockito.mock(AExperienceRole.class);
+        List<AExperienceRole> experienceRoles = Arrays.asList(experienceRole, secondRole);
         when(experienceRoleRepository.findByRoleServer(server)).thenReturn(experienceRoles);
         List<AExperienceRole> experienceRolesForServer = testUnit.getExperienceRolesForServer(server);
         verify(experienceRoleRepository, times(1)).findByRoleServer(server);
-
-        for (int i = 0; i < experienceRolesForServer.size(); i++) {
-            AExperienceRole role = experienceRolesForServer.get(i);
-            AExperienceRole innerRole = experienceRoles.get(i);
-            Assert.assertEquals(innerRole.getLevel().getLevel(), role.getLevel().getLevel());
-            Assert.assertEquals(innerRole.getRole().getId(), role.getRole().getId());
-        }
+        Assert.assertEquals(experienceRole, experienceRolesForServer.get(0));
+        Assert.assertEquals(secondRole, experienceRolesForServer.get(1));
         Assert.assertEquals(2, experienceRolesForServer.size());
     }
 
     @Test
     public void setLevelToRoleWhichHasAnExistingMapping() {
-        int level = 5;
-        AExperienceRole experienceRole = getExperienceRoleForLevel(level);
-        when(experienceRoleRepository.findByRole(experienceRole.getRole())).thenReturn(Optional.of(experienceRole));
-        AExperienceLevel newLevel = AExperienceLevel.builder().level(8).build();
-        AExperienceRole updatedExperienceRole = testUnit.setLevelToRole(newLevel, experienceRole.getRole());
-        verify(experienceRoleRepository, times(1)).findByRole(experienceRole.getRole());
-        Assert.assertEquals(newLevel.getLevel(), updatedExperienceRole.getLevel().getLevel());
+        Integer levelNumber = 4;
+        setupExperienceRole(levelNumber);
+        when(experienceRoleRepository.findByRole(role)).thenReturn(Optional.of(experienceRole));
+        AExperienceLevel newLevel = Mockito.mock(AExperienceLevel.class);
+        when(newLevel.getLevel()).thenReturn(levelNumber);
+        AExperienceRole updatedExperienceRole = testUnit.setLevelToRole(newLevel, role);
+        verify(experienceRoleRepository, times(1)).findByRole(role);
+        Assert.assertEquals(levelNumber, updatedExperienceRole.getLevel().getLevel());
     }
 
     @Test
     public void setLevelToRoleWithoutAMappingExistingPreviously() {
-        int level = 5;
-        AExperienceRole experienceRole = getExperienceRoleForLevel(level);
+        Integer levelNumber = 4;
+        setupExperienceRole(levelNumber);
         when(experienceRoleRepository.findByRole(experienceRole.getRole())).thenReturn(Optional.empty());
         when(experienceRoleRepository.save(any(AExperienceRole.class))).thenReturn(experienceRole);
-        AExperienceLevel newLevel = AExperienceLevel.builder().level(8).build();
-        AExperienceRole updatedExperienceRole = testUnit.setLevelToRole(newLevel, experienceRole.getRole());
-        verify(experienceRoleRepository, times(1)).findByRole(experienceRole.getRole());
-        Assert.assertEquals(experienceRole.getLevel().getLevel(), updatedExperienceRole.getLevel().getLevel());
+        AExperienceLevel newLevel = Mockito.mock(AExperienceLevel.class);
+        AExperienceRole updatedExperienceRole = testUnit.setLevelToRole(newLevel, role);
+        verify(experienceRoleRepository, times(1)).findByRole(role);
+        Assert.assertEquals(levelNumber, updatedExperienceRole.getLevel().getLevel());
     }
 
-    private List<AExperienceRole> getExperienceRoles() {
-        AExperienceRole level5ExperienceRole = getExperienceRoleForLevel(7);
-        AExperienceRole level10ExperienceRole = getExperienceRoleForLevel(25);
-        return Arrays.asList(level5ExperienceRole, level10ExperienceRole);
-    }
-
-    private AExperienceRole getExperienceRoleForLevel(int levelToBuild) {
-        AExperienceLevel firstLevel = AExperienceLevel.builder().level(levelToBuild).build();
-        AServer server = AServer.builder().id(4L).build();
-        ARole aRole = ARole.builder().id((long) levelToBuild).server(server).build();
-        return AExperienceRole.builder().role(aRole).roleServer(server).level(firstLevel).build();
-    }
-
-    private AExperienceLevel getLevel(Integer level, Long neededExperience) {
-        return AExperienceLevel
-                .builder()
-                .level(level)
-                .experienceNeeded(neededExperience)
-                .build();
+    private void setupExperienceRole(Integer levelNumber) {
+        when(role.getId()).thenReturn(ROLE_ID);
+        when(server.getId()).thenReturn(SERVER_ID);
+        when(role.getServer()).thenReturn(server);
+        when(experienceRole.getRole()).thenReturn(role);
+        when(level.getLevel()).thenReturn(levelNumber);
+        when(experienceRole.getLevel()).thenReturn(level);
     }
 
 }

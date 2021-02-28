@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.config.features.StarboardFeature;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +32,7 @@ public class StarboardFeatureValidatorServiceTest {
 
     @Test
     public void testStarboardFeatureConfig() {
-        AServer server = MockUtils.getServer();
+        AServer server = Mockito.mock(AServer.class);
         int levelCount = 4;
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
         when(config.getLongValue()).thenReturn((long) levelCount);

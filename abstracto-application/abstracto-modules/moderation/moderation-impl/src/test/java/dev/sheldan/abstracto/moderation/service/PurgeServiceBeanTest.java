@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-import static dev.sheldan.abstracto.core.test.MockUtils.mockQueueDoubleVoidConsumer;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -250,6 +250,17 @@ public class PurgeServiceBeanTest {
         setupFirstMessageHistoryMocks();
         mockQueueDoubleVoidConsumer(deleteMessagesAction);
         setupStatusMessageMocks();
+    }
+
+    public void mockQueueDoubleVoidConsumer(RestAction action) {
+        doAnswer(invocationOnMock -> {
+            Object consumerObj = invocationOnMock.getArguments()[0];
+            if(consumerObj instanceof Consumer) {
+                Consumer<Void> consumer = (Consumer) consumerObj;
+                consumer.accept(null);
+            }
+            return null;
+        }).when(action).queue(any(Consumer.class), any(Consumer.class));
     }
 
     private void setupFirstMessageHistoryMocks() {

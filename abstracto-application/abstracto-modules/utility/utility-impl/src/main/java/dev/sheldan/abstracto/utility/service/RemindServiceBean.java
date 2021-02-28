@@ -149,7 +149,7 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     public void unRemind(Long reminderId, AUserInAServer aUserInAServer) {
-        log.info("Trying to end reminder {} for user {} in server {}.", reminderId, aUserInAServer.getUserReference().getId(),aUserInAServer.getServerReference().getId());
+        log.info("Trying to end reminder {} for user {} in server {}.", reminderId, aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         Reminder reminder = reminderManagementService.getReminderByAndByUserNotReminded(aUserInAServer, reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
         reminder.setReminded(true);
         if(reminder.getJobTriggerKey() != null) {

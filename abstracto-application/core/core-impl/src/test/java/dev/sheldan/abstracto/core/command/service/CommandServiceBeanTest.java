@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -26,22 +27,26 @@ public class CommandServiceBeanTest {
 
     @Test
     public void testUsageWithoutParameters() {
-        executeTest("test", commandWithConfig(getNoParameters()));
+        CommandConfiguration parameters = getNoParameters();
+        executeTest("test", commandWithConfig(parameters));
     }
 
     @Test
     public void testUsageWithOptionalParameter() {
-        executeTest("test [param1]", commandWithConfig(getOptionalParameterConfig()));
+        CommandConfiguration parameters = getOptionalParameterConfig();
+        executeTest("test [param1]", commandWithConfig(parameters));
     }
 
     @Test
     public void testUsageWithMandatoryParameter() {
-        executeTest("test <param1>", commandWithConfig(getMandatoryParameterConfig()));
+        CommandConfiguration getparameters = getMandatoryParameterConfig();
+        executeTest("test <param1>", commandWithConfig(getparameters));
     }
 
     @Test
     public void testUsageWithMixedParameters() {
-        executeTest("test <param1> [param2]", commandWithConfig(getMixedParameterConfig()));
+        CommandConfiguration parameters = getMixedParameterConfig();
+        executeTest("test <param1> [param2]", commandWithConfig(parameters));
     }
 
     private void executeTest(String expectedUsage, Command commandToExecute) {
@@ -56,40 +61,46 @@ public class CommandServiceBeanTest {
     }
 
     private CommandConfiguration getNoParameters() {
-        return CommandConfiguration
-                .builder()
-                .name(COMMAND_NAME)
-                .build();
+        CommandConfiguration configuration = Mockito.mock(CommandConfiguration.class);
+        when(configuration.getName()).thenReturn(COMMAND_NAME);
+        return configuration;
     }
 
     private CommandConfiguration getOptionalParameterConfig() {
-        return CommandConfiguration
-                .builder()
-                .name(COMMAND_NAME)
-                .parameters(Arrays.asList(getOptionalParameter(true)))
-                .build();
+        CommandConfiguration configuration = Mockito.mock(CommandConfiguration.class);
+        when(configuration.getName()).thenReturn(COMMAND_NAME);
+        List<Parameter> parameters = Arrays.asList(getParameter(true));
+        when(configuration.getParameters()).thenReturn(parameters);
+        return configuration;
     }
 
     private CommandConfiguration getMandatoryParameterConfig() {
-        return CommandConfiguration
-                .builder()
-                .name(COMMAND_NAME)
-                .parameters(Arrays.asList(getOptionalParameter(false)))
-                .build();
+        CommandConfiguration configuration = Mockito.mock(CommandConfiguration.class);
+        when(configuration.getName()).thenReturn(COMMAND_NAME);
+        List<Parameter> parameters = Arrays.asList(getParameter(false));
+        when(configuration.getParameters()).thenReturn(parameters);
+        return configuration;
     }
 
     private CommandConfiguration getMixedParameterConfig() {
-        Parameter param1 = Parameter.builder().name(PARAMETER_1_NAME).type(Object.class).optional(false).build();
-        Parameter param2 = Parameter.builder().name(PARAMETER_2_NAME).type(Object.class).optional(true).build();
-        return CommandConfiguration
-                .builder()
-                .name(COMMAND_NAME)
-                .parameters(Arrays.asList(param1, param2))
-                .build();
+        Parameter param1 = getParameter(false);
+        Parameter param2 = Mockito.mock(Parameter.class);
+        when(param2.getName()).thenReturn(PARAMETER_2_NAME);
+        when(param2.getType()).thenReturn(Object.class);
+        when(param2.isOptional()).thenReturn(true);
+        CommandConfiguration configuration = Mockito.mock(CommandConfiguration.class);
+        when(configuration.getName()).thenReturn(COMMAND_NAME);
+        List<Parameter> parameters = Arrays.asList(param1, param2);
+        when(configuration.getParameters()).thenReturn(parameters);
+        return configuration;
     }
 
-    private Parameter getOptionalParameter(boolean b) {
-        return Parameter.builder().name(PARAMETER_1_NAME).type(Object.class).optional(b).build();
+    private Parameter getParameter(boolean optional) {
+        Parameter parameter = Mockito.mock(Parameter.class);
+        when(parameter.getType()).thenReturn(Object.class);
+        when(parameter.getName()).thenReturn(PARAMETER_1_NAME);
+        when(parameter.isOptional()).thenReturn(optional);
+        return parameter;
     }
 
 }

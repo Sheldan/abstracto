@@ -254,7 +254,9 @@ public class StarboardListenerTest {
         if(!remainingUsers.isEmpty()) {
             when(userInServerManagementService.loadUserOptional(SERVER_ID, USER_ACTING_ID)).thenReturn(Optional.of(userInServerActing));
         }
-        when(configManagementService.loadConfig(SERVER_ID, StarboardListener.FIRST_LEVEL_THRESHOLD_KEY)).thenReturn(AConfig.builder().longValue(requiredStars).build());
+        AConfig starRequirementConfig = Mockito.mock(AConfig.class);
+        when(starRequirementConfig.getLongValue()).thenReturn(requiredStars);
+        when(configManagementService.loadConfig(SERVER_ID, StarboardListener.FIRST_LEVEL_THRESHOLD_KEY)).thenReturn(starRequirementConfig);
         testUnit.executeReactionRemoved(cachedMessage, cachedReaction, serverUserActing);
         verify(emoteService, times(1)).getEmoteOrDefaultEmote(STAR_EMOTE, SERVER_ID);
         verify(emoteService, times(1)).getReactionFromMessageByEmote(cachedMessage, starEmote);

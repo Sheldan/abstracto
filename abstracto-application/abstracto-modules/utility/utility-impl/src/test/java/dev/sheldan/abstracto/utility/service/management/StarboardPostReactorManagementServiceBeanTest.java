@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.utility.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.utility.models.database.StarboardPost;
 import dev.sheldan.abstracto.utility.models.database.StarboardPostReaction;
 import dev.sheldan.abstracto.utility.models.template.commands.starboard.StarStatsUser;
@@ -37,40 +37,50 @@ public class StarboardPostReactorManagementServiceBeanTest {
     @Captor
     private ArgumentCaptor<StarboardPostReaction> reactorCaptor;
 
+    @Mock
+    private AUserInAServer aUserInAServer;
+
+    @Mock
+    private AServer server;
+
+    @Mock
+    private AUser aUser;
+
+    private static final Long SERVER_ID = 4L;
+
     @Test
     public void testAddReactor() {
-        StarboardPost post = StarboardPost.builder().reactions(new ArrayList<>()).build();
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
-        testUnit.addReactor(post, userInAServer);
+        StarboardPost post = Mockito.mock(StarboardPost.class);
+        when(aUserInAServer.getUserReference()).thenReturn(aUser);
+        when(aUserInAServer.getServerReference()).thenReturn(server);
+        testUnit.addReactor(post, aUserInAServer);
         verify(repository, times(1)).save(reactorCaptor.capture());
         StarboardPostReaction reaction = reactorCaptor.getValue();
         Assert.assertEquals(post, reaction.getStarboardPost());
-        Assert.assertEquals(userInAServer, reaction.getReactor());
+        Assert.assertEquals(aUserInAServer, reaction.getReactor());
     }
 
     @Test
     public void testRemoveReactor() {
-        StarboardPost post = StarboardPost.builder().build();
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(5L, server);
-        testUnit.removeReactor(post, userInAServer);
-        verify(repository, times(1)).deleteByReactorAndStarboardPost(userInAServer, post);
+        StarboardPost post = Mockito.mock(StarboardPost.class);
+        when(aUserInAServer.getUserReference()).thenReturn(aUser);
+        when(aUserInAServer.getServerReference()).thenReturn(server);
+        testUnit.removeReactor(post, aUserInAServer);
+        verify(repository, times(1)).deleteByReactorAndStarboardPost(aUserInAServer, post);
     }
 
     @Test
     public void testRemoveReactors() {
-        StarboardPost post = StarboardPost.builder().reactions(new ArrayList<>()).build();
+        StarboardPost post = Mockito.mock(StarboardPost.class);
         testUnit.removeReactors(post);
         verify(repository, times(1)).deleteByStarboardPost(post);
     }
 
     @Test
     public void testRetrieveStarCount() {
-        Long serverId = 5L;
         Integer stars = 5;
-        when(repository.getReactionCountByServer(serverId)).thenReturn(stars);
-        Integer starCount = testUnit.getStarCount(serverId);
+        when(repository.getReactionCountByServer(SERVER_ID)).thenReturn(stars);
+        Integer starCount = testUnit.getStarCount(SERVER_ID);
         Assert.assertEquals(stars, starCount);
     }
 
@@ -105,11 +115,10 @@ public class StarboardPostReactorManagementServiceBeanTest {
     }
 
     private void testTopStarReceiver(int expectedAmount, Integer amountToRetrieve) {
-        Long serverId = 5L;
         StarStatsUser user1 = Mockito.mock(StarStatsUser.class);
         StarStatsUser user2 = Mockito.mock(StarStatsUser.class);
-        setupStarStatsReceiverResult(amountToRetrieve, serverId, user1, user2);
-        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.retrieveTopStarReceiver(serverId, amountToRetrieve);
+        setupStarStatsReceiverResult(amountToRetrieve, SERVER_ID, user1, user2);
+        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.retrieveTopStarReceiver(SERVER_ID, amountToRetrieve);
         Assert.assertEquals(expectedAmount, starStatsUsers.size());
         Assert.assertEquals(user1, starStatsUsers.get(0).join());
         if(amountToRetrieve > 1) {
@@ -118,11 +127,10 @@ public class StarboardPostReactorManagementServiceBeanTest {
     }
 
     private void testTopStarGiver(int expectedAmount, Integer amountToRetrieve) {
-        Long serverId = 5L;
         StarStatsUser user1 = Mockito.mock(StarStatsUser.class);
         StarStatsUser user2 = Mockito.mock(StarStatsUser.class);
-        setupStarStatsGiverResult(amountToRetrieve, serverId, user1, user2);
-        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.retrieveTopStarGiver(serverId, amountToRetrieve);
+        setupStarStatsGiverResult(amountToRetrieve, SERVER_ID, user1, user2);
+        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.retrieveTopStarGiver(SERVER_ID, amountToRetrieve);
         Assert.assertEquals(expectedAmount, starStatsUsers.size());
         Assert.assertEquals(user1, starStatsUsers.get(0).join());
         if(amountToRetrieve > 1) {

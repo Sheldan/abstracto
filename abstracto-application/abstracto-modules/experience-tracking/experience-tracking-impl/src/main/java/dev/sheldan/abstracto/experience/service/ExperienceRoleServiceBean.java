@@ -123,7 +123,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         if(roles == null || roles.isEmpty()) {
             return null;
         }
-        log.trace("Calculating role for level {} in server {}. Using {} roles in our config.", currentLevel, roles.get(0).getRoleServer().getId(), roles.size());
+        log.trace("Calculating role for level {} in server {}. Using {} roles in our config.", currentLevel, roles.get(0).getServer().getId(), roles.size());
         AExperienceRole lastRole = null;
         for (AExperienceRole experienceRole : roles) {
             if(currentLevel >= experienceRole.getLevel().getLevel()) {

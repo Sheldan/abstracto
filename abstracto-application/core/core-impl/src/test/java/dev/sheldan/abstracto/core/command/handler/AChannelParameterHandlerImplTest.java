@@ -50,7 +50,7 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
 
     @Test
     public void testProperChannelMention() {
-        UnparsedCommandParameterPiece piece = getPieceWithValue("input");
+        UnparsedCommandParameterPiece piece = getPiece();
         when(textChannelParameterHandler.handle(piece, iterators, TextChannel.class, message)).thenReturn(channel);
         when(channelService.getFakeChannelFromTextChannel(channel)).thenReturn(aChannel);
         AChannel parsed = (AChannel) testUnit.handle(piece, iterators, TextChannel.class, message);

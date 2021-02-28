@@ -75,11 +75,11 @@ public class LeaderBoardCommandTest {
         when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(userInAServer);
         when(userExperienceService.findLeaderBoardData(server, expectedPage)).thenReturn(leaderBoard);
         when(converter.fromLeaderBoard(leaderBoard)).thenReturn(new ArrayList<>());
-        LeaderBoardEntry executingUserRank = LeaderBoardEntry.builder().build();
+        LeaderBoardEntry executingUserRank = Mockito.mock(LeaderBoardEntry.class);
         when(userExperienceService.getRankOfUserInServer(userInAServer)).thenReturn(executingUserRank);
-        LeaderBoardEntryModel leaderBoardEntryModel = LeaderBoardEntryModel.builder().build();
+        LeaderBoardEntryModel leaderBoardEntryModel = Mockito.mock(LeaderBoardEntryModel.class);
         when(converter.fromLeaderBoardEntry(executingUserRank)).thenReturn(CompletableFuture.completedFuture(leaderBoardEntryModel));
-        MessageToSend messageToSend = MessageToSend.builder().build();
+        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(LeaderBoardCommand.LEADER_BOARD_POST_EMBED_TEMPLATE), any(LeaderBoardModel.class), eq(SERVER_ID))).thenReturn(messageToSend);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendMessageToSendToChannel(messageToSend, context.getChannel());

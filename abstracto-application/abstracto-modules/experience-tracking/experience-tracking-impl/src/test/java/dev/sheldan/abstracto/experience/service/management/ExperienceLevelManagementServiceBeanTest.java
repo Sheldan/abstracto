@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -29,7 +30,9 @@ public class ExperienceLevelManagementServiceBeanTest {
     public void testCreateExperienceLevel() {
         Integer level = 1;
         Long neededExperience = 100L;
-        AExperienceLevel createdLevel = getLevel(level, neededExperience);
+        AExperienceLevel createdLevel = Mockito.mock(AExperienceLevel.class);
+        when(createdLevel.getLevel()).thenReturn(level);
+        when(createdLevel.getExperienceNeeded()).thenReturn(neededExperience);
         when(experienceLevelRepository.save(any(AExperienceLevel.class))).thenReturn(createdLevel);
         AExperienceLevel experienceLevel = testUnit.createExperienceLevel(level, neededExperience);
         Assert.assertEquals(experienceLevel.getLevel(), createdLevel.getLevel());
@@ -47,8 +50,10 @@ public class ExperienceLevelManagementServiceBeanTest {
     public void testFindLevel() {
         int levelValue = 1;
         long experienceAmount = 100L;
-        Optional<AExperienceLevel> level = Optional.of(getLevel(levelValue, experienceAmount));
-        when(experienceLevelRepository.findById(levelValue)).thenReturn(level);
+        AExperienceLevel level = Mockito.mock(AExperienceLevel.class);
+        when(level.getLevel()).thenReturn(levelValue);
+        when(level.getExperienceNeeded()).thenReturn(experienceAmount);
+        when(experienceLevelRepository.findById(levelValue)).thenReturn(Optional.of(level));
         Optional<AExperienceLevel> foundLevelOptional = testUnit.getLevel(levelValue);
         Assert.assertTrue(foundLevelOptional.isPresent());
         if(foundLevelOptional.isPresent()) {
@@ -71,8 +76,12 @@ public class ExperienceLevelManagementServiceBeanTest {
 
     @Test
     public void findAllLevelConfigurations() {
-        AExperienceLevel availableLevel = getLevel(1, 100L);
-        AExperienceLevel availableLevel2 = getLevel(2, 200L);
+        AExperienceLevel availableLevel = Mockito.mock(AExperienceLevel.class);
+        when(availableLevel.getLevel()).thenReturn(1);
+        when(availableLevel.getExperienceNeeded()).thenReturn(100L);
+        AExperienceLevel availableLevel2 = Mockito.mock(AExperienceLevel.class);
+        when(availableLevel2.getLevel()).thenReturn(2);
+        when(availableLevel2.getExperienceNeeded()).thenReturn(200L);
         List<AExperienceLevel> levelConfig = Arrays.asList(availableLevel, availableLevel2);
         when(experienceLevelRepository.findAll()).thenReturn(levelConfig);
         List<AExperienceLevel> foundLevelConfig = testUnit.getLevelConfig();
@@ -84,11 +93,4 @@ public class ExperienceLevelManagementServiceBeanTest {
         Assert.assertEquals(2, secondLevelConfig.getLevel().intValue());
     }
 
-    private AExperienceLevel getLevel(Integer level, Long neededExperience) {
-        return AExperienceLevel
-                .builder()
-                .level(level)
-                .experienceNeeded(neededExperience)
-                .build();
-    }
 }

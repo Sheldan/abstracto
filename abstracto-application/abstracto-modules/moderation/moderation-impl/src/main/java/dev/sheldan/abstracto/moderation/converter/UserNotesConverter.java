@@ -56,7 +56,7 @@ public class UserNotesConverter {
         List<NoteEntryModel> entryModels = new ArrayList<>();
         futureHashMap.keySet().forEach(serverSpecificId -> {
             Member member = futureHashMap.get(serverSpecificId).join();
-            UserNote note = userNoteManagementService.loadNote(serverSpecificId.getId(), serverSpecificId.getServerId());
+            UserNote note = userNoteManagementService.loadNote(serverSpecificId.getServerId(), serverSpecificId.getId());
             FullUserInServer fullUser = FullUserInServer
                     .builder()
                     .member(member)

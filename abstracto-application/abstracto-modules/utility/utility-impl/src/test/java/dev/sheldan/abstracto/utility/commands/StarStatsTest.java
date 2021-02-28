@@ -36,7 +36,7 @@ public class StarStatsTest {
     @Test
     public void executeCommand() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
-        GuildStarStatsModel guildStarStatsModel = GuildStarStatsModel.builder().build();
+        GuildStarStatsModel guildStarStatsModel = Mockito.mock(GuildStarStatsModel.class);
         when(starboardService.retrieveStarStats(noParameters.getGuild().getIdLong())).thenReturn(CompletableFuture.completedFuture(guildStarStatsModel));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(StarStats.STARSTATS_RESPONSE_TEMPLATE, guildStarStatsModel, noParameters.getChannel());

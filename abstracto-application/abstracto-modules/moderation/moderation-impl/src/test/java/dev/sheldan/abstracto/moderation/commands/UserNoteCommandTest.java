@@ -2,10 +2,8 @@ package dev.sheldan.abstracto.moderation.commands;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
@@ -36,8 +34,7 @@ public class UserNoteCommandTest {
     @Test
     public void testExecuteUserNoteCommand() {
         Member member = Mockito.mock(Member.class);
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(4L, server);
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         String note = "note";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member, note));
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);

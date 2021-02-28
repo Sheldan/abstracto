@@ -51,7 +51,7 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
 
     @Test
     public void testProperRoleMention() {
-        UnparsedCommandParameterPiece piece = getPieceWithValue("test");
+        UnparsedCommandParameterPiece piece = getPiece();
         when(roleParameterHandler.handle(piece, iterators, Role.class, message)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
         ARole parsed = (ARole) testUnit.handle(piece, iterators, AEmote.class, message);

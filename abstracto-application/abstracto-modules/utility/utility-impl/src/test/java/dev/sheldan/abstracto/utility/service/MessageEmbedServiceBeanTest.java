@@ -160,8 +160,12 @@ public class MessageEmbedServiceBeanTest {
         List<MessageEmbedLink> linksToEmbed = new ArrayList<>();
         Long channelId = 6L;
         Long firstMessageId = 6L;
-        linksToEmbed.add(MessageEmbedLink.builder().serverId(SERVER_ID).channelId(channelId).messageId(firstMessageId).build());
-        CachedMessage firstCachedMessage = CachedMessage.builder().serverId(SERVER_ID).channelId(channelId).messageId(firstMessageId).build();
+        MessageEmbedLink messageEmbedLink = Mockito.mock(MessageEmbedLink.class);
+        when(messageEmbedLink.getServerId()).thenReturn(SERVER_ID);
+        when(messageEmbedLink.getChannelId()).thenReturn(channelId);
+        when(messageEmbedLink.getMessageId()).thenReturn(firstMessageId);
+        linksToEmbed.add(messageEmbedLink);
+        CachedMessage firstCachedMessage = Mockito.mock(CachedMessage.class);
         when(messageCache.getMessageFromCache(SERVER_ID,channelId, firstMessageId)).thenReturn(CompletableFuture.completedFuture(firstCachedMessage));
         Long embeddingUserId = 5L;
         testUnit.embedLinks(linksToEmbed, textChannel, embeddingUserId, embeddingMessage);

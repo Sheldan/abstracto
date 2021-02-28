@@ -36,7 +36,9 @@ public class ExperienceLevelServiceBeanTest {
 
     @Test
     public void testExperienceToNextLevelCalculation() {
-        when(experienceLevelManagementService.getLevel(51)).thenReturn(Optional.of(AExperienceLevel.builder().level(51).experienceNeeded(15L).build()));
+        AExperienceLevel level = mock(AExperienceLevel.class);
+        when(level.getExperienceNeeded()).thenReturn(15L);
+        when(experienceLevelManagementService.getLevel(51)).thenReturn(Optional.of(level));
         Long experience = testingUnit.calculateExperienceToNextLevel(50, 10L);
         Assert.assertEquals(5L, experience.longValue());
     }

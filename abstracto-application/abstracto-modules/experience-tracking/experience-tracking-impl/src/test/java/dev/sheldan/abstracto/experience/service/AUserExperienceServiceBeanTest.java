@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.experience.config.features.ExperienceFeatureConfig;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
@@ -315,6 +314,7 @@ public class AUserExperienceServiceBeanTest {
         future.join();
         Assert.assertFalse(future.isCompletedExceptionally());
         verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any(ARole.class));
+        verify(roleService, times(0)).removeRoleFromUserFuture(any(AUserInAServer.class), any());
         verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
@@ -332,8 +332,8 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRoleService.calculateRole(eq(experienceRoles), any())).thenReturn(null);
 
         testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
-        verify(roleService, times(0)).removeRoleFromUserFuture(eq(aUserInAServer), any());
-        verify(roleService, times(0)).addRoleToUserFuture(eq(aUserInAServer), any());
+        verify(roleService, times(0)).removeRoleFromUserFuture(any(AUserInAServer.class), any());
+        verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any());
         verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
@@ -388,7 +388,9 @@ public class AUserExperienceServiceBeanTest {
         setupDefaultConfig();
         setupLevelsAndRolesAndNoDisallowed();
         setExperienceRoleLevels();
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        CompletableFuture<Void> future = testUnit.handleExperienceGain(Arrays.asList(serverExperience));
+        future.join();
+        Assert.assertFalse(future.isCompletedExceptionally());
         verify(roleService, times(0)).removeRoleFromUser(aUserInAServer, aRole1);
         verify(roleService, times(0)).addRoleToUser(eq(aUserInAServer), any(ARole.class));
         verify(self, times(1)).persistExperienceChanges(anyList());

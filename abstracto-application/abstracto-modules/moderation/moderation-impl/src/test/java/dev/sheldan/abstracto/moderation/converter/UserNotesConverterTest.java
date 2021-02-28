@@ -1,11 +1,9 @@
 package dev.sheldan.abstracto.moderation.converter;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.models.template.commands.NoteEntryModel;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
@@ -44,6 +42,9 @@ public class UserNotesConverterTest {
     @Mock
     private UserNoteManagementService userNoteManagementService;
 
+    private static final Long SERVER_ID = 3L;
+    private static final Long USER_NOTE_ID = 4L;
+
     @Test
     public void testWithEmptyList() {
         CompletableFuture<List<NoteEntryModel>> entryModels = testUnit.fromNotes(Collections.emptyList());
@@ -52,12 +53,13 @@ public class UserNotesConverterTest {
 
     @Test
     public void testWithSomeUserNotes() {
-        AServer server = MockUtils.getServer();
-        AUserInAServer userInAServer = MockUtils.getUserObject(4L, server);
+        AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         Member member = Mockito.mock(Member.class);
         when(memberService.getMemberInServerAsync(userInAServer)).thenReturn(CompletableFuture.completedFuture(member));
-        UserNote firstNote = UserNote.builder().userNoteId(new ServerSpecificId(3L, 4L)).user(userInAServer).build();
-        UserNote secondNote = UserNote.builder().userNoteId(new ServerSpecificId(3L, 5L)).user(userInAServer).build();
+        UserNote firstNote = Mockito.mock(UserNote.class);
+        when(firstNote.getUser()).thenReturn(userInAServer);
+        UserNote secondNote = Mockito.mock(UserNote.class);
+        when(secondNote.getUser()).thenReturn(userInAServer);
         testUnit.fromNotes(Arrays.asList(firstNote, secondNote));
         verify(self, times(1)).loadFullNotes(any());
     }
@@ -70,13 +72,13 @@ public class UserNotesConverterTest {
         UserNote note2 = Mockito.mock(UserNote.class);
         when(note1.getUser()).thenReturn(userInAServer);
         when(note2.getUser()).thenReturn(userInAServer);
-        ServerSpecificId firstUserNoteId = new ServerSpecificId(3L, 4L);
-        ServerSpecificId secondUserNoteId = new ServerSpecificId(3L, 5L);
+        ServerSpecificId firstUserNoteId = new ServerSpecificId(SERVER_ID, USER_NOTE_ID);
+        ServerSpecificId secondUserNoteId = new ServerSpecificId(SERVER_ID, USER_NOTE_ID + 1);
         HashMap<ServerSpecificId, CompletableFuture<Member>> map = new HashMap<>();
         map.put(firstUserNoteId, CompletableFuture.completedFuture(member));
         map.put(secondUserNoteId, CompletableFuture.completedFuture(member));
-        when(userNoteManagementService.loadNote(4L, 3L)).thenReturn(note1);
-        when(userNoteManagementService.loadNote(5L, 3L)).thenReturn(note2);
+        when(userNoteManagementService.loadNote(SERVER_ID, USER_NOTE_ID)).thenReturn(note1);
+        when(userNoteManagementService.loadNote(SERVER_ID, USER_NOTE_ID + 1)).thenReturn(note2);
         List<NoteEntryModel> models = testUnit.loadFullNotes(map);
         Assert.assertEquals(2, models.size());
         NoteEntryModel firstEntry = models.get(0);

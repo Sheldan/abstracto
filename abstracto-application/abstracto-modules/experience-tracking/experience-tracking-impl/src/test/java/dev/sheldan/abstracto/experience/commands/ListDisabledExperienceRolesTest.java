@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.experience.models.database.ADisabledExpRole;
@@ -62,8 +61,8 @@ public class ListDisabledExperienceRolesTest {
     public void testCommandExecutionRolesFound() {
         CommandContext context = CommandTestUtilities.getNoParameters();
         AServer server = Mockito.mock(AServer.class);
-        ADisabledExpRole disabledExpRole1 = ADisabledExpRole.builder().role(MockUtils.getRole(4L, server)).build();
-        ADisabledExpRole disabledExpRole2 = ADisabledExpRole.builder().role(MockUtils.getRole(6L, server)).build();
+        ADisabledExpRole disabledExpRole1 = Mockito.mock(ADisabledExpRole.class);
+        ADisabledExpRole disabledExpRole2 = Mockito.mock(ADisabledExpRole.class);
         when(disabledExpRoleManagementService.getDisabledRolesForServer(server)).thenReturn(Arrays.asList(disabledExpRole1, disabledExpRole2));
         Role role1 = Mockito.mock(Role.class);
         Role role2 = Mockito.mock(Role.class);

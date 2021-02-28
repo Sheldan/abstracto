@@ -3,11 +3,9 @@ package dev.sheldan.abstracto.moderation.job;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -41,14 +39,14 @@ public class WarnDecayJobTest {
     @Mock
     private WarnService warnService;
 
+    @Mock
     private AServer firstServer;
+
+    @Mock
     private AServer secondServer;
 
-    @Before
-    public void setup() {
-        this.firstServer = MockUtils.getServer(1L);
-        this.secondServer = MockUtils.getServer(2L);
-    }
+    private static final Long SERVER_ID = 1L;
+    private static final Long SERVER_ID_2 = 2L;
 
     @Test
     public void executeJobForNoServers() throws JobExecutionException {
@@ -60,6 +58,7 @@ public class WarnDecayJobTest {
 
     @Test
     public void executeJobForAEnabledServer() throws JobExecutionException {
+        when(firstServer.getId()).thenReturn(SERVER_ID);
         when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer));
         when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(true);
         testUnit.executeInternal(null);
@@ -76,6 +75,7 @@ public class WarnDecayJobTest {
 
     @Test
     public void executeJobForMixedServers() throws JobExecutionException {
+        when(firstServer.getId()).thenReturn(SERVER_ID);
         when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer, secondServer));
         when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(true);
         when(featureFlagService.isFeatureEnabled(warningDecayFeature, secondServer)).thenReturn(false);
@@ -85,6 +85,8 @@ public class WarnDecayJobTest {
 
     @Test
     public void executeJobForMultipleEnabledServers() throws JobExecutionException {
+        when(firstServer.getId()).thenReturn(SERVER_ID);
+        when(secondServer.getId()).thenReturn(SERVER_ID_2);
         when(serverManagementService.getAllServers()).thenReturn(Arrays.asList(firstServer, secondServer));
         when(featureFlagService.isFeatureEnabled(warningDecayFeature, firstServer)).thenReturn(true);
         when(featureFlagService.isFeatureEnabled(warningDecayFeature, secondServer)).thenReturn(true);

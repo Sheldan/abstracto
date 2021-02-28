@@ -47,7 +47,7 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     }
 
     @Override
-    public UserNote loadNote(Long userNoteId, Long serverId) {
+    public UserNote loadNote(Long serverId, Long userNoteId) {
         return userNoteRepository.findByUserNoteId_IdAndUserNoteId_ServerId(userNoteId, serverId);
     }
 

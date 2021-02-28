@@ -43,8 +43,8 @@ public class RemindersTest {
     @Test
     public void testExecuteCommand() {
         CommandContext context = CommandTestUtilities.getNoParameters();
-        Reminder reminder = Reminder.builder().build();
-        Reminder secondReminder = Reminder.builder().build();
+        Reminder reminder = Mockito.mock(Reminder.class);
+        Reminder secondReminder = Mockito.mock(Reminder.class);
         List<Reminder> reminders = Arrays.asList(reminder, secondReminder);
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(user);

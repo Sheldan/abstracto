@@ -109,7 +109,7 @@ public class SuggestionServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(serverManagementService.loadServer(suggestionCreator.getGuild())).thenReturn(server);
-        MessageToSend messageToSend = MessageToSend.builder().build();
+        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class))).thenReturn(messageToSend);
         Message suggestionMessage = Mockito.mock(Message.class);
         when(counterService.getNextCounterValue(server, SUGGESTION_COUNTER_KEY)).thenReturn(SUGGESTION_ID);
@@ -162,14 +162,14 @@ public class SuggestionServiceBeanTest {
 
     private void setupForNoTextChannel() {
         Long messageId = 7L;
-        Suggestion suggestionToAccept = Suggestion
-                .builder()
-                .channel(channel)
-                .server(server)
-                .suggestionId(new ServerSpecificId(server.getId(), SUGGESTION_ID))
-                .suggester(suggester)
-                .messageId(messageId)
-                .build();
+        Suggestion suggestionToAccept = Mockito.mock(Suggestion.class);
+        when(suggestionToAccept.getChannel()).thenReturn(channel);
+        when(suggestionToAccept.getServer()).thenReturn(server);
+        when(suggestionToAccept.getSuggester()).thenReturn(suggester);
+        ServerSpecificId suggestionId = Mockito.mock(ServerSpecificId.class);
+        when(suggestionId.getId()).thenReturn(SUGGESTION_ID);
+        when(suggestionToAccept.getSuggestionId()).thenReturn(suggestionId);
+        when(suggestionToAccept.getMessageId()).thenReturn(messageId);
         when(server.getId()).thenReturn(SERVER_ID);
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenThrow(new ChannelNotInGuildException(CHANNEL_ID));
@@ -178,7 +178,7 @@ public class SuggestionServiceBeanTest {
 
     @Test(expected = SuggestionUpdateException.class)
     public void testUpdateSuggestionTextWithoutEmbed() {
-        SuggestionLog log = SuggestionLog.builder().build();
+        SuggestionLog log = Mockito.mock(SuggestionLog.class);
         Message suggestionMessage = Mockito.mock(Message.class);
         testUnit.updateSuggestionMessageText(CLOSING_TEXT, log, suggestionMessage);
     }
@@ -193,7 +193,7 @@ public class SuggestionServiceBeanTest {
         when(suggestionMessage.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(suggestionMessage.getEmbeds()).thenReturn(Arrays.asList(embed));
-        MessageToSend updatedMessage = MessageToSend.builder().build();
+        MessageToSend updatedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class))).thenReturn(updatedMessage);
         testUnit.updateSuggestionMessageText(CLOSING_TEXT, log, suggestionMessage);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(updatedMessage, SuggestionPostTarget.SUGGESTION, SERVER_ID);
@@ -254,14 +254,14 @@ public class SuggestionServiceBeanTest {
     }
 
     private Suggestion setupClosing(Long messageId) {
-        Suggestion suggestionToAccept = Suggestion
-                .builder()
-                .channel(channel)
-                .server(server)
-                .suggestionId(new ServerSpecificId(server.getId(), SUGGESTION_ID))
-                .suggester(suggester)
-                .messageId(messageId)
-                .build();
+        Suggestion suggestionToAccept = Mockito.mock(Suggestion.class);
+        when(suggestionToAccept.getChannel()).thenReturn(channel);
+        when(suggestionToAccept.getServer()).thenReturn(server);
+        when(suggestionToAccept.getSuggester()).thenReturn(suggester);
+        ServerSpecificId suggestionId = Mockito.mock(ServerSpecificId.class);
+        when(suggestionId.getId()).thenReturn(SUGGESTION_ID);
+        when(suggestionToAccept.getSuggestionId()).thenReturn(suggestionId);
+        when(suggestionToAccept.getMessageId()).thenReturn(messageId);
         when(server.getId()).thenReturn(SERVER_ID);
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(suggester.getUserReference()).thenReturn(suggesterUser);

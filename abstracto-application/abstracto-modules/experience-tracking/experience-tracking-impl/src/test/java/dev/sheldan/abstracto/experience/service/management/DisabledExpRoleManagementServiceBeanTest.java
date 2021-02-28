@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.*;
@@ -24,17 +25,20 @@ public class DisabledExpRoleManagementServiceBeanTest {
 
     @Test
     public void testRoleToSetDisabled() {
-        ARole role = getARole();
-        ADisabledExpRole createdDisabledRole = getDisabledRole(role);
+        ARole role = Mockito.mock(ARole.class);
+        AServer server = Mockito.mock(AServer.class);
+        when(role.getServer()).thenReturn(server);
+        ADisabledExpRole createdDisabledRole = Mockito.mock(ADisabledExpRole.class);
+        when(createdDisabledRole.getRole()).thenReturn(role);
         when(disabledExpRoleRepository.save(any(ADisabledExpRole.class))).thenReturn(createdDisabledRole);
         ADisabledExpRole aDisabledExpRole = testUnit.setRoleToBeDisabledForExp(role);
-        Assert.assertEquals(role.getId(), aDisabledExpRole.getRole().getId());
-        Assert.assertEquals(createdDisabledRole.getId(), aDisabledExpRole.getId());
+        Assert.assertEquals(role, aDisabledExpRole.getRole());
+        Assert.assertEquals(createdDisabledRole, aDisabledExpRole);
     }
 
     @Test
     public void testIfRoleIsDisabled() {
-        ARole aRole = getARole();
+        ARole aRole = Mockito.mock(ARole.class);
         when(disabledExpRoleRepository.existsByRole(aRole)).thenReturn(true);
         boolean experienceDisabledForRole = testUnit.isExperienceDisabledForRole(aRole);
         Assert.assertTrue(experienceDisabledForRole);
@@ -43,24 +47,16 @@ public class DisabledExpRoleManagementServiceBeanTest {
 
     @Test
     public void testRemoveRoleFromDisabled() {
-        ARole aRole = getARole();
+        ARole aRole = Mockito.mock(ARole.class);
         testUnit.removeRoleToBeDisabledForExp(aRole);
         verify(disabledExpRoleRepository, times(1)).deleteByRole(aRole);
     }
 
     @Test
     public void testRetrieveAllDisabledRolesForServer() {
-        AServer server = AServer.builder().id(1L).build();
+        AServer server = Mockito.mock(AServer.class);
         testUnit.getDisabledRolesForServer(server);
         verify(disabledExpRoleRepository, times(1)).getByRole_Server(server);
     }
 
-    private ADisabledExpRole getDisabledRole(ARole role) {
-        return ADisabledExpRole.builder().role(role).id(2L).build();
-    }
-
-    private ARole getARole() {
-        AServer server = AServer.builder().id(4L).build();
-        return ARole.builder().id(1L).server(server).build();
-    }
 }

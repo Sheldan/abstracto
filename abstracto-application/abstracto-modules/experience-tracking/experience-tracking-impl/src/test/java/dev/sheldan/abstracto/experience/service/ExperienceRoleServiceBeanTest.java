@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.experience.service;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -58,30 +57,30 @@ public class ExperienceRoleServiceBeanTest {
     private AServer server;
 
     private static final Long CHANNEL_ID = 4L;
+    private static final Long ROLE_ID = 5L;
 
     @Test
     public void testSettingRoleToLevelWithoutOldUsers() {
         Integer levelCount = 10;
-        AExperienceLevel level = Mockito.mock(AExperienceLevel.class);
         Role roleToChange = Mockito.mock(Role.class);
         ARole role = Mockito.mock(ARole.class);
-        Long roleId = 5L;
-        when(roleToChange.getIdLong()).thenReturn(roleId);
-        when(roleManagementService.findRole(roleId)).thenReturn(role);
-        AExperienceRole previousExperienceRole = AExperienceRole.builder().role(role).roleServer(server).level(level).build();
+        when(roleToChange.getIdLong()).thenReturn(ROLE_ID);
+        when(roleManagementService.findRole(ROLE_ID)).thenReturn(role);
+        AExperienceRole previousExperienceRole = Mockito.mock(AExperienceRole.class);
         when(experienceRoleManagementService.getRoleInServerOptional(role)).thenReturn(Optional.of(previousExperienceRole));
         CompletableFuture<Void> future = testingUnit.setRoleToLevel(roleToChange, levelCount, CHANNEL_ID);
 
         future.join();
         verify(experienceRoleManagementService, times(1)).unsetRole(previousExperienceRole);
-        verify(self, times(1)).unsetRoleInDb(levelCount, roleId);
+        verify(self, times(1)).unsetRoleInDb(levelCount, ROLE_ID);
     }
 
     @Test
     public void testUnsetRoleInDb() {
         Integer levelCount = 10;
-        AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
-        ARole roleToChange = getRole(1L, server);
+        AExperienceLevel level = Mockito.mock(AExperienceLevel.class);
+        ARole roleToChange = Mockito.mock(ARole.class);
+        when(roleToChange.getServer()).thenReturn(server);
         when(experienceLevelService.getLevel(levelCount)).thenReturn(Optional.of(level));
         when(roleManagementService.findRole(roleToChange.getId())).thenReturn(roleToChange);
         testingUnit.unsetRoleInDb(levelCount, roleToChange.getId());
@@ -95,19 +94,17 @@ public class ExperienceRoleServiceBeanTest {
     @Test
     public void testSettingRoleToLevelExistingUsers() {
         Integer levelCount = 10;
-        AExperienceLevel level = AExperienceLevel.builder().experienceNeeded(10L).level(levelCount).build();
         Role roleToChange = Mockito.mock(Role.class);
         ARole role = Mockito.mock(ARole.class);
-        Long roleId = 5L;
-        when(roleToChange.getIdLong()).thenReturn(roleId);
-        when(roleManagementService.findRole(roleId)).thenReturn(role);
+        when(roleToChange.getIdLong()).thenReturn(ROLE_ID);
+        when(roleManagementService.findRole(ROLE_ID)).thenReturn(role);
         when(role.getServer()).thenReturn(server);
-        ARole newRoleToAward = getRole(2L, server);
-        AUserExperience firstUser = AUserExperience.builder().build();
-        AUserExperience secondUser = AUserExperience.builder().build();
+        AUserExperience firstUser = Mockito.mock(AUserExperience.class);
+        AUserExperience secondUser = Mockito.mock(AUserExperience.class);
         List<AUserExperience> users = Arrays.asList(firstUser, secondUser);
-        AExperienceRole previousExperienceRole = AExperienceRole.builder().role(role).id(roleToChange.getIdLong()).roleServer(server).level(level).users(users).build();
-        AExperienceRole newExperienceRole = AExperienceRole.builder().role(newRoleToAward).id(newRoleToAward.getId()).roleServer(server).level(level).build();
+        AExperienceRole previousExperienceRole = Mockito.mock(AExperienceRole.class);
+        when(previousExperienceRole.getUsers()).thenReturn(users);
+        AExperienceRole newExperienceRole = Mockito.mock(AExperienceRole.class);
         when(experienceRoleManagementService.getRoleInServerOptional(role)).thenReturn(Optional.of(previousExperienceRole));
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(new ArrayList<>(Arrays.asList(newExperienceRole, previousExperienceRole)));
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
@@ -124,55 +121,55 @@ public class ExperienceRoleServiceBeanTest {
     @Test
     public void testCalculateRoleForLevelInBetween() {
         List<AExperienceRole> roles = getExperienceRoles();
-        AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(6).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, 7);
         Assert.assertEquals(5, aExperienceRole.getLevel().getLevel().intValue());
     }
 
     @Test
     public void testCalculateRoleForLevelBelow() {
         List<AExperienceRole> roles = getExperienceRoles();
-        AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(4).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, 4);
         Assert.assertNull(aExperienceRole);
     }
 
     @Test
     public void testCalculateRoleForLevelOver() {
         List<AExperienceRole> roles = getExperienceRoles();
-        AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(11).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, userExperience.getLevelOrDefault());
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, 11);
         Assert.assertEquals(10, aExperienceRole.getLevel().getLevel().intValue());
     }
 
     @Test
     public void testCalculateRoleForLevelExact() {
         List<AExperienceRole> roles = getExperienceRoles();
-        AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(10).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles,  userExperience.getLevelOrDefault());
-        Assert.assertEquals(10, aExperienceRole.getLevel().getLevel().intValue());
+        Integer level = 10;
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, level);
+        Assert.assertEquals(level, aExperienceRole.getLevel().getLevel());
     }
 
     @Test
     public void testCalculateRoleForNoRoleConfigFound() {
         List<AExperienceRole> roles = new ArrayList<>();
-        AUserExperience userExperience = AUserExperience.builder().currentLevel(AExperienceLevel.builder().level(6).build()).build();
-        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles,  userExperience.getLevelOrDefault());
+        AExperienceRole aExperienceRole = testingUnit.calculateRole(roles,  10);
         Assert.assertNull(aExperienceRole);
     }
 
     @Test
     public void testCalculatingLevelOfNextRole() {
-        when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(getExperienceRoles());
-        AExperienceLevel levelToCheckFor =  AExperienceLevel.builder().level(7).build();
+        List<AExperienceRole> experienceRoles = getExperienceRoles();
+        when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(experienceRoles);
+        AExperienceLevel levelToCheckFor = Mockito.mock(AExperienceLevel.class);
+        when(levelToCheckFor.getLevel()).thenReturn(7);
         AExperienceLevel levelOfNextRole = testingUnit.getLevelOfNextRole(levelToCheckFor, server);
         Assert.assertEquals(10, levelOfNextRole.getLevel().intValue());
     }
 
     @Test
     public void testCalculatingLevelOfNextRoleIfThereIsNone() {
-        when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(getExperienceRoles());
-        AExperienceLevel levelToCheckFor =  AExperienceLevel.builder().level(15).build();
+        List<AExperienceRole> experienceRoles = getExperienceRoles();
+        when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(experienceRoles);
+        AExperienceLevel levelToCheckFor = Mockito.mock(AExperienceLevel.class);
+        when(levelToCheckFor.getLevel()).thenReturn(15);
         AExperienceLevel levelOfNextRole = testingUnit.getLevelOfNextRole(levelToCheckFor, server);
         Assert.assertEquals(200, levelOfNextRole.getLevel().intValue());
     }
@@ -180,20 +177,16 @@ public class ExperienceRoleServiceBeanTest {
     private List<AExperienceRole> getExperienceRoles() {
         AExperienceRole level5ExperienceRole = getExperienceRoleForLevel(5);
         AExperienceRole level10ExperienceRole = getExperienceRoleForLevel(10);
+        when(level5ExperienceRole.getServer()).thenReturn(server);
         return Arrays.asList(level5ExperienceRole, level10ExperienceRole);
     }
 
-    private AExperienceRole getExperienceRoleForLevel(int levelToBuild) {
-        AExperienceLevel firstLevel = AExperienceLevel.builder().level(levelToBuild).build();
-        return AExperienceRole.builder().roleServer(server).level(firstLevel).build();
-    }
-
-    private ARole getRole(Long id, AServer server) {
-        return ARole.builder().id(id).server(server).deleted(false).build();
-    }
-
-    private AChannel getFeedbackChannel(AServer server) {
-        return AChannel.builder().id(1L).server(server).type(AChannelType.TEXT).build();
+    private AExperienceRole getExperienceRoleForLevel(int level) {
+        AExperienceLevel experienceLevel = Mockito.mock(AExperienceLevel.class);
+        when(experienceLevel.getLevel()).thenReturn(level);
+        AExperienceRole role = Mockito.mock(AExperienceRole.class);
+        when(role.getLevel()).thenReturn(experienceLevel);
+        return role;
     }
 
 }

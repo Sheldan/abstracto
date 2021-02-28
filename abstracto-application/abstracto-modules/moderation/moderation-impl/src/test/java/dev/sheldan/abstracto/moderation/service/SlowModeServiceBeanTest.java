@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.managers.ChannelManager;
@@ -12,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
@@ -37,6 +37,9 @@ public class SlowModeServiceBeanTest {
     @Mock
     private TextChannel channel;
 
+    private static final Long SERVER_ID = 4L;
+    private static final Long CHANNEL_ID = 5L;
+
     @Test
     public void setSlowModeInTextChannel() {
         when(channel.getGuild()).thenReturn(guild);
@@ -47,11 +50,14 @@ public class SlowModeServiceBeanTest {
 
     @Test
     public void testSlowModeInAChannel() {
-        AServer server = MockUtils.getServer();
-        AChannel aChannel = MockUtils.getTextChannel(server, 5L);
+        AServer server = Mockito.mock(AServer.class);
+        when(server.getId()).thenReturn(SERVER_ID);
+        AChannel aChannel = Mockito.mock(AChannel.class);
+        when(aChannel.getServer()).thenReturn(server);
+        when(aChannel.getId()).thenReturn(CHANNEL_ID);
         Duration duration = Duration.ofMinutes(5);
         when(channel.getGuild()).thenReturn(guild);
-        when(channelService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.of(channel));
+        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(channel));
         testUnit.setSlowMode(aChannel, duration);
         verify(channelService, times(1)).setSlowModeInChannel(channel,(int) duration.getSeconds());
     }
@@ -72,10 +78,13 @@ public class SlowModeServiceBeanTest {
 
     @Test(expected = ChannelNotInGuildException.class)
     public void testSlowModeInAChannelNotFound() {
-        AServer server = MockUtils.getServer();
-        AChannel aChannel = MockUtils.getTextChannel(server, 5L);
+        AServer server = Mockito.mock(AServer.class);
+        when(server.getId()).thenReturn(SERVER_ID);
+        AChannel aChannel = Mockito.mock(AChannel.class);
+        when(aChannel.getServer()).thenReturn(server);
+        when(aChannel.getId()).thenReturn(CHANNEL_ID);
         Duration duration = Duration.ofMinutes(5);
-        when(channelService.getTextChannelFromServerOptional(server.getId(), aChannel.getId())).thenReturn(Optional.empty());
+        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.empty());
         testUnit.setSlowMode(aChannel, duration);
     }
 }

@@ -75,7 +75,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
 
     @Override
     public LeaderBoardEntryResult getRankOfUserInServer(AUserExperience userExperience) {
-        return repository.getRankOfUserInServer(userExperience.getId(), userExperience.getUser().getServerReference().getId());
+        return repository.getRankOfUserInServer(userExperience.getId(), userExperience.getServer().getId());
     }
 
     @Override

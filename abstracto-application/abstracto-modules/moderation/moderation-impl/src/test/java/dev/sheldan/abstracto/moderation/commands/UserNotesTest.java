@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.converter.UserNotesConverter;
@@ -56,15 +55,14 @@ public class UserNotesTest {
     public void testExecuteUserNotesCommandForMember() {
         Member member = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
-        AServer server = Mockito.mock(AServer.class);
-        AUserInAServer userNoteUser = MockUtils.getUserObject(4L, server);
+        AUserInAServer userNoteUser = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userNoteUser);
-        UserNote firstNote = UserNote.builder().build();
-        UserNote secondNote = UserNote.builder().build();
+        UserNote firstNote = Mockito.mock(UserNote.class);
+        UserNote secondNote = Mockito.mock(UserNote.class);
         List<UserNote> userNotes = Arrays.asList(firstNote, secondNote);
         when(userNoteManagementService.loadNotesForUser(userNoteUser)).thenReturn(userNotes);
-        NoteEntryModel firstConvertedNote = NoteEntryModel.builder().build();
-        NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
+        NoteEntryModel firstConvertedNote = Mockito.mock(NoteEntryModel.class);
+        NoteEntryModel secondConvertedNote = Mockito.mock(NoteEntryModel.class);
         CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
@@ -85,14 +83,14 @@ public class UserNotesTest {
     @Test
     public void testExecuteUserNotesCommandForServer() {
         CommandContext parameters = CommandTestUtilities.getNoParameters();
-        UserNote firstNote = UserNote.builder().build();
-        UserNote secondNote = UserNote.builder().build();
+        UserNote firstNote = Mockito.mock(UserNote.class);
+        UserNote secondNote = Mockito.mock(UserNote.class);
         List<UserNote> userNotes = Arrays.asList(firstNote, secondNote);
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(parameters.getGuild())).thenReturn(server);
         when(userNoteManagementService.loadNotesForServer(server)).thenReturn(userNotes);
-        NoteEntryModel firstConvertedNote = NoteEntryModel.builder().build();
-        NoteEntryModel secondConvertedNote = NoteEntryModel.builder().build();
+        NoteEntryModel firstConvertedNote = Mockito.mock(NoteEntryModel.class);
+        NoteEntryModel secondConvertedNote = Mockito.mock(NoteEntryModel.class);
         CompletableFuture<List<NoteEntryModel>> convertedNotes = CompletableFuture.completedFuture(Arrays.asList(firstConvertedNote, secondConvertedNote));
         when(userNotesConverter.fromNotes(userNotes)).thenReturn(convertedNotes);
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);

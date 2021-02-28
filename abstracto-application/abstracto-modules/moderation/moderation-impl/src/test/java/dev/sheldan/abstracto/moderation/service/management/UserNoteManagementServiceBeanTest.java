@@ -1,17 +1,17 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.CounterService;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.UserNote;
 import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -33,40 +33,43 @@ public class UserNoteManagementServiceBeanTest {
 
     private static final String NOTE_TEXT = "noteText";
     private static final Long NOTE_ID = 5L;
+    private static final Long SERVER_ID = 1L;
 
+    @Mock
     private AServer server;
-    private AUserInAServer userInAServer;
 
-    @Before
-    public void setup() {
-        this.server = MockUtils.getServer();
-        this.userInAServer = MockUtils.getUserObject(8L, server);
-    }
+    @Mock
+    private AUserInAServer userInAServer;
 
     @Test
     public void testCreateUserNote() {
+        AUser user = Mockito.mock(AUser.class);
+        when(userInAServer.getUserReference()).thenReturn(user);
+        when(userInAServer.getServerReference()).thenReturn(server);
         UserNote userNote = testUnit.createUserNote(userInAServer, NOTE_TEXT);
         verify(userNoteRepository, times(1)).save(userNote);
-        Assert.assertEquals(userNote.getUser(), userInAServer);
-        Assert.assertEquals(userNote.getNote(), NOTE_TEXT);
+        Assert.assertEquals(userInAServer, userNote.getUser());
+        Assert.assertEquals(NOTE_TEXT, userNote.getNote());
     }
 
     @Test
     public void testDeleteNote() {
+        when(server.getId()).thenReturn(SERVER_ID);
         testUnit.deleteNote(NOTE_ID, server);
-        verify(userNoteRepository, times(1)).deleteByUserNoteId_IdAndUserNoteId_ServerId(NOTE_ID, server.getId());
+        verify(userNoteRepository, times(1)).deleteByUserNoteId_IdAndUserNoteId_ServerId(NOTE_ID, SERVER_ID);
     }
 
     @Test
     public void testNoteExists() {
-        when(userNoteRepository.existsByUserNoteId_IdAndUserNoteId_ServerId(NOTE_ID, server.getId())).thenReturn(true);
+        when(server.getId()).thenReturn(SERVER_ID);
+        when(userNoteRepository.existsByUserNoteId_IdAndUserNoteId_ServerId(NOTE_ID, SERVER_ID)).thenReturn(true);
         Assert.assertTrue(testUnit.noteExists(NOTE_ID, server));
     }
 
     @Test
     public void testLoadNotesForUser() {
-        UserNote note = UserNote.builder().build();
-        UserNote note2 = UserNote.builder().build();
+        UserNote note = Mockito.mock(UserNote.class);
+        UserNote note2 = Mockito.mock(UserNote.class);
         List<UserNote> notes = Arrays.asList(note, note2);
         when(userNoteRepository.findByUser(userInAServer)).thenReturn(notes);
         List<UserNote> foundNotes = testUnit.loadNotesForUser(userInAServer);
@@ -80,8 +83,8 @@ public class UserNoteManagementServiceBeanTest {
 
     @Test
     public void testLoadNotesForServer() {
-        UserNote note = UserNote.builder().build();
-        UserNote note2 = UserNote.builder().build();
+        UserNote note = Mockito.mock(UserNote.class);
+        UserNote note2 = Mockito.mock(UserNote.class);
         List<UserNote> notes = Arrays.asList(note, note2);
         when(userNoteRepository.findByUser_ServerReference(server)).thenReturn(notes);
         List<UserNote> foundNotes = testUnit.loadNotesForServer(server);

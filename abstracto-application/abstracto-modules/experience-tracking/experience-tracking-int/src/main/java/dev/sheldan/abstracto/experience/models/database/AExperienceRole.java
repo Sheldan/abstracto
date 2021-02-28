@@ -49,7 +49,7 @@ public class AExperienceRole implements Serializable {
     @Getter
     @Setter
     @JoinColumn(name = "server_id", nullable = false)
-    private AServer roleServer;
+    private AServer server;
 
     @Column(name = "created")
     private Instant created;

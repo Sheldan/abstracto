@@ -2,15 +2,14 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.test.MockUtils;
 import dev.sheldan.abstracto.moderation.models.database.MuteRole;
 import dev.sheldan.abstracto.moderation.repository.MuteRoleRepository;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -27,16 +26,12 @@ public class MuteRoleManagementServiceBeanTest {
     @Mock
     private MuteRoleRepository muteRoleRepository;
 
+    @Mock
     private AServer server;
-
-    @Before
-    public void setup() {
-        this.server = MockUtils.getServer();
-    }
 
     @Test
     public void testRetrieveMuteRoleForServer() {
-        MuteRole role = getMuteRole();
+        MuteRole role = Mockito.mock(MuteRole.class);
         when(muteRoleRepository.findByRoleServer(server)).thenReturn(role);
         MuteRole muteRole = testUnit.retrieveMuteRoleForServer(server);
         Assert.assertEquals(role, muteRole);
@@ -50,14 +45,14 @@ public class MuteRoleManagementServiceBeanTest {
 
     @Test
     public void testCreateMuteRoleForServer() {
-        ARole role = ARole.builder().build();
+        ARole role = Mockito.mock(ARole.class);
         MuteRole muteRoleForServer = testUnit.createMuteRoleForServer(server, role);
         verifyRoleSaved(role, muteRoleForServer, 1);
     }
 
     @Test
     public void testRetrieveRolesForServer() {
-        List<MuteRole> existingRoles = Arrays.asList(getMuteRole(), getMuteRole());
+        List<MuteRole> existingRoles = Arrays.asList(Mockito.mock(MuteRole.class), Mockito.mock(MuteRole.class));
         when(muteRoleRepository.findAllByRoleServer(server)).thenReturn(existingRoles);
         List<MuteRole> foundRoles = testUnit.retrieveMuteRolesForServer(server);
         Assert.assertEquals(existingRoles.size(), foundRoles.size());
@@ -70,7 +65,7 @@ public class MuteRoleManagementServiceBeanTest {
 
     @Test
     public void testSetMuteRoleWithoutPrevious() {
-        ARole role = ARole.builder().build();
+        ARole role = Mockito.mock(ARole.class);
         when(muteRoleRepository.existsByRoleServer(server)).thenReturn(false);
         MuteRole muteRole = testUnit.setMuteRoleForServer(server, role);
         verifyRoleSaved(role, muteRole, 1);
@@ -78,9 +73,10 @@ public class MuteRoleManagementServiceBeanTest {
 
     @Test
     public void testSetMuteRoleWithPrevious() {
-        ARole role = ARole.builder().build();
+        ARole role = Mockito.mock(ARole.class);
         when(muteRoleRepository.existsByRoleServer(server)).thenReturn(true);
-        MuteRole existingRole = getMuteRole();
+        MuteRole existingRole = Mockito.mock(MuteRole.class);
+        when(existingRole.getRole()).thenReturn(role);
         when(muteRoleRepository.findByRoleServer(server)).thenReturn(existingRole);
         MuteRole muteRole = testUnit.setMuteRoleForServer(server, role);
         verifyRoleSaved(role, muteRole, 0);
@@ -88,13 +84,8 @@ public class MuteRoleManagementServiceBeanTest {
 
     private void verifyRoleSaved(ARole role, MuteRole muteRoleForServer, Integer saveCount) {
         Assert.assertEquals(role, muteRoleForServer.getRole());
-        Assert.assertEquals(server, muteRoleForServer.getRoleServer());
         verify(muteRoleRepository, times(saveCount)).save(muteRoleForServer);
     }
 
-
-    private MuteRole getMuteRole() {
-        return MuteRole.builder().roleServer(server).build();
-    }
 
 }
