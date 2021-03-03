@@ -20,20 +20,29 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class ADisabledExpRole implements Serializable {
 
+    /**
+     * The ID of the {@link ARole role} which is being marked to be used as a marker for {@link net.dv8tion.jda.api.entities.Member} which should not gain experience
+     */
     @Id
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Reference to the actual {@link ARole} being marked as disabled for experience gain.
+     */
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @PrimaryKeyJoinColumn
     private ARole role;
 
     /**
-     * Reference to the actual {@link ARole} being marked as disabled for experience gain.
+     * The {@link Instant} this entity was created
      */
     @Column(name = "created")
     private Instant created;
 
+    /**
+     * The {@link Instant} this entity was updated
+     */
     @Column(name = "updated")
     private Instant updated;
 }

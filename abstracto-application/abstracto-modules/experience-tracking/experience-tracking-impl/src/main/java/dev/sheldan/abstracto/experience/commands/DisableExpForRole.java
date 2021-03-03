@@ -34,6 +34,8 @@ public class DisableExpForRole extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         ARole role = (ARole) parameters.get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
+        // as we mange experience disabled roles via the existence of them in a table, we should not do anything
+        // in case it is used a second time as a disabled experience role
         if(!disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)) {
             disabledExpRoleManagementService.setRoleToBeDisabledForExp(actualRole);
         }

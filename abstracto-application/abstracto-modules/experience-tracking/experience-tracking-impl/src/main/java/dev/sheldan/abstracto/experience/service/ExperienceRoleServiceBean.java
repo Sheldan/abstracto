@@ -61,6 +61,12 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         );
     }
 
+    /**
+     * Removes all previous defined {@link AExperienceRole experienceRoles} from the given leve and sets the {@link ARole}
+     * (defined by its ID) to the level.
+     * @param level The level which the {@link ARole role} should be set to
+     * @param roleId The ID of the {@link Role} which should have its level set
+     */
     @Transactional
     public void unsetRoleInDb(Integer level, Long roleId) {
         log.info("Unsetting role {} from level {}.", roleId, level);
@@ -103,21 +109,22 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         }
     }
 
+    /**
+     * Stores the changed experience roles for all of the {@link AUserExperience userExperiences} which are referenced in the list of
+     * {@link RoleCalculationResult results}. This is only executed after a role is being "unset", which means, we also
+     * have to remove the existing {@link AExperienceRole experienceRole}
+     * @param results A list of {@link CompletableFuture futures} which each contain a {@link RoleCalculationResult result}, for the members who got
+     *                their {@link AExperienceRole experienceRole} removed
+     * @param roleId The ID of the {@link AExperienceRole experienceRole} which was removed from the experience roles
+     */
     @Transactional
     public void persistData(CompletableFutureList<RoleCalculationResult> results, Long roleId) {
         log.info("Persisting {} role calculation results after changing the role {}.", results.getFutures().size(), roleId);
-        AExperienceRole roleInServer = experienceRoleManagementService.getRoleInServer(roleId);
+        AExperienceRole roleInServer = experienceRoleManagementService.getExperienceRoleById(roleId);
         experienceRoleManagementService.unsetRole(roleInServer);
         userExperienceService.syncRolesInStorage(results.getObjects());
     }
 
-    /**
-     * Finds the best {@link AExperienceRole} for the level of the passed {@link AUserExperience}, returns null if the passed
-     * roles are empty/null
-     * @param roles The role configuration to be used when calculating the appropriate {@link AExperienceRole}
-     * @param currentLevel
-     * @return The best fitting {@link AExperienceRole} according to the level of the {@link AUserExperience}
-     */
     @Override
     public AExperienceRole calculateRole(List<AExperienceRole> roles, Integer currentLevel) {
         if(roles == null || roles.isEmpty()) {

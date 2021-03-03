@@ -88,10 +88,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Autowired
     private AUserExperienceServiceBean self;
 
-    /**
-     * Creates the user in the runtime experience, if the user was not in yet. Also creates an entry for the minute, if necessary.
-     * @param userInAServer The {@link AUserInAServer} to be added to the list of users gaining experience
-     */
     @Override
     public void addExperience(AUserInAServer userInAServer) {
         runTimeExperienceService.takeLock();
@@ -124,14 +120,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     }
 
 
-    /**
-     * Calculates the level of the given {@link AUserExperience} according to the given {@link AExperienceLevel} list
-     * @param levels The list of {@link AExperienceLevel} representing the level configuration, this must include the initial level 0
-     *      *               This level will be taken as the initial value, and if no other level qualifies, this will be taken.
-     *               The levels must be ordered.
-     * @param experienceCount
-     * @return The appropriate level according to the level config
-     */
     @Override
     public AExperienceLevel calculateLevel(List<AExperienceLevel> levels, Long experienceCount) {
         AExperienceLevel lastLevel = levels.get(0);
@@ -160,14 +148,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         return false;
     }
 
-    /**
-     * Calculates the actually gained experience for every user in the given servers and adds them to the users.
-     * This method only actually increases the message count, and calls other methods for experience gain
-     * and role change.
-     * Loads the level and role configuration for each server and sorts them for them to be used.
-     * Only actually updates the role, if the user also changed level.
-     * @param servers The list of {@link AServer} containing the user which need to gain experience
-     */
     @Transactional
     @Override
     public CompletableFuture<Void> handleExperienceGain(List<ServerExperience> servers) {
@@ -249,7 +229,21 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         );
     }
 
+    /**
+     * Calculates the appropriate {@link AExperienceRole experienceRole} based on the current level and awards the referenced the {@link AUserInAServer userinAServer}
+     * the {@link net.dv8tion.jda.api.entities.Role role}. If the user already left the guild, this will not award a {@link net.dv8tion.jda.api.entities.Role}, but just
+     * return the instance in order to be persisted
+     * @param aUserInAServer The {@link AUserInAServer userInAServer} which does not have a {@link AUserExperience userExperience} object,
+     *                       therefore we need to calculate the appropriate role and award the role
+     * @param roles A list of {@link AExperienceRole experienceRoles} representing the configuration which is used to calculate the appropriate
+     *              {@link AExperienceRole experienceRole}
+     * @param currentLevel The current level of the user which was reached.
+     * @return A {@link CompletableFuture future} containing the {@link RoleCalculationResult result} of the role calculation, which completes after the user has been awarded the role.
+     */
     private CompletableFuture<RoleCalculationResult> applyInitialRole(AUserInAServer aUserInAServer, List<AExperienceRole> roles, Integer currentLevel) {
+        // we are in the process of attributing experience, which means the member should have send a message, therefore is in the case
+        // if the member is actually _not_ in the guild anymore (would mean, joined, send a message, and left immediately) this check is required
+        // this is backed by the cache
         if(!memberService.isUserInGuild(aUserInAServer)) {
             log.trace("User {} is not in server {} anymore. No role calculation done.", aUserInAServer.getUserInServerId(), aUserInAServer.getServerReference().getId());
             return CompletableFuture.completedFuture(RoleCalculationResult
@@ -279,8 +273,15 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 .build());
     }
 
+    /**
+     * Persists the list of {@link ExperienceGainResult results} in the database. If the creation of {@link AUserExperience userExperience} object was requested,
+     * this will happen here, also the correct level is selected
+     * @param resultFutures A list of {@link ExperienceGainResult results} which define what should be changed for the given {@link AUserExperience userExperience} object:
+     *                      The level, experience, experienceRole, message account could change, or the object could not even exist ({@link ExperienceGainResult#createUserExperience})
+     */
     @Transactional
     public void persistExperienceChanges(List<ExperienceGainResult> resultFutures) {
+        // we do have the _value_ of the level, but we require the actual instance
         List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
         log.info("Storing {} experience gain results.", resultFutures.size());
         HashMap<Long, List<AExperienceRole>> serverRoleMapping = new HashMap<>();
@@ -295,13 +296,18 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             }
             userExperience.setMessageCount(experienceGainResult.getNewMessageCount());
             userExperience.setExperience(experienceGainResult.getNewExperience());
-            Optional<AExperienceLevel> foundLevel = levels.stream().filter(level -> level.getLevel().equals(experienceGainResult.getNewLevel())).findFirst();
-            if(foundLevel.isPresent()) {
-                userExperience.setCurrentLevel(foundLevel.get());
-            } else {
-                log.warn("User {} was present, but no level matching the calculation result {} could be found.", userExperience.getUser().getUserReference().getId(), experienceGainResult.getNewLevel());
+            // only search the levels if the level changed, or if there is no level currently set
+            boolean userExperienceHasLevel = userExperience.getCurrentLevel() != null;
+            if(!userExperienceHasLevel || !userExperience.getCurrentLevel().getLevel().equals(experienceGainResult.getNewLevel())) {
+                Optional<AExperienceLevel> foundLevel = levels.stream().filter(level -> level.getLevel().equals(experienceGainResult.getNewLevel())).findFirst();
+                if(foundLevel.isPresent()) {
+                    userExperience.setCurrentLevel(foundLevel.get());
+                } else {
+                    log.warn("User {} was present, but no level matching the calculation result {} could be found.", userExperience.getUser().getUserReference().getId(), experienceGainResult.getNewLevel());
+                }
             }
             AServer server = user.getServerReference();
+            // "Caching" the experience roles for this server
             if(!serverRoleMapping.containsKey(server.getId())) {
                 serverRoleMapping.put(server.getId(), experienceRoleManagementService.getExperienceRolesForServer(server));
             }
@@ -316,14 +322,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         });
     }
 
-    /**
-     * Calculates the appropriate level of the user and changes the role, if the {@link AExperienceLevel} changes.
-     * This changes the config in the database, and also gives the {@link net.dv8tion.jda.api.entities.Member} the new
-     * {@link net.dv8tion.jda.api.entities.Role}. If the user does not warrant an {@link AExperienceRole},
-     * this method also removes it. The role is only changed, if the user does not have
-     * @param userExperience The {@link AUserExperience} object to recalculate the {@link AExperienceRole} for
-     * @param roles The list of {@link AExperienceRole} used as a role configuration
-     */
     @Override
     public CompletableFuture<RoleCalculationResult> updateUserRole(AUserExperience userExperience, List<AExperienceRole> roles, Integer currentLevel) {
         AUserInAServer user = userExperience.getUser();
@@ -390,11 +388,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         });
     }
 
-    /**
-     * Synchronizes the {@link net.dv8tion.jda.api.entities.Role} of all {@link net.dv8tion.jda.api.entities.Member} in
-     * the given {@link AServer}. This might take a long time to complete, because there are a lot of role changes.
-     * @param server The {@link AServer} to update the users for
-     */
     @Override
     public List<CompletableFuture<RoleCalculationResult>> syncUserRoles(AServer server) {
         List<CompletableFuture<RoleCalculationResult>> results = new ArrayList<>();
@@ -409,11 +402,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         return results;
     }
 
-    /**
-     * Synchronizes the roles of all the users and provides feedback to the user executing
-     * @param server The {@link AServer} to update users for
-     * @param channelId The ID of the channel in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel} should be posted to
-     */
     @Override
     public CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, Long channelId) {
         AChannel channel = channelManagementService.loadChannel(channelId);
@@ -432,6 +420,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      */
     @Transactional
     public void syncRolesInStorage(List<RoleCalculationResult> results) {
+        HashMap<Long, AExperienceRole> experienceRoleHashMap = new HashMap<>();
         results.forEach(result -> {
             if(result != null) {
                 AUserInAServer user = userInServerManagementService.loadOrCreateUser(result.getUserInServerId());
@@ -439,7 +428,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 log.trace("Updating experience role for {} in server {} to {}", user.getUserInServerId(), user.getServerReference().getId(), result.getExperienceRoleId());
                 if(result.getExperienceRoleId() != null) {
                     log.trace("User experience {} gets new experience role with id {}.", userExperience.getId(), result.getExperienceRoleId());
-                    AExperienceRole role = experienceRoleManagementService.getExperienceRoleById(result.getExperienceRoleId());
+                    AExperienceRole role;
+                    if(!experienceRoleHashMap.containsKey(result.getExperienceRoleId())) {
+                        role = experienceRoleManagementService.getExperienceRoleById(result.getExperienceRoleId());
+                        experienceRoleHashMap.put(result.getExperienceRoleId(), role);
+                    } else {
+                        role = experienceRoleHashMap.get(result.getExperienceRoleId());
+                    }
                     userExperience.setCurrentExperienceRole(role);
                 } else {
                     log.trace("User experience {} does not get a user experience role.", userExperience.getId());
@@ -449,12 +444,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         });
     }
 
-    /**
-     * Executes the given {@link Consumer} on each of the experiences and provides feedback in the given AChannel in the form of a status message
-     * @param experiences The list of {@link AUserExperience} to be working on
-     * @param channel The {@link AChannel} used to provide feedback to the user
-     * @param toExecute The {@link Consumer} which should be executed on each element of the passed list
-     */
     @Override
     public CompletableFutureList<RoleCalculationResult> executeActionOnUserExperiencesWithFeedBack(List<AUserExperience> experiences, AChannel channel, Function<AUserExperience, CompletableFuture<RoleCalculationResult>> toExecute) {
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
@@ -491,15 +480,18 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         userExperience.setExperienceGainDisabled(false);
     }
 
+    /**
+     * Renders a {@link MessageToSend messageToSend} to be used as a status message for the ongoing user synchronization
+     * @param current The amount of users which have been synced
+     * @param total The total amount of users which will be synced
+     * @param serverId The ÍD of the {@link AServer server} for which this synchronization is being executed
+     * @return A {@link MessageToSend messageToSend} which will be used to inform the user executing the synchronization about the new situation
+     */
     private MessageToSend getUserSyncStatusUpdateModel(Integer current, Integer total, Long serverId) {
         UserSyncStatusModel statusModel = UserSyncStatusModel.builder().currentCount(current).totalUserCount(total).build();
         return templateService.renderEmbedTemplate("user_sync_status_message", statusModel, serverId);
     }
 
-    /**
-     * Retrieves the role configuration and executes the method responsible to sync the experience role of the user
-     * @param userExperience The {@link AUserExperience} to synchronize the role for
-     */
     @Override
     public CompletableFuture<RoleCalculationResult> syncForSingleUser(AUserExperience userExperience) {
         AUserInAServer user = userExperience.getUser();
@@ -508,12 +500,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         return updateUserRole(userExperience, roles, userExperience.getLevelOrDefault());
     }
 
-    /**
-     * Retrieves the leader board data for the given page of the given server
-     * @param server The {@link AServer} to retrieve the leader board for
-     * @param page The desired page on the leader board. The page size is 10
-     * @return The {@link LeaderBoard} containing all necessary information concerning the leader board
-     */
     @Override
     public LeaderBoard findLeaderBoardData(AServer server, Integer page) {
         if(page <= 0) {
@@ -532,11 +518,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         return LeaderBoard.builder().entries(entries).build();
     }
 
-    /**
-     * Builds an {@link AUserExperience} and loads the appropriate rank of the passed {@link AUserInAServer}
-     * @param userInAServer The {@link AUserInAServer} to retrieve the {@link LeaderBoardEntry} for
-     * @return The {@link LeaderBoardEntry} representing one single row in the leader board
-     */
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {
         log.trace("Retrieving rank for {}", userInAServer.getUserReference().getId());

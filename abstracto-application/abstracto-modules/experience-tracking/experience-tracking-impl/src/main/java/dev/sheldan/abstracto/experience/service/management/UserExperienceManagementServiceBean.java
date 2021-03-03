@@ -42,11 +42,6 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
         return findByUserInServerIdOptional(userInServerId).orElseThrow(() -> new UserInServerNotFoundException(userInServerId));
     }
 
-    /**
-     * Initializes the {@link AUserExperience} with default values the following: 0 experience, 0 messages and experience gain enabled
-     * @param aUserInAServer The {@link AUserInAServer} to create the {@link AUserExperience} object for.
-     * @return The created/changed {@link AUserExperience} object
-     */
     @Override
     public AUserExperience createUserInServer(AUserInAServer aUserInAServer) {
         log.info("Creating user experience for user {} in server {}.", aUserInAServer.getUserReference().getId(),aUserInAServer.getServerReference().getId());

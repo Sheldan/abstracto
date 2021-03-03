@@ -33,6 +33,7 @@ public class EnableExpForRole extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
+        // If its not disabled for the role, we can remove it
         if(disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)) {
             disabledExpRoleManagementService.removeRoleToBeDisabledForExp(actualRole);
         }

@@ -24,12 +24,15 @@ import java.time.Instant;
 public class AUserExperience implements Serializable {
 
     /**
-     * The {@link AUserInAServer} id which is unique for each user in a server.
+     * The ID of the {@link AUserInAServer user} which is represented by this object
      */
     @Id
     @Column(name = "id")
     private Long id;
 
+    /**
+     * The {@link AUserInAServer user} which is represented by this object
+     */
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @PrimaryKeyJoinColumn
     private AUserInAServer user;
@@ -57,22 +60,28 @@ public class AUserExperience implements Serializable {
     private Boolean experienceGainDisabled;
 
     /**
-     * The {@link AExperienceLevel } which the user currently has.
+     * The {@link AExperienceLevel level} which the user currently has.
      */
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "level_id", nullable = false)
     private AExperienceLevel currentLevel;
 
     /**
-     * The {@link AExperienceRole} the user currently has. Can be null.
+     * The {@link AExperienceRole role} the user currently has. Can be null.
      */
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "role_id")
     private AExperienceRole currentExperienceRole;
 
+    /**
+     * The {@link Instant} this entity was created
+     */
     @Column(name = "created")
     private Instant created;
 
+    /**
+     * The {@link Instant} this entity was updated
+     */
     @Column(name = "updated")
     private Instant updated;
 

@@ -18,21 +18,29 @@ import java.time.Instant;
 @Setter
 @EqualsAndHashCode
 public class AExperienceLevel implements Serializable {
+
     /**
      * The unique level from 0 to as defined in the configuration. Will be created on startup.
      */
     @Id
     @Column(name = "level")
     private Integer level;
+
     /**
      * The total amount of experience needed for this level.
      */
     @Column(name = "experience_needed")
     private Long experienceNeeded;
 
+    /**
+     * The {@link Instant} this entity was created
+     */
     @Column(name = "created")
     private Instant created;
 
+    /**
+     * The {@link Instant} this entity was updated
+     */
     @Column(name = "updated")
     private Instant updated;
 

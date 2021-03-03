@@ -10,18 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository to manage the access to the table managed by {@link AExperienceLevel}
+ * Repository to manage the access to the table managed by {@link AExperienceLevel experienceLevel}
  */
 @Repository
 public interface ExperienceLevelRepository extends JpaRepository<AExperienceLevel, Integer> {
-    @NotNull
-    @Override
-    Optional<AExperienceLevel> findById(@NonNull Integer aLong);
 
-    @Override
-    boolean existsById(@NonNull Integer aLong);
-
-    @NotNull
-    @Override
-    List<AExperienceLevel> findAll();
 }

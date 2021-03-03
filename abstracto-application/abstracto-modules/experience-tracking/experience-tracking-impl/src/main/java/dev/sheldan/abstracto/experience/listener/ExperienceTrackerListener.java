@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * This {@link MessageReceivedListener} is responsible to execute the {@link AUserExperienceService} in order to track
+ * This {@link MessageReceivedListener listener} is responsible to execute the {@link AUserExperienceService service} in order to track
  * that a certain user has send a message, and experience should be awarded.
  */
 @Component

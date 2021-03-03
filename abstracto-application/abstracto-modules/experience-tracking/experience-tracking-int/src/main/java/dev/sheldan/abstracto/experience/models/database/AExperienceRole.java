@@ -25,12 +25,15 @@ import java.util.List;
 public class AExperienceRole implements Serializable {
 
     /**
-     * The abstracto unique id of this experience role.
+     * The ID of the {@link ARole} to be awarded at a certain experience level
      */
     @Id
     @Column(name = "id")
     private Long id;
 
+    /**
+     * Reference to the {@link ARole} which is being awarded for this configuration
+     */
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @PrimaryKeyJoinColumn
     private ARole role;
@@ -51,9 +54,15 @@ public class AExperienceRole implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
+    /**
+     * The {@link Instant} this entity was created
+     */
     @Column(name = "created")
     private Instant created;
 
+    /**
+     * The {@link Instant} this entity was updated
+     */
     @Column(name = "updated")
     private Instant updated;
 

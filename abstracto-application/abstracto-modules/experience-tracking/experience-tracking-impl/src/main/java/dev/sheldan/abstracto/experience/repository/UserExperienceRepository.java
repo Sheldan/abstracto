@@ -15,33 +15,34 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository to manage the access to the table managed by {@link AUserExperience}
+ * Repository to manage the access to the table managed by {@link AUserExperience userExperience}
  */
 @Repository
 public interface UserExperienceRepository  extends JpaRepository<AUserExperience, Long> {
 
     /**
-     * Finds all {@link AUserExperience} of the given {@link AServer}
-     * @param server The {@link AServer} to retrieve ethe {@link AUserExperience} for
-     * @return A complete list of {@link AUserExperience} of the given {@link AServer}
+     * Finds all {@link AUserExperience userExperience} of the given {@link AServer server}
+     * @param server The {@link AServer server} to retrieve the {@link AUserExperience userExperience} for
+     * @return A complete list of {@link AUserExperience} of the given {@link AServer server}
      */
     List<AUserExperience> findByUser_ServerReference(AServer server);
 
     /**
-     * Retrieves the {@link AUserExperience} ordered by experience, and applies the {@link Pageable} to only filter out certain pages.
-     * @param server The {@link AServer} to retrieve the {@link AUserExperience} information for
-     * @param pageable A {@link Pageable} object to indicate the pages which should be retrieved, page size is 10
-     * @return A list of {@link AUserExperience} of the given {@link AServer} ordered by the experience of the users, paginated by the given
+     * Retrieves the {@link AUserExperience userExperience} ordered by experience, and applies the {@link Pageable pageable} to only filter out certain pages.
+     * @param server The {@link AServer server} to retrieve the {@link AUserExperience userExperience} information for
+     * @param pageable A {@link Pageable pageable} object to indicate the pages which should be retrieved, page size is 10
+     * @return A list of {@link AUserExperience userExperience} of the given {@link AServer server} ordered by the experience of the users, paginated by the given
      * configuration
      */
     List<AUserExperience> findTop10ByUser_ServerReferenceOrderByExperienceDesc(AServer server, Pageable pageable);
 
     /**
-     * This returns the {@link LeaderBoardEntryResult} object containing the information about the rank of a user in a server.
+     * This returns the {@link LeaderBoardEntryResult entryResult} object containing the information about the rank of a user in a server.
      * This query selects all the experience entries and returns the one associated with the provided user.
      * We need to select all of them, in order to find the rank of the member in the server
-     * @param id The {@link dev.sheldan.abstracto.core.models.database.AUserInAServer} id to search for
-     * @return the {@link LeaderBoardEntryResult} of this {@link dev.sheldan.abstracto.core.models.database.AUserInAServer}
+     * @param id The ID of an {@link dev.sheldan.abstracto.core.models.database.AUserInAServer userInAServer} search for
+     * @param serverId The ID of the {@link AServer server} for which we are retrieving the experience
+     * @return The {@link LeaderBoardEntryResult result} of this {@link dev.sheldan.abstracto.core.models.database.AUserInAServer userInAServer}
      * containing rank and experience information
      */
     @Query(value = "WITH user_experience_ranked AS" +
@@ -54,7 +55,4 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
             "WHERE rank.id = :userInServerId", nativeQuery = true)
     LeaderBoardEntryResult getRankOfUserInServer(@Param("userInServerId") Long id, @Param("serverId") Long serverId);
 
-    @NotNull
-    @Override
-    Optional<AUserExperience> findById(@NonNull Long aLong);
 }

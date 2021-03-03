@@ -10,17 +10,29 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service used to manage the record in the {@link AUserExperience} table
+ * Service used to manage the record in the {@link AUserExperience userExperience} table
  */
 public interface UserExperienceManagementService {
     /**
-     * Retrieves the {@link AUserExperience} object for the given {@link AUserInAServer}
-     * @param aUserInAServer The record in the table referenced by the given {@link AUserInAServer}, if none exists, creates one.
-     * @return The {@link AUserExperience} object representing the {@link AUserInAServer}
+     * Retrieves the {@link AUserExperience userExperience} object for the given {@link AUserInAServer userInAServer}
+     * @param aUserInAServer The record in the table referenced by the given {@link AUserInAServer userInAServer}, if none exists, creates one.
+     * @return The {@link AUserExperience userExperience} object representing the {@link AUserInAServer userInAServer}
      */
     AUserExperience findUserInServer(AUserInAServer aUserInAServer);
 
+    /**
+     * Retrieves a possible {@link AUserExperience userExperience} for the given ID of the {@link AUserInAServer}.
+     * If none is found, returns an empty {@link Optional optional}
+     * @param userInServerId The ID of a {@link AUserInAServer} to search for
+     * @return An {@link Optional optional} containing a {@link AUserExperience userExperience} object if one is found, none otherwise
+     */
     Optional<AUserExperience> findByUserInServerIdOptional(Long userInServerId);
+
+    /**
+     * Retrieves the {@link AUserExperience userExperience} object for the given ID of an {@link AUserInAServer userInAServer}
+     * @param userInServerId The ID of a {@link AUserInAServer userInAServer} to retrieve the {@link AUserExperience} for.
+     * @return The {@link AUserExperience userExperience} object representing the {@link AUserInAServer userInAServer}
+     */
     AUserExperience findByUserInServerId(Long userInServerId);
 
     /**
@@ -38,11 +50,11 @@ public interface UserExperienceManagementService {
     List<AUserExperience> loadAllUsers(AServer server);
 
     /**
-     * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience.experience} and only returns the positions between {@code start} and @{code end}.
+     * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience#experience} and only returns the positions between {@code start} and @{code end}.
      * @param server The {@link AServer} to retrieve the users for
      * @param start The start index in the complete ordered list to return the {@link AUserExperience} elements for
      * @param end The end index for which to return a sublist of {@link AUserExperience} elements for
-     * @return A list desc ordered by {@link AUserExperience.experience} only containing the elements between {@code start} and @{code end}
+     * @return A list desc ordered by {@link AUserExperience#experience} only containing the elements between {@code start} and @{code end}
      */
     List<AUserExperience> findLeaderBoardUsersPaginated(AServer server, Integer start, Integer end);
 

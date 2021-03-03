@@ -18,7 +18,7 @@ import java.util.Map;
 
 
 /**
- * This {@link QuartzJobBean} is executed regularly and calls the the {@link AUserExperienceService}
+ * This {@link QuartzJobBean job} is executed regularly and calls the the {@link AUserExperienceService service}
  * store the tracked experience from runtime. This job also cleans up the already processed entries in the runtime
  * experience.
  */

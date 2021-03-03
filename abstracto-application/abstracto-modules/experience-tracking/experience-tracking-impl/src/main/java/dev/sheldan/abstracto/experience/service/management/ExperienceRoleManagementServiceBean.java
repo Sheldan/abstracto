@@ -44,6 +44,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
 
     @Override
     public AExperienceRole getRoleInServer(ARole role) {
+        // TODO throw different exception
         return this.getRoleInServerOptional(role).orElseThrow(AbstractoRunTimeException::new);
     }
 
@@ -53,18 +54,13 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     }
 
     @Override
-    public AExperienceRole getRoleInServer(Long roleId) {
-        ARole role = roleManagementService.findRole(roleId);
-        return getRoleInServer(role);
-    }
-
-    @Override
     public List<AExperienceRole> getExperienceRolesForServer(AServer server) {
         return experienceRoleRepository.findByRoleServer(server);
     }
 
     @Override
     public AExperienceRole getExperienceRoleById(Long experienceRoleId) {
+        // TODO throw different exception
         return getExperienceRoleByIdOptional(experienceRoleId).orElseThrow(() -> new AbstractoRunTimeException("Experience role not found"));
     }
 

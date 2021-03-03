@@ -16,12 +16,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
+/**
+ * This condition evaluates whether or not a given {@link AUserExperience userExperience}, defined by the ID of {@link AUserInAServer userInAServer}
+ * has at least the given level.
+ */
 @Component
 @Slf4j
 public class HasLevelCondition implements SystemCondition {
 
-    public static final String USER_ID_VARIABLE = "userId";
+    public static final String USER_IN_SERVER_ID_VARIABLE_KEY = "userId";
     public static final String LEVEL_VARIABLE = "level";
+    public static final String HAS_LEVEL_CONDITION_KEY = "HAS_LEVEL";
+
     @Autowired
     private UserExperienceManagementService userExperienceManagementService;
 
@@ -31,10 +37,10 @@ public class HasLevelCondition implements SystemCondition {
     @Override
     public boolean checkCondition(ConditionContextInstance conditionContext) {
         HashMap<String, Object> parameters = conditionContext.getParameters();
-        Long userId = (Long) parameters.get(USER_ID_VARIABLE);
+        Long userInServerId = (Long) parameters.get(USER_IN_SERVER_ID_VARIABLE_KEY);
         Integer level = (Integer) parameters.get(LEVEL_VARIABLE);
         log.info("Evaluating has level condition.");
-        Optional<AUserInAServer> userInServerOptional = userInServerManagementService.loadUserOptional(userId);
+        Optional<AUserInAServer> userInServerOptional = userInServerManagementService.loadUserOptional(userInServerId);
         if(userInServerOptional.isPresent()) {
             AUserInAServer userInServer = userInServerOptional.get();
             log.info("Evaluating has level condition for user {} in server {} with level {}.",
@@ -49,13 +55,13 @@ public class HasLevelCondition implements SystemCondition {
 
     @Override
     public String getConditionName() {
-        return "HAS_LEVEL";
+        return HAS_LEVEL_CONDITION_KEY;
     }
 
     @Override
     public ConditionContext getExpectedContext() {
-        ConditionContextVariable userIdVariable = ConditionContextVariable.builder().name(USER_ID_VARIABLE).type(Long.class).build();
+        ConditionContextVariable userIdVariable = ConditionContextVariable.builder().name(USER_IN_SERVER_ID_VARIABLE_KEY).type(Long.class).build();
         ConditionContextVariable levelVariable = ConditionContextVariable.builder().name(LEVEL_VARIABLE).type(Integer.class).build();
-        return ConditionContext.builder().expectedVariables(Arrays.asList(userIdVariable, levelVariable)).build();
+        return ConditionContext.builder().requiredVariables(Arrays.asList(userIdVariable, levelVariable)).build();
     }
 }

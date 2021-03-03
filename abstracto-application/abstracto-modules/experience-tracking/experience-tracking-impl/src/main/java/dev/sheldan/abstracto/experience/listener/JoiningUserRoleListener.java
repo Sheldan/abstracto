@@ -16,8 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * If a user joins, this {@link JoinListener} retrieves the previously stored {@link AUserExperience} and gives the
- * {@link Member} the necessary {@link net.dv8tion.jda.api.entities.Role} according to the current configuration
+ * If a {@link Member member} joins, this {@link JoinListener listener} retrieves the previously stored {@link AUserExperience experience} and gives the
+ * member the necessary {@link net.dv8tion.jda.api.entities.Role role} according to the current configuration, if any
  */
 @Component
 @Slf4j

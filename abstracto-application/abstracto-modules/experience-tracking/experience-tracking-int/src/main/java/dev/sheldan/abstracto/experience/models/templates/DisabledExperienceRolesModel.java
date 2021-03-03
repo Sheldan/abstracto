@@ -15,6 +15,9 @@ import java.util.List;
 @Getter
 @SuperBuilder
 public class DisabledExperienceRolesModel extends UserInitiatedServerContext {
+    /**
+     * A list of {@link FullRole roles} for which experience gain is disabled in this server
+     */
     @Builder.Default
     private List<FullRole> roles = new ArrayList<>();
 }

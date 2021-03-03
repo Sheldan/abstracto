@@ -15,7 +15,16 @@ import java.io.Serializable;
 @Getter
 @Builder
 public class LeaderBoardEntryModel implements Serializable {
+    /**
+     * The {@link AUserExperience experience} for this particular user in the server
+     */
     private AUserExperience experience;
+    /**
+     * The {@link Member member} associated wit this user experience, might be null if the user left he server.
+     */
     private transient Member member;
+    /**
+     * The position this {@link dev.sheldan.abstracto.core.models.database.AUserInAServer user} in this server has, ordered by experience {@link AUserExperience#experience}
+     */
     private Integer rank;
 }

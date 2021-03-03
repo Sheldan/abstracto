@@ -20,7 +20,7 @@ public class RankModel extends SlimUserInitiatedServerContext {
      */
     private LeaderBoardEntryModel rankUser;
     /**
-     * The necessary experience until the next level up.
+     * The necessary experience to the next level up.
      */
     private Long experienceToNextLevel;
 }

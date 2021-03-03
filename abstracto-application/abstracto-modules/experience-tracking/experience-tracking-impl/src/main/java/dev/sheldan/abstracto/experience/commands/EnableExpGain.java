@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Command to enable experience again for a member
+ * Command to enable experience gain for a member
  */
 @Component
 public class EnableExpGain extends AbstractConditionableCommand {
