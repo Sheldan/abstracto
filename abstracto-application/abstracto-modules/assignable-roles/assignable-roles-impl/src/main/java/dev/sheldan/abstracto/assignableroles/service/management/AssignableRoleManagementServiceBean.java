@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.MessageReaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -83,18 +82,6 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
     @Override
     public AssignableRole getByAssignableRoleId(Long assignableRoleId) {
         return repository.findById(assignableRoleId).orElseThrow(() -> new AbstractoRunTimeException("Assignable role not found"));
-    }
-
-    @Override
-    public AssignableRole getRoleForReactionEmote(MessageReaction.ReactionEmote emote, AssignableRolePlace assignableRolePlace) {
-        for (AssignableRolePlacePost post : assignableRolePlace.getMessagePosts()) {
-            for (AssignableRole assignableRole : post.getAssignableRoles()) {
-                if (emoteService.isReactionEmoteAEmote(emote, assignableRole.getEmote())) {
-                    return assignableRole;
-                }
-            }
-        }
-        throw new AbstractoRunTimeException("Role for reaction was not found.");
     }
 
     @Override

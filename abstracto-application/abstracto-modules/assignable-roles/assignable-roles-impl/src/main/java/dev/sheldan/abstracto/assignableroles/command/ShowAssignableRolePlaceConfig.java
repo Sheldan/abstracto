@@ -16,7 +16,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+/**
+ * Command used to show the configuration of an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ */
 @Component
 public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand {
 
@@ -28,13 +32,13 @@ public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand 
     private ServerManagementService serverManagementService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
         // TODO refactor to return something to be posted in this command here instead of relying it to be posted somewhere else
-        service.showAssignablePlaceConfig(server, name, commandContext.getChannel());
-        return CommandResult.fromIgnored();
+        return service.showAssignablePlaceConfig(server, name, commandContext.getChannel())
+                .thenApply(unused -> CommandResult.fromIgnored());
     }
 
     @Override
@@ -46,6 +50,7 @@ public class ShowAssignableRolePlaceConfig extends AbstractConditionableCommand 
                 .name("showAssignableRolePlaceConfig")
                 .module(AssignableRoleModule.ASSIGNABLE_ROLES)
                 .templated(true)
+                .async(true)
                 .causesReaction(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

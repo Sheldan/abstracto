@@ -20,6 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Command used to render the {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ * and create the {@link net.dv8tion.jda.api.entities.Message messages} used to add {@link net.dv8tion.jda.api.entities.MessageReaction reactions} to
+ */
 @Component
 @Slf4j
 public class SetupAssignableRolePlace extends AbstractConditionableCommand {

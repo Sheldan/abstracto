@@ -7,10 +7,19 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * This model is used as a container to display the configuration of an {@link AssignableRolePlace place}
+ */
 @Getter
 @Setter
 @Builder
 public class AssignableRolePlaceConfig {
+    /**
+     * The {@link AssignableRolePlace place} to show the config of
+     */
     private AssignableRolePlace place;
-    private List<AssignablePostConfigRole> roles;
+    /**
+     * The {@link AssignableRolePlaceConfig roles} which are contained in this {@link AssignableRolePlace}
+     */
+    private List<AssignableRolePlaceConfigRole> roles;
 }

@@ -10,5 +10,5 @@ import java.util.List;
 @Setter
 @Builder
 public class ConditionContext {
-    private List<ConditionContextVariable> expectedVariables;
+    private List<ConditionContextVariable> requiredVariables;
 }

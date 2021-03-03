@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-
+/**
+ * Command used to change the text of an {@link AssignableRolePlace place}
+ */
 @Component
 public class EditAssignableRolePlaceText extends AbstractConditionableCommand {
 
@@ -37,7 +39,7 @@ public class EditAssignableRolePlaceText extends AbstractConditionableCommand {
         String name = (String) parameters.get(0);
         String newText = (String) parameters.get(1);
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        return service.changeText(server, name, newText)
+        return service.changeTextAsync(server, name, newText)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 

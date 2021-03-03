@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.listener;
 
 import dev.sheldan.abstracto.assignableroles.config.features.AssignableRoleFeature;
+import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
@@ -38,6 +39,16 @@ public class AssignablePostReactionRemoved implements AsyncReactionRemovedListen
         return AssignableRoleFeature.ASSIGNABLE_ROLES;
     }
 
+    /**
+     * Determines if the {@link net.dv8tion.jda.api.entities.Message message} a reaction was removed from, belongs to a
+     * {@link AssignableRolePlacePost post}.
+     * If the {@link AssignableRolePlacePost post} belong to an inactive {@link AssignableRolePlace place} this method ignores the removal.
+     * Otherwise the logic according to the configuration
+     * of the {@link AssignableRolePlace place} will be executed.
+     * @param message The {@link CachedMessage message} on which a reaction was added
+     * @param reactions All the reactions which are currently known to be on the {@link CachedMessage message}
+     * @param userRemoving The {@link ServerUser serverUser} which removed a {@link net.dv8tion.jda.api.entities.MessageReaction reaction}
+     */
     @Override
     public void executeReactionRemoved(CachedMessage message, CachedReactions reactions, ServerUser userRemoving) {
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(message.getMessageId());

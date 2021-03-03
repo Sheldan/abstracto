@@ -5,6 +5,11 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.templating.Templatable;
 
+/**
+ * Exception which is thrown in case a given {@link dev.sheldan.abstracto.core.models.database.AEmote} was not found
+ * in the {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace}, when it was tried to switch
+ * or move the emotes around.
+ */
 public class EmoteNotInAssignableRolePlaceException extends AbstractoRunTimeException implements Templatable {
 
     private final EmoteNotInAssignableRolePlaceExceptionModel model;

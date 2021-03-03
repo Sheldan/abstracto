@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,10 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Command used to move an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ * to another {@link dev.sheldan.abstracto.core.models.database.AChannel channel}
+ */
 @Component
 public class MoveAssignableRolePlace extends AbstractConditionableCommand {
 
@@ -32,8 +35,7 @@ public class MoveAssignableRolePlace extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         TextChannel newChannel = (TextChannel) parameters.get(1);
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        placeManagementService.moveAssignableRolePlace(server, name, newChannel);
+        placeManagementService.moveAssignableRolePlace(name, newChannel);
         return CommandResult.fromSuccess();
     }
 

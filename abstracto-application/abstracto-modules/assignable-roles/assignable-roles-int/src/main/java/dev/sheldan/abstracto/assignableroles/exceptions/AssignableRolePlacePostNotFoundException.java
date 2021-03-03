@@ -4,11 +4,15 @@ import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRolePlac
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
 
-public class AssignablePlacePostNotFoundException extends AbstractoRunTimeException implements Templatable {
+/**
+ * Exception which is thrown, in case the {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost post}
+ * was not found via its message ID
+ */
+public class AssignableRolePlacePostNotFoundException extends AbstractoRunTimeException implements Templatable {
 
     private final AssignableRolePlacePostNotFoundExceptionModel model;
 
-    public AssignablePlacePostNotFoundException(Long messageId) {
+    public AssignableRolePlacePostNotFoundException(Long messageId) {
         super("Assignable place post not found.");
         this.model = AssignableRolePlacePostNotFoundExceptionModel.builder().messageId(messageId).build();
     }

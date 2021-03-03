@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Command used to delete an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ */
 @Component
 public class DeleteAssignableRolePlace extends AbstractConditionableCommand {
 

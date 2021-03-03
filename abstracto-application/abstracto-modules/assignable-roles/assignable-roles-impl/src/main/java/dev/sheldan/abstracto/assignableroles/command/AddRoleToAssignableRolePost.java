@@ -23,6 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Command used to add an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRole assignableRole}
+ * to an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ */
 @Component
 public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
 

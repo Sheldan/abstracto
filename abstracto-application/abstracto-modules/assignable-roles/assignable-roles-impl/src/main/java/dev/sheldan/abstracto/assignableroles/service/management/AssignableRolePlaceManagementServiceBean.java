@@ -20,16 +20,16 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
     private AssignableRolePlaceRepository repository;
 
     @Override
-    public AssignableRolePlace createPlace(AServer server, String name, AChannel channel, String text) {
+    public AssignableRolePlace createPlace(String name, AChannel channel, String text) {
         AssignableRolePlace place = AssignableRolePlace
                 .builder()
                 .channel(channel)
-                .server(server)
+                .server(channel.getServer())
                 .text(text)
                 .key(name)
                 .build();
         repository.save(place);
-        log.info("Creating assignable role place in channel {} on server {}.", channel.getId(), server.getId());
+        log.info("Creating assignable role place in channel {} on server {}.", channel.getId(), channel.getServer().getId());
         return place;
     }
 
@@ -55,10 +55,10 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
     }
 
     @Override
-    public void moveAssignableRolePlace(AServer server, String name, AChannel newChannel) {
-        AssignableRolePlace assignablePlaceToChange = findByServerAndKey(server, name);
+    public void moveAssignableRolePlace(String name, AChannel newChannel) {
+        AssignableRolePlace assignablePlaceToChange = findByServerAndKey(newChannel.getServer(), name);
         log.info("Moving assignable role place {} in server {} from channel {} to channel {}.",
-                assignablePlaceToChange.getId(), server.getId(), assignablePlaceToChange.getChannel().getId(), newChannel.getId());
+                assignablePlaceToChange.getId(), newChannel.getServer().getId(), assignablePlaceToChange.getChannel().getId(), newChannel.getId());
         assignablePlaceToChange.setChannel(newChannel);
     }
 

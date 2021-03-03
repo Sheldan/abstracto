@@ -18,6 +18,10 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Command used to set the position of one individual {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRole assignableRole}
+ * within an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ */
 @Component
 public class SetAssignableRolePosition extends AbstractConditionableCommand {
 

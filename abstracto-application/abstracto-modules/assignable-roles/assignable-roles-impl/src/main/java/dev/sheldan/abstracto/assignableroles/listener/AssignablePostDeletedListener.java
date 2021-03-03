@@ -20,6 +20,10 @@ public class AssignablePostDeletedListener implements AsyncMessageDeletedListene
     @Autowired
     private AssignableRolePlacePostManagementService service;
 
+    /**
+     * This method deletes one individual {@link AssignableRolePlacePost post}, because its message has been deleted
+     * @param messageBefore The {@link CachedMessage message} which was deleted
+     */
     @Override
     public void execute(CachedMessage messageBefore) {
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(messageBefore.getMessageId());

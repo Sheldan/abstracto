@@ -34,7 +34,7 @@ public class ConditionServiceBean implements ConditionService {
     }
 
     private void verifyConditionContext(ConditionContextInstance contextInstance, SystemCondition condition) {
-        for (ConditionContextVariable conditionContextVariable : condition.getExpectedContext().getExpectedVariables()) {
+        for (ConditionContextVariable conditionContextVariable : condition.getExpectedContext().getRequiredVariables()) {
             HashMap<String, Object> providedParameters = contextInstance.getParameters();
             if(!providedParameters.containsKey(conditionContextVariable.getName())) {
                 throw new InvalidConditionParametersException(String.format("Variable %s was not present", conditionContextVariable.getName()));

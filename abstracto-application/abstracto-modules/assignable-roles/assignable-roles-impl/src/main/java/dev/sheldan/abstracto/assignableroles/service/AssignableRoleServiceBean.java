@@ -69,11 +69,11 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
                     .build();
 
     @Override
-    public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member toAdd) {
+    public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member member) {
         metricService.incrementCounter(ASSIGNABLE_ROLES_ASSIGNED);
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
-        log.info("Assigning role {} to member {} in server {}.", assignableRoleId, toAdd.getId(), toAdd.getGuild().getId());
-        return roleService.addRoleToMemberFuture(toAdd, role.getRole());
+        log.info("Assigning role {} to member {} in server {}.", assignableRoleId, member.getId(), member.getGuild().getId());
+        return roleService.addRoleToMemberFuture(member, role.getRole());
     }
 
     @Override
@@ -133,6 +133,7 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     }
 
     @Transactional
+    @Override
     public void addRoleToUser(Long assignableRoleId, AUserInAServer aUserInAServer) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         addRoleToUser(role, aUserInAServer);
@@ -152,6 +153,11 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
         assignedRoleUserManagementServiceBean.removeAssignedRoleFromUser(assignableRole, aUserInAServer);
     }
 
+    /**
+     * Adds the given {@link AssignableRole assignableRole} identified by the ID to the given {@link Member member}
+     * @param assignableRoleId The ID of the {@link AssignableRole} to be added to the {@link Member member}
+     * @param member The {@link Member member} to add the {@link AssignableRole role} to
+     */
     @Transactional
     public void addRoleToUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
@@ -159,12 +165,22 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
         addRoleToUser(role, aUserInAServer);
     }
 
+    /**
+     * Removes the given {@link AssignableRole assignableRole} identified by the ID from the given {@link AUserInAServer user}
+     * @param assignableRoleId The ID of the {@link AssignableRole} to be removed from the {@link Member member}
+     * @param aUserInAServer The {@link AUserInAServer user} to remove the {@link AssignableRole role} from
+     */
     @Transactional
     public void removeRoleFromUser(Long assignableRoleId, AUserInAServer aUserInAServer) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         removeRoleFromUser(role, aUserInAServer);
     }
 
+    /**
+     * Stores the removal of an {@link AssignableRole assignableRole} from a {@link Member member} in the database
+     * @param assignableRoleId The ID of the {@link AssignableRole} to be removed from the {@link Member member}
+     * @param member The {@link Member member} which should get the {@link AssignableRole role} removed
+     */
     @Transactional
     public void persistRoleRemovalFromUser(Long assignableRoleId, Member member) {
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);

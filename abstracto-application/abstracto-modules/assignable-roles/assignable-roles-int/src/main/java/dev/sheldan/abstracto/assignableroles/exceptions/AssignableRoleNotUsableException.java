@@ -6,6 +6,11 @@ import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import net.dv8tion.jda.api.entities.Guild;
 
+/**
+ * Exception thrown in case the defined {@link net.dv8tion.jda.api.entities.Role role} cannot be interacted with by the bot,
+ * because of permissions, this can happen if the role is the same or higher than the bot, therefore cannot be given to
+ * {@link net.dv8tion.jda.api.entities.Member members}
+ */
 public class AssignableRoleNotUsableException extends AbstractoRunTimeException implements Templatable {
     private final AssignableRoleNotUsableExceptionModel model;
 

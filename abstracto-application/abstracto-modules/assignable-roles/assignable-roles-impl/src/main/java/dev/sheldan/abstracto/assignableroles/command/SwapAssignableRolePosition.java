@@ -20,6 +20,10 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Command used to swap the positions of two {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRole roles}
+ * within one {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ */
 @Component
 public class SwapAssignableRolePosition extends AbstractConditionableCommand {
 

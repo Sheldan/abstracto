@@ -69,6 +69,16 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
     @Autowired
     private MemberService memberService;
 
+    /**
+     * Determines if the {@link net.dv8tion.jda.api.entities.Message message} a reaction was added to, belongs to a
+     * {@link AssignableRolePlacePost post}.
+     * If the {@link AssignableRolePlacePost post} belong to an inactive {@link AssignableRolePlace place} this method
+     * will automatically remove the reaction, self reactions are ignored. Otherwise the logic according to the configuration
+     * of the {@link AssignableRolePlace place} will be executed.
+     * @param message The {@link CachedMessage message} on which a reaction was added
+     * @param cachedReaction The {@link CachedReaction reaction} which was added
+     * @param serverUser The {@link ServerUser serverUser} who added the reaction
+     */
     @Override
     public void executeReactionAdded(CachedMessage message, CachedReactions cachedReaction, ServerUser serverUser) {
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(message.getMessageId());
@@ -79,13 +89,13 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
                 return;
             }
             CachedReaction specificReaction = cachedReaction.getReactionForSpecificUser(serverUser);
-            Long assignableRolePlaceId = assignablePlacePost.getId();
+            Long assignableRolePlacePostId = assignablePlacePost.getId();
             if(assignablePlacePost.getAssignablePlace().getActive()) {
                 log.info("User {} added reaction to assignable role place {} in server {}. Handling added event.", serverUser.getUserId(), assignablePlacePost.getId(), serverUser.getServerId());
                 addAppropriateRoles(specificReaction, assignablePlacePost, serverUser, message);
             } else {
                 reactionService.removeReactionFromMessage(specificReaction, message).exceptionally(throwable -> {
-                    log.error("Failed to remove reaction on place {} because place is inactive.", assignableRolePlaceId, throwable);
+                    log.error("Failed to remove reaction on place post {} because place is inactive.", assignableRolePlacePostId, throwable);
                     return null;
                 });
                 log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), serverUser.getServerId());
@@ -93,6 +103,19 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
         }
     }
 
+    /**
+     * Iterates over all {@link AssignableRole assignableRoles} of the post and checks which {@link AssignableRole assignableRole}
+     * is identified by the added {@link CachedReaction reaction}. If there is no valid reaction, the {@link net.dv8tion.jda.api.entities.MessageReaction reaction}
+     * will be removed again. In case the {@link AssignableRolePlace place} is configured to have unique roles, this will remove the existing
+     * {@link net.dv8tion.jda.api.entities.MessageReaction reaction} and the assigned {@link net.dv8tion.jda.api.entities.Role role}.
+     * Afterwards the appropriate {@link net.dv8tion.jda.api.entities.Role role} will be added and the update
+     * will be stored in the database.
+     * @param cachedReaction The {@link CachedReaction reaction} which was added
+     * @param assignablePlacePost The {@link AssignableRolePlacePost post} onto which the {@link CachedReaction reaction} was added to
+     * @param serverUser The {@link ServerUser serverUser} who added the {@link CachedReaction reaction}
+     * @param message The {@link CachedMessage message} onto which the {@link net.dv8tion.jda.api.entities.MessageReaction reaction}
+     *                was added
+     */
     private void addAppropriateRoles(CachedReaction cachedReaction, AssignableRolePlacePost assignablePlacePost, ServerUser serverUser, CachedMessage message) {
         boolean validReaction = false;
         AssignableRolePlace assignableRolePlace = assignablePlacePost.getAssignablePlace();
@@ -128,6 +151,12 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
         });
     }
 
+    /**
+     * Persists the {@link AssignableRole role} changes for the user who added a reaction in the database
+     * @param assignableRolePlaceId The ID of the {@link AssignableRolePlace place}
+     * @param serverUser The {@link ServerUser serverUser} who added the {@link net.dv8tion.jda.api.entities.MessageReaction reaction}
+     * @param cachedReaction The {@link CachedReaction reaction} wich was added
+     */
     @Transactional
     public void updateStoredAssignableRoles(Long assignableRolePlaceId, ServerUser serverUser, CachedReaction cachedReaction) {
         AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(assignableRolePlaceId);

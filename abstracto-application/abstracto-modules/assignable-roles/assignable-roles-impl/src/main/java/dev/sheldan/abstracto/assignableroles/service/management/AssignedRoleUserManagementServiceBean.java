@@ -43,6 +43,7 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
         removeAssignedRoleFromUser(assignableRole, user);
     }
 
+    @Override
     public void removeAssignedRoleFromUser(AssignableRole assignableRole, AssignedRoleUser user) {
         assignableRole.getAssignedUsers().remove(user);
         user.getRoles().remove(assignableRole);
@@ -53,21 +54,6 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
         log.info("Creating assigned role user for user {} in server {}.", aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
         AssignedRoleUser newUser = AssignedRoleUser.builder().user(aUserInAServer).id(aUserInAServer.getUserInServerId()).build();
         return repository.save(newUser);
-    }
-
-    @Override
-    public void clearAllAssignedRolesOfUser(AUserInAServer userInAServer) {
-        AssignedRoleUser user = findByUserInServer(userInAServer);
-        log.info("Clearing all assignable roles for user {} in server {}.", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
-        user.getRoles().forEach(assignableRole ->
-            assignableRole.getAssignedUsers().remove(user)
-        );
-        user.getRoles().clear();
-    }
-
-    @Override
-    public boolean doesAssignedRoleUserExist(AUserInAServer aUserInAServer) {
-        return repository.existsById(aUserInAServer.getUserInServerId());
     }
 
     @Override

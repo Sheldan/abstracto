@@ -4,6 +4,10 @@ import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRolePlac
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
 
+/**
+ * Exception which is thrown in case a {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ * defined by a {@link String key} does not exist
+ */
 public class AssignableRolePlaceNotFoundException extends AbstractoRunTimeException implements Templatable {
 
     private final AssignableRolePlaceNotFoundExceptionModel model;

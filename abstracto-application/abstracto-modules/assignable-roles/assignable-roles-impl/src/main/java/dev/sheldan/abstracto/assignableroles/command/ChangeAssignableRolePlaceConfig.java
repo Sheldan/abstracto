@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Command used to change one attribute of an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ */
 @Component
 @Slf4j
 public class ChangeAssignableRolePlaceConfig extends AbstractConditionableCommand {

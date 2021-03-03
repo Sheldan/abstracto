@@ -18,6 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Command used to show how an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ *  would look like in the current {@link net.dv8tion.jda.api.entities.TextChannel channel}
+ */
 @Component
 public class TestAssignableRolePlace extends AbstractConditionableCommand {
 

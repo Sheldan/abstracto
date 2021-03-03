@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureEnum;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -42,8 +41,7 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
         TextChannel channel = (TextChannel) parameters.get(1);
         String text =  (String) parameters.get(2);
         AChannel chosenChannel = channelManagementService.loadChannel(channel.getIdLong());
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        service.createAssignableRolePlace(server, name, chosenChannel, text);
+        service.createAssignableRolePlace(name, chosenChannel, text);
         return CommandResult.fromSuccess();
     }
 

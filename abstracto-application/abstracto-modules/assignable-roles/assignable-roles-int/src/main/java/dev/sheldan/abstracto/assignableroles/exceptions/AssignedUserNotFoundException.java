@@ -5,6 +5,10 @@ import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.templating.Templatable;
 
+/**
+ * Exception which is thrown in case an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser user}
+ * was not found.
+ */
 public class AssignedUserNotFoundException extends AbstractoRunTimeException implements Templatable {
 
     private final AssignedUserNotFoundExceptionModel model;

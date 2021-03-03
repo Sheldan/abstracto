@@ -15,7 +15,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
-
+/**
+ * Command used to show all {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace places}
+ * within the current {@link AServer server}
+ */
 @Component
 public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
 

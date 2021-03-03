@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignablePlacePostNotFoundException;
+import dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlacePostNotFoundException;
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRolePlacePostRepository;
@@ -22,7 +22,7 @@ public class AssignableRolePlacePostManagementServiceBean implements AssignableR
 
     @Override
     public AssignableRolePlacePost findByMessageId(Long messageId) {
-        return findByMessageIdOptional(messageId).orElseThrow(() -> new AssignablePlacePostNotFoundException(messageId));
+        return findByMessageIdOptional(messageId).orElseThrow(() -> new AssignableRolePlacePostNotFoundException(messageId));
     }
 
     @Override

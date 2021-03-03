@@ -4,11 +4,15 @@ import dev.sheldan.abstracto.assignableroles.models.exception.AssignableRolePlac
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
 
-public class AssignableRolePlaceChannelDoesNotExist extends AbstractoRunTimeException implements Templatable {
+/**
+ * Exception thrown in case the {@link dev.sheldan.abstracto.core.models.database.AChannel channel} in which a
+ * {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place} is defined, does not exist
+ */
+public class AssignableRolePlaceChannelDoesNotExistException extends AbstractoRunTimeException implements Templatable {
 
     private final AssignableRolePlaceChannelDoesNotExistExceptionModel model;
 
-    public AssignableRolePlaceChannelDoesNotExist(Long channelId, String placeName) {
+    public AssignableRolePlaceChannelDoesNotExistException(Long channelId, String placeName) {
         super("Assignable role place channel does not exist");
         this.model = AssignableRolePlaceChannelDoesNotExistExceptionModel.builder().channelId(channelId).placeName(placeName).build();
     }
