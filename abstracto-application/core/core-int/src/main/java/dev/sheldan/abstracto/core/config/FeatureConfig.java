@@ -19,6 +19,6 @@ public interface FeatureConfig extends Serializable {
     default List<String> getRequiredSystemConfigKeys() { return Collections.emptyList();}
     default List<FeatureValidator> getAdditionalFeatureValidators() { return Collections.emptyList(); }
     default List<String> getRequiredEmotes() { return Collections.emptyList(); }
-    default List<FeatureMode> getAvailableModes() { return Collections.emptyList(); };
+    default List<FeatureMode> getAvailableModes() { return Collections.emptyList(); }
     default List<SetupStep> getCustomSetupSteps() { return Collections.emptyList(); }
 }

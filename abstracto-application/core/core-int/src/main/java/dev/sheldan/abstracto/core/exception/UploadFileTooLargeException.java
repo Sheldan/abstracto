@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class UploadFileTooLargeException extends AbstractoRunTimeException implements Templatable {
 
-    private UploadFileTooLargeExceptionModel model;
+    private final UploadFileTooLargeExceptionModel model;
 
     public UploadFileTooLargeException(Long fileSize, Long fileSizeLimit) {
         super("File too large for uploading it into the server.");

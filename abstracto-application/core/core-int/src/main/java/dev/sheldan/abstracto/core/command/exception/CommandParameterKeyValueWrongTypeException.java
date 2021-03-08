@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CommandParameterKeyValueWrongTypeException extends AbstractoRunTimeException implements Templatable {
 
-    private CommandParameterKeyValueWrongTypeExceptionModel model;
+    private final CommandParameterKeyValueWrongTypeExceptionModel model;
 
     public CommandParameterKeyValueWrongTypeException(List<String> expectedValues) {
         super("Command parameter value did not have expected values present");
