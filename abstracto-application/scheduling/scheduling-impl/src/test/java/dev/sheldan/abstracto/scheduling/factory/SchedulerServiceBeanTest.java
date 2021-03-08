@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.scheduling.factory;
 
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
 import dev.sheldan.abstracto.scheduling.service.SchedulerServiceBean;
 import dev.sheldan.abstracto.scheduling.service.management.SchedulerJobManagementServiceBean;
@@ -98,7 +99,7 @@ public class SchedulerServiceBeanTest {
     public void executeJobOnce() throws SchedulerException {
         when(scheduleCreator.createOnceOnlyTriggerForJob(eq(JOB_NAME), eq(GROUP_NAME), any(Date.class), any(JobDataMap.class))).thenReturn(trigger);
         when(trigger.getKey()).thenReturn(TriggerKey.triggerKey("random key"));
-        classToTest.executeJobWithParametersOnce(JOB_NAME, GROUP_NAME, new JobDataMap(), new Date());
+        classToTest.executeJobWithParametersOnce(JOB_NAME, GROUP_NAME, JobParameters.builder().build(), new Date());
         verify(scheduler, times(1)).scheduleJob(any(Trigger.class));
     }
 

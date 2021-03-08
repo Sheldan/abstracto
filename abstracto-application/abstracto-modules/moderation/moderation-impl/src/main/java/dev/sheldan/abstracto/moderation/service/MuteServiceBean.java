@@ -23,6 +23,7 @@ import dev.sheldan.abstracto.moderation.models.template.commands.MuteNotificatio
 import dev.sheldan.abstracto.moderation.models.template.commands.UnMuteLog;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -31,7 +32,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -39,10 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -209,10 +206,11 @@ public class MuteServiceBean implements MuteService {
             return null;
         } else {
             log.trace("Starting scheduled job to execute unMute.");
-            JobDataMap parameters = new JobDataMap();
-            parameters.putAsString("muteId", muteId);
-            parameters.putAsString("serverId", serverId);
-            return schedulerService.executeJobWithParametersOnce("unMuteJob", "moderation", parameters, Date.from(unMuteDate));
+            HashMap<Object, Object> parameters = new HashMap<>();
+            parameters.put("muteId", muteId);
+            parameters.put("serverId", serverId);
+            JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
+            return schedulerService.executeJobWithParametersOnce("unMuteJob", "moderation", jobParameters, Date.from(unMuteDate));
         }
     }
 

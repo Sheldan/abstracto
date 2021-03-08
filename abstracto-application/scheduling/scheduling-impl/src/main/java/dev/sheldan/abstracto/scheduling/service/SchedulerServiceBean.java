@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.scheduling.service;
 
 import dev.sheldan.abstracto.scheduling.factory.QuartzConfigFactory;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
 import dev.sheldan.abstracto.scheduling.service.management.SchedulerJobManagementServiceBean;
 import lombok.extern.slf4j.Slf4j;
@@ -150,8 +151,10 @@ public class SchedulerServiceBean implements SchedulerService {
     }
 
     @Override
-    public String executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date) {
-        Trigger onceOnlyTriggerForJob = scheduleCreator.createOnceOnlyTriggerForJob(name, group, date, dataMap);
+    public String executeJobWithParametersOnce(String name, String group, JobParameters dataMap, Date date) {
+        JobDataMap map = new JobDataMap();
+        dataMap.getParameters().keySet().forEach(o -> map.put(o.toString(), dataMap.getParameters().get(o)));
+        Trigger onceOnlyTriggerForJob = scheduleCreator.createOnceOnlyTriggerForJob(name, group, date, map);
         try {
             schedulerFactoryBean.getScheduler().scheduleJob(onceOnlyTriggerForJob);
             return onceOnlyTriggerForJob.getKey().getName();

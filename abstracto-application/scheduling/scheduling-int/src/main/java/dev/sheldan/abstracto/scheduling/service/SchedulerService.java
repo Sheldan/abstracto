@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.scheduling.service;
 
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.model.database.SchedulerJob;
-import org.quartz.JobDataMap;
 
 import java.util.Date;
 
@@ -59,14 +59,14 @@ public interface SchedulerService {
     boolean executeJob(SchedulerJob job);
 
     /**
-     * Executes the job identified by name and group with the given {@link JobDataMap} as parameters on the given {@link Date}
+     * Executes the job identified by name and group with the given {@link JobParameters} as parameters on the given {@link Date}
      * @param name The name of the job to execute
      * @param group The group of the job to execute
-     * @param dataMap The {@link JobDataMap} made available to the group
+     * @param dataMap The {@link JobParameters} made available to the group
      * @param date The {@link Date} at which the job should be execute at.
      * @return The trigger key which triggers the job at the given date
      */
-    String executeJobWithParametersOnce(String name, String group, JobDataMap dataMap, Date date);
+    String executeJobWithParametersOnce(String name, String group, JobParameters dataMap, Date date);
 
     /**
      * Stops the trigger identified by the trigger key.

@@ -1,16 +1,11 @@
 package dev.sheldan.abstracto.core.models;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-@Getter
-@Setter
 public class ServerSpecificId implements Serializable {
     @Column(name = "server_id")
     private Long serverId;

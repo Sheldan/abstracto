@@ -64,7 +64,7 @@ public class MessageCacheBean implements MessageCache {
     @Override
     @Cacheable(key = "#messageId.toString()")
     public CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId) {
-        log.trace("Retrieving message with parameters");
+        log.trace("Retrieving message {} with parameters.", messageId);
         return concreteSelf.loadMessage(guildId, textChannelId, messageId);
     }
 
@@ -85,7 +85,10 @@ public class MessageCacheBean implements MessageCache {
                                         future.completeExceptionally(throwable);
                                         return null;
                                     })
-                        );
+                        ).exceptionally(throwable -> {
+                            log.error("Failed to load message for caching.", throwable);
+                            return null;
+                        });
             } else {
                 log.error("Not able to load message {} in channel {} in guild {}. Text channel not found.", messageId, textChannelId, guildId);
                 future.completeExceptionally(new ChannelNotInGuildException(textChannelId));

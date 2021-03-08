@@ -42,7 +42,7 @@
 
         <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>core-interface</artifactId>
+            <artifactId>core-int</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
             <type>test-jar</type>
@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>metrics-interface</artifactId>
+            <artifactId>metrics-int</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

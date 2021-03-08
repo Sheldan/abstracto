@@ -50,6 +50,11 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
     }
 
     @Override
+    public StarboardPost createStarboardPost(StarboardPost post) {
+        return repository.save(post);
+    }
+
+    @Override
     public void setStarboardPostMessageId(StarboardPost post, Long messageId) {
         post.setStarboardMessageId(messageId);
         repository.save(post);

@@ -13,9 +13,9 @@
     <artifactId>core</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>core-interface</module>
+        <module>core-int</module>
         <module>core-impl</module>
-        <module>metrics-interface</module>
+        <module>metrics-int</module>
         <module>metrics-impl</module>
     </modules>
 

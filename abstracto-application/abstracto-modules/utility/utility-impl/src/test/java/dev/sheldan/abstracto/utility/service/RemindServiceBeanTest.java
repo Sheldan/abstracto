@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -118,7 +119,7 @@ public class RemindServiceBeanTest {
         when(createdReminder.getTargetDate()).thenReturn(targetDate);
         Long messageId = 5L;
         when(reminderManagementService.createReminder(any(AServerAChannelAUser.class), eq(remindText), any(Instant.class), eq(messageId))).thenReturn(createdReminder);
-        when(schedulerService.executeJobWithParametersOnce(eq("reminderJob"), eq("utility"), any(JobDataMap.class), eq(Date.from(targetDate)))).thenReturn(triggerKey);
+        when(schedulerService.executeJobWithParametersOnce(eq("reminderJob"), eq("utility"), any(JobParameters.class), eq(Date.from(targetDate)))).thenReturn(triggerKey);
         Reminder returnedReminder = testUnit.createReminderInForUser(aUserInAServer, remindText, duration, message);
         verify(reminderManagementService, times(1)).saveReminder(createdReminder);
         Assert.assertEquals(createdReminder, returnedReminder);

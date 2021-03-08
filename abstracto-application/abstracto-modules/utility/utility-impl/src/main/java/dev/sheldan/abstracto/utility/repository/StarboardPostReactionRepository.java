@@ -18,6 +18,7 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +
             "WHERE p.server_id = :serverId\n" +
+            " AND p.ignored = false\n" +
             "GROUP BY r.reactor_user_in_server_id \n" +
             "ORDER BY starCount DESC \n" +
             "LIMIT :count", nativeQuery = true)
@@ -34,6 +35,7 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +
             "WHERE p.server_id = :serverId\n" +
+            " AND p.ignored = false\n" +
             "GROUP BY p.author_user_in_server_id \n" +
             "ORDER BY starCount DESC \n" +
             "LIMIT :count", nativeQuery = true)

@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>metrics-interface</artifactId>
+            <artifactId>metrics-int</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

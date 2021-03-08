@@ -25,7 +25,7 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
     private StarStatsUserConverter converter;
 
     @Override
-    public void addReactor(StarboardPost post, AUserInAServer user) {
+    public StarboardPostReaction addReactor(StarboardPost post, AUserInAServer user) {
         StarboardPostReaction reactor = StarboardPostReaction
                 .builder()
                 .starboardPost(post)
@@ -34,6 +34,7 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
                 .build();
         log.info("Persisting the reactor {} for starboard post {} in server {}.", user.getUserReference().getId(), post.getId(), user.getServerReference().getId());
         repository.save(reactor);
+        return reactor;
     }
 
     @Override

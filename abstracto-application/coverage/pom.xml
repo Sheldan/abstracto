@@ -71,7 +71,7 @@
 
         <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
-            <artifactId>core-interface</artifactId>
+            <artifactId>core-int</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -21,7 +22,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -94,9 +95,10 @@ public class RemindServiceBean implements ReminderService {
                 }
             }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
         } else {
-            JobDataMap parameters = new JobDataMap();
-            parameters.putAsString("reminderId", reminder.getId());
-            String triggerKey = schedulerService.executeJobWithParametersOnce("reminderJob", "utility", parameters, Date.from(reminder.getTargetDate()));
+            HashMap<Object, Object> parameters = new HashMap<>();
+            parameters.put("reminderId", reminder.getId());
+            JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
+            String triggerKey = schedulerService.executeJobWithParametersOnce("reminderJob", "utility", jobParameters, Date.from(reminder.getTargetDate()));
             log.info("Starting scheduled job  with trigger {} to execute reminder. {}", triggerKey, reminder.getId());
             reminder.setJobTriggerKey(triggerKey);
             reminderManagementService.saveReminder(reminder);
