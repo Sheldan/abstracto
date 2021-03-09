@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.models.template.job;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.moderation.models.database.Warning;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,4 +27,14 @@ public class WarnDecayWarning {
      * The user which casted the warn, is null if the user left the server
      */
     private Member warningMember;
+
+    /**
+     * The {@link ServerUser serverUser} which was warned, can be used in case the {@link Member warningMember} is null
+     */
+    private ServerUser warningUser;
+
+    /**
+     * The {@link ServerUser serverUser} who cast the warn, can be used in case the {@link Member warnedMember} is null
+     */
+    private ServerUser warnedUser;
 }

@@ -339,11 +339,13 @@ public class MuteServiceBean implements MuteService {
     public CompletableFuture<Void> sendUnmuteLog(Long muteId, Guild guild, CompletableFuture<Member> mutingMemberFuture, CompletableFuture<Member> mutedMemberFuture) {
         Mute mute = muteManagementService.findMute(muteId, guild.getIdLong());
         AServer mutingServer = serverManagementService.loadServer(guild.getIdLong());
+        Member mutingMember = !mutingMemberFuture.isCompletedExceptionally() ? mutingMemberFuture.join() : null;
+        Member mutedMember = !mutedMemberFuture.isCompletedExceptionally() ? mutedMemberFuture.join() : null;
         UnMuteLog unMuteLog = UnMuteLog
                 .builder()
                 .mute(mute)
-                .mutingUser(mutingMemberFuture.join())
-                .unMutedUser(mutedMemberFuture.join())
+                .mutingUser(mutingMember)
+                .unMutedUser(mutedMember)
                 .guild(guild)
                 .build();
         CompletableFuture<Void> notificationFuture = sendUnMuteLogMessage(unMuteLog, mutingServer);

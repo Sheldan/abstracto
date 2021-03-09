@@ -21,6 +21,7 @@ public class DisabledExpRoleManagementServiceBean implements DisabledExpRoleMana
     public ADisabledExpRole setRoleToBeDisabledForExp(ARole role) {
         ADisabledExpRole newRole = ADisabledExpRole
                 .builder()
+                .id(role.getId())
                 .role(role)
                 .build();
         log.info("Adding disabled exp role {} for server {}.", role.getId(), role.getServer().getId());
@@ -39,7 +40,7 @@ public class DisabledExpRoleManagementServiceBean implements DisabledExpRoleMana
 
     @Override
     public boolean isExperienceDisabledForRole(ARole role) {
-        return disabledExpRoleRepository.existsByRole(role);
+        return disabledExpRoleRepository.existsById(role.getId());
     }
 
 

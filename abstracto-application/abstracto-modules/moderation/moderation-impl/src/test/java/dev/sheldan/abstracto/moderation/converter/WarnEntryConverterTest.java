@@ -85,8 +85,12 @@ public class WarnEntryConverterTest {
         Warning warning2 = Mockito.mock(Warning.class);
         ServerSpecificId firstWarnId = new ServerSpecificId(SERVER_ID, WARN_ID_1);
         when(warning1.getWarnId()).thenReturn(firstWarnId);
+        when(warning1.getWarningUser()).thenReturn(warningUser);
+        when(warning1.getWarnedUser()).thenReturn(warnedUser);
         ServerSpecificId secondWarnId = new ServerSpecificId(SERVER_ID, WARN_ID_2);
         when(warning2.getWarnId()).thenReturn(secondWarnId);
+        when(warning2.getWarningUser()).thenReturn(warningUser);
+        when(warning2.getWarnedUser()).thenReturn(warnedUser);
         HashMap<ServerSpecificId, FutureMemberPair> map = new HashMap<>();
         FutureMemberPair memberPair = Mockito.mock(FutureMemberPair.class);
         when(memberPair.getFirstMember()).thenReturn(CompletableFuture.completedFuture(warningMember));
@@ -95,8 +99,6 @@ public class WarnEntryConverterTest {
         map.put(secondWarnId, memberPair);
         when(warnManagementService.findById(WARN_ID_1, SERVER_ID)).thenReturn(warning1);
         when(warnManagementService.findById(WARN_ID_2, SERVER_ID)).thenReturn(warning2);
-        when(userInServerManagementService.loadOrCreateUser(warnedMember)).thenReturn(warnedUser);
-        when(userInServerManagementService.loadOrCreateUser(warningMember)).thenReturn(warningUser);
         List<WarnEntry> models = testUnit.loadFullWarnEntries(map);
         Assert.assertEquals(2, models.size());
         WarnEntry firstEntry = models.get(0);

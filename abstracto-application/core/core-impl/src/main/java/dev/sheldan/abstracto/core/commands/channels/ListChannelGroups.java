@@ -59,14 +59,12 @@ public class ListChannelGroups extends AbstractConditionableCommand {
             List<ChannelGroupChannelModel> convertedChannels = new ArrayList<>();
             group.getChannels().forEach(channel -> {
                 Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
-                if(textChannelInGuild.isPresent()) {
-                    ChannelGroupChannelModel convertedChannel = ChannelGroupChannelModel
-                            .builder()
-                            .channel(channel)
-                            .discordChannel(textChannelInGuild.get())
-                            .build();
-                    convertedChannels.add(convertedChannel);
-                }
+                ChannelGroupChannelModel convertedChannel = ChannelGroupChannelModel
+                        .builder()
+                        .channel(channel)
+                        .discordChannel(textChannelInGuild.orElse(null))
+                        .build();
+                convertedChannels.add(convertedChannel);
             });
             ChannelGroupModel channelGroup = ChannelGroupModel
                     .builder()

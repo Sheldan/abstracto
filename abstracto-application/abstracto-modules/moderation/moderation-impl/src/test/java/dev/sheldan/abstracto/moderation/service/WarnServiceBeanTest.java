@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.*;
@@ -102,6 +103,15 @@ public class WarnServiceBeanTest {
 
     @Mock
     private AUserInAServer secondWarnedUser;
+
+    @Mock
+    private AUser firstAUser;
+
+    @Mock
+    private AUser secondAUser;
+
+    @Mock
+    private AUser thirdAUser;
 
     @Mock
     private Warning firstWarning;
@@ -225,9 +235,15 @@ public class WarnServiceBeanTest {
     private void setupWarnings() {
         when(firstWarning.getWarningUser()).thenReturn(warningUser);
         when(secondWarning.getWarningUser()).thenReturn(warningUser);
+        when(warningUser.getServerReference()).thenReturn(server);
+        when(warningUser.getUserReference()).thenReturn(thirdAUser);
 
         when(firstWarning.getWarnedUser()).thenReturn(firstWarnedUser);
+        when(firstWarnedUser.getServerReference()).thenReturn(server);
+        when(firstWarnedUser.getUserReference()).thenReturn(firstAUser);
         when(secondWarning.getWarnedUser()).thenReturn(secondWarnedUser);
+        when(secondWarnedUser.getServerReference()).thenReturn(server);
+        when(secondWarnedUser.getUserReference()).thenReturn(secondAUser);
         when(firstWarning.getWarnId()).thenReturn(new ServerSpecificId(SERVER_ID, WARN_ID));
         when(secondWarning.getWarnId()).thenReturn(new ServerSpecificId(SERVER_ID, 9L));
         when(server.getId()).thenReturn(SERVER_ID);

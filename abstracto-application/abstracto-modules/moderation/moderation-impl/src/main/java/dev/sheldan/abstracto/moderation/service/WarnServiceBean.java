@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
@@ -187,14 +188,25 @@ public class WarnServiceBean implements WarnService {
         warningsToDecay.forEach(warning -> {
             CompletableFuture<Member> warningMember = memberService.getMemberInServerAsync(warning.getWarningUser());
             CompletableFuture<Member> warnedMember = memberService.getMemberInServerAsync(warning.getWarnedUser());
-            FutureMemberPair futurePair = FutureMemberPair.builder().firstMember(warningMember).secondMember(warnedMember).build();
+            FutureMemberPair futurePair = FutureMemberPair
+                    .builder()
+                    .firstMember(warningMember)
+                    .secondMember(warnedMember)
+                    .firstUser(ServerUser.fromAUserInAServer(warning.getWarningUser()))
+                    .secondUser(ServerUser.fromAUserInAServer(warning.getWarnedUser()))
+                    .build();
             warningMembers.put(warning.getWarnId(), futurePair);
+            allFutures.add(warningMember);
+            allFutures.add(warnedMember);
         });
         CompletableFuture<Void> sendingFuture = new CompletableFuture<>();
         FutureUtils.toSingleFutureGeneric(allFutures).handle((aVoid, throwable) -> {
             self.renderAndSendWarnDecayLogs(serverId, warningMembers).thenAccept(aVoid1 ->
                sendingFuture.complete(null)
-            );
+            ).exceptionally(throwable1 -> {
+                sendingFuture.completeExceptionally(throwable1);
+                return null;
+            });
             return null;
         });
 
@@ -207,16 +219,23 @@ public class WarnServiceBean implements WarnService {
         AServer server = serverManagementService.loadServer(serverId);
         List<WarnDecayWarning> warnDecayWarnings = new ArrayList<>();
         warningMembers.keySet().forEach(serverSpecificId -> {
-            Warning warning = warnManagementService.findById(serverSpecificId.getId(), serverSpecificId.getServerId());
-            FutureMemberPair pair = warningMembers.get(serverSpecificId);
-            // TODO add ids to render in case any member left the server
-            WarnDecayWarning warnDecayWarning = WarnDecayWarning
-                    .builder()
-                    .warningMember(pair.getFirstMember().join())
-                    .warnedMember(pair.getSecondMember().join())
-                    .warning(warning)
-                    .build();
-            warnDecayWarnings.add(warnDecayWarning);
+            try {
+                Warning warning = warnManagementService.findById(serverSpecificId.getId(), serverSpecificId.getServerId());
+                FutureMemberPair pair = warningMembers.get(serverSpecificId);
+                Member warningMember = !pair.getFirstMember().isCompletedExceptionally() ? pair.getFirstMember().join() : null;
+                Member warnedMember = !pair.getSecondMember().isCompletedExceptionally() ? pair.getSecondMember().join() : null;
+                WarnDecayWarning warnDecayWarning = WarnDecayWarning
+                        .builder()
+                        .warningMember(warningMember)
+                        .warningUser(pair.getFirstUser())
+                        .warnedMember(warnedMember)
+                        .warnedUser(pair.getSecondUser())
+                        .warning(warning)
+                        .build();
+                warnDecayWarnings.add(warnDecayWarning);
+            } catch (Exception ex) {
+                log.error("exception.", ex);
+            }
         });
         WarnDecayLogModel warnDecayLogModel = WarnDecayLogModel
                 .builder()

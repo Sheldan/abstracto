@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.experience.models.database.ADisabledExpRole;
 import dev.sheldan.abstracto.experience.models.templates.DisabledExperienceRolesModel;
 import dev.sheldan.abstracto.experience.service.management.DisabledExpRoleManagementService;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,10 +52,14 @@ public class ListDisabledExperienceRoles extends AbstractConditionableCommand {
         List<ADisabledExpRole> disabledRolesForServer = disabledExpRoleManagementService.getDisabledRolesForServer(server);
         DisabledExperienceRolesModel disabledExperienceRolesModel = (DisabledExperienceRolesModel) ContextConverter.fromCommandContext(commandContext, DisabledExperienceRolesModel.class);
         disabledRolesForServer.forEach(aDisabledExpRole -> {
+            Role jdaRole = null;
+            if(!aDisabledExpRole.getRole().getDeleted()) {
+                jdaRole = roleService.getRoleFromGuild(aDisabledExpRole.getRole());
+            }
             FullRole role = FullRole
                     .builder()
                     .role(aDisabledExpRole.getRole())
-                    .serverRole(roleService.getRoleFromGuild(aDisabledExpRole.getRole()))
+                    .serverRole(jdaRole)
                     .build();
             disabledExperienceRolesModel.getRoles().add(role);
         });

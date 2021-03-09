@@ -41,11 +41,11 @@ public class DefaultFeatureModeManagementBean implements DefaultFeatureModeManag
     public Optional<FeatureModeProperty> getFeatureModeOptional(AFeature feature, String mode) {
         return Optional.ofNullable(defaultConfigProperties
                 .getFeatureModes()
-                .get(mode));
+                .get(mode.toLowerCase()));
     }
 
     @Override
     public FeatureModeProperty getFeatureMode(AFeature feature, String mode) {
-        return getFeatureModeOptional(feature, mode).orElseThrow(() -> new FeatureModeNotFoundException(mode, featureConfigService.getFeatureModesFromFeatureAsString(feature.getKey())));
+        return getFeatureModeOptional(feature, mode.toLowerCase()).orElseThrow(() -> new FeatureModeNotFoundException(mode, featureConfigService.getFeatureModesFromFeatureAsString(feature.getKey())));
     }
 }

@@ -4,11 +4,14 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.experience.models.LeaderBoard;
 import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.models.database.AUserExperience;
 import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
+import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,12 @@ public class LeaderBoardModelConverter {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private UserExperienceManagementService userExperienceManagementService;
+
+    @Autowired
+    private LeaderBoardModelConverter self;
 
     /**
      * Converts the complete {@link LeaderBoard leaderBoard} into a list of {@link LeaderBoardEntryModel leaderbaordEntryModels} which contain additional
@@ -50,13 +59,21 @@ public class LeaderBoardModelConverter {
      */
     public CompletableFuture<LeaderBoardEntryModel> fromLeaderBoardEntry(LeaderBoardEntry leaderBoardEntry) {
         AUserInAServer entryUser = leaderBoardEntry.getExperience().getUser();
-        return memberService.getMemberInServerAsync(entryUser.getServerReference().getId(), entryUser.getUserReference().getId()).thenApply(member ->
-            LeaderBoardEntryModel
-                    .builder()
-                    .experience(leaderBoardEntry.getExperience())
-                    .member(member).rank(leaderBoardEntry.getRank())
-                    .rank(leaderBoardEntry.getRank())
-                    .build()
-        );
+        Long userInServerId = leaderBoardEntry.getExperience().getUser().getUserInServerId();
+        Integer rank = leaderBoardEntry.getRank();
+        return memberService.getMemberInServerAsync(entryUser.getServerReference().getId(), entryUser.getUserReference().getId())
+            .thenApply(member -> self.buildLeaderBoardModel(userInServerId, member, rank))
+                .exceptionally(throwable -> self.buildLeaderBoardModel(userInServerId, null, rank));
+    }
+
+    @Transactional
+    public LeaderBoardEntryModel buildLeaderBoardModel(Long userInServerId, Member member, Integer rank) {
+        AUserExperience experience = userExperienceManagementService.findByUserInServerId(userInServerId);
+        return LeaderBoardEntryModel
+                .builder()
+                .experience(experience)
+                .member(member)
+                .rank(rank)
+                .build();
     }
 }

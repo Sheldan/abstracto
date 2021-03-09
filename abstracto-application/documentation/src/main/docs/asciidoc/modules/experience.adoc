@@ -23,7 +23,7 @@ Showing the leader board of the server::
 * Usage: `leaderboard [page]`
 * Description: Shows the leader board of the server in a paginated format. This does not use the interactive pagination.
 If no parameter is provided, it will show the top 10 members and their message count, level, experience and rank.
-Additionally the same information for the user executing is shown, regardless whether or not the user is already shown on the given leader board page.
+Additionally, the same information for the user executing is shown, regardless whether or not the user is already shown on the given leader board page.
 If a `page` is provided, it will display the leader board of the ranks `page * 10` until  `(page + 1) * 10` instead. If `page` is beyond the member count, the last members are shown.
 
 

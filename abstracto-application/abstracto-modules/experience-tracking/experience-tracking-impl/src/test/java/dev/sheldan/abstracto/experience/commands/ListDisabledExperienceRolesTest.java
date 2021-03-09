@@ -44,10 +44,12 @@ public class ListDisabledExperienceRolesTest {
     @Mock
     private ServerManagementService serverManagementService;
 
+    @Mock
+    private AServer server;
+
     @Test
     public void testCommandExecutionNoRolesFound() {
         CommandContext context = CommandTestUtilities.getNoParameters();
-        AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
         when(disabledExpRoleManagementService.getDisabledRolesForServer(server)).thenReturn(new ArrayList<>());
         when(channelService.sendEmbedTemplateInTextChannelList(eq("list_disabled_experience_roles"),
@@ -60,14 +62,20 @@ public class ListDisabledExperienceRolesTest {
     @Test
     public void testCommandExecutionRolesFound() {
         CommandContext context = CommandTestUtilities.getNoParameters();
-        AServer server = Mockito.mock(AServer.class);
         ADisabledExpRole disabledExpRole1 = Mockito.mock(ADisabledExpRole.class);
         ADisabledExpRole disabledExpRole2 = Mockito.mock(ADisabledExpRole.class);
         when(disabledExpRoleManagementService.getDisabledRolesForServer(server)).thenReturn(Arrays.asList(disabledExpRole1, disabledExpRole2));
         Role role1 = Mockito.mock(Role.class);
         Role role2 = Mockito.mock(Role.class);
-        when(roleService.getRoleFromGuild(disabledExpRole1.getRole())).thenReturn(role1);
-        when(roleService.getRoleFromGuild(disabledExpRole2.getRole())).thenReturn(role2);
+
+        ARole aRole = Mockito.mock(ARole.class);
+        ARole aRole2 = Mockito.mock(ARole.class);
+        when(roleService.getRoleFromGuild(aRole)).thenReturn(role1);
+        when(roleService.getRoleFromGuild(aRole2)).thenReturn(role2);
+        when(aRole.getDeleted()).thenReturn(false);
+        when(aRole2.getDeleted()).thenReturn(false);
+        when(disabledExpRole1.getRole()).thenReturn(aRole);
+        when(disabledExpRole2.getRole()).thenReturn(aRole2);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
         when(channelService.sendEmbedTemplateInTextChannelList(eq("list_disabled_experience_roles"),
                 any(DisabledExperienceRolesModel.class), eq(context.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());

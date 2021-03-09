@@ -14,4 +14,6 @@ import java.util.concurrent.CompletableFuture;
 public class FutureMemberPair {
     private CompletableFuture<Member> firstMember;
     private CompletableFuture<Member> secondMember;
+    private ServerUser firstUser;
+    private ServerUser secondUser;
 }

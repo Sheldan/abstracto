@@ -39,10 +39,12 @@ public class DisabledExpRoleManagementServiceBeanTest {
     @Test
     public void testIfRoleIsDisabled() {
         ARole aRole = Mockito.mock(ARole.class);
-        when(disabledExpRoleRepository.existsByRole(aRole)).thenReturn(true);
+        Long roleId = 1L;
+        when(aRole.getId()).thenReturn(roleId);
+        when(disabledExpRoleRepository.existsById(roleId)).thenReturn(true);
         boolean experienceDisabledForRole = testUnit.isExperienceDisabledForRole(aRole);
         Assert.assertTrue(experienceDisabledForRole);
-        verify(disabledExpRoleRepository, times(1)).existsByRole(aRole);
+        verify(disabledExpRoleRepository, times(1)).existsById(roleId);
     }
 
     @Test

@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -33,13 +34,14 @@ public class StarStatsUserConverterTest {
     @Mock
     private UserInServerManagementService userInServerManagementService;
 
+    @Mock
+    private StarStatsUserConverter self;
+
     @Test
     public void testConversionOfMultipleItems() {
         Long serverId = 5L;
         Long firstUserId = 5L;
-        Integer firstStarCount = 5;
         Long secondUserId = 9L;
-        Integer secondStarCount = 10;
         List<StarStatsGuildUserResult> results = new ArrayList<>();
         StarStatsGuildUserResult firstResult = Mockito.mock(StarStatsGuildUserResult.class);
         Member firstMember = Mockito.mock(Member.class);
@@ -50,7 +52,6 @@ public class StarStatsUserConverterTest {
         when(userInServerManagementService.loadOrCreateUser(firstUserId)).thenReturn(firstUser);
         when(memberService.getMemberInServerAsync(serverId, firstUserId)).thenReturn(CompletableFuture.completedFuture(firstMember));
         when(firstResult.getUserId()).thenReturn(firstUserId);
-        when(firstResult.getStarCount()).thenReturn(firstStarCount);
         results.add(firstResult);
         StarStatsGuildUserResult secondResult = Mockito.mock(StarStatsGuildUserResult.class);
         Member secondMember = Mockito.mock(Member.class);
@@ -62,19 +63,20 @@ public class StarStatsUserConverterTest {
         when(memberService.getMemberInServerAsync(serverId, secondUserId)).thenReturn(CompletableFuture.completedFuture(secondMember));
 
         when(secondResult.getUserId()).thenReturn(secondUserId);
-        when(secondResult.getStarCount()).thenReturn(secondStarCount);
         results.add(secondResult);
 
-        List<CompletableFuture<StarStatsUser>> starStatsUsers = testUnit.convertToStarStatsUser(results, serverId);
-        StarStatsUser firstConverted = starStatsUsers.get(0).join();
-        Assert.assertEquals(firstStarCount, firstConverted.getStarCount());
-        Assert.assertEquals(firstMember, firstConverted.getMember());
-        Assert.assertEquals(firstUserId, firstConverted.getUser().getId());
-        StarStatsUser secondConverted = starStatsUsers.get(1).join();
-        Assert.assertEquals(secondStarCount, secondConverted.getStarCount());
-        Assert.assertEquals(secondMember, secondConverted.getMember());
-        Assert.assertEquals(secondUserId, secondConverted.getUser().getId());
-        Assert.assertEquals(2, starStatsUsers.size());
+        testUnit.convertToStarStatsUser(results, serverId);
+        ArgumentCaptor<StarStatsGuildUserResult> resultArgumentCaptor = ArgumentCaptor.forClass(StarStatsGuildUserResult.class);
+        ArgumentCaptor<Member> memberArgumentCaptor = ArgumentCaptor.forClass(Member.class);
+        verify(self, times(2)).loadStarStatsUser(resultArgumentCaptor.capture(), memberArgumentCaptor.capture());
+        List<StarStatsGuildUserResult> resultCaptorValues = resultArgumentCaptor.getAllValues();
+        Assert.assertEquals(2, resultCaptorValues.size());
+        Assert.assertEquals(firstResult, resultCaptorValues.get(0));
+        Assert.assertEquals(secondResult, resultCaptorValues.get(1));
+        List<Member> memberCaptorValues = memberArgumentCaptor.getAllValues();
+        Assert.assertEquals(2, memberCaptorValues.size());
+        Assert.assertEquals(firstMember, memberCaptorValues.get(0));
+        Assert.assertEquals(secondMember, memberCaptorValues.get(1));
     }
 
     @Test

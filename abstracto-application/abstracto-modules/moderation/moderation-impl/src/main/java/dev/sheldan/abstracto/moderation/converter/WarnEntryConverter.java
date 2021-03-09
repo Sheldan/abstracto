@@ -57,25 +57,26 @@ public class WarnEntryConverter {
     public List<WarnEntry> loadFullWarnEntries(Map<ServerSpecificId, FutureMemberPair> loadedWarnInfo) {
         List<WarnEntry> entries = new ArrayList<>();
         loadedWarnInfo.keySet().forEach(warning -> {
+            Warning warn = warnManagementService.findById(warning.getId(), warning.getServerId());
             FutureMemberPair memberPair = loadedWarnInfo.get(warning);
-            Member warnedMember = memberPair.getSecondMember().join();
+            Member warnedMember = !memberPair.getSecondMember().isCompletedExceptionally() ? memberPair.getSecondMember().join() : null;
             FullUserInServer warnedUser = FullUserInServer
                     .builder()
                     .member(warnedMember)
-                    .aUserInAServer(userInServerManagementService.loadOrCreateUser(warnedMember))
+                    .aUserInAServer(warn.getWarnedUser())
                     .build();
 
-            Member warningMember = memberPair.getFirstMember().join();
+            Member warningMember = !memberPair.getFirstMember().isCompletedExceptionally() ? memberPair.getFirstMember().join() : null;
             FullUserInServer warningUser = FullUserInServer
                     .builder()
                     .member(warningMember)
-                    .aUserInAServer(userInServerManagementService.loadOrCreateUser(warningMember))
+                    .aUserInAServer(warn.getWarningUser())
                     .build();
             WarnEntry entry = WarnEntry
                     .builder()
                     .warnedUser(warnedUser)
                     .warningUser(warningUser)
-                    .warning(warnManagementService.findById(warning.getId(), warning.getServerId()))
+                    .warning(warn)
                     .build();
             entries.add(entry);
         });
