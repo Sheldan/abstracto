@@ -390,7 +390,7 @@ public class ChannelServiceBean implements ChannelService {
     public AChannel getFakeChannelFromTextChannel(TextChannel textChannel) {
         AServer server = AServer
                 .builder()
-                .id(textChannel.getIdLong())
+                .id(textChannel.getGuild().getIdLong())
                 .fake(true)
                 .build();
         return AChannel

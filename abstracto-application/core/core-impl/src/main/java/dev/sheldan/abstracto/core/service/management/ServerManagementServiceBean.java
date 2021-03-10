@@ -26,7 +26,7 @@ public class ServerManagementServiceBean implements ServerManagementService {
 
     @Override
     public AServer createServer(Long id) {
-        AServer newServer = AServer.builder().id(id).build();
+        AServer newServer = AServer.builder().id(id).adminMode(false).build();
         log.info("Creating server with id {}.", id);
         return repository.save(newServer);
     }

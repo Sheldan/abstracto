@@ -42,6 +42,9 @@ Changing a post target::
 * Description: Changes the given post target identified by `key` to the given channel. All messages using this post target will be send to this channel from now on.
 If neither `key` nor `channel` is given, this will print the currently available post targets and the channels they point to, if set.
 * Example: `posttarget banLog #general` to log the bans in the #general channel.
+Changing admin mode::
+* Usage: `setAdminMode <true/false>`
+* Description: Changes the admin modes on this server to the given value. Admin mode means, that **all** commands in the current server, can only be executed by members who have the ADMINISTRATOR permission.
 Listing the features::
 * Usage: `features`
 * Description: Lists the available features and whether or not they are enabled in this server.

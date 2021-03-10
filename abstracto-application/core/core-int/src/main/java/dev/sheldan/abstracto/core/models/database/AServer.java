@@ -28,6 +28,10 @@ public class AServer implements SnowFlake, Serializable {
     @Column(name = "updated")
     private Instant updated;
 
+    @Setter
+    @Column(name = "admin_mode")
+    private Boolean adminMode;
+
     @Transient
     private boolean fake;
 
