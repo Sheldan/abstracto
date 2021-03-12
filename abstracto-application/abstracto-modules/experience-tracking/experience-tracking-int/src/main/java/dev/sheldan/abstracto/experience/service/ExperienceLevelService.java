@@ -1,14 +1,14 @@
 package dev.sheldan.abstracto.experience.service;
 
 /**
- * Service responsible for operations on {@link dev.sheldan.abstracto.experience.models.database.AExperienceLevel experienceLevel}
+ * Service responsible for operations on {@link dev.sheldan.abstracto.experience.model.database.AExperienceLevel experienceLevel}
  * This includes creating and calculations.
  */
 public interface ExperienceLevelService {
 
     /**
      * Creates all the levels up until the given level.
-     * @param level The max level to create {@link dev.sheldan.abstracto.experience.models.database.AExperienceLevel level} for
+     * @param level The max level to create {@link dev.sheldan.abstracto.experience.model.database.AExperienceLevel level} for
      */
     void createLevelsUntil(Integer level);
 

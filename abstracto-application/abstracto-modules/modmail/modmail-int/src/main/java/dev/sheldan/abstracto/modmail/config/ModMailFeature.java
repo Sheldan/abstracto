@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.config;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.interactive.SetupStep;
@@ -27,8 +27,8 @@ public class ModMailFeature implements FeatureConfig {
     private ModMailCategorySetup modMailCategorySetup;
 
     @Override
-    public FeatureEnum getFeature() {
-        return ModMailFeatures.MOD_MAIL;
+    public FeatureDefinition getFeature() {
+        return ModMailFeatureDefinition.MOD_MAIL;
     }
 
     @Override

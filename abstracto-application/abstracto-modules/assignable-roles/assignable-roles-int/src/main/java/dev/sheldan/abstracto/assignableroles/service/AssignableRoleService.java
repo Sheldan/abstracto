@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.service;
 
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import net.dv8tion.jda.api.entities.Member;
@@ -39,11 +39,11 @@ public interface AssignableRoleService {
 
     /**
      * Assigns the given {@link AssignableRole role} to the {@link Member member} and stores the assignment as a
-     * {@link dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser}
+     * {@link dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser}
      * @param assignableRoleId The ID of an {@link AssignableRole assignableRole} to be added to the {@link Member member}
      * @param toAdd The {@link Member member} to add the role to
      * @return A {@link CompletableFuture future} which completes when the {@link net.dv8tion.jda.api.entities.Role role} has
-     * been added and the {@link dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser user} has been persisted
+     * been added and the {@link dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser user} has been persisted
      */
     CompletableFuture<Void> fullyAssignAssignableRoleToUser(Long assignableRoleId, Member toAdd);
 
@@ -76,11 +76,11 @@ public interface AssignableRoleService {
 
     /**
      * Removes the given {@link AssignableRole role} from the {@link ServerUser serverUser} and stores the assignment as a
-     * {@link dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser}
+     * {@link dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser}
      * @param assignableRole The {@link AssignableRole assignableRole} to be removed from the {@link ServerUser serverUser}
      * @param serverUser The {@link ServerUser serverUser} to remove the role from
      * @return A {@link CompletableFuture future} which completes when the {@link net.dv8tion.jda.api.entities.Role role} has
-     * been removed and the {@link dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser user} has been persisted
+     * been removed and the {@link dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser user} has been persisted
      */
     CompletableFuture<Void> fullyRemoveAssignableRoleFromUser(AssignableRole assignableRole, ServerUser serverUser);
 

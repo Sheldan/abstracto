@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.core;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 
 import java.util.Collections;
 import java.util.List;
 
 public interface FeatureAware {
-    FeatureEnum getFeature();
+    FeatureDefinition getFeature();
     default List<FeatureMode> getFeatureModeLimitations() { return Collections.emptyList();}
 }

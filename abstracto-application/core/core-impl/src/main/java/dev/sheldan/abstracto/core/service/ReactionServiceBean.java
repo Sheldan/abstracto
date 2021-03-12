@@ -2,9 +2,9 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.exception.ConfiguredEmoteNotUsableException;
 import dev.sheldan.abstracto.core.exception.EmoteNotInServerException;
-import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
-import dev.sheldan.abstracto.core.metrics.service.MetricTag;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;

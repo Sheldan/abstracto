@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.models.template.commands.help;
 
-import dev.sheldan.abstracto.core.command.config.ModuleInterface;
+import dev.sheldan.abstracto.core.command.config.ModuleDefinition;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,5 +12,5 @@ import java.util.List;
 @Setter
 @SuperBuilder
 public class HelpModuleOverviewModel extends UserInitiatedServerContext {
-    private List<ModuleInterface> modules;
+    private List<ModuleDefinition> modules;
 }

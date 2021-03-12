@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.moderation.models.database.Mute;
+import dev.sheldan.abstracto.moderation.model.database.Mute;
 import dev.sheldan.abstracto.moderation.repository.MuteRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;

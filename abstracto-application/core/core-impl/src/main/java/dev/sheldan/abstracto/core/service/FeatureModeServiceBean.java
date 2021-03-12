@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.command.exception.IncorrectFeatureModeException;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.models.database.*;
@@ -46,39 +46,39 @@ public class FeatureModeServiceBean implements FeatureModeService {
     private ServerManagementService serverManagementService;
 
     @Override
-    public void enableFeatureModeForFeature(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
-        setOrCreateFeatureMode(featureEnum, server, mode, true);
+    public void enableFeatureModeForFeature(FeatureDefinition featureDefinition, AServer server, FeatureMode mode) {
+        setOrCreateFeatureMode(featureDefinition, server, mode, true);
     }
 
-    private void setOrCreateFeatureMode(FeatureEnum featureEnum, AServer server, FeatureMode mode, boolean featureModeState) {
-        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+    private void setOrCreateFeatureMode(FeatureDefinition featureDefinition, AServer server, FeatureMode mode, boolean featureModeState) {
+        AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
         Optional<AFeatureMode> existing = featureModeManagementService.getFeatureMode(feature, server, mode);
         if (existing.isPresent()) {
             existing.get().setEnabled(featureModeState);
         } else {
             Optional<AFeatureFlag> featureFlagOptional = featureFlagManagementService.getFeatureFlag(feature, server);
-            AFeatureFlag featureFlagInstance = featureFlagOptional.orElseGet(() -> featureFlagService.createInstanceFromDefaultConfig(featureEnum, server));
+            AFeatureFlag featureFlagInstance = featureFlagOptional.orElseGet(() -> featureFlagService.createInstanceFromDefaultConfig(featureDefinition, server));
             featureModeManagementService.createMode(featureFlagInstance, mode, featureModeState);
         }
     }
 
     @Override
-    public void setFutureModeForFuture(FeatureEnum featureEnum, AServer server, FeatureMode mode, Boolean newValue) {
+    public void setFutureModeForFuture(FeatureDefinition featureDefinition, AServer server, FeatureMode mode, Boolean newValue) {
         if(newValue) {
-            enableFeatureModeForFeature(featureEnum, server, mode);
+            enableFeatureModeForFeature(featureDefinition, server, mode);
         } else {
-            disableFeatureModeForFeature(featureEnum, server, mode);
+            disableFeatureModeForFeature(featureDefinition, server, mode);
         }
     }
 
     @Override
-    public void disableFeatureModeForFeature(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
-        setOrCreateFeatureMode(featureEnum, server, mode, false);
+    public void disableFeatureModeForFeature(FeatureDefinition featureDefinition, AServer server, FeatureMode mode) {
+        setOrCreateFeatureMode(featureDefinition, server, mode, false);
     }
 
     @Override
-    public boolean featureModeActive(FeatureEnum featureEnum, AServer server, FeatureMode mode) {
-        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+    public boolean featureModeActive(FeatureDefinition featureDefinition, AServer server, FeatureMode mode) {
+        AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
         if(featureModeManagementService.doesFeatureModeExist(feature, server, mode)) {
             return featureModeManagementService.isFeatureModeActive(feature, server, mode);
         } else {
@@ -87,16 +87,16 @@ public class FeatureModeServiceBean implements FeatureModeService {
     }
 
     @Override
-    public boolean featureModeActive(FeatureEnum featureEnum, Long serverId, FeatureMode mode) {
+    public boolean featureModeActive(FeatureDefinition featureDefinition, Long serverId, FeatureMode mode) {
         AServer server = serverManagementService.loadServer(serverId);
-        return featureModeActive(featureEnum, server, mode);
+        return featureModeActive(featureDefinition, server, mode);
     }
 
     @Override
-    public void validateActiveFeatureMode(Long serverId, FeatureEnum featureEnum, FeatureMode mode) {
-        boolean featureModeActive = featureModeActive(featureEnum, serverId, mode);
+    public void validateActiveFeatureMode(Long serverId, FeatureDefinition featureDefinition, FeatureMode mode) {
+        boolean featureModeActive = featureModeActive(featureDefinition, serverId, mode);
         if(!featureModeActive) {
-            throw new IncorrectFeatureModeException(featureEnum, Arrays.asList(mode));
+            throw new IncorrectFeatureModeException(featureDefinition, Arrays.asList(mode));
         }
     }
 
@@ -178,9 +178,9 @@ public class FeatureModeServiceBean implements FeatureModeService {
     }
 
     @Override
-    public boolean necessaryFeatureModesMet(FeatureEnum featureEnum, List<FeatureMode> featureModes, Long serverId) {
+    public boolean necessaryFeatureModesMet(FeatureDefinition featureDefinition, List<FeatureMode> featureModes, Long serverId) {
         for (FeatureMode featureMode : featureModes) {
-            if(featureModeActive(featureEnum, serverId, featureMode)) {
+            if(featureModeActive(featureDefinition, serverId, featureMode)) {
                 return true;
             }
         }

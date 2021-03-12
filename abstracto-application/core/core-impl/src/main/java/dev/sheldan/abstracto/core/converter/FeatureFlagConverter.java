@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.converter;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.property.FeatureFlagProperty;
 import dev.sheldan.abstracto.core.models.template.commands.DefaultFeatureFlagDisplay;
@@ -20,8 +20,8 @@ public class FeatureFlagConverter {
     private FeatureConfigService featureFlagService;
 
     public FeatureFlagDisplay fromAFeatureFlag(AFeatureFlag featureFlag) {
-        FeatureEnum featureEnum = featureFlagService.getFeatureEnum(featureFlag.getFeature().getKey());
-        FeatureConfig forFeature = featureFlagService.getFeatureDisplayForFeature(featureEnum);
+        FeatureDefinition featureDefinition = featureFlagService.getFeatureEnum(featureFlag.getFeature().getKey());
+        FeatureConfig forFeature = featureFlagService.getFeatureDisplayForFeature(featureDefinition);
         return FeatureFlagDisplay
                 .builder()
                 .featureConfig(forFeature)
@@ -30,8 +30,8 @@ public class FeatureFlagConverter {
     }
 
     public DefaultFeatureFlagDisplay fromFeatureFlagProperty(FeatureFlagProperty featureFlagProperty) {
-        FeatureEnum featureEnum = featureFlagService.getFeatureEnum(featureFlagProperty.getFeatureName());
-        FeatureConfig forFeature = featureFlagService.getFeatureDisplayForFeature(featureEnum);
+        FeatureDefinition featureDefinition = featureFlagService.getFeatureEnum(featureFlagProperty.getFeatureName());
+        FeatureConfig forFeature = featureFlagService.getFeatureDisplayForFeature(featureDefinition);
         return DefaultFeatureFlagDisplay
                 .builder()
                 .featureConfig(forFeature)

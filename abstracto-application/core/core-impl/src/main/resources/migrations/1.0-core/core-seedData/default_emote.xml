@@ -6,27 +6,22 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <property name="today" value="(SELECT NOW())"/>
     <changeSet author="Sheldan" id="core_default_emote-insert">
        <insert tableName="default_emote">
            <column name="emote_key" value="warnReaction"/>
            <column name="name" value="⚠️"/>
-           <column name="created" valueComputed="${today}"/>
        </insert>
         <insert tableName="default_emote">
             <column name="emote_key" value="successReaction"/>
             <column name="name" value="✅"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="default_emote">
             <column name="emote_key" value="confirmation"/>
             <column name="name" value="✅"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="default_emote">
             <column name="emote_key" value="denial"/>
             <column name="name" value="❌"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

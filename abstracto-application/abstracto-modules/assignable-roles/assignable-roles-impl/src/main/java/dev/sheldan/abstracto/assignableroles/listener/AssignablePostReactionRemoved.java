@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.assignableroles.listener;
 
-import dev.sheldan.abstracto.assignableroles.config.features.AssignableRoleFeature;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
+import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionRemovedListener;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -35,8 +35,8 @@ public class AssignablePostReactionRemoved implements AsyncReactionRemovedListen
     private AssignableRoleService assignableRoleService;
 
     @Override
-    public FeatureEnum getFeature() {
-        return AssignableRoleFeature.ASSIGNABLE_ROLES;
+    public FeatureDefinition getFeature() {
+        return AssignableRoleFeatureDefinition.ASSIGNABLE_ROLES;
     }
 
     /**

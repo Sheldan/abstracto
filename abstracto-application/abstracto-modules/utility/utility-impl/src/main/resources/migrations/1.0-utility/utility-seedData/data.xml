@@ -6,10 +6,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <include file="default_emote.xml" relativeToChangelogFile="true"/>
     <include file="feature.xml" relativeToChangelogFile="true"/>
-    <include file="module.xml" relativeToChangelogFile="true"/>
     <include file="command.xml" relativeToChangelogFile="true"/>
-    <include file="reminder_job.xml" relativeToChangelogFile="true"/>
-    <include file="channel_group_types.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

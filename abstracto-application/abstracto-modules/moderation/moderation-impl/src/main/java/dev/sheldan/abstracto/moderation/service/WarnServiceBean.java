@@ -10,17 +10,17 @@ import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementServ
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
-import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
-import dev.sheldan.abstracto.moderation.config.features.mode.WarningMode;
-import dev.sheldan.abstracto.moderation.config.posttargets.WarnDecayPostTarget;
-import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
-import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
-import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayWarning;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.feature.mode.WarnDecayMode;
+import dev.sheldan.abstracto.moderation.config.feature.mode.WarningMode;
+import dev.sheldan.abstracto.moderation.config.posttarget.WarnDecayPostTarget;
+import dev.sheldan.abstracto.moderation.config.posttarget.WarningPostTarget;
+import dev.sheldan.abstracto.moderation.model.database.Warning;
+import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
+import dev.sheldan.abstracto.moderation.model.template.command.WarnNotification;
+import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayLogModel;
+import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayWarning;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -99,12 +99,12 @@ public class WarnServiceBean implements WarnService {
         String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification, server.getId());
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         futures.add(messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage));
-        if(featureModeService.featureModeActive(ModerationFeatures.WARNING, server.getId(), WarningMode.WARN_LOG)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server.getId(), WarningMode.WARN_LOG)) {
             log.trace("Logging warning for server {}.", server.getId());
             MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context, server.getId());
             futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
         } else {
-            log.trace("Not logging warning because of feature {} with feature mode {} in server {}.", ModerationFeatures.WARNING, WarningMode.WARN_LOG, server.getId());
+            log.trace("Not logging warning because of feature {} with feature mode {} in server {}.", ModerationFeatureDefinition.WARNING, WarningMode.WARN_LOG, server.getId());
         }
 
         return FutureUtils.toSingleFutureGeneric(futures);
@@ -138,11 +138,11 @@ public class WarnServiceBean implements WarnService {
         List<Long> warningIds = flattenWarnings(warningsToDecay);
         Long serverId = server.getId();
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatures.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)) {
             log.trace("Sending log messages for automatic warn decay in server {}.", server.getId());
             completableFuture = logDecayedWarnings(server, warningsToDecay);
         } else {
-            log.trace("Not logging automatic warn decay, because feature {} has its mode {} disabled in server {}.", ModerationFeatures.AUTOMATIC_WARN_DECAY, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG, server.getId());
+            log.trace("Not logging automatic warn decay, because feature {} has its mode {} disabled in server {}.", ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG, server.getId());
             completableFuture = CompletableFuture.completedFuture(null);
         }
         return completableFuture.thenAccept(aVoid ->
@@ -253,13 +253,13 @@ public class WarnServiceBean implements WarnService {
         List<Long> warnIds = flattenWarnings(warningsToDecay);
         log.info("Decaying ALL warning in server {}.", server.getId());
         Long serverId = server.getId();
-        if(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server, WarningMode.WARN_DECAY_LOG)) {
             log.trace("Logging warn decays in server {}", serverId);
             return logDecayedWarnings(server, warningsToDecay).thenAccept(aVoid ->
                 self.decayWarnings(warnIds, serverId)
             );
         } else {
-            log.trace("Not logging warn decays for manual decay in server {} because feature {} with feature mode: {}", serverId, ModerationFeatures.WARNING, WarningMode.WARN_DECAY_LOG);
+            log.trace("Not logging warn decays for manual decay in server {} because feature {} with feature mode: {}", serverId, ModerationFeatureDefinition.WARNING, WarningMode.WARN_DECAY_LOG);
             self.decayWarnings(warnIds, serverId);
             return CompletableFuture.completedFuture(null);
         }

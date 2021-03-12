@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
@@ -12,8 +12,8 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.CommandServiceBean;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
-import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -51,8 +51,8 @@ public class AllowRole extends AbstractConditionableCommand {
         ARole fakeRole = (ARole) commandContext.getParameters().getParameters().get(1);
         ARole actualRole = roleManagementService.findRole(fakeRole.getId());
         if(featureManagementService.featureExists(name)) {
-            FeatureEnum featureEnum = featureFlagService.getFeatureEnum(name);
-            commandService.allowFeatureForRole(featureEnum, actualRole);
+            FeatureDefinition featureDefinition = featureFlagService.getFeatureEnum(name);
+            commandService.allowFeatureForRole(featureDefinition, actualRole);
         } else if(commandManagementService.doesCommandExist(name)) {
             ACommand command = commandManagementService.findCommandByName(name);
             commandService.allowCommandForRole(command, actualRole);
@@ -70,7 +70,7 @@ public class AllowRole extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("allowRole")
-                .module(ConfigModuleInterface.CONFIG)
+                .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
                 .help(helpInfo)
@@ -79,7 +79,7 @@ public class AllowRole extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 }

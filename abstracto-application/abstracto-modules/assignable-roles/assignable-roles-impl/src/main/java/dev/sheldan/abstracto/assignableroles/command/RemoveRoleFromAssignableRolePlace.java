@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
-import dev.sheldan.abstracto.assignableroles.config.features.AssignableRoleFeature;
+import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Command used to remove a {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRole role}
- * from an {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace place}
+ * Command used to remove a {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRole role}
+ * from an {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace place}
  */
 @Component
 public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableCommand {
@@ -50,7 +50,7 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("removeRoleFromAssignableRolePlace")
-                .module(AssignableRoleModule.ASSIGNABLE_ROLES)
+                .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
                 .async(true)
@@ -61,7 +61,7 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return AssignableRoleFeature.ASSIGNABLE_ROLES;
+    public FeatureDefinition getFeature() {
+        return AssignableRoleFeatureDefinition.ASSIGNABLE_ROLES;
     }
 }

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
-import dev.sheldan.abstracto.experience.models.ServerExperience;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.experience.model.ServerExperience;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -11,6 +11,6 @@ import java.util.List;
 @Setter
 @Getter
 public class SingleLevelPackedModule {
-    private ModuleInterface moduleInterface;
+    private ModuleDefinition moduleDefinition;
     private List<Command> commands;
 }

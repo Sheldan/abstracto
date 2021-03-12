@@ -6,9 +6,9 @@ import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
-import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.mode.ModerationMode;
+import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -52,13 +52,13 @@ public class BanServiceBean implements BanService {
     @NotNull
     public CompletableFuture<Void> sendBanLogMessage(ServerContext banLog, Long guildId, String template) {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatures.MODERATION, guildId, ModerationMode.BAN_LOG)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, guildId, ModerationMode.BAN_LOG)) {
             MessageToSend banLogMessage = templateService.renderEmbedTemplate(template, banLog, guildId);
             log.trace("Sending ban log message in guild {}.", guildId);
             List<CompletableFuture<Message>> notificationFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId);
             completableFuture = FutureUtils.toSingleFutureGeneric(notificationFutures);
         } else {
-            log.trace("Feature {} has mode {} for logging disabled for server {}. Not sending notification.", ModerationFeatures.MODERATION, ModerationMode.BAN_LOG, guildId);
+            log.trace("Feature {} has mode {} for logging disabled for server {}. Not sending notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, guildId);
             completableFuture = CompletableFuture.completedFuture(null);
         }
         return completableFuture;

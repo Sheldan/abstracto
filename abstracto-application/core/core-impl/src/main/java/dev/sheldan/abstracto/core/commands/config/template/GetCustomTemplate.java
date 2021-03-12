@@ -4,12 +4,12 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
-import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.CustomTemplateNotFoundException;
 import dev.sheldan.abstracto.core.models.template.commands.GetCustomTemplateModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -69,7 +69,7 @@ public class GetCustomTemplate extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("getCustomTemplate")
-                .module(ConfigModuleInterface.CONFIG)
+                .module(ConfigModuleDefinition.CONFIG)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .async(true)
@@ -80,7 +80,7 @@ public class GetCustomTemplate extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 }

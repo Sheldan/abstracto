@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.command.condition;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.detail.FeatureDisabledConditionDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class FeatureEnabledCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(CommandContext context, Command command) {
-        FeatureEnum feature = command.getFeature();
+        FeatureDefinition feature = command.getFeature();
         boolean featureFlagValue = true;
         if(feature != null) {
             featureFlagValue = featureFlagService.getFeatureFlagValue(feature, context.getGuild().getIdLong());

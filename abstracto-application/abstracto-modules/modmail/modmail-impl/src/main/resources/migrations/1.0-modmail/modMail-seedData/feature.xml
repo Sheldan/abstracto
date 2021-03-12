@@ -6,11 +6,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <property name="today" value="(SELECT NOW())"/>
     <changeSet author="Sheldan" id="modmail_feature-insertion">
         <insert tableName="feature">
             <column name="key" value="modmail"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

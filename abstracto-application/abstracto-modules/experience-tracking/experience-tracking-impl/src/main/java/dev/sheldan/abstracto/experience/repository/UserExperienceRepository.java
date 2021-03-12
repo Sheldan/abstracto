@@ -1,18 +1,15 @@
 package dev.sheldan.abstracto.experience.repository;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
-import dev.sheldan.abstracto.experience.models.database.LeaderBoardEntryResult;
-import org.jetbrains.annotations.NotNull;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.database.LeaderBoardEntryResult;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository to manage the access to the table managed by {@link AUserExperience userExperience}

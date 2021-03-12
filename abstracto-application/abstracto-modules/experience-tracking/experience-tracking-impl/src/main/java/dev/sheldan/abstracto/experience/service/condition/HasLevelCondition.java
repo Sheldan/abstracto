@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.ConditionContextVariable;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.SystemCondition;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

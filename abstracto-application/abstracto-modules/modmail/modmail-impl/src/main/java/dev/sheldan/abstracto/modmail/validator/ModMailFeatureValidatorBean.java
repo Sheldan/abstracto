@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.FeatureValidatorService;
 import dev.sheldan.abstracto.core.service.GuildService;
-import dev.sheldan.abstracto.modmail.models.template.ModMailCategoryValidationErrorModel;
+import dev.sheldan.abstracto.modmail.model.template.ModMailCategoryValidationErrorModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Category;

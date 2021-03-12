@@ -67,6 +67,54 @@
                 <artifactId>metrics-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>entertainment-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>link-embed-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>remind-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>statistic-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>remind-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>repost-detection-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>starboard-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>suggestion-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

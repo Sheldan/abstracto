@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.experience.listener;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncJoinListener;
 import dev.sheldan.abstracto.core.listener.sync.jda.JoinListener;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -48,8 +48,8 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return ExperienceFeature.EXPERIENCE;
+    public FeatureDefinition getFeature() {
+        return ExperienceFeatureDefinition.EXPERIENCE;
     }
 
 }

@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
-import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.repository.ExperienceRoleRepository;
 import org.junit.Assert;
 import org.junit.Test;

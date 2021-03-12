@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignedUserNotFoundException;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
+import dev.sheldan.abstracto.assignableroles.exception.AssignedUserNotFoundException;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 

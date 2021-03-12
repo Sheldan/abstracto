@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.experience.models.database.ADisabledExpRole;
+import dev.sheldan.abstracto.experience.model.database.ADisabledExpRole;
 
 import java.util.List;
 

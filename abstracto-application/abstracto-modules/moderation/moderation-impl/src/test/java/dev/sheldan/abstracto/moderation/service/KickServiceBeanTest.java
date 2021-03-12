@@ -2,10 +2,10 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
-import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
-import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.mode.ModerationMode;
+import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
+import dev.sheldan.abstracto.moderation.model.template.command.KickLogModel;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
@@ -55,7 +55,7 @@ public class KickServiceBeanTest {
         when(mockedAction.submit()).thenReturn(CompletableFuture.completedFuture(null));
         KickLogModel model = Mockito.mock(KickLogModel.class);
         when(model.getGuild()).thenReturn(mockedGuild);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.KICK_LOG)).thenReturn(false);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, SERVER_ID, ModerationMode.KICK_LOG)).thenReturn(false);
         testUnit.kickMember(member, reason, model);
         verify(postTargetService, times(0)).sendEmbedInPostTarget(any(MessageToSend.class), eq(ModerationPostTarget.KICK_LOG), eq(SERVER_ID));
         verify(templateService, times(0)).renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model, SERVER_ID);
@@ -78,7 +78,7 @@ public class KickServiceBeanTest {
         when(model.getGuild()).thenReturn(mockedGuild);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(KickServiceBean.KICK_LOG_TEMPLATE, model, SERVER_ID)).thenReturn(messageToSend);
-        when(featureModeService.featureModeActive(ModerationFeatures.MODERATION, SERVER_ID, ModerationMode.KICK_LOG)).thenReturn(true);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, SERVER_ID, ModerationMode.KICK_LOG)).thenReturn(true);
         testUnit.kickMember(member, reason, model);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, ModerationPostTarget.KICK_LOG, SERVER_ID);
     }

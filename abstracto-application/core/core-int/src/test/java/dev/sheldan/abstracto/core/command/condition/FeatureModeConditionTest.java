@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.condition;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
@@ -38,7 +38,7 @@ public class FeatureModeConditionTest {
     private FeatureMode featureMode;
 
     @Mock
-    private FeatureEnum featureEnum;
+    private FeatureDefinition featureDefinition;
 
     @Mock
     private Guild server;
@@ -59,8 +59,8 @@ public class FeatureModeConditionTest {
         when(commandContext.getUserInitiatedContext()).thenReturn(userInitiatedServerContext);
         when(server.getIdLong()).thenReturn(SERVER_ID);
         when(userInitiatedServerContext.getGuild()).thenReturn(server);
-        when(command.getFeature()).thenReturn(featureEnum);
-        when(modeService.featureModeActive(featureEnum, SERVER_ID, featureMode)).thenReturn(true);
+        when(command.getFeature()).thenReturn(featureDefinition);
+        when(modeService.featureModeActive(featureDefinition, SERVER_ID, featureMode)).thenReturn(true);
         when(command.getFeatureModeLimitations()).thenReturn(Arrays.asList(featureMode));
         CommandTestUtilities.checkSuccessfulCondition(testUnit.shouldExecute(commandContext, command));
     }
@@ -70,8 +70,8 @@ public class FeatureModeConditionTest {
         when(commandContext.getUserInitiatedContext()).thenReturn(userInitiatedServerContext);
         when(server.getIdLong()).thenReturn(SERVER_ID);
         when(userInitiatedServerContext.getGuild()).thenReturn(server);
-        when(command.getFeature()).thenReturn(featureEnum);
-        when(modeService.featureModeActive(featureEnum, SERVER_ID, featureMode)).thenReturn(false);
+        when(command.getFeature()).thenReturn(featureDefinition);
+        when(modeService.featureModeActive(featureDefinition, SERVER_ID, featureMode)).thenReturn(false);
         when(command.getFeatureModeLimitations()).thenReturn(Arrays.asList(featureMode));
         CommandTestUtilities.checkUnmetCondition(testUnit.shouldExecute(commandContext, command));
     }

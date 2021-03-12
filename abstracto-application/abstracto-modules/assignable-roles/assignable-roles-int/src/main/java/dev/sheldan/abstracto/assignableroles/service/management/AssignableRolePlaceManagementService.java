@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 
@@ -15,7 +15,7 @@ public interface AssignableRolePlaceManagementService {
     /**
      * Creates an {@link AssignableRolePlace place} with the given attributes
      * @param name The key of the {@link AssignableRolePlace place} to identify it with
-     * @param channel The {@link AChannel channel} in which the {@link dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost posts}
+     * @param channel The {@link AChannel channel} in which the {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlacePost posts}
      *                should be created in
      * @param text The text which should be shown in the description
      * @return The {@link AssignableRolePlace place} which was created
@@ -34,7 +34,7 @@ public interface AssignableRolePlaceManagementService {
      * Retrieves an {@link AssignableRolePlace place} identified by the given key in the {@link AServer server}
      * @param server The {@link AServer server} to search in
      * @param name The key of the {@link AssignableRolePlace place} to search for
-     * @throws dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlaceNotFoundException if not found
+     * @throws dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceNotFoundException if not found
      * @return Returns an instance of {@link AssignableRolePlace place}, if it was found
      */
     AssignableRolePlace findByServerAndKey(AServer server, String name);
@@ -50,7 +50,7 @@ public interface AssignableRolePlaceManagementService {
     /**
      * Retrieves an {@link AssignableRolePlace place} via its ID
      * @param id The ID to search for
-     * @throws dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlaceNotFoundException if not found
+     * @throws dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceNotFoundException if not found
      * @return Returns an {@link AssignableRolePlace place} if one was found with this ID
      */
     AssignableRolePlace findByPlaceId(Long id);

@@ -3,8 +3,8 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.moderation.models.database.Mute;
-import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
+import dev.sheldan.abstracto.moderation.model.database.Mute;
+import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
 import net.dv8tion.jda.api.entities.Member;
 
 import java.time.Instant;

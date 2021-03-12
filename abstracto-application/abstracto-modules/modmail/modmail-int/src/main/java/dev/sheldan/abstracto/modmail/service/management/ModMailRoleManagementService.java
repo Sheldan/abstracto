@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.modmail.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.modmail.models.database.ModMailRole;
+import dev.sheldan.abstracto.modmail.model.database.ModMailRole;
 
 import java.util.List;
 

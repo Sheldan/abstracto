@@ -11,16 +11,16 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.mode.MutingMode;
-import dev.sheldan.abstracto.moderation.config.posttargets.MutingPostTarget;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.mode.MutingMode;
+import dev.sheldan.abstracto.moderation.config.posttarget.MutingPostTarget;
 import dev.sheldan.abstracto.moderation.exception.MuteRoleNotSetupException;
 import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
-import dev.sheldan.abstracto.moderation.models.database.Mute;
-import dev.sheldan.abstracto.moderation.models.database.MuteRole;
-import dev.sheldan.abstracto.moderation.models.template.commands.MuteContext;
-import dev.sheldan.abstracto.moderation.models.template.commands.MuteNotification;
-import dev.sheldan.abstracto.moderation.models.template.commands.UnMuteLog;
+import dev.sheldan.abstracto.moderation.model.database.Mute;
+import dev.sheldan.abstracto.moderation.model.database.MuteRole;
+import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
+import dev.sheldan.abstracto.moderation.model.template.command.MuteNotification;
+import dev.sheldan.abstracto.moderation.model.template.command.UnMuteLog;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.moderation.service.management.MuteRoleManagementService;
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
@@ -242,28 +242,28 @@ public class MuteServiceBean implements MuteService {
 
     private CompletableFuture<Void> sendMuteLog(MuteContext muteLogModel, AServer server)  {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)) {
             log.trace("Sending mute log to the mute post target.");
             MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.trace("Not sending mute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MUTE_LOGGING, ModerationFeatures.WARNING, server.getId());
+            log.trace("Not sending mute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
         }
         return completableFuture;
     }
 
     private CompletableFuture<Void> sendUnMuteLogMessage(UnMuteLog muteLogModel, AServer server)  {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatures.MUTING, server, MutingMode.MUTE_LOGGING)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)) {
             log.trace("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
             MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.trace("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.UN_MUTE_LOGGING, ModerationFeatures.WARNING, server.getId());
+            log.trace("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
         }
         return completableFuture;
     }
@@ -287,12 +287,12 @@ public class MuteServiceBean implements MuteService {
     @Transactional
     public CompletableFuture<Void> sendUnMuteLogForManualUnMute(Long muteId, CompletableFuture<Member> mutingMemberFuture, CompletableFuture<Member> mutedMemberFuture, Guild guild) {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatures.MUTING, guild.getIdLong(), MutingMode.MANUAL_UN_MUTE_LOGGING)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, guild.getIdLong(), MutingMode.MANUAL_UN_MUTE_LOGGING)) {
             completableFuture = self.sendUnmuteLog(muteId, guild, mutingMemberFuture, mutedMemberFuture);
             log.trace("Sending un mute notification for manual un mute for mute {} in server {}.", muteId, guild.getIdLong());
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.trace("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MANUAL_UN_MUTE_LOGGING, ModerationFeatures.WARNING, guild.getIdLong());
+            log.trace("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MANUAL_UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, guild.getIdLong());
 
         }
         return completableFuture;

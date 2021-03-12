@@ -5,12 +5,12 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.ParameterValidator;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
@@ -47,7 +47,7 @@ public class SetEmote extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("setEmote")
-                .module(ConfigModuleInterface.CONFIG)
+                .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .supportsEmbedException(true)
                 .help(helpInfo)
@@ -57,7 +57,7 @@ public class SetEmote extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 }

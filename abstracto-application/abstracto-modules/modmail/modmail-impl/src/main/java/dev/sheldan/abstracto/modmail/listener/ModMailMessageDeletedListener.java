@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.modmail.listener;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
-import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +69,8 @@ public class ModMailMessageDeletedListener implements AsyncMessageDeletedListene
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return ModMailFeatures.MOD_MAIL;
+    public FeatureDefinition getFeature() {
+        return ModMailFeatureDefinition.MOD_MAIL;
     }
 
 }

@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.experience.listener;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.experience.config.features.ExperienceFeature;
+import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +33,8 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return ExperienceFeature.EXPERIENCE;
+    public FeatureDefinition getFeature() {
+        return ExperienceFeatureDefinition.EXPERIENCE;
     }
 
 }

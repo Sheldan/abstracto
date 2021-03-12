@@ -14,38 +14,32 @@
     <property name="warnDecayFeature" value="(SELECT id FROM feature WHERE key = 'warnDecay')"/>
     <property name="userNotesFeature" value="(SELECT id FROM feature WHERE key = 'userNotes')"/>
     <property name="inviteLinkFilteringFeature" value="(SELECT id FROM feature WHERE key = 'inviteFilter')"/>
-    <property name="today" value="(SELECT NOW())"/>
 
     <changeSet  author="Sheldan"  id="moderation_moderation-commands">
         <insert tableName="command">
             <column name="name" value="ban"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${moderationFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="banId"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${moderationFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="kick"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${moderationFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="purge"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${moderationFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="slowMode"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${moderationFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 
@@ -54,7 +48,6 @@
             <column name="name" value="deleteWarning"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${warningsFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="decayAllWarnings"/>
@@ -65,19 +58,16 @@
             <column name="name" value="myWarnings"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${warningsFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="warn"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${warningsFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="warnings"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${warningsFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 
@@ -86,19 +76,16 @@
             <column name="name" value="mute"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${mutingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="setMuteRole"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${mutingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="unMute"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${mutingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 
@@ -107,7 +94,6 @@
             <column name="name" value="decayWarnings"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${warnDecayFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 
@@ -116,19 +102,16 @@
             <column name="name" value="deleteNote"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${userNotesFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="userNote"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${userNotesFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="userNotes"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${userNotesFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 
@@ -137,25 +120,21 @@
             <column name="name" value="allowInvite"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="disAllowInvite"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="removeTrackedInviteLinks"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="showTrackedInviteLinks"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 

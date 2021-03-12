@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.metrics.OkHttpMetrics;
+import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

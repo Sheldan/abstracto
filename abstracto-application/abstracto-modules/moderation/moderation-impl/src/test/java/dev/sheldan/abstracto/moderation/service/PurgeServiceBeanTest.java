@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.moderation.exception.NoMessageFoundException;
-import dev.sheldan.abstracto.moderation.models.template.commands.PurgeStatusUpdateModel;
+import dev.sheldan.abstracto.moderation.model.template.command.PurgeStatusUpdateModel;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.*;

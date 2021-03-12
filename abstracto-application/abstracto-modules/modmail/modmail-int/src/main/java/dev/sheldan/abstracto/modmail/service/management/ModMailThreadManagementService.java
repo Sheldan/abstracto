@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThreadState;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThreadState;
 
 import java.util.List;
 import java.util.Optional;

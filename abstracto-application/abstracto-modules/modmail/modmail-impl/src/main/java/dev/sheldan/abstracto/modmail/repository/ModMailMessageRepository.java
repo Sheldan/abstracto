@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.repository;
 
-import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

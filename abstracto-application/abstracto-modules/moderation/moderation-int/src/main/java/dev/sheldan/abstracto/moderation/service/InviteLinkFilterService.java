@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.moderation.models.database.FilteredInviteLink;
+import dev.sheldan.abstracto.moderation.model.database.FilteredInviteLink;
 
 import java.util.List;
 

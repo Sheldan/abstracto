@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.service.management;
 
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.repository.ExperienceLevelRepository;
 import org.junit.Assert;
 import org.junit.Test;

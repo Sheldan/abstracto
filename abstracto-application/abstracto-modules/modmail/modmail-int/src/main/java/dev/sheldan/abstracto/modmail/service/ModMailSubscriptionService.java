@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.service;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 
 /**
  * Service used to add subscriptions to threads and remove them as well.

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.modmail.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import net.dv8tion.jda.api.entities.Message;
 
 import java.util.List;

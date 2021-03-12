@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.modmail.service;
 
-import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
-import dev.sheldan.abstracto.modmail.models.dto.LoadedModmailThreadMessageList;
+import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
+import dev.sheldan.abstracto.modmail.model.dto.LoadedModmailThreadMessageList;
 import net.dv8tion.jda.api.entities.Message;
 
 import java.util.List;
 
 /**
- * Service to handle the messages of a {@link dev.sheldan.abstracto.modmail.models.database.ModMailThread}
+ * Service to handle the messages of a {@link dev.sheldan.abstracto.modmail.model.database.ModMailThread}
  */
 public interface ModMailMessageService {
     /**

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlacePostNotFoundException;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
+import dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlacePostNotFoundException;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlacePost;
 
 import java.util.Optional;
 

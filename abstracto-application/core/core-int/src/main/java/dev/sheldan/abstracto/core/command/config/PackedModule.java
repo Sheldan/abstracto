@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 @Getter
 public class PackedModule {
-    private ModuleInterface moduleInterface;
+    private ModuleDefinition moduleDefinition;
     private PackedModule parentModule;
     private List<PackedModule> subModules;
     private List<Command> commands;

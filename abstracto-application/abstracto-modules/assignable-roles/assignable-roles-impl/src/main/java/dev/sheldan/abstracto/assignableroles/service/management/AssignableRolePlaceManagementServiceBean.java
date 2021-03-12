@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlaceNotFoundException;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceNotFoundException;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRolePlaceRepository;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;

@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.modmail.models.template.SetupModMailCategoryMessageModel;
+import dev.sheldan.abstracto.modmail.model.template.SetupModMailCategoryMessageModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import dev.sheldan.abstracto.modmail.validator.ModMailFeatureValidator;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;

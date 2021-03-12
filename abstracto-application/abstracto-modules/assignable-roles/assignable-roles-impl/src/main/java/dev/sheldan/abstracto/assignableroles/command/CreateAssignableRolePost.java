@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
-import dev.sheldan.abstracto.assignableroles.config.features.AssignableRoleFeature;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -57,7 +57,7 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("createAssignableRolePlace")
-                .module(AssignableRoleModule.ASSIGNABLE_ROLES)
+                .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
@@ -68,7 +68,7 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return AssignableRoleFeature.ASSIGNABLE_ROLES;
+    public FeatureDefinition getFeature() {
+        return AssignableRoleFeatureDefinition.ASSIGNABLE_ROLES;
     }
 }

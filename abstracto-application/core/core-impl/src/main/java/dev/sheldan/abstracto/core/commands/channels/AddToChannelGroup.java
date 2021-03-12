@@ -4,10 +4,10 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
         List<String> aliases = Arrays.asList("addTChGrp", "chGrpCh+");
         return CommandConfiguration.builder()
                 .name("addToChannelGroup")
-                .module(ChannelsModuleInterface.CHANNELS)
+                .module(ChannelsModuleDefinition.CHANNELS)
                 .aliases(aliases)
                 .parameters(parameters)
                 .supportsEmbedException(true)
@@ -51,7 +51,7 @@ public class AddToChannelGroup extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 }

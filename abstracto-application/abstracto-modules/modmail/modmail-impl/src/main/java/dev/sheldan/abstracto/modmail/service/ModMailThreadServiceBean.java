@@ -4,9 +4,9 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.ButtonMenu;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
-import dev.sheldan.abstracto.core.metrics.service.MetricTag;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
@@ -19,16 +19,16 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.modmail.config.ModMailFeature;
-import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
+import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.config.ModMailMode;
 import dev.sheldan.abstracto.modmail.config.ModMailPostTargets;
 import dev.sheldan.abstracto.modmail.exception.ModMailCategoryIdException;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadChannelNotFound;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadNotFoundException;
-import dev.sheldan.abstracto.modmail.models.database.*;
-import dev.sheldan.abstracto.modmail.models.dto.LoadedModmailThreadMessageList;
-import dev.sheldan.abstracto.modmail.models.dto.ServerChoice;
-import dev.sheldan.abstracto.modmail.models.template.*;
+import dev.sheldan.abstracto.modmail.model.database.*;
+import dev.sheldan.abstracto.modmail.model.dto.LoadedModmailThreadMessageList;
+import dev.sheldan.abstracto.modmail.model.dto.ServerChoice;
+import dev.sheldan.abstracto.modmail.model.template.*;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailRoleManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailSubscriberManagementService;
@@ -500,7 +500,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel);
         CompletableFuture<Message> future = messageService.sendMessageToSendToUser(targetMember.getUser(), messageToSend);
         CompletableFuture<Message> sameThreadMessageFuture;
-        if(featureModeService.featureModeActive(ModMailFeatures.MOD_MAIL, modMailThread.getServer(), ModMailMode.SEPARATE_MESSAGE)) {
+        if(featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, modMailThread.getServer(), ModMailMode.SEPARATE_MESSAGE)) {
             sameThreadMessageFuture = channelService.sendMessageToSendToAChannel(messageToSend, modMailThread.getChannel()).get(0);
         } else {
             sameThreadMessageFuture = CompletableFuture.completedFuture(null);
@@ -512,7 +512,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     public CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions, Boolean log) {
-        boolean loggingMode = featureModeService.featureModeActive(ModMailFeatures.MOD_MAIL, modMailThread.getServer(), ModMailMode.LOGGING);
+        boolean loggingMode = featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, modMailThread.getServer(), ModMailMode.LOGGING);
         boolean shouldLogThread = log && loggingMode;
         return closeModMailThread(modMailThread, note, notifyUser, shouldLogThread, undoActions);
     }

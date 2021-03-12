@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -77,9 +77,9 @@ public class FeatureModesTest {
     public void testExecuteFeatureParameter() {
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(FEATURE_NAME));
         FeatureModeDisplay display1 = Mockito.mock(FeatureModeDisplay.class);
-        FeatureEnum featureEnum = Mockito.mock(FeatureEnum.class);
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureConfigService.getFeatureEnum(FEATURE_NAME)).thenReturn(featureEnum);
+        FeatureDefinition featureDefinition = Mockito.mock(FeatureDefinition.class);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureConfigService.getFeatureEnum(FEATURE_NAME)).thenReturn(featureDefinition);
         AFeature feature = Mockito.mock(AFeature.class);
         when(featureManagementService.getFeature(FEATURE_NAME)).thenReturn(feature);
         List<FeatureModeDisplay> featureModeDisplays = Arrays.asList(display1);

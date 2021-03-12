@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.moderation.exception.InvalidInviteException;
-import dev.sheldan.abstracto.moderation.models.database.FilteredInviteLink;
+import dev.sheldan.abstracto.moderation.model.database.FilteredInviteLink;
 import dev.sheldan.abstracto.moderation.service.management.AllowedInviteLinkManagement;
 import dev.sheldan.abstracto.moderation.service.management.FilteredInviteLinkManagement;
 import net.dv8tion.jda.api.entities.Message;

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.moderation.models.database.MuteRole;
+import dev.sheldan.abstracto.moderation.model.database.MuteRole;
 import dev.sheldan.abstracto.moderation.repository.MuteRoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

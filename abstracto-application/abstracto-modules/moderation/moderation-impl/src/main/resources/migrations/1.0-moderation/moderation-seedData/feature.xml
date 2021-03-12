@@ -6,35 +6,27 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <property name="today" value="(SELECT NOW())"/>
     <changeSet author="Sheldan"  id="moderation_feature-insertion">
         <insert tableName="feature">
             <column name="key" value="moderation"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="feature">
             <column name="key" value="warnings"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="feature">
             <column name="key" value="warnDecay"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="feature">
             <column name="key" value="logging"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="feature">
             <column name="key" value="muting"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="feature">
             <column name="key" value="userNotes"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="feature">
             <column name="key" value="inviteFilter"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

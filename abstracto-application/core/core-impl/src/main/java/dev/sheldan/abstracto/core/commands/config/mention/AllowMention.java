@@ -4,11 +4,11 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.AllowedMentionService;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class AllowMention extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("allowMention")
-                .module(ConfigModuleInterface.CONFIG)
+                .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
                 .supportsEmbedException(true)
@@ -47,7 +47,7 @@ public class AllowMention extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 }

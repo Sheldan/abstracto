@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.config.DefaultConfigProperties;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.property.FeatureFlagProperty;
@@ -28,7 +28,7 @@ public class DefaultFeatureFlagManagementServiceBean implements  DefaultFeatureF
     }
 
     @Override
-    public FeatureFlagProperty getDefaultFeatureFlagProperty(FeatureEnum feature) {
+    public FeatureFlagProperty getDefaultFeatureFlagProperty(FeatureDefinition feature) {
         return findFeatureFlagPropertyViaFeatureKey(feature.getKey());
     }
 

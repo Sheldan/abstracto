@@ -1,14 +1,14 @@
 package dev.sheldan.abstracto.assignableroles.service;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRolePlaceParameterKey;
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlaceAlreadyExistsException;
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlaceChannelDoesNotExistException;
-import dev.sheldan.abstracto.assignableroles.exceptions.EmoteNotInAssignableRolePlaceException;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
-import dev.sheldan.abstracto.assignableroles.models.templates.*;
+import dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceAlreadyExistsException;
+import dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceChannelDoesNotExistException;
+import dev.sheldan.abstracto.assignableroles.exception.EmoteNotInAssignableRolePlaceException;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlacePost;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
+import dev.sheldan.abstracto.assignableroles.model.template.*;
 import dev.sheldan.abstracto.assignableroles.service.management.*;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterKeyValueWrongTypeException;
@@ -877,8 +877,6 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
      */
     @Transactional
     public CompletableFuture<Void> addEmotes(List<CompletableFuture<Message>> assignablePlacePostsMessageFutures, Long assignablePlaceId) {
-        Message firstMessage = assignablePlacePostsMessageFutures.get(0).join();
-
         AssignableRolePlace innerRolePlace = rolePlaceManagementService.findByPlaceId(assignablePlaceId);
         log.info("Adding emotes to assignable role place {}.", innerRolePlace);
         log.trace("We have {} posts and {} roles.", assignablePlacePostsMessageFutures.size(), innerRolePlace.getAssignableRoles().size());

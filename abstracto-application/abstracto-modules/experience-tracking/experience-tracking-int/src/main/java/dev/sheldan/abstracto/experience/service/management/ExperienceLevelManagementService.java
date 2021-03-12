@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.service.management;
 
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 
 import java.util.List;
 import java.util.Optional;

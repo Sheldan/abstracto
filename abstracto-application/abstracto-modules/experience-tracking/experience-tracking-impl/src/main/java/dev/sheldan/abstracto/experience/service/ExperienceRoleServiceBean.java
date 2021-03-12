@@ -6,10 +6,10 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
-import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
-import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.RoleCalculationResult;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +79,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     /**
      * Deletes the {@link AExperienceRole} and recalculates the experience for all users which currently had the associated
      * {@link net.dv8tion.jda.api.entities.Role}.
-     * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.models.database.AExperienceRole}
+     * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.model.database.AExperienceRole}
      *             configuration
      */
     @Override

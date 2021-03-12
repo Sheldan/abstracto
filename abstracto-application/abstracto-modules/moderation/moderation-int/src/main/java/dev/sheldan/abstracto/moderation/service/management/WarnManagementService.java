@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
+import dev.sheldan.abstracto.moderation.model.database.Warning;
 
 import java.time.Instant;
 import java.util.List;

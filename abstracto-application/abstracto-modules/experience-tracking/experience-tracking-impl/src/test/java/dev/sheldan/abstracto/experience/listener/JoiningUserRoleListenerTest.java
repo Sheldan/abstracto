@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.experience.listener;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import org.junit.Before;

@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 public interface FeatureConfig extends Serializable {
-    FeatureEnum getFeature();
+    FeatureDefinition getFeature();
     default List<FeatureConfig> getRequiredFeatures() {
         return Collections.emptyList();
     }

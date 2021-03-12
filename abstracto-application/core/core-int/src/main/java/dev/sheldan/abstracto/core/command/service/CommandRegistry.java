@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.service;
 
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.config.ModuleInterface;
+import dev.sheldan.abstracto.core.command.config.ModuleDefinition;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -12,7 +12,7 @@ public interface CommandRegistry {
     Command findCommandByParameters(String name, UnParsedCommandParameter context);
     Command findCommand(String message);
     List<Command> getAllCommands();
-    List<Command> getAllCommandsFromModule(ModuleInterface module);
+    List<Command> getAllCommandsFromModule(ModuleDefinition module);
     boolean isCommand(Message message);
     boolean commandExists(String name);
     Command getCommandByName(String name);

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.repository;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
+import dev.sheldan.abstracto.moderation.model.database.Warning;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;

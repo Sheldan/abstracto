@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.property.FeatureModeProperty;
@@ -56,7 +56,7 @@ public class FeatureModeServiceBeanTest {
     private AServer server;
 
     @Mock
-    private FeatureEnum featureEnum;
+    private FeatureDefinition featureDefinition;
 
     @Mock
     private AFeature feature;
@@ -75,79 +75,79 @@ public class FeatureModeServiceBeanTest {
 
     @Test
     public void enableFeatureModeForFeatureWhichAlreadyExists() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.of(aFeatureMode));
-        testUnit.enableFeatureModeForFeature(featureEnum, server, featureMode);
+        testUnit.enableFeatureModeForFeature(featureDefinition, server, featureMode);
         verify(aFeatureMode, times(1)).setEnabled(true);
     }
 
     @Test
     public void enableFeatureModeForFeatureCreatingNewMode() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.empty());
         when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(Optional.of(featureFlag));
-        testUnit.enableFeatureModeForFeature(featureEnum, server, featureMode);
+        testUnit.enableFeatureModeForFeature(featureDefinition, server, featureMode);
         verify(featureModeManagementService, times(1)).createMode(featureFlag, featureMode, true);
     }
 
     @Test
     public void setFutureModeForFutureEnable() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.of(aFeatureMode));
-        testUnit.setFutureModeForFuture(featureEnum, server, featureMode, true);
+        testUnit.setFutureModeForFuture(featureDefinition, server, featureMode, true);
         verify(aFeatureMode, times(1)).setEnabled(true);
     }
 
     @Test
     public void setFutureModeForFutureDisable() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.of(aFeatureMode));
-        testUnit.setFutureModeForFuture(featureEnum, server, featureMode, false);
+        testUnit.setFutureModeForFuture(featureDefinition, server, featureMode, false);
         verify(aFeatureMode, times(1)).setEnabled(false);
     }
 
     @Test
     public void disableFeatureModeForFeatureWhichAlreadyExists() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.of(aFeatureMode));
-        testUnit.disableFeatureModeForFeature(featureEnum, server, featureMode);
+        testUnit.disableFeatureModeForFeature(featureDefinition, server, featureMode);
         verify(aFeatureMode, times(1)).setEnabled(false);
     }
 
     @Test
     public void disableFeatureModeForFeatureCreatingNewMode() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.getFeatureMode(feature, server, featureMode)).thenReturn(Optional.empty());
         when(featureFlagManagementService.getFeatureFlag(feature, server)).thenReturn(Optional.of(featureFlag));
-        testUnit.disableFeatureModeForFeature(featureEnum, server, featureMode);
+        testUnit.disableFeatureModeForFeature(featureDefinition, server, featureMode);
         verify(featureModeManagementService, times(1)).createMode(featureFlag, featureMode, false);
     }
 
     @Test
     public void testFeatureModeActiveForCustomizedFeatureMode() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.doesFeatureModeExist(feature, server, featureMode)).thenReturn(true);
         when(featureModeManagementService.isFeatureModeActive(feature, server, featureMode)).thenReturn(true);
-        boolean actualResult = testUnit.featureModeActive(featureEnum, server, featureMode);
+        boolean actualResult = testUnit.featureModeActive(featureDefinition, server, featureMode);
         Assert.assertTrue(actualResult);
     }
 
     @Test
     public void testFeatureModeActiveForDefaultFeatureMode() {
-        when(featureEnum.getKey()).thenReturn(FEATURE_NAME);
+        when(featureDefinition.getKey()).thenReturn(FEATURE_NAME);
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
-        when(featureManagementService.getFeature(featureEnum.getKey())).thenReturn(feature);
+        when(featureManagementService.getFeature(featureDefinition.getKey())).thenReturn(feature);
         when(featureModeManagementService.doesFeatureModeExist(feature, server, featureMode)).thenReturn(false);
         when(defaultFeatureModeManagement.getFeatureMode(feature, FEATURE_MODE)).thenReturn(defaultFeatureMode);
         when(defaultFeatureMode.getEnabled()).thenReturn(true);
-        boolean actualResult = testUnit.featureModeActive(featureEnum, server, featureMode);
+        boolean actualResult = testUnit.featureModeActive(featureDefinition, server, featureMode);
         Assert.assertTrue(actualResult);
     }
 

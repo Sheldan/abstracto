@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
-import dev.sheldan.abstracto.assignableroles.exceptions.AssignableRolePlaceNotFoundException;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
+import dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceNotFoundException;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlacePost;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRoleRepository;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;

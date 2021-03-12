@@ -4,17 +4,16 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
-import dev.sheldan.abstracto.experience.models.LeaderBoard;
-import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
-import dev.sheldan.abstracto.experience.models.RoleCalculationResult;
-import dev.sheldan.abstracto.experience.models.ServerExperience;
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
-import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.LeaderBoard;
+import dev.sheldan.abstracto.experience.model.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.model.RoleCalculationResult;
+import dev.sheldan.abstracto.experience.model.ServerExperience;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -88,7 +87,7 @@ public interface AUserExperienceService {
      * to how much experience the user has. This method provides feedback back to the user in the provided {@link AChannel channel}
      * while the process is going own.
      * @param server The {@link AServer} to update users for
-     * @param channelId The ID of a {@link AChannel channel} in which the {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel statusUpdate}
+     * @param channelId The ID of a {@link AChannel channel} in which the {@link dev.sheldan.abstracto.experience.model.template.UserSyncStatusModel statusUpdate}
      *                should be posted to
      * @return A {@link CompletableFuture future} which completes after all the role changes have been completed
      */
@@ -122,7 +121,7 @@ public interface AUserExperienceService {
 
     /**
      * Provides a method to execute an action on a list of {@link AUserExperience} and provide feedback in the given {@link AChannel}
-     * in the form of {@link dev.sheldan.abstracto.experience.models.templates.UserSyncStatusModel} to be rendered with a certain
+     * in the form of {@link dev.sheldan.abstracto.experience.model.template.UserSyncStatusModel} to be rendered with a certain
      * template
      * @param experiences The list of {@link AUserExperience} to be working on
      * @param channel The {@link AChannel} used to provide feedback to the user

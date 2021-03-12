@@ -1,14 +1,14 @@
 package dev.sheldan.abstracto.assignableroles.service;
 
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRoleManagementServiceBean;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignedRoleUserManagementServiceBean;
-import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
-import dev.sheldan.abstracto.core.metrics.service.MetricTag;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;

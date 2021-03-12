@@ -10,7 +10,7 @@
         <insert tableName="scheduler_job">
             <column name="name" value="emoteStatisticJob"/>
             <column name="group_name" value="statistic"/>
-            <column name="clazz" value="dev.sheldan.abstracto.statistic.emotes.job.EmotePersistingJob"/>
+            <column name="clazz" value="dev.sheldan.abstracto.statistic.emote.job.EmotePersistingJob"/>
             <column name="active" value="true"/>
             <column name="cron_expression" value="40 * * * * ?"/>
             <column name="recovery" value="false"/>

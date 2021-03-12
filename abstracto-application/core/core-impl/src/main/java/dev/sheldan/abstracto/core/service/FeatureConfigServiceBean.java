@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
@@ -43,12 +43,12 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
     }
 
     @Override
-    public FeatureConfig getFeatureDisplayForFeature(FeatureEnum featureEnum) {
-        Optional<FeatureConfig> any = getAllFeatureConfigs().stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureEnum)).findAny();
+    public FeatureConfig getFeatureDisplayForFeature(FeatureDefinition featureDefinition) {
+        Optional<FeatureConfig> any = getAllFeatureConfigs().stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureDefinition)).findAny();
         if(any.isPresent()) {
             return any.get();
         }
-        throw new FeatureNotFoundException(featureEnum.getKey(), getFeaturesAsList());
+        throw new FeatureNotFoundException(featureDefinition.getKey(), getFeaturesAsList());
     }
 
     @Override
@@ -81,7 +81,7 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
     }
 
     @Override
-    public FeatureEnum getFeatureEnum(String key) {
+    public FeatureDefinition getFeatureEnum(String key) {
         Optional<FeatureConfig> foundFeature = availableFeatures.stream().filter(featureDisplay -> featureDisplay.getFeature().getKey().equalsIgnoreCase(key)).findAny();
         if(foundFeature.isPresent()) {
             return foundFeature.get().getFeature();

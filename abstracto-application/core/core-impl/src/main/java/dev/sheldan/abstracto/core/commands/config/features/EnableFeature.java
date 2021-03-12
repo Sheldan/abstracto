@@ -5,13 +5,13 @@ import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
-import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
+import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.EnableModel;
@@ -83,7 +83,7 @@ public class EnableFeature extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("enableFeature")
-                .module(ConfigModuleInterface.CONFIG)
+                .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .async(true)
                 .supportsEmbedException(true)
@@ -94,8 +94,8 @@ public class EnableFeature extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 
     @Override

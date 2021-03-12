@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.experience.service;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
 
     /**
      * Creates all {@link AExperienceLevel} until (including 0) up until the passed level
-     * @param level The max level to create {@link dev.sheldan.abstracto.experience.models.database.AExperienceLevel} for
+     * @param level The max level to create {@link dev.sheldan.abstracto.experience.model.database.AExperienceLevel} for
      */
     @Override
     public void createLevelsUntil(Integer level) {

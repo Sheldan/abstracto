@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.models.database.ACommand;
@@ -12,8 +12,8 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.CommandServiceBean;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
-import dev.sheldan.abstracto.core.commands.config.ConfigModuleInterface;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -70,7 +70,7 @@ public class DisAllowRole extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("disAllowRole")
-                .module(ConfigModuleInterface.CONFIG)
+                .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .help(helpInfo)
                 .templated(true)
@@ -79,7 +79,7 @@ public class DisAllowRole extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 }

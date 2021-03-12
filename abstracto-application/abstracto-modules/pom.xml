@@ -19,6 +19,12 @@
         <module>modmail</module>
         <module>assignable-roles</module>
         <module>statistic</module>
+        <module>starboard</module>
+        <module>link-embed</module>
+        <module>entertainment</module>
+        <module>remind</module>
+        <module>suggestion</module>
+        <module>repost-detection</module>
     </modules>
 
 

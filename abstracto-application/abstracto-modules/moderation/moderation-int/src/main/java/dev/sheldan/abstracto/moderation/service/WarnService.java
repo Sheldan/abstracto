@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
+import dev.sheldan.abstracto.moderation.model.database.Warning;
+import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
 
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;

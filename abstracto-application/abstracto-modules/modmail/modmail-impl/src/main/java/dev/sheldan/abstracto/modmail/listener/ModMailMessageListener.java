@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.modmail.listener;
 
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.sync.jda.PrivateMessageReceivedListener;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
-import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
-import dev.sheldan.abstracto.modmail.models.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -62,8 +62,8 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return ModMailFeatures.MOD_MAIL;
+    public FeatureDefinition getFeature() {
+        return ModMailFeatureDefinition.MOD_MAIL;
     }
 
     @Override

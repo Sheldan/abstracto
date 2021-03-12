@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.modmail.models.template.exception.ModMailThreadNotFoundExceptionModel;
+import dev.sheldan.abstracto.modmail.model.exception.ModMailThreadNotFoundExceptionModel;
 import dev.sheldan.abstracto.core.templating.Templatable;
 
 /**

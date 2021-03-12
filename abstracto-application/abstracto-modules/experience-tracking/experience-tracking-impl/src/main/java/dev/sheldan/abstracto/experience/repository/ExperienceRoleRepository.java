@@ -2,11 +2,9 @@ package dev.sheldan.abstracto.experience.repository;
 
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.experience.models.database.AExperienceLevel;
-import dev.sheldan.abstracto.experience.models.database.AExperienceRole;
-import org.jetbrains.annotations.NotNull;
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
+import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

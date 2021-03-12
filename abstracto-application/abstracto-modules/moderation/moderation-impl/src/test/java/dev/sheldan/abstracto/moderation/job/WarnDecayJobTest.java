@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.job;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeature;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import org.junit.Assert;
 import org.junit.Test;

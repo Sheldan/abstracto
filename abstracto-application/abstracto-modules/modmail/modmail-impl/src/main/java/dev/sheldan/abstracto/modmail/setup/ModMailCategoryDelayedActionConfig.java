@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.modmail.setup;
 
 import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
-import dev.sheldan.abstracto.modmail.models.template.ModMailCategoryActionModel;
+import dev.sheldan.abstracto.modmail.model.template.ModMailCategoryActionModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

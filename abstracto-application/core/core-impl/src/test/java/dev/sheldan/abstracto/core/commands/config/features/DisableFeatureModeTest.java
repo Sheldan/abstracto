@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.commands.config.features;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
@@ -43,8 +43,8 @@ public class DisableFeatureModeTest {
     public void testExecuteDisable() {
         String featureName = "text";
         String modeName = "mode";
-        FeatureEnum featureEnum = Mockito.mock(FeatureEnum.class);
-        when(featureConfigService.getFeatureEnum(featureName)).thenReturn(featureEnum);
+        FeatureDefinition featureDefinition = Mockito.mock(FeatureDefinition.class);
+        when(featureConfigService.getFeatureEnum(featureName)).thenReturn(featureDefinition);
         FeatureMode featureMode = Mockito.mock(FeatureMode.class);
         when(featureModeService.getFeatureModeForKey(modeName)).thenReturn(featureMode);
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
@@ -52,7 +52,7 @@ public class DisableFeatureModeTest {
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
         CommandResult commandResultCompletableFuture = testUnit.execute(context);
         CommandTestUtilities.checkSuccessfulCompletion(commandResultCompletableFuture);
-        verify(featureModeService, times(1)).disableFeatureModeForFeature(featureEnum, server, featureMode);
+        verify(featureModeService, times(1)).disableFeatureModeForFeature(featureDefinition, server, featureMode);
     }
 
     @Test(expected = FeatureNotFoundException.class)
@@ -68,8 +68,8 @@ public class DisableFeatureModeTest {
     public void testExecuteDisableNotExistingFeatureMode() {
         String featureName = "text";
         String modeName = "mode";
-        FeatureEnum featureEnum = Mockito.mock(FeatureEnum.class);
-        when(featureConfigService.getFeatureEnum(featureName)).thenReturn(featureEnum);
+        FeatureDefinition featureDefinition = Mockito.mock(FeatureDefinition.class);
+        when(featureConfigService.getFeatureEnum(featureName)).thenReturn(featureDefinition);
         when(featureModeService.getFeatureModeForKey(modeName)).thenThrow(new FeatureModeNotFoundException(modeName, new ArrayList<>()));
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
         testUnit.execute(context);

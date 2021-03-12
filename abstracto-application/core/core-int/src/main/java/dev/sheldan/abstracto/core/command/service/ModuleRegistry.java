@@ -1,16 +1,16 @@
 package dev.sheldan.abstracto.core.command.service;
 
 
-import dev.sheldan.abstracto.core.command.config.ModuleInterface;
+import dev.sheldan.abstracto.core.command.config.ModuleDefinition;
 import dev.sheldan.abstracto.core.command.config.SingleLevelPackedModule;
 
 import java.util.List;
 
 public interface ModuleRegistry {
-    List<ModuleInterface> getModuleInterfaces();
-    SingleLevelPackedModule getPackedModule(ModuleInterface moduleInterface);
+    List<ModuleDefinition> getModuleInterfaces();
+    SingleLevelPackedModule getPackedModule(ModuleDefinition moduleDefinition);
     boolean moduleExists(String name);
-    ModuleInterface getModuleByName(String name);
-    List<ModuleInterface> getSubModules(ModuleInterface moduleInterface);
-    ModuleInterface getDefaultModule();
+    ModuleDefinition getModuleByName(String name);
+    List<ModuleDefinition> getSubModules(ModuleDefinition moduleDefinition);
+    ModuleDefinition getDefaultModule();
 }

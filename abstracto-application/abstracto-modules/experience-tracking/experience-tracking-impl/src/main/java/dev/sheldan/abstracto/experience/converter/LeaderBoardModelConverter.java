@@ -2,10 +2,10 @@ package dev.sheldan.abstracto.experience.converter;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
-import dev.sheldan.abstracto.experience.models.LeaderBoard;
-import dev.sheldan.abstracto.experience.models.LeaderBoardEntry;
-import dev.sheldan.abstracto.experience.models.database.AUserExperience;
-import dev.sheldan.abstracto.experience.models.templates.LeaderBoardEntryModel;
+import dev.sheldan.abstracto.experience.model.LeaderBoard;
+import dev.sheldan.abstracto.experience.model.LeaderBoardEntry;
+import dev.sheldan.abstracto.experience.model.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.template.LeaderBoardEntryModel;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.modmail.listener;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.CommandService;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
@@ -11,9 +11,9 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import dev.sheldan.abstracto.modmail.config.ModMailFeatures;
-import dev.sheldan.abstracto.modmail.models.database.ModMailMessage;
-import dev.sheldan.abstracto.modmail.models.template.ModMailModeratorReplyModel;
+import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
+import dev.sheldan.abstracto.modmail.model.template.ModMailModeratorReplyModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
@@ -134,8 +134,8 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return ModMailFeatures.MOD_MAIL;
+    public FeatureDefinition getFeature() {
+        return ModMailFeatureDefinition.MOD_MAIL;
     }
 
 }

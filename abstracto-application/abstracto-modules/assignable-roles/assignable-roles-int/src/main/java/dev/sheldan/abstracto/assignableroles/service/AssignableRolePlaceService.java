@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.assignableroles.service;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRolePlaceParameterKey;
-import dev.sheldan.abstracto.assignableroles.exceptions.EmoteNotInAssignableRolePlaceException;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRole;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlace;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignableRolePlacePost;
-import dev.sheldan.abstracto.assignableroles.models.database.AssignedRoleUser;
+import dev.sheldan.abstracto.assignableroles.exception.EmoteNotInAssignableRolePlaceException;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlacePost;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.models.FullEmote;
@@ -31,7 +31,7 @@ public interface AssignableRolePlaceService {
      *                the {@link AServer server} in which the place should reside in. This {@link AServer server} needs to be unique in combination with the
      *                key
      * @param text The description of the {@link AssignableRolePlace place} which is displayed in the first post of the place
-     * @throws dev.sheldan.abstracto.assignableroles.exceptions.AssignableRoleAlreadyDefinedException if the combination of {@link AServer server}
+     * @throws dev.sheldan.abstracto.assignableroles.exception.AssignableRoleAlreadyDefinedException if the combination of {@link AServer server}
      * and {@link AssignableRolePlace#key} already exists
      */
     void createAssignableRolePlace(String name, AChannel channel, String text);

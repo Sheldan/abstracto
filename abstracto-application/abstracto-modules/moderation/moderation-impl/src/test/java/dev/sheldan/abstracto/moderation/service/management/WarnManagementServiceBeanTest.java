@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
+import dev.sheldan.abstracto.moderation.model.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
 import org.junit.Assert;
 import org.junit.Test;

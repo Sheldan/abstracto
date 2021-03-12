@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.commands.help;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.*;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
@@ -13,10 +13,10 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
-import dev.sheldan.abstracto.core.metrics.service.CounterMetric;
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
-import dev.sheldan.abstracto.core.metrics.service.MetricTag;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpCommandDetailsModel;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleDetailsModel;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOverviewModel;
@@ -75,7 +75,7 @@ public class Help implements Command {
             CounterMetric
                     .builder()
                     .name(HELP_COMMAND_EXECUTED_METRIC)
-                    .tagList(Arrays.asList(MetricTag.getTag(CATEGORY, "no.parmeter")))
+                    .tagList(Arrays.asList(MetricTag.getTag(CATEGORY, "no.parameter")))
                     .build();
 
     private static final CounterMetric HELP_COMMAND_MODULE_METRIC =
@@ -109,9 +109,9 @@ public class Help implements Command {
             String parameter = (String) parameters.get(0);
             if(moduleService.moduleExists(parameter)){
                 metricService.incrementCounter(HELP_COMMAND_MODULE_METRIC);
-                ModuleInterface moduleInterface = moduleService.getModuleByName(parameter);
-                log.trace("Displaying help for module {}.", moduleInterface.getInfo().getName());
-                SingleLevelPackedModule module = moduleService.getPackedModule(moduleInterface);
+                ModuleDefinition moduleDefinition = moduleService.getModuleByName(parameter);
+                log.trace("Displaying help for module {}.", moduleDefinition.getInfo().getName());
+                SingleLevelPackedModule module = moduleService.getPackedModule(moduleDefinition);
                 List<Command> commands = module.getCommands();
                 List<Command> filteredCommands = new ArrayList<>();
                 commands.forEach(command -> {
@@ -120,7 +120,7 @@ public class Help implements Command {
                     }
                 });
                 module.setCommands(filteredCommands);
-                List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
+                List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
                 HelpModuleDetailsModel model = (HelpModuleDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpModuleDetailsModel.class);
                 model.setModule(module);
                 model.setSubModules(subModules);
@@ -153,8 +153,8 @@ public class Help implements Command {
 
     private CompletableFuture<CommandResult> displayHelpOverview(CommandContext commandContext) {
         log.trace("Displaying help overview response.");
-        ModuleInterface moduleInterface = moduleService.getDefaultModule();
-        List<ModuleInterface> subModules = moduleService.getSubModules(moduleInterface);
+        ModuleDefinition moduleDefinition = moduleService.getDefaultModule();
+        List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
         HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
         model.setModules(subModules);
         MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
@@ -174,7 +174,7 @@ public class Help implements Command {
         return CommandConfiguration.builder()
                 .name("help")
                 .async(true)
-                .module(SupportModuleInterface.SUPPORT)
+                .module(SupportModuleDefinition.SUPPORT)
                 .parameters(Collections.singletonList(moduleOrCommandName))
                 .help(helpInfo)
                 .templated(true)
@@ -183,8 +183,8 @@ public class Help implements Command {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 
     @PostConstruct

@@ -3,11 +3,11 @@ package dev.sheldan.abstracto.core.command.service;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandReceivedHandler;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
-import dev.sheldan.abstracto.core.command.config.ModuleInterface;
+import dev.sheldan.abstracto.core.command.config.ModuleDefinition;
 import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
-import dev.sheldan.abstracto.core.metrics.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import net.dv8tion.jda.api.entities.Message;
@@ -88,11 +88,11 @@ public class CommandManager implements CommandRegistry {
     }
 
     @Override
-    public List<Command> getAllCommandsFromModule(ModuleInterface moduleInterface) {
+    public List<Command> getAllCommandsFromModule(ModuleDefinition moduleDefinition) {
         List<Command> commandsFromModule = new ArrayList<>();
         this.getAllCommands().forEach(command -> {
             CommandConfiguration configuration = command.getConfiguration();
-            if(configuration != null && configuration.getModule().equals(moduleInterface.getInfo().getName())){
+            if(configuration != null && configuration.getModule().equals(moduleDefinition.getInfo().getName())){
                 commandsFromModule.add(command);
             }
         });

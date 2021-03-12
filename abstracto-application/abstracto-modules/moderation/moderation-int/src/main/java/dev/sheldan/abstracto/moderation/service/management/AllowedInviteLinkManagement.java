@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.moderation.models.database.AllowedInviteLink;
+import dev.sheldan.abstracto.moderation.model.database.AllowedInviteLink;
 
 public interface AllowedInviteLinkManagement {
     AllowedInviteLink createAllowedInviteLink(AServer server, String code);

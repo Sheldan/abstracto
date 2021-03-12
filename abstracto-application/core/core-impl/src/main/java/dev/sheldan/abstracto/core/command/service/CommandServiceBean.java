@@ -17,7 +17,7 @@ import dev.sheldan.abstracto.core.command.service.management.CommandInServerMana
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.command.service.management.ModuleManagementService;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -57,13 +57,13 @@ public class CommandServiceBean implements CommandService {
     private CommandReceivedHandler commandReceivedHandler;
 
     @Override
-    public ACommand createCommand(String name, String moduleName, FeatureEnum featureEnum) {
+    public ACommand createCommand(String name, String moduleName, FeatureDefinition featureDefinition) {
         AModule module = moduleManagementService.getOrCreate(moduleName);
-        if(featureEnum == null) {
+        if(featureDefinition == null) {
             log.warn("Command {} in module {} has no feature.", name, moduleName);
             return null;
         }
-        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+        AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
         return commandManagementService.createCommand(name, module, feature);
     }
 
@@ -83,8 +83,8 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
-    public void allowFeatureForRole(FeatureEnum featureEnum, ARole role) {
-        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+    public void allowFeatureForRole(FeatureDefinition featureDefinition, ARole role) {
+        AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
         feature.getCommands().forEach(command -> this.allowCommandForRole(command, role));
         log.info("Allowing feature {} for role {} in server {}.", feature.getKey(), role.getId(), role.getServer().getId());
     }
@@ -151,8 +151,8 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
-    public void disAllowFeatureForRole(FeatureEnum featureEnum, ARole role) {
-        AFeature feature = featureManagementService.getFeature(featureEnum.getKey());
+    public void disAllowFeatureForRole(FeatureDefinition featureDefinition, ARole role) {
+        AFeature feature = featureManagementService.getFeature(featureDefinition.getKey());
         feature.getCommands().forEach(command -> this.disAllowCommandForRole(command, role));
         log.info("Disallowing feature {} for role {} in server {}.", feature.getKey(), role.getId(), role.getServer().getId());
     }

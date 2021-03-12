@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
@@ -52,7 +52,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Override
     public void enableFeature(FeatureConfig name, AServer server) {
-        FeatureEnum feature = name.getFeature();
+        FeatureDefinition feature = name.getFeature();
         if(!featureConfigService.doesFeatureExist(name)) {
             throw new FeatureNotFoundException(feature.getKey(), featureConfigService.getFeaturesAsList());
         }
@@ -67,7 +67,7 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Override
     public void disableFeature(FeatureConfig name, AServer server) {
-        FeatureEnum feature = name.getFeature();
+        FeatureDefinition feature = name.getFeature();
         if(!featureConfigService.doesFeatureExist(name)) {
             throw new FeatureNotFoundException(feature.getKey(), featureConfigService.getFeaturesAsList());
         }
@@ -75,25 +75,25 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     }
 
     @Override
-    public AFeatureFlag createInstanceFromDefaultConfig(FeatureEnum name, Long serverId) {
+    public AFeatureFlag createInstanceFromDefaultConfig(FeatureDefinition name, Long serverId) {
         FeatureFlagProperty defaultFeatureFlag = defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(name);
         return updateFeatureFlag(name, serverId, defaultFeatureFlag.getEnabled());
     }
 
     @Override
-    public AFeatureFlag createInstanceFromDefaultConfig(FeatureEnum name, AServer server) {
+    public AFeatureFlag createInstanceFromDefaultConfig(FeatureDefinition name, AServer server) {
         FeatureFlagProperty defaultFeatureFlag = defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(name);
         return updateFeatureFlag(name, server, defaultFeatureFlag.getEnabled());
     }
 
     @Override
-    public boolean getFeatureFlagValue(FeatureEnum key, Long serverId) {
+    public boolean getFeatureFlagValue(FeatureDefinition key, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return getFeatureFlagValue(key, server);
     }
 
     @Override
-    public boolean getFeatureFlagValue(FeatureEnum key, AServer server) {
+    public boolean getFeatureFlagValue(FeatureDefinition key, AServer server) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
         Optional<AFeatureFlag> featureFlagOptional = managementService.getFeatureFlag(feature, server);
         return featureFlagOptional
@@ -102,13 +102,13 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
     }
 
     @Override
-    public AFeatureFlag updateFeatureFlag(FeatureEnum key, Long serverId, Boolean newValue) {
+    public AFeatureFlag updateFeatureFlag(FeatureDefinition key, Long serverId, Boolean newValue) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return updateFeatureFlag(key, server, newValue);
     }
 
     @Override
-    public AFeatureFlag updateFeatureFlag(FeatureEnum key, AServer server, Boolean newValue) {
+    public AFeatureFlag updateFeatureFlag(FeatureDefinition key, AServer server, Boolean newValue) {
         AFeature feature = featureManagementService.getFeature(key.getKey());
         return managementService.setFeatureFlagValue(feature, server, newValue);
     }

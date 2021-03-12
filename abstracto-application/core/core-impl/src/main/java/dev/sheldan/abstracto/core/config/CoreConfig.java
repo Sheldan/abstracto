@@ -4,7 +4,7 @@ import ch.qos.logback.core.net.ssl.SecureRandomFactoryBean;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import dev.sheldan.abstracto.core.metrics.OkHttpMetrics;
+import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
 import dev.sheldan.abstracto.core.service.BotService;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -8,80 +8,67 @@
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
     <property name="statisticModule" value="(SELECT id FROM module WHERE name = 'statistic')"/>
     <property name="emoteTrackingFeature" value="(SELECT id FROM feature WHERE key = 'emoteTracking')"/>
-    <property name="today" value="(SELECT NOW())"/>
 
     <changeSet  author="Sheldan"  id="statistic-commands">
         <insert tableName="command">
             <column name="name" value="emoteStats"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="deletedEmoteStats"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="externalEmoteStats"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="purgeEmoteStats"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="syncTrackedEmotes"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="trackEmote"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="disableEmoteTracking"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="deleteTrackedEmote"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="resetEmoteStats"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="exportEmoteStats"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="showExternalTrackedEmote"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="showTrackedEmotes"/>
             <column name="module_id" valueComputed="${statisticModule}"/>
             <column name="feature_id" valueComputed="${emoteTrackingFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 

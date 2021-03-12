@@ -1,13 +1,13 @@
 package dev.sheldan.abstracto.core.commands.utility;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.UtilityModuleInterface;
+import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
-import dev.sheldan.abstracto.core.command.config.features.CoreFeatures;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.config.FeatureEnum;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.template.commands.PingModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -40,7 +40,7 @@ public class Ping implements Command {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("ping")
-                .module(UtilityModuleInterface.UTILITY)
+                .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
                 .help(helpInfo)
@@ -49,8 +49,8 @@ public class Ping implements Command {
     }
 
     @Override
-    public FeatureEnum getFeature() {
-        return CoreFeatures.CORE_FEATURE;
+    public FeatureDefinition getFeature() {
+        return CoreFeatureDefinition.CORE_FEATURE;
     }
 
 }

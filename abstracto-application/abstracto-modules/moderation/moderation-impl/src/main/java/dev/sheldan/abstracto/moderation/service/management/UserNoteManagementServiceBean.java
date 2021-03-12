@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.CounterService;
-import dev.sheldan.abstracto.moderation.models.database.UserNote;
+import dev.sheldan.abstracto.moderation.model.database.UserNote;
 import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

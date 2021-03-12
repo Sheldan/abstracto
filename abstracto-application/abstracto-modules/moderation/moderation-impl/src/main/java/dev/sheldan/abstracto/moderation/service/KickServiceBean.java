@@ -3,10 +3,10 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.mode.ModerationMode;
-import dev.sheldan.abstracto.moderation.config.posttargets.ModerationPostTarget;
-import dev.sheldan.abstracto.moderation.models.template.commands.KickLogModel;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.mode.ModerationMode;
+import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
+import dev.sheldan.abstracto.moderation.model.template.command.KickLogModel;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,12 +43,12 @@ public class KickServiceBean implements KickService {
 
     private CompletableFuture<Void> sendKickLog(KickLogModel kickLogModel)  {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatures.MODERATION, kickLogModel.getGuild().getIdLong(), ModerationMode.KICK_LOG)) {
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, kickLogModel.getGuild().getIdLong(), ModerationMode.KICK_LOG)) {
             MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, kickLogModel.getGuild().getIdLong());
             log.trace("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
             completableFuture = FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
         } else {
-            log.trace("Feature {} has mode {} for logging disabled for server {}. Not sending kick notification.", ModerationFeatures.MODERATION, ModerationMode.BAN_LOG, kickLogModel.getGuild().getIdLong());
+            log.trace("Feature {} has mode {} for logging disabled for server {}. Not sending kick notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, kickLogModel.getGuild().getIdLong());
             completableFuture = CompletableFuture.completedFuture(null);
         }
         return completableFuture;

@@ -9,15 +9,15 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
-import dev.sheldan.abstracto.moderation.config.features.ModerationFeatures;
-import dev.sheldan.abstracto.moderation.config.features.WarningDecayFeature;
-import dev.sheldan.abstracto.moderation.config.features.mode.WarnDecayMode;
-import dev.sheldan.abstracto.moderation.config.features.mode.WarningMode;
-import dev.sheldan.abstracto.moderation.config.posttargets.WarningPostTarget;
-import dev.sheldan.abstracto.moderation.models.database.Warning;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnContext;
-import dev.sheldan.abstracto.moderation.models.template.commands.WarnNotification;
-import dev.sheldan.abstracto.moderation.models.template.job.WarnDecayLogModel;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.feature.mode.WarnDecayMode;
+import dev.sheldan.abstracto.moderation.config.feature.mode.WarningMode;
+import dev.sheldan.abstracto.moderation.config.posttarget.WarningPostTarget;
+import dev.sheldan.abstracto.moderation.model.database.Warning;
+import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
+import dev.sheldan.abstracto.moderation.model.template.command.WarnNotification;
+import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayLogModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -150,7 +150,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayWarningsForServer() {
         setupWarnDecay();
-        when(featureModeService.featureModeActive(ModerationFeatures.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)).thenReturn(true);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)).thenReturn(true);
         testUnit.decayWarningsForServer(server);
         verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
@@ -158,7 +158,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayWarningsForServerWithoutLog() {
         setupWarnDecay();
-        when(featureModeService.featureModeActive(ModerationFeatures.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)).thenReturn(false);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)).thenReturn(false);
         testUnit.decayWarningsForServer(server);
         verify(self, times(0)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
@@ -166,7 +166,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayAllWarningsForServer() {
         setupWarnDecay();
-        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(true);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(true);
         testUnit.decayAllWarningsForServer(server);
         verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
@@ -174,7 +174,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testDecayAllWarningsForServerWithoutLog() {
         setupWarnDecay();
-        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(false);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(false);
         testUnit.decayAllWarningsForServer(server);
         verify(self, times(0)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
@@ -185,7 +185,7 @@ public class WarnServiceBeanTest {
         List<Warning> warnings = Collections.emptyList();
         when(server.getId()).thenReturn(SERVER_ID);
         when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
-        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(false);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(false);
         testUnit.decayAllWarningsForServer(server);
         verify(self, times(0)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
@@ -195,7 +195,7 @@ public class WarnServiceBeanTest {
         List<Warning> warnings = Collections.emptyList();
         when(server.getId()).thenReturn(SERVER_ID);
         when(warnManagementService.getActiveWarningsInServerOlderThan(eq(server), any(Instant.class))).thenReturn(warnings);
-        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(true);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server, WarningMode.WARN_DECAY_LOG)).thenReturn(true);
         testUnit.decayAllWarningsForServer(server);
         verify(self, times(1)).renderAndSendWarnDecayLogs(eq(SERVER_ID), any());
     }
@@ -203,7 +203,7 @@ public class WarnServiceBeanTest {
     @Test
     public void testWarnFullUser() {
         setupWarnContext();
-        when(featureModeService.featureModeActive(ModerationFeatures.WARNING, SERVER_ID, WarningMode.WARN_LOG)).thenReturn(true);
+        when(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, SERVER_ID, WarningMode.WARN_LOG)).thenReturn(true);
         setupMocksForWarning();
         CompletableFuture<Void> future = testUnit.notifyAndLogFullUserWarning(context);
         future.join();

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.moderation.exception.AllowedInviteLinkNotFound;
-import dev.sheldan.abstracto.moderation.models.database.AllowedInviteLink;
+import dev.sheldan.abstracto.moderation.model.database.AllowedInviteLink;
 import dev.sheldan.abstracto.moderation.repository.AllowedInviteLinkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

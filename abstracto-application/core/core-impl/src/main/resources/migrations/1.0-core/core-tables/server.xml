@@ -14,7 +14,7 @@
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
                 <constraints nullable="true"/>
             </column>
-            <column name="admin_only" type="BOOLEAN">
+            <column name="admin_mode" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>

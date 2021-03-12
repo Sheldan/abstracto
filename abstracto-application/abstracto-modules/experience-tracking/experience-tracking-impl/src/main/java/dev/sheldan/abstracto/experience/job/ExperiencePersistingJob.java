@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.experience.job;
 
-import dev.sheldan.abstracto.experience.models.ServerExperience;
+import dev.sheldan.abstracto.experience.model.ServerExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.RunTimeExperienceService;
 import lombok.extern.slf4j.Slf4j;
