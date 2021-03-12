@@ -198,6 +198,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param channel The created {@link TextChannel} in which the mod mail thread is dealt with
      * @param userInitiated Whether or not the thread was initiated by a member
      * @param undoActions The list of actions to undo, in case an exception occurs
+     * @return A {@link CompletableFuture future} which completes when the setup is done
      */
     @Transactional
     public CompletableFuture<Void> performModMailThreadSetup(Member member, Message initialMessage, TextChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions) {
@@ -237,6 +238,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     /**
      * Sends the message containing the pings to notify the staff members to handle the opened {@link ModMailThread}
      * @param member The {@link FullUserInServer} which opened the thread
+     * @param channel The created {@link TextChannel} in which the mod mail thread is dealt with
+     * @return A {@link CompletableFuture future} which complets when the notification has been sent
      */
     @Transactional
     public CompletableFuture<Void> sendModMailNotification(Member member, TextChannel channel) {
@@ -519,7 +522,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     public CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, boolean logThread, List<UndoActionInstance> undoActions) {
-        metricService.incrementCounter(MODMAIL_THREAD_CREATED_COUNTER);
+        metricService.incrementCounter(MODMAIL_THREAD_CLOSED_COUNTER);
         Long modMailThreadId = modMailThread.getId();
         log.info("Starting closing procedure for thread {}", modMailThread.getId());
         List<ModMailMessage> modMailMessages = modMailThread.getMessages();
@@ -562,6 +565,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param messages The list of loaded {@link Message} to log
      * @param serverId The ID of the {@link Guild} the {@link ModMailThread} is in
      * @param userId The ID of the user the {@link ModMailThread} is about
+     * @return A {@link CompletableFuture future} which completes when the messages have been logged
      */
     @Transactional
     public CompletableFuture<Void> logMessagesToModMailLog(String note, Boolean notifyUser, Long modMailThreadId, List<UndoActionInstance> undoActions, LoadedModmailThreadMessageList messages, Long serverId, Long userId) {
@@ -575,7 +579,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 });
                 return memberService.getMemberInServerAsync(serverId, userId).thenCompose(member ->
                     self.afterSuccessfulLog(modMailThreadId, notifyUser, member, undoActions)
-                );
+                ).exceptionally(throwable -> {
+                    log.warn("Failed to retrieve member for closing the modmail thread. Closing without member information.", throwable);
+                    self.afterSuccessfulLog(modMailThreadId, false, null, undoActions);
+                    return null;
+                });
             });
         } catch (Exception e) {
             log.error("Failed to log mod mail messages", e);
@@ -589,7 +597,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param modMailThreadId The ID of the {@link ModMailThread} which is being closed.
      * @param notifyUser Whether or not the user should be notified
      * @param undoActions The list of {@link UndoActionInstance} to execute in case of exceptions
+     * @param modMailThreaduser The {@link Member member} for which the {@link ModMailThread thread} was for
      * @throws ModMailThreadNotFoundException in case the {@link ModMailThread} is not found by the ID
+     * @return A {@link CompletableFuture future} which completes after the messages have been logged
      */
     @Transactional
     public CompletableFuture<Void> afterSuccessfulLog(Long modMailThreadId, Boolean notifyUser, Member modMailThreaduser, List<UndoActionInstance> undoActions) {
@@ -620,6 +630,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param modMailThreadId The ID of the {@link ModMailThread} to delete the {@link MessageChannel} from
      * @param undoActions The list of {@link UndoActionInstance} to execute in case of exceptions
      * @throws ModMailThreadNotFoundException in case the {@link ModMailThread} is not found by the ID
+     * @return A {@link CompletableFuture future} which completes after the {@link TextChannel channel} in which the thread was has been deleted
      */
     @Transactional
     public CompletableFuture<Void> deleteChannelAndClose(Long modMailThreadId, List<UndoActionInstance> undoActions) {
@@ -653,6 +664,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param modMailThreadId The ID of the {@link ModMailThread} to log the messages of
      * @param messages The list of {@link CompletableFuture} which contain the {@link Message} which could be loaded
      * @param note The note which was entered when closing the {@link ModMailThread}
+     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @throws ModMailThreadNotFoundException in case the {@link ModMailThread} is not found by the ID
      * @return An instance of {@link CompletableFutureList}, which contains a main {@link CompletableFuture} which is resolved,
      * when all of the smaller {@link CompletableFuture} in it are resolved. We need this construct, because we need to access
@@ -762,6 +774,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param modMailThreadId The ID of the {@link ModMailThread} for which the messages were sent for
      * @param anonymous Whether or not the messages were send anonymous
      * @param moderator The original {@link AUserInAServer} which authored the messages
+     * @param createdMessageInDM The {@link Message message} which was sent to the private channel with the {@link User user}
+     * @param modMailThreadMessage The {@link Message message} which was sent in the channel representing the {@link ModMailThread thread}. Might be null.
+     * @param replyCommandMessage The {@link Message message} which contained the command used to reply to the user
      * @throws ModMailThreadNotFoundException in case the {@link ModMailThread} is not found by the ID
      */
     @Transactional

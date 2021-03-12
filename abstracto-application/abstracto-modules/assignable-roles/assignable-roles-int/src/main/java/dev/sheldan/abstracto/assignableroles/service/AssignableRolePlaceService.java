@@ -213,6 +213,7 @@ public interface AssignableRolePlaceService {
      * @param server The {@link AServer server} in which the {@link AssignableRolePlace place} is
      * @param name The key of the {@link AssignableRolePlace place}
      * @param newValue The new vale of the inline attribute
+     * @return A {@link CompletableFuture future} which completes when the config has been updated, or when the message was edited (if the posts already exist)
      */
     CompletableFuture<Void> setAssignablePlaceInlineTo(AServer server, String name, Boolean newValue);
 
@@ -222,6 +223,7 @@ public interface AssignableRolePlaceService {
      * are any.
      * @param server The {@link AServer server} in which the {@link AssignableRolePlace place} is
      * @param name The key of the {@link AssignableRolePlace place} to inline
+     * @return A {@link CompletableFuture future} which completes when the config has been updated, or when the message was edited (if the posts already exist)
      */
     CompletableFuture<Void> inlineAssignableRolePlace(AServer server, String name);
 
@@ -229,6 +231,7 @@ public interface AssignableRolePlaceService {
      * Sets the inline attribute of the {@link AssignableRolePlace place} to true. This method will update any existing
      * {@link AssignableRolePlacePost posts} of the place, if there are any.
      * @param place The {@link AssignableRolePlace place} to inline
+     * @return A {@link CompletableFuture future} which completes when the config has been updated, or when the message was edited (if the posts already exist)
      */
     CompletableFuture<Void> inlineAssignableRolePlace(AssignableRolePlace place);
 
@@ -238,6 +241,7 @@ public interface AssignableRolePlaceService {
      * are any.
      * @param server The {@link AServer server} in which the {@link AssignableRolePlace place} is
      * @param name The key of the {@link AssignableRolePlace place} to spread
+     * @return A {@link CompletableFuture future} which completes when the config has been updated, or when the message was edited (if the posts already exist)
      */
     CompletableFuture<Void> spreadAssignableRolePlace(AServer server, String name);
 
@@ -245,6 +249,7 @@ public interface AssignableRolePlaceService {
      * Sets the inline attribute of the {@link AssignableRolePlace place} to false. This method will update any existing
      * {@link AssignableRolePlacePost posts} of the place, if there are any.
      * @param place The {@link AssignableRolePlace place} to spread
+     * @return A {@link CompletableFuture future} which completes when the config has been updated, or when the message was edited (if the posts already exist)
      */
     CompletableFuture<Void> spreadAssignableRolePlace(AssignableRolePlace place);
 
@@ -389,6 +394,7 @@ public interface AssignableRolePlaceService {
      * @param server The {@link AServer server} in which the {@link AssignableRolePlace place} is
      * @param name The key of the {@link AssignableRolePlace place}
      * @param newText The new value for the text attribute displayed in the first {@link AssignableRolePlacePost post}
+     * @return A {@link CompletableFuture future} which completes when the config has been updated, or when the message was edited (if the posts already exist)
      */
     CompletableFuture<Void> changeTextAsync(AServer server, String name, String newText);
 

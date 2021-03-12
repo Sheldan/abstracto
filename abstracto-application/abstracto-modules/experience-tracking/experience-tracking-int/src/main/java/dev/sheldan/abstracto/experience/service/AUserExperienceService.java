@@ -65,6 +65,7 @@ public interface AUserExperienceService {
      * state in the server and the database.
      * @param userExperience The {@link AUserExperience userExperience} object to recalculate the {@link AExperienceRole experienceRole} for
      * @param roles The list of {@link AExperienceRole roles} used as a role configuration
+     * @param currentLevel The current level of the user
      * @return A {@link CompletableFuture future} containing the {@link RoleCalculationResult result} of the role calculation,
      * completing after the role of the {@link net.dv8tion.jda.api.entities.Member} has been updated, if any
      */

@@ -39,6 +39,8 @@ public class FreemarkerConfiguration {
      * The correct compatibility version and the provided formatter methods to be used in the templates.
      * The encoding of the templates is set to UTF-8.
      * @return A configured {@link Configuration} bean according to the configuration
+     * @throws IOException when the configuration fails to be created
+     * @throws TemplateException when the configuration fails to be created
      */
     @Bean
     public Configuration freeMarkerConfiguration() throws IOException, TemplateException {

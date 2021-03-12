@@ -88,18 +88,6 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
-                <artifactId>statistic-impl</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>dev.sheldan.abstracto.modules</groupId>
-                <artifactId>remind-impl</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>repost-detection-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>

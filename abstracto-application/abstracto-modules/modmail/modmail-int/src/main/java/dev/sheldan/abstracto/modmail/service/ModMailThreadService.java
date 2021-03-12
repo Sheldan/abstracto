@@ -26,6 +26,8 @@ public interface ModMailThreadService {
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
      * @param feedBackChannel The {@link MessageChannel} in which feedback about exceptions should be posted to
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
+     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
+     * @return A {@link CompletableFuture future} which completes when the modmail thread is set up
      */
     CompletableFuture<Void> createModMailThreadForUser(Member member, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated, List<UndoActionInstance> undoActions);
 
@@ -51,7 +53,9 @@ public interface ModMailThreadService {
      * In case there was no channel found, this will cause a message to be shown to the user and the existing mod mail thread will be closed.
      * This is the case, if the mod mail thread was still open in the database, but no text channel was found anymore.
      * @param modMailThread The {@link ModMailThread} on which the user answered
+     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @param messageFromUser The {@link Message} object which was sent by the user as an answer
+     * @return A {@link CompletableFuture future} which completes when the message has been relayed to the channel
      */
     CompletableFuture<Message> relayMessageToModMailThread(ModMailThread modMailThread, Message messageFromUser, List<UndoActionInstance> undoActions);
 
@@ -63,8 +67,9 @@ public interface ModMailThreadService {
      * @param message  The pure {@link Message} containing the command which caused the reply
      * @param anonymous Whether or nor the message should be send anonymous
      * @param feedBack The {@link MessageChannel} in which feedback about possible exceptions should be sent to
-     * @param undoActions list of {@link UndoActionInstance} to execute in case this fails
+     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @param targetMember The {@link Member} the {@link ModMailThread} is about.
+     * @return A {@link CompletableFuture future} which completes when the message has been relayed to the DM
      */
     CompletableFuture<Void> relayMessageToDm(Long threadId, String text, Message message, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions, Member targetMember);
 
@@ -77,6 +82,8 @@ public interface ModMailThreadService {
      * @param note The text of the note used for the header message of the logged mod mail thread.
      * @param notifyUser Whether or not the user should be notified
      * @param log whether or not the closed {@link ModMailThread} should be logged (if the {@link dev.sheldan.abstracto.core.config.FeatureMode} is enabled)
+     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
+     * @return A {@link CompletableFuture future} which completes when the {@link ModMailThread thread} has been closed.
      */
     CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions, Boolean log);
 
@@ -90,6 +97,8 @@ public interface ModMailThreadService {
      *             logging the mod mail thread
      * @param notifyUser Whether or not the user should be notified
      * @param logThread Whether or not the thread should be logged to the appropriate post target
+     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
+     * @return A {@link CompletableFuture future} which completes when the {@link ModMailThread thread} has been closed
      */
     CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, boolean logThread, List<UndoActionInstance> undoActions);
 

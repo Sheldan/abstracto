@@ -26,7 +26,7 @@ public class ModMailClosingHeaderModel {
 
     /**
      * The duration between the creation and closed date of a {@link ModMailThread}
-     * @return
+     * @return The duration between the creation date and the date the thread has been closed
      */
     public Duration getDuration() {
         return Duration.between(closedThread.getCreated(), closedThread.getClosed());

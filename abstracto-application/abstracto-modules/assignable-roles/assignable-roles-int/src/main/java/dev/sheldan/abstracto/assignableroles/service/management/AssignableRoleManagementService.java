@@ -59,9 +59,9 @@ public interface AssignableRoleManagementService {
     /**
      * Returns the respective {@link AssignableRole assignableRole} for the {@link CachedEmote emote} which is part of the
      * {@link AssignableRolePlace place}. It will throw an exception, if the {@link CachedEmote emote} is not used.
-     * @param cachedEmote
-     * @param assignableRolePlace
-     * @return
+     * @param cachedEmote The {@link CachedEmote emote} which should be used to identify the {@link AssignableRole role}
+     * @param assignableRolePlace The {@link AssignableRolePlace place} from which the {@link AssignableRole role} should be retrieved for
+     * @return An instance of {@link AssignableRole role} which was in the place and identified by the emote
      */
     AssignableRole getRoleForReactionEmote(CachedEmote cachedEmote, AssignableRolePlace assignableRolePlace);
 }

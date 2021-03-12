@@ -6,17 +6,17 @@ package dev.sheldan.abstracto.statistic.emote.model;
  */
 public interface EmoteStatsResult {
     /**
-     * ID of the emote
+     * @return The ID of the emote
      */
     Long getEmoteId();
 
     /**
-     * ID of the server
+     * @return  ID of the server
      */
     Long getServerId();
 
     /**
-     * Amount the emote with the ID has been used in the server with the ID
+     * @return Amount the emote with the ID has been used in the server with the ID
      */
     Long getAmount();
 }

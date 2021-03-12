@@ -10,11 +10,18 @@ import java.util.Optional;
  */
 public interface EffectiveTemplateManagementService {
     /**
-     * Retrieves the template identified by the key.
+     * Retrieves the template identified by the key for the server
      * @param key They template key to search for
-     * @return An {@link Optional} containing the {@link Template} if it exists, and null otherwise
+     * @param server The ID of the server to retrieve the template for
+     * @return An {@link Optional} containing the {@link Template} if it exists, and empty otherwise
      */
     Optional<EffectiveTemplate> getTemplateByKeyAndServer(String key, Long server);
+
+    /**
+     * Retrieves the template identified by the key.
+     * @param key They template key to search for
+     * @return An {@link Optional} containing the {@link Template} if it exists, and empty otherwise
+     */
     Optional<EffectiveTemplate> getTemplateByKey(String key);
 
 }

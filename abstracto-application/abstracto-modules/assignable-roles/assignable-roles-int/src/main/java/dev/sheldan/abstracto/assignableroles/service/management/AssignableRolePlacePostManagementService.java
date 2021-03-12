@@ -31,7 +31,7 @@ public interface AssignableRolePlacePostManagementService {
      * Creates an {@link AssignableRolePlacePost post} for the given {@link AssignableRolePlace place} in the given message ID
      * @param updatedPlace The {@link AssignableRolePlace place} this post should be part of
      * @param messageId The ID of the message in which the post exists
-     * @return
+     * @return The {@link AssignableRolePlacePost post} which is found in the given {@link AssignableRolePlace place} of the {@link net.dv8tion.jda.api.entities.Message message} ID
      */
     AssignableRolePlacePost createAssignableRolePlacePost(AssignableRolePlace updatedPlace, Long messageId);
 }
