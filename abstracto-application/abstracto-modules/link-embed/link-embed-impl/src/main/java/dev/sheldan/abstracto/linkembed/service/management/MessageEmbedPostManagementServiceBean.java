@@ -39,7 +39,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
     public void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer embeddingUser) {
         AServer embeddedServer = serverManagementService.loadOrCreate(embeddedMessage.getServerId());
         AServer embeddingServer = serverManagementService.loadOrCreate(messageContainingEmbed.getGuild().getIdLong());
-        if(!embeddedServer.getId().equals(embeddingServer.getId())) {
+        if(!embeddedMessage.getServerId().equals(messageContainingEmbed.getGuild().getIdLong())) {
             throw new CrossServerEmbedException(String.format("Message %s is not from server %s", embeddedMessage.getMessageUrl(), embeddingServer.getId()));
         }
         AChannel embeddingChannel = channelManagementService.loadChannel(messageContainingEmbed.getChannel().getIdLong());

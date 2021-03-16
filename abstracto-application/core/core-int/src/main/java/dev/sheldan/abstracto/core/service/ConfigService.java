@@ -5,8 +5,11 @@ import dev.sheldan.abstracto.core.models.database.AConfig;
 public interface ConfigService {
     Double getDoubleValue(String name, Long serverId);
     Long getLongValue(String name, Long serverId);
+    Long getLongValueOrConfigDefault(String name, Long serverId);
     Double getDoubleValue(String name, Long serverId, Double defaultValue);
+    Double getDoubleValueOrConfigDefault(String name, Long serverId, Double defaultValue);
     String getStringValue(String name, Long serverId, String defaultValue);
+    String getStringValueOrConfigDefault(String name, Long serverId, String defaultValue);
     Long getLongValue(String name, Long serverId, Long defaultValue);
     AConfig setOrCreateConfigValue(Long serverId, String name, AConfig value);
     void setDoubleValue(String name, Long serverId, Double value);

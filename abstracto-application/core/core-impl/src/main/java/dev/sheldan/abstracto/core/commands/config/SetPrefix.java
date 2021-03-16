@@ -26,7 +26,7 @@ public class SetPrefix extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String prefixValue = (String) commandContext.getParameters().getParameters().get(0);
-        configService.setStringValue("prefix", commandContext.getGuild().getIdLong(), prefixValue);
+        configService.setOrCreateConfigValue("prefix", commandContext.getGuild().getIdLong(), prefixValue);
         return CommandResult.fromSuccess();
     }
 

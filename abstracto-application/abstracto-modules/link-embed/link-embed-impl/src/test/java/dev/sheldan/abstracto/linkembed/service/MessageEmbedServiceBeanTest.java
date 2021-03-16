@@ -14,10 +14,7 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,6 +62,9 @@ public class MessageEmbedServiceBeanTest {
     private MessageEmbedPostManagementService messageEmbedPostManagementService;
 
     @Mock
+    private UserService userService;
+
+    @Mock
     private ReactionService reactionService;
 
     @Mock
@@ -99,6 +99,9 @@ public class MessageEmbedServiceBeanTest {
 
     @Mock
     private Member embeddedMember;
+
+    @Mock
+    private User embeddedUser;
 
     @Test
     public void testNoLinkInString(){
@@ -203,14 +206,12 @@ public class MessageEmbedServiceBeanTest {
 
     @Test
     public void testLoadingEmbeddingModel() {
-        when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
         when(cachedAuthor.getAuthorId()).thenReturn(USER_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(userInServerManagementService.loadUserOptional(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(Optional.of(embeddingUser));
-        when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddingMember));
+        when(userService.retrieveUserForId(USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddedUser));
         MessageEmbeddedModel model = Mockito.mock(MessageEmbeddedModel.class);
-        when(self.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddingMember)).thenReturn(model);
+        when(self.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser)).thenReturn(model);
         when(self.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, model)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<Void> embedFuture = testUnit.embedLink(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage);
         Assert.assertTrue(embedFuture.isDone());
@@ -221,7 +222,10 @@ public class MessageEmbedServiceBeanTest {
         Long firstMessageId = 6L;
         CachedMessage cachedMessage = mockCachedMessage(firstMessageId);
         Long userEmbeddingUserInServerId = 5L;
-        when(userInServerManagementService.loadUserOptional(userEmbeddingUserInServerId)).thenReturn(Optional.empty());
+        CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
+        when(cachedAuthor.getAuthorId()).thenReturn(USER_ID);
+        when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
+        when(userService.retrieveUserForId(USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddedUser));
         testUnit.embedLink(cachedMessage, textChannel, userEmbeddingUserInServerId, embeddingMessage);
         verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
     }
@@ -259,11 +263,11 @@ public class MessageEmbedServiceBeanTest {
         when(embeddingMessage.getGuild()).thenReturn(guild);
         when(embeddingMessage.getChannel()).thenReturn(textChannel);
         when(embeddingMessage.getMember()).thenReturn(embeddingMember);
-        MessageEmbeddedModel createdModel = testUnit.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedMember);
+        MessageEmbeddedModel createdModel = testUnit.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser);
         Assert.assertEquals(textChannel, createdModel.getSourceChannel());
         Assert.assertEquals(guild, createdModel.getGuild());
         Assert.assertEquals(textChannel, createdModel.getMessageChannel());
-        Assert.assertEquals(embeddedMember, createdModel.getAuthor());
+        Assert.assertEquals(embeddedUser, createdModel.getAuthor());
         Assert.assertEquals(embeddingMember, createdModel.getMember());
         Assert.assertEquals(embeddingMember, createdModel.getEmbeddingUser());
         Assert.assertEquals(cachedMessage, createdModel.getEmbeddedMessage());

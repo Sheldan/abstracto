@@ -45,7 +45,7 @@ public class EntertainmentServiceBean implements EntertainmentService {
 
     @Override
     public boolean executeRoulette(Member memberExecuting) {
-        Long possibilities = configService.getLongValue(EntertainmentFeature.ROULETTE_BULLETS_CONFIG_KEY, memberExecuting.getGuild().getIdLong());
+        Long possibilities = configService.getLongValueOrConfigDefault(EntertainmentFeature.ROULETTE_BULLETS_CONFIG_KEY, memberExecuting.getGuild().getIdLong());
         // 1/possibilities of chance, we don't have a state, each time its reset
         return secureRandom.nextInt(possibilities.intValue()) == 0;
     }

@@ -32,6 +32,11 @@ public class ConfigServiceBean implements ConfigService {
     }
 
     @Override
+    public Long getLongValueOrConfigDefault(String name, Long serverId) {
+        return getLongValue(name, serverId, defaultConfigManagementService.getDefaultConfig(name).getLongValue());
+    }
+
+    @Override
     public Double getDoubleValue(String name, Long serverId, Double defaultValue) {
         AConfig config = configManagementService.loadConfig(serverId, name);
         if(config == null) {
@@ -41,12 +46,22 @@ public class ConfigServiceBean implements ConfigService {
     }
 
     @Override
+    public Double getDoubleValueOrConfigDefault(String name, Long serverId, Double defaultValue) {
+        return getDoubleValue(name, serverId, defaultConfigManagementService.getDefaultConfig(name).getDoubleValue());
+    }
+
+    @Override
     public String getStringValue(String name, Long serverId, String defaultValue) {
         AConfig config = configManagementService.loadConfig(serverId, name);
         if(config == null) {
             return defaultValue;
         }
         return config.getStringValue();
+    }
+
+    @Override
+    public String getStringValueOrConfigDefault(String name, Long serverId, String defaultValue) {
+        return getStringValue(name, serverId, defaultConfigManagementService.getDefaultConfig(name).getStringValue());
     }
 
     @Override

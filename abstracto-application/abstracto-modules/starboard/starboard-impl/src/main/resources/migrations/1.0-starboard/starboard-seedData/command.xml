@@ -14,7 +14,6 @@
             <column name="name" value="starStats"/>
             <column name="module_id" valueComputed="${utilityModule}"/>
             <column name="feature_id" valueComputed="${starboardFeature}"/>
-            <column name="created" valueComputed="${today}"/>
         </insert>
     </changeSet>
 

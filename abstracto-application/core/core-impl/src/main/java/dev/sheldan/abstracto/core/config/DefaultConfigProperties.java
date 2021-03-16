@@ -36,6 +36,9 @@ public class DefaultConfigProperties {
     }
 
     private <T> void makeKeysLowerCase(Map<String, T> map) {
+        if(map == null) {
+            return;
+        }
         Set<String> keys = new HashSet<>(map.keySet());
         List<Pair<String, T>> pairs = new ArrayList<>();
         keys.forEach(s ->

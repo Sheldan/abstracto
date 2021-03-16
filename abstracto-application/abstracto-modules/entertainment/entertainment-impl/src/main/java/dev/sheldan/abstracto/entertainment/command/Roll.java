@@ -42,7 +42,7 @@ public class Roll extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
-        Integer high = configService.getLongValue(EntertainmentFeature.ROLL_DEFAULT_HIGH_KEY, commandContext.getGuild().getIdLong()).intValue();
+        Integer high = configService.getLongValueOrConfigDefault(EntertainmentFeature.ROLL_DEFAULT_HIGH_KEY, commandContext.getGuild().getIdLong()).intValue();
         Integer low = 1;
         if(parameters.size() > 1) {
             low = (Integer) parameters.get(1);

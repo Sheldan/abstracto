@@ -12,9 +12,9 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +46,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private TemplateService templateService;
@@ -105,15 +108,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     @Override
     @Transactional
     public CompletableFuture<Void> embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
-        Optional<AUserInAServer> causeOpt = userInServerManagementService.loadUserOptional(userEmbeddingUserInServerId);
-        if(causeOpt.isPresent()) {
-            return buildTemplateParameter(embeddingMessage, cachedMessage).thenCompose(messageEmbeddedModel ->
-                self.sendEmbeddingMessage(cachedMessage, target, userEmbeddingUserInServerId, messageEmbeddedModel)
-            );
-        } else {
-            log.warn("User {} which was not found in database wanted to embed link in message {}.", userEmbeddingUserInServerId, embeddingMessage.getJumpUrl());
-            return CompletableFuture.completedFuture(null);
-        }
+        return buildTemplateParameter(embeddingMessage, cachedMessage).thenCompose(messageEmbeddedModel ->
+            self.sendEmbeddingMessage(cachedMessage, target, userEmbeddingUserInServerId, messageEmbeddedModel)
+        );
     }
 
     @Transactional
@@ -132,25 +129,25 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     @Transactional
-    public void loadUserAndPersistMessage(CachedMessage cachedMessage, Long userInServerId, Message createdMessage) {
-        AUserInAServer innerCause = userInServerManagementService.loadOrCreateUser(userInServerId);
+    public void loadUserAndPersistMessage(CachedMessage cachedMessage, Long embeddingUserId, Message createdMessage) {
+        AUserInAServer innerCause = userInServerManagementService.loadOrCreateUser(embeddingUserId);
         messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, innerCause);
     }
 
     private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
-        return memberService.getMemberInServerAsync(embeddedMessage.getServerId(), embeddedMessage.getAuthor().getAuthorId()).thenApply(member ->
-            self.loadMessageEmbedModel(message, embeddedMessage, member)
+        return userService.retrieveUserForId(embeddedMessage.getAuthor().getAuthorId()).thenApply(authorUser ->
+            self.loadMessageEmbedModel(message, embeddedMessage, authorUser)
         );
     }
 
     @Transactional
-    public MessageEmbeddedModel loadMessageEmbedModel(Message message, CachedMessage embeddedMessage, Member member) {
+    public MessageEmbeddedModel loadMessageEmbedModel(Message message, CachedMessage embeddedMessage, User userAuthor) {
         Optional<TextChannel> textChannelFromServer = channelService.getTextChannelFromServerOptional(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
         TextChannel sourceChannel = textChannelFromServer.orElse(null);
         return MessageEmbeddedModel
                 .builder()
                 .member(message.getMember())
-                .author(member)
+                .author(userAuthor)
                 .sourceChannel(sourceChannel)
                 .embeddingUser(message.getMember())
                 .messageChannel(message.getChannel())

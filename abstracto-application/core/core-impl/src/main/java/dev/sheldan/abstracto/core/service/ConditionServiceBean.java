@@ -15,11 +15,14 @@ import java.util.Optional;
 @Slf4j
 public class ConditionServiceBean implements ConditionService {
 
-    @Autowired
+    @Autowired(required = false)
     private List<SystemCondition> conditionList;
 
     @Override
     public boolean checkConditions(ConditionContextInstance context) {
+        if(conditionList == null ||  conditionList.isEmpty()) {
+            return true;
+        }
         Optional<SystemCondition> matchingCondition = conditionList
                 .stream()
                 .filter(systemCondition -> systemCondition.getConditionName().equalsIgnoreCase(context.getConditionName()))
