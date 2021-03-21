@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureMode;
 import lombok.Getter;
 
 /**
- * {@link FeatureMode}s for {@link EmoteTrackingFeature}. These modes include:
+ * {@link FeatureMode}s for {@link EmoteTrackingFeatureConfig}. These modes include:
  * AUTO_TRACK: This controls a listener which listens for the emote events of a server, and automatically creates/updates/marks as deleted instances in the database if the respective event happens
  *             Influences:
  * EXTERNAL_EMOTES: Enables the tracking of emotes which are not from the server the feature is enabled in. This feature alone only enables to track emotes with the `trackEmote` command and makes the command `externalEmoteStats` (and more) available

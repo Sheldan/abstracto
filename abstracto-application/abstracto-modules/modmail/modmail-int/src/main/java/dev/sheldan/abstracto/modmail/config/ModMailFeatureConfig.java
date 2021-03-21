@@ -18,7 +18,7 @@ import java.util.List;
  * General instance of {@link FeatureConfig} to establish the mod mail feature
  */
 @Component
-public class ModMailFeature implements FeatureConfig {
+public class ModMailFeatureConfig implements FeatureConfig {
 
     @Autowired
     private ModMailFeatureValidator modMailFeatureValidator;

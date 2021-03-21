@@ -46,7 +46,7 @@ public class ConfigServiceBean implements ConfigService {
     }
 
     @Override
-    public Double getDoubleValueOrConfigDefault(String name, Long serverId, Double defaultValue) {
+    public Double getDoubleValueOrConfigDefault(String name, Long serverId) {
         return getDoubleValue(name, serverId, defaultConfigManagementService.getDefaultConfig(name).getDoubleValue());
     }
 
@@ -60,7 +60,7 @@ public class ConfigServiceBean implements ConfigService {
     }
 
     @Override
-    public String getStringValueOrConfigDefault(String name, Long serverId, String defaultValue) {
+    public String getStringValueOrConfigDefault(String name, Long serverId) {
         return getStringValue(name, serverId, defaultConfigManagementService.getDefaultConfig(name).getStringValue());
     }
 

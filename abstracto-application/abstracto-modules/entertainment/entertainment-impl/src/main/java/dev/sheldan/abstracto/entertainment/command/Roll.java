@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.entertainment.config.EntertainmentFeature;
+import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureConfig;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
 import dev.sheldan.abstracto.entertainment.model.RollResponseModel;
@@ -42,7 +42,7 @@ public class Roll extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
-        Integer high = configService.getLongValueOrConfigDefault(EntertainmentFeature.ROLL_DEFAULT_HIGH_KEY, commandContext.getGuild().getIdLong()).intValue();
+        Integer high = configService.getLongValueOrConfigDefault(EntertainmentFeatureConfig.ROLL_DEFAULT_HIGH_KEY, commandContext.getGuild().getIdLong()).intValue();
         Integer low = 1;
         if(parameters.size() > 1) {
             low = (Integer) parameters.get(1);

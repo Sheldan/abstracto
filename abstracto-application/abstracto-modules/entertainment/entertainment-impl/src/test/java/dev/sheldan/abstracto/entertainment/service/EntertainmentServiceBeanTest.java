@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.entertainment.service;
 
 import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.entertainment.config.EntertainmentFeature;
+import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureConfig;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
@@ -79,7 +79,7 @@ public class EntertainmentServiceBeanTest {
         when(guild.getIdLong()).thenReturn(serverId);
         when(member.getGuild()).thenReturn(guild);
         Long sides = 6L;
-        when(configService.getLongValue(EntertainmentFeature.ROULETTE_BULLETS_CONFIG_KEY, serverId)).thenReturn(sides);
+        when(configService.getLongValue(EntertainmentFeatureConfig.ROULETTE_BULLETS_CONFIG_KEY, serverId)).thenReturn(sides);
         when(secureRandom.nextInt(sides.intValue())).thenReturn(randomValue);
         boolean shot = testUnit.executeRoulette(member);
         Assert.assertEquals(randomValue == 0, shot);

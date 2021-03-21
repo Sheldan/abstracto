@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class StarboardFeature implements FeatureConfig {
+public class StarboardFeatureConfig implements FeatureConfig {
 
     public static final String STAR_LVL_CONFIG_PREFIX = "starLvl";
     public static final String STAR_EMOTE_PREFIX = "star";
@@ -38,7 +38,7 @@ public class StarboardFeature implements FeatureConfig {
         List<String> configKeys = new ArrayList<>();
         int maxLevels = getMaxLevels();
         for(int i = maxLevels; i > 0; i--) {
-            configKeys.add(StarboardFeature.STAR_LVL_CONFIG_PREFIX + i);
+            configKeys.add(StarboardFeatureConfig.STAR_LVL_CONFIG_PREFIX + i);
         }
         return configKeys;
     }
@@ -48,11 +48,11 @@ public class StarboardFeature implements FeatureConfig {
         List<String> emoteNames = new ArrayList<>();
         int maxLevels = getMaxLevels();
         for(int i = maxLevels; i > 0; i--) {
-            emoteNames.add(StarboardFeature.STAR_EMOTE_PREFIX + i);
+            emoteNames.add(StarboardFeatureConfig.STAR_EMOTE_PREFIX + i);
         }
-        emoteNames.add(StarboardFeature.STAR_BADGE_EMOTE_PREFIX + 1);
-        emoteNames.add(StarboardFeature.STAR_BADGE_EMOTE_PREFIX + 2);
-        emoteNames.add(StarboardFeature.STAR_BADGE_EMOTE_PREFIX + 3);
+        emoteNames.add(StarboardFeatureConfig.STAR_BADGE_EMOTE_PREFIX + 1);
+        emoteNames.add(StarboardFeatureConfig.STAR_BADGE_EMOTE_PREFIX + 2);
+        emoteNames.add(StarboardFeatureConfig.STAR_BADGE_EMOTE_PREFIX + 3);
         return emoteNames;
     }
 

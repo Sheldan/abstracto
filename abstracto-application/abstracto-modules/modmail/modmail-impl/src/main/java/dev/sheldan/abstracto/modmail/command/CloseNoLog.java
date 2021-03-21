@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
+import dev.sheldan.abstracto.modmail.config.ModMailFeatureConfig;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.config.ModMailMode;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
@@ -26,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * This command closes a mod mail thread without logging the closing and the contents of the {@link ModMailThread}.
- * This command is only available if the server has the {@link dev.sheldan.abstracto.modmail.config.ModMailFeature}
+ * This command is only available if the server has the {@link ModMailFeatureConfig}
  * 'LOGGING' mode enabled, because else the normal close command behaves the same way.
  */
 @Component

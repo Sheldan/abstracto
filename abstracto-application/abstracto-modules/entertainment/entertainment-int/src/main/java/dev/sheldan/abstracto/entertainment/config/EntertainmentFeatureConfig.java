@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class EntertainmentFeature implements FeatureConfig {
+public class EntertainmentFeatureConfig implements FeatureConfig {
 
     public static final String ROULETTE_BULLETS_CONFIG_KEY = "rouletteBullets";
     public static final String ROLL_DEFAULT_HIGH_KEY = "rollDefaultHigh";

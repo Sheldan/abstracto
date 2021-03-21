@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.starboard.config.StarboardFeature;
+import dev.sheldan.abstracto.starboard.config.StarboardFeatureConfig;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import dev.sheldan.abstracto.starboard.service.StarboardService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
@@ -110,7 +110,7 @@ public class StarAddedListenerTest {
         when(model.getMessage()).thenReturn(cachedMessage);
         when(model.getUserReacting()).thenReturn(serverUserActing);
         testUnit.execute(model);
-        verify(emoteService, times(0)).getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, SERVER_ID);
+        verify(emoteService, times(0)).getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class StarAddedListenerTest {
         when(model.getReaction()).thenReturn(reaction);
         when(reaction.getReactionEmote()).thenReturn(reactionEmote);
         testUnit.execute(model);
-        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, SERVER_ID);
+        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID);
         verify(emoteService, times(0)).getReactionFromMessageByEmote(any(CachedMessage.class), eq(starEmote));
     }
 
@@ -180,7 +180,7 @@ public class StarAddedListenerTest {
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(reaction.getReactionEmote()).thenReturn(reactionEmote);
         when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote)).thenReturn(true);
-        when(emoteService.getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, SERVER_ID)).thenReturn(starEmote);
+        when(emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID)).thenReturn(starEmote);
         when(serverUserActing.getUserId()).thenReturn(USER_ACTING_ID);
         when(serverUserActing.getServerId()).thenReturn(SERVER_ID);
         when(starboardPostManagementService.findByMessageId(MESSAGE_ID)).thenReturn(Optional.ofNullable(postToUse));
@@ -197,7 +197,7 @@ public class StarAddedListenerTest {
         when(model.getReaction()).thenReturn(reaction);
         when(model.getServerId()).thenReturn(SERVER_ID);
         testUnit.execute(model);
-        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, SERVER_ID);
+        verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID);
         verify(emoteService, times(1)).getReactionFromMessageByEmote(cachedMessage, starEmote);
     }
 
@@ -205,6 +205,6 @@ public class StarAddedListenerTest {
         when(cachedAuthor.getAuthorId()).thenReturn(authorId);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(reaction.getReactionEmote()).thenReturn(reactionEmote);
-        when(emoteService.getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, serverId)).thenReturn(starEmote);
+        when(emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, serverId)).thenReturn(starEmote);
     }
 }

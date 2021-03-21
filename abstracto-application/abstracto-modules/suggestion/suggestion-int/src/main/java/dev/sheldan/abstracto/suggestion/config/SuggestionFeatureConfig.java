@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class SuggestionFeature implements FeatureConfig {
+public class SuggestionFeatureConfig implements FeatureConfig {
 
     @Override
     public FeatureDefinition getFeature() {

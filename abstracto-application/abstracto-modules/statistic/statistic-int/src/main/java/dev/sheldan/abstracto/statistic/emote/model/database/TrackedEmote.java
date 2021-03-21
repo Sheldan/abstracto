@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.statistic.emote.model.database;
 import dev.sheldan.abstracto.core.models.Fakeable;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingFeatureConfig;
 import lombok.*;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * The instance of an emote which is being tracked by {@link dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingFeature}.
+ * The instance of an emote which is being tracked by {@link EmoteTrackingFeatureConfig}.
  * This represents an emote by its unique ID and the respective server its being tracked in. This emote might not be part of the server
  * and might have been deleted.
  */

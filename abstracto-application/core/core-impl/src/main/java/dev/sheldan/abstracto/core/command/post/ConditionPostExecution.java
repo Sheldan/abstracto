@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.command.post;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ConditionPostExecution implements PostCommandExecution {
-    public static final String WARN_REACTION_EMOTE = "warnReaction";
     public static final String GENERIC_COMMAND_EXCEPTION_MODEL_KEY = "generic_condition_notification";
 
     @Autowired
@@ -26,7 +26,7 @@ public class ConditionPostExecution implements PostCommandExecution {
     @Override
     public void execute(CommandContext commandContext, CommandResult commandResult, Command command) {
         if(commandResult.getResult().equals(ResultState.CONDITION) && commandResult.getConditionResult() != null && !commandResult.getConditionResult().isResult() && commandResult.getConditionResult().getConditionDetail() != null) {
-            reactionService.addReactionToMessage(WARN_REACTION_EMOTE, commandContext.getGuild().getIdLong(), commandContext.getMessage());
+            reactionService.addReactionToMessage(CoreFeatureConfig.WARN_REACTION_KEY, commandContext.getGuild().getIdLong(), commandContext.getMessage());
             GenericConditionModel conditionModel = GenericConditionModel
                     .builder()
                     .conditionDetail(commandResult.getConditionResult().getConditionDetail())

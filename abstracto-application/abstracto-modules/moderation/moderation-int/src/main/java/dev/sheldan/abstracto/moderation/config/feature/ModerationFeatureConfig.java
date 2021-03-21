@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class ModerationFeature implements FeatureConfig {
+public class ModerationFeatureConfig implements FeatureConfig {
 
     @Override
     public FeatureDefinition getFeature() {

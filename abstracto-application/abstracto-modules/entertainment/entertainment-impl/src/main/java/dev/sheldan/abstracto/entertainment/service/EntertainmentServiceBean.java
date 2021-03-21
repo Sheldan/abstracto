@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.entertainment.service;
 
 import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.entertainment.config.EntertainmentFeature;
+import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureConfig;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,7 +45,7 @@ public class EntertainmentServiceBean implements EntertainmentService {
 
     @Override
     public boolean executeRoulette(Member memberExecuting) {
-        Long possibilities = configService.getLongValueOrConfigDefault(EntertainmentFeature.ROULETTE_BULLETS_CONFIG_KEY, memberExecuting.getGuild().getIdLong());
+        Long possibilities = configService.getLongValueOrConfigDefault(EntertainmentFeatureConfig.ROULETTE_BULLETS_CONFIG_KEY, memberExecuting.getGuild().getIdLong());
         // 1/possibilities of chance, we don't have a state, each time its reset
         return secureRandom.nextInt(possibilities.intValue()) == 0;
     }

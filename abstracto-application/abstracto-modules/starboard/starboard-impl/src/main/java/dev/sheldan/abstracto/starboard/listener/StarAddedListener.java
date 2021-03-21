@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
-import dev.sheldan.abstracto.starboard.config.StarboardFeature;
+import dev.sheldan.abstracto.starboard.config.StarboardFeatureConfig;
 import dev.sheldan.abstracto.starboard.config.StarboardFeatureDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class StarAddedListener extends StarboardListener implements AsyncReactio
             return DefaultListenerResult.IGNORED;
         }
         Long serverId = model.getServerId();
-        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, serverId);
+        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, serverId);
         if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
             metricService.incrementCounter(STARBOARD_STARS_ADDED);
             log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.",

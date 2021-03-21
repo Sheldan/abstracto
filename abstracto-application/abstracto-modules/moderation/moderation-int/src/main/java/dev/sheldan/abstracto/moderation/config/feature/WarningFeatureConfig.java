@@ -13,10 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class WarningFeature implements FeatureConfig {
+public class WarningFeatureConfig implements FeatureConfig {
 
     @Autowired
-    private WarningDecayFeature warningDecayFeature;
+    private WarningDecayFeatureConfig warningDecayFeatureConfig;
 
     @Override
     public FeatureDefinition getFeature() {
@@ -25,7 +25,7 @@ public class WarningFeature implements FeatureConfig {
 
     @Override
     public List<FeatureConfig> getDependantFeatures() {
-        return Arrays.asList(warningDecayFeature);
+        return Arrays.asList(warningDecayFeatureConfig);
     }
 
     @Override

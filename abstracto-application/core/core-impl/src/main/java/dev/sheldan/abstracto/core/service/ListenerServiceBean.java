@@ -24,6 +24,9 @@ public class ListenerServiceBean implements ListenerService {
     @Autowired
     private FeatureModeService featureModeService;
 
+    @Autowired
+    private ListenerServiceBean self;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> void executeFeatureAwareListener(FeatureAwareListener<T, R> listener, T model) {
@@ -52,13 +55,18 @@ public class ListenerServiceBean implements ListenerService {
             return;
         }
         try {
-            CompletableFuture.runAsync(() -> listener.execute(model), executor).exceptionally(throwable -> {
+            CompletableFuture.runAsync(() -> self.executeFeatureListenerInTransaction(listener, model), executor).exceptionally(throwable -> {
                 log.error("Feature aware async Listener {} failed with async exception:", listener.getClass().getName(), throwable);
                 return null;
             });
         } catch (Exception e) {
             log.error("Feature aware listener {} failed with exception:", listener.getClass().getName(), e);
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public  <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> void executeFeatureListenerInTransaction(FeatureAwareListener<T, R> listener, T model) {
+        listener.execute(model);
     }
 
     @Override
@@ -72,16 +80,20 @@ public class ListenerServiceBean implements ListenerService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public <T extends ListenerModel, R extends ListenerExecutionResult> void executeListener(AbstractoListener<T, R> listener, T model, TaskExecutor executor) {
         try {
-            CompletableFuture.runAsync(() -> listener.execute(model), executor).exceptionally(throwable -> {
+            CompletableFuture.runAsync(() -> self.executeListenerInTransaction(listener, model), executor).exceptionally(throwable -> {
                 log.error("Async Listener {} failed with async exception:", listener.getClass().getName(), throwable);
                 return null;
             });
         } catch (Exception e) {
             log.error("Async listener {} failed with exception:", listener.getClass().getName(), e);
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public <T extends ListenerModel, R extends ListenerExecutionResult> void executeListenerInTransaction(AbstractoListener<T, R> listener, T model) {
+        listener.execute(model);
     }
 
 }

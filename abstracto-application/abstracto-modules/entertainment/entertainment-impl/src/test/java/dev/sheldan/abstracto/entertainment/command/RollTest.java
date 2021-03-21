@@ -20,7 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-import static dev.sheldan.abstracto.entertainment.config.EntertainmentFeature.ROLL_DEFAULT_HIGH_KEY;
+import static dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureConfig.ROLL_DEFAULT_HIGH_KEY;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 

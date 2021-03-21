@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserNoteFeature implements FeatureConfig {
+public class UserNoteFeatureConfig implements FeatureConfig {
     @Override
     public FeatureDefinition getFeature() {
         return ModerationFeatureDefinition.USER_NOTES;

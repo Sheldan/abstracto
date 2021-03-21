@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.listener.ReactionRemovedModel;
-import dev.sheldan.abstracto.starboard.config.StarboardFeature;
+import dev.sheldan.abstracto.starboard.config.StarboardFeatureConfig;
 import dev.sheldan.abstracto.starboard.config.StarboardFeatureDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ public class StarRemovedListener extends StarboardListener implements AsyncReact
             return DefaultListenerResult.IGNORED;
         }
         Long guildId = model.getServerId();
-        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeature.STAR_EMOTE, guildId);
+        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, guildId);
         if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
             metricService.incrementCounter(STARBOARD_STARS_REMOVED);
             log.info("User {} in server {} removed star reaction from message {} on starboard.",

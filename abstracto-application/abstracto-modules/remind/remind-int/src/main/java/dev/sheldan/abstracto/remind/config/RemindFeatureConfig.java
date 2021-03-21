@@ -1,15 +1,15 @@
-package dev.sheldan.abstracto.utility.config;
+package dev.sheldan.abstracto.remind.config;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UtilitiesFeature implements FeatureConfig {
+public class RemindFeatureConfig implements FeatureConfig {
 
     @Override
     public FeatureDefinition getFeature() {
-        return UtilityFeatureDefinition.UTILITY;
+        return RemindFeatureDefinition.REMIND;
     }
 
 }

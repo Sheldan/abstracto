@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class RepostDetectionFeature implements FeatureConfig {
+public class RepostDetectionFeatureConfig implements FeatureConfig {
     @Override
     public FeatureDefinition getFeature() {
         return RepostDetectionFeatureDefinition.REPOST_DETECTION;

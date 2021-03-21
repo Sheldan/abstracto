@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.job;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeatureConfig;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
@@ -31,7 +31,7 @@ public class WarnDecayJob extends QuartzJobBean {
     private FeatureFlagService featureFlagService;
 
     @Autowired
-    private WarningDecayFeature warningDecayFeature;
+    private WarningDecayFeatureConfig warningDecayFeatureConfig;
 
     @Autowired
     private WarnService warnService;
@@ -42,7 +42,7 @@ public class WarnDecayJob extends QuartzJobBean {
         List<AServer> allServers = serverManagementService.getAllServers();
         log.info("Executing warn decay job.");
         allServers.forEach(server -> {
-            boolean featureEnabled = featureFlagService.isFeatureEnabled(warningDecayFeature, server);
+            boolean featureEnabled = featureFlagService.isFeatureEnabled(warningDecayFeatureConfig, server);
             if(featureEnabled) {
                 log.info("Executing warn decay for server {}.", server.getId());
                 warnService.decayWarningsForServer(server);

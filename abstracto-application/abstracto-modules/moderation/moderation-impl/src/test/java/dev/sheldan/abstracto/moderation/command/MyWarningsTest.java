@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
-import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeatureConfig;
 import dev.sheldan.abstracto.moderation.model.template.command.MyWarningsModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import org.junit.Assert;
@@ -35,7 +35,7 @@ public class MyWarningsTest {
     private FeatureFlagService featureFlagService;
 
     @Mock
-    private WarningDecayFeature warningDecayFeature;
+    private WarningDecayFeatureConfig warningDecayFeatureConfig;
 
     @Mock
     private UserInServerManagementService userInServerManagementService;

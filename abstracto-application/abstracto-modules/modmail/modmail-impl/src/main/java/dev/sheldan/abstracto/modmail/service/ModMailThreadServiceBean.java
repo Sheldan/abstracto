@@ -18,7 +18,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.modmail.config.ModMailFeature;
+import dev.sheldan.abstracto.modmail.config.ModMailFeatureConfig;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.config.ModMailMode;
 import dev.sheldan.abstracto.modmail.config.ModMailPostTargets;
@@ -109,7 +109,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     private FeatureFlagService featureFlagService;
 
     @Autowired
-    private ModMailFeature modMailFeature;
+    private ModMailFeatureConfig modMailFeatureConfig;
 
     @Autowired
     private ModMailRoleManagementService modMailRoleManagementService;
@@ -295,7 +295,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 AUserInAServer aUserInAServer = knownServers.get(i);
                 // only take the servers in which mod mail is actually enabled, would not make much sense to make the
                 // other servers available
-                if(featureFlagService.isFeatureEnabled(modMailFeature, aUserInAServer.getServerReference())) {
+                if(featureFlagService.isFeatureEnabled(modMailFeatureConfig, aUserInAServer.getServerReference())) {
                     AServer serverReference = aUserInAServer.getServerReference();
                     FullGuild guild = FullGuild
                             .builder()

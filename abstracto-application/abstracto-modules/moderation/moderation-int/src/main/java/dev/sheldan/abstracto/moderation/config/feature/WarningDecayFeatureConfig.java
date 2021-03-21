@@ -13,12 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class WarningDecayFeature implements FeatureConfig {
+public class WarningDecayFeatureConfig implements FeatureConfig {
 
     public static final String DECAY_DAYS_KEY = "decayDays";
-    @Autowired
-    private WarningFeature warningFeature;
 
+    @Autowired
+    private WarningFeatureConfig warningFeatureConfig;
 
     @Override
     public FeatureDefinition getFeature() {
@@ -32,7 +32,7 @@ public class WarningDecayFeature implements FeatureConfig {
 
     @Override
     public List<FeatureConfig> getRequiredFeatures() {
-        return Arrays.asList(warningFeature);
+        return Arrays.asList(warningFeatureConfig);
     }
 
     @Override

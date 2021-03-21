@@ -13,7 +13,7 @@ import java.util.List;
  * {@link FeatureConfig} implementation to define the EmoteTracking feature.
  */
 @Component
-public class EmoteTrackingFeature implements FeatureConfig {
+public class EmoteTrackingFeatureConfig implements FeatureConfig {
 
     /**
      * {@link FeatureDefinition} represents the feature uniquely
@@ -24,7 +24,7 @@ public class EmoteTrackingFeature implements FeatureConfig {
     }
 
     /**
-     * This feature contains three feature modes. For explanation of them check {@link EmoteTrackingFeature}
+     * This feature contains three feature modes. For explanation of them check {@link EmoteTrackingFeatureConfig}
      * @return list of {@link FeatureMode} handled by this feature.
      */
     @Override

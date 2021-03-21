@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class MutingFeature implements FeatureConfig {
+public class MutingFeatureConfig implements FeatureConfig {
 
     @Override
     public FeatureDefinition getFeature() {

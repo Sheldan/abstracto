@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class LinkEmbedFeature implements FeatureConfig {
+public class LinkEmbedFeatureConfig implements FeatureConfig {
 
     @Override
     public FeatureDefinition getFeature() {

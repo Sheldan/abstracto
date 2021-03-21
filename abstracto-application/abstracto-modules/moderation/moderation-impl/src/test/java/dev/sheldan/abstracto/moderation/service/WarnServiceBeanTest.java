@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementServ
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeature;
+import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.feature.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.feature.mode.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.WarningPostTarget;
@@ -254,8 +254,8 @@ public class WarnServiceBeanTest {
         SystemConfigProperty defaultDecayDays = Mockito.mock(SystemConfigProperty.class);
         Long defaultDayCount = 4L;
         when(defaultDecayDays.getLongValue()).thenReturn(defaultDayCount);
-        when(defaultConfigManagementService.getDefaultConfig(WarningDecayFeature.DECAY_DAYS_KEY)).thenReturn(defaultDecayDays);
-        when(configService.getLongValue(WarningDecayFeature.DECAY_DAYS_KEY, SERVER_ID, defaultDayCount)).thenReturn(5L);
+        when(defaultConfigManagementService.getDefaultConfig(WarningDecayFeatureConfig.DECAY_DAYS_KEY)).thenReturn(defaultDecayDays);
+        when(configService.getLongValue(WarningDecayFeatureConfig.DECAY_DAYS_KEY, SERVER_ID, defaultDayCount)).thenReturn(5L);
         List<Warning> warnings = Arrays.asList(firstWarning, secondWarning);
         when(memberService.getMemberInServerAsync(warningUser)).thenReturn(CompletableFuture.completedFuture(warningMember));
         when(memberService.getMemberInServerAsync(firstWarnedUser)).thenReturn(CompletableFuture.completedFuture(warnedMember));
