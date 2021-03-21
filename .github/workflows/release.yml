@@ -28,6 +28,14 @@ jobs:
           branch: master
           ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           folder: abstracto-application/documentation/target/generated-docs
+      - name: Deploy documentation to GitHub pages latest
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          repository-name: Sheldan/abstracto-docs
+          target-folder: docs/current
+          branch: master
+          ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          folder: abstracto-application/documentation/target/generated-docs
       - name: Login to GitHub Packages Docker Registry
         uses: docker/login-action@v1
         with:
