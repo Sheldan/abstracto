@@ -20,6 +20,7 @@ public interface StarboardPostManagementService {
     Integer getPostCount(Long serverId);
     Optional<StarboardPost> findByMessageId(Long messageId);
     Optional<StarboardPost> findByStarboardPostId(Long postId);
+    Optional<StarboardPost> findByStarboardPostMessageId(Long postId);
     void setStarboardPostIgnored(Long starboardPostId, Boolean newValue);
     boolean isStarboardPost(Long starboardPostId);
     void removePost(StarboardPost starboardPost);

@@ -5,9 +5,8 @@ import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.starboard.listener.StarboardPostState;
-import dev.sheldan.abstracto.starboard.listener.StarboardPostUpdatedListener;
-import dev.sheldan.abstracto.starboard.model.StarboardPostUpdatedModel;
+import dev.sheldan.abstracto.starboard.listener.StarboardPostDeletedListener;
+import dev.sheldan.abstracto.starboard.model.StarboardPostDeletedModel;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +19,17 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class StarboardPostListenerManager {
+public class StarboardPostDeletedListenerManager {
 
     @Autowired(required = false)
-    private List<StarboardPostUpdatedListener> listeners;
+    private List<StarboardPostDeletedListener> listeners;
 
     @Autowired
-    @Qualifier("starboardStatusListenerExecutor")
-    private TaskExecutor starboardStatusExecutor;
+    @Qualifier("starboardDeletedListenerExecutor")
+    private TaskExecutor starboardDeletedExecutor;
 
     @Autowired
-    private StarboardPostListenerManager self;
+    private StarboardPostDeletedListenerManager self;
 
     @Autowired
     private FeatureConfigService featureConfigService;
@@ -41,25 +40,15 @@ public class StarboardPostListenerManager {
     @Autowired
     private ListenerService listenerService;
 
-    public void sendStarboardPostCreatedEvent(Long userReactingId, StarboardPost post) {
-        if(listeners == null || listeners.isEmpty()) {
-            return;
-        }
-        ServerUser userReactingServerUser = ServerUser.builder().serverId(post.getServer().getId()).userId(userReactingId).build();
-        StarboardPostUpdatedModel model = createStarboardStatusModel(post, userReactingServerUser);
-        model.setNewState(StarboardPostState.CREATED);
-        listeners.forEach(listener -> listenerService.executeFeatureAwareListener(listener, model));
-    }
-
     public void sendStarboardPostDeletedEvent(StarboardPost post, ServerUser userReacting) {
         if(listeners == null || listeners.isEmpty()) {
             return;
         }
-        StarboardPostUpdatedModel model = createStarboardStatusModel(post, userReacting);
-        model.setNewState(StarboardPostState.DELETED);
+        StarboardPostDeletedModel model = createStarboardStatusModel(post, userReacting);
+        listeners.forEach(listener -> listenerService.executeFeatureAwareListener(listener, model, starboardDeletedExecutor));
     }
 
-    private StarboardPostUpdatedModel createStarboardStatusModel(StarboardPost post, ServerUser userReacting) {
+    private StarboardPostDeletedModel createStarboardStatusModel(StarboardPost post, ServerUser userReacting) {
         Long serverId = post.getServer().getId();
         ServerUser starredUser = ServerUser
                 .builder()
@@ -85,9 +74,10 @@ public class StarboardPostListenerManager {
                 .stream()
                 .map(starboardPostReaction -> starboardPostReaction.getReactor().getUserReference().getId())
                 .collect(Collectors.toList());
-        return StarboardPostUpdatedModel
+        return StarboardPostDeletedModel
                 .builder()
                 .lastStarrer(userReacting)
+                .starboardPostId(post.getId())
                 .starredUser(starredUser)
                 .starboardMessage(starboardMessagePayLoad)
                 .starredMessage(starredMessage)

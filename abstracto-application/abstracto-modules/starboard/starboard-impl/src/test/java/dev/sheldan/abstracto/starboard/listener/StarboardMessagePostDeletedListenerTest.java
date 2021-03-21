@@ -17,10 +17,10 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StarboardPostDeletedListenerTest {
+public class StarboardMessagePostDeletedListenerTest {
 
     @InjectMocks
-    private StarboardPostDeletedListener testUnit;
+    private StarboardMessagePostDeletedListener testUnit;
 
     @Mock
     private StarboardPostManagementService starboardPostManagementService;
@@ -28,7 +28,7 @@ public class StarboardPostDeletedListenerTest {
     @Test
     public void deleteNonStarboardPost() {
         Long messageId = 4L;
-        when(starboardPostManagementService.findByStarboardPostId(messageId)).thenReturn(Optional.empty());
+        when(starboardPostManagementService.findByStarboardPostMessageId(messageId)).thenReturn(Optional.empty());
         MessageDeletedModel model = Mockito.mock(MessageDeletedModel.class);
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(cachedMessage.getMessageId()).thenReturn(messageId);
@@ -46,7 +46,7 @@ public class StarboardPostDeletedListenerTest {
         StarboardPost post = Mockito.mock(StarboardPost.class);
         when(post.getSourceChannel()) .thenReturn(sourceChannel);
         when(post.getPostMessageId()).thenReturn(postMessageId);
-        when(starboardPostManagementService.findByStarboardPostId(messageId)).thenReturn(Optional.of(post));
+        when(starboardPostManagementService.findByStarboardPostMessageId(messageId)).thenReturn(Optional.of(post));
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(cachedMessage.getServerId()).thenReturn(serverId);
         when(cachedMessage.getMessageId()).thenReturn(messageId);

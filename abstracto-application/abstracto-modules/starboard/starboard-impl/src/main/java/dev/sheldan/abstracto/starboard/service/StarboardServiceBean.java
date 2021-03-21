@@ -91,7 +91,10 @@ public class StarboardServiceBean implements StarboardService {
     private StarboardServiceBean self;
 
     @Autowired
-    private StarboardPostListenerManager starboardPostListenerManager;
+    private StarboardPostDeletedListenerManager starboardPostDeletedListenerManager;
+
+    @Autowired
+    private StarboardPostCreatedListenerManager starboardPostCreatedListenerManager;
 
     @Autowired
     private UserService userService;
@@ -138,7 +141,7 @@ public class StarboardServiceBean implements StarboardService {
             AUserInAServer user = userInServerManagementService.loadUserOptional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
             starboardPostReactorManagementService.addReactor(starboardPost, user);
         });
-        starboardPostListenerManager.sendStarboardPostCreatedEvent(userReactingId, starboardPost);
+        starboardPostCreatedListenerManager.sendStarboardPostCreatedEvent(userReactingId, starboardPost);
     }
 
 
@@ -250,7 +253,7 @@ public class StarboardServiceBean implements StarboardService {
     public void deleteStarboardPost(StarboardPost starboardPost, ServerUser userReacting) {
         deleteStarboardMessagePost(starboardPost);
         starboardPostManagementService.removePost(starboardPost);
-        starboardPostListenerManager.sendStarboardPostDeletedEvent(starboardPost, userReacting);
+        starboardPostDeletedListenerManager.sendStarboardPostDeletedEvent(starboardPost, userReacting);
     }
 
     private String getStarboardRankingEmote(Long serverId, Integer position) {

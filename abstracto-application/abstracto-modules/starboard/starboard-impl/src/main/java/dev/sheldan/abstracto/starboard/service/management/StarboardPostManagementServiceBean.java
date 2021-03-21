@@ -97,6 +97,11 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public Optional<StarboardPost> findByStarboardPostId(Long postId) {
+        return repository.findById(postId);
+    }
+
+    @Override
+    public Optional<StarboardPost> findByStarboardPostMessageId(Long postId) {
         return Optional.ofNullable(repository.findByStarboardMessageId(postId));
     }
 

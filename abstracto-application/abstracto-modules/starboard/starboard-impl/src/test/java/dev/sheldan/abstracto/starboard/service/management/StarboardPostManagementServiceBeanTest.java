@@ -179,7 +179,7 @@ public class StarboardPostManagementServiceBeanTest {
         Long postId = 5L;
         StarboardPost post = Mockito.mock(StarboardPost.class);
         when(repository.findByStarboardMessageId(postId)).thenReturn(post);
-        Optional<StarboardPost> postOptional = testUnit.findByStarboardPostId(postId);
+        Optional<StarboardPost> postOptional = testUnit.findByStarboardPostMessageId(postId);
         Assert.assertTrue(postOptional.isPresent());
         postOptional.ifPresent(starboardPost -> Assert.assertEquals(starboardPost, post));
     }
@@ -188,7 +188,7 @@ public class StarboardPostManagementServiceBeanTest {
     public void testFindByStarboardPostIdMissing() {
         Long postId = 5L;
         when(repository.findByStarboardMessageId(postId)).thenReturn(null);
-        Optional<StarboardPost> postOptional = testUnit.findByStarboardPostId(postId);
+        Optional<StarboardPost> postOptional = testUnit.findByStarboardPostMessageId(postId);
         Assert.assertFalse(postOptional.isPresent());
     }
 

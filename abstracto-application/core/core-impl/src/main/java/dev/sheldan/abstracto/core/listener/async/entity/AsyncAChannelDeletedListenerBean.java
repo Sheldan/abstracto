@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -26,6 +28,10 @@ public class AsyncAChannelDeletedListenerBean extends ListenerAdapter {
     @Autowired
     private ChannelManagementService channelManagementService;
 
+    @Autowired
+    @Qualifier("aChannelDeletedExecutor")
+    private TaskExecutor channelDeletedExecutor;
+
     @Override
     public void onTextChannelDelete(@Nonnull TextChannelDeleteEvent event) {
         channelManagementService.markAsDeleted(event.getChannel().getIdLong());
@@ -34,7 +40,7 @@ public class AsyncAChannelDeletedListenerBean extends ListenerAdapter {
     @TransactionalEventListener
     public void executeServerCreationListener(AChannelDeletedListenerModel model) {
         if(channelDeletedListeners == null) return;
-        channelDeletedListeners.forEach(serverCreatedListener -> listenerService.executeListener(serverCreatedListener, model));
+        channelDeletedListeners.forEach(serverCreatedListener -> listenerService.executeListener(serverCreatedListener, model, channelDeletedExecutor));
     }
 
 }

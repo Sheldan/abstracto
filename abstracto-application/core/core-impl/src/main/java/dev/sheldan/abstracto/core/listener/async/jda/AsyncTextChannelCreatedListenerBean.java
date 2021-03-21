@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -21,11 +23,15 @@ public class AsyncTextChannelCreatedListenerBean extends ListenerAdapter {
     @Autowired
     private ListenerService listenerService;
 
+    @Autowired
+    @Qualifier("channelCreatedExecutor")
+    private TaskExecutor channelCreatedExecutor;
+
     @Override
     public void onTextChannelCreate(@Nonnull TextChannelCreateEvent event) {
         if(listenerList == null) return;
         TextChannelCreatedModel model = getModel(event);
-        listenerList.forEach(textChannelCreatedListener -> listenerService.executeFeatureAwareListener(textChannelCreatedListener, model));
+        listenerList.forEach(textChannelCreatedListener -> listenerService.executeFeatureAwareListener(textChannelCreatedListener, model, channelCreatedExecutor));
     }
 
     private TextChannelCreatedModel getModel(TextChannelCreateEvent event) {

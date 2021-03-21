@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-public class StarboardPostDeletedListener implements AsyncMessageDeletedListener {
+public class StarboardMessagePostDeletedListener implements AsyncMessageDeletedListener {
 
     @Autowired
     private StarboardPostManagementService starboardPostManagementService;
@@ -24,7 +24,7 @@ public class StarboardPostDeletedListener implements AsyncMessageDeletedListener
     @Override
     public DefaultListenerResult execute(MessageDeletedModel model) {
         CachedMessage message = model.getCachedMessage();
-        Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostId(message.getMessageId());
+        Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostMessageId(message.getMessageId());
         if(byStarboardPostId.isPresent()) {
             StarboardPost post = byStarboardPostId.get();
             log.info("Removing starboard post: message {}, channel {}, server {}, because the message was deleted",

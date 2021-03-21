@@ -77,6 +77,59 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("reactionClearedListener");
     }
 
-   
+    @Bean(name = "aChannelCreatedExecutor")
+    public TaskExecutor aChannelCreatedExecutor() {
+        return executorService.setupExecutorFor("aChannelCreatedListener");
+    }
+
+    @Bean(name = "aChannelDeletedExecutor")
+    public TaskExecutor aChannelDeletedExecutor() {
+        return executorService.setupExecutorFor("aChannelDeletedListener");
+    }
+
+    @Bean(name = "aRoleCreatedExecutor")
+    public TaskExecutor aRoleCreatedExecutor() {
+        return executorService.setupExecutorFor("aRoleCreatedListener");
+    }
+
+    @Bean(name = "aRoleDeletedExecutor")
+    public TaskExecutor aRoleDeletedExecutor() {
+        return executorService.setupExecutorFor("aRoleDeletedListener");
+    }
+
+    @Bean(name = "channelGroupCreatedExecutor")
+    public TaskExecutor channelGroupCreatedExecutor() {
+        return executorService.setupExecutorFor("channelGroupCreatedListener");
+    }
+
+    @Bean(name = "channelGroupDeletedExecutor")
+    public TaskExecutor channelGroupDeletedExecutor() {
+        return executorService.setupExecutorFor("channelGroupDeletedListener");
+    }
+
+    @Bean(name = "serverJoinExecutor")
+    public TaskExecutor serverJoinExecutor() {
+        return executorService.setupExecutorFor("serverJoinListener");
+    }
+
+    @Bean(name = "roleCreatedExecutor")
+    public TaskExecutor roleCreatedExecutor() {
+        return executorService.setupExecutorFor("roleCreatedListener");
+    }
+
+    @Bean(name = "roleDeletedExecutor")
+    public TaskExecutor roleDeletedExecutor() {
+        return executorService.setupExecutorFor("roleDeletedListener");
+    }
+
+    @Bean(name = "channelCreatedExecutor")
+    public TaskExecutor channelCreatedExecutor() {
+        return executorService.setupExecutorFor("channelCreatedListener");
+    }
+
+    @Bean(name = "channelDeletedExecutor")
+    public TaskExecutor channelDeletedExecutor() {
+        return executorService.setupExecutorFor("channelDeletedListener");
+    }
 
 }

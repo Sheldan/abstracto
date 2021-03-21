@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.role.RoleDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -26,6 +28,10 @@ public class AsyncARoleDeletedListenerBean extends ListenerAdapter {
     @Autowired
     private ListenerService listenerService;
 
+    @Autowired
+    @Qualifier("aRoleDeletedExecutor")
+    private TaskExecutor roleDeletedExecutor;
+
     @Override
     public void onRoleDelete(@Nonnull RoleDeleteEvent event) {
         roleManagementService.markDeleted(event.getRole().getIdLong());
@@ -34,7 +40,7 @@ public class AsyncARoleDeletedListenerBean extends ListenerAdapter {
     @TransactionalEventListener
     public void executeServerCreationListener(ARoleDeletedListenerModel model) {
         if(roleDeletedListeners == null) return;
-        roleDeletedListeners.forEach(serverCreatedListener -> listenerService.executeListener(serverCreatedListener, model));
+        roleDeletedListeners.forEach(serverCreatedListener -> listenerService.executeListener(serverCreatedListener, model, roleDeletedExecutor));
     }
 
 }

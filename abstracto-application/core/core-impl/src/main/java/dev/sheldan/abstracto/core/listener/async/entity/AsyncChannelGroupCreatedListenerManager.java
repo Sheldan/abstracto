@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.listener.sync.entity.AsyncChannelGroupCreatedListener;
 import dev.sheldan.abstracto.core.models.listener.ChannelGroupCreatedListenerModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -17,10 +19,14 @@ public class AsyncChannelGroupCreatedListenerManager {
     @Autowired
     private ListenerService listenerService;
 
+    @Autowired
+    @Qualifier("channelGroupCreatedExecutor")
+    private TaskExecutor channelGroupCreatedExecutor;
+
     @TransactionalEventListener
     public void executeListener(ChannelGroupCreatedListenerModel createdGroup){
         listener.forEach(asyncChannelGroupCreatedListener ->
-            listenerService.executeListener(asyncChannelGroupCreatedListener, createdGroup)
+            listenerService.executeListener(asyncChannelGroupCreatedListener, createdGroup, channelGroupCreatedExecutor)
         );
     }
 

@@ -242,7 +242,7 @@ public class StarboardServiceBeanTest {
         when(config.getLongValue()).thenReturn(1L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + 1)).thenReturn(config);
-        when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
+        when(starboardPostManagementService.findByStarboardPostMessageId(starboardPostId)).thenReturn(Optional.of(post));
         when(userService.retrieveUserForId(STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredJdaUser));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
         CompletableFuture<Void> future = testUnit.updateStarboardPost(post, message, userExceptAuthor);

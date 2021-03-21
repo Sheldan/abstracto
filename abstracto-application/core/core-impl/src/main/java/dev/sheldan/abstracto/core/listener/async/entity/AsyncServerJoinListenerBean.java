@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -27,6 +29,10 @@ public class AsyncServerJoinListenerBean extends ListenerAdapter {
     @Autowired
     private ListenerService listenerService;
 
+    @Autowired
+    @Qualifier("serverJoinExecutor")
+    private TaskExecutor serverJoinExecutor;
+
     @Override
     @Transactional
     public void onGuildJoin(@Nonnull GuildJoinEvent event) {
@@ -38,7 +44,7 @@ public class AsyncServerJoinListenerBean extends ListenerAdapter {
     @TransactionalEventListener
     public void executeServerCreationListener(ServerCreatedListenerModel model) {
         if(serverCreatedListeners == null) return;
-        serverCreatedListeners.forEach(asyncServerCreatedListener -> listenerService.executeListener(asyncServerCreatedListener, model));
+        serverCreatedListeners.forEach(asyncServerCreatedListener -> listenerService.executeListener(asyncServerCreatedListener, model, serverJoinExecutor));
     }
 
 }

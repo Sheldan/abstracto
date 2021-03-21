@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.role.RoleCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -31,6 +33,10 @@ public class AsyncARoleCreatedListenerBean extends ListenerAdapter {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    @Qualifier("aRoleCreatedExecutor")
+    private TaskExecutor roleCreatedExecutor;
+
     @Override
     public void onRoleCreate(@Nonnull RoleCreateEvent event) {
         AServer server = serverManagementService.loadServer(event.getGuild());
@@ -40,7 +46,7 @@ public class AsyncARoleCreatedListenerBean extends ListenerAdapter {
     @TransactionalEventListener
     public void executeServerCreationListener(ARoleCreatedListenerModel model) {
         if(roleCreatedListeners == null) return;
-        roleCreatedListeners.forEach(asyncServerCreatedListener -> listenerService.executeListener(asyncServerCreatedListener, model));
+        roleCreatedListeners.forEach(asyncServerCreatedListener -> listenerService.executeListener(asyncServerCreatedListener, model, roleCreatedExecutor));
     }
 
 }

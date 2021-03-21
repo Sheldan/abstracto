@@ -11,8 +11,13 @@ public class StarboardListenerConfig {
     @Autowired
     private ExecutorService executorService;
 
-    @Bean(name = "starboardStatusListenerExecutor")
-    public TaskExecutor joinListenerExecutor() {
-        return executorService.setupExecutorFor("starboardStatusListener");
+    @Bean(name = "starboardCreatedListenerExecutor")
+    public TaskExecutor starboardPostCreatedExecutor() {
+        return executorService.setupExecutorFor("starboardCreatedListener");
+    }
+
+    @Bean(name = "starboardDeletedListenerExecutor")
+    public TaskExecutor starboardPostDeletedExecutor() {
+        return executorService.setupExecutorFor("starboardDeletedListener");
     }
 }

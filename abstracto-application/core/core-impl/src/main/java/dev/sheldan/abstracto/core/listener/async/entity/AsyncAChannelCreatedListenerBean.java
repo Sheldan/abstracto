@@ -11,6 +11,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -33,6 +35,10 @@ public class AsyncAChannelCreatedListenerBean extends ListenerAdapter {
     @Autowired
     private ChannelManagementService channelManagementService;
 
+    @Autowired
+    @Qualifier("aChannelCreatedExecutor")
+    private TaskExecutor channelCreatedExecutor;
+
     @Override
     public void onTextChannelCreate(@Nonnull TextChannelCreateEvent event) {
         log.info("Creating text channel with ID {}.", event.getChannel().getIdLong());
@@ -45,7 +51,7 @@ public class AsyncAChannelCreatedListenerBean extends ListenerAdapter {
     @TransactionalEventListener
     public void executeServerCreationListener(AChannelCreatedListenerModel model) {
         if(channelListener == null) return;
-        channelListener.forEach(serverCreatedListener -> listenerService.executeListener(serverCreatedListener, model));
+        channelListener.forEach(serverCreatedListener -> listenerService.executeListener(serverCreatedListener, model, channelCreatedExecutor));
     }
 
 }
