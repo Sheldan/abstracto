@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
-import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
 
-public interface AsyncJoinListener extends FeatureAware {
-    void execute(ServerUser joiningUser);
+public interface AsyncJoinListener extends FeatureAwareListener<MemberJoinModel, DefaultListenerResult> {
 }

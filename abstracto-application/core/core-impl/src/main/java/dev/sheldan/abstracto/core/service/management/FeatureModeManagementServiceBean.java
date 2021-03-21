@@ -33,8 +33,7 @@ public class FeatureModeManagementServiceBean implements FeatureModeManagementSe
                 .featureMode(mode)
                 .build();
 
-        featureModeRepository.save(aFeatureMode);
-        return aFeatureMode;
+        return featureModeRepository.save(aFeatureMode);
     }
 
     @Override

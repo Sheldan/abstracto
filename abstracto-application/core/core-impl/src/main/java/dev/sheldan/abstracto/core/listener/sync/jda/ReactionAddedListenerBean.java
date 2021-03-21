@@ -1,9 +1,10 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
+import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
@@ -12,8 +13,6 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -51,7 +50,7 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
     private BotService botService;
 
     @Autowired
-    private EmoteService emoteService;
+    private ListenerService listenerService;
 
     @Override
     @Transactional
@@ -94,22 +93,18 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
     public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
         ServerUser serverUser = ServerUser.builder().serverId(cachedMessage.getServerId()).userId(event.getUserIdLong()).build();
         addReactionIfNotThere(cachedMessage, reaction, serverUser);
-        addedListenerList.forEach(reactedAddedListener -> {
-            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactedAddedListener.getFeature());
-            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                return;
-            }
-            try {
-                self.executeIndividualReactionAddedListener(event, cachedMessage, serverUser, reactedAddedListener);
-            } catch (Exception e) {
-                log.warn(String.format("Failed to execute reaction added listener %s.", reactedAddedListener.getClass().getName()), e);
-            }
-        });
+        ReactionAddedModel model = getModel(event, cachedMessage, serverUser);
+        addedListenerList.forEach(reactedAddedListener -> listenerService.executeFeatureAwareListener(reactedAddedListener, model));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualReactionAddedListener(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser serverUser, ReactionAddedListener reactedAddedListener) {
-        reactedAddedListener.executeReactionAdded(cachedMessage, event, serverUser);
+    private ReactionAddedModel getModel(GuildMessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser userReacting) {
+        return ReactionAddedModel
+                .builder()
+                .reaction(event.getReaction())
+                .message(cachedMessage)
+                .memberReacting(event.getMember())
+                .userReacting(userReacting)
+                .build();
     }
 
     @PostConstruct

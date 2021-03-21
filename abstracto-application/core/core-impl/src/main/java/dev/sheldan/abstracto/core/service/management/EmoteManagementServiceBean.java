@@ -69,8 +69,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
                 .emoteKey(emoteKey)
                 .serverRef(server)
                 .build();
-        repository.save(emoteToCreate);
-        return emoteToCreate;
+        return repository.save(emoteToCreate);
     }
 
     @Override
@@ -93,8 +92,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
                 .emoteKey(emoteKey)
                 .serverRef(server)
                 .build();
-        repository.save(emoteToCreate);
-        return emoteToCreate;
+        return repository.save(emoteToCreate);
     }
 
     @Override
@@ -123,7 +121,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             emote.setEmoteId(emoteId);
             emote.setAnimated(animated);
             emote.setCustom(true);
-            repository.save(emote);
+            return repository.save(emote);
         }
         return emote;
     }
@@ -147,7 +145,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             emoteBeingSet.setEmoteKey(emoteKey);
             emoteBeingSet.setCustom(false);
             emoteBeingSet.setAnimated(false);
-            repository.save(emoteBeingSet);
+            return repository.save(emoteBeingSet);
         }
         return emoteBeingSet;
     }

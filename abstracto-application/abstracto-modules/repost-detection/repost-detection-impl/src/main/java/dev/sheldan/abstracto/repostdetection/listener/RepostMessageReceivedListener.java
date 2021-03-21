@@ -1,16 +1,18 @@
 package dev.sheldan.abstracto.repostdetection.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
-import dev.sheldan.abstracto.core.models.cache.CachedEmbed;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.repostdetection.config.RepostDetectionFeatureDefinition;
 import dev.sheldan.abstracto.repostdetection.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.repostdetection.service.RepostService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.EmbedType;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,13 +34,16 @@ public class RepostMessageReceivedListener implements AsyncMessageReceivedListen
     private ChannelManagementService channelManagementService;
 
     @Override
-    public void execute(CachedMessage message) {
-        AChannel channel = channelManagementService.loadChannel(message.getChannelId());
+    public DefaultListenerResult execute(MessageReceivedModel model) {
+        Message message = model.getMessage();
+        AChannel channel = channelManagementService.loadChannel(message.getTextChannel().getIdLong());
         if(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)) {
             repostService.processMessageAttachmentRepostCheck(message);
-            List<CachedEmbed> imageEmbeds = message.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());
+            List<MessageEmbed> imageEmbeds = message.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());
             repostService.processMessageEmbedsRepostCheck(imageEmbeds, message);
+            return DefaultListenerResult.PROCESSED;
         }
+        return DefaultListenerResult.IGNORED;
     }
 
     @Override

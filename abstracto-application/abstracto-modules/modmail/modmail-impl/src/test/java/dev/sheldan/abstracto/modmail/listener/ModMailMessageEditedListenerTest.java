@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -72,7 +73,7 @@ public class ModMailMessageEditedListenerTest {
     private CachedMessage messageBefore;
 
     @Mock
-    private CachedMessage messageAfter;
+    private Message messageAfter;
 
     @Mock
     private Message loadedMessage;
@@ -101,6 +102,9 @@ public class ModMailMessageEditedListenerTest {
     @Captor
     private ArgumentCaptor<ModMailModeratorReplyModel> replyModelArgumentCaptor;
 
+    @Mock
+    private MessageTextUpdatedModel model;
+
     private static final Long CHANNEL_ID = 5L;
     private static final Long MESSAGE_ID = 6L;
     private static final Long CREATED_MESSAGE_ID = 10L;
@@ -111,33 +115,26 @@ public class ModMailMessageEditedListenerTest {
     private static final Long USER_ID = 3L;
     private static final Long AUTHOR_USER_ID = 9L;
 
-    @Test
-    public void testMessageLoading() {
-        when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
-        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
-        when(messageService.loadMessageFromCachedMessage(messageAfter)).thenReturn(CompletableFuture.completedFuture(loadedMessage));
-        testUnit.execute(messageBefore, messageAfter);
-        verify(self, times(1)).executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
-    }
 
     @Test
     public void testEditOutsideModMailThread() {
         when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(false);
         when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
-        testUnit.execute(messageBefore, messageAfter);
+        when(model.getAfter()).thenReturn(messageAfter);
+        when(model.getBefore()).thenReturn(messageBefore);
+        testUnit.execute(model);
         verify(modMailMessageManagementService, times(0)).getByMessageIdOptional(anyLong());
     }
 
-    @Test
-    public void testEditNotTrackedMessage() {
-        when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
-        when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.empty());
-        testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
-        verify(commandRegistry, times(0)).getCommandName(anyString(), anyLong());
-    }
 
     @Test
     public void testEditMessageWithCorrectCommand() {
+        when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
+        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
+        when(model.getBefore()).thenReturn(messageBefore);
+        when(model.getAfter()).thenReturn(messageAfter);
+        when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
+        when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.empty());
         when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
         when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
         when(messageBefore.getServerId()).thenReturn(SERVER_ID);
@@ -154,14 +151,16 @@ public class ModMailMessageEditedListenerTest {
         AUser authorUser = Mockito.mock(AUser.class);
         when(authorUser.getId()).thenReturn(AUTHOR_USER_ID);
         when(authorUserInAServer.getUserReference()).thenReturn(authorUser);
-        when(messageAfter.getContent()).thenReturn(NEW_CONTENT);
+        when(messageAfter.getContentStripped()).thenReturn(NEW_CONTENT);
         when(commandRegistry.getCommandName(NEW_COMMAND_PART, SERVER_ID)).thenReturn(NEW_COMMAND_PART);
         when(commandService.doesCommandExist(NEW_COMMAND_PART)).thenReturn(true);
-        when(commandService.getParametersForCommand(NEW_COMMAND_PART, loadedMessage)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
+        when(commandService.getParametersForCommand(NEW_COMMAND_PART, messageAfter)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
-        testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
-        verify(self, times(1)).updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
+        when(model.getAfter()).thenReturn(messageAfter);
+        when(model.getBefore()).thenReturn(messageBefore);
+        testUnit.execute(model);
+        verify(self, times(1)).updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
     }
 
     @Test
@@ -169,6 +168,7 @@ public class ModMailMessageEditedListenerTest {
         when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
         when(messageBefore.getMessageId()).thenReturn(MESSAGE_ID);
         when(messageBefore.getServerId()).thenReturn(SERVER_ID);
+        when(modMailThreadService.isModMailThread(CHANNEL_ID)).thenReturn(true);
         when(modMailMessageManagementService.getByMessageIdOptional(MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         ModMailThread thread = Mockito.mock(ModMailThread.class);
         when(modMailMessage.getThreadReference()).thenReturn(thread);
@@ -182,14 +182,16 @@ public class ModMailMessageEditedListenerTest {
         AUser authorUser = Mockito.mock(AUser.class);
         when(authorUser.getId()).thenReturn(AUTHOR_USER_ID);
         when(authorUserInAServer.getUserReference()).thenReturn(authorUser);
-        when(messageAfter.getContent()).thenReturn(NEW_CONTENT);
+        when(messageAfter.getContentStripped()).thenReturn(NEW_CONTENT);
         when(commandRegistry.getCommandName(NEW_COMMAND_PART, SERVER_ID)).thenReturn(NEW_COMMAND_PART);
         when(commandService.doesCommandExist(NEW_COMMAND_PART)).thenReturn(false);
-        when(commandService.getParametersForCommand(DEFAULT_COMMAND_FOR_MODMAIL_EDIT, loadedMessage)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
+        when(commandService.getParametersForCommand(DEFAULT_COMMAND_FOR_MODMAIL_EDIT, messageAfter)).thenReturn(CompletableFuture.completedFuture(parsedParameters));
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
-        testUnit.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage);
-        verify(self, times(1)).updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
+        when(model.getAfter()).thenReturn(messageAfter);
+        when(model.getBefore()).thenReturn(messageBefore);
+        testUnit.execute(model);
+        verify(self, times(1)).updateMessageInThread(messageAfter, parsedParameters, targetMember, authorMember);
     }
 
     @Test

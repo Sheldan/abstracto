@@ -2,9 +2,9 @@ package dev.sheldan.abstracto.starboard.service;
 
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
@@ -13,9 +13,9 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.starboard.config.StarboardFeature;
 import dev.sheldan.abstracto.starboard.config.StarboardPostTarget;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
@@ -90,40 +90,47 @@ public class StarboardServiceBean implements StarboardService {
     @Autowired
     private StarboardServiceBean self;
 
+    @Autowired
+    private StarboardPostListenerManager starboardPostListenerManager;
+
+    @Autowired
+    private UserService userService;
+
     @Override
     public CompletableFuture<Void> createStarboardPost(CachedMessage message, List<AUserInAServer> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser)  {
         Long starredUserId = starredUser.getUserInServerId();
         List<Long> userExceptAuthorIds = userExceptAuthor.stream().map(AUserInAServer::getUserInServerId).collect(Collectors.toList());
+        Long userReactingId = userReacting.getUserReference().getId();
         return buildStarboardPostModel(message, userExceptAuthor.size()).thenCompose(starboardPostModel ->
-            self.sendStarboardPostAndStore(message, starredUserId, userExceptAuthorIds, starboardPostModel)
+            self.sendStarboardPostAndStore(message, starredUserId, userExceptAuthorIds, starboardPostModel, userReactingId)
         );
 
     }
 
     @Transactional
-    public CompletionStage<Void> sendStarboardPostAndStore(CachedMessage message, Long starredUserId, List<Long> userExceptAuthorIds, StarboardPostModel starboardPostModel) {
+    public CompletionStage<Void> sendStarboardPostAndStore(CachedMessage message, Long starredUserId, List<Long> userExceptAuthorIds, StarboardPostModel starboardPostModel, Long userReactingId) {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
         PostTarget starboard = postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), message.getServerId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardChannelId = starboard.getChannelReference().getId();
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
-                self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId)
+            self.persistPost(message, userExceptAuthorIds, completableFutures, starboardChannelId, starredUserId, userReactingId)
         );
     }
 
     @Transactional
-    public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId) {
+    public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
         AUserInAServer innerStarredUser = userInServerManagementService.loadUserOptional(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
         AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
-        Message message1 = completableFutures.get(0).join();
+        Message starboardMessage = completableFutures.get(0).join();
         AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
                 .builder()
-                .messageId(message1.getIdLong())
+                .messageId(starboardMessage.getIdLong())
                 .channel(starboardChannel)
                 .server(starboardChannel.getServer())
                 .build();
         StarboardPost starboardPost = starboardPostManagementService.createStarboardPost(message, innerStarredUser, aServerAChannelMessage);
-        log.info("Persisting starboard post in channel {} with message {} with {} reactors.", message1.getId(),starboardChannelId, userExceptAuthorIds.size());
+        log.info("Persisting starboard post in channel {} with message {} with {} reactors.", starboardMessage.getId(),starboardChannelId, userExceptAuthorIds.size());
         if(userExceptAuthorIds.isEmpty()) {
             log.warn("There are no user ids except the author for the reactions in post {} in guild {} for message {} in channel {}.", starboardPost.getId(), message.getChannelId(), message.getMessageId(), message.getChannelId());
         }
@@ -131,25 +138,23 @@ public class StarboardServiceBean implements StarboardService {
             AUserInAServer user = userInServerManagementService.loadUserOptional(aLong).orElseThrow(() -> new UserInServerNotFoundException(aLong));
             starboardPostReactorManagementService.addReactor(starboardPost, user);
         });
+        starboardPostListenerManager.sendStarboardPostCreatedEvent(userReactingId, starboardPost);
     }
 
+
     private CompletableFuture<StarboardPostModel> buildStarboardPostModel(CachedMessage message, Integer starCount)  {
-        return memberService.getMemberInServerAsync(message.getServerId(), message.getAuthor().getAuthorId()).thenApply(member -> {
+        return userService.retrieveUserForId(message.getAuthor().getAuthorId()).thenApply(user -> {
             Optional<TextChannel> channel = channelService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
             Optional<Guild> guild = guildService.getGuildByIdOptional(message.getServerId());
-            // TODO use model objects instead of building entity models
-            AChannel aChannel = AChannel.builder().id(message.getChannelId()).build();
-            AUser user = AUser.builder().id(message.getAuthor().getAuthorId()).build();
             String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
             return StarboardPostModel
                     .builder()
                     .message(message)
-                    .author(member)
+                    .author(user)
+                    .sourceChannelId(message.getChannelId())
                     .channel(channel.orElse(null))
-                    .aChannel(aChannel)
                     .starCount(starCount)
                     .guild(guild.orElse(null))
-                    .user(user)
                     .starLevelEmote(starLevelEmote)
                     .build();
         });
@@ -239,6 +244,13 @@ public class StarboardServiceBean implements StarboardService {
                 .messageId(starboardPost.getPostMessageId())
                 .starCount(starboardPost.getReactions().size())
                 .build();
+    }
+
+    @Override
+    public void deleteStarboardPost(StarboardPost starboardPost, ServerUser userReacting) {
+        deleteStarboardMessagePost(starboardPost);
+        starboardPostManagementService.removePost(starboardPost);
+        starboardPostListenerManager.sendStarboardPostDeletedEvent(starboardPost, userReacting);
     }
 
     private String getStarboardRankingEmote(Long serverId, Integer position) {

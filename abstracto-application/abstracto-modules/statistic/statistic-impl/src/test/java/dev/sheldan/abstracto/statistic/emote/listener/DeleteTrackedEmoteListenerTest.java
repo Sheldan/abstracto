@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.statistic.emote.listener;
 
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.models.cache.CachedEmote;
+import dev.sheldan.abstracto.core.models.listener.EmoteDeletedModel;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
+import net.dv8tion.jda.api.entities.Emote;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,15 +23,20 @@ public class DeleteTrackedEmoteListenerTest {
     @Mock
     private TrackedEmoteManagementService trackedEmoteManagementService;
 
+    @Mock
+    private EmoteDeletedModel model;
+
+    private static final Long SERVER_ID = 4L;
+    private static final Long EMOTE_ID = 4L;
+
     @Test
     public void testEmoteDeleted() {
-        Long serverId = 4L;
-        Long emoteId = 5L;
-        CachedEmote emote = Mockito.mock(CachedEmote.class);
-        when(emote.getEmoteId()).thenReturn(emoteId);
-        when(emote.getServerId()).thenReturn(serverId);
-        testUnit.emoteDeleted(emote);
-        verify(trackedEmoteManagementService, times(1)).markAsDeleted(serverId, emoteId);
+        Emote emote = Mockito.mock(Emote.class);
+        when(emote.getIdLong()).thenReturn(EMOTE_ID);
+        when(model.getEmote()).thenReturn(emote);
+        when(model.getServerId()).thenReturn(SERVER_ID);
+        testUnit.execute(model);
+        verify(trackedEmoteManagementService, times(1)).markAsDeleted(SERVER_ID, EMOTE_ID);
     }
 
     @Test
@@ -39,8 +44,4 @@ public class DeleteTrackedEmoteListenerTest {
         Assert.assertEquals(StatisticFeatureDefinition.EMOTE_TRACKING, testUnit.getFeature());
     }
 
-    @Test
-    public void testPriority() {
-        Assert.assertEquals(ListenerPriority.MEDIUM, testUnit.getPriority());
-    }
 }

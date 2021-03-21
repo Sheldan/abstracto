@@ -30,8 +30,7 @@ public class MuteRoleManagementServiceBean implements MuteRoleManagementService 
                 .role(role)
                 .roleServer(server)
                 .build();
-        muteRoleRepository.save(muteRole);
-        return  muteRole;
+        return muteRoleRepository.save(muteRole);
     }
 
     @Override

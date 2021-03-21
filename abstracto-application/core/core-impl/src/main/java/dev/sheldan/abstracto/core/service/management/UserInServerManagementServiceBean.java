@@ -108,8 +108,7 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     public AUserInAServer tryToCreateAUserInAServer(Long guildId, Long userId) {
         lockService.lockTable(TableLocks.USER_IN_SERVER);
         AUserInAServer aUserInAServer = serverManagementService.addUserToServer(guildId, userId);
-        userInServerRepository.save(aUserInAServer);
-        return aUserInAServer;
+        return userInServerRepository.save(aUserInAServer);
     }
 
     @Override

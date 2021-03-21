@@ -1,19 +1,16 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.ReactionClearedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -50,26 +47,22 @@ public class ReactionClearedListenerBean extends ListenerAdapter {
     private BotService botService;
 
     @Autowired
-    private EmoteService emoteService;
+    private ListenerService listenerService;
 
     public void callClearListeners(@Nonnull GuildMessageReactionRemoveAllEvent event, CachedMessage cachedMessage) {
         if(clearedListenerList == null) return;
+        ReactionClearedModel model = getModel(event, cachedMessage);
         clearedListenerList.forEach(reactionRemovedListener ->
-            self.executeIndividualListener(event, cachedMessage, reactionRemovedListener)
+            listenerService.executeFeatureAwareListener(reactionRemovedListener, model)
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualListener(@NotNull GuildMessageReactionRemoveAllEvent event, CachedMessage cachedMessage, ReactionClearedListener reactionRemovedListener) {
-        FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
-        if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-            return;
-        }
-        try {
-            reactionRemovedListener.executeReactionCleared(cachedMessage);
-        } catch (AbstractoRunTimeException e) {
-            log.warn(String.format("Failed to execute reaction clear listener %s.", reactionRemovedListener.getClass().getName()), e);
-        }
+    private ReactionClearedModel getModel(GuildMessageReactionRemoveAllEvent event, CachedMessage message) {
+        return ReactionClearedModel
+                .builder()
+                .message(message)
+                .channel(event.getChannel())
+                .build();
     }
 
     @Override

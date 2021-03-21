@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.listener.ListenerService;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -14,13 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -48,33 +45,21 @@ public class AsyncMessageReceivedListenerBean extends ListenerAdapter {
     private TaskExecutor messageReceivedExecutor;
 
     @Autowired
-    private AsyncMessageReceivedListenerBean self;
+    private ListenerService listenerService;
 
     @Override
     @Transactional
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
         if(listenerList == null) return;
-        messageCache.putMessageInCache(event.getMessage()).thenAccept(message -> {
-            for (AsyncMessageReceivedListener messageReceivedListener : listenerList) {
-                CompletableFuture.runAsync(() -> self.executeIndividualGuildMessageReceivedListener(message, messageReceivedListener), messageReceivedExecutor)
-                    .exceptionally(throwable -> {
-                        log.error("Async message received listener {} failed.", messageReceivedListener, throwable);
-                        return null;
-                    });
-            }
-        });
+        messageCache.putMessageInCache(event.getMessage());
+        MessageReceivedModel model = getModel(event);
+        listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, messageReceivedExecutor));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualGuildMessageReceivedListener(CachedMessage cachedMessage, AsyncMessageReceivedListener messageReceivedListener) {
-        try {
-            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
-            if (!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
-                return;
-            }
-            messageReceivedListener.execute(cachedMessage);
-        } catch (Exception e) {
-            log.error("Async listener {} had exception when executing.", messageReceivedListener, e);
-        }
+    private MessageReceivedModel getModel(GuildMessageReceivedEvent event) {
+        return MessageReceivedModel
+                .builder()
+                .message(event.getMessage())
+                .build();
     }
 }

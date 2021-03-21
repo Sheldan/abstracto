@@ -13,6 +13,8 @@ public interface ChannelGroupManagementService {
     boolean doesChannelGroupExist(String name, AServer server);
     void deleteChannelGroup(String name, AServer server);
     AChannelGroup addChannelToChannelGroup(AChannelGroup channelGroup, AChannel channel);
+    Optional<AChannelGroup> findChannelGroupByIdOptional(Long channelGroupId);
+    AChannelGroup findChannelGroupById(Long channelGroupId);
     void removeChannelFromChannelGroup(AChannelGroup channelGroup, AChannel channel);
     AChannelGroup findByNameAndServer(String name, AServer server);
     Optional<AChannelGroup> findByNameAndServerOptional(String name, AServer server);

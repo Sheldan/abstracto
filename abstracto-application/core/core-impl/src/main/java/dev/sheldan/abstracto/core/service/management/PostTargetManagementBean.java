@@ -38,9 +38,8 @@ public class PostTargetManagementBean implements PostTargetManagement {
             throw new PostTargetNotValidException(name, defaultPostTargetManagementService.getDefaultPostTargetKeys());
         }
         log.info("Creating post target {} pointing towards {} on server {}.", name, targetChannel.getId(), targetChannel.getServer().getId());
-        PostTarget build = PostTarget.builder().name(name).channelReference(targetChannel).serverReference(targetChannel.getServer()).build();
-        postTargetRepository.save(build);
-        return build;
+        PostTarget createdPostTarget = PostTarget.builder().name(name).channelReference(targetChannel).serverReference(targetChannel.getServer()).build();
+        return postTargetRepository.save(createdPostTarget);
     }
 
     @Override

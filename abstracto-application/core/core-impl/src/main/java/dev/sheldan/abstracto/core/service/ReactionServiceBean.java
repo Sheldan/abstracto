@@ -82,6 +82,16 @@ public class ReactionServiceBean implements ReactionService {
     }
 
     @Override
+    public CompletableFuture<Void> removeReactionFromMessage(MessageReaction reaction, CachedMessage cachedMessage, User user) {
+        return messageService.loadMessageFromCachedMessage(cachedMessage).thenCompose(message -> removeReactionFromMessageWithFuture(reaction.getReactionEmote(), message, user));
+    }
+
+    @Override
+    public CompletableFuture<Void> removeReactionFromMessage(MessageReaction reaction, CachedMessage cachedMessage) {
+        return messageService.loadMessageFromCachedMessage(cachedMessage).thenCompose(message -> removeReactionFromMessageWithFuture(reaction.getReactionEmote(), message));
+    }
+
+    @Override
     public CompletableFuture<Void> removeReactionFromMessage(CachedReaction reaction, Message message) {
         return memberService.retrieveUserById(reaction.getUser().getUserId()).thenCompose(user -> {
             if(reaction.getEmote().getCustom()) {
@@ -187,6 +197,24 @@ public class ReactionServiceBean implements ReactionService {
         } else {
             log.trace("Removing single default emote {} reaction from message {}.", emote.getEmoteKey(), message.getId());
             return removeReaction(message, emote.getEmoteKey());
+        }
+    }
+
+    @Override
+    public CompletableFuture<Void> removeReactionFromMessageWithFuture(MessageReaction.ReactionEmote emote, Message message) {
+        if(emote.isEmote()) {
+            return removeReaction(message, emote.getEmote());
+        } else {
+            return removeReaction(message, emote.getEmoji());
+        }
+    }
+
+    @Override
+    public CompletableFuture<Void> removeReactionFromMessageWithFuture(MessageReaction.ReactionEmote emote, Message message, User user) {
+        if(emote.isEmote()) {
+            return removeReaction(message, emote.getEmote(), user);
+        } else {
+            return removeReaction(message, emote.getEmoji(), user);
         }
     }
 

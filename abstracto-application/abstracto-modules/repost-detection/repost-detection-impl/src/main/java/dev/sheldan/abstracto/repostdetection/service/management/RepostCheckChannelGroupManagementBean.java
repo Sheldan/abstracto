@@ -49,8 +49,7 @@ public class RepostCheckChannelGroupManagementBean implements RepostCheckChannel
                 .id(channelGroup.getId())
                 .build();
 
-        repository.save(repostCheckChannelGroup);
-        return repostCheckChannelGroup;
+        return repository.save(repostCheckChannelGroup);
     }
 
     @Override

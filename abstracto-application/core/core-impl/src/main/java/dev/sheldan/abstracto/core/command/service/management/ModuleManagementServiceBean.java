@@ -19,9 +19,8 @@ public class ModuleManagementServiceBean implements ModuleManagementService {
                 builder()
                 .name(name)
                 .build();
-        moduleRepository.save(module);
         log.info("Creating module {}.", name);
-        return module;
+        return moduleRepository.save(module);
     }
 
     @Override

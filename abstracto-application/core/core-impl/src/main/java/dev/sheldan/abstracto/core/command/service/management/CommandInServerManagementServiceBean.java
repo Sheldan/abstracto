@@ -24,9 +24,8 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
                 .serverReference(server)
                 .restricted(false)
                 .build();
-        repository.save(commandInAServer);
         log.info("Creating command {} in server {}.", command.getName(), server.getId());
-        return commandInAServer;
+        return repository.save(commandInAServer);
     }
 
     @Override

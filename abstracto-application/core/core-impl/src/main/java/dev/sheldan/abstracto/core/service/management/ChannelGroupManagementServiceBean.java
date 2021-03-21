@@ -1,18 +1,18 @@
 package dev.sheldan.abstracto.core.service.management;
 
-import dev.sheldan.abstracto.core.command.exception.ChannelAlreadyInChannelGroupException;
-import dev.sheldan.abstracto.core.command.exception.ChannelGroupExistsException;
-import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
-import dev.sheldan.abstracto.core.command.exception.ChannelNotInChannelGroupException;
-import dev.sheldan.abstracto.core.listener.sync.entity.ChannelGroupCreatedListenerManager;
-import dev.sheldan.abstracto.core.listener.sync.entity.ChannelGroupDeletedListenerManager;
+import dev.sheldan.abstracto.core.command.exception.*;
+import dev.sheldan.abstracto.core.listener.async.entity.AsyncChannelGroupCreatedListenerManager;
+import dev.sheldan.abstracto.core.listener.async.entity.AsyncChannelGroupDeletedListenerManager;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
+import dev.sheldan.abstracto.core.models.listener.ChannelGroupCreatedListenerModel;
+import dev.sheldan.abstracto.core.models.listener.ChannelGroupDeletedListenerModel;
 import dev.sheldan.abstracto.core.repository.ChannelGroupRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -31,10 +31,13 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private ChannelGroupDeletedListenerManager deletedListenerManager;
+    private AsyncChannelGroupDeletedListenerManager deletedListenerManager;
 
     @Autowired
-    private ChannelGroupCreatedListenerManager createdListenerManager;
+    private AsyncChannelGroupCreatedListenerManager createdListenerManager;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public AChannelGroup createChannelGroup(String name, AServer server, ChannelGroupType channelGroupType) {
@@ -49,9 +52,24 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
                 .server(server)
                 .build();
         log.info("Creating new channel group in server {}.", server.getId());
-        channelGroupRepository.save(channelGroup);
-        createdListenerManager.executeListener(channelGroup);
+        channelGroup = channelGroupRepository.save(channelGroup);
+        ChannelGroupCreatedListenerModel model = getCreatedModel(channelGroup);
+        applicationEventPublisher.publishEvent(model);
         return channelGroup;
+    }
+
+    private ChannelGroupCreatedListenerModel getCreatedModel(AChannelGroup channelGroup) {
+        return ChannelGroupCreatedListenerModel
+                .builder()
+                .channelGroupId(channelGroup.getId())
+                .build();
+    }
+
+    private ChannelGroupDeletedListenerModel getDeletionModel(AChannelGroup channelGroup) {
+        return ChannelGroupDeletedListenerModel
+                .builder()
+                .channelGroupId(channelGroup.getId())
+                .build();
     }
 
     @Override
@@ -67,8 +85,9 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
             throw new ChannelGroupNotFoundException(name, getAllAvailableAsString(server));
         }
         log.info("Deleting channel group {} in server {}.", existing.getId(), server.getId());
-        deletedListenerManager.executeListener(existing);
         channelGroupRepository.delete(existing);
+        ChannelGroupDeletedListenerModel model = getDeletionModel(existing);
+        applicationEventPublisher.publishEvent(model);
     }
 
     @Override
@@ -81,6 +100,16 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         channel.getGroups().add(channelGroup);
         log.info("Adding channel {} to channel group {} in server {}.", channel.getId(), channelGroup.getId(), channel.getServer().getId());
         return channelGroup;
+    }
+
+    @Override
+    public Optional<AChannelGroup> findChannelGroupByIdOptional(Long channelGroupId) {
+        return channelGroupRepository.findById(channelGroupId);
+    }
+
+    @Override
+    public AChannelGroup findChannelGroupById(Long channelGroupId) {
+        return findChannelGroupByIdOptional(channelGroupId).orElseThrow(ChannelGroupNotFoundByIdException::new);
     }
 
     @Override

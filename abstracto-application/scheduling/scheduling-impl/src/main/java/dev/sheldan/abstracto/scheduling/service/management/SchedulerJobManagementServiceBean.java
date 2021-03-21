@@ -31,8 +31,7 @@ public class SchedulerJobManagementServiceBean {
 
     public SchedulerJob createJob(SchedulerJob job) {
         log.info("Creating job {}", job.getName());
-        repository.save(job);
-        return job;
+        return repository.save(job);
     }
 
     public List<SchedulerJob> findAll() {
@@ -40,8 +39,7 @@ public class SchedulerJobManagementServiceBean {
     }
 
     public SchedulerJob save(SchedulerJob job) {
-        repository.save(job);
-        return job;
+        return repository.save(job);
     }
 
     public boolean doesJobExist(SchedulerJob schedulerJob) {

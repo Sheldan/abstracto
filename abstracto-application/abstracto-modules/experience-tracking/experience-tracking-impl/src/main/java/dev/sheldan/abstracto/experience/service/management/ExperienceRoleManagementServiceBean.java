@@ -93,7 +93,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
                     .role(role)
                     .build();
             log.trace("Role did not exist. Creating new.");
-            experienceRole = experienceRoleRepository.save(experienceRole);
+            return experienceRoleRepository.save(experienceRole);
         }
         return experienceRole;
     }

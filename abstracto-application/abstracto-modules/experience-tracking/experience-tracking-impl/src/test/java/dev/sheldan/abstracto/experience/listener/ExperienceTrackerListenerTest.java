@@ -1,12 +1,11 @@
 package dev.sheldan.abstracto.experience.listener;
 
-import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -28,16 +27,25 @@ public class ExperienceTrackerListenerTest {
     @Mock
     private UserInServerManagementService userInServerManagementService;
 
+    @Mock
+    private MessageReceivedModel model;
+
+    @Mock
+    private User user;
+
+    private static final Long SERVER_ID = 4L;
+    private static final Long USER_ID = 5L;
+
     @Test
     public void testExperienceTracking() {
-        AServer server = Mockito.mock(AServer.class);
-        AUser user = Mockito.mock(AUser.class);
         AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
-        CachedMessage mockedMessage = Mockito.mock(CachedMessage.class);
-        CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
-        when(mockedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(userInServerManagementService.loadOrCreateUser(server.getId(), user.getId())).thenReturn(userInAServer);
-        testUnit.execute(mockedMessage);
+        Message mockedMessage = Mockito.mock(Message.class);
+        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
+        when(model.getMessage()).thenReturn(mockedMessage);
+        when(model.getServerId()).thenReturn(SERVER_ID);
+        when(mockedMessage.getAuthor()).thenReturn(user);
+        when(user.getIdLong()).thenReturn(USER_ID);
+        testUnit.execute(model);
         verify(userExperienceService, times(1)).addExperience(userInAServer);
     }
 }

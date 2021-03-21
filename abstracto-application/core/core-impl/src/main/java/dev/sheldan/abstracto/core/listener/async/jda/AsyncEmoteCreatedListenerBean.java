@@ -1,11 +1,7 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.models.cache.CachedEmote;
-import dev.sheldan.abstracto.core.service.CacheEntityService;
-import dev.sheldan.abstracto.core.service.FeatureConfigService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
-import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.listener.ListenerService;
+import dev.sheldan.abstracto.core.models.listener.EmoteCreatedModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -14,64 +10,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
 public class AsyncEmoteCreatedListenerBean extends ListenerAdapter {
 
     @Autowired(required = false)
-    private List<AsyncEmoteCreatedListener> createdListeners;
-
-    @Autowired
-    private FeatureFlagService featureFlagService;
-
-    @Autowired
-    private FeatureConfigService featureConfigService;
-
-    @Autowired
-    private FeatureModeService featureModeService;
-
-    @Autowired
-    private AsyncEmoteCreatedListenerBean self;
+    private List<AsyncEmoteCreatedListener> listenerList;
 
     @Autowired
     @Qualifier("emoteCreatedExecutor")
-    private TaskExecutor emoteCreatedExecutor;
+    private TaskExecutor emoteCreatedListenerExecutor;
 
     @Autowired
-    private CacheEntityService cacheEntityService;
+    private ListenerService listenerService;
 
     @Override
     @Transactional
     public void onEmoteAdded(@NotNull EmoteAddedEvent event) {
-        if(createdListeners == null) return;
-        CachedEmote cachedEmote = cacheEntityService.getCachedEmoteFromEmote(event.getEmote(), event.getGuild());
-        createdListeners.forEach(emoteUpdatedListener ->
-            CompletableFuture.runAsync(() ->
-                self.executeCreatedListener(emoteUpdatedListener, cachedEmote, event.getGuild().getIdLong())
-            , emoteCreatedExecutor)
-            .exceptionally(throwable -> {
-                log.error("Async join listener {} failed with exception.", emoteUpdatedListener, throwable);
-                return null;
-            })
-        );
+        if(listenerList == null) return;
+        EmoteCreatedModel model = getModel(event);
+        listenerList.forEach(joinListener -> listenerService.executeFeatureAwareListener(joinListener, model, emoteCreatedListenerExecutor));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeCreatedListener(AsyncEmoteCreatedListener listener, CachedEmote createDdEmote, Long serverId) {
-        FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
-        if (!featureFlagService.isFeatureEnabled(feature, serverId)) {
-            return;
-        }
-        if(!featureModeService.necessaryFeatureModesMet(listener, serverId)) {
-            return;
-        }
-        listener.emoteCreated(createDdEmote);
+    private EmoteCreatedModel getModel(EmoteAddedEvent event) {
+        return EmoteCreatedModel.builder().emote(event.getEmote()).build();
     }
 }

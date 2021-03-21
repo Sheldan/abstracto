@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.Prioritized;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
 import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
 
-public interface MessageEmbeddedListener extends FeatureAware, Prioritized {
-    void execute(GuildMessageEmbedEventModel eventModel);
+public interface MessageEmbeddedListener extends FeatureAwareListener<GuildMessageEmbedEventModel, DefaultListenerResult>, Prioritized {
 }

@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.moderation.listener;
 
-import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
+import dev.sheldan.abstracto.core.listener.ConsumableListenerResult;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -68,6 +69,9 @@ public class InviteLinkFilterListenerTest {
     @Mock
     private MetricService metricService;
 
+    @Mock
+    private MessageReceivedModel model;
+
     private static final Long SERVER_ID = 1L;
     private static final Long CHANNEL_ID = 2L;
     private static final Long USER_ID = 3L;
@@ -79,8 +83,9 @@ public class InviteLinkFilterListenerTest {
     public void testExecutionWithNoInvite() {
         when(message.getContentRaw()).thenReturn("text");
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
-        Assert.assertEquals(MessageReceivedListenerResult.PROCESSED, result);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
+        Assert.assertEquals(ConsumableListenerResult.PROCESSED, result);
     }
 
     @Test
@@ -88,8 +93,9 @@ public class InviteLinkFilterListenerTest {
         when(message.getContentRaw()).thenReturn(INVITE_LINK);
         when(inviteLinkFilterService.isCodeFiltered(eq(INVITE_CODE), any(ServerUser.class))).thenReturn(false);
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
-        Assert.assertEquals(MessageReceivedListenerResult.PROCESSED, result);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
+        Assert.assertEquals(ConsumableListenerResult.PROCESSED, result);
     }
 
     @Test
@@ -100,8 +106,9 @@ public class InviteLinkFilterListenerTest {
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(false);
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(false);
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
-        Assert.assertEquals(MessageReceivedListenerResult.DELETED, result);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
+        Assert.assertEquals(ConsumableListenerResult.DELETED, result);
         verify(metricService, times(1)).incrementCounter(any());
     }
 
@@ -113,8 +120,9 @@ public class InviteLinkFilterListenerTest {
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.TRACK_USES)).thenReturn(true);
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(false);
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
-        Assert.assertEquals(MessageReceivedListenerResult.DELETED, result);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
+        Assert.assertEquals(ConsumableListenerResult.DELETED, result);
         verifyTracking();
         verify(metricService, times(1)).incrementCounter(any());
     }
@@ -128,8 +136,9 @@ public class InviteLinkFilterListenerTest {
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(true);
         setupForNotification();
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
-        Assert.assertEquals(MessageReceivedListenerResult.DELETED, result);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
+        Assert.assertEquals(ConsumableListenerResult.DELETED, result);
         verifyTracking();
         verify(metricService, times(1)).incrementCounter(any());
     }
@@ -143,9 +152,10 @@ public class InviteLinkFilterListenerTest {
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(true);
         setupForNotification();
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
         verify(metricService, times(1)).incrementCounter(any());
-        Assert.assertEquals(MessageReceivedListenerResult.DELETED, result);
+        Assert.assertEquals(ConsumableListenerResult.DELETED, result);
         verify(inviteLinkFilterService, times(0)).storeFilteredInviteLinkUsage(eq(INVITE_CODE), any(ServerUser.class));
     }
 
@@ -158,9 +168,10 @@ public class InviteLinkFilterListenerTest {
         when(featureModeService.featureModeActive(ModerationFeatureDefinition.INVITE_FILTER, SERVER_ID, InviteFilterMode.FILTER_NOTIFICATIONS)).thenReturn(true);
         when(postTargetService.postTargetDefinedInServer(InviteFilterPostTarget.INVITE_DELETE_LOG, SERVER_ID)).thenReturn(false);
         setupBasicMessage();
-        MessageReceivedListenerResult result = testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        ConsumableListenerResult result = testUnit.execute(model);
         verify(metricService, times(1)).incrementCounter(any());
-        Assert.assertEquals(MessageReceivedListenerResult.DELETED, result);
+        Assert.assertEquals(ConsumableListenerResult.DELETED, result);
         verify(inviteLinkFilterService, times(0)).storeFilteredInviteLinkUsage(eq(INVITE_CODE), any(ServerUser.class));
         verify(templateService, times(0)).renderEmbedTemplate(eq(InviteLinkFilterListener.INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY), any(DeletedInvitesNotificationModel.class), eq(SERVER_ID));
     }

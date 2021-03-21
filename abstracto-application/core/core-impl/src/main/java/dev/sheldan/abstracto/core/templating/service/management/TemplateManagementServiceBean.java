@@ -48,9 +48,8 @@ public class TemplateManagementServiceBean implements TemplateManagementService 
      */
     @Override
     public Template createTemplate(String key, String content) {
-        Template build = Template.builder().key(key).content(content).lastModified(Instant.now()).build();
-        repository.save(build);
-        return build;
+        Template template = Template.builder().key(key).content(content).lastModified(Instant.now()).build();
+        return repository.save(template);
     }
 
 }

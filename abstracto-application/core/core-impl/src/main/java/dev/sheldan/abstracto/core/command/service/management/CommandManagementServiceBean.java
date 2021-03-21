@@ -40,8 +40,7 @@ public class CommandManagementServiceBean implements CommandManagementService {
                 .feature(feature)
                 .build();
         log.info("Creating creating command {} in module {} with feature {}.", name, module.getName(), feature.getKey());
-        commandRepository.save(command);
-        return command;
+        return commandRepository.save(command);
     }
 
     @Override

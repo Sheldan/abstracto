@@ -20,8 +20,10 @@ public interface RepostService {
     Optional<PostedImage> getRepostFor(Message message, MessageEmbed messageEmbed, Integer embedIndex);
     boolean isRepost(CachedMessage message, CachedAttachment attachment, Integer index);
     Optional<PostedImage> getRepostFor(CachedMessage message, CachedAttachment attachment, Integer index);
+    Optional<PostedImage> getRepostFor(Message message, Message.Attachment attachment, Integer index);
     String calculateHashForPost(String url, Long serverId);
     void processMessageAttachmentRepostCheck(CachedMessage message);
+    void processMessageAttachmentRepostCheck(Message message);
     void processMessageEmbedsRepostCheck(List<CachedEmbed> embeds, CachedMessage message);
     void processMessageEmbedsRepostCheck(List<MessageEmbed> embeds, Message message);
     CompletableFuture<List<RepostLeaderboardEntryModel>> retrieveRepostLeaderboard(Guild guild, Integer page);

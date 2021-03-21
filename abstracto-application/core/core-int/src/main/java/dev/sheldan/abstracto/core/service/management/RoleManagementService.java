@@ -10,4 +10,5 @@ public interface RoleManagementService {
     Optional<ARole> findRoleOptional(Long id);
     ARole findRole(Long id);
     void markDeleted(ARole role);
+    void markDeleted(Long roleId);
 }

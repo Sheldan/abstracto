@@ -44,8 +44,7 @@ public class AllowedMentionManagementServiceBean implements AllowedMentionManage
                 .role(base.getRole())
                 .user(base.getUser())
                 .server(server).build();
-        allowedMentionRepository.save(allowedMention);
-        return allowedMention;
+        return allowedMentionRepository.save(allowedMention);
     }
 
     @Override

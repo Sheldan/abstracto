@@ -2,12 +2,13 @@ package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
+import dev.sheldan.abstracto.core.listener.ConsumableListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -69,7 +70,8 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
     public static final String INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY = "invite_link_deleted_notification";
 
     @Override
-    public MessageReceivedListenerResult execute(Message message) {
+    public ConsumableListenerResult execute(MessageReceivedModel model) {
+        Message message = model.getMessage();
         Long serverId = message.getGuild().getIdLong();
         Matcher matcher = Message.INVITE_PATTERN.matcher(message.getContentRaw());
         ServerUser author = ServerUser.builder().userId(message.getAuthor().getIdLong()).serverId(message.getGuild().getIdLong()).build();
@@ -95,9 +97,9 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
             if(sendNotification) {
                 sendDeletionNotification(codesToTrack, message);
             }
-            return MessageReceivedListenerResult.DELETED;
+            return ConsumableListenerResult.DELETED;
         } else {
-            return MessageReceivedListenerResult.PROCESSED;
+            return ConsumableListenerResult.PROCESSED;
         }
     }
 

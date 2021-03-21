@@ -35,6 +35,15 @@ public interface TrackedEmoteManagementService {
     TrackedEmote createTrackedEmote(Emote emote, Guild guild);
 
     /**
+     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote}.
+     * The emote used here must contain a {@link Guild guild} instance, emotes created from {@link net.dv8tion.jda.api.entities.Message messages}
+     * do not.
+     * @param emote The {@link Emote} to be used to create a {@link TrackedEmote}
+     * @return The created {@link TrackedEmote} instance in the database
+     */
+    TrackedEmote createTrackedEmote(Emote emote);
+
+    /**
      * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote} and {@link Guild}
      * @param emote The {@link CachedEmote} to be used to create a {@link TrackedEmote}
      * @return The created {@link TrackedEmote} instance in the database
@@ -105,6 +114,14 @@ public interface TrackedEmoteManagementService {
      * @throws TrackedEmoteNotFoundException if no {@link TrackedEmote} with the given IDs can be found
      */
     void markAsDeleted(Long serverId, Long emoteId);
+
+    /**
+     * Marks the {@link Emote emote} as deleted in the database. This {@link Emote emote} must
+     * not come from a {@link net.dv8tion.jda.api.entities.Message message}, because then the {@link Guild guild}
+     * is null.
+     * @throws TrackedEmoteNotFoundException if no {@link TrackedEmote} with the given IDs can be found
+     */
+    void markAsDeleted(Emote emote);
 
     /**
      * Marks the given {@link TrackedEmote} as deleted

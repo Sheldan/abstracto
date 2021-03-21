@@ -42,8 +42,7 @@ public class CustomTemplateManagementServiceBean implements CustomTemplateManage
                 .content(templateContent)
                 .key(templateKey)
                 .build();
-        customTemplateRepository.save(template);
-        return template;
+        return customTemplateRepository.save(template);
     }
 
     @Override

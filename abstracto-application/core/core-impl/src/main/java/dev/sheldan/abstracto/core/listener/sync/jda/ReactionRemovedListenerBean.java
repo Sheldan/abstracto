@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
+import dev.sheldan.abstracto.core.models.listener.ReactionRemovedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
@@ -13,8 +13,6 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemove
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -52,7 +50,7 @@ public class ReactionRemovedListenerBean extends ListenerAdapter {
     private BotService botService;
 
     @Autowired
-    private EmoteService emoteService;
+    private ListenerService listenerService;
 
     private void removeReactionIfThere(CachedMessage message, CachedReactions reaction, ServerUser userReacting) {
         Optional<CachedReactions> existingReaction = message.getReactions().stream().filter(reaction1 ->
@@ -91,23 +89,20 @@ public class ReactionRemovedListenerBean extends ListenerAdapter {
     public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
         ServerUser serverUser = ServerUser.builder().serverId(event.getGuild().getIdLong()).userId(event.getUserIdLong()).build();
         removeReactionIfThere(cachedMessage, reaction, serverUser);
-        reactionRemovedListeners.forEach(reactionRemovedListener -> {
-            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
-            if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                return;
-            }
-            try {
-                self.executeIndividualReactionRemovedListener(event, cachedMessage, serverUser, reactionRemovedListener);
-            } catch (AbstractoRunTimeException e) {
-                log.warn(String.format("Failed to execute reaction removed listener %s.", reactionRemovedListener.getClass().getName()), e);
-            }
-        });
+        ReactionRemovedModel model = getModel(event, cachedMessage, serverUser);
+        reactionRemovedListeners.forEach(reactionRemovedListener -> listenerService.executeFeatureAwareListener(reactionRemovedListener, model));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualReactionRemovedListener(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, ServerUser serverUser, ReactionRemovedListener reactionRemovedListener) {
-        reactionRemovedListener.executeReactionRemoved(cachedMessage, event, serverUser);
+    private ReactionRemovedModel getModel(GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, ServerUser userRemoving) {
+        return ReactionRemovedModel
+                .builder()
+                .memberRemoving(event.getMember())
+                .reaction(event.getReaction())
+                .userRemoving(userRemoving)
+                .message(cachedMessage)
+                .build();
     }
+
 
     @PostConstruct
     public void postConstruct() {

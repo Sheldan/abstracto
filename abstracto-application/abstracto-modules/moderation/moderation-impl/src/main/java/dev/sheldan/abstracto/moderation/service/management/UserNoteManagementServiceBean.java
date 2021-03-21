@@ -36,8 +36,7 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
                 .server(aUserInAServer.getServerReference())
                 .user(aUserInAServer)
                 .build();
-        userNoteRepository.save(newNote);
-        return newNote;
+        return userNoteRepository.save(newNote);
     }
 
     @Override

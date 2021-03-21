@@ -44,8 +44,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
                 .muteId(id)
                 .muteEnded(false)
                 .build();
-        muteRepository.save(mute);
-        return mute;
+        return muteRepository.save(mute);
     }
 
     @Override

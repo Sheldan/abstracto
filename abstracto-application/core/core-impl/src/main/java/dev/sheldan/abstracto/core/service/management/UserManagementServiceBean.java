@@ -53,8 +53,7 @@ public class UserManagementServiceBean implements UserManagementService {
     public AUser tryCreateUser(Long userId) {
         lockService.lockTable(TableLocks.USER);
         AUser aUser = AUser.builder().id(userId).build();
-        userRepository.save(aUser);
-        return aUser;
+        return userRepository.save(aUser);
     }
 
     @Override

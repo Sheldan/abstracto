@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -16,8 +16,6 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -48,7 +46,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     private ExceptionService exceptionService;
 
     @Autowired
-    private MessageReceivedListenerBean self;
+    private ListenerService listenerService;
 
     @Autowired
     private MetricService metricService;
@@ -63,26 +61,16 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
         metricService.incrementCounter(MESSAGE_RECEIVED_COUNTER);
         messageCache.putMessageInCache(event.getMessage());
         if(listenerList == null) return;
-        for (MessageReceivedListener messageReceivedListener : listenerList) {
-            try {
-                FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
-                if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                    continue;
-                }
-                MessageReceivedListenerResult result = self.executeIndividualGuildMessageReceivedListener(event, messageReceivedListener);
-                if (messageReceivedListener.shouldConsume(event, result)) {
-                    break;
-                }
-            } catch (Exception e) {
-                log.error("Listener {} had exception when executing.", messageReceivedListener, e);
-                exceptionService.reportExceptionToGuildMessageReceivedContext(e, event);
-            }
-        }
+        MessageReceivedModel model = getModel(event);
+        listenerList.forEach(messageReceivedListener -> listenerService.executeFeatureAwareListener(messageReceivedListener, model));
+
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public MessageReceivedListenerResult executeIndividualGuildMessageReceivedListener(@Nonnull GuildMessageReceivedEvent event, MessageReceivedListener messageReceivedListener) {
-        return messageReceivedListener.execute(event.getMessage());
+    private MessageReceivedModel getModel(GuildMessageReceivedEvent event) {
+        return MessageReceivedModel
+                .builder()
+                .message(event.getMessage())
+                .build();
     }
 
     @PostConstruct

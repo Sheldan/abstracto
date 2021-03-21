@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.starboard.listener;
 
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import org.junit.Test;
@@ -28,9 +29,11 @@ public class StarboardPostDeletedListenerTest {
     public void deleteNonStarboardPost() {
         Long messageId = 4L;
         when(starboardPostManagementService.findByStarboardPostId(messageId)).thenReturn(Optional.empty());
+        MessageDeletedModel model = Mockito.mock(MessageDeletedModel.class);
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(cachedMessage.getMessageId()).thenReturn(messageId);
-        testUnit.execute(cachedMessage);
+        when(model.getCachedMessage()).thenReturn(cachedMessage);
+        testUnit.execute(model);
         verify( starboardPostManagementService, times(0)).setStarboardPostIgnored(messageId, true);
     }
 
@@ -47,7 +50,9 @@ public class StarboardPostDeletedListenerTest {
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(cachedMessage.getServerId()).thenReturn(serverId);
         when(cachedMessage.getMessageId()).thenReturn(messageId);
-        testUnit.execute(cachedMessage);
+        MessageDeletedModel model = Mockito.mock(MessageDeletedModel.class);
+        when(model.getCachedMessage()).thenReturn(cachedMessage);
+        testUnit.execute(model);
         verify( starboardPostManagementService, times(1)).setStarboardPostIgnored(messageId, true);
     }
 

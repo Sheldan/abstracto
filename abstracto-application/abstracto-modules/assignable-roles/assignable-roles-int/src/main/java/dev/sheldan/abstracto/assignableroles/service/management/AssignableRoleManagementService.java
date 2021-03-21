@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceP
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import net.dv8tion.jda.api.entities.MessageReaction;
 
 /**
  * Management service for the table of {@link AssignableRole assignableRoles}
@@ -64,4 +65,5 @@ public interface AssignableRoleManagementService {
      * @return An instance of {@link AssignableRole role} which was in the place and identified by the emote
      */
     AssignableRole getRoleForReactionEmote(CachedEmote cachedEmote, AssignableRolePlace assignableRolePlace);
+    AssignableRole getRoleForReactionEmote(MessageReaction.ReactionEmote cachedEmote, AssignableRolePlace assignableRolePlace);
 }

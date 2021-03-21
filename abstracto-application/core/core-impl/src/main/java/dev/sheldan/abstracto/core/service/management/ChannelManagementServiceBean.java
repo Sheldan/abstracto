@@ -5,11 +5,14 @@ import dev.sheldan.abstracto.core.exception.ChannelNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.listener.AChannelCreatedListenerModel;
+import dev.sheldan.abstracto.core.models.listener.AChannelDeletedListenerModel;
 import dev.sheldan.abstracto.core.repository.ChannelRepository;
 import dev.sheldan.abstracto.core.service.LockService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -23,6 +26,9 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
 
     @Autowired
     private LockService lockService;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<AChannel> loadChannelOptional(Long id) {
@@ -51,17 +57,37 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
                     .server(server)
                     .deleted(false)
                     .build();
-            return repository.save(build);
+            AChannel createdChannel = repository.save(build);
+            AChannelCreatedListenerModel model = getCreationModel(createdChannel);
+            eventPublisher.publishEvent(model);
+            return createdChannel;
         } else {
             Optional<AChannel> channelOptional = loadChannelOptional(id);
             return channelOptional.orElse(null);
         }
     }
 
+    private AChannelCreatedListenerModel getCreationModel(AChannel channel) {
+        return AChannelCreatedListenerModel
+                .builder()
+                .channelId(channel.getId())
+                .build();
+    }
+
+    private AChannelDeletedListenerModel getDeletionModel(AChannel channel) {
+        return AChannelDeletedListenerModel
+                .builder()
+                .channelId(channel.getId())
+                .build();
+    }
+
+
     @Override
     public AChannel markAsDeleted(Long id) {
         AChannel channel = loadChannel(id);
         channel.setDeleted(true);
+        AChannelDeletedListenerModel model = getDeletionModel(channel);
+        eventPublisher.publishEvent(model);
         log.info("Marking channel {} as deleted.", id);
         return channel;
     }

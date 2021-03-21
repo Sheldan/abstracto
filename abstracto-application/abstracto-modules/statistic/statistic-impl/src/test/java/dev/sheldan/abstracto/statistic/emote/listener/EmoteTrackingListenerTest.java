@@ -1,11 +1,13 @@
 package dev.sheldan.abstracto.statistic.emote.listener;
 
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,13 +33,16 @@ public class EmoteTrackingListenerTest {
     private GuildService guildService;
 
     @Mock
-    private CachedMessage message;
+    private Message message;
 
     @Mock
-    private CachedEmote emote1;
+    private MessageReceivedModel messageReceivedModel;
 
     @Mock
-    private CachedEmote emote2;
+    private Emote emote1;
+
+    @Mock
+    private Emote emote2;
 
     @Mock
     private Guild guild;
@@ -47,40 +52,43 @@ public class EmoteTrackingListenerTest {
 
     @Test
     public void testExecuteOneEmote() {
-        List<CachedEmote> emotesBag = new ArrayList<>();
+        List<Emote> emotesBag = new ArrayList<>();
         emotesBag.add(emote1);
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
-        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(messageReceivedModel.getMessage()).thenReturn(message);
+        when(messageReceivedModel.getServerId()).thenReturn(SERVER_ID);
         when(message.getEmotes()).thenReturn(emotesBag);
-        testUnit.execute(message);
+        testUnit.execute(messageReceivedModel);
         verify(trackedEmoteService, times(1)).addEmoteToRuntimeStorage(emote1, guild, 1L);
     }
 
     @Test
     public void testExecuteOneEmoteMultipleTimes() {
-        List<CachedEmote> emotesBag = new ArrayList<>();
-        when(emote1.getEmoteId()).thenReturn(EMOTE_ID);
-        when(emote2.getEmoteId()).thenReturn(EMOTE_ID);
+        List<Emote> emotesBag = new ArrayList<>();
+        when(emote1.getIdLong()).thenReturn(EMOTE_ID);
+        when(emote2.getIdLong()).thenReturn(EMOTE_ID);
         emotesBag.add(emote1);
         emotesBag.add(emote2);
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
-        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(messageReceivedModel.getServerId()).thenReturn(SERVER_ID);
+        when(messageReceivedModel.getMessage()).thenReturn(message);
         when(message.getEmotes()).thenReturn(emotesBag);
-        testUnit.execute(message);
+        testUnit.execute(messageReceivedModel);
         verify(trackedEmoteService, times(1)).addEmoteToRuntimeStorage(any(CachedEmote.class), eq(guild), eq(2L));
     }
 
     @Test
     public void testExecuteMultipleEmotes() {
-        List<CachedEmote> emotesBag = new ArrayList<>();
-        when(emote1.getEmoteId()).thenReturn(EMOTE_ID);
-        when(emote2.getEmoteId()).thenReturn(EMOTE_ID + 1);
+        List<Emote> emotesBag = new ArrayList<>();
+        when(emote1.getIdLong()).thenReturn(EMOTE_ID);
+        when(emote2.getIdLong()).thenReturn(EMOTE_ID + 1);
         emotesBag.add(emote1);
         emotesBag.add(emote2);
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
-        when(message.getServerId()).thenReturn(SERVER_ID);
+        when(messageReceivedModel.getServerId()).thenReturn(SERVER_ID);
+        when(messageReceivedModel.getMessage()).thenReturn(message);
         when(message.getEmotes()).thenReturn(emotesBag);
-        testUnit.execute(message);
+        testUnit.execute(messageReceivedModel);
         verify(trackedEmoteService, times(1)).addEmoteToRuntimeStorage(emote1, guild, 1L);
         verify(trackedEmoteService, times(1)).addEmoteToRuntimeStorage(emote2, guild, 1L);
     }
@@ -88,8 +96,9 @@ public class EmoteTrackingListenerTest {
     @Test
     public void testExecuteNoEmote() {
         when(message.getEmotes()).thenReturn(new ArrayList<>());
-        testUnit.execute(message);
-        verify(trackedEmoteService, times(0)).addEmoteToRuntimeStorage(any(), any(), anyLong());
+        when(messageReceivedModel.getMessage()).thenReturn(message);
+        testUnit.execute(messageReceivedModel);
+        verify(trackedEmoteService, times(0)).addEmoteToRuntimeStorage(any(Emote.class), any(), anyLong());
     }
 
 

@@ -16,11 +16,23 @@
                 <artifactId>core-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.core</groupId>
+                <artifactId>core-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- modules containing commands -->
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>moderation-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>moderation-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -32,7 +44,19 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>modmail-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>utility-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>utility-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -43,8 +67,20 @@
             </dependency>
 
             <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>experience-tracking-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>dev.sheldan.abstracto.scheduling</groupId>
                 <artifactId>scheduling-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.scheduling</groupId>
+                <artifactId>scheduling-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -56,13 +92,31 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>assignable-roles-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>statistic-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>statistic-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.core</groupId>
                 <artifactId>metrics-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.core</groupId>
+                <artifactId>metrics-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -74,7 +128,19 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>entertainment-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>link-embed-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>link-embed-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -86,7 +152,19 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>remind-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>repost-detection-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>repost-detection-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -98,7 +176,19 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>starboard-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>suggestion-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>suggestion-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

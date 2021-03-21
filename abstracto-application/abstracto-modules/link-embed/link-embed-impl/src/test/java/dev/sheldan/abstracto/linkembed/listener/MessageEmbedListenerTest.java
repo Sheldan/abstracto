@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.linkembed.listener;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -58,6 +59,9 @@ public class MessageEmbedListenerTest {
     private TextChannel textChannel;
 
     @Mock
+    private MessageReceivedModel model;
+
+    @Mock
     private Guild guild;
 
     private static final Long FIRST_SERVER_ID = 12L;
@@ -80,7 +84,8 @@ public class MessageEmbedListenerTest {
         when(message.getContentRaw()).thenReturn(text);
         List<MessageEmbedLink> foundMessageLinks = new ArrayList<>();
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
-        testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        testUnit.execute(model);
         verify(messageService, times(0)).deleteMessage(message);
     }
 
@@ -116,7 +121,8 @@ public class MessageEmbedListenerTest {
         when(message.getMember()).thenReturn(author);
         when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
-        testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        testUnit.execute(model);
         verify(messageService, times(0)).deleteMessage(message);
         verify(self, times(0)).embedSingleLink(eq(message), anyLong(), any(CachedMessage.class));
         verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
@@ -148,7 +154,8 @@ public class MessageEmbedListenerTest {
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, FIRST_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageEmbedService.getLinksInMessage(completeMessage)).thenReturn(foundMessageLinks);
-        testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        testUnit.execute(model);
         verify(messageService, times(0)).deleteMessage(message);
         verify(self, times(1)).embedSingleLink(message, USER_IN_SERVER_ID, cachedMessage);
     }
@@ -179,7 +186,8 @@ public class MessageEmbedListenerTest {
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, FIRST_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, SECOND_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(secondCachedMessage));
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
-        testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        testUnit.execute(model);
         verify(messageService, times(1)).deleteMessage(message);
         verify(self, times(1)).embedSingleLink(message, USER_IN_SERVER_ID, cachedMessage);
         verify(self, times(1)).embedSingleLink(message, USER_IN_SERVER_ID, secondCachedMessage);
@@ -210,7 +218,8 @@ public class MessageEmbedListenerTest {
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, FIRST_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
-        testUnit.execute(message);
+        when(model.getMessage()).thenReturn(message);
+        testUnit.execute(model);
     }
 
 }

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
@@ -42,6 +43,9 @@ public class JoinMuteListenerTest {
     @Mock
     private ServerUser serverUser;
 
+    @Mock
+    private MemberJoinModel model;
+
     private static final Long SERVER_ID = 3L;
     private static final Long USER_ID = 4L;
 
@@ -51,7 +55,8 @@ public class JoinMuteListenerTest {
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
         when(muteManagementService.hasActiveMute(joiningUser)).thenReturn(false);
-        testUnit.execute(serverUser);
+        when(model.getMember()).thenReturn(member);
+        testUnit.execute(model);
         verify(muteService, times(0)).applyMuteRole(joiningUser);
     }
 
@@ -61,7 +66,8 @@ public class JoinMuteListenerTest {
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
         when(muteManagementService.hasActiveMute(joiningUser)).thenReturn(true);
-        testUnit.execute(serverUser);
+        when(model.getMember()).thenReturn(member);
+        testUnit.execute(model);
         verify(muteService, times(1)).applyMuteRole(joiningUser);
     }
 }

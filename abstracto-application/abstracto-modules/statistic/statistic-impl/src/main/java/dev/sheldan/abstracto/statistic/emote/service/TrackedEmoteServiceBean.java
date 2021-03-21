@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
+import dev.sheldan.abstracto.core.service.CacheEntityService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.GuildService;
@@ -54,6 +55,9 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     @Autowired
     private MetricService metricService;
 
+    @Autowired
+    private CacheEntityService cacheEntityService;
+
     public static final String EMOTE_USAGES_TRACKED_METRIC = "emote.usages";
     private static final CounterMetric EMOTE_USAGES_TRACKED =
             CounterMetric
@@ -80,6 +84,11 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
         if(externalTrackingEnabled || !emote.getExternal()) {
             trackedEmoteRuntimeService.addEmoteForServer(emote, guild, count, emote.getExternal());
         }
+    }
+
+    @Override
+    public void addEmoteToRuntimeStorage(Emote emote, Guild guild, Long count) {
+        addEmoteToRuntimeStorage(cacheEntityService.getCachedEmoteFromEmote(emote, guild), guild, count);
     }
 
     @Override

@@ -115,8 +115,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
         log.info("Create modmail thread in channel {} for user {} in server {}.",
                 channel.getId(), userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
 
-        modMailThreadRepository.save(thread);
-        return thread;
+        return modMailThreadRepository.save(thread);
     }
 
     @Override

@@ -2,10 +2,12 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.listener.ServerCreatedListenerModel;
 import dev.sheldan.abstracto.core.repository.ServerRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,11 +26,24 @@ public class ServerManagementServiceBean implements ServerManagementService {
     @Autowired
     private UserManagementService userManagementService;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     @Override
     public AServer createServer(Long id) {
         AServer newServer = AServer.builder().id(id).adminMode(false).build();
         log.info("Creating server with id {}.", id);
-        return repository.save(newServer);
+        AServer server = repository.save(newServer);
+        ServerCreatedListenerModel model = getModel(server);
+        eventPublisher.publishEvent(model);
+        return server;
+    }
+
+    private ServerCreatedListenerModel getModel(AServer server) {
+        return ServerCreatedListenerModel
+                .builder()
+                .serverId(server.getId())
+                .build();
     }
 
     @Override

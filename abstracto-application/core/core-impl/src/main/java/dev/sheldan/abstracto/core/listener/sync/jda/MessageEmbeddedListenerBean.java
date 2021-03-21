@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
-import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
@@ -44,24 +44,14 @@ public class MessageEmbeddedListenerBean extends ListenerAdapter {
     private ExceptionService exceptionService;
 
     @Autowired
-    private MessageEmbeddedListenerBean self;
+    private ListenerService listenerService;
 
     @Override
     @Transactional
     public void onGuildMessageEmbed(@NotNull GuildMessageEmbedEvent event) {
         if(listenerList == null) return;
         GuildMessageEmbedEventModel model = buildModel(event);
-        listenerList.forEach(messageReceivedListener -> {
-            try {
-                FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(messageReceivedListener.getFeature());
-                if(!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                    return;
-                }
-                self.executeIndividualGuildMessageReceivedListener(model, messageReceivedListener);
-            } catch (Exception e) {
-                log.error("Listener {} had exception when executing.", messageReceivedListener, e);
-            }
-        });
+        listenerList.forEach(messageReceivedListener -> listenerService.executeFeatureAwareListener(messageReceivedListener, model));
     }
 
     private GuildMessageEmbedEventModel buildModel(GuildMessageEmbedEvent event) {

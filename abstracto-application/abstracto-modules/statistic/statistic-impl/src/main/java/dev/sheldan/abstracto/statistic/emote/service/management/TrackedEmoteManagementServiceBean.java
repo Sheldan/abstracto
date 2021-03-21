@@ -39,6 +39,11 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
+    public TrackedEmote createTrackedEmote(Emote emote) {
+        return createTrackedEmote(emote, emote.getGuild());
+    }
+
+    @Override
     public TrackedEmote createTrackedEmote(CachedEmote emote) {
         AServer server = serverManagementService.loadServer(emote.getServerId());
         return createTrackedEmote(emote.getEmoteId(), emote.getEmoteName(), emote.getAnimated(), true, server);
@@ -107,6 +112,11 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     public void markAsDeleted(Long serverId, Long emoteId) {
         TrackedEmote emote = loadByEmoteId(emoteId, serverId);
         markAsDeleted(emote);
+    }
+
+    @Override
+    public void markAsDeleted(Emote emote) {
+        markAsDeleted(emote.getGuild().getIdLong(), emote.getIdLong());
     }
 
     @Override

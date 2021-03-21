@@ -1,7 +1,8 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.listener.ListenerService;
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -11,8 +12,6 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -36,30 +35,27 @@ public class JoinListenerBean extends ListenerAdapter {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
-    private JoinListenerBean self;
+    private ListenerService listenerService;
 
     @Override
     @Transactional
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         if(listenerList == null) return;
-        listenerList.forEach(joinListener -> {
-            FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(joinListener.getFeature());
-            if (!featureFlagService.isFeatureEnabled(feature, event.getGuild().getIdLong())) {
-                return;
-            }
-            try {
-                AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
-                self.executeIndividualJoinListener(event, joinListener, aUserInAServer);
-            } catch (Exception e) {
-                log.error("Listener {} failed with exception:", joinListener.getClass().getName(), e);
-            }
-        });
+        MemberJoinModel model = getModel(event);
+        listenerList.forEach(joinListener -> listenerService.executeFeatureAwareListener(joinListener, model));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualJoinListener(@Nonnull GuildMemberJoinEvent event, JoinListener joinListener, AUserInAServer aUserInAServer) {
-        log.trace("Executing join listener {} for member {} in guild {}.", joinListener.getClass().getName(), event.getMember().getId(), event.getGuild().getId());
-        joinListener.execute(event.getMember(), event.getGuild(), aUserInAServer);
+    private MemberJoinModel getModel(GuildMemberJoinEvent event) {
+        ServerUser serverUser = ServerUser
+                .builder()
+                .serverId(event.getGuild().getIdLong())
+                .userId(event.getUser().getIdLong())
+                .build();
+        return MemberJoinModel
+                .builder()
+                .joiningUser(serverUser)
+                .member(event.getMember())
+                .build();
     }
 
     @PostConstruct

@@ -40,8 +40,7 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
                 .server(server)
                 .build();
         log.info("Creating new feature flag for feature {} in server {} with value {}.", feature.getKey(), server.getId(), newValue);
-        repository.save(featureFlag);
-        return featureFlag;
+        return repository.save(featureFlag);
     }
 
 

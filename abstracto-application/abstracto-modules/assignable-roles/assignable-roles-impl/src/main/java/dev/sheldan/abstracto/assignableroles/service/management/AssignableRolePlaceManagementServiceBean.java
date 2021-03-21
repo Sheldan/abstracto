@@ -28,9 +28,8 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
                 .text(text)
                 .key(name)
                 .build();
-        repository.save(place);
         log.info("Creating assignable role place in channel {} on server {}.", channel.getId(), channel.getServer().getId());
-        return place;
+        return repository.save(place);
     }
 
     @Override

@@ -1,10 +1,8 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
-import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.cache.CachedReactions;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.ReactionRemovedModel;
 
-public interface AsyncReactionRemovedListener extends FeatureAware {
-    void executeReactionRemoved(CachedMessage message, CachedReactions removedReaction, ServerUser userRemoving);
+public interface AsyncReactionRemovedListener extends FeatureAwareListener<ReactionRemovedModel, DefaultListenerResult> {
 }

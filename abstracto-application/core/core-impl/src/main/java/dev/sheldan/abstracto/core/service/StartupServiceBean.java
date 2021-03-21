@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.listener.sync.entity.ServerConfigListener;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -44,9 +43,6 @@ public class StartupServiceBean implements Startup {
     @Autowired
     private RoleManagementService roleManagementService;
 
-    @Autowired
-    private List<ServerConfigListener> configListeners;
-
 
     @Override
     public void startBot() throws LoginException {
@@ -73,24 +69,20 @@ public class StartupServiceBean implements Startup {
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
-                configListeners.forEach(serverConfigListener ->
-                    serverConfigListener.updateServerConfig(newAServer)
-                );
             }
         });
 
     }
 
-    // TODO mark deleted roles ad deleted, use intersect for that
     private void synchronizeRolesOf(Guild guild, AServer existingAServer){
-        List<Role> existingRoles = guild.getRoles();
-        List<ARole> knownARoles = existingAServer.getRoles();
-        Set<Long> knownRolesId = SnowflakeUtils.getOwnItemsIds(knownARoles);
-        Set<Long> availableRoles = SnowflakeUtils.getSnowflakeIds(existingRoles);
-        Set<Long> newRoles = SetUtils.difference(availableRoles, knownRolesId);
-        newRoles.forEach(aLong ->
-            roleManagementService.createRole(aLong, existingAServer)
-        );
+        List<Role> guildRoles = guild.getRoles();
+        List<ARole> existingRoles = existingAServer.getRoles();
+        Set<Long> existingRoleIds = SnowflakeUtils.getOwnItemsIds(existingRoles);
+        Set<Long> guildRoleIds = SnowflakeUtils.getSnowflakeIds(guildRoles);
+        Set<Long> newRoles = SetUtils.difference(guildRoleIds, existingRoleIds);
+        newRoles.forEach(aLong -> roleManagementService.createRole(aLong, existingAServer));
+        Set<Long> deletedRoles = SetUtils.difference(existingRoleIds, guildRoleIds);
+        deletedRoles.forEach(aLong -> roleManagementService.markDeleted(aLong));
     }
 
     private void synchronizeChannelsOf(Guild guild, AServer existingServer){

@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.ReactionClearedModel;
 
-public interface AsyncReactionClearedListener extends FeatureAware {
-    void executeReactionCleared(CachedMessage message);
+public interface AsyncReactionClearedListener extends FeatureAwareListener<ReactionClearedModel, DefaultListenerResult> {
 }

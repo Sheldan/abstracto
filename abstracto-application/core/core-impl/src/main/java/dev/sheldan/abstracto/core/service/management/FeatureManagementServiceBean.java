@@ -20,9 +20,8 @@ public class FeatureManagementServiceBean implements FeatureManagementService {
                 .builder()
                 .key(key)
                 .build();
-        featureRepository.save(feature);
         log.info("Creating new feature {}.", key);
-        return feature;
+        return featureRepository.save(feature);
     }
 
     @Override

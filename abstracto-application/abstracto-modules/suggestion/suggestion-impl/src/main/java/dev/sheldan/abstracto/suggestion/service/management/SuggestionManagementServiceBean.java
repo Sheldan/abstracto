@@ -56,8 +56,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
                 .build();
         log.info("Persisting suggestion {} at message {} in channel {} on server {} from user {}.",
                 suggestionId, message.getId(), channelId, message.getGuild().getId(), suggester.getUserReference().getId());
-        suggestionRepository.save(suggestion);
-        return suggestion;
+        return suggestionRepository.save(suggestion);
     }
 
     @Override

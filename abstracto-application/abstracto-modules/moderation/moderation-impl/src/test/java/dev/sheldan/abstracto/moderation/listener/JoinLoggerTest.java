@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.moderation.config.posttarget.LoggingPostTarget;
@@ -40,6 +41,8 @@ public class JoinLoggerTest {
     @Mock
     private Member member;
 
+    @Mock
+    private MemberJoinModel model;
 
     private static final Long SERVER_ID = 1L;
     private static final Long USER_ID = 2L;
@@ -48,17 +51,13 @@ public class JoinLoggerTest {
     public void testExecute() {
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
+        when(model.getMember()).thenReturn(member);
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(member));
-        testUnit.execute(serverUser);
-        verify(self, times(1)).sendJoinLog(serverUser, member);
-    }
-
-    @Test
-    public void testJoinLog() {
-        String message = "text";
+        testUnit.execute(model);
         when(serverUser.getServerId()).thenReturn(SERVER_ID);
+        String message = "text";
         when(templateService.renderTemplateWithMap(eq(JoinLogger.USER_JOIN_TEMPLATE), any(), eq(SERVER_ID))).thenReturn(message);
-        testUnit.sendJoinLog(serverUser, member);
         verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.JOIN_LOG, SERVER_ID);
     }
+
 }

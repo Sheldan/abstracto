@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -11,6 +12,7 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,10 +46,12 @@ public class MessageEditedListenerTest {
     private MemberService memberService;
 
     @Mock
-    private CachedMessage messageAfter;
+    private Message messageAfter;
 
     @Mock
     private CachedMessage messageBefore;
+
+    private MessageTextUpdatedModel model;
 
     private static final Long SERVER_ID = 4L;
     private static final Long CHANNEL_ID = 5L;
@@ -56,9 +60,11 @@ public class MessageEditedListenerTest {
     @Test
     public void testExecuteListenerWithSameContent() {
         String content = "text";
-        when(messageAfter.getContent()).thenReturn(content);
+        when(messageAfter.getContentRaw()).thenReturn(content);
         when(messageBefore.getContent()).thenReturn(content);
-        testUnit.execute(messageBefore, messageAfter);
+        when(model.getAfter()).thenReturn(messageAfter);
+        when(model.getBefore()).thenReturn(messageBefore);
+        testUnit.execute(model);
         verify(templateService, times(0)).renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), any());
     }
 
@@ -67,15 +73,12 @@ public class MessageEditedListenerTest {
         String content = "text";
         String contentAfterwards = "text2";
         TextChannel channel = Mockito.mock(TextChannel.class);
-        when(messageAfter.getContent()).thenReturn(contentAfterwards);
-        when(messageAfter.getChannelId()).thenReturn(CHANNEL_ID);
+        when(messageAfter.getContentRaw()).thenReturn(contentAfterwards);
         Guild guild = Mockito.mock(Guild.class);
         when(channel.getGuild()).thenReturn(guild);
-        when(messageAfter.getServerId()).thenReturn(SERVER_ID);
         Member author = Mockito.mock(Member.class);
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
         when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
-        when(messageAfter.getAuthor()).thenReturn(cachedAuthor);
         when(messageBefore.getContent()).thenReturn(content);
         when(messageBefore.getServerId()).thenReturn(SERVER_ID);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
@@ -83,7 +86,9 @@ public class MessageEditedListenerTest {
         when(templateService.renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(author));
         when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(channel);
-        testUnit.execute(messageBefore, messageAfter);
+        when(model.getAfter()).thenReturn(messageAfter);
+        when(model.getBefore()).thenReturn(messageBefore);
+        testUnit.execute(model);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.EDIT_LOG, SERVER_ID);
         MessageEditedLog capturedValue = captor.getValue();
         Assert.assertEquals(messageBefore, capturedValue.getMessageBefore());

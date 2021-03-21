@@ -40,8 +40,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
 
         log.info("Creating command {} in group {}.", command.getName(), group.getId());
 
-        groupCommandRepository.save(channelGroupCommand);
-        return channelGroupCommand;
+        return groupCommandRepository.save(channelGroupCommand);
     }
 
     @Override

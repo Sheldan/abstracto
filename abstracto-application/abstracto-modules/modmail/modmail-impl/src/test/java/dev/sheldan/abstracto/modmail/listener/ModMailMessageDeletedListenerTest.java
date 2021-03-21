@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
@@ -60,6 +61,9 @@ public class ModMailMessageDeletedListenerTest {
     @Mock
     private AChannel channel;
 
+    @Mock
+    private MessageDeletedModel model;
+
     private static final Long DELETED_MESSAGE_ID = 4L;
     private static final Long CREATED_MESSAGE_ID_1 = 3L;
     private static final Long CREATED_MESSAGE_ID_2 = 5L;
@@ -71,7 +75,8 @@ public class ModMailMessageDeletedListenerTest {
     public void testDeleteOutSideOfThread() {
         when(deletedMessage.getMessageId()).thenReturn(DELETED_MESSAGE_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(DELETED_MESSAGE_ID)).thenReturn(Optional.empty());
-        testUnit.execute(deletedMessage);
+        when(model.getCachedMessage()).thenReturn(deletedMessage);
+        testUnit.execute(model);
         verify(memberService, times(0)).getMemberInServerAsync(anyLong(), anyLong());
     }
 
@@ -94,7 +99,8 @@ public class ModMailMessageDeletedListenerTest {
         when(targetMember.getUser()).thenReturn(targetUser);
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(messageService.deleteMessageInChannelWithUser(targetUser, CREATED_MESSAGE_ID_2)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.execute(deletedMessage);
+        when(model.getCachedMessage()).thenReturn(deletedMessage);
+        testUnit.execute(model);
         verify(messageService, times(0)).deleteMessageInChannelInServer(eq(SERVER_ID), anyLong(), any());
         verify(self, times(1)).removeMessageFromThread(DELETED_MESSAGE_ID);
     }
@@ -121,7 +127,8 @@ public class ModMailMessageDeletedListenerTest {
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(messageService.deleteMessageInChannelWithUser(targetUser, CREATED_MESSAGE_ID_2)).thenReturn(CompletableFuture.completedFuture(null));
         when(messageService.deleteMessageInChannelInServer(SERVER_ID, CHANNEL_ID, CREATED_MESSAGE_ID_1)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.execute(deletedMessage);
+        when(model.getCachedMessage()).thenReturn(deletedMessage);
+        testUnit.execute(model);
         verify(self, times(1)).removeMessageFromThread(DELETED_MESSAGE_ID);
     }
 

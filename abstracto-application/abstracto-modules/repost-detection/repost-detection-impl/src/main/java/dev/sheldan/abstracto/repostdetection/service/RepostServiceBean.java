@@ -173,6 +173,18 @@ public class RepostServiceBean implements RepostService {
     }
 
     @Override
+    public Optional<PostedImage> getRepostFor(Message message, Message.Attachment attachment, Integer index) {
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getGuild().getIdLong())
+                .channelId(message.getChannel().getIdLong())
+                .userId(message.getAuthor().getIdLong())
+                .messageId(message.getIdLong())
+                .build();
+        return checkForDuplicates(serverChannelMessageUser, index, attachment.getProxyUrl());
+    }
+
+    @Override
     public String calculateHashForPost(String url, Long serverId) {
         File downloadedFile = null;
         try {
@@ -204,6 +216,14 @@ public class RepostServiceBean implements RepostService {
         }
     }
 
+    @Override
+    public void processMessageAttachmentRepostCheck(Message message) {
+        boolean canThereBeMultipleReposts = message.getAttachments().size() > 1;
+        for (int imageIndex = 0; imageIndex < message.getAttachments().size(); imageIndex++) {
+            executeRepostCheckForAttachment(message, message.getAttachments().get(imageIndex), imageIndex, canThereBeMultipleReposts);
+        }
+    }
+
     private void executeRepostCheckForAttachment(CachedMessage message, CachedAttachment attachment, Integer index, boolean moreRepostsPossible) {
         Optional<PostedImage> originalPostOptional = getRepostFor(message, attachment, index);
         ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
@@ -212,6 +232,18 @@ public class RepostServiceBean implements RepostService {
                 .channelId(message.getChannelId())
                 .userId(message.getAuthor().getAuthorId())
                 .messageId(message.getMessageId())
+                .build();
+        originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(serverChannelMessageUser, index, moreRepostsPossible, postedImage));
+    }
+
+    private void executeRepostCheckForAttachment(Message message, Message.Attachment attachment, Integer index, boolean moreRepostsPossible) {
+        Optional<PostedImage> originalPostOptional = getRepostFor(message, attachment, index);
+        ServerChannelMessageUser serverChannelMessageUser = ServerChannelMessageUser
+                .builder()
+                .serverId(message.getGuild().getIdLong())
+                .channelId(message.getChannel().getIdLong())
+                .userId(message.getAuthor().getIdLong())
+                .messageId(message.getIdLong())
                 .build();
         originalPostOptional.ifPresent(postedImage -> markMessageAndPersist(serverChannelMessageUser, index, moreRepostsPossible, postedImage));
     }

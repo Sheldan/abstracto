@@ -1,10 +1,11 @@
 package dev.sheldan.abstracto.experience.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
@@ -27,9 +28,10 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
     private UserInServerManagementService userInServerManagementService;
 
     @Override
-    public void execute(CachedMessage message) {
-        AUserInAServer cause = userInServerManagementService.loadOrCreateUser(message.getServerId(), message.getAuthor().getAuthorId());
+    public DefaultListenerResult execute(MessageReceivedModel model) {
+        AUserInAServer cause = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getMessage().getAuthor().getIdLong());
         userExperienceService.addExperience(cause);
+        return DefaultListenerResult.PROCESSED;
     }
 
     @Override

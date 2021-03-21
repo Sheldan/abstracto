@@ -12,6 +12,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ReactionService {
     CompletableFuture<Void> removeReactionFromMessage(CachedReaction reaction, CachedMessage cachedMessage);
+    CompletableFuture<Void> removeReactionFromMessage(MessageReaction reaction, CachedMessage cachedMessage, User user);
+    CompletableFuture<Void> removeReactionFromMessage(MessageReaction reaction, CachedMessage cachedMessage);
     CompletableFuture<Void> removeReactionFromMessage(CachedReaction reaction, Message message);
     void addReactionToMessage(String emoteKey, Long serverId, Message message);
     void addDefaultReactionToMessage(String unicode, Message message);
@@ -31,6 +33,8 @@ public interface ReactionService {
     CompletableFuture<Void> removeReaction(Message message, CachedEmote cachedEmote, User user);
     CompletableFuture<Void> removeReaction(CachedMessage message, CachedEmote cachedEmote, ServerUser user);
     CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Message message);
+    CompletableFuture<Void> removeReactionFromMessageWithFuture(MessageReaction.ReactionEmote emote, Message message);
+    CompletableFuture<Void> removeReactionFromMessageWithFuture(MessageReaction.ReactionEmote emote, Message message, User user);
     CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Message message);
     CompletableFuture<Void> clearReaction(Message message, String key);
     CompletableFuture<Void> clearReaction(Message message, Emote emote);

@@ -1,11 +1,9 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.Prioritized;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
 
-public interface JoinListener extends FeatureAware, Prioritized {
-    void execute(Member member, Guild guild, AUserInAServer aUserInAServer);
+public interface JoinListener extends FeatureAwareListener<MemberJoinModel, DefaultListenerResult>, Prioritized {
 }

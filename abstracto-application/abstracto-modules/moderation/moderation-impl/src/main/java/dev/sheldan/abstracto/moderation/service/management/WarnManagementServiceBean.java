@@ -35,8 +35,7 @@ public class WarnManagementServiceBean implements WarnManagementService {
                 .warnId(warningId)
                 .decayed(false)
                 .build();
-        warnRepository.save(warning);
-        return warning;
+        return warnRepository.save(warning);
     }
 
     @Override

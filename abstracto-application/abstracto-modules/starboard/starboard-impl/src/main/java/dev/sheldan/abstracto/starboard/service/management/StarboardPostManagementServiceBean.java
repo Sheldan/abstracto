@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -36,6 +33,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
                 .postMessageId(starredMessage.getMessageId())
                 .sourceChannel(build)
                 .ignored(false)
+                .reactions(new ArrayList<>())
                 .server(starboardPost.getServer())
                 .starboardMessageId(starboardPost.getMessageId())
                 .starboardChannel(starboardPost.getChannel())
@@ -45,8 +43,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
                 starredMessage.getMessageId(), starredMessage.getChannelId(), starredMessage.getServerId(),
                 starboardPost.getMessageId(), starboardPost.getChannel().getId(), starboardPost.getServer().getId(),
                 starredUser.getUserReference().getId());
-        repository.save(post);
-        return post;
+        return repository.save(post);
     }
 
     @Override
@@ -57,7 +54,6 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
     @Override
     public void setStarboardPostMessageId(StarboardPost post, Long messageId) {
         post.setStarboardMessageId(messageId);
-        repository.save(post);
     }
 
     @Override

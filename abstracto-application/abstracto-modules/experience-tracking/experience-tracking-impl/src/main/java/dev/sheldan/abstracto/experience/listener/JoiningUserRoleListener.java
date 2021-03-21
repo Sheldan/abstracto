@@ -1,10 +1,11 @@
 package dev.sheldan.abstracto.experience.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncJoinListener;
 import dev.sheldan.abstracto.core.listener.sync.jda.JoinListener;
-import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
@@ -33,18 +34,20 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
     private UserInServerManagementService userInServerManagementService;
 
     @Override
-    public void execute(ServerUser serverUser) {
-        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(serverUser.getServerId(), serverUser.getUserId());
+    public DefaultListenerResult execute(MemberJoinModel model) {
+        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getJoiningUser().getUserId());
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
         Long userInServerId = userInAServer.getUserInServerId();
         if(userExperience != null) {
-            log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", serverUser.getUserId(), serverUser.getServerId());
+            log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", model.getJoiningUser().getUserId(), model.getServerId());
             userExperienceService.syncForSingleUser(userExperience).thenAccept(result ->
-                log.info("Finished re-assigning experience for re-joining user {} in server {}.", userInServerId, serverUser.getServerId())
+                log.info("Finished re-assigning experience for re-joining user {} in server {}.", userInServerId, model.getServerId())
             );
         } else {
-            log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", serverUser.getUserId(), serverUser.getServerId());
+            log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", model.getJoiningUser().getUserId(), model.getServerId());
         }
+
+        return DefaultListenerResult.PROCESSED;
     }
 
     @Override

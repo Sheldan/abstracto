@@ -32,6 +32,14 @@ public interface TrackedEmoteService {
     void addEmoteToRuntimeStorage(CachedEmote emote, Guild guild, Long count);
 
     /**
+     * Adds the given {@link Emote} with the given amount to the runtime storage for the given {@link Guild}
+     * @param emote The {@link Emote} to add to the runtime storage
+     * @param guild The {@link Guild} in which the {@link Emote} was used and in which the usage should be added
+     * @param count The amount of times which the {@link Emote} has been used and should be reflected in the runtime storage
+     */
+    void addEmoteToRuntimeStorage(Emote emote, Guild guild, Long count);
+
+    /**
      * Takes the given map of server_ids with the list of {@link PersistingEmote} and stores the objects in the database
      * Non existing {@link TrackedEmote} for the server will be created. Depending on the feature mode external emotes will be created.
      * @param usagesToStore The map of server_ids to a List of {@link PersistingEmote} which should be stored in the database

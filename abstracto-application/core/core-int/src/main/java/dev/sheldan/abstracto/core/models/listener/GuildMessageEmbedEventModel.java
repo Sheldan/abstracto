@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.models.listener;
 
+import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class GuildMessageEmbedEventModel {
+public class GuildMessageEmbedEventModel implements FeatureAwareListenerModel {
     @Builder.Default
     private List<MessageEmbed> embeds = new ArrayList<>();
     private Long messageId;

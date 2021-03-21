@@ -2,13 +2,13 @@ package dev.sheldan.abstracto.linkembed.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.execution.result.ExecutionResult;
-import dev.sheldan.abstracto.core.execution.result.MessageReceivedListenerResult;
+import dev.sheldan.abstracto.core.listener.ConsumableListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -59,7 +59,8 @@ public class MessageEmbedListener implements MessageReceivedListener {
             .build();
 
     @Override
-    public MessageReceivedListenerResult execute(Message message) {
+    public ConsumableListenerResult execute(MessageReceivedModel model) {
+        Message message = model.getMessage();
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         if(!links.isEmpty()) {
@@ -82,12 +83,12 @@ public class MessageEmbedListener implements MessageReceivedListener {
         }
         if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
             messageService.deleteMessage(message);
-            return MessageReceivedListenerResult.DELETED;
+            return ConsumableListenerResult.DELETED;
         }
         if(!links.isEmpty()) {
-            return MessageReceivedListenerResult.PROCESSED;
+            return ConsumableListenerResult.PROCESSED;
         }
-        return MessageReceivedListenerResult.IGNORED;
+        return ConsumableListenerResult.IGNORED;
     }
 
     @Transactional
@@ -104,8 +105,8 @@ public class MessageEmbedListener implements MessageReceivedListener {
     }
 
     @Override
-    public boolean shouldConsume(Event event, ExecutionResult result) {
-        return result.equals(MessageReceivedListenerResult.DELETED);
+    public boolean shouldConsume(Event event, ConsumableListenerResult result) {
+        return result.equals(ConsumableListenerResult.DELETED);
     }
 
     @Override

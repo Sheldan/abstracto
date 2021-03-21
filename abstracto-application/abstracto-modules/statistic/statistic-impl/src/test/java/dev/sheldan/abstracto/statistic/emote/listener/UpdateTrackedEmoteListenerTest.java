@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.statistic.emote.listener;
 
-import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.models.cache.CachedEmote;
+import dev.sheldan.abstracto.core.models.listener.EmoteNameUpdatedModel;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
+import net.dv8tion.jda.api.entities.Emote;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,22 +19,26 @@ import static org.mockito.Mockito.*;
 public class UpdateTrackedEmoteListenerTest {
 
     @InjectMocks
-    private UpdateTrackedEmoteListener testUnit;
+    private UpdateTrackedEmoteNameListener testUnit;
 
     @Mock
     private TrackedEmoteManagementService trackedEmoteManagementService;
+
+    @Mock
+    private EmoteNameUpdatedModel model;
 
     @Test
     public void testEmoteUpdated() {
         Long serverId = 1L;
         Long emoteId = 2L;
-        CachedEmote changedEmote = Mockito.mock(CachedEmote.class);
-        when(changedEmote.getServerId()).thenReturn(serverId);
-        when(changedEmote.getEmoteId()).thenReturn(emoteId);
+        Emote changedEmote = Mockito.mock(Emote.class);
+        when(changedEmote.getIdLong()).thenReturn(emoteId);
         TrackedEmote trackedEmote = Mockito.mock(TrackedEmote.class);
         when(trackedEmoteManagementService.loadByEmoteId(emoteId, serverId)).thenReturn(trackedEmote);
         String newValue = "AFTER";
-        testUnit.emoteUpdated(changedEmote, "BEFORE", newValue);
+        when(model.getEmote()).thenReturn(changedEmote);
+        when(model.getNewValue()).thenReturn(newValue);
+        testUnit.execute(model);
         verify(trackedEmoteManagementService, times(1)).changeName(trackedEmote, newValue);
     }
 
@@ -43,8 +47,4 @@ public class UpdateTrackedEmoteListenerTest {
         Assert.assertEquals(StatisticFeatureDefinition.EMOTE_TRACKING, testUnit.getFeature());
     }
 
-    @Test
-    public void testPriority() {
-        Assert.assertEquals(ListenerPriority.MEDIUM, testUnit.getPriority());
-    }
 }

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.moderation.listener;
 import dev.sheldan.abstracto.core.models.cache.CachedAttachment;
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -86,13 +87,18 @@ public class MessageDeleteLogListenerTest {
     @Mock
     private Guild guild;
 
+    @Mock
+    private MessageDeletedModel model;
+
     @Test
     public void testExecuteListener() {
         when(deletedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
         when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(member));
-        testUnit.execute(deletedMessage);
+        when(model.getCachedMessage()).thenReturn(deletedMessage);
+        when(model.getServerId()).thenReturn(SERVER_ID);
+        testUnit.execute(model);
         verify(self, times(1)).executeListener(deletedMessage, member);
     }
 

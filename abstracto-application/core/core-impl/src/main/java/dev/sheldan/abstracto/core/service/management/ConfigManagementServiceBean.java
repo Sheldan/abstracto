@@ -60,8 +60,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
                 .name(name)
                 .build();
         log.trace("Creating config entry for type string in server {} and key {}", serverId, name);
-        configRepository.save(config);
-        return config;
+        return configRepository.save(config);
     }
 
     @Override
@@ -74,8 +73,7 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
                 .name(name)
                 .build();
         log.trace("Creating config entry for type double in server {} and key {}", serverId, name);
-        configRepository.save(config);
-        return config;
+        return configRepository.save(config);
     }
 
     @Override
@@ -87,9 +85,8 @@ public class ConfigManagementServiceBean implements ConfigManagementService {
                 .server(server)
                 .name(name)
                 .build();
-        configRepository.save(config);
         log.trace("Creating config entry for type long in server {} and key {}", serverId, name);
-        return config;
+        return configRepository.save(config);
     }
 
     @Override

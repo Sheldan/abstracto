@@ -33,8 +33,7 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
                 .server(user.getServerReference())
                 .build();
         log.info("Persisting the reactor {} for starboard post {} in server {}.", user.getUserReference().getId(), post.getId(), user.getServerReference().getId());
-        repository.save(reactor);
-        return reactor;
+        return repository.save(reactor);
     }
 
     @Override

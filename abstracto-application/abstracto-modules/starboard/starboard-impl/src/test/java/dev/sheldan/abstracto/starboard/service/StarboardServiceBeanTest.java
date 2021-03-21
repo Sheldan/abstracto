@@ -20,15 +20,13 @@ import dev.sheldan.abstracto.starboard.model.database.StarboardPostReaction;
 import dev.sheldan.abstracto.starboard.model.template.*;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorManagementService;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -78,6 +76,12 @@ public class StarboardServiceBeanTest {
     private UserInServerManagementService userInServerManagementService;
 
     @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
     private MessageService messageService;
 
     @Mock
@@ -96,6 +100,9 @@ public class StarboardServiceBeanTest {
     private TextChannel mockedTextChannel;
 
     @Mock
+    private User starredJdaUser;
+
+    @Mock
     private Member starredMember;
 
     @Mock
@@ -107,6 +114,9 @@ public class StarboardServiceBeanTest {
     @Mock
     private AServer server;
 
+    @Mock
+    private AUser aUser;
+
     private static final Long STARRED_USER_ID = 5L;
     private static final Long STARRED_SERVER_USER_ID = 2L;
     private static final Long SERVER_ID = 6L;
@@ -116,6 +126,7 @@ public class StarboardServiceBeanTest {
     private static final Long CHANNEL_ID = 10L;
     private static final Long MESSAGE_ID = 11L;
     private static final Long SECOND_MESSAGE_ID = 12L;
+    private static final Long STARRING_USER_ID = 13L;
 
     @Captor
     private ArgumentCaptor<AUserInAServer> userInAServerArgumentCaptor;
@@ -131,6 +142,8 @@ public class StarboardServiceBeanTest {
         AUserInAServer secondUserExceptAuthor = Mockito.mock(AUserInAServer.class);
         userExceptAuthor.add(secondUserExceptAuthor);
         AUserInAServer userReacting = Mockito.mock(AUserInAServer.class);
+        when(userReacting.getUserReference()).thenReturn(aUser);
+        when(aUser.getId()).thenReturn(STARRING_USER_ID);
         AUserInAServer starredUser = Mockito.mock(AUserInAServer.class);
         when(starredUser.getUserInServerId()).thenReturn(STARRED_SERVER_USER_ID);
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
@@ -139,8 +152,7 @@ public class StarboardServiceBeanTest {
         when(message.getAuthor()).thenReturn(cachedAuthor);
         when(message.getServerId()).thenReturn(SERVER_ID);
         when(message.getChannelId()).thenReturn(CHANNEL_ID);
-        Member authorMember = Mockito.mock(Member.class);
-        when(memberService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(authorMember));
+        when(userService.retrieveUserForId(STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredJdaUser));
         when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
@@ -152,10 +164,11 @@ public class StarboardServiceBeanTest {
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + "2")).thenReturn(config);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + "3")).thenReturn(config);
         when(emoteService.getUsableEmoteOrDefault(SERVER_ID, StarboardFeature.STAR_EMOTE_PREFIX + "2")).thenReturn("b");
-        when(self.sendStarboardPostAndStore(eq(message), eq(STARRED_SERVER_USER_ID), anyList(), any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(self.sendStarboardPostAndStore(eq(message), eq(STARRED_SERVER_USER_ID), anyList(), any(), eq(STARRING_USER_ID))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<Void> createPostFuture = testUnit.createStarboardPost(message, userExceptAuthor, userReacting, starredUser);
         createPostFuture.join();
         Assert.assertFalse(createPostFuture.isCompletedExceptionally());
+        verify(self, times(1)).sendStarboardPostAndStore(eq(message), eq(STARRED_SERVER_USER_ID), anyList(), any(), eq(STARRING_USER_ID));
     }
 
     @Test
@@ -170,8 +183,8 @@ public class StarboardServiceBeanTest {
         when(postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), SERVER_ID)).thenReturn(postTarget);
         when(postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
         ArrayList<Long> userExceptAuthorIds = new ArrayList<>();
-        testUnit.sendStarboardPostAndStore(message, STARRED_USER_ID, userExceptAuthorIds, model);
-        verify(self, times(1)).persistPost(eq(message), eq(userExceptAuthorIds), any(), eq(STARBOARD_CHANNEL_ID), eq(STARRED_USER_ID));
+        testUnit.sendStarboardPostAndStore(message, STARRED_USER_ID, userExceptAuthorIds, model, STARRING_USER_ID);
+        verify(self, times(1)).persistPost(eq(message), eq(userExceptAuthorIds), any(), eq(STARBOARD_CHANNEL_ID), eq(STARRED_USER_ID), eq(STARRING_USER_ID));
     }
 
     @Test
@@ -181,9 +194,13 @@ public class StarboardServiceBeanTest {
         CachedMessage message = Mockito.mock(CachedMessage.class);
         List<Long> userExceptAuthorIds = Arrays.asList(FIRST_USER_IN_SERVER_ID, SECOND_USER_IN_SERVER_ID);
         List<CompletableFuture<Message>> futures = Arrays.asList(CompletableFuture.completedFuture(sendPost));
+        when(sendPost.getGuild()).thenReturn(guild);
+        when(sendPost.getChannel()).thenReturn(mockedTextChannel);
+        when(sendPost.getIdLong()).thenReturn(MESSAGE_ID);
         when(userInServerManagementService.loadUserOptional(STARRED_SERVER_USER_ID)).thenReturn(Optional.of(starredUser));
         when(userInServerManagementService.loadUserOptional(FIRST_USER_IN_SERVER_ID)).thenReturn(Optional.of(userReacting));
         when(userReacting.getUserInServerId()).thenReturn(FIRST_USER_IN_SERVER_ID);
+        when(userReacting.getUserReference()).thenReturn(aUser);
         AChannel channel = Mockito.mock(AChannel.class);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
         StarboardPost post = Mockito.mock(StarboardPost.class);
@@ -191,7 +208,8 @@ public class StarboardServiceBeanTest {
         AUserInAServer secondStarrerUserObj = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadUserOptional(SECOND_USER_IN_SERVER_ID)).thenReturn(Optional.of(secondStarrerUserObj));
         when(secondStarrerUserObj.getUserInServerId()).thenReturn(SECOND_USER_IN_SERVER_ID);
-        testUnit.persistPost(message, userExceptAuthorIds, futures, CHANNEL_ID, STARRED_SERVER_USER_ID);
+        when(secondStarrerUserObj.getUserReference()).thenReturn(aUser);
+        testUnit.persistPost(message, userExceptAuthorIds, futures, CHANNEL_ID, STARRED_SERVER_USER_ID, STARRING_USER_ID);
         verify(starboardPostReactorManagementService, times(2)).addReactor(eq(post), userInAServerArgumentCaptor.capture());
         List<AUserInAServer> addedReactors = userInAServerArgumentCaptor.getAllValues();
         Assert.assertEquals(FIRST_USER_IN_SERVER_ID, addedReactors.get(0).getUserInServerId());
@@ -225,7 +243,7 @@ public class StarboardServiceBeanTest {
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeature.STAR_LVL_CONFIG_PREFIX + 1)).thenReturn(config);
         when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
-        when(memberService.getMemberInServerAsync(SERVER_ID, STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredMember));
+        when(userService.retrieveUserForId(STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredJdaUser));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
         CompletableFuture<Void> future = testUnit.updateStarboardPost(post, message, userExceptAuthor);
         future.join();
@@ -254,7 +272,7 @@ public class StarboardServiceBeanTest {
         CachedMessage message = Mockito.mock(CachedMessage.class);
         List<Long> userExceptAuthorIds = Arrays.asList(FIRST_USER_IN_SERVER_ID);
         List<CompletableFuture<Message>> futures = Arrays.asList(CompletableFuture.completedFuture(sendPost));
-        testUnit.persistPost(message, userExceptAuthorIds, futures, CHANNEL_ID, SECOND_USER_IN_SERVER_ID);
+        testUnit.persistPost(message, userExceptAuthorIds, futures, CHANNEL_ID, SECOND_USER_IN_SERVER_ID, STARRING_USER_ID);
     }
 
     @Test

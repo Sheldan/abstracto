@@ -32,8 +32,7 @@ public class RepostManagementServiceBean implements RepostManagementService {
                 .count(1)
                 .build();
 
-        repostRepository.save(repost);
-        return repost;
+        return repostRepository.save(repost);
     }
 
     @Override

@@ -39,8 +39,7 @@ public class ModMailSubscriberManagementServiceBean implements ModMailSubscriber
 
         log.info("Creating subscription for user {} in server {} for modmail thread {}.",
                 aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId(), modMailThread.getId());
-        modMailSubscriberRepository.save(subscriber);
-        return subscriber;
+        return modMailSubscriberRepository.save(subscriber);
     }
 
     @Override

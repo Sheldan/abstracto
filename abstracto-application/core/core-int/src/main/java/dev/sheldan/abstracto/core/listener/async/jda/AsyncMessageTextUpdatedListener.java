@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
 
-public interface AsyncMessageTextUpdatedListener extends FeatureAware {
-    void execute(CachedMessage messageBefore, CachedMessage messageAfter);
+public interface AsyncMessageTextUpdatedListener extends FeatureAwareListener<MessageTextUpdatedModel, DefaultListenerResult> {
 }

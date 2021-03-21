@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.Prioritized;
-import net.dv8tion.jda.api.entities.Emote;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.EmoteCreatedModel;
 
-public interface EmoteCreatedListener extends FeatureAware, Prioritized {
-    void emoteCreated(Emote createdEmote);
+public interface EmoteCreatedListener extends FeatureAwareListener<EmoteCreatedModel, DefaultListenerResult>, Prioritized {
 }

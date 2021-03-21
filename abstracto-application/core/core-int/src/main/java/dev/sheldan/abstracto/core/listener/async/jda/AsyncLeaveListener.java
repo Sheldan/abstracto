@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
-import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.MemberLeaveModel;
 
-public interface AsyncLeaveListener extends FeatureAware {
-    void execute(ServerUser serverUser);
+public interface AsyncLeaveListener extends FeatureAwareListener<MemberLeaveModel, DefaultListenerResult> {
 }

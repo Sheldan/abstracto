@@ -34,8 +34,7 @@ public class PostedImageManagementBean implements PostedImageManagement {
                 .postedChannel(creation.getChannel())
                 .build();
 
-        postedImageRepository.save(post);
-        return post;
+        return postedImageRepository.save(post);
     }
 
     @Override

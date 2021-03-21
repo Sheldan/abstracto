@@ -1,8 +1,10 @@
 package dev.sheldan.abstracto.starboard.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.starboard.config.StarboardFeatureDefinition;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
@@ -20,14 +22,16 @@ public class StarboardPostDeletedListener implements AsyncMessageDeletedListener
     private StarboardPostManagementService starboardPostManagementService;
 
     @Override
-    public void execute(CachedMessage messageBefore) {
-        Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostId(messageBefore.getMessageId());
+    public DefaultListenerResult execute(MessageDeletedModel model) {
+        CachedMessage message = model.getCachedMessage();
+        Optional<StarboardPost> byStarboardPostId = starboardPostManagementService.findByStarboardPostId(message.getMessageId());
         if(byStarboardPostId.isPresent()) {
             StarboardPost post = byStarboardPostId.get();
             log.info("Removing starboard post: message {}, channel {}, server {}, because the message was deleted",
-                    post.getPostMessageId(), post.getSourceChannel().getId(), messageBefore.getServerId());
-            starboardPostManagementService.setStarboardPostIgnored(messageBefore.getMessageId(), true);
+                    post.getPostMessageId(), post.getSourceChannel().getId(), message.getServerId());
+            starboardPostManagementService.setStarboardPostIgnored(message.getMessageId(), true);
         }
+        return DefaultListenerResult.PROCESSED;
     }
 
     @Override

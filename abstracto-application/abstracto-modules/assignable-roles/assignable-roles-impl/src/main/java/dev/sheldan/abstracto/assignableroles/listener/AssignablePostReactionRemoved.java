@@ -6,10 +6,10 @@ import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceP
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleService;
 import dev.sheldan.abstracto.assignableroles.service.management.AssignableRolePlacePostManagementService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionRemovedListener;
-import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.cache.CachedReactions;
+import dev.sheldan.abstracto.core.models.listener.ReactionRemovedModel;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,31 +45,37 @@ public class AssignablePostReactionRemoved implements AsyncReactionRemovedListen
      * If the {@link AssignableRolePlacePost post} belong to an inactive {@link AssignableRolePlace place} this method ignores the removal.
      * Otherwise the logic according to the configuration
      * of the {@link AssignableRolePlace place} will be executed.
-     * @param message The {@link CachedMessage message} on which a reaction was added
-     * @param reactions All the reactions which are currently known to be on the {@link CachedMessage message}
-     * @param userRemoving The {@link ServerUser serverUser} which removed a {@link net.dv8tion.jda.api.entities.MessageReaction reaction}
+     * @param model The {@link ReactionRemovedModel model} containing the information which reaction was placed where
      */
     @Override
-    public void executeReactionRemoved(CachedMessage message, CachedReactions reactions, ServerUser userRemoving) {
+    public DefaultListenerResult execute(ReactionRemovedModel model) {
+        CachedMessage message = model.getMessage();
+
         Optional<AssignableRolePlacePost> messageOptional = service.findByMessageIdOptional(message.getMessageId());
         if(messageOptional.isPresent()) {
             AssignableRolePlacePost assignablePlacePost = messageOptional.get();
             if(assignablePlacePost.getAssignablePlace().getActive()) {
                 assignablePlacePost.getAssignableRoles().forEach(assignableRole -> {
-                    if(emoteService.compareCachedEmoteWithAEmote(reactions.getEmote(), assignableRole.getEmote())) {
+                    if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), assignableRole.getEmote())) {
                         Long assignableRoleId = assignableRole.getId();
                         log.info("Removing assignable role {} for user {} in server {} from assignable role place {}.", assignableRoleId,
-                                userRemoving.getUserId(), userRemoving.getServerId(), assignablePlacePost.getAssignablePlace().getId());
-                        assignableRoleService.fullyRemoveAssignableRoleFromUser(assignableRole, userRemoving).exceptionally(throwable -> {
-                            log.error("Failed to remove assignable role {} from user {} in server {}.", assignableRoleId, userRemoving.getUserId(), userRemoving.getServerId(), throwable);
+                                model.getUserRemoving().getUserId(), model.getServerId(), assignablePlacePost.getAssignablePlace().getId());
+                        assignableRoleService.fullyRemoveAssignableRoleFromUser(assignableRole, model.getUserRemoving()).exceptionally(throwable -> {
+                            log.error("Failed to remove assignable role {} from user {} in server {}.", assignableRoleId, model.getUserRemoving().getUserId(), model.getServerId(), throwable);
                             return null;
                         });
                     }
                 });
+                return DefaultListenerResult.PROCESSED;
             } else {
-                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), userRemoving.getServerId());
+                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), model.getServerId());
+                return DefaultListenerResult.PROCESSED;
             }
+        } else {
+            return DefaultListenerResult.IGNORED;
         }
     }
+
+
 
 }

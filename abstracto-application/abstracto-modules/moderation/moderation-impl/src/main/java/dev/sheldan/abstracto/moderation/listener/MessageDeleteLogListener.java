@@ -1,8 +1,10 @@
 package dev.sheldan.abstracto.moderation.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageDeletedListener;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -58,10 +60,12 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
     private MessageDeleteLogListener self;
 
     @Override
-    public void execute(CachedMessage messageFromCache) {
-        memberService.getMemberInServerAsync(messageFromCache.getServerId(), messageFromCache.getAuthor().getAuthorId()).thenAccept(member ->
-            self.executeListener(messageFromCache, member)
+    public DefaultListenerResult execute(MessageDeletedModel model) {
+        CachedMessage message = model.getCachedMessage();
+        memberService.getMemberInServerAsync(model.getServerId(), message.getAuthor().getAuthorId()).thenAccept(member ->
+            self.executeListener(message, member)
         );
+        return DefaultListenerResult.PROCESSED;
     }
 
     @Transactional

@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.core.listener.async.jda;
 
-import dev.sheldan.abstracto.core.config.FeatureConfig;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
+import dev.sheldan.abstracto.core.models.listener.ReactionRemovedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -58,16 +56,8 @@ public class AsyncReactionRemovedListenerBean extends ListenerAdapter {
     @Qualifier("reactionRemovedExecutor")
     private TaskExecutor reactionRemovedExecutor;
 
-    private void removeReactionIfThere(CachedMessage message, CachedReactions reaction, ServerUser serverUser) {
-        Optional<CachedReactions> existingReaction = message.getReactions().stream().filter(reaction1 ->
-                reaction1.getEmote().equals(reaction.getEmote())
-        ).findAny();
-        if(existingReaction.isPresent()) {
-            CachedReactions cachedReaction = existingReaction.get();
-            cachedReaction.getUsers().removeIf(user -> user.getUserId().equals(serverUser.getUserId()) && user.getServerId().equals(serverUser.getServerId()));
-            message.getReactions().removeIf(reaction1 -> reaction1.getUsers().isEmpty());
-        }
-    }
+    @Autowired
+    private ListenerService listenerServiceBean;
 
     @Override
     @Transactional
@@ -92,31 +82,32 @@ public class AsyncReactionRemovedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
+    public void callRemoveListeners(GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
         ServerUser serverUser = ServerUser.builder().serverId(cachedMessage.getServerId()).userId(event.getUserIdLong()).build();
         removeReactionIfThere(cachedMessage, reaction, serverUser);
-        reactionRemovedListeners.forEach(reactionRemovedListener -> {
-            try {
-                CompletableFuture.runAsync(() ->
-                    self.executeIndividualReactionRemovedListener(reaction, cachedMessage, serverUser, reactionRemovedListener)
-                , reactionRemovedExecutor)
-                .exceptionally(throwable -> {
-                    log.error("Async reaction removed listener {} failed with exception.", reactionRemovedListener, throwable);
-                    return null;
-                });
-            } catch (AbstractoRunTimeException e) {
-                log.warn(String.format("Failed to execute reaction removed listener %s.", reactionRemovedListener.getClass().getName()), e);
-            }
-        });
+        ReactionRemovedModel model = getModel(event, cachedMessage, serverUser);
+        reactionRemovedListeners.forEach(asyncReactionRemovedListener -> listenerServiceBean.executeFeatureAwareListener(asyncReactionRemovedListener, model, reactionRemovedExecutor));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualReactionRemovedListener(@Nonnull CachedReactions reaction, CachedMessage cachedMessage, ServerUser userRemoving, AsyncReactionRemovedListener reactionRemovedListener) {
-        FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(reactionRemovedListener.getFeature());
-        if(!featureFlagService.isFeatureEnabled(feature, cachedMessage.getServerId())) {
-            return;
+    private ReactionRemovedModel getModel(GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, ServerUser userRemoving) {
+        return ReactionRemovedModel
+                .builder()
+                .memberRemoving(event.getMember())
+                .reaction(event.getReaction())
+                .userRemoving(userRemoving)
+                .message(cachedMessage)
+                .build();
+    }
+
+    private void removeReactionIfThere(CachedMessage message, CachedReactions reaction, ServerUser serverUser) {
+        Optional<CachedReactions> existingReaction = message.getReactions().stream().filter(reaction1 ->
+                reaction1.getEmote().equals(reaction.getEmote())
+        ).findAny();
+        if(existingReaction.isPresent()) {
+            CachedReactions cachedReaction = existingReaction.get();
+            cachedReaction.getUsers().removeIf(user -> user.getUserId().equals(serverUser.getUserId()) && user.getServerId().equals(serverUser.getServerId()));
+            message.getReactions().removeIf(reaction1 -> reaction1.getUsers().isEmpty());
         }
-        reactionRemovedListener.executeReactionRemoved(cachedMessage, reaction, userRemoving);
     }
 
 }

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.starboard.service;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
@@ -18,4 +19,5 @@ public interface StarboardService {
     CompletableFuture<GuildStarStatsModel> retrieveStarStats(Long serverId);
     MemberStarStatsModel retrieveStarStatsForMember(Member member);
     StarStatsPost fromStarboardPost(StarboardPost starboardPost);
+    void deleteStarboardPost(StarboardPost starboardPost, ServerUser userReacting);
 }

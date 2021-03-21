@@ -1,11 +1,9 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.Prioritized;
-import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
 
-public interface ReactionAddedListener extends FeatureAware, Prioritized {
-    void executeReactionAdded(CachedMessage message, GuildMessageReactionAddEvent event, ServerUser serverUser);
+public interface ReactionAddedListener extends FeatureAwareListener<ReactionAddedModel, DefaultListenerResult>, Prioritized {
 }

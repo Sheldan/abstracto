@@ -37,8 +37,7 @@ public class ModMailMessageManagementServiceBean implements ModMailMessageManage
         log.info("Storing created message in DM {} with created message in channel {} caused by message {} to modmail thread {} of user {} in server {}.",
                 dmId, channelMessageId, userPostedMessage.getId(), modMailThread.getId(), author.getUserReference().getId(), author.getServerReference().getId());
 
-        modMailMessageRepository.save(modMailMessage);
-        return modMailMessage;
+        return modMailMessageRepository.save(modMailMessage);
     }
 
     @Override

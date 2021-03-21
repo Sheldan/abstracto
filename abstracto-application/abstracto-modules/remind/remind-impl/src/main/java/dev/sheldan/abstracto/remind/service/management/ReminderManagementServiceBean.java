@@ -35,8 +35,7 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
         log.info("Creating reminder for user {} in server {} in message {} to be reminded at {}.",
                 userToBeReminded.getAUserInAServer().getUserReference().getId(), userToBeReminded.getGuild().getId(), messageId, timeToBeRemindedAt);
 
-        reminderRepository.save(reminder);
-        return reminder;
+        return reminderRepository.save(reminder);
     }
 
     @Override

@@ -1,11 +1,9 @@
 package dev.sheldan.abstracto.core.listener.sync.jda;
 
-import dev.sheldan.abstracto.core.FeatureAware;
 import dev.sheldan.abstracto.core.Prioritized;
-import dev.sheldan.abstracto.core.models.AServerAChannelAUser;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 
-public interface MessageDeletedListener extends FeatureAware, Prioritized {
-    void execute(CachedMessage messageBefore, AServerAChannelAUser authorUser, GuildChannelMember authorMember);
+public interface MessageDeletedListener extends FeatureAwareListener<MessageDeletedModel, DefaultListenerResult>, Prioritized {
 }

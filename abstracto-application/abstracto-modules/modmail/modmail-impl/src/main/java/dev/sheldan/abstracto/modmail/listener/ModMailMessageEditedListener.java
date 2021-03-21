@@ -4,10 +4,12 @@ import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -62,34 +64,32 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
     private ModMailThreadService modMailThreadService;
 
     @Override
-    public void execute(CachedMessage messageBefore, CachedMessage messageAfter) {
+    public DefaultListenerResult execute(MessageTextUpdatedModel model) {
+        CachedMessage messageBefore = model.getBefore();
+        Message message = model.getAfter();
         if(!modMailThreadService.isModMailThread(messageBefore.getChannelId())) {
-            return;
+            return DefaultListenerResult.IGNORED;
         }
-
-        messageService.loadMessageFromCachedMessage(messageAfter).thenAccept(loadedMessage ->
-            self.executeMessageUpdatedLogic(messageBefore, messageAfter, loadedMessage)
-        );
-    }
-
-    @Transactional
-    public void executeMessageUpdatedLogic(CachedMessage messageBefore, CachedMessage messageAfter, Message loadedMessage) {
         Optional<ModMailMessage> messageOptional = modMailMessageManagementService.getByMessageIdOptional(messageBefore.getMessageId());
-        messageOptional.ifPresent(modMailMessage -> {
-            log.info("Editing send message {} in channel {} in mod mail thread {} in server {}.", messageBefore.getMessageId(), messageBefore.getChannelId(), modMailMessage.getThreadReference().getId(), messageBefore.getServerId());
-            String contentStripped = messageAfter.getContent();
-            String commandName = commandRegistry.getCommandName(contentStripped.substring(0, contentStripped.indexOf(" ")), messageBefore.getServerId());
-            if(!commandService.doesCommandExist(commandName)) {
-                commandName = DEFAULT_COMMAND_FOR_MODMAIL_EDIT;
-                log.info("Edit did not contain the original command to retrieve the parameters for. Resulting to {}.", DEFAULT_COMMAND_FOR_MODMAIL_EDIT);
-            }
-            CompletableFuture<Parameters> parameterParseFuture = commandService.getParametersForCommand(commandName, loadedMessage);
-            CompletableFuture<Member> loadTargetUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId());
-            CompletableFuture<Member> loadEditingUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getAuthor().getUserReference().getId());
-            CompletableFuture.allOf(parameterParseFuture, loadTargetUser, loadEditingUser).thenAccept(unused ->
-                    self.updateMessageInThread(loadedMessage, parameterParseFuture.join(), loadTargetUser.join(), loadEditingUser.join())
-            );
-        });
+        if(messageOptional.isPresent()) {
+            messageOptional.ifPresent(modMailMessage -> {
+                log.info("Editing send message {} in channel {} in mod mail thread {} in server {}.", messageBefore.getMessageId(), messageBefore.getChannelId(), modMailMessage.getThreadReference().getId(), messageBefore.getServerId());
+                String contentStripped = message.getContentStripped();
+                String commandName = commandRegistry.getCommandName(contentStripped.substring(0, contentStripped.indexOf(" ")), messageBefore.getServerId());
+                if(!commandService.doesCommandExist(commandName)) {
+                    commandName = DEFAULT_COMMAND_FOR_MODMAIL_EDIT;
+                    log.info("Edit did not contain the original command to retrieve the parameters for. Resulting to {}.", DEFAULT_COMMAND_FOR_MODMAIL_EDIT);
+                }
+                CompletableFuture<Parameters> parameterParseFuture = commandService.getParametersForCommand(commandName, message);
+                CompletableFuture<Member> loadTargetUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId());
+                CompletableFuture<Member> loadEditingUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getAuthor().getUserReference().getId());
+                CompletableFuture.allOf(parameterParseFuture, loadTargetUser, loadEditingUser).thenAccept(unused ->
+                    self.updateMessageInThread(message, parameterParseFuture.join(), loadTargetUser.join(), loadEditingUser.join())
+                );
+            });
+            return DefaultListenerResult.PROCESSED;
+        }
+        return DefaultListenerResult.IGNORED;
     }
 
     @Transactional

@@ -1,14 +1,13 @@
 package dev.sheldan.abstracto.linkembed.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionAddedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
-import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -59,21 +58,22 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
             .tagList(Arrays.asList(MetricTag.getTag(MESSAGE_EMBED_ACTION, "removed.source")))
             .build();
 
-
     @Override
-    public void executeReactionAdded(CachedMessage message, CachedReactions cachedReaction, ServerUser serverUser) {
-        Long guildId = message.getServerId();
-        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(REMOVAL_EMOTE, guildId);
-        if(emoteService.compareCachedEmoteWithAEmote(cachedReaction.getEmote(), aEmote)) {
-            Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
+    public DefaultListenerResult execute(ReactionAddedModel model) {
+        Long serverId = model.getServerId();
+        AEmote aEmote = emoteService.getEmoteOrDefaultEmote(REMOVAL_EMOTE, serverId);
+        if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
+            Long messageId = model.getMessage().getMessageId();
+            Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(messageId);
             if(embeddedMessageOptional.isPresent()) {
+                Long channelId = model.getMessage().getChannelId();
                 EmbeddedMessage embeddedMessage = embeddedMessageOptional.get();
-                boolean embeddedUserRemoves = embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(serverUser.getUserId());
-                boolean embeddingUserRemoves = embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(serverUser.getUserId());
+                boolean embeddedUserRemoves = embeddedMessage.getEmbeddedUser().getUserReference().getId().equals(model.getUserReacting().getUserId());
+                boolean embeddingUserRemoves = embeddedMessage.getEmbeddingUser().getUserReference().getId().equals(model.getUserReacting().getUserId());
                 if(embeddedUserRemoves || embeddingUserRemoves) {
-                    log.info("Removing embed in message {} in channel {} in server {} because of a user reaction.", message.getMessageId(), message.getChannelId(), message.getServerId());
-                    messageService.deleteMessageInChannelInServer(message.getServerId(), message.getChannelId(), message.getMessageId()).thenAccept(aVoid -> {
-                        Optional<EmbeddedMessage> innerOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(message.getMessageId());
+                    log.info("Removing embed in message {} in channel {} in server {} because of a user reaction.", messageId, channelId, serverId);
+                    messageService.deleteMessageInChannelInServer(serverId, channelId, messageId).thenAccept(aVoid -> {
+                        Optional<EmbeddedMessage> innerOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(messageId);
                         innerOptional.ifPresent(value -> messageEmbedPostManagementService.deleteEmbeddedMessage(value));
                         if(embeddedUserRemoves) {
                             metricService.incrementCounter(MESSAGE_EMBED_REMOVED_SOURCE);
@@ -83,13 +83,19 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
                     });
                 } else {
                     log.trace("Somebody besides the original author and the user embedding added the removal reaction to the message {} in channel {} in server {}.",
-                            message.getMessageId(), message.getChannelId(), message.getServerId());
+                            messageId, channelId, serverId);
+                    return DefaultListenerResult.IGNORED;
                 }
 
             } else {
                 log.trace("Removal emote was placed on a message which was not recognized as an embedded message.");
+                return DefaultListenerResult.IGNORED;
             }
+            return DefaultListenerResult.PROCESSED;
+        } else {
+            return DefaultListenerResult.IGNORED;
         }
+
     }
 
     @Override
