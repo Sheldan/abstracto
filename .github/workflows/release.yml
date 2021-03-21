@@ -28,3 +28,15 @@ jobs:
           branch: master
           ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           folder: abstracto-application/documentation/target/generated-docs
+      - name: Login to GitHub Packages Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push deployment container
+        working-directory: ./abstracto-application/installer/src/main/docker/deployment
+        run: docker-compose build && docker-compose push
+        env:
+          REGISTRY_PREFIX: docker.pkg.github.com/sheldan/abstracto
+          VERSION: ${{ env.version }}
