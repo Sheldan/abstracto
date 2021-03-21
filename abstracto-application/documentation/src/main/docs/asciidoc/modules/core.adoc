@@ -140,6 +140,9 @@ Retrieving the current customized template for this server::
 Resetting a customized template to the default template::
 * Usage `resetTemplate <templateKey>`
 * Description: Resets the template identified by `templateKey` to the default content.
+Show a link to documentation::
+* Usage `documentation`
+* Description: Shows links to access the documentation.
 
 
 .What does it mean if a role is immune?

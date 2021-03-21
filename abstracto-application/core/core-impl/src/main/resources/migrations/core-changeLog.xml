@@ -8,4 +8,5 @@
     http://www.liquibase.org/xml/ns/pro dbchangelog-3.8.xsd" >
     <include file="1.0-core/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.0-templating/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.1-core/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
