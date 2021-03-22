@@ -12,7 +12,7 @@ fi
 if [ "x$EXECUTE_TEMPLATES" = 'xtrue' ]; then
   DEPLOY_TEMPLATES=yes
 fi
-exit_code = 0
+exit_code=0
 if [ "x$EXECUTE_DEPLOYMENT" = 'xtrue' ]; then
    python3 -u python/main.py $DEPLOY_TEMPLATES $DEPLOY_LIQUIBASE
    exit_code=$?

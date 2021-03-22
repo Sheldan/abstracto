@@ -139,9 +139,13 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     public AChannelGroup findByNameAndServerAndType(String name, AServer server, String expectedType) {
         String lowerName = name.toLowerCase();
         Optional<AChannelGroup> channelOptional = channelGroupRepository.findByGroupNameAndServerAndChannelGroupType_GroupTypeKey(lowerName, server, expectedType);
-        return channelOptional.orElseThrow( () -> {
-            List<String> channelGroupNames = extractChannelGroupNames(findAllInServerWithType(server.getId(), expectedType));
-            return new ChannelGroupNotFoundException(name.toLowerCase(), channelGroupNames);
+        return channelOptional.orElseThrow(() -> {
+            if(channelGroupRepository.existsByGroupNameAndServer(lowerName, server)) {
+                return new ChannelGroupIncorrectTypeException(name.toLowerCase(), expectedType);
+            } else {
+                List<String> channelGroupNames = extractChannelGroupNames(findAllInServerWithType(server.getId(), expectedType));
+                return new ChannelGroupNotFoundException(name.toLowerCase(), channelGroupNames);
+            }
         });
     }
 

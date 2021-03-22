@@ -34,6 +34,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
         AChannelGroupCommand channelGroupCommand = AChannelGroupCommand
                 .builder()
                 .command(command)
+                .server(group.getServer())
                 .group(group)
                 .enabled(false)
                 .build();

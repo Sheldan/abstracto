@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static dev.sheldan.abstracto.core.command.CommandConstants.COMMAND_CHANNEL_GROUP_KEY;
+
 @Component
 public class ChannelGroupServiceBean implements ChannelGroupService {
 
@@ -95,10 +97,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     @Override
     public void disableCommandInChannelGroup(String commandName, String channelGroupName, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
-        if(channelGroup == null) {
-            throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
-        }
+        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServerAndType(channelGroupName, server, COMMAND_CHANNEL_GROUP_KEY);
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
             throw new CommandNotFoundException();
@@ -109,10 +108,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     @Override
     public void enableCommandInChannelGroup(String commandName, String channelGroupName, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
-        if(channelGroup == null) {
-            throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
-        }
+        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServerAndType(channelGroupName, server, COMMAND_CHANNEL_GROUP_KEY);
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
             throw new CommandNotFoundException();
