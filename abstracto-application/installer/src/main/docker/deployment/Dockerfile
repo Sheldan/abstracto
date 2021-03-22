@@ -11,16 +11,16 @@ RUN apt-get update \
 
 # Install liquibase
 RUN mkdir -p /liqiubase \
-&& wget https://github.com/liquibase/liquibase/releases/download/v${liquibase_version}/liquibase-${liquibase_version}.zip -O /tmp/liquibase.zip \
+&& wget -nv https://github.com/liquibase/liquibase/releases/download/v${liquibase_version}/liquibase-${liquibase_version}.zip -O /tmp/liquibase.zip \
 && unzip /tmp/liquibase.zip -d /liquibase
 
 RUN mkdir -p /java \
-&& wget https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.tar.gz -O /tmp/java.tar.gz \
+&& wget -nv https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.tar.gz -O /tmp/java.tar.gz \
 && tar -xf /tmp/java.tar.gz --strip-components=1 -C /java
 
 # Install postgres driver
 RUN mkdir -p /postgres \
-&& wget https://jdbc.postgresql.org/download/postgresql-${postgres_driver_version}.jar -O /postgres/driver.jar
+&& wget -nv https://jdbc.postgresql.org/download/postgresql-${postgres_driver_version}.jar -O /postgres/driver.jar
 
 # Install ansible and required libraries
 
