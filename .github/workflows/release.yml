@@ -46,5 +46,5 @@ jobs:
         working-directory: ./abstracto-application/installer/src/main/docker/deployment
         run: docker-compose build && docker-compose push
         env:
-          REGISTRY_PREFIX: docker.pkg.github.com/sheldan/abstracto
+          REGISTRY_PREFIX: docker.pkg.github.com/sheldan/abstracto/
           VERSION: ${{ env.version }}
