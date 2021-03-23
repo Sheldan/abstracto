@@ -5,7 +5,7 @@ from sqlalchemy.sql import text
 
 
 def deploy_template_folder(db_config, folder):
-    engine = db.create_engine('postgres://%s:%s@%s:%s/%s' % (db_config.user, db_config.password, db_config.host, db_config.port, db_config.database))
+    engine = db.create_engine('postgresql://%s:%s@%s:%s/%s' % (db_config.user, db_config.password, db_config.host, db_config.port, db_config.database))
 
     if not os.path.isdir(folder):
         print("Given path was not a folder. Exiting.")

@@ -33,9 +33,13 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
                 return false;
             }
         }
-        // empty -> no groups, command enabled
-        // not empty -> has groups, command is disabled in all
-        return allChannelGroupsOfCommand.isEmpty();
+        /*
+            if we are here this means either:
+            the command has no channel groups assigned -> enabled
+            the command has one or more channel group and is enabled in these ones -> enabled
+            the command has a channel group with channels (and it might be enabled/disabled, does not matter), but the given channel is not part of that group -> ok
+         */
+        return true;
     }
 
     @Override

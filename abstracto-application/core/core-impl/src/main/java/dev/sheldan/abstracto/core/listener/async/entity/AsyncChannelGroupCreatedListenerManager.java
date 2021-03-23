@@ -25,6 +25,7 @@ public class AsyncChannelGroupCreatedListenerManager {
 
     @TransactionalEventListener
     public void executeListener(ChannelGroupCreatedListenerModel createdGroup){
+        if(listener == null) return;
         listener.forEach(asyncChannelGroupCreatedListener ->
             listenerService.executeListener(asyncChannelGroupCreatedListener, createdGroup, channelGroupCreatedExecutor)
         );
