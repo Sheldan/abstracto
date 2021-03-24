@@ -49,8 +49,8 @@ public class LoveCalc extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("firstSubject").type(String.class).templated(true).optional(true).build());
-        parameters.add(Parameter.builder().name("secondSubject").type(String.class).templated(true).optional(true).build());
+        parameters.add(Parameter.builder().name("firstSubject").type(String.class).templated(true).build());
+        parameters.add(Parameter.builder().name("secondSubject").type(String.class).templated(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("loveCalc")
