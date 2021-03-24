@@ -163,7 +163,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
             if(reaction.getGuild() != null) {
                 aUsers.add(ServerUser.builder().userId(user.getIdLong()).serverId(reaction.getGuild().getIdLong()).build());
             }
-            return false;
+            return true;
         }).whenComplete((o, throwable) -> {
             log.trace("{} Users have been loaded. Completing future.", aUsers.size());
             if(throwable != null) {
