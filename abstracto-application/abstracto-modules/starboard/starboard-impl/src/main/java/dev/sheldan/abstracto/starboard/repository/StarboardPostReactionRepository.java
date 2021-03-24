@@ -15,6 +15,8 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
 
     void deleteByStarboardPost(StarboardPost post);
 
+    long countByStarboardPost(StarboardPost post);
+
     @Query(value = "SELECT r.reactor_user_in_server_id as userId, COUNT(*) AS starCount \n" +
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +

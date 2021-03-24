@@ -198,7 +198,7 @@ public class StarboardPostManagementServiceBeanTest {
         StarboardPost starboardPost2 = Mockito.mock(StarboardPost.class);
         List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2);
         when(repository.findByServer_Id(SERVER_ID)).thenReturn(posts);
-        Integer retrievedPostCount = testUnit.getPostCount(SERVER_ID);
+        Long retrievedPostCount = testUnit.getPostCount(SERVER_ID);
         Assert.assertEquals(posts.size(), retrievedPostCount.intValue());
     }
 }

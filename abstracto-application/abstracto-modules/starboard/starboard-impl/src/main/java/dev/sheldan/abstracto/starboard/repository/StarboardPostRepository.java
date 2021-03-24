@@ -18,6 +18,8 @@ public interface StarboardPostRepository extends JpaRepository<StarboardPost, Lo
 
     List<StarboardPost> findByServer_Id(Long serverId);
 
+    Long countByServer_Id(Long serverId);
+
     @Query(value = "SELECT p.id, COUNT(*) AS starCount \n" +
             " FROM starboard_post p \n" +
             " INNER JOIN starboard_post_reaction r ON p.id = r.post_id\n" +
@@ -29,6 +31,16 @@ public interface StarboardPostRepository extends JpaRepository<StarboardPost, Lo
             " ORDER BY starCount DESC \n" +
             " LIMIT :count", nativeQuery = true)
     List<Long> getTopStarboardPostsForUser(Long serverId, Long userId, Integer count);
+
+    @Query(value = "SELECT p.id, COUNT(*) AS starCount \n" +
+            " FROM starboard_post p \n" +
+            " INNER JOIN starboard_post_reaction r ON p.id = r.post_id\n" +
+            " WHERE p.server_id = :serverId\n" +
+            " AND p.ignored = false\n" +
+            " GROUP BY p.id \n" +
+            " ORDER BY starCount DESC \n" +
+            " LIMIT :count", nativeQuery = true)
+    List<Long> getTopStarboardPostsForServer(Long serverId, Integer count);
 
     @Query(value = "SELECT COUNT(*) AS starCount\n" +
             "FROM starboard_post_reaction r \n" +

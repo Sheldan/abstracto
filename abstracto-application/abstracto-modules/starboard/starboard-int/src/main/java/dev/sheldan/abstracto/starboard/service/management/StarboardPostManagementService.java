@@ -17,7 +17,7 @@ public interface StarboardPostManagementService {
     Long retrieveGivenStarsOfUserInServer(Long serverId, Long userId);
     Long retrieveReceivedStarsOfUserInServer(Long serverId, Long userId);
     List<StarboardPost> retrieveAllPosts(Long serverId);
-    Integer getPostCount(Long serverId);
+    Long getPostCount(Long serverId);
     Optional<StarboardPost> findByMessageId(Long messageId);
     Optional<StarboardPost> findByStarboardPostId(Long postId);
     Optional<StarboardPost> findByStarboardPostMessageId(Long postId);

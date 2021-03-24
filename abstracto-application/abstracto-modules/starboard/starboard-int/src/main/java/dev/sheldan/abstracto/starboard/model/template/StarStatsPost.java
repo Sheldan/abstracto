@@ -12,7 +12,7 @@ public class StarStatsPost {
     private Long serverId;
     private Long channelId;
     private Long messageId;
-    private Integer starCount;
+    private Long starCount;
 
     public String getMessageUrl() {
         return MessageUtils.buildMessageUrl(serverId ,channelId, messageId);

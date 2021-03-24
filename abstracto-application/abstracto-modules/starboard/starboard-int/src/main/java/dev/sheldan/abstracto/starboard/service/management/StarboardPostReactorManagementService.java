@@ -15,4 +15,5 @@ public interface StarboardPostReactorManagementService {
     Integer getStarCount(Long serverId);
     List<CompletableFuture<StarStatsUser>> retrieveTopStarGiver(Long serverId, Integer count);
     List<CompletableFuture<StarStatsUser>> retrieveTopStarReceiver(Long serverId, Integer count);
+    Long getReactorCountOfPost(StarboardPost starboardPost);
 }

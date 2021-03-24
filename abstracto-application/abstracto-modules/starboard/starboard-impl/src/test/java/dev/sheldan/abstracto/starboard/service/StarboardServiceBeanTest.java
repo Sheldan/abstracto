@@ -298,7 +298,7 @@ public class StarboardServiceBeanTest {
         List<CompletableFuture<StarStatsUser>> topGiver = Arrays.asList(statsUser, statsUser2);
         when(starboardPostReactorManagementService.retrieveTopStarGiver(SERVER_ID, limit)).thenReturn(topGiver);
         when(starboardPostReactorManagementService.retrieveTopStarReceiver(SERVER_ID, limit)).thenReturn(topGiver);
-        when(starboardPostManagementService.getPostCount(SERVER_ID)).thenReturn(50);
+        when(starboardPostManagementService.getPostCount(SERVER_ID)).thenReturn(50L);
         when(starboardPostReactorManagementService.getStarCount(SERVER_ID)).thenReturn(500);
         when(emoteService.getUsableEmoteOrDefault(SERVER_ID, "starboardBadge1")).thenReturn("1");
         when(emoteService.getUsableEmoteOrDefault(SERVER_ID, "starboardBadge2")).thenReturn("2");

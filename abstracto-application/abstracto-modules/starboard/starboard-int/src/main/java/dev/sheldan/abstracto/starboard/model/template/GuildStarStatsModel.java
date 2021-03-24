@@ -15,5 +15,5 @@ public class GuildStarStatsModel {
     private List<StarStatsUser> starGiver;
     private Integer totalStars;
     private List<String> badgeEmotes;
-    private Integer starredMessages;
+    private Long starredMessages;
 }

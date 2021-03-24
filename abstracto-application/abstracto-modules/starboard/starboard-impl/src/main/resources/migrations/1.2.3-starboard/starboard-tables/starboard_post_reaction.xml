@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="additional_starboard_reaction-index">
+        <createIndex indexName="idx_starboard_reaction_user" tableName="starboard_post_reaction">
+            <column name="reactor_user_in_server_id"/>
+        </createIndex>
+        <createIndex indexName="idx_starboard_reaction_post" tableName="starboard_post_reaction">
+            <column name="post_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

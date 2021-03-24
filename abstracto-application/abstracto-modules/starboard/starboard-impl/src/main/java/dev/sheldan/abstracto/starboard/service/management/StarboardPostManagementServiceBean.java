@@ -58,10 +58,8 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public List<StarboardPost> retrieveTopPosts(Long serverId, Integer count) {
-        List<StarboardPost> posts = retrieveAllPosts(serverId);
-        posts.sort(Comparator.comparingInt(o -> o.getReactions().size()));
-        Collections.reverse(posts);
-        return posts.subList(0, Math.min(count, posts.size()));
+        List<Long> topPostIds = repository.getTopStarboardPostsForServer(serverId, count);
+        return repository.findAllById(topPostIds);
     }
 
     @Override
@@ -86,8 +84,8 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
     }
 
     @Override
-    public Integer getPostCount(Long serverId) {
-        return retrieveAllPosts(serverId).size();
+    public Long getPostCount(Long serverId) {
+        return repository.countByServer_Id(serverId);
     }
 
     @Override

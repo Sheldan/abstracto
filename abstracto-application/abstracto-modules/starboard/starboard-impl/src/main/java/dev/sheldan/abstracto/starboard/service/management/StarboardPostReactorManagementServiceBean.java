@@ -65,4 +65,9 @@ public class StarboardPostReactorManagementServiceBean implements StarboardPostR
         return converter.convertToStarStatsUser(starReceivers, serverId);
     }
 
+    @Override
+    public Long getReactorCountOfPost(StarboardPost starboardPost) {
+        return repository.countByStarboardPost(starboardPost);
+    }
+
 }
