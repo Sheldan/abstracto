@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -223,7 +224,7 @@ public class StarboardServiceBean implements StarboardService {
         Long receivedStars = starboardPostManagementService.retrieveReceivedStarsOfUserInServer(member.getGuild().getIdLong(), member.getIdLong());
         Long givenStars = starboardPostManagementService.retrieveGivenStarsOfUserInServer(member.getGuild().getIdLong(), member.getIdLong());
         List<StarboardPost> topPosts = starboardPostManagementService.retrieveTopPostsForUserInServer(member.getGuild().getIdLong(), member.getIdLong(), count);
-        List<StarStatsPost> starStatsPosts = topPosts.stream().map(this::fromStarboardPost).collect(Collectors.toList());
+        List<StarStatsPost> starStatsPosts = topPosts.stream().map(this::fromStarboardPost).sorted(Comparator.comparingInt(StarStatsPost::getStarCount).reversed()).collect(Collectors.toList());
         List<String> emotes = new ArrayList<>();
         for (int i = 1; i < count + 1; i++) {
             emotes.add(getStarboardRankingEmote(member.getGuild().getIdLong(), i));
