@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationActi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.time.Instant;
@@ -155,40 +154,27 @@ public class CacheEntityServiceBean implements CacheEntityService {
     @Override
     public CompletableFuture<CachedReactions> getCachedReactionFromReaction(MessageReaction reaction) {
         CompletableFuture<CachedReactions> future = new CompletableFuture<>();
-        ReactionPaginationAction users = reaction.retrieveUsers();
+        ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
         CachedReactions.CachedReactionsBuilder builder = CachedReactions.builder();
 
         List<ServerUser> aUsers = new ArrayList<>();
         users.forEachAsync(user -> {
             log.trace("Loading user {} for reaction.", user.getIdLong());
-            concreteSelf.loadUser(reaction, aUsers, user);
+            if(reaction.getGuild() != null) {
+                aUsers.add(ServerUser.builder().userId(user.getIdLong()).serverId(reaction.getGuild().getIdLong()).build());
+            }
             return false;
-        }).thenAccept(o -> {
-            log.trace("Users have been loaded. Completing future.");
+        }).whenComplete((o, throwable) -> {
+            log.trace("{} Users have been loaded. Completing future.", aUsers.size());
+            if(throwable != null) {
+                log.error("Reaction user retrieval failed. Completing with what we have.", throwable);
+            }
             builder.users(aUsers);
             builder.self(reaction.isSelf());
             builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
             future.complete(builder.build());
-        })
-        .exceptionally(throwable -> {
-            log.error("Failed to load reaction users.", throwable);
-            return null;
         });
-        if(users.isEmpty()) {
-            log.trace("Reaction had no users. Completing future anyway.");
-            builder.users(aUsers);
-            builder.self(reaction.isSelf());
-            builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
-            future.complete(builder.build());
-        }
         return future;
-    }
-
-    @Transactional
-    public void loadUser(MessageReaction reaction, List<ServerUser> aUsers, User user) {
-        if(reaction.getGuild() != null) {
-            aUsers.add(ServerUser.builder().userId(user.getIdLong()).serverId(reaction.getGuild().getIdLong()).build());
-        }
     }
 
     @Override
