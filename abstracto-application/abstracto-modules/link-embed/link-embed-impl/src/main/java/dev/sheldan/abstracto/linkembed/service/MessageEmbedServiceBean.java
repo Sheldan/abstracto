@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class MessageEmbedServiceBean implements MessageEmbedService {
 
-    private Pattern messageRegex = Pattern.compile("(?<whole>https://discord(?:app)?.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+");
+    private final Pattern messageRegex = Pattern.compile("(?<whole>(?:https?://)?(?:\\w+\\.)?discord(?:app)?\\.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+");
 
     public static final String MESSAGE_EMBED_TEMPLATE = "message_embed";
     public static final String REMOVAL_EMOTE = "removeEmbed";
