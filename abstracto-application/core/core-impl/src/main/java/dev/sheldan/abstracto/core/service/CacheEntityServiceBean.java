@@ -86,6 +86,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
         }
         List<MessageEmbed.Field> fields = embed.getFields();
         if(!fields.isEmpty()) {
+            log.trace("Caching {} fields.", fields.size());
             List<CachedEmbedField> cachedEmbedFields = new ArrayList<>();
             fields.forEach(field -> {
                 CachedEmbedField build = CachedEmbedField
@@ -159,16 +160,27 @@ public class CacheEntityServiceBean implements CacheEntityService {
 
         List<ServerUser> aUsers = new ArrayList<>();
         users.forEachAsync(user -> {
+            log.trace("Loading user {} for reaction.", user.getIdLong());
             concreteSelf.loadUser(reaction, aUsers, user);
             return false;
-        }).thenAccept(o -> future.complete(builder.build()))
-                .exceptionally(throwable -> {
-                    log.error("Failed to load reaction users.", throwable);
-                    return null;
-                });
-        builder.users(aUsers);
-        builder.self(reaction.isSelf());
-        builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
+        }).thenAccept(o -> {
+            log.trace("Users have been loaded. Completing future.");
+            builder.users(aUsers);
+            builder.self(reaction.isSelf());
+            builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
+            future.complete(builder.build());
+        })
+        .exceptionally(throwable -> {
+            log.error("Failed to load reaction users.", throwable);
+            return null;
+        });
+        if(users.isEmpty()) {
+            log.trace("Reaction had no users. Completing future anyway.");
+            builder.users(aUsers);
+            builder.self(reaction.isSelf());
+            builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
+            future.complete(builder.build());
+        }
         return future;
     }
 
@@ -183,22 +195,25 @@ public class CacheEntityServiceBean implements CacheEntityService {
     public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message) {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         List<CachedAttachment> attachments = new ArrayList<>();
+        log.trace("Caching {} attachments.", message.getAttachments().size());
         message.getAttachments().forEach(attachment ->
                 attachments.add(getCachedAttachment(attachment))
         );
+        log.trace("Caching {} embeds.", message.getEmbeds().size());
         List<CachedEmbed> embeds = new ArrayList<>();
         message.getEmbeds().forEach(embed ->
                 embeds.add(getCachedEmbedFromEmbed(embed))
         );
 
+        log.trace("Caching {} emotes.", message.getEmbeds().size());
         List<CachedEmote> emotes = new ArrayList<>();
         if(message.isFromGuild()) {
             message.getEmotesBag().forEach(emote -> emotes.add(getCachedEmoteFromEmote(emote, message.getGuild())));
         }
 
         List<CompletableFuture<CachedReactions>> futures = new ArrayList<>();
+        log.trace("Caching {} reactions.", message.getReactions().size());
         message.getReactions().forEach(messageReaction -> futures.add(getCachedReactionFromReaction(messageReaction)));
-
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
                 {
                     CachedAuthor cachedAuthor = CachedAuthor.builder().authorId(message.getAuthor().getIdLong()).isBot(message.getAuthor().isBot()).build();
@@ -222,6 +237,23 @@ public class CacheEntityServiceBean implements CacheEntityService {
             log.error("Failed to load reactions for message {}. ", message.getId(), throwable);
             return null;
         });
+        if(message.getReactions().isEmpty()) {
+            CachedAuthor cachedAuthor = CachedAuthor.builder().authorId(message.getAuthor().getIdLong()).isBot(message.getAuthor().isBot()).build();
+            CachedMessage.CachedMessageBuilder builder = CachedMessage.builder()
+                    .author(cachedAuthor)
+                    .messageId(message.getIdLong())
+                    .channelId(message.getChannel().getIdLong())
+                    .content(message.getContentRaw())
+                    .embeds(embeds)
+                    .emotes(emotes)
+                    .timeCreated(Instant.from(message.getTimeCreated()))
+                    .attachments(attachments);
+            if(message.isFromGuild()) {
+                builder.serverId(message.getGuild().getIdLong());
+            }
+            future.complete(builder
+                    .build());
+        }
         return future;
     }
 

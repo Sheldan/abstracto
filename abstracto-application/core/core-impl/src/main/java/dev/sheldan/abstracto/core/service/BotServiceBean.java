@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.internal.utils.IOUtil;
 import okhttp3.OkHttpClient;
@@ -26,7 +25,7 @@ public class BotServiceBean implements BotService {
 
     @Override
     public void login() throws LoginException {
-        JDABuilder builder = JDABuilder.create(System.getenv("TOKEN"), GatewayIntent.GUILD_MEMBERS, GUILD_VOICE_STATES,
+        JDABuilder builder = JDABuilder.create(System.getenv("TOKEN"), GUILD_VOICE_STATES,
                 GUILD_EMOJIS, GUILD_MEMBERS, GUILD_MESSAGE_REACTIONS, GUILD_MESSAGES,
                 GUILD_MESSAGE_REACTIONS, DIRECT_MESSAGE_REACTIONS, DIRECT_MESSAGES, GUILD_PRESENCES);
 
