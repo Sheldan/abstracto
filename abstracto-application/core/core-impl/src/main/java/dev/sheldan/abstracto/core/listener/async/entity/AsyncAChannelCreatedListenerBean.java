@@ -10,10 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.annotation.Nonnull;
@@ -39,8 +41,16 @@ public class AsyncAChannelCreatedListenerBean extends ListenerAdapter {
     @Qualifier("aChannelCreatedExecutor")
     private TaskExecutor channelCreatedExecutor;
 
+    @Autowired
+    private AsyncAChannelCreatedListenerBean self;
+
     @Override
     public void onTextChannelCreate(@Nonnull TextChannelCreateEvent event) {
+        self.createChannelInDatabase(event);
+    }
+
+    @Transactional
+    public void createChannelInDatabase(@NotNull TextChannelCreateEvent event) {
         log.info("Creating text channel with ID {}.", event.getChannel().getIdLong());
         AServer serverObject = serverManagementService.loadOrCreate(event.getChannel().getGuild().getIdLong());
         TextChannel createdChannel = event.getChannel();
