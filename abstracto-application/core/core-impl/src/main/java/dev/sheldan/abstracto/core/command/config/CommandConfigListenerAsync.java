@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.config;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
@@ -39,7 +39,7 @@ public class CommandConfigListenerAsync implements AsyncServerCreatedListener {
             if(command.getConfiguration() != null) {
                 ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
                 if(!commandInServerManagementService.doesCommandExistInServer(aCommand, server)) {
-                    commandInServerManagementService.crateCommandInServer(aCommand, server);
+                    commandInServerManagementService.createCommandInServer(aCommand, server);
                 }
             }
         });

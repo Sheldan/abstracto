@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
-import dev.sheldan.abstracto.core.command.models.condition.GenericConditionModel;
+import dev.sheldan.abstracto.core.command.model.condition.GenericConditionModel;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.service.ChannelService;

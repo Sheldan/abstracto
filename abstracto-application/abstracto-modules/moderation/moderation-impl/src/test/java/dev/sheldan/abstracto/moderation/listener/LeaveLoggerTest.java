@@ -51,14 +51,11 @@ public class LeaveLoggerTest {
 
      @Test
      public void testExecute() {
-         when(leavingUser.getUserId()).thenReturn(USER_ID);
-         when(leavingUser.getServerId()).thenReturn(SERVER_ID);
-         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(member));
+         when(model.getServerId()).thenReturn(SERVER_ID);
          when(model.getMember()).thenReturn(member);
          User user = Mockito.mock(User.class);
          when(member.getUser()).thenReturn(user);
          String message = "text";
-         when(leavingUser.getServerId()).thenReturn(SERVER_ID);
          when(templateService.renderTemplateWithMap(eq(LeaveLogger.USER_LEAVE_TEMPLATE), any(), eq(SERVER_ID))).thenReturn(message);
          testUnit.execute(model);
          verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.LEAVE_LOG, SERVER_ID);

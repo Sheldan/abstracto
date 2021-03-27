@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.repository;
 
-import dev.sheldan.abstracto.core.command.models.database.AModule;
+import dev.sheldan.abstracto.core.command.model.database.AModule;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

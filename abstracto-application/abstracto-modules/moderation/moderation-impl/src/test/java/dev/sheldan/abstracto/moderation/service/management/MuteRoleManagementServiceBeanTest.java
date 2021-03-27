@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.moderation.repository.MuteRoleRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,8 +47,12 @@ public class MuteRoleManagementServiceBeanTest {
     @Test
     public void testCreateMuteRoleForServer() {
         ARole role = Mockito.mock(ARole.class);
+        ArgumentCaptor<MuteRole> muteRoleCaptor = ArgumentCaptor.forClass(MuteRole.class);
+        MuteRole savedRole = Mockito.mock(MuteRole.class);
+        when(muteRoleRepository.save(muteRoleCaptor.capture())).thenReturn(savedRole);
         MuteRole muteRoleForServer = testUnit.createMuteRoleForServer(server, role);
-        verifyRoleSaved(role, muteRoleForServer, 1);
+        Assert.assertEquals(savedRole, muteRoleForServer);
+        Assert.assertEquals(role, muteRoleCaptor.getValue().getRole());
     }
 
     @Test
@@ -67,8 +72,12 @@ public class MuteRoleManagementServiceBeanTest {
     public void testSetMuteRoleWithoutPrevious() {
         ARole role = Mockito.mock(ARole.class);
         when(muteRoleRepository.existsByRoleServer(server)).thenReturn(false);
+        ArgumentCaptor<MuteRole> muteRoleCaptor = ArgumentCaptor.forClass(MuteRole.class);
+        MuteRole savedRole = Mockito.mock(MuteRole.class);
+        when(muteRoleRepository.save(muteRoleCaptor.capture())).thenReturn(savedRole);
         MuteRole muteRole = testUnit.setMuteRoleForServer(server, role);
-        verifyRoleSaved(role, muteRole, 1);
+        Assert.assertEquals(savedRole, muteRole);
+        Assert.assertEquals(role, muteRoleCaptor.getValue().getRole());
     }
 
     @Test
@@ -76,16 +85,11 @@ public class MuteRoleManagementServiceBeanTest {
         ARole role = Mockito.mock(ARole.class);
         when(muteRoleRepository.existsByRoleServer(server)).thenReturn(true);
         MuteRole existingRole = Mockito.mock(MuteRole.class);
-        when(existingRole.getRole()).thenReturn(role);
         when(muteRoleRepository.findByRoleServer(server)).thenReturn(existingRole);
-        MuteRole muteRole = testUnit.setMuteRoleForServer(server, role);
-        verifyRoleSaved(role, muteRole, 0);
+        testUnit.setMuteRoleForServer(server, role);
+        verify(existingRole, times(1)).setRole(role);
     }
 
-    private void verifyRoleSaved(ARole role, MuteRole muteRoleForServer, Integer saveCount) {
-        Assert.assertEquals(role, muteRoleForServer.getRole());
-        verify(muteRoleRepository, times(saveCount)).save(muteRoleForServer);
-    }
 
 
 }

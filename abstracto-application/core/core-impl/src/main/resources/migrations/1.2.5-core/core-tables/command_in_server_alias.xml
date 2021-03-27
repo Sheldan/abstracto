@@ -1,0 +1,29 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="command_in_server_alias-table">
+        <createTable tableName="command_in_server_alias">
+            <column name="command_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="command_in_server_id, name" tableName="command_in_server_alias" constraintName="pk_command_in_server_alias" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="command_in_server_id" baseTableName="command_in_server_alias" constraintName="fk_command_in_server_alias_command_in_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="command_in_server_id" referencedTableName="command_in_server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS command_in_server_alias_insert_trigger ON command_in_server_alias;
+            CREATE TRIGGER command_in_server_alias_insert_trigger BEFORE INSERT ON command_in_server_alias FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

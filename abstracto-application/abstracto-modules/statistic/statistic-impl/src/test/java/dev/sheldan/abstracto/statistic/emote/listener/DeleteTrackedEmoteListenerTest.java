@@ -26,17 +26,12 @@ public class DeleteTrackedEmoteListenerTest {
     @Mock
     private EmoteDeletedModel model;
 
-    private static final Long SERVER_ID = 4L;
-    private static final Long EMOTE_ID = 4L;
-
     @Test
     public void testEmoteDeleted() {
         Emote emote = Mockito.mock(Emote.class);
-        when(emote.getIdLong()).thenReturn(EMOTE_ID);
         when(model.getEmote()).thenReturn(emote);
-        when(model.getServerId()).thenReturn(SERVER_ID);
         testUnit.execute(model);
-        verify(trackedEmoteManagementService, times(1)).markAsDeleted(SERVER_ID, EMOTE_ID);
+        verify(trackedEmoteManagementService, times(1)).markAsDeleted(emote);
     }
 
     @Test

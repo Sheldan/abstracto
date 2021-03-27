@@ -1,7 +1,8 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.repository.CommandInServerRepository;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
 
 
     @Override
-    public ACommandInAServer crateCommandInServer(ACommand command, AServer server) {
+    public ACommandInAServer createCommandInServer(ACommand command, AServer server) {
         ACommandInAServer commandInAServer = ACommandInAServer
                 .builder()
                 .commandReference(command)
@@ -30,12 +31,12 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
 
     @Override
     public boolean doesCommandExistInServer(ACommand command, AServer server) {
-        return getCommandForServer(command, server) != null;
+        return repository.findByServerReferenceAndCommandReference(server, command).isPresent();
     }
 
     @Override
     public ACommandInAServer getCommandForServer(ACommand command, AServer server) {
-        return repository.findByServerReferenceAndCommandReference(server, command);
+        return repository.findByServerReferenceAndCommandReference(server, command).orElseThrow(CommandNotFoundException::new);
     }
 
     @Override

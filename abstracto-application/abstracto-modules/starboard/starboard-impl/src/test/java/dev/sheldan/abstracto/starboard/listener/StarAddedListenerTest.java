@@ -25,6 +25,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
@@ -149,9 +150,9 @@ public class StarAddedListenerTest {
     public void testAddingEmoteReachingThreshold() {
         Long requiredStars = 1L;
         setupActingAndAuthor();
+        when(starboardService.createStarboardPost(any(CachedMessage.class), anyList(), eq(userInServerActing), eq(userInAServer))).thenReturn(CompletableFuture.completedFuture(null));
         executeAddingTest(requiredStars, null);
         verify(metricService, times(2)).incrementCounter(any());
-        verify(starboardService, times(1)).createStarboardPost(any(CachedMessage.class), anyList(), eq(userInServerActing), eq(userInAServer));
     }
 
     @Test

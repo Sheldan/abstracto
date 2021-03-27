@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.repostdetection.service.RepostServiceBean;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -55,11 +56,15 @@ public class PostedImageManagementBeanTest {
         when(serverAChannelAUser.getGuild()).thenReturn(server);
         when(serverAChannelAUser.getChannel()).thenReturn(channel);
         when(serverAChannelAUser.getAUserInAServer()).thenReturn(aUserInAServer);
+        ArgumentCaptor<PostedImage> postedImageArgumentCaptor = ArgumentCaptor.forClass(PostedImage.class);
+        PostedImage savedPost = Mockito.mock(PostedImage.class);
+        when(postedImageRepository.save(postedImageArgumentCaptor.capture())).thenReturn(savedPost);
         PostedImage createdPost = testUnit.createPost(serverAChannelAUser, MESSAGE_ID, HASH, INDEX);
-        Assert.assertEquals(HASH, createdPost.getImageHash());
-        Assert.assertEquals(INDEX, createdPost.getPostId().getPosition());
-        Assert.assertEquals(MESSAGE_ID, createdPost.getPostId().getMessageId());
-        verify(postedImageRepository, times(1)).save(createdPost);
+        Assert.assertEquals(savedPost, createdPost);
+        PostedImage capturedPost = postedImageArgumentCaptor.getValue();
+        Assert.assertEquals(HASH, capturedPost.getImageHash());
+        Assert.assertEquals(INDEX, capturedPost.getPostId().getPosition());
+        Assert.assertEquals(MESSAGE_ID, capturedPost.getPostId().getMessageId());
     }
 
     @Test

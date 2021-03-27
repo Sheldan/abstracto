@@ -51,7 +51,7 @@ public class LeaveLogger implements AsyncLeaveListener {
 
     @Override
     public DefaultListenerResult execute(MemberLeaveModel model) {
-        String text = templateService.renderTemplateWithMap(USER_LEAVE_TEMPLATE, getUserParameter(model.getMember().getUser()), model.getLeavingUser().getServerId());
+        String text = templateService.renderTemplateWithMap(USER_LEAVE_TEMPLATE, getUserParameter(model.getMember().getUser()), model.getServerId());
         postTargetService.sendTextInPostTarget(text, LoggingPostTarget.LEAVE_LOG, model.getServerId());
         return DefaultListenerResult.PROCESSED;
     }

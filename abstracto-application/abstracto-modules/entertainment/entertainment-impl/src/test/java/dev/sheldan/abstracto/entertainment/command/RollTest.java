@@ -49,7 +49,7 @@ public class RollTest {
         Long serverId = 3L;
         Integer max = 10;
         when(noParameters.getGuild().getIdLong()).thenReturn(serverId);
-        when(configService.getLongValue(ROLL_DEFAULT_HIGH_KEY, serverId)).thenReturn(max.longValue());
+        when(configService.getLongValueOrConfigDefault(ROLL_DEFAULT_HIGH_KEY, serverId)).thenReturn(max.longValue());
         when(entertainmentService.calculateRollResult(1, max)).thenReturn(result);
         when(channelService.sendEmbedTemplateInTextChannelList(eq(Roll.ROLL_RESPONSE_TEMPLATE_KEY), responseModelArgumentCaptor.capture(), eq(noParameters.getChannel()))).thenReturn(CommandTestUtilities.messageFutureList());
         CompletableFuture<CommandResult> futureResult = testUnit.executeAsync(noParameters);

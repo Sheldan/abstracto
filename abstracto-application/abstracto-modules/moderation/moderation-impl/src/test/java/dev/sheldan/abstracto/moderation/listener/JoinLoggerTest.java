@@ -49,14 +49,11 @@ public class JoinLoggerTest {
 
     @Test
     public void testExecute() {
-        when(serverUser.getUserId()).thenReturn(USER_ID);
-        when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(model.getMember()).thenReturn(member);
-        when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(member));
-        testUnit.execute(model);
-        when(serverUser.getServerId()).thenReturn(SERVER_ID);
+        when(model.getServerId()).thenReturn(SERVER_ID);
         String message = "text";
         when(templateService.renderTemplateWithMap(eq(JoinLogger.USER_JOIN_TEMPLATE), any(), eq(SERVER_ID))).thenReturn(message);
+        testUnit.execute(model);
         verify(postTargetService, times(1)).sendTextInPostTarget(message, LoggingPostTarget.JOIN_LOG, SERVER_ID);
     }
 

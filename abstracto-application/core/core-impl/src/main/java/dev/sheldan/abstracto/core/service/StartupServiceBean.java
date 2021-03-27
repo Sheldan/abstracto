@@ -1,5 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
+import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
+import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -43,6 +46,11 @@ public class StartupServiceBean implements Startup {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private CommandManagementService commandManagementService;
+
+    @Autowired
+    private CommandInServerManagementService commandInServerManagementService;
 
     @Override
     public void startBot() throws LoginException {
@@ -62,6 +70,7 @@ public class StartupServiceBean implements Startup {
         JDA instance = service.getInstance();
         List<Guild> onlineGuilds = instance.getGuilds();
         Set<Long> availableServers = SnowflakeUtils.getSnowflakeIds(onlineGuilds);
+        List<ACommand> existingCommands = commandManagementService.getAllCommands();
         availableServers.forEach(aLong -> {
             AServer newAServer = serverManagementService.loadOrCreate(aLong);
             Guild newGuild = instance.getGuildById(aLong);
@@ -69,9 +78,18 @@ public class StartupServiceBean implements Startup {
             if(newGuild != null){
                 synchronizeRolesOf(newGuild, newAServer);
                 synchronizeChannelsOf(newGuild, newAServer);
+                synchronizeCommandsInServer(newAServer, existingCommands);
             }
         });
 
+    }
+
+    private void synchronizeCommandsInServer(AServer newAServer, List<ACommand> commands) {
+        commands.forEach(aCommand -> {
+            if(!commandInServerManagementService.doesCommandExistInServer(aCommand, newAServer)) {
+                commandInServerManagementService.createCommandInServer(aCommand, newAServer);
+            }
+        });
     }
 
     private void synchronizeRolesOf(Guild guild, AServer existingAServer){

@@ -1,9 +1,10 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.command.models.database.AModule;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.AModule;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CommandManagementService {
@@ -12,4 +13,5 @@ public interface CommandManagementService {
     Optional<ACommand> findCommandByNameOptional(String name);
     ACommand findCommandByName(String name);
     boolean doesCommandExist(String name);
+    List<ACommand> getAllCommands();
 }

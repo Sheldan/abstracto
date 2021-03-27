@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.exception;
 
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.validator.ValidatorParam;
-import dev.sheldan.abstracto.core.command.models.exception.CommandParameterValidationExceptionModel;
+import dev.sheldan.abstracto.core.command.model.exception.CommandParameterValidationExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import lombok.Getter;

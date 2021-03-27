@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -70,11 +71,15 @@ public class SuggestionManagementServiceBeanTest {
         when(message.getGuild()).thenReturn(guild);
         when(guild.getId()).thenReturn("8");
         long suggestionId = 1L;
+        ArgumentCaptor<Suggestion> suggestionArgumentCaptor = ArgumentCaptor.forClass(Suggestion.class);
+        Suggestion savedSuggestion = Mockito.mock(Suggestion.class);
+        when(suggestionRepository.save(suggestionArgumentCaptor.capture())).thenReturn(savedSuggestion);
         Suggestion createdSuggestion = testUnit.createSuggestion(aUserInAServer, text, message, suggestionId);
-        verify(suggestionRepository, times(1)).save(createdSuggestion);
-        Assert.assertEquals(SuggestionState.NEW, createdSuggestion.getState());
-        Assert.assertEquals(aUserInAServer, createdSuggestion.getSuggester());
-        Assert.assertEquals(server, createdSuggestion.getServer());
+        Assert.assertEquals(savedSuggestion, createdSuggestion);
+        Suggestion capturedSuggestion = suggestionArgumentCaptor.getValue();
+        Assert.assertEquals(SuggestionState.NEW, capturedSuggestion.getState());
+        Assert.assertEquals(aUserInAServer, capturedSuggestion.getSuggester());
+        Assert.assertEquals(server, capturedSuggestion.getServer());
     }
 
     @Test
@@ -92,11 +97,15 @@ public class SuggestionManagementServiceBeanTest {
         when(guild.getId()).thenReturn("5");
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(aUserInAServer);
         long suggestionId = 1L;
+        ArgumentCaptor<Suggestion> suggestionArgumentCaptor = ArgumentCaptor.forClass(Suggestion.class);
+        Suggestion savedSuggestion = Mockito.mock(Suggestion.class);
+        when(suggestionRepository.save(suggestionArgumentCaptor.capture())).thenReturn(savedSuggestion);
         Suggestion createdSuggestion = testUnit.createSuggestion(member, text, message, suggestionId);
-        verify(suggestionRepository, times(1)).save(createdSuggestion);
-        Assert.assertEquals(SuggestionState.NEW, createdSuggestion.getState());
-        Assert.assertEquals(aUserInAServer, createdSuggestion.getSuggester());
-        Assert.assertEquals(server, createdSuggestion.getServer());
+        Assert.assertEquals(savedSuggestion, createdSuggestion);
+        Suggestion capturedSuggestion = suggestionArgumentCaptor.getValue();
+        Assert.assertEquals(SuggestionState.NEW, capturedSuggestion.getState());
+        Assert.assertEquals(aUserInAServer, capturedSuggestion.getSuggester());
+        Assert.assertEquals(server, capturedSuggestion.getServer());
     }
 
     @Test

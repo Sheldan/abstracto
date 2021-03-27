@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.moderation.repository.WarnRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -47,12 +48,16 @@ public class WarnManagementServiceBeanTest {
         when(warningUser.getUserReference()).thenReturn(user);
         when(warnedUser.getUserReference()).thenReturn(user);
         String reason = "REASON";
+        ArgumentCaptor<Warning> warningArgumentCaptor = ArgumentCaptor.forClass(Warning.class);
+        Warning savedWarning = Mockito.mock(Warning.class);
+        when(warnRepository.save(warningArgumentCaptor.capture())).thenReturn(savedWarning);
         Warning warning = testUnit.createWarning(warnedUser, warningUser, reason, 8L);
-        Assert.assertEquals(warningUser, warning.getWarningUser());
-        Assert.assertEquals(warnedUser, warning.getWarnedUser());
-        Assert.assertEquals(reason, warning.getReason());
-        Assert.assertFalse(warning.getDecayed());
-        verify(warnRepository, times(1)).save(warning);
+        Assert.assertEquals(savedWarning, warning);
+        Warning capturedWarning = warningArgumentCaptor.getValue();
+        Assert.assertEquals(warningUser, capturedWarning.getWarningUser());
+        Assert.assertEquals(warnedUser, capturedWarning.getWarnedUser());
+        Assert.assertEquals(reason, capturedWarning.getReason());
+        Assert.assertFalse(capturedWarning.getDecayed());
     }
 
     @Test

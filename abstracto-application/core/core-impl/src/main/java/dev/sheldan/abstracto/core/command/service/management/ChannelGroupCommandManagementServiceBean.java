@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.repository.ChannelGroupCommandRepository;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;

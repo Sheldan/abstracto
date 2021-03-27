@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.exception;
 
-import dev.sheldan.abstracto.core.command.models.exception.ChannelNotInChannelGroupExceptionModel;
+import dev.sheldan.abstracto.core.command.model.exception.ChannelNotInChannelGroupExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;

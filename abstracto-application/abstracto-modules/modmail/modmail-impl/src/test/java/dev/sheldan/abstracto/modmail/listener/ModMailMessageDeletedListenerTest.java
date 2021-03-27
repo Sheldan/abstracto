@@ -83,7 +83,6 @@ public class ModMailMessageDeletedListenerTest {
     @Test
     public void testDeleteNonDuplicatedMessage() {
         when(deletedMessage.getMessageId()).thenReturn(DELETED_MESSAGE_ID);
-        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(DELETED_MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         ModMailThread thread = Mockito.mock(ModMailThread.class);
         AUserInAServer targetUsInAServer = Mockito.mock(AUserInAServer.class);
@@ -100,6 +99,7 @@ public class ModMailMessageDeletedListenerTest {
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(messageService.deleteMessageInChannelWithUser(targetUser, CREATED_MESSAGE_ID_2)).thenReturn(CompletableFuture.completedFuture(null));
         when(model.getCachedMessage()).thenReturn(deletedMessage);
+        when(model.getServerId()).thenReturn(SERVER_ID);
         testUnit.execute(model);
         verify(messageService, times(0)).deleteMessageInChannelInServer(eq(SERVER_ID), anyLong(), any());
         verify(self, times(1)).removeMessageFromThread(DELETED_MESSAGE_ID);
@@ -108,7 +108,6 @@ public class ModMailMessageDeletedListenerTest {
     @Test
     public void testDeleteDuplicatedMessage() {
         when(deletedMessage.getMessageId()).thenReturn(DELETED_MESSAGE_ID);
-        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(modMailMessageManagementService.getByMessageIdOptional(DELETED_MESSAGE_ID)).thenReturn(Optional.of(modMailMessage));
         ModMailThread thread = Mockito.mock(ModMailThread.class);
         AUserInAServer targetUsInAServer = Mockito.mock(AUserInAServer.class);
@@ -127,6 +126,7 @@ public class ModMailMessageDeletedListenerTest {
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(targetMember));
         when(messageService.deleteMessageInChannelWithUser(targetUser, CREATED_MESSAGE_ID_2)).thenReturn(CompletableFuture.completedFuture(null));
         when(messageService.deleteMessageInChannelInServer(SERVER_ID, CHANNEL_ID, CREATED_MESSAGE_ID_1)).thenReturn(CompletableFuture.completedFuture(null));
+        when(model.getServerId()).thenReturn(SERVER_ID);
         when(model.getCachedMessage()).thenReturn(deletedMessage);
         testUnit.execute(model);
         verify(self, times(1)).removeMessageFromThread(DELETED_MESSAGE_ID);

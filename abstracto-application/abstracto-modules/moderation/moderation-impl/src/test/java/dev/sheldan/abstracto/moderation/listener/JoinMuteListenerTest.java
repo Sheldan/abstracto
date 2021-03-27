@@ -32,12 +32,6 @@ public class JoinMuteListenerTest {
     private UserInServerManagementService userInServerManagementService;
 
     @Mock
-    private Member member;
-
-    @Mock
-    private Guild guild;
-
-    @Mock
     private AUserInAServer joiningUser;
 
     @Mock
@@ -51,22 +45,22 @@ public class JoinMuteListenerTest {
 
     @Test
     public void testNonMutedUserJoins() {
-        when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
         when(muteManagementService.hasActiveMute(joiningUser)).thenReturn(false);
-        when(model.getMember()).thenReturn(member);
+        when(model.getServerId()).thenReturn(SERVER_ID);
+        when(model.getJoiningUser()).thenReturn(serverUser);
         testUnit.execute(model);
         verify(muteService, times(0)).applyMuteRole(joiningUser);
     }
 
     @Test
     public void testMutedUserJoins() {
-        when(serverUser.getServerId()).thenReturn(SERVER_ID);
+        when(model.getServerId()).thenReturn(SERVER_ID);
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(joiningUser);
         when(muteManagementService.hasActiveMute(joiningUser)).thenReturn(true);
-        when(model.getMember()).thenReturn(member);
+        when(model.getJoiningUser()).thenReturn(serverUser);
         testUnit.execute(model);
         verify(muteService, times(1)).applyMuteRole(joiningUser);
     }

@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition.detail;
 
 import dev.sheldan.abstracto.core.command.condition.ConditionDetail;
-import dev.sheldan.abstracto.core.command.models.condition.FeatureDisabledConditionDetailModel;
+import dev.sheldan.abstracto.core.command.model.condition.FeatureDisabledConditionDetailModel;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import lombok.Getter;
 import lombok.Setter;

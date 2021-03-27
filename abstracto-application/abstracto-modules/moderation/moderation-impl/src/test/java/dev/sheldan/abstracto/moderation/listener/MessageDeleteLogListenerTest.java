@@ -94,7 +94,6 @@ public class MessageDeleteLogListenerTest {
     public void testExecuteListener() {
         when(deletedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
-        when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(member));
         when(model.getCachedMessage()).thenReturn(deletedMessage);
         when(model.getServerId()).thenReturn(SERVER_ID);

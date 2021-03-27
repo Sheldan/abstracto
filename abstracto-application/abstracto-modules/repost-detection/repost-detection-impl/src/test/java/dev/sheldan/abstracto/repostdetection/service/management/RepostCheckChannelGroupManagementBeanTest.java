@@ -7,10 +7,7 @@ import dev.sheldan.abstracto.repostdetection.repository.RepostCheckChannelReposi
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
@@ -105,12 +102,14 @@ public class RepostCheckChannelGroupManagementBeanTest {
     @Test
     public void testCreateRepostCheckChannelGroup() {
         when(aChannelGroup.getId()).thenReturn(CHANNEL_GROUP_ID);
+        RepostCheckChannelGroup savedGroup = Mockito.mock(RepostCheckChannelGroup.class);
+        when(repository.save(checkChannelGroupArgumentCaptor.capture())).thenReturn(savedGroup);
         RepostCheckChannelGroup createdCheckChannelGroup = testUnit.createRepostCheckChannelGroup(aChannelGroup);
-        verify(repository, times(1)).save(checkChannelGroupArgumentCaptor.capture());
-        Assert.assertEquals(checkChannelGroupArgumentCaptor.getValue(), createdCheckChannelGroup);
-        Assert.assertTrue(createdCheckChannelGroup.getCheckEnabled());
-        Assert.assertEquals(CHANNEL_GROUP_ID, createdCheckChannelGroup.getId());
-        Assert.assertEquals(aChannelGroup, createdCheckChannelGroup.getChannelGroup());
+        Assert.assertEquals(savedGroup, createdCheckChannelGroup);
+        RepostCheckChannelGroup capturedGroup = checkChannelGroupArgumentCaptor.getValue();
+        Assert.assertTrue(capturedGroup.getCheckEnabled());
+        Assert.assertEquals(CHANNEL_GROUP_ID, capturedGroup.getId());
+        Assert.assertEquals(aChannelGroup, capturedGroup.getChannelGroup());
     }
 
     @Test(expected = RepostCheckChannelGroupNotFoundException.class)

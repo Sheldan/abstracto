@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.exception;
 
 import dev.sheldan.abstracto.core.command.Command;
-import dev.sheldan.abstracto.core.command.models.exception.InsufficientParametersExceptionModel;
+import dev.sheldan.abstracto.core.command.model.exception.InsufficientParametersExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
 

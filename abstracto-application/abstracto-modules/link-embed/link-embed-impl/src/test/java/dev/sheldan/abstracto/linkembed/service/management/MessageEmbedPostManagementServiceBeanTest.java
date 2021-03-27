@@ -59,7 +59,6 @@ public class MessageEmbedPostManagementServiceBeanTest {
         AUserInAServer embeddedUser = Mockito.mock(AUserInAServer.class);
         AChannel channel = Mockito.mock(AChannel.class);
         AServer server = Mockito.mock(AServer.class);
-        when(server.getId()).thenReturn(SERVER_ID);
         when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
         when(channelManagementService.loadChannel(EMBEDDING_CHANNEL_ID)).thenReturn(channel);
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
@@ -69,7 +68,6 @@ public class MessageEmbedPostManagementServiceBeanTest {
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
         when(cachedAuthor.getAuthorId()).thenReturn(EMBEDDED_USER_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
         Message embeddingMessage = Mockito.mock(Message.class);
         MessageChannel embeddingChannel = Mockito.mock(MessageChannel.class);
         when(embeddingChannel.getIdLong()).thenReturn(EMBEDDING_CHANNEL_ID);
@@ -99,7 +97,6 @@ public class MessageEmbedPostManagementServiceBeanTest {
     public void testToCreateEmbedForDifferentServers() {
         Long originServerId = 4L;
         AServer originalServer = Mockito.mock(AServer.class);
-        when(originalServer.getId()).thenReturn(originServerId);
         AServer embeddingServer = Mockito.mock(AServer.class);
         when(embeddingServer.getId()).thenReturn(SERVER_ID);
         AUserInAServer embeddingUser = Mockito.mock(AUserInAServer.class);

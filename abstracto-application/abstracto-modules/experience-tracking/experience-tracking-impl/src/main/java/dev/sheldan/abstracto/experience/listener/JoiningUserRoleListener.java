@@ -37,11 +37,10 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
     public DefaultListenerResult execute(MemberJoinModel model) {
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getJoiningUser().getUserId());
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
-        Long userInServerId = userInAServer.getUserInServerId();
         if(userExperience != null) {
             log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", model.getJoiningUser().getUserId(), model.getServerId());
             userExperienceService.syncForSingleUser(userExperience).thenAccept(result ->
-                log.info("Finished re-assigning experience for re-joining user {} in server {}.", userInServerId, model.getServerId())
+                log.info("Finished re-assigning experience for re-joining user {} in server {}.", model.getJoiningUser().getUserId(), model.getServerId())
             );
         } else {
             log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", model.getJoiningUser().getUserId(), model.getServerId());

@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.remind.repository.ReminderRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -56,15 +57,19 @@ public class ReminderManagementServiceBeanTest {
         String reminderText = "text";
         Instant reminderTargetDate = Instant.ofEpochSecond(1590615937);
         Long messageId = 5L;
+        ArgumentCaptor<Reminder> reminderArgumentCaptor = ArgumentCaptor.forClass(Reminder.class);
+        Reminder savedReminder = Mockito.mock(Reminder.class);
+        when(reminderRepository.save(reminderArgumentCaptor.capture())).thenReturn(savedReminder);
         Reminder createdReminder = testUnit.createReminder(serverAChannelAUser, reminderText, reminderTargetDate, messageId);
-        Assert.assertEquals(messageId, createdReminder.getMessageId());
-        Assert.assertEquals(aUserInAServer, createdReminder.getRemindedUser());
-        Assert.assertEquals(server, createdReminder.getServer());
-        Assert.assertEquals(reminderText, createdReminder.getText());
-        Assert.assertEquals(reminderTargetDate, createdReminder.getTargetDate());
-        Assert.assertEquals(channel, createdReminder.getChannel());
-        Assert.assertFalse(createdReminder.isReminded());
-        verify(reminderRepository, times(1)).save(createdReminder);
+        Assert.assertEquals(savedReminder, createdReminder);
+        Reminder capturedReminder = reminderArgumentCaptor.getValue();
+        Assert.assertEquals(messageId, capturedReminder.getMessageId());
+        Assert.assertEquals(aUserInAServer, capturedReminder.getRemindedUser());
+        Assert.assertEquals(server, capturedReminder.getServer());
+        Assert.assertEquals(reminderText, capturedReminder.getText());
+        Assert.assertEquals(reminderTargetDate, capturedReminder.getTargetDate());
+        Assert.assertEquals(channel, capturedReminder.getChannel());
+        Assert.assertFalse(capturedReminder.isReminded());
     }
 
     @Test

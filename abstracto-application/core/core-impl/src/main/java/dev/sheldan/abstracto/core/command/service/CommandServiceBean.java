@@ -10,9 +10,9 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
-import dev.sheldan.abstracto.core.command.models.database.AModule;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
+import dev.sheldan.abstracto.core.command.model.database.AModule;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
@@ -175,7 +175,7 @@ public class CommandServiceBean implements CommandService {
     public CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent) {
         String contentStripped = messageContainingContent.getContentRaw();
         UnParsedCommandParameter unParsedParameter = getUnParsedCommandParameter(contentStripped, messageContainingContent);
-        Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter);
+        Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter, messageContainingContent.getGuild().getIdLong());
         return commandReceivedHandler.getParsedParameters(unParsedParameter, command, messageContainingContent);
     }
 

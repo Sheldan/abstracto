@@ -5,6 +5,8 @@ import dev.sheldan.abstracto.core.templating.repository.TemplateRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -23,6 +25,12 @@ public class TemplateManagementServiceBeanTest {
 
     @Mock
     private TemplateRepository repository;
+
+    @Mock
+    private Template template;
+
+    @Captor
+    private ArgumentCaptor<Template> templateArgumentCaptor;
 
     private static final String TEMPLATE_KEY = "templateKey";
     private static final String TEMPLATE_SOURCE = "source";
@@ -53,11 +61,14 @@ public class TemplateManagementServiceBeanTest {
 
     @Test
     public void testCreateTemplate() {
-        Template template = templateManagementServiceBean.createTemplate(TEMPLATE_KEY, TEMPLATE_SOURCE);
-        Assert.assertEquals(template.getContent(), TEMPLATE_SOURCE);
-        Assert.assertEquals(template.getKey(), TEMPLATE_KEY);
+        when(repository.save(templateArgumentCaptor.capture())).thenReturn(template);
+        Template createdTemplate = templateManagementServiceBean.createTemplate(TEMPLATE_KEY, TEMPLATE_SOURCE);
+        Template savedTemplate = templateArgumentCaptor.getValue();
+        Assert.assertEquals(template, createdTemplate);
+        Assert.assertEquals(TEMPLATE_SOURCE, savedTemplate.getContent());
+        Assert.assertEquals(TEMPLATE_KEY, savedTemplate.getKey());
         verify(repository, times(1)).save(any(Template.class));
-        Assert.assertTrue(Duration.between(template.getLastModified(), Instant.now()).getSeconds() < 1);
+        Assert.assertTrue(Duration.between(savedTemplate.getLastModified(), Instant.now()).getSeconds() < 1);
     }
 
     private Template getTemplate() {

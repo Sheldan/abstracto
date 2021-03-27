@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.command.condition.detail;
 
 import dev.sheldan.abstracto.core.command.condition.ConditionDetail;
-import dev.sheldan.abstracto.core.command.models.condition.ImmuneUserConditionDetailModel;
+import dev.sheldan.abstracto.core.command.model.condition.ImmuneUserConditionDetailModel;
 import net.dv8tion.jda.api.entities.Role;
 
 public class ImmuneUserConditionDetail implements ConditionDetail {

@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
 import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.models.database.AChannel;

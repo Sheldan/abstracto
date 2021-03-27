@@ -79,7 +79,7 @@ public class EntertainmentServiceBeanTest {
         when(guild.getIdLong()).thenReturn(serverId);
         when(member.getGuild()).thenReturn(guild);
         Long sides = 6L;
-        when(configService.getLongValue(EntertainmentFeatureConfig.ROULETTE_BULLETS_CONFIG_KEY, serverId)).thenReturn(sides);
+        when(configService.getLongValueOrConfigDefault(EntertainmentFeatureConfig.ROULETTE_BULLETS_CONFIG_KEY, serverId)).thenReturn(sides);
         when(secureRandom.nextInt(sides.intValue())).thenReturn(randomValue);
         boolean shot = testUnit.executeRoulette(member);
         Assert.assertEquals(randomValue == 0, shot);

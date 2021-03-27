@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.command.service;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.models.exception.GenericExceptionModel;
+import dev.sheldan.abstracto.core.command.model.exception.GenericExceptionModel;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUser;

@@ -6,8 +6,9 @@ import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
-import dev.sheldan.abstracto.core.command.models.database.ACommandInAServer;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
+import dev.sheldan.abstracto.core.command.service.CommandInServerAliasService;
 import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
@@ -30,10 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -68,6 +66,9 @@ public class Help implements Command {
 
     @Autowired
     private MetricService metricService;
+
+    @Autowired
+    private CommandInServerAliasService commandInServerAliasService;
 
     public static final String HELP_COMMAND_EXECUTED_METRIC = "help.executions";
     public static final String CATEGORY = "category";
@@ -127,26 +128,31 @@ public class Help implements Command {
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model, commandContext.getGuild().getIdLong());
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                         .thenApply(aVoid -> CommandResult.fromIgnored());
-            } else if(commandRegistry.commandExists(parameter)) {
-                metricService.incrementCounter(HELP_COMMAND_COMMAND_METRIC);
-                Command command = commandRegistry.getCommandByName(parameter);
-                log.trace("Displaying help for command {}.", command.getConfiguration().getName());
-                ACommand aCommand = commandManagementService.findCommandByName(parameter);
-                ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getGuild().getIdLong());
-                HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
-                if(Boolean.TRUE.equals(aCommandInAServer.getRestricted())) {
-                    model.setImmuneRoles(roleService.getRolesFromGuild(aCommandInAServer.getImmuneRoles()));
-                    model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
-                    model.setRestricted(true);
-                }
-                model.setUsage(commandService.generateUsage(command));
-                model.setCommand(command.getConfiguration());
-                MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model, commandContext.getGuild().getIdLong());
-                return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                        .thenApply(aVoid -> CommandResult.fromIgnored());
             } else {
-                metricService.incrementCounter(HELP_COMMAND_WRONG_PARAM_METRIC);
-                return displayHelpOverview(commandContext);
+                Optional<Command> commandOptional = commandRegistry.getCommandByNameOptional(parameter, true, commandContext.getGuild().getIdLong());
+                if(commandOptional.isPresent()) {
+                    metricService.incrementCounter(HELP_COMMAND_COMMAND_METRIC);
+                    Command command = commandOptional.get();
+                    log.trace("Displaying help for command {}.", command.getConfiguration().getName());
+                    ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
+                    List<String> aliases = commandInServerAliasService.getAliasesForCommand(commandContext.getGuild().getIdLong(), command.getConfiguration().getName());
+                    ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getGuild().getIdLong());
+                    HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
+                    model.setServerSpecificAliases(aliases);
+                    if(Boolean.TRUE.equals(aCommandInAServer.getRestricted())) {
+                        model.setImmuneRoles(roleService.getRolesFromGuild(aCommandInAServer.getImmuneRoles()));
+                        model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
+                        model.setRestricted(true);
+                    }
+                    model.setUsage(commandService.generateUsage(command));
+                    model.setCommand(command.getConfiguration());
+                    MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model, commandContext.getGuild().getIdLong());
+                    return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                            .thenApply(aVoid -> CommandResult.fromIgnored());
+                } else {
+                    metricService.incrementCounter(HELP_COMMAND_WRONG_PARAM_METRIC);
+                    return displayHelpOverview(commandContext);
+                }
             }
         }
     }

@@ -51,6 +51,7 @@ public class MessageEditedListenerTest {
     @Mock
     private CachedMessage messageBefore;
 
+    @Mock
     private MessageTextUpdatedModel model;
 
     private static final Long SERVER_ID = 4L;
@@ -77,17 +78,16 @@ public class MessageEditedListenerTest {
         Guild guild = Mockito.mock(Guild.class);
         when(channel.getGuild()).thenReturn(guild);
         Member author = Mockito.mock(Member.class);
-        CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
-        when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
         when(messageBefore.getContent()).thenReturn(content);
-        when(messageBefore.getServerId()).thenReturn(SERVER_ID);
+        when(messageBefore.getChannelId()).thenReturn(CHANNEL_ID);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         ArgumentCaptor<MessageEditedLog> captor = ArgumentCaptor.forClass(MessageEditedLog.class);
         when(templateService.renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(memberService.getMemberInServerAsync(SERVER_ID, AUTHOR_ID)).thenReturn(CompletableFuture.completedFuture(author));
         when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(channel);
         when(model.getAfter()).thenReturn(messageAfter);
         when(model.getBefore()).thenReturn(messageBefore);
+        when(messageAfter.getMember()).thenReturn(author);
+        when(model.getServerId()).thenReturn(SERVER_ID);
         testUnit.execute(model);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.EDIT_LOG, SERVER_ID);
         MessageEditedLog capturedValue = captor.getValue();

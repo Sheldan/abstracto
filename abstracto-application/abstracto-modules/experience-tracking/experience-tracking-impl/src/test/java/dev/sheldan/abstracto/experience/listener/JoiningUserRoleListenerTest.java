@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.experience.listener;
 
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.ListenerExecutionResult;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
@@ -7,6 +9,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,9 +51,9 @@ public class JoiningUserRoleListenerTest {
 
     @Before
     public void setup() {
-        when(serverUser.getServerId()).thenReturn(SERVER_ID);
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(model.getJoiningUser()).thenReturn(serverUser);
+        when(model.getServerId()).thenReturn(SERVER_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(aUserInAServer);
     }
 
@@ -59,7 +62,8 @@ public class JoiningUserRoleListenerTest {
         AUserExperience experience = Mockito.mock(AUserExperience.class);
         when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(experience);
         when(userExperienceService.syncForSingleUser(experience)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.execute(model);
+        DefaultListenerResult result = testUnit.execute(model);
+        Assert.assertEquals(DefaultListenerResult.PROCESSED, result);
     }
 
     @Test

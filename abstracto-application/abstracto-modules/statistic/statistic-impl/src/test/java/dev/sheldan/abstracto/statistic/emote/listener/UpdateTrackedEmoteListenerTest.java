@@ -29,12 +29,9 @@ public class UpdateTrackedEmoteListenerTest {
 
     @Test
     public void testEmoteUpdated() {
-        Long serverId = 1L;
-        Long emoteId = 2L;
         Emote changedEmote = Mockito.mock(Emote.class);
-        when(changedEmote.getIdLong()).thenReturn(emoteId);
         TrackedEmote trackedEmote = Mockito.mock(TrackedEmote.class);
-        when(trackedEmoteManagementService.loadByEmoteId(emoteId, serverId)).thenReturn(trackedEmote);
+        when(trackedEmoteManagementService.loadByEmote(changedEmote)).thenReturn(trackedEmote);
         String newValue = "AFTER";
         when(model.getEmote()).thenReturn(changedEmote);
         when(model.getNewValue()).thenReturn(newValue);

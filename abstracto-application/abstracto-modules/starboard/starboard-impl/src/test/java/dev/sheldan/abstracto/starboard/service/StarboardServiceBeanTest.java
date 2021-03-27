@@ -117,6 +117,9 @@ public class StarboardServiceBeanTest {
     @Mock
     private AUser aUser;
 
+    @Mock
+    private StarboardPostCreatedListenerManager starboardPostCreatedListenerManager;
+
     private static final Long STARRED_USER_ID = 5L;
     private static final Long STARRED_SERVER_USER_ID = 2L;
     private static final Long SERVER_ID = 6L;
@@ -194,13 +197,10 @@ public class StarboardServiceBeanTest {
         CachedMessage message = Mockito.mock(CachedMessage.class);
         List<Long> userExceptAuthorIds = Arrays.asList(FIRST_USER_IN_SERVER_ID, SECOND_USER_IN_SERVER_ID);
         List<CompletableFuture<Message>> futures = Arrays.asList(CompletableFuture.completedFuture(sendPost));
-        when(sendPost.getGuild()).thenReturn(guild);
-        when(sendPost.getChannel()).thenReturn(mockedTextChannel);
         when(sendPost.getIdLong()).thenReturn(MESSAGE_ID);
         when(userInServerManagementService.loadUserOptional(STARRED_SERVER_USER_ID)).thenReturn(Optional.of(starredUser));
         when(userInServerManagementService.loadUserOptional(FIRST_USER_IN_SERVER_ID)).thenReturn(Optional.of(userReacting));
         when(userReacting.getUserInServerId()).thenReturn(FIRST_USER_IN_SERVER_ID);
-        when(userReacting.getUserReference()).thenReturn(aUser);
         AChannel channel = Mockito.mock(AChannel.class);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);
         StarboardPost post = Mockito.mock(StarboardPost.class);
@@ -208,13 +208,13 @@ public class StarboardServiceBeanTest {
         AUserInAServer secondStarrerUserObj = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadUserOptional(SECOND_USER_IN_SERVER_ID)).thenReturn(Optional.of(secondStarrerUserObj));
         when(secondStarrerUserObj.getUserInServerId()).thenReturn(SECOND_USER_IN_SERVER_ID);
-        when(secondStarrerUserObj.getUserReference()).thenReturn(aUser);
         testUnit.persistPost(message, userExceptAuthorIds, futures, CHANNEL_ID, STARRED_SERVER_USER_ID, STARRING_USER_ID);
         verify(starboardPostReactorManagementService, times(2)).addReactor(eq(post), userInAServerArgumentCaptor.capture());
         List<AUserInAServer> addedReactors = userInAServerArgumentCaptor.getAllValues();
         Assert.assertEquals(FIRST_USER_IN_SERVER_ID, addedReactors.get(0).getUserInServerId());
         Assert.assertEquals(SECOND_USER_IN_SERVER_ID, addedReactors.get(1).getUserInServerId());
         Assert.assertEquals(2, addedReactors.size());
+        verify(starboardPostCreatedListenerManager, times(1)).sendStarboardPostCreatedEvent(STARRING_USER_ID, post);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class StarboardServiceBeanTest {
         when(config.getLongValue()).thenReturn(1L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeatureConfig.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeatureConfig.STAR_LVL_CONFIG_PREFIX + 1)).thenReturn(config);
-        when(starboardPostManagementService.findByStarboardPostMessageId(starboardPostId)).thenReturn(Optional.of(post));
+        when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
         when(userService.retrieveUserForId(STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredJdaUser));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
         CompletableFuture<Void> future = testUnit.updateStarboardPost(post, message, userExceptAuthor);
@@ -280,17 +280,16 @@ public class StarboardServiceBeanTest {
         Integer limit = 3;
         AChannel channel = Mockito.mock(AChannel.class);
         when(server.getId()).thenReturn(SERVER_ID);
-        StarboardPostReaction reaction = Mockito.mock(StarboardPostReaction.class);
         StarboardPost post1 = Mockito.mock(StarboardPost.class);
-        when(post1.getReactions()).thenReturn(Arrays.asList(reaction));
         when(post1.getPostMessageId()).thenReturn(MESSAGE_ID);
         when(post1.getServer()).thenReturn(server);
         when(post1.getStarboardChannel()).thenReturn(channel);
         StarboardPost post2 = Mockito.mock(StarboardPost.class);
         when(post2.getPostMessageId()).thenReturn(SECOND_MESSAGE_ID);
-        when(post2.getReactions()).thenReturn(new ArrayList<>());
         when(post2.getServer()).thenReturn(server);
         when(post2.getStarboardChannel()).thenReturn(channel);
+        when(starboardPostReactorManagementService.getReactorCountOfPost(post1)).thenReturn(1L);
+        when(starboardPostReactorManagementService.getReactorCountOfPost(post2)).thenReturn(0L);
         List<StarboardPost> topPosts = Arrays.asList(post1, post2);
         when(starboardPostManagementService.retrieveTopPosts(SERVER_ID, limit)).thenReturn(topPosts);
         CompletableFuture<StarStatsUser> statsUser = CompletableFuture.completedFuture(Mockito.mock(StarStatsUser.class));
@@ -339,10 +338,9 @@ public class StarboardServiceBeanTest {
         AServer server = Mockito.mock(AServer.class);
         when(server.getId()).thenReturn(SERVER_ID);
         when(post.getServer()).thenReturn(server);
-        StarboardPostReaction reaction = Mockito.mock(StarboardPostReaction.class);
-        when(post.getReactions()).thenReturn(Collections.singletonList(reaction));
         when(starboardChannel.getId()).thenReturn(STARBOARD_CHANNEL_ID);
         when(post.getPostMessageId()).thenReturn(MESSAGE_ID);
+        when(starboardPostReactorManagementService.getReactorCountOfPost(post)).thenReturn(1L);
         when(starboardPostManagementService.retrieveTopPostsForUserInServer(SERVER_ID, STARRED_USER_ID, 3)).thenReturn(Collections.singletonList(post));
         MemberStarStatsModel returnedModel = testUnit.retrieveStarStatsForMember(starredMember);
         Assert.assertEquals(receivedStars, returnedModel.getReceivedStars());

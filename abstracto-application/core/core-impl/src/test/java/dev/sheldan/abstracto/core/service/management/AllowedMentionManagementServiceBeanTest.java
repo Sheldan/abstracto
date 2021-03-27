@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
@@ -67,11 +68,13 @@ public class AllowedMentionManagementServiceBeanTest {
     @Test
     public void createCustomAllowedMention() {
         when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
-        AllowedMention createdMention = testUnit.createCustomAllowedMention(SERVER_ID, allowedMention);
         ArgumentCaptor<AllowedMention> mentionCaptor = ArgumentCaptor.forClass(AllowedMention.class);
-        verify(allowedMentionRepository, times(1)).save(mentionCaptor.capture());
-        Assert.assertEquals(createdMention, mentionCaptor.getValue());
-        Assert.assertEquals(server, createdMention.getServer());
+        AllowedMention toReturn = Mockito.mock(AllowedMention.class);
+        when(allowedMentionRepository.save(mentionCaptor.capture())).thenReturn(toReturn);
+        AllowedMention createdMention = testUnit.createCustomAllowedMention(SERVER_ID, allowedMention);
+        Assert.assertEquals(toReturn, createdMention);
+        AllowedMention usedValue = mentionCaptor.getValue();
+        Assert.assertEquals(server, usedValue.getServer());
     }
 
     @Test

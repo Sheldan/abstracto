@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.exception;
 
-import dev.sheldan.abstracto.core.command.models.exception.ChannelGroupNotFoundExceptionModel;
+import dev.sheldan.abstracto.core.command.model.exception.ChannelGroupNotFoundExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
 

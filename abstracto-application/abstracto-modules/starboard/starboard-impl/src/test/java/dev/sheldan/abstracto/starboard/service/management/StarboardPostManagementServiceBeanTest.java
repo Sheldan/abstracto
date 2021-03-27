@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.starboard.repository.StarboardPostRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -67,14 +68,18 @@ public class StarboardPostManagementServiceBeanTest {
         when(channelManagementService.loadChannel(SOURCE_CHANNEL_ID)).thenReturn(sourceChannel);
         AUser aUser = Mockito.mock(AUser.class);
         when(aUserInAServer.getUserReference()).thenReturn(aUser);
+        ArgumentCaptor<StarboardPost> argumentCaptor = ArgumentCaptor.forClass(StarboardPost.class);
+        StarboardPost savedPost = Mockito.mock(StarboardPost.class);
+        when(repository.save(argumentCaptor.capture())).thenReturn(savedPost);
         StarboardPost createdStarboardPost = testUnit.createStarboardPost(starredMessage, aUserInAServer, postInStarboard);
-        verify(repository, times(1)).save(createdStarboardPost);
-        Assert.assertEquals(starboardChannel, createdStarboardPost.getStarboardChannel());
-        Assert.assertEquals(starboardPostId, createdStarboardPost.getStarboardMessageId());
-        Assert.assertEquals(starredMessageId, createdStarboardPost.getPostMessageId());
-        Assert.assertEquals(aUserInAServer, createdStarboardPost.getAuthor());
-        Assert.assertEquals(sourceChannel, createdStarboardPost.getSourceChannel());
-        Assert.assertFalse(createdStarboardPost.isIgnored());
+        Assert.assertEquals(savedPost, createdStarboardPost);
+        StarboardPost capturedPost = argumentCaptor.getValue();
+        Assert.assertEquals(starboardChannel, capturedPost.getStarboardChannel());
+        Assert.assertEquals(starboardPostId, capturedPost.getStarboardMessageId());
+        Assert.assertEquals(starredMessageId, capturedPost.getPostMessageId());
+        Assert.assertEquals(aUserInAServer, capturedPost.getAuthor());
+        Assert.assertEquals(sourceChannel, capturedPost.getSourceChannel());
+        Assert.assertFalse(capturedPost.isIgnored());
     }
 
     @Test
@@ -83,20 +88,21 @@ public class StarboardPostManagementServiceBeanTest {
         Long messageId = 6L;
         testUnit.setStarboardPostMessageId(post, messageId);
         verify(post, times(1)).setStarboardMessageId(messageId);
-        verify(repository, times(1)).save(post);
     }
 
     @Test
     public void testRetrieveTopPosts() {
         Integer count = 2;
+        Long postId = 1L;
+        Long postId2 = 3L;
         StarboardPost starboardPost1 = Mockito.mock(StarboardPost.class);
         when(starboardPost1.getReactions()).thenReturn(Arrays.asList(Mockito.mock(StarboardPostReaction.class), Mockito.mock(StarboardPostReaction.class)));
         StarboardPost starboardPost2 = Mockito.mock(StarboardPost.class);
         when(starboardPost2.getReactions()).thenReturn(Arrays.asList(Mockito.mock(StarboardPostReaction.class)));
-        StarboardPost starboardPost3 = Mockito.mock(StarboardPost.class);
-        when(starboardPost3.getReactions()).thenReturn(new ArrayList<>());
-        List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2, starboardPost3);
-        when(repository.findByServer_Id(SERVER_ID)).thenReturn(posts);
+        List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2);
+        List<Long> postIds = Arrays.asList(postId, postId2);
+        when(repository.getTopStarboardPostsForServer(SERVER_ID, count)).thenReturn(postIds);
+        when(repository.findAllById(postIds)).thenReturn(posts);
         List<StarboardPost> topPosts = testUnit.retrieveTopPosts(SERVER_ID, count);
         Assert.assertEquals(count.intValue(), topPosts.size());
         StarboardPost topMostPost = topPosts.get(0);
@@ -109,6 +115,9 @@ public class StarboardPostManagementServiceBeanTest {
     @Test
     public void testRetrieveMoreThanAvailable() {
         Integer count = 5;
+        Long postId = 1L;
+        Long postId2 = 2L;
+        Long postId3 = 3L;
         StarboardPost starboardPost1 = Mockito.mock(StarboardPost.class);
         when(starboardPost1.getReactions()).thenReturn(Arrays.asList(Mockito.mock(StarboardPostReaction.class), Mockito.mock(StarboardPostReaction.class)));
         StarboardPost starboardPost2 = Mockito.mock(StarboardPost.class);
@@ -116,7 +125,9 @@ public class StarboardPostManagementServiceBeanTest {
         StarboardPost starboardPost3 = Mockito.mock(StarboardPost.class);
         when(starboardPost3.getReactions()).thenReturn(new ArrayList<>());
         List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2, starboardPost3);
-        when(repository.findByServer_Id(SERVER_ID)).thenReturn(posts);
+        List<Long> postIds = Arrays.asList(postId, postId2, postId3);
+        when(repository.getTopStarboardPostsForServer(SERVER_ID, 5)).thenReturn(postIds);
+        when(repository.findAllById(postIds)).thenReturn(posts);
         List<StarboardPost> topPosts = testUnit.retrieveTopPosts(SERVER_ID, count);
         StarboardPost topMostPost = topPosts.get(0);
         StarboardPost secondTop = topPosts.get(1);
@@ -194,11 +205,9 @@ public class StarboardPostManagementServiceBeanTest {
 
     @Test
     public void testRetrievePostCount() {
-        StarboardPost starboardPost1 = Mockito.mock(StarboardPost.class);
-        StarboardPost starboardPost2 = Mockito.mock(StarboardPost.class);
-        List<StarboardPost> posts = Arrays.asList(starboardPost1, starboardPost2);
-        when(repository.findByServer_Id(SERVER_ID)).thenReturn(posts);
+        Long expectedCount = 2L;
+        when(repository.countByServer_Id(SERVER_ID)).thenReturn(expectedCount);
         Long retrievedPostCount = testUnit.getPostCount(SERVER_ID);
-        Assert.assertEquals(posts.size(), retrievedPostCount.intValue());
+        Assert.assertEquals(expectedCount, retrievedPostCount);
     }
 }

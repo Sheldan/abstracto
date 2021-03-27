@@ -143,6 +143,12 @@ Resetting a customized template to the default template::
 Show a link to documentation::
 * Usage `documentation`
 * Description: Shows links to access the documentation.
+Create a server specific alias::
+* Usage `createAlias <commandName> <alias>`
+* Description: Creates the server specific alias for command `commandName` identified by `alias`. This means that from now on, users can use the command identified by `commandName` by using `alias` in its place, when executing the command or when using the help command. This alias is only available in this server, and it is not allowed to use the names of existing commands or pre-defined aliases. In case such an alias is used as `alias`, an error message is shown.
+Delete a server specific alias::
+* Usage: `deleteAlias <alias>`
+* Description: Deletes the server specific alias identified by `alias`. It is not possible to delete pre-defined aliases. If `alias` does not exist, an error message is shown.
 
 
 .What does it mean if a role is immune?

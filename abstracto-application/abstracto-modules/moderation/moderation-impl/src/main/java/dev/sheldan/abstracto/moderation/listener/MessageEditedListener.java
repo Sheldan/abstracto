@@ -45,7 +45,7 @@ public class MessageEditedListener implements AsyncMessageTextUpdatedListener {
             log.trace("Message content was the same. Possible reason was: message was not in cache.");
             return DefaultListenerResult.IGNORED;
         }
-        log.trace("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), messageBefore.getServerId());
+        log.trace("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), model.getServerId());
         TextChannel textChannel = channelService.getTextChannelFromServer(model.getServerId(), messageBefore.getChannelId());
         MessageEditedLog log = MessageEditedLog
                 .builder()
@@ -55,8 +55,8 @@ public class MessageEditedListener implements AsyncMessageTextUpdatedListener {
                 .guild(textChannel.getGuild())
                 .member(messageAfter.getMember())
                 .build();
-        MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log, messageBefore.getServerId());
-        postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, messageBefore.getServerId());
+        MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log, model.getServerId());
+        postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, model.getServerId());
         return DefaultListenerResult.PROCESSED;
     }
 

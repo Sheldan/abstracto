@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
-import dev.sheldan.abstracto.core.command.models.database.AModule;
+import dev.sheldan.abstracto.core.command.model.database.AModule;
 import dev.sheldan.abstracto.core.command.repository.ModuleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

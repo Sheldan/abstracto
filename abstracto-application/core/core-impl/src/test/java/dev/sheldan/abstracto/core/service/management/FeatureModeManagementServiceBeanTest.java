@@ -6,6 +6,8 @@ import dev.sheldan.abstracto.core.repository.FeatureModeRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -43,29 +45,36 @@ public class FeatureModeManagementServiceBeanTest {
     @Mock
     private AFeatureMode aFeatureMode;
 
+    @Captor
+    private ArgumentCaptor<AFeatureMode> modeCaptor;
+
     private static final String FEATURE_MODE = "featureMode";
 
     @Test
     public void createModeWithModeAsString() {
         when(featureFlag.getServer()).thenReturn(server);
+        when(featureModeRepository.save(modeCaptor.capture())).thenReturn(aFeatureMode);
         AFeatureMode createdMode = testUnit.createMode(featureFlag, FEATURE_MODE, true);
-        Assert.assertEquals(true, createdMode.getEnabled());
-        Assert.assertEquals(featureFlag, createdMode.getFeatureFlag());
-        Assert.assertEquals(FEATURE_MODE, createdMode.getFeatureMode());
-        Assert.assertEquals(server, createdMode.getServer());
-        verify(featureModeRepository, times(1)).save(createdMode);
+        AFeatureMode createdValue = modeCaptor.getValue();
+        Assert.assertEquals(aFeatureMode, createdMode);
+        Assert.assertEquals(true, createdValue.getEnabled());
+        Assert.assertEquals(featureFlag, createdValue.getFeatureFlag());
+        Assert.assertEquals(FEATURE_MODE, createdValue.getFeatureMode());
+        Assert.assertEquals(server, createdValue.getServer());
     }
 
     @Test
     public void testCreateMode() {
         when(featureFlag.getServer()).thenReturn(server);
         when(featureMode.getKey()).thenReturn(FEATURE_MODE);
+        when(featureModeRepository.save(modeCaptor.capture())).thenReturn(aFeatureMode);
         AFeatureMode createdMode = testUnit.createMode(featureFlag, featureMode, true);
-        Assert.assertEquals(true, createdMode.getEnabled());
-        Assert.assertEquals(featureFlag, createdMode.getFeatureFlag());
-        Assert.assertEquals(FEATURE_MODE, createdMode.getFeatureMode());
-        Assert.assertEquals(server, createdMode.getServer());
-        verify(featureModeRepository, times(1)).save(createdMode);
+        AFeatureMode createdValue = modeCaptor.getValue();
+        Assert.assertEquals(aFeatureMode, createdMode);
+        Assert.assertEquals(true, createdValue.getEnabled());
+        Assert.assertEquals(featureFlag, createdValue.getFeatureFlag());
+        Assert.assertEquals(FEATURE_MODE, createdValue.getFeatureMode());
+        Assert.assertEquals(server, createdValue.getServer());
     }
 
     @Test

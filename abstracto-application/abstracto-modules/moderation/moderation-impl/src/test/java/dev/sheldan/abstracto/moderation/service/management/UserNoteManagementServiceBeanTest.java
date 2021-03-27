@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,10 +47,14 @@ public class UserNoteManagementServiceBeanTest {
         AUser user = Mockito.mock(AUser.class);
         when(userInAServer.getUserReference()).thenReturn(user);
         when(userInAServer.getServerReference()).thenReturn(server);
+        UserNote savedNote = Mockito.mock(UserNote.class);
+        ArgumentCaptor<UserNote> noteCaptor = ArgumentCaptor.forClass(UserNote.class);
+        when(userNoteRepository.save(noteCaptor.capture())).thenReturn(savedNote);
         UserNote userNote = testUnit.createUserNote(userInAServer, NOTE_TEXT);
-        verify(userNoteRepository, times(1)).save(userNote);
-        Assert.assertEquals(userInAServer, userNote.getUser());
-        Assert.assertEquals(NOTE_TEXT, userNote.getNote());
+        Assert.assertEquals(savedNote, userNote);
+        UserNote capturedNote = noteCaptor.getValue();
+        Assert.assertEquals(userInAServer, capturedNote.getUser());
+        Assert.assertEquals(NOTE_TEXT, capturedNote.getNote());
     }
 
     @Test

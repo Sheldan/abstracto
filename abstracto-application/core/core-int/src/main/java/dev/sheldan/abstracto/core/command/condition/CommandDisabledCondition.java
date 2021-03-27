@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.command.condition;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.detail.CommandDisabledDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.models.database.ACommand;
+import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.ChannelGroupCommandService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
