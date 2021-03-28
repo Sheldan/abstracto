@@ -48,3 +48,5 @@ include::modules/assignableRoles.adoc[]
 include::modules/statistic.adoc[]
 
 include::modules/utility.adoc[]
+
+include::modules/webservices.adoc[]

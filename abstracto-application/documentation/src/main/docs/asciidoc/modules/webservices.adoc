@@ -1,0 +1,13 @@
+=== Webservices
+
+Integrates different web APIs to be used via the bot.
+
+
+=== Youtube
+Feature key: `youtube`
+
+==== Command
+Search for a youtube video::
+* Usage: `youtubeSearch <query>`
+* Aliases: `yt`
+* Description: Searches youtube for a video with this query, and returns the link with additional information.

@@ -23,6 +23,7 @@
         <module>remind</module>
         <module>suggestion</module>
         <module>repost-detection</module>
+        <module>webservices</module>
     </modules>
 
 
