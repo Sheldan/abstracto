@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.webservices.youtube.commands;
+package dev.sheldan.abstracto.webservices.youtube.command;
 
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;

@@ -11,3 +11,12 @@ Search for a youtube video::
 * Usage: `youtubeSearch <query>`
 * Aliases: `yt`
 * Description: Searches youtube for a video with this query, and returns the link with additional information.
+
+=== Urban dictionary
+Feature key: `urban`
+
+==== Command
+Search for an urban dictionary definition::
+* Usage: `urbanDefine <query>`
+* Aliases: `ud`
+* Description: Searches an urban dictionary definition, and returns the definition, with an example and meta information.

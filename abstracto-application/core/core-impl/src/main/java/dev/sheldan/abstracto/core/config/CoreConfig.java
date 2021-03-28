@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,6 +36,7 @@ public class CoreConfig {
     public Gson gson() {
         return new GsonBuilder()
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter())
+                .registerTypeAdapter(Instant.class, new InstantTimeAdapter())
                 .setPrettyPrinting().create();
     }
 

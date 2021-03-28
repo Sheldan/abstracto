@@ -6,15 +6,12 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
-    <property name="youtubeFeature" value="(SELECT id FROM feature WHERE key = 'youtube')"/>
-
-    <changeSet  author="Sheldan"  id="webservices_youtube-commands">
-        <insert tableName="command">
-            <column name="name" value="youtubeSearch"/>
-            <column name="module_id" valueComputed="${utilityModule}"/>
-            <column name="feature_id" valueComputed="${youtubeFeature}"/>
+    <changeSet author="Sheldan"  id="webservices_feature-insertion">
+        <insert tableName="feature">
+            <column name="key" value="youtube"/>
+        </insert>
+        <insert tableName="feature">
+            <column name="key" value="urban"/>
         </insert>
     </changeSet>
-
 </databaseChangeLog>
