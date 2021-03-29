@@ -6,6 +6,9 @@ Integrates different web APIs to be used via the bot.
 === Youtube
 Feature key: `youtube`
 
+==== Feature modes
+`videoDetails`:: if enabled, the video shown with video details. Disabled by default.
+
 ==== Command
 Search for a youtube video::
 * Usage: `youtubeSearch <query>`

@@ -10,10 +10,12 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.webservices.config.WebserviceFeatureDefinition;
+import dev.sheldan.abstracto.webservices.youtube.config.YoutubeWebServiceFeatureMode;
 import dev.sheldan.abstracto.webservices.youtube.model.YoutubeVideo;
 import dev.sheldan.abstracto.webservices.youtube.model.command.YoutubeVideoSearchCommandModel;
 import dev.sheldan.abstracto.webservices.youtube.service.YoutubeSearchService;
@@ -37,15 +39,23 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private FeatureModeService featureModeService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         String query = (String) commandContext.getParameters().getParameters().get(0);
         YoutubeVideo foundVideo = youtubeSearchService.searchOneVideoForQuery(query);
         YoutubeVideoSearchCommandModel model = (YoutubeVideoSearchCommandModel) ContextConverter.slimFromCommandContext(commandContext, YoutubeVideoSearchCommandModel.class);
         model.setVideo(foundVideo);
-        MessageToSend message = templateService.renderEmbedTemplate("youtube_search_command_response", model);
+        CompletableFuture<Void> infoEmbedFuture;
+        if(featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, commandContext.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS)) {
+            MessageToSend message = templateService.renderEmbedTemplate("youtube_search_command_response", model);
+            infoEmbedFuture = FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()));
+        } else {
+            infoEmbedFuture = CompletableFuture.completedFuture(null);
+        }
         MessageToSend linkEmbed = templateService.renderEmbedTemplate("youtube_search_command_response_link", model);
-        CompletableFuture<Void> infoEmbedFuture = FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()));
         CompletableFuture<Void> linkEmbedFuture = FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(linkEmbed, commandContext.getChannel()));
         return CompletableFuture.allOf(infoEmbedFuture, linkEmbedFuture)
                 .thenApply(unused -> CommandResult.fromSuccess());

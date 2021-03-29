@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AConfig;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +72,11 @@ public class ConfigServiceBean implements ConfigService {
             return defaultValue;
         }
         return config.getLongValue();
+    }
+
+    @Override
+    public Boolean getBooleanValueOrConfigDefault(String name, Long serverId) {
+        return BooleanUtils.toBoolean(getStringValueOrConfigDefault(name, serverId));
     }
 
     @Override

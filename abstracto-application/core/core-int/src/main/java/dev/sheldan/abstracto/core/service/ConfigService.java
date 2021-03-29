@@ -11,6 +11,7 @@ public interface ConfigService {
     String getStringValue(String name, Long serverId, String defaultValue);
     String getStringValueOrConfigDefault(String name, Long serverId);
     Long getLongValue(String name, Long serverId, Long defaultValue);
+    Boolean getBooleanValueOrConfigDefault(String name, Long serverId);
     AConfig setOrCreateConfigValue(Long serverId, String name, AConfig value);
     void setDoubleValue(String name, Long serverId, Double value);
     void setLongValue(String name, Long serverId, Long value);
