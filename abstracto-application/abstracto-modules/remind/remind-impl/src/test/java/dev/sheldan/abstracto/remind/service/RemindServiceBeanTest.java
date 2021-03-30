@@ -246,7 +246,8 @@ public class RemindServiceBeanTest {
         when(remindedReminder.getReminderDate()).thenReturn(Instant.now());
         when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(RemindServiceBean.REMINDER_TEMPLATE_TEXT), any())).thenReturn(messageToSend);
+        when(channel.getGuild()).thenReturn(guild);
+        when(templateService.renderEmbedTemplate(eq(RemindServiceBean.REMINDER_TEMPLATE_TEXT), any(), eq(SERVER_ID))).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, channel)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
         CompletableFuture<Void> future = testUnit.sendReminderText(REMINDER_ID, channel, remindedMember);
         future.join();

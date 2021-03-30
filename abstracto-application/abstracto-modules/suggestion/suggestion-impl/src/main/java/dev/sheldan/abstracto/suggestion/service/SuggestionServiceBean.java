@@ -77,7 +77,7 @@ public class SuggestionServiceBean implements SuggestionService {
         suggestionLog.setState(SuggestionState.NEW);
         suggestionLog.setSuggesterUser(suggester);
         suggestionLog.setText(text);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog, member.getGuild().getIdLong());
         long guildId = member.getGuild().getIdLong();
         log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, member.getGuild().getId(), member.getId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
@@ -144,7 +144,7 @@ public class SuggestionServiceBean implements SuggestionService {
             MessageEmbed suggestionEmbed = embedOptional.get();
             suggestionLog.setReason(text);
             suggestionLog.setText(suggestionEmbed.getDescription());
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_LOG_TEMPLATE, suggestionLog, suggestionLog.getGuild().getIdLong());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, suggestionLog.getGuild().getIdLong());
             return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
         } else {

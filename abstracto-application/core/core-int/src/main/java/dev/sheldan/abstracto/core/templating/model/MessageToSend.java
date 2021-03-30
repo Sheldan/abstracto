@@ -24,7 +24,7 @@ public class MessageToSend {
     /**
      * The string content to be used in the first message.
      */
-    private String message;
+    private List<String> messages;
     /**
      * The file handle to send attached to the message.
      */

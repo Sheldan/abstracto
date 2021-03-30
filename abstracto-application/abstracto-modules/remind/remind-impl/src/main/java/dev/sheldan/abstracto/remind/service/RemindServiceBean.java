@@ -145,7 +145,7 @@ public class RemindServiceBean implements ReminderService {
                 .member(member)
                 .duration(Duration.between(reminder.getReminderDate(), reminder.getTargetDate()))
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(REMINDER_TEMPLATE_TEXT, build);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(REMINDER_TEMPLATE_TEXT, build, channelToAnswerIn.getGuild().getIdLong());
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, channelToAnswerIn));
     }
 

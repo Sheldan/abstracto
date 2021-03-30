@@ -163,7 +163,7 @@ public class Help implements Command {
         List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
         HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
         model.setModules(subModules);
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model, commandContext.getGuild().getIdLong());
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }

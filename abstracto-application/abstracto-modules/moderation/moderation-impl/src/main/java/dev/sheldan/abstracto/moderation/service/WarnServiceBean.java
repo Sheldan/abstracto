@@ -242,7 +242,7 @@ public class WarnServiceBean implements WarnService {
                 .guild(guildService.getGuildById(server.getId()))
                 .warnings(warnDecayWarnings)
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_LOG_TEMPLATE_KEY, warnDecayLogModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_LOG_TEMPLATE_KEY, warnDecayLogModel, serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId());
         return FutureUtils.toSingleFutureGeneric(messageFutures);
     }

@@ -101,7 +101,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
             if(tempFile.length() > maxFileSize) {
                 throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
             }
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY, model);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY, model, actualServer.getId());
             messageToSend.setFileToSend(tempFile);
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());

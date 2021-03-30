@@ -62,7 +62,7 @@ public class BanServiceBeanTest {
         testUnit.banMember(memberToBan, REASON, context);
         verify(mockedGuild, times(1)).ban(USER_ID.toString(), 0, REASON);
         verify(postTargetService, times(0)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, SERVER_ID);
-        verify(templateService, times(0)).renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context);
+        verify(templateService, times(0)).renderEmbedTemplate(BanServiceBean.BAN_LOG_TEMPLATE, context, SERVER_ID);
     }
 
     @Test

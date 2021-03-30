@@ -784,7 +784,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
      */
     private MessageToSend renderAssignablePlacePosts(AssignableRolePlace place) {
         AssignablePostMessage model = prepareAssignablePostMessageModel(place);
-        return templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model);
+        return templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model, place.getServer().getId());
     }
 
     /**

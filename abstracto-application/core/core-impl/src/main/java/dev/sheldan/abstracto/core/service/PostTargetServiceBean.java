@@ -130,7 +130,8 @@ public class PostTargetServiceBean implements PostTargetService {
     @Override
     public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        String messageText = message.getMessage();
+        // always takes the first one, only applicable for this scenario
+        String messageText = message.getMessages().get(0);
         if(StringUtils.isBlank(messageText)) {
             log.trace("Editing embeds of message {} in post target {}.", messageId, target.getName());
             return Arrays.asList(channelService.editEmbedMessageInAChannel(message.getEmbeds().get(0), textChannelForPostTarget, messageId));
@@ -146,7 +147,7 @@ public class PostTargetServiceBean implements PostTargetService {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
         CompletableFuture<Message> messageEditFuture = new CompletableFuture<>();
         futures.add(messageEditFuture);
-        if(StringUtils.isBlank(messageToSend.getMessage().trim())) {
+        if(StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
             channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
                 log.trace("Editing existing message {} when upserting message embeds in channel {} in server {}.",
                         messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
@@ -167,7 +168,7 @@ public class PostTargetServiceBean implements PostTargetService {
             channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
                     log.trace("Editing existing message {} when upserting message in channel {} in server {}.",
                             messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
-                    messageService.editMessage(message, messageToSend.getMessage(), messageToSend.getEmbeds().get(0))
+                    messageService.editMessage(message, messageToSend.getMessages().get(0), messageToSend.getEmbeds().get(0))
                             .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
             }).exceptionally(throwable -> {
                 log.trace("Creating new message when trying to upsert a message {} in channel {} in server {}.",

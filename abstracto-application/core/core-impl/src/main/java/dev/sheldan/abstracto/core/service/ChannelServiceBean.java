@@ -200,33 +200,38 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel) {
-        String messageText = messageToSend.getMessage();
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        MessageAction firstMessageAction = null;
         List<MessageAction> allMessageActions = new ArrayList<>();
-        if(!StringUtils.isBlank(messageText)) {
+        int iterations = Math.min(messageToSend.getMessages().size(), messageToSend.getEmbeds().size());
+        for (int i = 0; i < iterations; i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            firstMessageAction = textChannel.sendMessage(messageText);
+            String text = messageToSend.getMessages().get(i);
+            MessageEmbed embed = messageToSend.getEmbeds().get(i);
+            MessageAction messageAction = textChannel.sendMessage(text).embed(embed);
+            allMessageActions.add(messageAction);
         }
-        if(!messageToSend.getEmbeds().isEmpty()) {
-            if(firstMessageAction != null) {
-                metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                firstMessageAction.embed(messageToSend.getEmbeds().get(0));
-            } else {
-                firstMessageAction = textChannel.sendMessage(messageToSend.getEmbeds().get(0));
-            }
-            messageToSend.getEmbeds().stream().skip(1).forEach(embed -> allMessageActions.add(sendEmbedToChannelInComplete(embed, textChannel)));
+        // one of these loops will get additional iterations, if the number is different, not both
+        for (int i = iterations; i < messageToSend.getMessages().size(); i++) {
+            metricService.incrementCounter(MESSAGE_SEND_METRIC);
+            String text = messageToSend.getMessages().get(i);
+            MessageAction messageAction = textChannel.sendMessage(text);
+            allMessageActions.add(messageAction);
+        }
+        for (int i = iterations; i < messageToSend.getEmbeds().size(); i++) {
+            metricService.incrementCounter(MESSAGE_SEND_METRIC);
+            MessageEmbed embed = messageToSend.getEmbeds().get(i);
+            MessageAction messageAction = textChannel.sendMessage(embed);
+            allMessageActions.add(messageAction);
         }
         if(messageToSend.hasFileToSend()) {
-            if(firstMessageAction != null) {
+            if(!allMessageActions.isEmpty()) {
                 // in case there has not been a message, we need to increment it
-                metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                firstMessageAction.addFile(messageToSend.getFileToSend());
+                allMessageActions.set(0, allMessageActions.get(0).addFile(messageToSend.getFileToSend()));
             } else {
-                firstMessageAction = textChannel.sendFile(messageToSend.getFileToSend());
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                allMessageActions.add(textChannel.sendFile(messageToSend.getFileToSend()));
             }
         }
-        allMessageActions.add(0, firstMessageAction);
         List<Message.MentionType> allowedMentions = getAllowedMentionsFor(textChannel);
         allMessageActions.forEach(messageAction ->
             futures.add(messageAction.allowedMentions(allowedMentions).submit())
@@ -253,9 +258,9 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId) {
         MessageAction messageAction;
-        if(!StringUtils.isBlank(messageToSend.getMessage())) {
+        if(!StringUtils.isBlank(messageToSend.getMessages().get(0))) {
             log.trace("Editing message {} with new text content.", messageId);
-            messageAction = channel.editMessageById(messageId, messageToSend.getMessage());
+            messageAction = channel.editMessageById(messageId, messageToSend.getMessages().get(0));
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 log.trace("Also editing the embed for message {}.", messageId);
                 messageAction = messageAction.embed(messageToSend.getEmbeds().get(0));
@@ -459,7 +464,7 @@ public class ChannelServiceBean implements ChannelService {
             if(tempFile.length() > maxFileSize) {
                 throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
             }
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(messageTemplate, model);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(messageTemplate, model, channel.getGuild().getIdLong());
             messageToSend.setFileToSend(tempFile);
             return sendMessageToSendToChannel(messageToSend, channel);
         } catch (IOException e) {

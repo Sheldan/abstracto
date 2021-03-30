@@ -115,7 +115,7 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
                 modMailModeratorReplyModelBuilder.moderator(editingUser);
             }
             ModMailModeratorReplyModel modMailUserReplyModel = modMailModeratorReplyModelBuilder.build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel, editingUser.getGuild().getIdLong());
             Long threadId = modMailMessage.getThreadReference().getId();
             long serverId = editingUser.getGuild().getIdLong();
             if(modMailMessage.getCreatedMessageInChannel() != null) {

@@ -207,7 +207,7 @@ public class ModMailMessageEditedListenerTest {
         when(authorMember.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
-        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(0)).editMessageInAChannel(eq(messageToSend), any(AChannel.class), anyLong());
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
@@ -231,7 +231,7 @@ public class ModMailMessageEditedListenerTest {
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
-        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(1)).editMessageInAChannel(eq(messageToSend), eq(channel), eq(CREATED_MESSAGE_ID));
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
@@ -251,7 +251,7 @@ public class ModMailMessageEditedListenerTest {
         when(authorMember.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
-        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(0)).editMessageInAChannel(eq(messageToSend), any(AChannel.class), anyLong());
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);
@@ -274,7 +274,7 @@ public class ModMailMessageEditedListenerTest {
         when(thread.getChannel()).thenReturn(channel);
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(parsedParameters.getParameters()).thenReturn(Arrays.asList(NEW_PARAM));
-        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture())).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(ModMailThreadServiceBean.MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY), replyModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
         testUnit.updateMessageInThread(loadedMessage, parsedParameters, targetMember, authorMember);
         verify(channelService, times(1)).editMessageInAChannel(eq(messageToSend), eq(channel), eq(CREATED_MESSAGE_ID));
         verify(messageService, times(1)).editMessageInDMChannel(targetUser, messageToSend, CREATED_MESSAGE_ID);

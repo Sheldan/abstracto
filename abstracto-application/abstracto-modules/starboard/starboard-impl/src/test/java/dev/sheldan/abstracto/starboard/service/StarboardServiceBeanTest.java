@@ -179,7 +179,7 @@ public class StarboardServiceBeanTest {
         CachedMessage message = Mockito.mock(CachedMessage.class);
         when(message.getServerId()).thenReturn(SERVER_ID);
         StarboardPostModel model = Mockito.mock(StarboardPostModel.class);
-        when(templateService.renderEmbedTemplate(StarboardServiceBean.STARBOARD_POST_TEMPLATE, model)).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(StarboardServiceBean.STARBOARD_POST_TEMPLATE, model, SERVER_ID)).thenReturn(messageToSend);
         PostTarget postTarget = Mockito.mock(PostTarget.class);
         when(postTarget.getChannelReference()).thenReturn(starboardChannel);
         when(starboardChannel.getId()).thenReturn(STARBOARD_CHANNEL_ID);
@@ -235,7 +235,7 @@ public class StarboardServiceBeanTest {
         when(post.getSourceChannel()).thenReturn(sourceChannel);
         when(post.getId()).thenReturn(starboardPostId);
         MessageToSend postMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture())).thenReturn(postMessage);
+        when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(postMessage);
         when(postTargetService.editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(sendPost)));
         when(sendPost.getIdLong()).thenReturn(newPostId);
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);

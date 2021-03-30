@@ -48,7 +48,7 @@ public class UrbanDefine extends AbstractConditionableCommand {
             UrbanDefinition definition = urbanService.getUrbanDefinition(parameter);
             UrbanResponseModel model = (UrbanResponseModel) ContextConverter.slimFromCommandContext(commandContext, UrbanResponseModel.class);
             model.setDefinition(definition);
-            MessageToSend message = templateService.renderEmbedTemplate(URBAN_DEFINE_RESPONSE_MODEL_TEMPLATE_KEY, model);
+            MessageToSend message = templateService.renderEmbedTemplate(URBAN_DEFINE_RESPONSE_MODEL_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromSuccess());
         } catch (IOException e) {

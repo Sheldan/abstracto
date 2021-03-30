@@ -106,10 +106,9 @@ public class SuggestionServiceBeanTest {
         SuggestionLog log = Mockito.mock(SuggestionLog.class);
         when(suggestionCreator.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
-        when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(serverManagementService.loadServer(suggestionCreator.getGuild())).thenReturn(server);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class))).thenReturn(messageToSend);
+        when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class), eq(SERVER_ID))).thenReturn(messageToSend);
         Message suggestionMessage = Mockito.mock(Message.class);
         when(counterService.getNextCounterValue(server, SuggestionServiceBean.SUGGESTION_COUNTER_KEY)).thenReturn(SUGGESTION_ID);
         AUserInAServer aUserInAServer = Mockito.mock(AUserInAServer.class);
@@ -193,7 +192,7 @@ public class SuggestionServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(suggestionMessage.getEmbeds()).thenReturn(Arrays.asList(embed));
         MessageToSend updatedMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class))).thenReturn(updatedMessage);
+        when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_LOG_TEMPLATE), any(SuggestionLog.class), eq(SERVER_ID))).thenReturn(updatedMessage);
         testUnit.updateSuggestionMessageText(CLOSING_TEXT, log, suggestionMessage);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(updatedMessage, SuggestionPostTarget.SUGGESTION, SERVER_ID);
     }

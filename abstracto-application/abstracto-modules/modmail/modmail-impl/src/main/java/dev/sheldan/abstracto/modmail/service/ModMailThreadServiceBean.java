@@ -254,7 +254,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .roles(rolesToPing)
                 .channel(channel)
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel, channel.getGuild().getIdLong());
         List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId);
         return CompletableFuture.allOf(modmailping.toArray(new CompletableFuture[0]));
     }
@@ -434,7 +434,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .member(member)
                     .subscribers(subscribers)
                     .build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel, textChannel.getGuild().getIdLong());
             List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
             return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
                     .thenCompose(aVoid -> {
@@ -477,7 +477,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions, Member targetMember) {
         log.info("Relaying message {} to user {} in modmail thread {} on server {}.", replyCommandMessage.getId(), targetMember.getId(), modmailThreadId, targetMember.getGuild().getId());
         AUserInAServer moderator = userInServerManagementService.loadOrCreateUser(replyCommandMessage.getMember());
-        metricService. incrementCounter(MDOMAIL_THREAD_MESSAGE_SENT);
+        metricService.incrementCounter(MDOMAIL_THREAD_MESSAGE_SENT);
         ModMailThread modMailThread = modMailThreadManagementService.getById(modmailThreadId);
         FullUserInServer fullThreadUser = FullUserInServer
                 .builder()
@@ -500,7 +500,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             modMailModeratorReplyModelBuilder.moderator(moderatorMember);
         }
         ModMailModeratorReplyModel modMailUserReplyModel = modMailModeratorReplyModelBuilder.build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel, modMailThread.getServer().getId());
         CompletableFuture<Message> future = messageService.sendMessageToSendToUser(targetMember.getUser(), messageToSend);
         CompletableFuture<Message> sameThreadMessageFuture;
         if(featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, modMailThread.getServer(), ModMailMode.SEPARATE_MESSAGE)) {
@@ -720,7 +720,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .note(note)
                     .build();
             log.trace("Sending close header and individual mod mail messages to mod mail log target for thread {}.", modMailThreadId);
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_header", headerModel);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_header", headerModel, modMailThread.getServer().getId());
             List<CompletableFuture<Message>> closeHeaderFutures = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, modMailThread.getServer().getId());
             // TODO in case the rendering fails, the already sent messages are not deleted
             completableFutures.addAll(closeHeaderFutures);
@@ -761,7 +761,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         // TODO order messages
         loadedMessages.forEach(message -> {
             log.trace("Sending message {} of modmail thread {} to modmail log post target.",  modMailThread.getId(), message.getMessage().getId());
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_logged_message", message);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_logged_message", message, modMailThread.getServer().getId());
             List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, modMailThread.getServer().getId());
             messageFutures.addAll(logFuture);
         });

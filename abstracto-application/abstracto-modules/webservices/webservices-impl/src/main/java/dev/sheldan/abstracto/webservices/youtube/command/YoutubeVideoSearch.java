@@ -30,6 +30,8 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class YoutubeVideoSearch extends AbstractConditionableCommand {
 
+    public static final String YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY = "youtube_search_command_response";
+    public static final String YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY = "youtube_search_command_response_link";
     @Autowired
     private YoutubeSearchService youtubeSearchService;
 
@@ -50,12 +52,12 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
         model.setVideo(foundVideo);
         CompletableFuture<Void> infoEmbedFuture;
         if(featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, commandContext.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS)) {
-            MessageToSend message = templateService.renderEmbedTemplate("youtube_search_command_response", model);
+            MessageToSend message = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
             infoEmbedFuture = FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()));
         } else {
             infoEmbedFuture = CompletableFuture.completedFuture(null);
         }
-        MessageToSend linkEmbed = templateService.renderEmbedTemplate("youtube_search_command_response_link", model);
+        MessageToSend linkEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
         CompletableFuture<Void> linkEmbedFuture = FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(linkEmbed, commandContext.getChannel()));
         return CompletableFuture.allOf(infoEmbedFuture, linkEmbedFuture)
                 .thenApply(unused -> CommandResult.fromSuccess());

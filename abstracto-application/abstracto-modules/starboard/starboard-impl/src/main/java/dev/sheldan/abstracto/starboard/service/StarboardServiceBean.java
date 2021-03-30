@@ -113,7 +113,7 @@ public class StarboardServiceBean implements StarboardService {
 
     @Transactional
     public CompletionStage<Void> sendStarboardPostAndStore(CachedMessage message, Long starredUserId, List<Long> userExceptAuthorIds, StarboardPostModel starboardPostModel, Long userReactingId) {
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel, message.getServerId());
         PostTarget starboard = postTargetManagement.getPostTarget(StarboardPostTarget.STARBOARD.getKey(), message.getServerId());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
         Long starboardChannelId = starboard.getChannelReference().getId();
@@ -169,7 +169,7 @@ public class StarboardServiceBean implements StarboardService {
         int starCount = userExceptAuthor.size();
         log.info("Updating starboard post {} in server {} with reactors {}.", post.getId(), post.getSourceChannel().getServer().getId(), starCount);
         return buildStarboardPostModel(message, starCount).thenCompose(starboardPostModel -> {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel, message.getServerId());
             List<CompletableFuture<Message>> futures = postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
             Long starboardPostId = post.getId();
             return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {

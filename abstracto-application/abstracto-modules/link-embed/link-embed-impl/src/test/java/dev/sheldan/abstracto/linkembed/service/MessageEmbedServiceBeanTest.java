@@ -234,7 +234,9 @@ public class MessageEmbedServiceBeanTest {
     public void testSendEmbeddingMessage() {
         MessageEmbeddedModel embeddedModel = Mockito.mock(MessageEmbeddedModel.class);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(MessageEmbedServiceBean.MESSAGE_EMBED_TEMPLATE, embeddedModel)).thenReturn(messageToSend);
+        when(textChannel.getGuild()).thenReturn(guild);
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
+        when(templateService.renderEmbedTemplate(MessageEmbedServiceBean.MESSAGE_EMBED_TEMPLATE, embeddedModel, SERVER_ID)).thenReturn(messageToSend);
         AUser user = Mockito.mock(AUser.class);
         when(embeddingUser.getUserReference()).thenReturn(user);
         when(userInServerManagementService.loadOrCreateUser(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(embeddingUser);

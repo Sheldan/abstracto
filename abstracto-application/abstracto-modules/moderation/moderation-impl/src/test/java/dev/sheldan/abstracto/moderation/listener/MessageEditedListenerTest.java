@@ -56,7 +56,6 @@ public class MessageEditedListenerTest {
 
     private static final Long SERVER_ID = 4L;
     private static final Long CHANNEL_ID = 5L;
-    private static final Long AUTHOR_ID = 6L;
 
     @Test
     public void testExecuteListenerWithSameContent() {
@@ -66,7 +65,7 @@ public class MessageEditedListenerTest {
         when(model.getAfter()).thenReturn(messageAfter);
         when(model.getBefore()).thenReturn(messageBefore);
         testUnit.execute(model);
-        verify(templateService, times(0)).renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), any());
+        verify(templateService, times(0)).renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), any(), eq(SERVER_ID));
     }
 
     @Test

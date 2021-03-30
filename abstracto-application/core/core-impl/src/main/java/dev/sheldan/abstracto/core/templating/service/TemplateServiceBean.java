@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.core.templating.service;
 
 import com.google.gson.Gson;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.config.ServerContext;
+import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.exception.TemplatingException;
 import dev.sheldan.abstracto.core.templating.model.*;
@@ -13,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,6 +43,9 @@ public class TemplateServiceBean implements TemplateService {
 
     @Autowired
     private ServerContext serverContext;
+
+    @Autowired
+    private ConfigService configService;
 
     /**
      * Formats the passed passed count with the embed used for formatting pages.
@@ -114,9 +120,51 @@ public class TemplateServiceBean implements TemplateService {
             embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
         }
 
+        List<String> messages = new ArrayList<>();
+        String additionalMessage = embedConfiguration.getAdditionalMessage();
+        if(additionalMessage != null) {
+            Long segmentLimit = embedConfiguration.getAdditionalMessageLengthLimit() != null ? embedConfiguration.getAdditionalMessageLengthLimit() : Long.valueOf(Message.MAX_CONTENT_LENGTH);
+            if(additionalMessage.length() > segmentLimit) {
+                int segmentStart = 0;
+                int segmentEnd = segmentLimit.intValue();
+                while(segmentStart < additionalMessage.length()) {
+                    int segmentLength = additionalMessage.length() - segmentStart;
+                    if(segmentLength > segmentLimit) {
+                        int lastSpace = additionalMessage.substring(segmentStart, segmentEnd).lastIndexOf(" ");
+                        if(lastSpace != -1) {
+                            segmentEnd = segmentStart + lastSpace;
+                        }
+                    } else {
+                        segmentEnd = additionalMessage.length();
+                    }
+                    String messageText = additionalMessage.substring(segmentStart, segmentEnd);
+                    messages.add(messageText);
+                    segmentStart = segmentEnd;
+                    segmentEnd += segmentLimit;
+                }
+            } else {
+                messages.add(additionalMessage);
+            }
+        }
+        Long messageLimit = 100L;
+        if(serverContext.getServerId() != null) {
+            messageLimit = Math.min(messageLimit, configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, serverContext.getServerId()));
+        }
+        if(embedConfiguration.getMessageLimit() != null) {
+            messageLimit = Math.min(messageLimit, embedConfiguration.getMessageLimit());
+        }
+        if(embeds.size() > messageLimit) {
+            log.info("Limiting size of embeds. Max allowed: {}, currently: {}.", messageLimit, embeds.size());
+            embeds.subList(messageLimit.intValue(), embeds.size()).clear();
+        }
+        if(messages.size() > messageLimit) {
+            log.info("Limiting size of messages. Max allowed: {}, currently: {}.", messageLimit, messages.size());
+            messages.subList(messageLimit.intValue(), messages.size()).clear();
+        }
+
         return MessageToSend.builder()
                 .embeds(embeds)
-                .message(embedConfiguration.getAdditionalMessage())
+                .messages(messages)
                 .build();
     }
 
@@ -171,7 +219,7 @@ public class TemplateServiceBean implements TemplateService {
 
     @Override
     public MessageToSend renderTemplateToMessageToSend(String key, Object model) {
-        return MessageToSend.builder().message(renderTemplate(key, model)).build();
+        return MessageToSend.builder().messages(Arrays.asList(renderTemplate(key, model))).build();
     }
 
     @Override
