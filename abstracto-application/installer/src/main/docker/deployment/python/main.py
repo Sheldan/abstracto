@@ -59,15 +59,18 @@ if not use_folder:
     if deploy_templates:
         print("Deploying templates.")
         for template_artifact in artifact_config['template_artifacts']:
+            folder_name = template_artifact + "-templates"
+            os.mkdir(folder_name)
             with ZipFile('templates/' + template_artifact + '.zip', 'r') as template_zip:
-                template_zip.extractall(template_artifact)
-            templates_deploy.deploy_template_folder(db_config, template_artifact)
+                template_zip.extractall(folder_name)
+            templates_deploy.deploy_template_folder(db_config, folder_name)
 
         print("Deploying translation templates")
         for template_artifact in artifact_config['translation_artifacts']:
+            folder_name = template_artifact + "-translations"
             with ZipFile('translations/' + template_artifact + '.zip', 'r') as template_zip:
-                template_zip.extractall(template_artifact)
-            templates_deploy.deploy_template_folder(db_config, template_artifact)
+                template_zip.extractall(folder_name)
+            templates_deploy.deploy_template_folder(db_config, folder_name)
 
 if use_folder:
     print("Only deploying folder.")

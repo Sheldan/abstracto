@@ -23,7 +23,8 @@ def deploy_template_folder(db_config, folder):
     print('Deploying %s templates from folder %s' % (len(templates), folder))
 
     with engine.connect() as con:
-        statement = text("""INSERT INTO template(key, content, last_modified) VALUES(:key, :content, NOW()) ON CONFLICT (key) DO UPDATE SET content = :content""")
+        with con.begin():
+            statement = text("""INSERT INTO template(key, content, last_modified) VALUES(:key, :content, NOW()) ON CONFLICT (key) DO UPDATE SET content = :content""")
 
-        for line in templates:
-            con.execute(statement, **line)
+            for line in templates:
+                con.execute(statement, **line)
