@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class DeleteProfanityRegex extends AbstractConditionableCommand {
+public class RemoveProfanityRegex extends AbstractConditionableCommand {
 
     @Autowired
     private ProfanityService profanityService;
@@ -33,12 +33,12 @@ public class DeleteProfanityRegex extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter profanityGroupParameter = Parameter.builder().name("profanityGroup").type(String.class).templated(true).build();
+        Parameter profanityGroupParameter = Parameter.builder().name("profanityGroupName").type(String.class).templated(true).build();
         Parameter profanityNameParameter = Parameter.builder().name("profanityName").type(String.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(profanityGroupParameter, profanityNameParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("deleteProfanityRegex")
+                .name("removeProfanityRegex")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)

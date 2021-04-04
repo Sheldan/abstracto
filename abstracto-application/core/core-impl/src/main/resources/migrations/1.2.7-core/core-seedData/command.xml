@@ -25,7 +25,7 @@
             <column name="feature_id" valueComputed="${coreFeature}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="deleteProfanityRegex"/>
+            <column name="name" value="removeProfanityRegex"/>
             <column name="module_id" valueComputed="${configModule}"/>
             <column name="feature_id" valueComputed="${coreFeature}"/>
         </insert>
