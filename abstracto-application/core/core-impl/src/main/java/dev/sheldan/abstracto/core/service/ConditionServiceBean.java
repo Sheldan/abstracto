@@ -27,11 +27,11 @@ public class ConditionServiceBean implements ConditionService {
                 .stream()
                 .filter(systemCondition -> systemCondition.getConditionName().equalsIgnoreCase(context.getConditionName()))
                 .findAny();
-        log.trace("Checking condition {}.", context.getConditionName());
+        log.debug("Checking condition {}.", context.getConditionName());
         return matchingCondition.map(systemCondition -> {
             verifyConditionContext(context, systemCondition);
             boolean result = systemCondition.checkCondition(context);
-            log.trace("Condition resulted in {}.", result);
+            log.debug("Condition resulted in {}.", result);
             return result;
         }).orElse(true);
     }

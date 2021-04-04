@@ -72,7 +72,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());
         Runnable finalAction = super.getTimeoutRunnable(user.getGuildId(), user.getChannelId());
-        log.trace("Executing setup for post target {} in server {} for user {}.", postTargetStepParameter.getPostTargetKey(), user.getGuildId(), user.getUserId());
+        log.debug("Executing setup for post target {} in server {} for user {}.", postTargetStepParameter.getPostTargetKey(), user.getGuildId(), user.getUserId());
         Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
             try {
 
@@ -83,7 +83,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                     result = SetupStepResult.fromCancelled();
                 } else {
                     if(message.getMentionedChannels().size() == 0) {
-                        log.trace("No mentioned channel was seen in channel, nothing provided.");
+                        log.debug("No mentioned channel was seen in channel, nothing provided.");
                         throw new NoChannelProvidedException();
                     }
                     TextChannel textChannel = message.getMentionedChannels().get(0);
@@ -94,7 +94,7 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                             .textChannel(textChannel)
                             .channelId(textChannel.getIdLong())
                             .build();
-                    log.trace("Setup for post target {} in server {} for user {} completed. Storing delayed action.", postTargetStepParameter.getPostTargetKey(), user.getGuildId(), user.getUserId());
+                    log.debug("Setup for post target {} in server {} for user {} completed. Storing delayed action.", postTargetStepParameter.getPostTargetKey(), user.getGuildId(), user.getUserId());
                     List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
                     result = SetupStepResult
                             .builder()

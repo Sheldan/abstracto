@@ -80,7 +80,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
         if(configManagementService.configExists(user.getGuildId(), ModMailThreadServiceBean.MODMAIL_CATEGORY)) {
             Guild guild = guildService.getGuildById(user.getGuildId());
             Long categoryId = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId());
-            log.trace("Previous modmail category exists for server {}. Loading value {}.", guild.getId(), categoryId);
+            log.debug("Previous modmail category exists for server {}. Loading value {}.", guild.getId(), categoryId);
             Category category = guild.getCategoryById(categoryId);
             model.setCategory(category);
         }
@@ -109,7 +109,7 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                     // directly validate whether or not the given category ID is a valid value
                     modMailFeatureValidator.validateModMailCategory(featureValidationResult, guild, categoryId);
                     if(Boolean.TRUE.equals(featureValidationResult.getValidationResult())) {
-                        log.trace("Given category {} maps to a valid category in server {}.", categoryId, guild.getId());
+                        log.debug("Given category {} maps to a valid category in server {}.", categoryId, guild.getId());
                         ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
                                 .builder()
                                 .serverId(user.getGuildId())

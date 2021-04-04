@@ -114,7 +114,7 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
                             usedEmoteManagementService.createEmoteUsageForToday(trackedEmote, persistingEmote.getCount());
                         }
                     } else {
-                        log.trace("Tracking disabled for emote {} in server {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId());
+                        log.debug("Tracking disabled for emote {} in server {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId());
                     }
                 });
                 // if tracked emote does not exists, we might want to create one (only for external emotes)

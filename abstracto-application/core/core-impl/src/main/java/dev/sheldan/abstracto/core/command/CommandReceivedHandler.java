@@ -211,7 +211,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
             for (ParameterValidator parameterValidator : parameter.getValidators()) {
                 boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
                 if(!validate) {
-                    log.trace("Parameter {} in command {} failed to validate.", parameter.getName(), foundCommand.getConfiguration().getName());
+                    log.debug("Parameter {} in command {} failed to validate.", parameter.getName(), foundCommand.getConfiguration().getName());
                     throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getExceptionTemplateName(), parameter);
                 }
             }
@@ -220,7 +220,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Transactional
     public void executePostCommandListener(Command foundCommand, CommandContext commandContext, CommandResult result) {
-        log.trace("Executing post command listeners for command from message {}.", commandContext.getMessage().getIdLong());
+        log.debug("Executing post command listeners for command from message {}.", commandContext.getMessage().getIdLong());
         for (PostCommandExecution postCommandExecution : executions) {
             postCommandExecution.execute(commandContext, result, foundCommand);
         }
@@ -247,7 +247,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().isEmpty()) {
             return CompletableFuture.completedFuture(Parameters.builder().parameters(parsedParameters).build());
         }
-        log.trace("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
+        log.debug("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
         Iterator<Emote> emoteIterator = message.getEmotesBag().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();

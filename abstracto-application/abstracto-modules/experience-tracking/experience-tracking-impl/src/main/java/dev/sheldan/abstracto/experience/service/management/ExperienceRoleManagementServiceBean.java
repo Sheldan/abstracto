@@ -81,7 +81,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
         AExperienceRole experienceRole;
         log.info("Setting role {} in server {} to level {}.", role.getId(), role.getServer().getId(), level.getLevel());
         if(byRoleServerAndRoleOptional.isPresent()) {
-            log.trace("Role already existed. Updating.");
+            log.debug("Role already existed. Updating.");
             experienceRole = byRoleServerAndRoleOptional.get();
             experienceRole.setLevel(level);
         } else {
@@ -92,7 +92,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
                     .server(role.getServer())
                     .role(role)
                     .build();
-            log.trace("Role did not exist. Creating new.");
+            log.debug("Role did not exist. Creating new.");
             return experienceRoleRepository.save(experienceRole);
         }
         return experienceRole;

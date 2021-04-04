@@ -195,7 +195,7 @@ public class MuteServiceBean implements MuteService {
     public String startUnMuteJobFor(Instant unMuteDate, Long muteId, Long serverId) {
         Duration muteDuration = Duration.between(Instant.now(), unMuteDate);
         if(muteDuration.getSeconds() < 60) {
-            log.trace("Directly scheduling the unMute, because it was below the threshold.");
+            log.debug("Directly scheduling the unMute, because it was below the threshold.");
             unMuteScheduler.schedule(() -> {
                 try {
                     self.endMute(muteId, serverId);
@@ -205,7 +205,7 @@ public class MuteServiceBean implements MuteService {
             }, muteDuration.toNanos(), TimeUnit.NANOSECONDS);
             return null;
         } else {
-            log.trace("Starting scheduled job to execute unMute.");
+            log.debug("Starting scheduled job to execute unMute.");
             HashMap<Object, Object> parameters = new HashMap<>();
             parameters.put("muteId", muteId);
             parameters.put("serverId", serverId);
@@ -223,7 +223,7 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public CompletableFuture<Void> muteMemberWithLog(MuteContext context) {
-        log.trace("Muting member {} in server {}.", context.getMutedUser().getId(), context.getMutedUser().getGuild().getId());
+        log.debug("Muting member {} in server {}.", context.getMutedUser().getId(), context.getMutedUser().getGuild().getId());
         AServer server = serverManagementService.loadOrCreate(context.getContext().getServerId());
         Long nextCounterValue = counterService.getNextCounterValue(server, MUTE_COUNTER_KEY);
         context.setMuteId(nextCounterValue);
@@ -243,13 +243,13 @@ public class MuteServiceBean implements MuteService {
     private CompletableFuture<Void> sendMuteLog(MuteContext muteLogModel, AServer server)  {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)) {
-            log.trace("Sending mute log to the mute post target.");
+            log.debug("Sending mute log to the mute post target.");
             MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.trace("Not sending mute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
+            log.debug("Not sending mute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
         }
         return completableFuture;
     }
@@ -257,13 +257,13 @@ public class MuteServiceBean implements MuteService {
     private CompletableFuture<Void> sendUnMuteLogMessage(UnMuteLog muteLogModel, AServer server)  {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)) {
-            log.trace("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
+            log.debug("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
             MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
             List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
             completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.trace("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
+            log.debug("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
         }
         return completableFuture;
     }
@@ -289,10 +289,10 @@ public class MuteServiceBean implements MuteService {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, guild.getIdLong(), MutingMode.MANUAL_UN_MUTE_LOGGING)) {
             completableFuture = self.sendUnmuteLog(muteId, guild, mutingMemberFuture, mutedMemberFuture);
-            log.trace("Sending un mute notification for manual un mute for mute {} in server {}.", muteId, guild.getIdLong());
+            log.debug("Sending un mute notification for manual un mute for mute {} in server {}.", muteId, guild.getIdLong());
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.trace("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MANUAL_UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, guild.getIdLong());
+            log.debug("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MANUAL_UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, guild.getIdLong());
 
         }
         return completableFuture;
@@ -308,7 +308,7 @@ public class MuteServiceBean implements MuteService {
         AServer mutingServer = mute.getServer();
         log.info("UnMuting {} in server {}", mute.getMutedUser().getUserReference().getId(), mutingServer.getId());
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
-        log.trace("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
+        log.debug("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
         Guild guild = guildService.getGuildById(mutingServer.getId());
         CompletableFuture<Void> roleRemovalFuture;
         // TODO replace with future, because caching

@@ -42,7 +42,7 @@ public class MessageCacheBean implements MessageCache {
     @Override
     @CachePut(key = "#message.id")
     public CompletableFuture<CachedMessage> putMessageInCache(Message message) {
-        log.info("Adding message {} to cache.", message.getId());
+        log.debug("Adding message {} to cache.", message.getId());
         return cacheEntityService.buildCachedMessageFromMessage(message);
     }
 
@@ -50,27 +50,27 @@ public class MessageCacheBean implements MessageCache {
     @Override
     @CachePut(key = "#message.messageId.toString()")
     public CompletableFuture<CachedMessage> putMessageInCache(CachedMessage message) {
-        log.info("Adding cached message {} to cache.", message.getMessageId());
+        log.debug("Adding cached message {} to cache.", message.getMessageId());
         return CompletableFuture.completedFuture(message);
     }
 
     @Override
     @Cacheable(key = "#message.id")
     public CompletableFuture<CachedMessage> getMessageFromCache(Message message) {
-        log.trace("Retrieving message {}.", message.getId());
+        log.debug("Retrieving message {}.", message.getId());
         return getMessageFromCache(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
     }
 
     @Override
     @Cacheable(key = "#messageId.toString()")
     public CompletableFuture<CachedMessage> getMessageFromCache(Long guildId, Long textChannelId, Long messageId) {
-        log.info("Retrieving message {}.", messageId);
+        log.debug("Retrieving message {}.", messageId);
         return concreteSelf.loadMessage(guildId, textChannelId, messageId);
     }
 
     @Override
     public CompletableFuture<CachedMessage> loadMessage(Long guildId, Long textChannelId, Long messageId) {
-        log.info("Loading message {} from channel {} in server {}.", messageId, textChannelId, guildId);
+        log.debug("Loading message {} from channel {} in server {}.", messageId, textChannelId, guildId);
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         Optional<Guild> guildOptional = guildService.getGuildByIdOptional(guildId);
         if(guildOptional.isPresent()) {

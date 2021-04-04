@@ -53,7 +53,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         if(commandContext.getParameters().getParameters().isEmpty()) {
-            log.trace("Displaying existing post targets for guild {}.", commandContext.getGuild().getId());
+            log.debug("Displaying existing post targets for guild {}.", commandContext.getGuild().getId());
             PostTargetDisplayModel posttargetDisplayModel = (PostTargetDisplayModel) ContextConverter.fromCommandContext(commandContext, PostTargetDisplayModel.class);
             AServer server = serverManagementService.loadServer(commandContext.getGuild());
             List<PostTarget> postTargets = postTargetService.getPostTargets(server);

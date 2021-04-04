@@ -16,7 +16,7 @@ public class SystemConfigDelayedAction implements DelayedAction {
     @Override
     public void execute(DelayedActionConfig delayedActionConfig) {
         SystemConfigDelayedActionConfig concrete = (SystemConfigDelayedActionConfig) delayedActionConfig;
-        log.trace("Executing delayed system config action for key {} in server {}.", concrete.getConfigKey(), concrete.getServerId());
+        log.debug("Executing delayed system config action for key {} in server {}.", concrete.getConfigKey(), concrete.getServerId());
         configService.setOrCreateConfigValue(concrete.getServerId(), concrete.getConfigKey(), concrete.getValue());
     }
 

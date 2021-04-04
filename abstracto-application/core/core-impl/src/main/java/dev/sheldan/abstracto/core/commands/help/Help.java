@@ -111,7 +111,7 @@ public class Help implements Command {
             if(moduleService.moduleExists(parameter)){
                 metricService.incrementCounter(HELP_COMMAND_MODULE_METRIC);
                 ModuleDefinition moduleDefinition = moduleService.getModuleByName(parameter);
-                log.trace("Displaying help for module {}.", moduleDefinition.getInfo().getName());
+                log.debug("Displaying help for module {}.", moduleDefinition.getInfo().getName());
                 SingleLevelPackedModule module = moduleService.getPackedModule(moduleDefinition);
                 List<Command> commands = module.getCommands();
                 List<Command> filteredCommands = new ArrayList<>();
@@ -133,7 +133,7 @@ public class Help implements Command {
                 if(commandOptional.isPresent()) {
                     metricService.incrementCounter(HELP_COMMAND_COMMAND_METRIC);
                     Command command = commandOptional.get();
-                    log.trace("Displaying help for command {}.", command.getConfiguration().getName());
+                    log.debug("Displaying help for command {}.", command.getConfiguration().getName());
                     ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
                     List<String> aliases = commandInServerAliasService.getAliasesForCommand(commandContext.getGuild().getIdLong(), command.getConfiguration().getName());
                     ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getGuild().getIdLong());
@@ -158,7 +158,7 @@ public class Help implements Command {
     }
 
     private CompletableFuture<CommandResult> displayHelpOverview(CommandContext commandContext) {
-        log.trace("Displaying help overview response.");
+        log.debug("Displaying help overview response.");
         ModuleDefinition moduleDefinition = moduleService.getDefaultModule();
         List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
         HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);

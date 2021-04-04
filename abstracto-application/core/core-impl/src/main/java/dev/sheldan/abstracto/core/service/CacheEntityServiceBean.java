@@ -85,7 +85,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
         }
         List<MessageEmbed.Field> fields = embed.getFields();
         if(!fields.isEmpty()) {
-            log.trace("Caching {} fields.", fields.size());
+            log.debug("Caching {} fields.", fields.size());
             List<CachedEmbedField> cachedEmbedFields = new ArrayList<>();
             fields.forEach(field -> {
                 CachedEmbedField build = CachedEmbedField
@@ -159,13 +159,13 @@ public class CacheEntityServiceBean implements CacheEntityService {
 
         List<ServerUser> aUsers = new ArrayList<>();
         users.forEachAsync(user -> {
-            log.trace("Loading user {} for reaction.", user.getIdLong());
+            log.debug("Loading user {} for reaction.", user.getIdLong());
             if(reaction.getGuild() != null) {
                 aUsers.add(ServerUser.builder().userId(user.getIdLong()).serverId(reaction.getGuild().getIdLong()).build());
             }
             return true;
         }).whenComplete((o, throwable) -> {
-            log.trace("{} Users have been loaded. Completing future.", aUsers.size());
+            log.debug("{} Users have been loaded. Completing future.", aUsers.size());
             if(throwable != null) {
                 log.error("Reaction user retrieval failed. Completing with what we have.", throwable);
             }
@@ -181,24 +181,24 @@ public class CacheEntityServiceBean implements CacheEntityService {
     public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message) {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         List<CachedAttachment> attachments = new ArrayList<>();
-        log.trace("Caching {} attachments.", message.getAttachments().size());
+        log.debug("Caching {} attachments.", message.getAttachments().size());
         message.getAttachments().forEach(attachment ->
                 attachments.add(getCachedAttachment(attachment))
         );
-        log.trace("Caching {} embeds.", message.getEmbeds().size());
+        log.debug("Caching {} embeds.", message.getEmbeds().size());
         List<CachedEmbed> embeds = new ArrayList<>();
         message.getEmbeds().forEach(embed ->
                 embeds.add(getCachedEmbedFromEmbed(embed))
         );
 
-        log.trace("Caching {} emotes.", message.getEmbeds().size());
+        log.debug("Caching {} emotes.", message.getEmbeds().size());
         List<CachedEmote> emotes = new ArrayList<>();
         if(message.isFromGuild()) {
             message.getEmotesBag().forEach(emote -> emotes.add(getCachedEmoteFromEmote(emote, message.getGuild())));
         }
 
         List<CompletableFuture<CachedReactions>> futures = new ArrayList<>();
-        log.trace("Caching {} reactions.", message.getReactions().size());
+        log.debug("Caching {} reactions.", message.getReactions().size());
         message.getReactions().forEach(messageReaction -> futures.add(getCachedReactionFromReaction(messageReaction)));
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
                 {

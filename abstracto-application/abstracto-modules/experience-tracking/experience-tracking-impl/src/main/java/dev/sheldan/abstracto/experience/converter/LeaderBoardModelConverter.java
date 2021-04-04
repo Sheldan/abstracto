@@ -42,7 +42,7 @@ public class LeaderBoardModelConverter {
      */
     public List<CompletableFuture<LeaderBoardEntryModel>> fromLeaderBoard(LeaderBoard leaderBoard) {
         List<CompletableFuture<LeaderBoardEntryModel>> models = new ArrayList<>();
-        log.trace("Converting {} entries to a list of leaderboard entries.", leaderBoard.getEntries().size());
+        log.debug("Converting {} entries to a list of leaderboard entries.", leaderBoard.getEntries().size());
         leaderBoard.getEntries().forEach(leaderBoardEntry -> {
             CompletableFuture<LeaderBoardEntryModel> entry = fromLeaderBoardEntry(leaderBoardEntry);
             models.add(entry);

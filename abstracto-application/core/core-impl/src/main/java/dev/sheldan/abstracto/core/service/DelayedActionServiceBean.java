@@ -18,7 +18,7 @@ public class DelayedActionServiceBean implements DelayedActionService {
     @Override
     public void executeDelayedActions(List<DelayedActionConfig> delayedActionConfigList) {
         delayedActionConfigList.forEach(delayedActionConfig -> {
-            log.trace("Executing delayed action {}.", delayedActionConfig.getClass().getSimpleName());
+            log.debug("Executing delayed action {}.", delayedActionConfig.getClass().getSimpleName());
             delayedActions.stream()
                     .filter(delayedAction -> delayedAction.handles(delayedActionConfig))
                     .findFirst()

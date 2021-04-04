@@ -56,14 +56,14 @@ public class TrackedEmoteRuntimeServiceBean implements TrackedEmoteRuntimeServic
                     }
                 } else {
                     // it did not exist for the server, create a new list of PersistingEmote
-                    log.trace("Adding emote {} to list of server {}.", newPersistentEmote.getEmoteId(), guild.getIdLong());
+                    log.debug("Adding emote {} to list of server {}.", newPersistentEmote.getEmoteId(), guild.getIdLong());
                     elementsForKey.put(guild.getIdLong(), new ArrayList<>(Arrays.asList(newPersistentEmote)));
                 }
             } else {
                 // no entry for the minute exists yet, add a new one
                 HashMap<Long, List<PersistingEmote>> serverEmotes = new HashMap<>();
                 serverEmotes.put(guild.getIdLong(), new ArrayList<>(Arrays.asList(newPersistentEmote)));
-                log.trace("Adding emote map entry for server {}.", guild.getIdLong());
+                log.debug("Adding emote map entry for server {}.", guild.getIdLong());
                 trackedEmoteRunTimeStorage.put(key, serverEmotes);
             }
         } finally {

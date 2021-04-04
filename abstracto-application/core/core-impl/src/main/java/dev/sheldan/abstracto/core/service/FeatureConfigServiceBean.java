@@ -105,19 +105,19 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
         log.info("Verifying feature setup for feature {} in server {}.", featureConfig.getFeature().getKey(), server.getId());
         FeatureValidationResult featureValidationResult = FeatureValidationResult.validationSuccessful(featureConfig);
         featureConfig.getRequiredPostTargets().forEach(s -> {
-            log.trace("Checking post target {}.", s.getKey());
+            log.debug("Checking post target {}.", s.getKey());
             featureValidatorService.checkPostTarget(s, server, featureValidationResult);
         });
         featureConfig.getRequiredSystemConfigKeys().forEach(s -> {
-            log.trace("Checking system config key {}.", s);
+            log.debug("Checking system config key {}.", s);
             featureValidatorService.checkSystemConfig(s, server, featureValidationResult);
         });
         featureConfig.getRequiredEmotes().forEach(s -> {
-            log.trace("Checking required emote {}.", s);
+            log.debug("Checking required emote {}.", s);
             featureValidatorService.checkEmote(s, server, featureValidationResult);
 }       );
         featureConfig.getAdditionalFeatureValidators().forEach(featureValidator ->  {
-            log.trace("Executing additional feature validator {}.", featureValidator.getClass().getName());
+            log.debug("Executing additional feature validator {}.", featureValidator.getClass().getName());
             featureValidator.featureIsSetup(featureConfig, server, featureValidationResult);
         });
         return featureValidationResult;

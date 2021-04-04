@@ -43,7 +43,7 @@ public class ProfanityServiceBean implements ProfanityService {
     public String replaceProfanities(String input, Long serverId, String replacement) {
         if(regex.containsKey(serverId)) {
             List<PatternReplacement> regexes = regex.get(serverId);
-            log.trace("Checking {} regexes for server {} with static replacement.", regexes.size(), serverId);
+            log.debug("Checking {} regexes for server {} with static replacement.", regexes.size(), serverId);
             for (PatternReplacement pattern: regexes) {
                 Matcher matcher = pattern.getPattern().matcher(input);
                 input = matcher.replaceAll(replacement);
@@ -56,7 +56,7 @@ public class ProfanityServiceBean implements ProfanityService {
     public String replaceProfanitiesWithDefault(String input, Long serverId, String defaultReplacement) {
         if(regex.containsKey(serverId)) {
             List<PatternReplacement> regexes = regex.get(serverId);
-            log.trace("Checking {} regexes for server {} with dynamic replacement.", regexes.size(), serverId);
+            log.debug("Checking {} regexes for server {} with dynamic replacement.", regexes.size(), serverId);
             for (PatternReplacement pattern: regexes) {
                 Matcher matcher = pattern.getPattern().matcher(input);
                 String replacement = pattern.getReplacement() != null ? pattern.getReplacement() : defaultReplacement;
@@ -70,7 +70,7 @@ public class ProfanityServiceBean implements ProfanityService {
     public boolean containsProfanity(String input, Long serverId) {
         if(regex.containsKey(serverId)) {
             List<PatternReplacement> regexes = regex.get(serverId);
-            log.trace("Checking existence of {} regexes for server {}.", regexes.size(), serverId);
+            log.debug("Checking existence of {} regexes for server {}.", regexes.size(), serverId);
             for (PatternReplacement pattern: regexes) {
                 Matcher matcher = pattern.getPattern().matcher(input);
                 if(matcher.matches()) {

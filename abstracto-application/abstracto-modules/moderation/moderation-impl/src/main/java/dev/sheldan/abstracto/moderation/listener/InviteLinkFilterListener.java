@@ -122,7 +122,7 @@ public class InviteLinkFilterListener implements MessageReceivedListener {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY, model, message.getGuild().getIdLong());
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, InviteFilterPostTarget.INVITE_DELETE_LOG, serverId);
         FutureUtils.toSingleFutureGeneric(messageFutures).thenAccept(unused ->
-            log.trace("Successfully send notification about deleted invite link in message {}.", message.getIdLong())
+            log.debug("Successfully send notification about deleted invite link in message {}.", message.getIdLong())
         ).exceptionally(throwable -> {
             log.error("Failed to send notification about deleted invite link in message {}.", message.getIdLong());
             return null;

@@ -54,11 +54,11 @@ public class BanServiceBean implements BanService {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, guildId, ModerationMode.BAN_LOG)) {
             MessageToSend banLogMessage = templateService.renderEmbedTemplate(template, banLog, guildId);
-            log.trace("Sending ban log message in guild {}.", guildId);
+            log.debug("Sending ban log message in guild {}.", guildId);
             List<CompletableFuture<Message>> notificationFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId);
             completableFuture = FutureUtils.toSingleFutureGeneric(notificationFutures);
         } else {
-            log.trace("Feature {} has mode {} for logging disabled for server {}. Not sending notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, guildId);
+            log.debug("Feature {} has mode {} for logging disabled for server {}. Not sending notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, guildId);
             completableFuture = CompletableFuture.completedFuture(null);
         }
         return completableFuture;

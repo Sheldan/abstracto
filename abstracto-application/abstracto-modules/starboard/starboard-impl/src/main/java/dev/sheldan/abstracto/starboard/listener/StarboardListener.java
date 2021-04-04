@@ -108,10 +108,10 @@ public abstract class StarboardListener {
         // TODO handle futures correctly
         starboardService.updateStarboardPost(starboardPost, message, userExceptAuthor);
         if(adding) {
-            log.trace("Adding reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
+            log.debug("Adding reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
             starboardPostReactorManagementService.addReactor(starboardPost, userReacting);
         } else {
-            log.trace("Removing reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
+            log.debug("Removing reactor {} from message {}", userReacting.getUserReference().getId(), message.getMessageId());
             starboardPostReactorManagementService.removeReactor(starboardPost, userReacting);
         }
     }

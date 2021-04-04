@@ -138,7 +138,7 @@ public class RemindServiceBean implements ReminderService {
     @Transactional
     public CompletableFuture<Void> sendReminderText(Long reminderId, TextChannel channelToAnswerIn, Member member) {
         Reminder reminder = reminderManagementService.loadReminder(reminderId);
-        log.trace("Sending remind message for reminder {} to user user {} in server {}.", reminderId, member.getIdLong(), member.getGuild().getIdLong());
+        log.debug("Sending remind message for reminder {} to user user {} in server {}.", reminderId, member.getIdLong(), member.getGuild().getIdLong());
         ExecutedReminderModel build = ExecutedReminderModel
                 .builder()
                 .reminder(reminder)
@@ -155,7 +155,7 @@ public class RemindServiceBean implements ReminderService {
         Reminder reminder = reminderManagementService.getReminderByAndByUserNotReminded(aUserInAServer, reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
         reminder.setReminded(true);
         if(reminder.getJobTriggerKey() != null) {
-            log.trace("Stopping scheduled trigger {} for reminder {}.", reminder.getJobTriggerKey(), reminderId);
+            log.debug("Stopping scheduled trigger {} for reminder {}.", reminder.getJobTriggerKey(), reminderId);
             schedulerService.stopTrigger(reminder.getJobTriggerKey());
         }
     }

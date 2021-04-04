@@ -120,10 +120,10 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
             long serverId = editingUser.getGuild().getIdLong();
             if(modMailMessage.getCreatedMessageInChannel() != null) {
                 AChannel channel = modMailMessage.getThreadReference().getChannel();
-                log.trace("Editing message {} in mod mail channel {} for thread {} in server {} as well.", modMailMessage.getCreatedMessageInChannel(), channel.getId(), threadId, serverId);
+                log.debug("Editing message {} in mod mail channel {} for thread {} in server {} as well.", modMailMessage.getCreatedMessageInChannel(), channel.getId(), threadId, serverId);
                 channelService.editMessageInAChannel(messageToSend, channel, modMailMessage.getCreatedMessageInChannel());
             }
-            log.trace("Editing message {} in DM channel with user {} for thread {} in server {}.", modMailMessage.getCreatedMessageInDM(), targetMember.getUser().getIdLong(), threadId, serverId);
+            log.debug("Editing message {} in DM channel with user {} for thread {} in server {}.", modMailMessage.getCreatedMessageInDM(), targetMember.getUser().getIdLong(), threadId, serverId);
             messageService.editMessageInDMChannel(targetMember.getUser(), messageToSend, modMailMessage.getCreatedMessageInDM());
         });
 

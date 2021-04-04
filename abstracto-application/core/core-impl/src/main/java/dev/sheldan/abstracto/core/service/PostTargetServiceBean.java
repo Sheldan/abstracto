@@ -53,14 +53,14 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
-        log.trace("Sending text to post target {}.", target.getName());
+        log.debug("Sending text to post target {}.", target.getName());
         return channelService.sendTextToAChannel(text, target.getChannelReference());
     }
 
     @Override
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTarget target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        log.trace("Sending message embed to post target {}.", target.getName());
+        log.debug("Sending message embed to post target {}.", target.getName());
         return channelService.sendEmbedToChannel(embed, textChannelForPostTarget);
     }
 
@@ -110,7 +110,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTarget target) {
-        log.trace("Send message {} towards post target {}.", message.getId(), target.getName());
+        log.debug("Send message {} towards post target {}.", message.getId(), target.getName());
         return channelService.sendMessageToAChannel(message, target.getChannelReference());
     }
 
@@ -123,7 +123,7 @@ public class PostTargetServiceBean implements PostTargetService {
     @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target)  {
         TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        log.trace("Send messageToSend towards post target {}.", target.getName());
+        log.debug("Send messageToSend towards post target {}.", target.getName());
         return channelService.sendMessageToSendToChannel(message, textChannelForPostTarget);
     }
 
@@ -133,10 +133,10 @@ public class PostTargetServiceBean implements PostTargetService {
         // always takes the first one, only applicable for this scenario
         String messageText = message.getMessages().get(0);
         if(StringUtils.isBlank(messageText)) {
-            log.trace("Editing embeds of message {} in post target {}.", messageId, target.getName());
+            log.debug("Editing embeds of message {} in post target {}.", messageId, target.getName());
             return Arrays.asList(channelService.editEmbedMessageInAChannel(message.getEmbeds().get(0), textChannelForPostTarget, messageId));
         } else {
-            log.trace("Editing message text and potentially text for message {} in post target {}.", messageId, target.getName());
+            log.debug("Editing message text and potentially text for message {} in post target {}.", messageId, target.getName());
             return Arrays.asList(channelService.editTextMessageInAChannel(messageText, message.getEmbeds().get(0), textChannelForPostTarget, messageId));
         }
     }
@@ -149,12 +149,12 @@ public class PostTargetServiceBean implements PostTargetService {
         futures.add(messageEditFuture);
         if(StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
             channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
-                log.trace("Editing existing message {} when upserting message embeds in channel {} in server {}.",
+                log.debug("Editing existing message {} when upserting message embeds in channel {} in server {}.",
                         messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
                 messageService.editMessage(message, messageToSend.getEmbeds().get(0))
                         .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
             }).exceptionally(throwable -> {
-                log.trace("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
+                log.debug("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
                         messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
                 sendEmbedInPostTarget(messageToSend, target).get(0)
                         .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
@@ -166,12 +166,12 @@ public class PostTargetServiceBean implements PostTargetService {
             });
         } else {
             channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
-                    log.trace("Editing existing message {} when upserting message in channel {} in server {}.",
+                    log.debug("Editing existing message {} when upserting message in channel {} in server {}.",
                             messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
                     messageService.editMessage(message, messageToSend.getMessages().get(0), messageToSend.getEmbeds().get(0))
                             .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
             }).exceptionally(throwable -> {
-                log.trace("Creating new message when trying to upsert a message {} in channel {} in server {}.",
+                log.debug("Creating new message when trying to upsert a message {} in channel {} in server {}.",
                         messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
                 sendEmbedInPostTarget(messageToSend, target).get(0)
                         .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {

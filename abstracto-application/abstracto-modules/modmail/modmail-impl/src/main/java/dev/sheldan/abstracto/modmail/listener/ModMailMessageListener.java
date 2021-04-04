@@ -47,7 +47,7 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
         }
         AUser user = userManagementService.loadOrCreateUser(message.getAuthor().getIdLong());
         if(modMailThreadManagementService.hasOpenModMailThread(user)) {
-            log.trace("User {} has an open modmail thread. Forwarding message {}.", user.getId(), message.getId());
+            log.debug("User {} has an open modmail thread. Forwarding message {}.", user.getId(), message.getId());
             // there is only one open mod mail thread for a user at a time, so we can select the first one
             // we cannot use the AUserInAServer directly, because a message in a private channel does not have a Member
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadsForUser(user).get(0);

@@ -28,7 +28,7 @@ public class MuteManagementServiceBean implements MuteManagementService {
 
     @Override
     public Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage, String triggerKey, Long muteId) {
-        log.trace("Creating mute for user {} executed by user {} in server {}, user will be un-muted at {}",
+        log.debug("Creating mute for user {} executed by user {} in server {}, user will be un-muted at {}",
                 mutedUser.getUserReference().getId(), mutingUser.getUserReference().getId(), mutedUser.getServerReference().getId(), unMuteDate);
         ServerSpecificId id = new ServerSpecificId(muteMessage.getServer().getId(), muteId);
         Mute mute = Mute

@@ -22,7 +22,7 @@ public class SelfDestructPostExecution implements PostCommandExecution {
     public void execute(CommandContext commandContext, CommandResult commandResult, Command command) {
         if(commandResult.getResult().equals(ResultState.SELF_DESTRUCT)) {
             Message message = commandContext.getMessage();
-            log.trace("Command {} is of type self destruct. Deleting message {} in channel {} in server {}.",
+            log.debug("Command {} is of type self destruct. Deleting message {} in channel {} in server {}.",
                     command.getConfiguration().getName(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
             messageService.deleteMessage(message);
         }

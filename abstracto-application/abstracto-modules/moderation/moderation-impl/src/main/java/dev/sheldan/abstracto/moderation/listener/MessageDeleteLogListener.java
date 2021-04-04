@@ -70,7 +70,7 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
 
     @Transactional
     public void executeListener(CachedMessage messageFromCache, Member authorMember) {
-        log.trace("Message {} in channel {} in guild {} was deleted.", messageFromCache.getMessageId(), messageFromCache.getChannelId(), messageFromCache.getServerId());
+        log.debug("Message {} in channel {} in guild {} was deleted.", messageFromCache.getMessageId(), messageFromCache.getChannelId(), messageFromCache.getServerId());
 
         TextChannel textChannel = channelService.getTextChannelFromServer(messageFromCache.getServerId(), messageFromCache.getChannelId());
         MessageDeletedLog logModel = MessageDeletedLog
@@ -83,7 +83,7 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel, messageFromCache.getServerId());
         postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
         if(messageFromCache.getAttachments() != null){
-            log.trace("Notifying about deletions of {} attachments.", messageFromCache.getAttachments().size());
+            log.debug("Notifying about deletions of {} attachments.", messageFromCache.getAttachments().size());
             for (int i = 0; i < messageFromCache.getAttachments().size(); i++) {
                 MessageDeletedAttachmentLog log = MessageDeletedAttachmentLog
                         .builder()

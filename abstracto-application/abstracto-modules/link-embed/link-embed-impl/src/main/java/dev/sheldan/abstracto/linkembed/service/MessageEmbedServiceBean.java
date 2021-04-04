@@ -118,7 +118,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel, target.getGuild().getIdLong());
         AUserInAServer cause = userInServerManagementService.loadOrCreateUser(userEmbeddingUserInServerId);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
-        log.trace("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
+        log.debug("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
                 cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
             Message createdMessage = completableFutures.get(0).join();

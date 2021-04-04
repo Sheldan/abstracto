@@ -69,7 +69,7 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualPrivateMessageReceivedListener(CachedMessage cachedMessage, AsyncPrivateMessageReceivedListener messageReceivedListener) {
-        log.trace("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), cachedMessage.getAuthor().getAuthorId());
+        log.debug("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), cachedMessage.getAuthor().getAuthorId());
         messageReceivedListener.execute(cachedMessage);
     }
 

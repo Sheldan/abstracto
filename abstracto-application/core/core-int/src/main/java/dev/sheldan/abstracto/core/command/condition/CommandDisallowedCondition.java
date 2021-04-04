@@ -41,7 +41,7 @@ public class CommandDisallowedCondition implements CommandCondition {
         for (ARole role : commandForServer.getAllowedRoles()) {
             Member author = context.getAuthor();
             if (roleService.memberHasRole(author, role)) {
-                log.trace("Member {} is able to execute restricted command {}, because of role {}.", author.getIdLong(), aCommand.getName(), role.getId());
+                log.debug("Member {} is able to execute restricted command {}, because of role {}.", author.getIdLong(), aCommand.getName(), role.getId());
                 return ConditionResult.builder().result(true).build();
             }
         }

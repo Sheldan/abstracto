@@ -152,14 +152,14 @@ public class ReactionServiceBean implements ReactionService {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById != null) {
-                log.trace("Adding custom emote {} as reaction to message {}.", emoteById.getId(), message.getId());
+                log.debug("Adding custom emote {} as reaction to message {}.", emoteById.getId(), message.getId());
                 return addReactionToMessageAsync(emoteById, message);
             } else {
                 log.error("Emote with key {} and id {} for guild {} was not found.", emote.getName() , emote.getEmoteId(), guild.getId());
                 throw new ConfiguredEmoteNotUsableException(emote);
             }
         } else {
-            log.trace("Adding default emote {} as reaction to message {}.", emote.getEmoteKey(), message.getId());
+            log.debug("Adding default emote {} as reaction to message {}.", emote.getEmoteKey(), message.getId());
             return addDefaultReactionToMessageAsync(emote.getEmoteKey(), message);
         }
     }
@@ -192,10 +192,10 @@ public class ReactionServiceBean implements ReactionService {
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
-            log.trace("Removing single custom reaction for emote {} on message {}.", emoteById.getId(), message.getId());
+            log.debug("Removing single custom reaction for emote {} on message {}.", emoteById.getId(), message.getId());
             return removeReaction(message, emoteById);
         } else {
-            log.trace("Removing single default emote {} reaction from message {}.", emote.getEmoteKey(), message.getId());
+            log.debug("Removing single default emote {} reaction from message {}.", emote.getEmoteKey(), message.getId());
             return removeReaction(message, emote.getEmoteKey());
         }
     }
@@ -265,10 +265,10 @@ public class ReactionServiceBean implements ReactionService {
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
-            log.trace("Clearing reactions for custom emote {} on message {}.", emoteById.getId(), message.getId());
+            log.debug("Clearing reactions for custom emote {} on message {}.", emoteById.getId(), message.getId());
             return clearReaction(message, emoteById);
         } else {
-            log.trace("Clearing reactions for default emote {} on message {}.", emote.getEmoteKey(), message.getId());
+            log.debug("Clearing reactions for default emote {} on message {}.", emote.getEmoteKey(), message.getId());
             return clearReaction(message, emote.getEmoteKey());
         }
     }
@@ -330,10 +330,10 @@ public class ReactionServiceBean implements ReactionService {
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
-            log.trace("Removing reaction for custom emote {} from user {} on message {}.", emoteById.getId(), member.getId(), member.getId());
+            log.debug("Removing reaction for custom emote {} from user {} on message {}.", emoteById.getId(), member.getId(), member.getId());
             return removeReaction(message, emoteById, member.getUser());
         } else {
-            log.trace("Removing reaction for default emote {} from user {} on message {}.", emote.getEmoteKey(), member.getId(), member.getId());
+            log.debug("Removing reaction for default emote {} from user {} on message {}.", emote.getEmoteKey(), member.getId(), member.getId());
             return removeReaction(message,  emote.getEmoteKey(), member.getUser());
         }
     }

@@ -65,13 +65,13 @@ public class ExternalEmoteStats extends AbstractConditionableCommand {
 
         // only show embed if static emote stats are available
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
-            log.trace("External emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
+            log.debug("External emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
 
         // only show embed if animated emote stats are available
         if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
-            log.trace("External emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
+            log.debug("External emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_EXTERNAL_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
 

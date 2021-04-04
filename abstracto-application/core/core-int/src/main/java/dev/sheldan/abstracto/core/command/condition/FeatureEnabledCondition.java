@@ -27,7 +27,7 @@ public class FeatureEnabledCondition implements CommandCondition {
         if(feature != null) {
             featureFlagValue = featureFlagService.getFeatureFlagValue(feature, context.getGuild().getIdLong());
             if(!featureFlagValue) {
-                log.trace("Feature {} is disabled, disallows command {} to be executed in guild {}.", feature.getKey(), command.getConfiguration().getName(), context.getGuild().getId());
+                log.debug("Feature {} is disabled, disallows command {} to be executed in guild {}.", feature.getKey(), command.getConfiguration().getName(), context.getGuild().getId());
                 FeatureDisabledConditionDetail exception = new FeatureDisabledConditionDetail(featureConfigService.getFeatureDisplayForFeature(command.getFeature()));
                 return ConditionResult.builder().result(false).conditionDetail(exception).build();
             }

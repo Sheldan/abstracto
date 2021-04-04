@@ -62,12 +62,12 @@ public class EmoteStats extends AbstractConditionableCommand {
         List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
         // only show embed if static emote stats are available
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
-            log.trace("Emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
+            log.debug("Emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
         // only show embed if animated emote stats are available
         if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
-            log.trace("Emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
+            log.debug("Emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
         // show an embed if no emote stats are available indicating so

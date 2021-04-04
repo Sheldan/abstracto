@@ -35,7 +35,7 @@ public class Accept extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
-        log.trace("Using default reason for accept: {}.", parameters.size() != 2);
+        log.debug("Using default reason for accept: {}.", parameters.size() != 2);
         SuggestionLog suggestionModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
         return suggestionService.acceptSuggestion(suggestionId, text, suggestionModel)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());

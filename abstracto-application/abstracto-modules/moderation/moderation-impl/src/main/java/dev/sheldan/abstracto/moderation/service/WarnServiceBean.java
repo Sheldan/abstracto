@@ -100,11 +100,11 @@ public class WarnServiceBean implements WarnService {
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         futures.add(messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage));
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server.getId(), WarningMode.WARN_LOG)) {
-            log.trace("Logging warning for server {}.", server.getId());
+            log.debug("Logging warning for server {}.", server.getId());
             MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context, server.getId());
             futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
         } else {
-            log.trace("Not logging warning because of feature {} with feature mode {} in server {}.", ModerationFeatureDefinition.WARNING, WarningMode.WARN_LOG, server.getId());
+            log.debug("Not logging warning because of feature {} with feature mode {} in server {}.", ModerationFeatureDefinition.WARNING, WarningMode.WARN_LOG, server.getId());
         }
 
         return FutureUtils.toSingleFutureGeneric(futures);
@@ -139,10 +139,10 @@ public class WarnServiceBean implements WarnService {
         Long serverId = server.getId();
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG)) {
-            log.trace("Sending log messages for automatic warn decay in server {}.", server.getId());
+            log.debug("Sending log messages for automatic warn decay in server {}.", server.getId());
             completableFuture = logDecayedWarnings(server, warningsToDecay);
         } else {
-            log.trace("Not logging automatic warn decay, because feature {} has its mode {} disabled in server {}.", ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG, server.getId());
+            log.debug("Not logging automatic warn decay, because feature {} has its mode {} disabled in server {}.", ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG, server.getId());
             completableFuture = CompletableFuture.completedFuture(null);
         }
         return completableFuture.thenAccept(aVoid ->
@@ -175,13 +175,13 @@ public class WarnServiceBean implements WarnService {
 
     @Override
     public void decayWarning(Warning warning, Instant now) {
-        log.trace("Decaying warning {} in server {} with date {}.", warning.getWarnId().getId(), warning.getWarnId().getServerId(), now);
+        log.debug("Decaying warning {} in server {} with date {}.", warning.getWarnId().getId(), warning.getWarnId().getServerId(), now);
         warning.setDecayDate(now);
         warning.setDecayed(true);
     }
 
     private CompletableFuture<Void> logDecayedWarnings(AServer server, List<Warning> warningsToDecay) {
-        log.trace("Loading members decaying {} warnings in server {}.", warningsToDecay.size(), server.getId());
+        log.debug("Loading members decaying {} warnings in server {}.", warningsToDecay.size(), server.getId());
         HashMap<ServerSpecificId, FutureMemberPair> warningMembers = new HashMap<>();
         List<CompletableFuture<Member>> allFutures = new ArrayList<>();
         Long serverId = server.getId();
@@ -254,12 +254,12 @@ public class WarnServiceBean implements WarnService {
         log.info("Decaying ALL warning in server {}.", server.getId());
         Long serverId = server.getId();
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server, WarningMode.WARN_DECAY_LOG)) {
-            log.trace("Logging warn decays in server {}", serverId);
+            log.debug("Logging warn decays in server {}", serverId);
             return logDecayedWarnings(server, warningsToDecay).thenAccept(aVoid ->
                 self.decayWarnings(warnIds, serverId)
             );
         } else {
-            log.trace("Not logging warn decays for manual decay in server {} because feature {} with feature mode: {}", serverId, ModerationFeatureDefinition.WARNING, WarningMode.WARN_DECAY_LOG);
+            log.debug("Not logging warn decays for manual decay in server {} because feature {} with feature mode: {}", serverId, ModerationFeatureDefinition.WARNING, WarningMode.WARN_DECAY_LOG);
             self.decayWarnings(warnIds, serverId);
             return CompletableFuture.completedFuture(null);
         }

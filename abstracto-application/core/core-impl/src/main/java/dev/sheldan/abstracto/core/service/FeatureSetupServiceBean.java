@@ -65,7 +65,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
             List<String> requiredSystemConfigKeys = featureConfig.getRequiredSystemConfigKeys();
             List<SetupExecution> steps = new ArrayList<>();
             requiredSystemConfigKeys.forEach(s -> {
-                log.trace("Feature requires system config key {}.", s);
+                log.debug("Feature requires system config key {}.", s);
                 SetupExecution execution = SetupExecution
                         .builder()
                         .step(systemConfigSetupStep)
@@ -74,7 +74,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                 steps.add(execution);
             });
             featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> {
-                log.trace("Feature requires post target {}.", postTargetEnum.getKey());
+                log.debug("Feature requires post target {}.", postTargetEnum.getKey());
                 SetupExecution execution = SetupExecution
                         .builder()
                         .step(postTargetSetupStep)
@@ -83,7 +83,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                 steps.add(execution);
             });
             featureConfig.getCustomSetupSteps().forEach(setupStep -> {
-                log.trace("Feature requires custom setup step {}.", setupStep.getClass().getName());
+                log.debug("Feature requires custom setup step {}.", setupStep.getClass().getName());
                 SetupExecution execution = SetupExecution
                         .builder()
                         .step(setupStep)
@@ -118,16 +118,16 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
     }
 
     private CompletableFuture<Void> executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
-        log.trace("Executing step {} in server {} in channel {} for user {}.", execution.getStep().getClass(), aUserInAServer.getGuildId(), aUserInAServer.getChannelId(), aUserInAServer.getUserId());
+        log.debug("Executing step {} in server {} in channel {} for user {}.", execution.getStep().getClass(), aUserInAServer.getGuildId(), aUserInAServer.getChannelId(), aUserInAServer.getUserId());
         return execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(aVoid -> {
             if(aVoid.getResult().equals(SetupStepResultType.SUCCESS)) {
                 log.info("Step {} in server {} has been executed successfully. Proceeding.", execution.getStep().getClass(), aUserInAServer.getGuildId());
                 delayedActionConfigs.addAll(aVoid.getDelayedActionConfigList());
                 if(execution.getNextStep() != null) {
-                    log.trace("Executing next step {}.", execution.getNextStep().getStep().getClass());
+                    log.debug("Executing next step {}.", execution.getNextStep().getStep().getClass());
                     executeStep(aUserInAServer, execution.getNextStep(), delayedActionConfigs, featureConfig);
                 } else {
-                    log.trace("Step was the last step. Executing post setup steps.");
+                    log.debug("Step was the last step. Executing post setup steps.");
                     self.executePostSetupSteps(delayedActionConfigs, aUserInAServer, execution.getParameter().getPreviousMessageId(), featureConfig);
                 }
             } else {
@@ -165,7 +165,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
 
     @Transactional
     public void notifyAboutCompletion(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig, SetupStepResult result) {
-        log.trace("Notifying user {} in channel {} in server {} about completion of setup for feature {}.",
+        log.debug("Notifying user {} in channel {} in server {} about completion of setup for feature {}.",
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
         String templateKey;
         if(result.getResult().equals(SetupStepResultType.CANCELLED)) {
@@ -188,7 +188,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
 
     @Transactional
     public void notifyAboutCancellation(AServerChannelUserId aServerChannelUserId, FeatureConfig featureConfig) {
-        log.trace("Notifying user {} in channel {} in server {} about cancellation of setup for feature {}.",
+        log.debug("Notifying user {} in channel {} in server {} about cancellation of setup for feature {}.",
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
         notifyUserWithTemplate(aServerChannelUserId, featureConfig, FEATURE_SETUP_CANCELLATION_NOTIFICATION_TEMPLATE);
     }

@@ -115,7 +115,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             emote = this.createCustomEmote(name, emoteKey, emoteId, animated, server, true);
         } else {
             emote = emoteOptional.get();
-            log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
+            log.debug("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
                     emote.getAnimated(), emote.getCustom(), emote.getId(), emote.getEmoteId(), emoteId, animated);
             emote.setEmoteKey(emoteKey);
             emote.setEmoteId(emoteId);
@@ -140,7 +140,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             emoteBeingSet = this.createDefaultEmote(name, emoteKey, server, true);
         } else {
             emoteBeingSet = emoteOptional.get();
-            log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
+            log.debug("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
                     emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), emoteKey);
             emoteBeingSet.setEmoteKey(emoteKey);
             emoteBeingSet.setCustom(false);
@@ -158,13 +158,13 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
         } else {
             AEmote emoteBeingSet = emoteOptional.get();
             if(fakeEmote.getCustom()) {
-                log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
+                log.debug("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
                         emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), fakeEmote.getEmoteId(), fakeEmote.getAnimated());
                 emoteBeingSet.setCustom(fakeEmote.getCustom());
                 emoteBeingSet.setEmoteId(fakeEmote.getEmoteId());
                 emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());
             } else {
-                log.trace("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
+                log.debug("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
                         emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), fakeEmote.getEmoteKey());
                 emoteBeingSet.setCustom(false);
                 emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());

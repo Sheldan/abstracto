@@ -204,7 +204,7 @@ public class RoleServiceBean implements RoleService {
         }
         Optional<Guild> guildById = guildService.getGuildByIdOptional(role.getServer().getId());
         if(guildById.isPresent()) {
-            log.trace("Loading role {} from server {}.", role.getId(), role.getServer().getId());
+            log.debug("Loading role {} from server {}.", role.getId(), role.getServer().getId());
             return guildById.get().getRoleById(role.getId());
         } else {
             throw new GuildNotFoundException(role.getServer().getId());

@@ -33,7 +33,7 @@ public class UsedEmoteManagementServiceBean implements UsedEmoteManagementServic
                 .emoteId(new UsedEmoteDay(trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), Instant.now()))
                 .amount(count)
                 .build();
-        log.trace("Creating emote usage for emote {} in server {} with count {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), count);
+        log.debug("Creating emote usage for emote {} in server {} with count {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), count);
         return usedEmoteRepository.save(usedEmote);
     }
 

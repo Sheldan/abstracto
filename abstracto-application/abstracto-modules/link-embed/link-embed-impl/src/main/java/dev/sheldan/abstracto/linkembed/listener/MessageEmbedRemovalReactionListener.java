@@ -82,13 +82,13 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
                         }
                     });
                 } else {
-                    log.trace("Somebody besides the original author and the user embedding added the removal reaction to the message {} in channel {} in server {}.",
+                    log.debug("Somebody besides the original author and the user embedding added the removal reaction to the message {} in channel {} in server {}.",
                             messageId, channelId, serverId);
                     return DefaultListenerResult.IGNORED;
                 }
 
             } else {
-                log.trace("Removal emote was placed on a message which was not recognized as an embedded message.");
+                log.debug("Removal emote was placed on a message which was not recognized as an embedded message.");
                 return DefaultListenerResult.IGNORED;
             }
             return DefaultListenerResult.PROCESSED;

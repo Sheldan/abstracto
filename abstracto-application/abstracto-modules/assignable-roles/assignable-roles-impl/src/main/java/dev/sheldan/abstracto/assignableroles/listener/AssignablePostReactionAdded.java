@@ -85,10 +85,10 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
         AssignableRolePlace assignableRolePlace = assignablePlacePost.getAssignablePlace();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (AssignableRole assignableRole : assignablePlacePost.getAssignableRoles()) {
-            log.trace("Checking emote {} if it was reaction for assignable role place.", assignableRole.getEmote().getId());
+            log.debug("Checking emote {} if it was reaction for assignable role place.", assignableRole.getEmote().getId());
             if (emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), assignableRole.getEmote())) {
                 if(assignableRolePlace.getUniqueRoles()) {
-                    log.trace("Assignable role place {} has unique roles configured. Removing existing reactions and roles.", assignableRolePlace.getId());
+                    log.debug("Assignable role place {} has unique roles configured. Removing existing reactions and roles.", assignableRolePlace.getId());
                     Optional<AssignedRoleUser> byUserInServer = assignedRoleUserManagementService.findByUserInServerOptional(model.getUserReacting());
                     byUserInServer.ifPresent(user -> futures.add(assignableRolePlaceService.removeExistingReactionsAndRoles(assignableRolePlace, user)));
                 }
@@ -103,7 +103,7 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
             }
         }
         if(!validReaction) {
-            log.trace("Reaction was not found in the configuration of assignable role place {}, removing reaction.", assignableRolePlace.getId());
+            log.debug("Reaction was not found in the configuration of assignable role place {}, removing reaction.", assignableRolePlace.getId());
             futures.add(reactionService.removeReactionFromMessage(model.getReaction(), model.getMessage(), model.getMemberReacting().getUser()));
         }
         Long assignableRolePlaceId = assignableRolePlace.getId();
@@ -126,7 +126,7 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
         AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(assignableRolePlaceId);
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(serverUser);
         if(place.getUniqueRoles()) {
-            log.trace("Assignable role place {} has unique roles. Deleting all existing references.", assignableRolePlaceId);
+            log.debug("Assignable role place {} has unique roles. Deleting all existing references.", assignableRolePlaceId);
             assignableRoleServiceBean.clearAllRolesOfUserInPlace(place, userInAServer);
         }
         AssignableRole role = assignableRoleManagementService.getRoleForReactionEmote(reaction.getReactionEmote(), place);
@@ -167,7 +167,7 @@ public class AssignablePostReactionAdded implements AsyncReactionAddedListener {
                     log.error("Failed to remove reaction on place post {} because place is inactive.", assignableRolePlacePostId, throwable);
                     return null;
                 });
-                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), model.getServerId());
+                log.debug("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), model.getServerId());
             }
         }
         return DefaultListenerResult.PROCESSED;

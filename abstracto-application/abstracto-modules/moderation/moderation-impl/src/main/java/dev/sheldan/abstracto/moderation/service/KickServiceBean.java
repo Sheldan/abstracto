@@ -45,10 +45,10 @@ public class KickServiceBean implements KickService {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, kickLogModel.getGuild().getIdLong(), ModerationMode.KICK_LOG)) {
             MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, kickLogModel.getGuild().getIdLong());
-            log.trace("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
+            log.debug("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
             completableFuture = FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
         } else {
-            log.trace("Feature {} has mode {} for logging disabled for server {}. Not sending kick notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, kickLogModel.getGuild().getIdLong());
+            log.debug("Feature {} has mode {} for logging disabled for server {}. Not sending kick notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, kickLogModel.getGuild().getIdLong());
             completableFuture = CompletableFuture.completedFuture(null);
         }
         return completableFuture;

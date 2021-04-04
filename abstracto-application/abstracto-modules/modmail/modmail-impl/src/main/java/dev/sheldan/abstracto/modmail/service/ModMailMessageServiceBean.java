@@ -41,7 +41,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         }
         // all message must be from the same thread
         ModMailThread thread = modMailMessages.get(0).getThreadReference();
-        log.trace("Loading {} mod mail messages from thread {} in server {}.", modMailMessages.size(), thread.getId(), thread.getServer().getId());
+        log.debug("Loading {} mod mail messages from thread {} in server {}.", modMailMessages.size(), thread.getId(), thread.getServer().getId());
         List<ServerChannelMessageUser> messageIds = new ArrayList<>();
         modMailMessages.forEach(modMailMessage -> {
             ServerChannelMessageUser.ServerChannelMessageUserBuilder serverChannelMessageBuilder = ServerChannelMessageUser
@@ -50,7 +50,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                     .serverId(thread.getServer().getId());
             // if its not from a private chat, we need to set channel ID in order to fetch the data
             if(Boolean.FALSE.equals(modMailMessage.getDmChannel())) {
-                log.trace("Message {} was from DM.", modMailMessage.getMessageId());
+                log.debug("Message {} was from DM.", modMailMessage.getMessageId());
                 serverChannelMessageBuilder
                         .channelId(modMailMessage.getThreadReference().getChannel().getId());
                 serverChannelMessageBuilder.messageId(modMailMessage.getCreatedMessageInChannel());
@@ -72,7 +72,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
             botService.getInstance().openPrivateChannelById(userId).queue(privateChannel -> {
                 Iterator<LoadedModmailThreadMessage> iterator = messageFutures.iterator();
                 messageIds.forEach(serverChannelMessage -> {
-                    log.trace("Loading message {}.", serverChannelMessage.getMessageId());
+                    log.debug("Loading message {}.", serverChannelMessage.getMessageId());
                     CompletableFuture<Message> messageFuture;
                     CompletableFuture<Member> memberFuture = memberService.getMemberInServerAsync(serverChannelMessage.getServerId(), serverChannelMessage.getUserId());
                     if(serverChannelMessage.getChannelId() == null){

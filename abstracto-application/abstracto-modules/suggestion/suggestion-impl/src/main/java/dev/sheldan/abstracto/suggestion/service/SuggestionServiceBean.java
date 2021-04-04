@@ -83,11 +83,11 @@ public class SuggestionServiceBean implements SuggestionService {
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, guildId);
         return FutureUtils.toSingleFutureGeneric(completableFutures).thenCompose(aVoid -> {
             Message message = completableFutures.get(0).join();
-            log.trace("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
+            log.debug("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
             CompletableFuture<Void> firstReaction = reactionService.addReactionToMessageAsync(SUGGESTION_YES_EMOTE, guildId, message);
             CompletableFuture<Void> secondReaction = reactionService.addReactionToMessageAsync(SUGGESTION_NO_EMOTE, guildId, message);
             return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 -> {
-                log.trace("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
+                log.debug("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
                 self.persistSuggestionInDatabase(member, text, message, newSuggestionId);
             });
         });

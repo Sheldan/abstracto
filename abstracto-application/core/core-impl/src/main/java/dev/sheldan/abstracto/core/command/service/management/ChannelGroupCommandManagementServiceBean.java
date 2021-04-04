@@ -25,7 +25,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
         AChannelGroupCommand groupCommand = groupCommandOptional.orElseGet(() -> createCommandInGroup(command, group));
 
         groupCommand.setEnabled(enabled);
-        log.trace("Setting command {} enabled in group {} to {}.", command.getName(), group.getId(), enabled);
+        log.debug("Setting command {} enabled in group {} to {}.", command.getName(), group.getId(), enabled);
         groupCommandRepository.save(groupCommand);
     }
 

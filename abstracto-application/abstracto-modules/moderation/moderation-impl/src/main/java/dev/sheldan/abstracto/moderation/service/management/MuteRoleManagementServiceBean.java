@@ -24,7 +24,7 @@ public class MuteRoleManagementServiceBean implements MuteRoleManagementService 
 
     @Override
     public MuteRole createMuteRoleForServer(AServer server, ARole role) {
-        log.trace("Creating mute role for server {} to be role {}", server.getId(), role.getId());
+        log.debug("Creating mute role for server {} to be role {}", server.getId(), role.getId());
         MuteRole muteRole = MuteRole
                 .builder()
                 .role(role)
@@ -42,11 +42,11 @@ public class MuteRoleManagementServiceBean implements MuteRoleManagementService 
     public MuteRole setMuteRoleForServer(AServer server, ARole role) {
         log.info("Setting muted role for server {} to role {}", server.getId(), role.getId());
         if(!muteRoleForServerExists(server)) {
-            log.trace("Mute role did not exist yet, updating for server {}.", server.getId());
+            log.debug("Mute role did not exist yet, updating for server {}.", server.getId());
             return createMuteRoleForServer(server, role);
         } else {
             MuteRole existing = retrieveMuteRoleForServer(server);
-            log.trace("Updating mute role for server {} to be role {} instead.", server.getId(), role.getId());
+            log.debug("Updating mute role for server {} to be role {} instead.", server.getId(), role.getId());
             existing.setRole(role);
             return existing;
         }

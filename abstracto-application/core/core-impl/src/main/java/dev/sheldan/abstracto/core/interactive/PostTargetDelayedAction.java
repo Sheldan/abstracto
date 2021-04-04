@@ -15,7 +15,7 @@ public class PostTargetDelayedAction implements DelayedAction {
     @Override
     public void execute(DelayedActionConfig delayedActionConfig) {
         PostTargetDelayedActionConfig castedConfig = (PostTargetDelayedActionConfig) delayedActionConfig;
-        log.trace("Executing post target delayed step to set post target {} to channel {} in server {}.", castedConfig.getPostTargetKey(), castedConfig.getChannelId(), castedConfig.getServerId());
+        log.debug("Executing post target delayed step to set post target {} to channel {} in server {}.", castedConfig.getPostTargetKey(), castedConfig.getChannelId(), castedConfig.getServerId());
         postTargetManagement.createOrUpdate(castedConfig.getPostTargetKey(), castedConfig.getServerId(), castedConfig.getChannelId());
     }
 

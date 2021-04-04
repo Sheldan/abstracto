@@ -52,7 +52,7 @@ public class PrivateMessageReceivedListenerBean extends ListenerAdapter {
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeIndividualPrivateMessageReceivedListener(@Nonnull PrivateMessageReceivedEvent event, PrivateMessageReceivedListener messageReceivedListener) {
         // no feature flag check, because we are in no server context
-        log.trace("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), event.getAuthor().getId());
+        log.debug("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), event.getAuthor().getId());
         messageReceivedListener.execute(event.getMessage());
     }
 

@@ -33,7 +33,7 @@ public class MemberServiceBean implements MemberService {
 
     @Override
     public GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId)  {
-        log.trace("Trying to retrieve member {}, channel {} in server {} from cache.", userId, channelId, serverId);
+        log.debug("Trying to retrieve member {}, channel {} in server {} from cache.", userId, channelId, serverId);
         Guild guild = guildService.getGuildById(serverId);
         Optional<TextChannel> textChannelOptional = channelService.getTextChannelFromServerOptional(guild, channelId);
         if(textChannelOptional.isPresent()) {
@@ -47,7 +47,7 @@ public class MemberServiceBean implements MemberService {
 
     @Override
     public CompletableFuture<GuildChannelMember> getServerChannelUserAsync(Long serverId, Long channelId, Long userId) {
-        log.trace("Trying to retrieve member {}, channel {} in server {} async.", userId, channelId, serverId);
+        log.debug("Trying to retrieve member {}, channel {} in server {} async.", userId, channelId, serverId);
         CompletableFuture<Member> memberFuture = getMemberInServerAsync(serverId, userId);
 
         Guild guild = guildService.getGuildById(serverId);
@@ -59,7 +59,7 @@ public class MemberServiceBean implements MemberService {
 
     @Override
     public Member getMemberInServer(Long serverId, Long memberId) {
-        log.trace("Retrieving member {} in server {} from cache.", memberId, serverId);
+        log.debug("Retrieving member {} in server {} from cache.", memberId, serverId);
         Guild guildById = guildService.getGuildById(serverId);
         if(guildById != null) {
             return guildById.getMemberById(memberId);
@@ -70,7 +70,7 @@ public class MemberServiceBean implements MemberService {
 
     @Override
     public CompletableFuture<Member> getMemberInServerAsync(Long serverId, Long memberId) {
-        log.trace("Retrieving member {} in server {} from cache.", memberId, serverId);
+        log.debug("Retrieving member {} in server {} from cache.", memberId, serverId);
         Guild guildById = guildService.getGuildById(serverId);
         if(guildById != null) {
             return guildById.retrieveMemberById(memberId).submit();

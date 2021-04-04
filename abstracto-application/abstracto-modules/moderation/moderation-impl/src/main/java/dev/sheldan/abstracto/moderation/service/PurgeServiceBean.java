@@ -84,7 +84,7 @@ public class PurgeServiceBean implements PurgeService {
                     return;
                 }
                 Message latestMessage = messagesToDeleteNow.get(messagesToDeleteNow.size() - 1);
-                log.trace("Deleting {} messages directly", messagesToDeleteNow.size());
+                log.debug("Deleting {} messages directly", messagesToDeleteNow.size());
                 int newCurrentCount = currentCount + messagesToDeleteNow.size();
                 int newAmountToDelete = amountToDelete - PURGE_MAX_MESSAGES;
                 Consumer<Void> consumer = deletionConsumer(newAmountToDelete, channel, purgedMember, totalCount, newCurrentCount, deletionFuture, currentStatusMessageId, latestMessage);
@@ -119,12 +119,12 @@ public class PurgeServiceBean implements PurgeService {
     private CompletableFuture<Long> getOrCreatedStatusMessage(TextChannel channel, Integer totalCount, Long statusMessageId) {
         CompletableFuture<Long> statusMessageFuture;
         if(statusMessageId == 0) {
-            log.trace("Creating new status message in channel {} in server {} because of puring.", channel.getIdLong(), channel.getGuild().getId());
+            log.debug("Creating new status message in channel {} in server {} because of puring.", channel.getIdLong(), channel.getGuild().getId());
             PurgeStatusUpdateModel model = PurgeStatusUpdateModel.builder().currentlyDeleted(0).totalToDelete(totalCount).build();
             MessageToSend messageToSend = templateService.renderTemplateToMessageToSend("purge_status_update", model, channel.getGuild().getIdLong());
             statusMessageFuture = messageService.createStatusMessageId(messageToSend, channel);
         } else {
-            log.trace("Using existing status message {}.", statusMessageId);
+            log.debug("Using existing status message {}.", statusMessageId);
             statusMessageFuture = CompletableFuture.completedFuture(statusMessageId);
         }
         return statusMessageFuture;
@@ -132,20 +132,20 @@ public class PurgeServiceBean implements PurgeService {
 
     private List<Message> filterMessagesToDelete(List<Message> retrievedHistory, Member purgedMember) {
         long twoWeeksAgo = TimeUtil.getDiscordTimestamp((System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000)));
-        log.trace("Filtering messages older than {}.", twoWeeksAgo);
+        log.debug("Filtering messages older than {}.", twoWeeksAgo);
         List<Message> messagesToDeleteNow = new ArrayList<>();
         for (Message messageObj : retrievedHistory) {
             if (MiscUtil.parseSnowflake(messageObj.getId()) > twoWeeksAgo) {
                 if(purgedMember != null) {
                     if(messageObj.getAuthor().getIdLong() == purgedMember.getIdLong()) {
-                        log.trace("Message {} is from filtered user {}. Purging.", messageObj.getId(), purgedMember.getIdLong());
+                        log.debug("Message {} is from filtered user {}. Purging.", messageObj.getId(), purgedMember.getIdLong());
                         messagesToDeleteNow.add(messageObj);
                     }
                 } else {
                     messagesToDeleteNow.add(messageObj);
                 }
             } else {
-                log.trace("Message {} was older than {}. Not purging.", messageObj.getId(), twoWeeksAgo);
+                log.debug("Message {} was older than {}. Not purging.", messageObj.getId(), twoWeeksAgo);
             }
         }
         return messagesToDeleteNow;
@@ -154,7 +154,7 @@ public class PurgeServiceBean implements PurgeService {
     private Consumer<Void> deletionConsumer(Integer amountToDelete, TextChannel channel, Member purgedMember, Integer totalCount, Integer currentCount, CompletableFuture<Void> deletionFuture, Long currentStatusMessageId, Message earliestMessage) {
         return aVoid -> {
             if (amountToDelete >= 1) {
-                log.trace("Still more than 1 message to delete. Continuing.");
+                log.debug("Still more than 1 message to delete. Continuing.");
                 purgeMessages(amountToDelete, channel, earliestMessage.getIdLong(), purgedMember, totalCount, currentCount, currentStatusMessageId).whenComplete((avoid, throwable) -> {
                             if (throwable != null) {
                                 deletionFuture.completeExceptionally(throwable);
@@ -164,12 +164,12 @@ public class PurgeServiceBean implements PurgeService {
                         }
                 );
             } else {
-                log.trace("Completed purging of {} messages.", totalCount);
+                log.debug("Completed purging of {} messages.", totalCount);
                 // Todo Move to message service
                 channel.deleteMessageById(currentStatusMessageId).queueAfter(5, TimeUnit.SECONDS);
                 deletionFuture.complete(null);
             }
-            log.trace("Setting status for {} out of {}", currentCount, totalCount);
+            log.debug("Setting status for {} out of {}", currentCount, totalCount);
             PurgeStatusUpdateModel finalUpdateModel = PurgeStatusUpdateModel.builder().currentlyDeleted(currentCount).totalToDelete(totalCount).build();
             MessageToSend finalUpdateMessage = templateService.renderTemplateToMessageToSend("purge_status_update", finalUpdateModel);
             messageService.updateStatusMessage(channel, currentStatusMessageId, finalUpdateMessage);

@@ -68,7 +68,7 @@ public class AssignablePostReactionRemoved implements AsyncReactionRemovedListen
                 });
                 return DefaultListenerResult.PROCESSED;
             } else {
-                log.trace("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), model.getServerId());
+                log.debug("Reaction for assignable place {} in sever {} was added, but place is inactive.", assignablePlacePost.getAssignablePlace().getKey(), model.getServerId());
                 return DefaultListenerResult.PROCESSED;
             }
         } else {

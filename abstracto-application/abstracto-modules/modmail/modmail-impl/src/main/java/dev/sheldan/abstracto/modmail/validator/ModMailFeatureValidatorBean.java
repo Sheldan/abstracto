@@ -46,9 +46,9 @@ public class ModMailFeatureValidatorBean implements ModMailFeatureValidator {
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
             boolean checkSucceeded = featureValidatorService.checkSystemConfig(ModMailThreadServiceBean.MODMAIL_CATEGORY, server, validationResult);
-            log.trace("Validating the modmail category for server {}.", server.getId());
+            log.debug("Validating the modmail category for server {}.", server.getId());
             if(checkSucceeded) {
-                log.trace("Modmail category has been set for server {}. Lets see if the category exists.", server.getId());
+                log.debug("Modmail category has been set for server {}. Lets see if the category exists.", server.getId());
                 Long modMailCategory = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, server.getId());
                 validateModMailCategory(validationResult, guild, modMailCategory);
             }

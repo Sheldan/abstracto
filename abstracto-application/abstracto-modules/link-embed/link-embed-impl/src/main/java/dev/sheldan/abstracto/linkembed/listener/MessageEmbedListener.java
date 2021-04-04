@@ -64,7 +64,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         if(!links.isEmpty()) {
-            log.trace("We found {} links to embed in message {} in channel {} in guild {}.", links.size(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
+            log.debug("We found {} links to embed in message {} in channel {} in guild {}.", links.size(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
             Long userEmbeddingUserInServerId = userInServerManagementService.loadOrCreateUser(message.getMember()).getUserInServerId();
             for (MessageEmbedLink messageEmbedLink : links) {
                 if(!messageEmbedLink.getServerId().equals(message.getGuild().getIdLong())) {

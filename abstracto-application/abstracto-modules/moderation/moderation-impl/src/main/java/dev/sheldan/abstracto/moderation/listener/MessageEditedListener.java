@@ -42,10 +42,10 @@ public class MessageEditedListener implements AsyncMessageTextUpdatedListener {
         Message messageAfter = model.getAfter();
         CachedMessage messageBefore = model.getBefore();
         if(messageBefore.getContent().equals(messageAfter.getContentRaw())) {
-            log.trace("Message content was the same. Possible reason was: message was not in cache.");
+            log.debug("Message content was the same. Possible reason was: message was not in cache.");
             return DefaultListenerResult.IGNORED;
         }
-        log.trace("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), model.getServerId());
+        log.debug("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), model.getServerId());
         TextChannel textChannel = channelService.getTextChannelFromServer(model.getServerId(), messageBefore.getChannelId());
         MessageEditedLog log = MessageEditedLog
                 .builder()

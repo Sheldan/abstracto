@@ -61,12 +61,12 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
         List<CompletableFuture<Message>> messagePromises = new ArrayList<>();
         // only show the embed, if there are static emotes to show
         if(!emoteStatsModel.getStaticEmotes().isEmpty()) {
-            log.trace("Deleted emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
+            log.debug("Deleted emote stats has {} static emotes since {}.", emoteStatsModel.getStaticEmotes().size(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
         // only show the embed, if there are animated emotes to show
         if(!emoteStatsModel.getAnimatedEmotes().isEmpty()) {
-            log.trace("Deleted emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
+            log.debug("Deleted emote stats has {} animated emotes since {}.", emoteStatsModel.getAnimatedEmotes(), statsSince);
             messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_DELETED_RESPONSE, emoteStatsModel, commandContext.getChannel()));
         }
         // if neither static nor animated emote stats are available, show an embed indicating so
