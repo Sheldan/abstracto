@@ -137,7 +137,11 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
         return userService.retrieveUserForId(embeddedMessage.getAuthor().getAuthorId()).thenApply(authorUser ->
             self.loadMessageEmbedModel(message, embeddedMessage, authorUser)
-        );
+        ).exceptionally(throwable -> {
+            log.warn("Failed to retrieve author for user {}.", embeddedMessage.getAuthor().getAuthorId(), throwable);
+            self.loadMessageEmbedModel(message, embeddedMessage, null);
+            return null;
+        });
     }
 
     @Transactional

@@ -147,21 +147,28 @@ public class StarboardServiceBean implements StarboardService {
 
 
     private CompletableFuture<StarboardPostModel> buildStarboardPostModel(CachedMessage message, Integer starCount)  {
-        return userService.retrieveUserForId(message.getAuthor().getAuthorId()).thenApply(user -> {
-            Optional<TextChannel> channel = channelService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
-            Optional<Guild> guild = guildService.getGuildByIdOptional(message.getServerId());
-            String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
-            return StarboardPostModel
-                    .builder()
-                    .message(message)
-                    .author(user)
-                    .sourceChannelId(message.getChannelId())
-                    .channel(channel.orElse(null))
-                    .starCount(starCount)
-                    .guild(guild.orElse(null))
-                    .starLevelEmote(starLevelEmote)
-                    .build();
+        return userService.retrieveUserForId(message.getAuthor().getAuthorId())
+        .thenApply(user -> createStarboardModel(message, starCount, user))
+        .exceptionally(throwable -> {
+            log.warn("Failed to retrieve user for author {} of starboard post.", message.getAuthor().getAuthorId(), throwable);
+            return createStarboardModel(message, starCount, null);
         });
+    }
+
+    private StarboardPostModel createStarboardModel(CachedMessage message, Integer starCount, net.dv8tion.jda.api.entities.User user) {
+        Optional<TextChannel> channel = channelService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
+        Optional<Guild> guild = guildService.getGuildByIdOptional(message.getServerId());
+        String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
+        return StarboardPostModel
+                .builder()
+                .message(message)
+                .author(user)
+                .sourceChannelId(message.getChannelId())
+                .channel(channel.orElse(null))
+                .starCount(starCount)
+                .guild(guild.orElse(null))
+                .starLevelEmote(starLevelEmote)
+                .build();
     }
 
     @Override
