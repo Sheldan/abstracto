@@ -1,0 +1,35 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <changeSet author="Sheldan" id="profanity_regex-table">
+        <createTable tableName="profanity_regex">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_profanity_regex"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="regex" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="replacement" type="VARCHAR(255)" />
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="profanity_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="profanity_group_id" baseTableName="profanity_regex" constraintName="fk_profanity_regex_group" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="profanity_group" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS profanity_regex_insert_trigger ON profanity_regex;
+            CREATE TRIGGER profanity_regex_insert_trigger BEFORE INSERT ON profanity_regex FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

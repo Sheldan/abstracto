@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.ProfanityService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -39,6 +40,9 @@ public class UrbanDefine extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private ProfanityService profanityService;
+
     private static final String URBAN_DEFINE_RESPONSE_MODEL_TEMPLATE_KEY = "urban_define_response_model";
 
     @Override
@@ -47,6 +51,10 @@ public class UrbanDefine extends AbstractConditionableCommand {
         try {
             UrbanDefinition definition = urbanService.getUrbanDefinition(parameter);
             UrbanResponseModel model = (UrbanResponseModel) ContextConverter.slimFromCommandContext(commandContext, UrbanResponseModel.class);
+            String sanitizedDefinition = profanityService.replaceProfanities(definition.getDefinition(), commandContext.getGuild().getIdLong());
+            String sanitizedExample = profanityService.replaceProfanities(definition.getExample(), commandContext.getGuild().getIdLong());
+            definition.setDefinition(sanitizedDefinition);
+            definition.setExample(sanitizedExample);
             model.setDefinition(definition);
             MessageToSend message = templateService.renderEmbedTemplate(URBAN_DEFINE_RESPONSE_MODEL_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()))

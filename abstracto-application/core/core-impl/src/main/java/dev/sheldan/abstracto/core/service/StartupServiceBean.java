@@ -52,6 +52,9 @@ public class StartupServiceBean implements Startup {
     @Autowired
     private CommandInServerManagementService commandInServerManagementService;
 
+    @Autowired
+    private ProfanityService profanityService;
+
     @Override
     public void startBot() throws LoginException {
         service.login();
@@ -64,6 +67,7 @@ public class StartupServiceBean implements Startup {
         log.info("Synchronizing servers.");
         synchronizeServers();
         log.info("Done synchronizing servers");
+        profanityService.reloadRegex();
     }
 
     private void synchronizeServers(){

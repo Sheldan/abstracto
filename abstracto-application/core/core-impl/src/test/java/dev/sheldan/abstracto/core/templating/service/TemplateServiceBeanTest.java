@@ -79,7 +79,7 @@ public class TemplateServiceBeanTest {
 
     private void setupServerAware() {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
-        when(configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
+        when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class TemplateServiceBeanTest {
     public void testRenderTooLongAdditionalMessage() throws IOException, TemplateException {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
         String additionalMessage = RandomStringUtils.randomAlphabetic(3500);
-        when(configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
+        when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         String templateContent = String.format("{ \"additionalMessage\": \"%s\"}", additionalMessage);
         EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
         when(config.getAdditionalMessageLengthLimit()).thenReturn(2000L);
@@ -113,7 +113,7 @@ public class TemplateServiceBeanTest {
     public void testRenderEmbedWithMessageLimit() throws IOException, TemplateException {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
         String additionalMessage = RandomStringUtils.randomAlphabetic(3500);
-        when(configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
+        when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         String templateContent = String.format("{ \"additionalMessage\": \"%s\", \"messageLimit\": 1}", additionalMessage);
         EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
         when(config.getAdditionalMessageLengthLimit()).thenReturn(2000L);
@@ -130,7 +130,7 @@ public class TemplateServiceBeanTest {
     public void testRenderTooLongMultipleAdditionalMessages() throws IOException, TemplateException {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
         String additionalMessage = RandomStringUtils.randomAlphabetic(3500);
-        when(configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
+        when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         String templateContent = String.format("{ \"additionalMessage\": \"%s\"}", additionalMessage);
         EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
         when(config.getAdditionalMessageLengthLimit()).thenReturn(500L);
@@ -228,7 +228,7 @@ public class TemplateServiceBeanTest {
     public void testEmbedWithTooLongFieldNoSpace() throws IOException, TemplateException {
         when(serverContext.getServerId()).thenReturn(SERVER_ID);
         String fieldValue = RandomStringUtils.randomAlphabetic(1500);
-        when(configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
+        when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithTooLongField(fieldValue));
         when(gson.fromJson(getSingleFieldWithValue(fieldValue), EmbedConfiguration.class)).thenReturn(getEmbedWithSingleFieldOfValue(fieldValue));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());

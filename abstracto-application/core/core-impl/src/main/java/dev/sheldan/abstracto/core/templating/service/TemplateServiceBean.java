@@ -148,7 +148,7 @@ public class TemplateServiceBean implements TemplateService {
         }
         Long messageLimit = 100L;
         if(serverContext.getServerId() != null) {
-            messageLimit = Math.min(messageLimit, configService.getLongValue(CoreFeatureConfig.MAX_MESSAGES_KEY, serverContext.getServerId()));
+            messageLimit = Math.min(messageLimit, configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, serverContext.getServerId()));
         }
         if(embedConfiguration.getMessageLimit() != null) {
             messageLimit = Math.min(messageLimit, embedConfiguration.getMessageLimit());

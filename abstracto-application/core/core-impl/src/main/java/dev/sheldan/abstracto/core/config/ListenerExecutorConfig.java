@@ -82,6 +82,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("aChannelCreatedListener");
     }
 
+    @Bean(name = "cacheClearedExecutor")
+    public TaskExecutor cacheClearedExecutor() {
+        return executorService.setupExecutorFor("cacheClearedListener");
+    }
+
     @Bean(name = "aChannelDeletedExecutor")
     public TaskExecutor aChannelDeletedExecutor() {
         return executorService.setupExecutorFor("aChannelDeletedListener");

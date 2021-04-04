@@ -3,43 +3,37 @@ package dev.sheldan.abstracto.core.models.database;
 import lombok.*;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-@Table(name="posttarget")
+@Table(name = "profanity_regex")
+@Getter
 @Builder
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class PostTarget implements Serializable {
-
+public class ProfanityRegex {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @Column(name = "id")
     private Long id;
 
-    @Getter
     @Column(name = "name")
-    private String name;
+    private String regexName;
+
+    @Column(name = "regex")
+    private String regex;
+
+    @Column(name = "replacement")
+    private String replacement;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id", nullable = false)
+    @JoinColumn(name="profanity_group_id", nullable = false)
     @Getter
     @Setter
-    private AChannel channelReference;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="server_id", nullable = false)
-    @Getter
-    @Setter
-    private AServer serverReference;
+    private ProfanityGroup group;
 
     @Column(name = "created")
     private Instant created;
-
-    @Column(name = "updated")
-    private Instant updated;
-
 }

@@ -3,43 +3,43 @@ package dev.sheldan.abstracto.core.models.database;
 import lombok.*;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name="posttarget")
+@Table(name = "profanity_group")
+@Getter
 @Builder
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class PostTarget implements Serializable {
+public class ProfanityGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @Column(name = "id")
     private Long id;
 
-    @Getter
     @Column(name = "name")
-    private String name;
+    private String groupName;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id", nullable = false)
-    @Getter
-    @Setter
-    private AChannel channelReference;
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            orphanRemoval = true,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            mappedBy = "group")
+    @Builder.Default
+    private List<ProfanityRegex> profanities = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="server_id", nullable = false)
     @Getter
     @Setter
-    private AServer serverReference;
+    private AServer server;
 
     @Column(name = "created")
     private Instant created;
-
-    @Column(name = "updated")
-    private Instant updated;
 
 }
