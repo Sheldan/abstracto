@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -100,6 +101,12 @@ public class MessageCacheBean implements MessageCache {
         }
 
         return future;
+    }
+
+    @Override
+    @CacheEvict(allEntries = true)
+    public void clearCache() {
+        log.info("Clearing message cache.");
     }
 
 

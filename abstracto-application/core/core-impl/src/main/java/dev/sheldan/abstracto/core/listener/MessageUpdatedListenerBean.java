@@ -1,6 +1,7 @@
-package dev.sheldan.abstracto.core.listener.sync.jda;
+package dev.sheldan.abstracto.core.listener;
 
-import dev.sheldan.abstracto.core.listener.ListenerService;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;
+import dev.sheldan.abstracto.core.listener.sync.jda.MessageTextUpdatedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
@@ -13,6 +14,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +43,13 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     @Autowired
     private ListenerService listenerService;
 
+    @Autowired(required = false)
+    private List<AsyncMessageTextUpdatedListener> asyncListenerList;
+
+    @Autowired
+    @Qualifier("messageUpdatedExecutor")
+    private TaskExecutor messageUpdatedExecutor;
+
     @Autowired
     private MetricService metricService;
 
@@ -53,11 +63,17 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     @Transactional
     public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
         metricService.incrementCounter(MESSAGE_UPDATED_COUNTER);
-        if(listenerList == null) return;
         Message message = event.getMessage();
         messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getTextChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {
-            self.executeListener(cachedMessage, event);
-            messageCache.putMessageInCache(message);
+            try {
+                executeAsyncListeners(event, cachedMessage);
+                if (listenerList != null) {
+                    self.executeListener(cachedMessage, event);
+                }
+            } finally {
+                cachedMessage.setContent(message.getContentRaw());
+                messageCache.putMessageInCache(cachedMessage);
+            }
         }).exceptionally(throwable -> {
             log.error("Message retrieval {} from cache failed. ", event.getMessage().getId(), throwable);
             return null;
@@ -67,6 +83,7 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
 
     @Transactional
     public void executeListener(CachedMessage cachedMessage, GuildMessageUpdateEvent event) {
+        if(listenerList == null) return;
         MessageTextUpdatedModel model = getModel(event, cachedMessage);
         listenerList.forEach(messageTextUpdatedListener -> listenerService.executeFeatureAwareListener(messageTextUpdatedListener, model));
     }
@@ -77,6 +94,14 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
                 .after(event.getMessage())
                 .before(oldMessage)
                 .build();
+    }
+
+    private void executeAsyncListeners(GuildMessageUpdateEvent event, CachedMessage oldMessage) {
+        if(asyncListenerList == null) return;
+        MessageTextUpdatedModel model = getModel(event, oldMessage);
+        asyncListenerList.forEach(messageTextUpdatedListener ->
+                listenerService.executeFeatureAwareListener(messageTextUpdatedListener, model, messageUpdatedExecutor)
+        );
     }
 
     @PostConstruct

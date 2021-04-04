@@ -11,4 +11,5 @@ public interface MessageCache {
     CompletableFuture<CachedMessage> getMessageFromCache(Message message);
     CompletableFuture<CachedMessage> putMessageInCache(CachedMessage message);
     CompletableFuture<CachedMessage> loadMessage(Long guildId, Long textChannelId, Long messageId);
+    void clearCache();
 }
