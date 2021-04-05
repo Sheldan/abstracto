@@ -139,8 +139,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             self.loadMessageEmbedModel(message, embeddedMessage, authorUser)
         ).exceptionally(throwable -> {
             log.warn("Failed to retrieve author for user {}.", embeddedMessage.getAuthor().getAuthorId(), throwable);
-            self.loadMessageEmbedModel(message, embeddedMessage, null);
-            return null;
+            return self.loadMessageEmbedModel(message, embeddedMessage, null);
         });
     }
 
