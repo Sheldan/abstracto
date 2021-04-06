@@ -70,6 +70,11 @@ public abstract class StarboardListener {
 
     protected void handleStarboardPostChange(CachedMessage message, CachedReactions reaction, ServerUser userReacting, boolean adding)  {
         Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
+        boolean starboardPostExists = starboardPostOptional.isPresent();
+        if(starboardPostExists && starboardPostOptional.get().isIgnored()) {
+            log.info("Starboard post {} for message {} in server {} is ignored. Doing nothing.", starboardPostOptional.get().getId(), message.getMessageId(), message.getServerId());
+            return;
+        }
         if(reaction != null) {
             AUserInAServer author = userInServerManagementService.loadOrCreateUser(message.getServerId(), message.getAuthor().getAuthorId());
             List<AUserInAServer> userExceptAuthor = getUsersExcept(reaction.getUsers(), author);
@@ -78,7 +83,7 @@ public abstract class StarboardListener {
             if (userExceptAuthor.size() >= starMinimum) {
                 log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
                         message.getMessageId(), message.getChannelId(), message.getServerId());
-                if(starboardPostOptional.isPresent()) {
+                if(starboardPostExists) {
                     updateStarboardPost(message, userAddingReaction, adding, starboardPostOptional.get(), userExceptAuthor);
                 } else {
                     metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_REACHED);
@@ -89,14 +94,14 @@ public abstract class StarboardListener {
                     });
                 }
             } else {
-                if(starboardPostOptional.isPresent()) {
+                if(starboardPostExists) {
                     metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_FELL);
                     log.info("Removing starboard post for message {} in channel {} in server {}. It fell under the threshold {}", message.getMessageId(), message.getChannelId(), message.getServerId(), starMinimum);
                     starboardPostOptional.ifPresent(starboardPost -> completelyRemoveStarboardPost(starboardPost, userReacting));
                 }
             }
         } else {
-            if(starboardPostOptional.isPresent()) {
+            if(starboardPostExists) {
                 log.info("Removing starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
                 starboardPostOptional.ifPresent(starboardPost -> completelyRemoveStarboardPost(starboardPost, userReacting));
             }

@@ -165,6 +165,18 @@ public class StarAddedListenerTest {
         verify(starboardPostReactorManagementService, times(1)).addReactor(post, userInServerActing);
     }
 
+
+    @Test
+    public void testAddingEmoteToExistingIgnoredPost() {
+        Long requiredStars = 1L;
+        setupActingAndAuthor();
+        when(post.isIgnored()).thenReturn(true);
+        executeAddingTest(requiredStars, post);
+        verify(metricService, times(1)).incrementCounter(any());
+        verify(starboardService, times(0)).updateStarboardPost(eq(post), any(CachedMessage.class), anyList());
+        verify(starboardPostReactorManagementService, times(0)).addReactor(post, userInServerActing);
+    }
+
     private void setupActingAndAuthor() {
         when(userInServerActing.getUserReference()).thenReturn(userActing);
         when(userActing.getId()).thenReturn(USER_ACTING_ID);
