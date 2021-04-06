@@ -12,4 +12,5 @@ public interface MessageEmbedService {
     List<MessageEmbedLink> getLinksInMessage(String message);
     void embedLinks(List<MessageEmbedLink> linksToEmbed, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage);
     CompletableFuture<Void> embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage);
+    CompletableFuture<Void> cleanUpOldMessageEmbeds();
 }

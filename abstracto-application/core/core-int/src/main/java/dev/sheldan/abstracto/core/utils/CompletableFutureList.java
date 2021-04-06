@@ -40,7 +40,11 @@ public class CompletableFutureList<T> {
             if(!future.isCompletedExceptionally()) {
                 result.add(future.join());
             } else {
-                log.warn("Future completed with exception {}.", future.join());
+                try {
+                    future.join();
+                } catch (Exception exception) {
+                    log.warn("Future completed with exception.", exception);
+                }
             }
         });
         return result;

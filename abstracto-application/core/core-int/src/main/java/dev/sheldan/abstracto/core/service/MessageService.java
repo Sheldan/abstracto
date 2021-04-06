@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface MessageService {
@@ -22,6 +24,7 @@ public interface MessageService {
     void updateStatusMessage(MessageChannel channel, Long messageId, MessageToSend messageToSend);
     CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text);
     CompletableFuture<Message> sendSimpleTemplateToUser(Long userId, String templateKey);
+    List<CompletableFuture<Message>> retrieveMessages(List<ServerChannelMessage> messages);
     CompletableFuture<Message> sendTemplateToUser(User user, String template, Object model);
     CompletableFuture<Void> sendEmbedToUser(User user, String template, Object model);
     CompletableFuture<Message> sendEmbedToUserWithMessage(User user, String template, Object model);

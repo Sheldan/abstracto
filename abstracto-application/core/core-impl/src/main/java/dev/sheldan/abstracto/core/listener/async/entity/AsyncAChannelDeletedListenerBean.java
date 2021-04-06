@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.annotation.Nonnull;
@@ -32,8 +33,16 @@ public class AsyncAChannelDeletedListenerBean extends ListenerAdapter {
     @Qualifier("aChannelDeletedExecutor")
     private TaskExecutor channelDeletedExecutor;
 
+    @Autowired
+    private AsyncAChannelDeletedListenerBean self;
+
     @Override
     public void onTextChannelDelete(@Nonnull TextChannelDeleteEvent event) {
+        self.deleteChannelInDb(event);
+    }
+
+    @Transactional
+    public void deleteChannelInDb(TextChannelDeleteEvent event) {
         channelManagementService.markAsDeleted(event.getChannel().getIdLong());
     }
 

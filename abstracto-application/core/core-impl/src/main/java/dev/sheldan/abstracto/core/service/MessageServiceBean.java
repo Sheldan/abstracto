@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -18,8 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static dev.sheldan.abstracto.core.config.MetricConstants.DISCORD_API_INTERACTION_METRIC;
 import static dev.sheldan.abstracto.core.config.MetricConstants.INTERACTION_TYPE;
@@ -39,6 +44,9 @@ public class MessageServiceBean implements MessageService {
 
     @Autowired
     private MetricService metricService;
+
+    @Autowired
+    private GuildService guildService;
 
     public static final CounterMetric MESSAGE_SEND_METRIC = CounterMetric
             .builder()
@@ -108,6 +116,26 @@ public class MessageServiceBean implements MessageService {
         return memberService.getUserViaId(userId)
                 .thenCompose(this::openPrivateChannelForUser)
                 .thenCompose(o -> channelService.sendTextToChannel(text, o));
+    }
+
+    @Override
+    public List<CompletableFuture<Message>> retrieveMessages(List<ServerChannelMessage> messages) {
+        List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
+        Map<Long, List<ServerChannelMessage>> serverMessages = messages
+                .stream()
+                .collect(Collectors.groupingBy(ServerChannelMessage::getServerId));
+        serverMessages.forEach((serverId, channelMessagesNonGrouped) -> {
+            Guild guild = guildService.getGuildById(serverId);
+            Map<Long, List<ServerChannelMessage>> channelMessages = channelMessagesNonGrouped
+                    .stream()
+                    .collect(Collectors.groupingBy(ServerChannelMessage::getChannelId));
+            channelMessages.forEach((channelId, serverChannelMessages) -> {
+                MessageChannel channel = guild.getTextChannelById(channelId);
+                serverChannelMessages.forEach(serverChannelMessage ->
+                        messageFutures.add(channelService.retrieveMessageInChannel(channel, serverChannelMessage.getMessageId())));
+            });
+        });
+        return messageFutures;
     }
 
     @Override

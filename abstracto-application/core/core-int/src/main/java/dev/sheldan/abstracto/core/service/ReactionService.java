@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public interface ReactionService {
     CompletableFuture<Void> clearReactionFromMessageWithFuture(Integer emoteId, Message message);
     CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId);
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Long userId);
+    CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId);
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Member member);
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Message message, Member member);
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Member member);
@@ -49,4 +51,10 @@ public interface ReactionService {
     CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Long userId);
     CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId);
     List<CompletableFuture<Void>> addReactionsToMessageWithFuture(List<String> emoteKeys, Long serverId, Message message);
+    List<CompletableFuture<Void>> removeReactionFromMessagesWithFuture(List<Message> messages, Integer emoteId);
+    List<CompletableFuture<Void>> removeReactionFromMessagesWithFuture(List<Message> messages, AEmote emote);
+    CompletableFutureList<Void> removeReactionFromMessagesWithFutureWithFutureList(List<Message> messages, Integer emoteId);
+    CompletableFutureList<Void> removeReactionFromMessagesWithFutureWithFutureList(List<Message> messages, String emoteKey);
+    List<CompletableFuture<Void>> removeReactionFromMessagesWithFuture(List<Message> messages, String emoteKey);
+    CompletableFutureList<Void> removeReactionFromMessagesWithFutureWithFutureList(List<Message> messages, AEmote emote);
 }

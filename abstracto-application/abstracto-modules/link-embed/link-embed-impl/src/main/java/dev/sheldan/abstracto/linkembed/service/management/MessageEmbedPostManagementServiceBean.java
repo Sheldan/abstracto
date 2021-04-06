@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -74,6 +76,17 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
     public void deleteEmbeddedMessage(EmbeddedMessage embeddedMessage) {
         log.info("Deleting embedded message {}.", embeddedMessage.getEmbeddingMessageId());
        embeddedMessageRepository.delete(embeddedMessage);
+    }
+
+    @Override
+    public List<EmbeddedMessage> getEmbeddedMessagesOlderThan(Instant date) {
+        return embeddedMessageRepository.findByCreatedLessThan(date);
+    }
+
+    @Override
+    public void deleteEmbeddedMessagesViaId(List<Long> embeddingMessageId) {
+        log.info("Deleting {} embedded messages from db.", embeddingMessageId.size());
+        embeddedMessageRepository.deleteByEmbeddingMessageIdIn(embeddingMessageId);
     }
 
 }

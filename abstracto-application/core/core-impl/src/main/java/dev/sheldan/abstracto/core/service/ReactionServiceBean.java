@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReaction;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
@@ -317,6 +318,15 @@ public class ReactionServiceBean implements ReactionService {
     }
 
     @Override
+    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId) {
+        Integer emoteId = emote.getId();
+        CompletableFuture<Message> messageFuture = channelService.retrieveMessageInChannel(serverId, channelId, messageId);
+        return messageFuture.thenCompose(message ->
+            self.removeReactionFromMessageWithFuture(emoteId, message)
+        );
+    }
+
+    @Override
     public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Member member) {
         Integer emoteId = emote.getId();
         return channelService.retrieveMessageInChannel(serverId, channelId, messageId)
@@ -372,6 +382,44 @@ public class ReactionServiceBean implements ReactionService {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         emoteKeys.forEach(s -> futures.add(addReactionToMessageAsync(s, serverId, message)));
         return futures;
+    }
+
+    @Override
+    public List<CompletableFuture<Void>> removeReactionFromMessagesWithFuture(List<Message> messages, Integer emoteId) {
+        AEmote emote = emoteManagementService.loadEmote(emoteId);
+        return removeReactionFromMessagesWithFuture(messages, emote);
+    }
+
+    @Override
+    public List<CompletableFuture<Void>> removeReactionFromMessagesWithFuture(List<Message> messages, AEmote emote) {
+        List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
+        messages.forEach(message -> removalFutures.add(removeReactionFromMessageWithFuture(emote, message)));
+        return removalFutures;
+    }
+
+    @Override
+    public CompletableFutureList<Void> removeReactionFromMessagesWithFutureWithFutureList(List<Message> messages, Integer emoteId) {
+        List<CompletableFuture<Void>> allFutures = removeReactionFromMessagesWithFuture(messages, emoteId);
+        return new CompletableFutureList<>(allFutures);
+    }
+
+    @Override
+    public CompletableFutureList<Void> removeReactionFromMessagesWithFutureWithFutureList(List<Message> messages, String emoteKey) {
+        List<CompletableFuture<Void>> allFutures = removeReactionFromMessagesWithFuture(messages, emoteKey);
+        return new CompletableFutureList<>(allFutures);
+    }
+
+    @Override
+    public  List<CompletableFuture<Void>> removeReactionFromMessagesWithFuture(List<Message> messages, String emoteKey) {
+        AEmote emote = emoteService.getEmoteOrDefaultEmote(emoteKey, messages.get(0).getGuild().getIdLong());
+        return removeReactionFromMessagesWithFuture(messages, emote);
+    }
+
+    @Override
+    public CompletableFutureList<Void> removeReactionFromMessagesWithFutureWithFutureList(List<Message> messages, AEmote emote) {
+        List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
+        messages.forEach(message -> removalFutures.add(removeReactionFromMessageWithFuture(emote, message)));
+        return new CompletableFutureList<>(removalFutures);
     }
 
     @PostConstruct

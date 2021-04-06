@@ -27,7 +27,7 @@ public class ReminderJob extends QuartzJobBean {
             log.info("Executing reminder job for reminder {}", reminderId);
             reminderService.executeReminder(reminderId);
         } catch (Exception e) {
-            log.error("Reminder job failed to execute.", e);
+            log.error("Reminder job failed.", e);
         }
     }
 
