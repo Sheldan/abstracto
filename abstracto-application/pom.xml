@@ -44,11 +44,16 @@
             <name>jcenter-bintray</name>
             <url>https://jcenter.bintray.com</url>
         </repository>
+        <repository>
+            <id>dv8tion</id>
+            <name>m2-dv8tion</name>
+            <url>https://m2.dv8tion.net/releases</url>
+        </repository>
     </repositories>
 
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm</maven.build.timestamp.format>
-        <jda.version>4.2.0_180</jda.version>
+        <jda.version>4.2.1_254</jda.version>
         <jda.utilities.version>3.0.4</jda.utilities.version>
         <asciidoctor.maven.plugin.version>2.0.0-RC.1</asciidoctor.maven.plugin.version>
         <asciidoctorj.pdf.version>1.5.3</asciidoctorj.pdf.version>
