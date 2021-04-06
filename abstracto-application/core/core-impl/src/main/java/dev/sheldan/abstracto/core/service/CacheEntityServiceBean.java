@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
@@ -178,7 +179,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
     }
 
     @Override
-    public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message) {
+    public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message, boolean loadReferenced) {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         List<CachedAttachment> attachments = new ArrayList<>();
         log.debug("Caching {} attachments.", message.getAttachments().size());
@@ -197,10 +198,20 @@ public class CacheEntityServiceBean implements CacheEntityService {
             message.getEmotesBag().forEach(emote -> emotes.add(getCachedEmoteFromEmote(emote, message.getGuild())));
         }
 
-        List<CompletableFuture<CachedReactions>> futures = new ArrayList<>();
+        CompletableFuture<CachedMessage> referencedMessageFuture;
+        if(loadReferenced && message.getReferencedMessage() != null) {
+            log.debug("Loading referenced message {}.", message.getReferencedMessage().getIdLong());
+            referencedMessageFuture = buildCachedMessageFromMessage(message.getReferencedMessage(), false);
+        } else {
+            referencedMessageFuture = CompletableFuture.completedFuture(null);
+        }
+
+        List<CompletableFuture<CachedReactions>> reactionFutures = new ArrayList<>();
         log.debug("Caching {} reactions.", message.getReactions().size());
-        message.getReactions().forEach(messageReaction -> futures.add(getCachedReactionFromReaction(messageReaction)));
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid ->
+        message.getReactions().forEach(messageReaction -> reactionFutures.add(getCachedReactionFromReaction(messageReaction)));
+        List<CompletableFuture> allFutures = new ArrayList<>(reactionFutures);
+        allFutures.add(referencedMessageFuture);
+        FutureUtils.toSingleFuture(allFutures).thenAccept(aVoid ->
                 {
                     CachedAuthor cachedAuthor = CachedAuthor.builder().authorId(message.getAuthor().getIdLong()).isBot(message.getAuthor().isBot()).build();
                     CachedMessage.CachedMessageBuilder builder = CachedMessage.builder()
@@ -210,7 +221,8 @@ public class CacheEntityServiceBean implements CacheEntityService {
                             .content(message.getContentRaw())
                             .embeds(embeds)
                             .emotes(emotes)
-                            .reactions(convertReactionFuturesToCachedReactions(futures))
+                            .referencedMessage(referencedMessageFuture.join())
+                            .reactions(convertReactionFuturesToCachedReactions(reactionFutures))
                             .timeCreated(Instant.from(message.getTimeCreated()))
                             .attachments(attachments);
                     if(message.isFromGuild()) {
@@ -241,6 +253,11 @@ public class CacheEntityServiceBean implements CacheEntityService {
                     .build());
         }
         return future;
+    }
+
+    @Override
+    public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message) {
+        return buildCachedMessageFromMessage(message, true);
     }
 
     private List<CachedReactions> convertReactionFuturesToCachedReactions(List<CompletableFuture<CachedReactions>> futures) {

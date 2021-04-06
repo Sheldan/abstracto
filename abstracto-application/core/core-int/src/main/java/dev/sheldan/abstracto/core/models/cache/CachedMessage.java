@@ -23,6 +23,7 @@ public class CachedMessage {
     private List<CachedAttachment> attachments;
     private List<CachedReactions> reactions;
     private List<CachedEmote> emotes;
+    private CachedMessage referencedMessage;
 
     public String getMessageUrl() {
         return MessageUtils.buildMessageUrl(this.serverId ,this.channelId, this.messageId);

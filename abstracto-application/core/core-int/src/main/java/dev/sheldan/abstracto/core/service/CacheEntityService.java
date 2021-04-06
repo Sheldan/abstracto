@@ -13,5 +13,6 @@ public interface CacheEntityService {
     CachedThumbnail buildCachedThumbnail(MessageEmbed.Thumbnail thumbnail);
     CachedImageInfo buildCachedImage(MessageEmbed.ImageInfo image);
     CompletableFuture<CachedReactions> getCachedReactionFromReaction(MessageReaction reaction);
+    CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message, boolean loadReferenced);
     CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message);
 }
