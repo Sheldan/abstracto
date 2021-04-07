@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.models.SystemInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -11,6 +13,7 @@ import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.security.auth.login.LoginException;
 
 import java.lang.management.ManagementFactory;
@@ -28,6 +31,15 @@ public class BotServiceBean implements BotService {
 
     @Autowired
     private OkHttpMetrics okHttpMetrics;
+
+    @Autowired
+    private MetricService metricService;
+
+    public static final String DISCORD_GATEWAY_PING = "discord.gateway.ping";
+    private static final CounterMetric DISCORD_GATE_WAY_PING_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_GATEWAY_PING)
+            .build();
 
     @Override
     public void login() throws LoginException {
@@ -60,6 +72,12 @@ public class BotServiceBean implements BotService {
                 .startTime(startTime)
                 .uptime(upTime)
                 .build();
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        metricService.registerGauge(DISCORD_GATE_WAY_PING_METRIC, this, value -> value.getInstance().getGatewayPing(),
+                "Gateway ping");
     }
 
 
