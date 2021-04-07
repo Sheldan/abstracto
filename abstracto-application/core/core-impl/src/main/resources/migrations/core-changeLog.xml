@@ -12,4 +12,5 @@
     <include file="1.2-core/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.5-core/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.7-core/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.2.8-core/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
