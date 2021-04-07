@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.ChannelGroupParameterHandler;
@@ -23,7 +25,7 @@ public class ChannelGroupParameterHandlerImpl implements ChannelGroupParameterHa
     private ServerManagementService serverManagementService;
 
     @Override
-    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         AServer server = serverManagementService.loadServer(context.getGuild().getIdLong());
         String inputString = (String) input.getValue();
         AChannelGroup actualInstance = channelGroupManagementService.findByNameAndServerOptional(inputString, server)

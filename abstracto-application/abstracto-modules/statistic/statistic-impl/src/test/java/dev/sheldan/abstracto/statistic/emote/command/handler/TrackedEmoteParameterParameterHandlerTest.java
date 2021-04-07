@@ -1,8 +1,11 @@
 package dev.sheldan.abstracto.statistic.emote.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.statistic.emote.command.parameter.TrackEmoteParameter;
 import dev.sheldan.abstracto.statistic.emote.command.parameter.handler.TrackedEmoteParameterParameterHandler;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
@@ -35,6 +38,9 @@ public class TrackedEmoteParameterParameterHandlerTest {
     private TrackedEmoteService trackedEmoteService;
 
     @Mock
+    private CommandService commandService;
+
+    @Mock
     private Message contextMessage;
 
     @Mock
@@ -45,6 +51,15 @@ public class TrackedEmoteParameterParameterHandlerTest {
 
     @Mock
     private TrackedEmote trackedEmote;
+
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Parameter parameter2;
+
+    @Mock
+    private Command command;
 
     private static final String WRONG_FORMATTED_INPUT = "input";
 
@@ -63,9 +78,10 @@ public class TrackedEmoteParameterParameterHandlerTest {
         when(contextMessage.getGuild()).thenReturn(guild);
         Emote emote = Mockito.mock(Emote.class);
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(emote);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(emote);
         when(trackedEmoteService.getFakeTrackedEmote(emote, guild)).thenReturn(trackedEmote);
-        TrackEmoteParameter parsedEmote = (TrackEmoteParameter) testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
+        TrackEmoteParameter parsedEmote = (TrackEmoteParameter) testUnit.handle(input, iterators, parameter, contextMessage, command);
         Assert.assertEquals(trackedEmote, parsedEmote.getTrackedEmote());
         Assert.assertEquals(emote, parsedEmote.getEmote());
     }
@@ -77,8 +93,9 @@ public class TrackedEmoteParameterParameterHandlerTest {
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(input.getValue()).thenReturn(emoteId.toString());
         when(trackedEmoteService.getFakeTrackedEmote(emoteId, guild)).thenReturn(trackedEmote);
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(null);
-        TrackEmoteParameter parsedEmote = (TrackEmoteParameter) testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(null);
+        TrackEmoteParameter parsedEmote = (TrackEmoteParameter) testUnit.handle(input, iterators, parameter, contextMessage, command);
         verify(trackedEmoteService, times(0)).getFakeTrackedEmote(any(Emote.class), eq(guild));
         Assert.assertEquals(trackedEmote, parsedEmote.getTrackedEmote());
     }
@@ -87,8 +104,9 @@ public class TrackedEmoteParameterParameterHandlerTest {
     public void testWithIllegalInput() {
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(input.getValue()).thenReturn(WRONG_FORMATTED_INPUT);
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(null);
-        testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(null);
+        testUnit.handle(input, iterators, parameter, contextMessage, command);
     }
 
 }

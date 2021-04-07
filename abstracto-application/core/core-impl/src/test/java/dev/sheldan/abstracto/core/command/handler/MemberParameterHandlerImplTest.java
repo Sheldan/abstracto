@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -38,6 +40,12 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
     @Mock
     private Guild guild;
 
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Command command;
+
     private static final Long USER_ID = 111111111111111111L;
 
     @Test
@@ -55,7 +63,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
     public void testProperMemberMention() {
         oneMemberInIterator();
         String input = getUserMention();
-        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), iterators, Member.class, null);
+        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), iterators, parameter, null, command);
         Assert.assertEquals(member, parsed.join());
     }
 
@@ -64,7 +72,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
     public void testMemberById() {
         setupMessage();
         String input = USER_ID.toString();
-        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+        CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
         Assert.assertEquals(member, parsed.join());
     }
 
@@ -73,7 +81,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getMembersByName(input, true)).thenReturn(new ArrayList<>());
-        testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+        testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
     }
 
     @Test(expected = AbstractoTemplatedException.class)
@@ -82,7 +90,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         Member secondMember = Mockito.mock(Member.class);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getMembersByName(input, true)).thenReturn(Arrays.asList(member, secondMember));
-        testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+        testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
     }
 
     @Test
@@ -90,7 +98,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getMembersByName(input, true)).thenReturn(Arrays.asList(member));
-        CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, Member.class, message);
+        CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
         Member returnedMember = (Member) future.join();
         Assert.assertFalse(future.isCompletedExceptionally());
         Assert.assertEquals(member, returnedMember);

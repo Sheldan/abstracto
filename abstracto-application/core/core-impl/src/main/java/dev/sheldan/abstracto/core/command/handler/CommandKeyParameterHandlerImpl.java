@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandParameterKey;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.CommandKeyParameterHandler;
@@ -16,8 +18,8 @@ public class CommandKeyParameterHandlerImpl implements CommandKeyParameterHandle
     }
 
     @Override
-    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
-        return CommandParameterKey.getEnumFromKey(clazz, (String) input.getValue());
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
+        return CommandParameterKey.getEnumFromKey(param.getType(), (String) input.getValue());
     }
 
     @Override

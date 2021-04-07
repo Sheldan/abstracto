@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.NoAttachmentFoundException;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.FileParameterHandler;
@@ -25,7 +27,7 @@ public class FileParameterHandlerImpl implements FileParameterHandler {
     }
 
     @Override
-    public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         if(context.getAttachments().isEmpty()) {
             throw new NoAttachmentFoundException();
         }

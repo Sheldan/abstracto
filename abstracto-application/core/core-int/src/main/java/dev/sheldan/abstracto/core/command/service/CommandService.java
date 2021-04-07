@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.service;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -28,4 +29,5 @@ public interface CommandService {
     ConditionResult isCommandExecutable(Command command, CommandContext commandContext);
     UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message);
     CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent);
+    Parameter cloneParameter(Parameter parameter);
 }

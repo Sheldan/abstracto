@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -177,6 +178,21 @@ public class CommandServiceBean implements CommandService {
         UnParsedCommandParameter unParsedParameter = getUnParsedCommandParameter(contentStripped, messageContainingContent);
         Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter, messageContainingContent.getGuild().getIdLong());
         return commandReceivedHandler.getParsedParameters(unParsedParameter, command, messageContainingContent);
+    }
+
+    @Override
+    public Parameter cloneParameter(Parameter parameter) {
+        return Parameter
+                .builder()
+                .optional(parameter.isOptional())
+                .type(parameter.getType())
+                .remainder(parameter.isRemainder())
+                .name(parameter.getName())
+                .templated(parameter.getTemplated())
+                .description(parameter.getDescription())
+                .validators(parameter.getValidators())
+                .isListParam(parameter.isListParam())
+                .build();
     }
 
     private ConditionResult checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {

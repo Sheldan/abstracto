@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -38,6 +40,12 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Mock
     private AChannel aChannel;
 
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Command command;
+
     @Test
     public void testSuccessfulCondition() {
         Assert.assertTrue(testUnit.handles(AChannel.class));
@@ -51,9 +59,9 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Test
     public void testProperChannelMention() {
         UnparsedCommandParameterPiece piece = getPiece();
-        when(textChannelParameterHandler.handle(piece, iterators, TextChannel.class, message)).thenReturn(channel);
+        when(textChannelParameterHandler.handle(piece, iterators, parameter, message, command)).thenReturn(channel);
         when(channelService.getFakeChannelFromTextChannel(channel)).thenReturn(aChannel);
-        AChannel parsed = (AChannel) testUnit.handle(piece, iterators, TextChannel.class, message);
+        AChannel parsed = (AChannel) testUnit.handle(piece, iterators, parameter, message, command);
         Assert.assertEquals(aChannel, parsed);
     }
 

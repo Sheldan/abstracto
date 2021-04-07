@@ -1,9 +1,12 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.FullEmoteParameterHandler;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
@@ -21,14 +24,19 @@ public class FullEmoteParameterHandlerImpl implements FullEmoteParameterHandler 
     @Autowired
     private EmoteService emoteService;
 
+    @Autowired
+    private CommandService commandService;
+
     @Override
     public boolean handles(Class clazz) {
         return clazz.equals(FullEmote.class);
     }
 
     @Override
-    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
-        Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
+        Parameter cloned = commandService.cloneParameter(param);
+        cloned.setType(Emote.class);
+        Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, cloned, context, command);
         AEmote aEmote;
         if(emote != null) {
             aEmote = emoteService.getFakeEmoteFromEmote(emote);

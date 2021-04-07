@@ -1,9 +1,12 @@
 package dev.sheldan.abstracto.statistic.emote.command.parameter.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.statistic.emote.command.parameter.TrackEmoteParameter;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
@@ -28,6 +31,9 @@ public class TrackedEmoteParameterParameterHandler implements CommandParameterHa
     @Autowired
     private TrackedEmoteService trackedEmoteService;
 
+    @Autowired
+    private CommandService commandService;
+
     /**
      * This {@link CommandParameterHandler} only handles {@link TrackEmoteParameter}
      * @param clazz The desired {@link Class} of a parameter
@@ -45,15 +51,18 @@ public class TrackedEmoteParameterParameterHandler implements CommandParameterHa
      * @param input The {@link String} input at the current position
      * @param iterators The {@link CommandParameterIterators} containing all available iterators to directly retrieve JDA related
      *                  entities from
-     * @param clazz The {@link Class} which this type should handle
+     * @param param The {@link Class} which this type should handle
      * @param context The {@link Message} which caused the command to be executed
+     * @param command
      * @return An instance of {@link TrackEmoteParameter} which contains the available instances. This is an {@link Emote} in case it was
      * used directly. In every successful case, it will contain a faked {@link TrackedEmote}.
      */
     @Override
-    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         TrackEmoteParameter parameter = TrackEmoteParameter.builder().build();
-        Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, Emote.class, context);
+        Parameter cloned = commandService.cloneParameter(param);
+        cloned.setType(Emote.class);
+        Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, cloned, context, command);
         if(emote != null) {
             parameter.setEmote(emote);
             parameter.setTrackedEmote(trackedEmoteService.getFakeTrackedEmote(emote, context.getGuild()));

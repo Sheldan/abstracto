@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -33,6 +35,12 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     @Mock
     private Guild guild;
 
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Command command;
+
     private static final Long EMOTE_ID = 111111111111111111L;
     private static final String EMOTE_NAME = "test";
 
@@ -50,7 +58,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     public void testProperEmoteMention() {
         oneEmoteInIterator();
         String input = getEmoteMention();
-        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), iterators, Emote.class, null);
+        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
         Assert.assertEquals(parsed, emote);
     }
 
@@ -58,13 +66,13 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     public void testEmoteById() {
         setupMessage();
         String input = EMOTE_ID.toString();
-        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), null, Emote.class, message);
+        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
         Assert.assertEquals(parsed, emote);
     }
 
     @Test
     public void testInvalidEmoteMention() {
-        Assert.assertNull(testUnit.handle(getPieceWithValue("test"), null, Emote.class, null));
+        Assert.assertNull(testUnit.handle(getPieceWithValue("test"), null, parameter, null, command));
     }
 
     private String getEmoteMention() {

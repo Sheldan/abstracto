@@ -1,10 +1,13 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -12,6 +15,12 @@ public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTes
 
     @InjectMocks
     private BooleanParameterHandlerImpl testUnit;
+
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Command command;
 
     @Test
     public void testSuccessfulCondition() {
@@ -26,25 +35,25 @@ public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTes
     @Test
     public void testTrueParsing() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("true");
-        Assert.assertTrue((Boolean)testUnit.handle(piece, null, null, null));
+        Assert.assertTrue((Boolean)testUnit.handle(piece, null, parameter, null, command));
     }
 
     @Test
     public void testAnyOtherText() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("test");
-        Assert.assertFalse((Boolean)testUnit.handle(piece, null, null, null));
+        Assert.assertFalse((Boolean)testUnit.handle(piece, null, parameter, null, command));
     }
 
     @Test
     public void testNullInput() {
         UnparsedCommandParameterPiece piece = getPieceWithValue(null);
-        Assert.assertFalse((Boolean)testUnit.handle(piece, null, null, null));
+        Assert.assertFalse((Boolean)testUnit.handle(piece, null, parameter, null, command));
     }
 
     @Test
     public void testEmptyStringAsInput() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("");
-        Assert.assertFalse((Boolean)testUnit.handle(piece, null, null, null));
+        Assert.assertFalse((Boolean)testUnit.handle(piece, null, parameter, null, command));
     }
 
 }

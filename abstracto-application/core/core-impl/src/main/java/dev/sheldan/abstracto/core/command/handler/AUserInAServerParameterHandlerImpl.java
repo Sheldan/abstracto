@@ -1,9 +1,12 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AUserInAServerParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.exception.UserInServerNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -23,10 +26,15 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private CommandService commandService;
+
     @Override
-    public CompletableFuture handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public CompletableFuture handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         CompletableFuture<AUserInAServer> future = new CompletableFuture<>();
-        memberParameterHandler.handleAsync(input, iterators, Member.class, context).whenComplete((o, throwable) -> {
+        Parameter cloned = commandService.cloneParameter(param);
+        cloned.setType(Member.class);
+        memberParameterHandler.handleAsync(input, iterators, cloned, context, command).whenComplete((o, throwable) -> {
             try {
                 AUserInAServer actualInstance;
                 if (throwable == null) {

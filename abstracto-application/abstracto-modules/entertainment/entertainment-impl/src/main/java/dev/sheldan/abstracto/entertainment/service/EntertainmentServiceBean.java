@@ -54,4 +54,19 @@ public class EntertainmentServiceBean implements EntertainmentService {
     public String takeChoice(List<String> choices, Member memberExecuting) {
         return choices.get(secureRandom.nextInt(choices.size()));
     }
+
+    @Override
+    public String createMockText(String text, Member memberExecuting, Member mockedUser) {
+        char[] textChars = text.toLowerCase().toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, textCharsLength = textChars.length; i < textCharsLength; i++) {
+            char character = textChars[i];
+            if(i % 2 == 0) {
+                sb.append(Character.toUpperCase(character));
+            } else {
+                sb.append(character);
+            }
+        }
+        return sb.toString();
+    }
 }

@@ -191,3 +191,7 @@ Ask a magic 8-ball a question::
 Roll a virtual die::
 * Usage: `role [max] [min]`
 * Description: Rolls a virtual die. Per default this is a six sided die. If `max` is provided, it changes the amount of sides possible and if `min` is provided, no value below this is possible. If `min` is larger than `max`, it is taken as `max` and vice-versa.
+
+Mock the message of another user::
+* Usage: `mock <text/message>`
+* Description: Takes the `text` and prints the text with the characters with alternating upper and lower case. If no text is provided, this command requires that the command has been executed in a message which replies to another message. In this case the text to be mocked will be the content of the message which has been replied to.

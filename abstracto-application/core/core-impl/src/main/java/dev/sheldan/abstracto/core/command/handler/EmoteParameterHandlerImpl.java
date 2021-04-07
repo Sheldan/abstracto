@@ -1,6 +1,8 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
 import net.dv8tion.jda.api.entities.Emote;
@@ -19,7 +21,7 @@ public class EmoteParameterHandlerImpl implements EmoteParameterHandler {
     }
 
     @Override
-    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Class clazz, Message context) {
+    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         String inputString = (String) input.getValue();
         Matcher matcher = Message.MentionType.EMOTE.getPattern().matcher(inputString);
         if(matcher.matches()) {

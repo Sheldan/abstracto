@@ -17,6 +17,13 @@ public class UnParsedCommandParameter {
         this.parameters = new ArrayList<>();
         Matcher m = SPLIT_REGEX.matcher(parameters);
         boolean skippedCommand = false;
+        if(message.getReferencedMessage() != null) {
+            this.parameters.add(UnparsedCommandParameterPiece
+                    .builder()
+                    .value(message.getReferencedMessage())
+                    .type(ParameterPieceType.REFERENCED_MESSAGE)
+                    .build());
+        }
         while (m.find()) {
             if(!skippedCommand) {
                 skippedCommand = true;
@@ -35,7 +42,11 @@ public class UnParsedCommandParameter {
             }
         }
         message.getAttachments().forEach(attachment ->
-                this.parameters.add(UnparsedCommandParameterPiece.builder().value(attachment).type(ParameterPieceType.ATTACHMENT).build()));
+                this.parameters.add(UnparsedCommandParameterPiece
+                        .builder()
+                        .value(attachment)
+                        .type(ParameterPieceType.ATTACHMENT)
+                        .build()));
     }
     private List<UnparsedCommandParameterPiece> parameters;
 }

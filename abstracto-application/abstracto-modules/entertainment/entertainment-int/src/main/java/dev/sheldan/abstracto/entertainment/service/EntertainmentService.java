@@ -10,4 +10,5 @@ public interface EntertainmentService {
     Integer calculateRollResult(Integer low, Integer high);
     boolean executeRoulette(Member memberExecuting);
     String takeChoice(List<String> choices, Member memberExecuting);
+    String createMockText(String text, Member memberExecuting, Member mockedUser);
 }

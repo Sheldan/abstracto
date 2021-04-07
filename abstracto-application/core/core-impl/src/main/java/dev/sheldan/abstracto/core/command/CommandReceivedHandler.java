@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.Parameters;
+import dev.sheldan.abstracto.core.command.config.ParseResult;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterValidationException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -207,7 +208,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         // we iterate only over the actually found parameters, that way we dont have to consider the optional parameters
         // the parameters are going from left to right anyway
         for (int i = 0; i < parameters.getParameters().size(); i++) {
-            Parameter parameter = parameterList.get(i);
+            Parameter parameter = parameterList.get(Math.min(i, parameterList.size() - 1));
             for (ParameterValidator parameterValidator : parameter.getValidators()) {
                 boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
                 if(!validate) {
@@ -243,37 +244,36 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
-        List<Object> parsedParameters = new ArrayList<>();
-        if(command.getConfiguration().getParameters() == null || command.getConfiguration().getParameters().isEmpty()) {
-            return CompletableFuture.completedFuture(Parameters.builder().parameters(parsedParameters).build());
+        List<ParseResult> parsedParameters = new ArrayList<>();
+        List<Parameter> parameters = command.getConfiguration().getParameters();
+        if(parameters == null || parameters.isEmpty()) {
+            return CompletableFuture.completedFuture(Parameters.builder().parameters(new ArrayList<>()).build());
         }
         log.debug("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
         Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
         Iterator<Emote> emoteIterator = message.getEmotesBag().iterator();
         Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
         Iterator<Role> roleIterator = message.getMentionedRolesBag().iterator();
-        Parameter param = command.getConfiguration().getParameters().get(0);
+        Parameter param = parameters.get(0);
         CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
-        boolean reminderActive = false;
         List<CompletableFuture> futures = new ArrayList<>();
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
-            if(i < command.getConfiguration().getParameters().size() && !param.isRemainder()) {
-                param = command.getConfiguration().getParameters().get(i);
+            if(i < parameters.size() && !param.isRemainder()) {
+                param = parameters.get(i);
             } else {
-                reminderActive = true;
+                param = parameters.get(parameters.size() - 1);
             }
             UnparsedCommandParameterPiece value = unParsedCommandParameter.getParameters().get(i);
-            boolean handlerMatched = false;
             for (CommandParameterHandler handler : parameterHandlers) {
                 try {
                     if (handler.handles(param.getType())) {
-                        handlerMatched = true;
                         if (handler.async()) {
-                            CompletableFuture future = handler.handleAsync(value, iterators, param.getType(), message);
+                            CompletableFuture future = handler.handleAsync(value, iterators, param, message, command);
                             futures.add(future);
-                            parsedParameters.add(future);
+                            parsedParameters.add(ParseResult.builder().parameter(param).result(future).build());
                         } else {
-                            parsedParameters.add(handler.handle(value, iterators, param.getType(), message));
+                            Object result = handler.handle(value, iterators, param, message, command);
+                            parsedParameters.add(ParseResult.builder().parameter(param).result(result).build());
                         }
                         break;
                     }
@@ -285,44 +285,30 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     throw new IncorrectParameterException(command, param.getName());
                 }
             }
-            if(!handlerMatched) {
-                Object valueAsString = value.getValue().toString();
-                if(!reminderActive) {
-                    parsedParameters.add(valueAsString);
-                } else {
-                    if(!param.isListParam()) {
-                        if(parsedParameters.isEmpty()) {
-                            parsedParameters.add(valueAsString);
-                        } else {
-                            int lastIndex = parsedParameters.size() - 1;
-                            parsedParameters.set(lastIndex, parsedParameters.get(lastIndex) + " " + valueAsString);
-                        }
-                    } else {
-                        if(parsedParameters.isEmpty()) {
-                            ArrayList<Object> list = new ArrayList<>();
-                            list.add(valueAsString);
-                            parsedParameters.add(list);
-                        } else {
-                            int lastIndex = parsedParameters.size() - 1;
-                            ((List)parsedParameters.get(lastIndex)).add(valueAsString);
-                        }
-                    }
-                }
-            }
         }
 
         if(!futures.isEmpty()) {
             CompletableFuture<Parameters> multipleFuturesFuture = new CompletableFuture<>();
             CompletableFuture<Void> combinedFuture = FutureUtils.toSingleFuture(futures);
             combinedFuture.thenAccept(aVoid -> {
-                List<Object> usableParameters = parsedParameters.stream().map(o -> {
-                    if(o instanceof CompletableFuture) {
-                        return ((CompletableFuture) o).join();
+                List<Object> allParamResults = parsedParameters.stream().map(o -> {
+                    if(o.getResult() instanceof CompletableFuture) {
+                        return ((CompletableFuture) o.getResult()).join();
                     } else {
                         return o;
                     }
                 }).collect(Collectors.toList());
-                multipleFuturesFuture.complete(Parameters.builder().parameters(usableParameters).build());
+                List<ParseResult> parseResults = new ArrayList<>();
+                for (int i = 0; i < allParamResults.size(); i++) {
+                    ParseResult parseResult = ParseResult
+                            .builder()
+                            .result(allParamResults.get(i))
+                            // all parameters beyond the most possible ones are attributed to be from the last parameter
+                            .parameter(parameters.get(Math.min(i, parameters.size() - 1)))
+                            .build();
+                    parseResults.add(parseResult);
+                }
+                multipleFuturesFuture.complete(Parameters.builder().parameters(extractParametersFromParsed(parseResults)).build());
             });
 
             combinedFuture.exceptionally(throwable -> {
@@ -331,9 +317,36 @@ public class CommandReceivedHandler extends ListenerAdapter {
             });
             return multipleFuturesFuture;
         } else {
-            Parameters parameters = Parameters.builder().parameters(parsedParameters).build();
-            return CompletableFuture.completedFuture(parameters);
+            Parameters resultParameters = Parameters.builder().parameters(extractParametersFromParsed(parsedParameters)).build();
+            return CompletableFuture.completedFuture(resultParameters);
         }
+    }
+
+    private List<Object> extractParametersFromParsed(List<ParseResult> results) {
+        List<Object> usableParameters = new ArrayList<>();
+        results.forEach(parseResult -> {
+            if(parseResult.getParameter().isRemainder() && !parseResult.getParameter().isListParam() && parseResult.getResult() instanceof String) {
+                if(usableParameters.isEmpty()) {
+                    usableParameters.add(parseResult.getResult());
+                } else {
+                    int lastIndex = usableParameters.size() - 1;
+                    usableParameters.set(lastIndex, usableParameters.get(lastIndex).toString() + " " + parseResult.getResult().toString());
+                }
+            } else if(parseResult.getParameter().isListParam()) {
+                if(usableParameters.isEmpty()) {
+                    ArrayList<Object> list = new ArrayList<>();
+                    list.add(parseResult.getResult().toString());
+                    usableParameters.add(list);
+                } else {
+                    int lastIndex = usableParameters.size() - 1;
+                    ((List)usableParameters.get(lastIndex)).add(parseResult.getResult());
+                }
+            }
+            else {
+                usableParameters.add(parseResult.getResult());
+            }
+        });
+       return usableParameters;
     }
 
     @PostConstruct

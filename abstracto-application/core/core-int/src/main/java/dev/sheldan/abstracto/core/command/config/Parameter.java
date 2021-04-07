@@ -6,7 +6,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -25,4 +27,8 @@ public class Parameter implements Serializable {
     private Boolean templated = false;
     @Builder.Default
     private List<ParameterValidator> validators = new ArrayList<>();
+    @Builder.Default
+    private Map<String, Object> additionalInfo = new HashMap<>();
+
+    public static final String ADDITIONAL_TYPES_KEY = "ADDITIONAL_TYPES";
 }

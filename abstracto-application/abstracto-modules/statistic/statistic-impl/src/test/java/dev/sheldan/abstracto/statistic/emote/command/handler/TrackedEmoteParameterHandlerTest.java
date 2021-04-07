@@ -1,8 +1,11 @@
 package dev.sheldan.abstracto.statistic.emote.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.statistic.emote.command.parameter.handler.TrackedEmoteParameterHandler;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
@@ -32,6 +35,9 @@ public class TrackedEmoteParameterHandlerTest {
     private TrackedEmoteService trackedEmoteService;
 
     @Mock
+    private CommandService commandService;
+
+    @Mock
     private Message contextMessage;
 
     @Mock
@@ -39,6 +45,15 @@ public class TrackedEmoteParameterHandlerTest {
 
     @Mock
     private Guild guild;
+
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Parameter parameter2;
+
+    @Mock
+    private Command command;
 
     @Mock
     private TrackedEmote trackedEmote;
@@ -60,9 +75,10 @@ public class TrackedEmoteParameterHandlerTest {
         when(contextMessage.getGuild()).thenReturn(guild);
         Emote emote = Mockito.mock(Emote.class);
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(emote);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(emote);
         when(trackedEmoteService.getFakeTrackedEmote(emote, guild)).thenReturn(trackedEmote);
-        TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
+        TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, parameter, contextMessage, command);
         Assert.assertEquals(trackedEmote, parsedEmote);
     }
 
@@ -72,9 +88,10 @@ public class TrackedEmoteParameterHandlerTest {
         when(contextMessage.getGuild()).thenReturn(guild);
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(input.getValue()).thenReturn(emoteId.toString());
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(trackedEmoteService.getFakeTrackedEmote(emoteId, guild)).thenReturn(trackedEmote);
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(null);
-        TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
+        when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(null);
+        TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, parameter, contextMessage, command);
         verify(trackedEmoteService, times(0)).getFakeTrackedEmote(any(Emote.class), eq(guild));
         Assert.assertEquals(trackedEmote, parsedEmote);
     }
@@ -83,7 +100,8 @@ public class TrackedEmoteParameterHandlerTest {
     public void testWithIllegalInput() {
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(input.getValue()).thenReturn(WRONG_FORMATTED_INPUT);
-        when(emoteParameterHandler.handle(input, iterators, Emote.class, contextMessage)).thenReturn(null);
-        testUnit.handle(input, iterators, TrackedEmote.class, contextMessage);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(null);
+        testUnit.handle(input, iterators, parameter, contextMessage, command);
     }
 }

@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -36,6 +38,12 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
     @Mock
     private Guild guild;
 
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Command command;
+
     private static final Long ROLE_ID = 111111111111111111L;
 
     @Test
@@ -52,7 +60,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
     public void testProperRoleMention() {
         oneRoleIterator();
         String input = getRoleMention();
-        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, Role.class, null);
+        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
         Assert.assertEquals(role, parsed);
     }
 
@@ -60,7 +68,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
     public void testRoleById() {
         setupMessage();
         String input = ROLE_ID.toString();
-        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
         Assert.assertEquals(role, parsed);
     }
 
@@ -69,7 +77,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(new ArrayList<>());
-        testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+        testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
     }
 
     @Test(expected = AbstractoTemplatedException.class)
@@ -78,7 +86,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         Role secondRole = Mockito.mock(Role.class);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role, secondRole));
-        testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+        testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
     }
 
     @Test
@@ -86,7 +94,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role));
-        Role returnedRole =  (Role) testUnit.handle(getPieceWithValue(input), null, Role.class, message);
+        Role returnedRole =  (Role) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
         Assert.assertEquals(role, returnedRole);
     }
 

@@ -43,7 +43,7 @@ public class LoveCalc extends AbstractConditionableCommand {
         model.setFirstPart(firstPart);
         model.setSecondPart(secondPart);
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(LOVE_CALC_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
-                .thenApply(unused -> CommandResult.fromIgnored());
+                .thenApply(unused -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -58,7 +58,6 @@ public class LoveCalc extends AbstractConditionableCommand {
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .supportsEmbedException(true)
-                .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

@@ -1,6 +1,9 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import net.dv8tion.jda.api.entities.Emote;
@@ -28,6 +31,9 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
     private EmoteService emoteService;
 
     @Mock
+    private CommandService commandService;
+
+    @Mock
     private CommandParameterIterators iterators;
 
     @Mock
@@ -38,6 +44,15 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
 
     @Mock
     private AEmote aEmote;
+
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Parameter parameter2;
+
+    @Mock
+    private Command command;
 
     @Test
     public void testSuccessfulCondition() {
@@ -52,18 +67,20 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
     @Test
     public void testProperEmoteMention() {
         UnparsedCommandParameterPiece piece = getPieceWithValue(INPUT);
-        when(emoteParameterHandler.handle(piece, iterators, Emote.class, message)).thenReturn(emote);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(emote);
         when(emoteService.getFakeEmoteFromEmote(emote)).thenReturn(aEmote);
-        AEmote parsed = (AEmote) testUnit.handle(piece, iterators, AEmote.class, message);
+        AEmote parsed = (AEmote) testUnit.handle(piece, iterators, parameter, message, command);
         Assert.assertEquals(aEmote, parsed);
     }
 
     @Test
     public void testDefaultEmoteHandling() {
         UnparsedCommandParameterPiece piece = getPieceWithValue(INPUT);
-        when(emoteParameterHandler.handle(piece, iterators, Emote.class, message)).thenReturn(null);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(null);
         when(emoteService.getFakeEmote(INPUT)).thenReturn(aEmote);
-        AEmote parsed = (AEmote) testUnit.handle(piece, iterators, AEmote.class, message);
+        AEmote parsed = (AEmote) testUnit.handle(piece, iterators, parameter, message, command);
         Assert.assertEquals(aEmote, parsed);
     }
 

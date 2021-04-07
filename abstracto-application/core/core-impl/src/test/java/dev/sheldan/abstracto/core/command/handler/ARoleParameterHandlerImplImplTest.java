@@ -1,6 +1,9 @@
 package dev.sheldan.abstracto.core.command.handler;
 
+import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -28,6 +31,9 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
     private RoleService roleService;
 
     @Mock
+    private CommandService commandService;
+
+    @Mock
     private CommandParameterIterators iterators;
 
     @Mock
@@ -38,6 +44,15 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
 
     @Mock
     private ARole aRole;
+
+    @Mock
+    private Parameter parameter;
+
+    @Mock
+    private Parameter parameter2;
+
+    @Mock
+    private Command command;
 
     @Test
     public void testSuccessfulCondition() {
@@ -52,9 +67,10 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
     @Test
     public void testProperRoleMention() {
         UnparsedCommandParameterPiece piece = getPiece();
-        when(roleParameterHandler.handle(piece, iterators, Role.class, message)).thenReturn(role);
+        when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
+        when(roleParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
-        ARole parsed = (ARole) testUnit.handle(piece, iterators, AEmote.class, message);
+        ARole parsed = (ARole) testUnit.handle(piece, iterators, parameter, message, command);
         Assert.assertEquals(aRole, parsed);
     }
 
