@@ -72,7 +72,12 @@ public class RemindServiceBean implements ReminderService {
 
     @Override
     public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Message message) {
-        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
+        return createReminderInForUser(user, remindText, remindIn, message.getChannel().getIdLong(), message.getIdLong());
+    }
+
+    @Override
+    public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Long channelId, Long messageId) {
+        AChannel channel = channelManagementService.loadChannel(channelId);
         AServerAChannelAUser aServerAChannelAUser = AServerAChannelAUser
                 .builder()
                 .user(user.getUserReference())
@@ -80,8 +85,8 @@ public class RemindServiceBean implements ReminderService {
                 .guild(user.getServerReference())
                 .channel(channel)
                 .build();
-        Instant remindAt = Instant.now().plusNanos(remindIn.toNanos());
-        Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, message.getIdLong());
+        Instant remindAt = Instant.now().plusMillis(remindIn.toMillis());
+        Reminder reminder = reminderManagementService.createReminder(aServerAChannelAUser, remindText, remindAt, messageId);
         log.info("Creating reminder for user {} in guild {} due at {}.",
                 user.getUserReference().getId(), user.getServerReference().getId(), remindAt);
 
@@ -96,7 +101,7 @@ public class RemindServiceBean implements ReminderService {
             }, remindIn.toNanos(), TimeUnit.NANOSECONDS);
         } else {
             HashMap<Object, Object> parameters = new HashMap<>();
-            parameters.put("reminderId", reminder.getId());
+            parameters.put("reminderId", reminder.getId().toString());
             JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
             String triggerKey = schedulerService.executeJobWithParametersOnce("reminderJob", "utility", jobParameters, Date.from(reminder.getTargetDate()));
             log.info("Starting scheduled job  with trigger {} to execute reminder. {}", triggerKey, reminder.getId());
