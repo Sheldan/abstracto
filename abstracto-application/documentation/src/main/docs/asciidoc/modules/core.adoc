@@ -164,6 +164,9 @@ Removing a profanity regex from a profanity group::
 Deleting a profanity group::
 * Usage: `deleteProfanityGroup <profanityGroupName>`
 * Description: Deletes the profanity group identified by `profanityGroupName` and all profanity regexes within.
+Showing the uptime of the bot::
+* Usage: `uptime`
+* Shows the uptime and start time of the bot instance.
 
 
 .What does it mean if a role is immune?
