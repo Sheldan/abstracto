@@ -295,7 +295,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     if(o.getResult() instanceof CompletableFuture) {
                         return ((CompletableFuture) o.getResult()).join();
                     } else {
-                        return o;
+                        return o.getResult();
                     }
                 }).collect(Collectors.toList());
                 List<ParseResult> parseResults = new ArrayList<>();
@@ -326,7 +326,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         List<Object> usableParameters = new ArrayList<>();
         results.forEach(parseResult -> {
             if(parseResult.getParameter().isRemainder() && !parseResult.getParameter().isListParam() && parseResult.getResult() instanceof String) {
-                if(usableParameters.isEmpty()) {
+                if(usableParameters.isEmpty() || !(usableParameters.get(usableParameters.size() -1) instanceof String)) {
                     usableParameters.add(parseResult.getResult());
                 } else {
                     int lastIndex = usableParameters.size() - 1;
