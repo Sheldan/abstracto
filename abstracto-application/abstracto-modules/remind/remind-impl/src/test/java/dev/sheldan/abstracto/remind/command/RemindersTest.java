@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.remind.command;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -37,6 +39,9 @@ public class RemindersTest {
     @Mock
     private UserInServerManagementService userInServerManagementService;
 
+    @Mock
+    private AChannel channel;
+
     @Captor
     private ArgumentCaptor<RemindersModel> modelCaptor;
 
@@ -44,7 +49,9 @@ public class RemindersTest {
     public void testExecuteCommand() {
         CommandContext context = CommandTestUtilities.getNoParameters();
         Reminder reminder = Mockito.mock(Reminder.class);
+        when(reminder.getChannel()).thenReturn(channel);
         Reminder secondReminder = Mockito.mock(Reminder.class);
+        when(secondReminder.getChannel()).thenReturn(channel);
         List<Reminder> reminders = Arrays.asList(reminder, secondReminder);
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(context.getAuthor())).thenReturn(user);
@@ -52,8 +59,8 @@ public class RemindersTest {
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(Reminders.REMINDERS_RESPONSE_TEMPLATE), modelCaptor.capture(), eq(context.getChannel()));
         RemindersModel usedModel = modelCaptor.getValue();
-        Assert.assertEquals(reminder, usedModel.getReminders().get(0));
-        Assert.assertEquals(secondReminder, usedModel.getReminders().get(1));
+        Assert.assertEquals(reminder, usedModel.getReminders().get(0).getReminder());
+        Assert.assertEquals(secondReminder, usedModel.getReminders().get(1).getReminder());
         Assert.assertEquals(reminders.size(), usedModel.getReminders().size());
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
