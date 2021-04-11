@@ -8,7 +8,9 @@ import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -59,16 +62,16 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
         if(event.getUserIdLong() == botService.getInstance().getSelfUser().getIdLong()) {
             return;
         }
+        CompletableFuture<Member> memberFuture = event.retrieveMember().submit();
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
-        asyncMessageFromCache.thenAccept(cachedMessage ->
-                cacheEntityService.getCachedReactionFromReaction(event.getReaction()).thenAccept(reaction -> {
-                self.callAddedListeners(event, cachedMessage, reaction);
-                    messageCache.putMessageInCache(cachedMessage);
-            }).exceptionally(throwable -> {
-                log.error("Failed to handle add reaction to message {} ", event.getMessageIdLong(), throwable);
-                return null;
-            })
-        ).exceptionally(throwable -> {
+        CompletableFuture<CachedReactions> reactionCacheFuture = cacheEntityService.getCachedReactionFromReaction(event.getReaction());
+        FutureUtils.toSingleFuture(Arrays.asList(asyncMessageFromCache, memberFuture, reactionCacheFuture)).thenAccept(aVoid -> {
+            CachedMessage cachedMessage = asyncMessageFromCache.join();
+            CachedReactions reaction = reactionCacheFuture.join();
+            Member member = memberFuture.join();
+            self.callAddedListeners(event, cachedMessage, reaction, member);
+            messageCache.putMessageInCache(cachedMessage);
+        }).exceptionally(throwable -> {
             log.error("Message retrieval {} from cache failed. ", event.getMessageIdLong(), throwable);
             return null;
         });
@@ -90,19 +93,19 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
+    public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction, Member member) {
         ServerUser serverUser = ServerUser.builder().serverId(cachedMessage.getServerId()).userId(event.getUserIdLong()).build();
         addReactionIfNotThere(cachedMessage, reaction, serverUser);
-        ReactionAddedModel model = getModel(event, cachedMessage, serverUser);
+        ReactionAddedModel model = getModel(event, cachedMessage, serverUser, member);
         addedListenerList.forEach(reactedAddedListener -> listenerService.executeFeatureAwareListener(reactedAddedListener, model));
     }
 
-    private ReactionAddedModel getModel(GuildMessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser userReacting) {
+    private ReactionAddedModel getModel(GuildMessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser userReacting, Member member) {
         return ReactionAddedModel
                 .builder()
                 .reaction(event.getReaction())
                 .message(cachedMessage)
-                .memberReacting(event.getMember())
+                .memberReacting(member)
                 .userReacting(userReacting)
                 .build();
     }
