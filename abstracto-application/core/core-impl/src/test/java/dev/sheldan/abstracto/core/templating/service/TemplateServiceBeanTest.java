@@ -59,6 +59,7 @@ public class TemplateServiceBeanTest {
     @Mock
     private ConfigService configService;
 
+    // requires the org.mockito.plugins.MockMaker file
     @Mock
     private Gson gson;
 

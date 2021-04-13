@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.entertainment.model;
+package dev.sheldan.abstracto.entertainment.model.command;
 
 import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import lombok.Getter;

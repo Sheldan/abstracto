@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
-import dev.sheldan.abstracto.entertainment.model.RollResponseModel;
+import dev.sheldan.abstracto.entertainment.model.command.RollResponseModel;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
 import org.junit.Assert;
 import org.junit.Test;

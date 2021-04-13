@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
-import dev.sheldan.abstracto.entertainment.model.ChooseResponseModel;
+import dev.sheldan.abstracto.entertainment.model.command.ChooseResponseModel;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

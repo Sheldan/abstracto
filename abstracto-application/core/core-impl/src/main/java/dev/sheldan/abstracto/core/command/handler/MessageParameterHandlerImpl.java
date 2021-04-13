@@ -5,15 +5,27 @@ import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.MessageParameterHandler;
+import dev.sheldan.abstracto.core.service.MessageService;
 import net.dv8tion.jda.api.entities.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class MessageParameterHandlerImpl implements MessageParameterHandler {
 
+    @Autowired
+    private MessageService messageService;
+
     @Override
-    public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return context.getReferencedMessage();
+    public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
+        return messageService.loadMessage(context.getReferencedMessage()).thenApply(message -> message);
+    }
+
+    @Override
+    public boolean async() {
+        return true;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.entertainment.model;
+package dev.sheldan.abstracto.entertainment.model.command;
 
 import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-public class RollResponseModel extends SlimUserInitiatedServerContext {
-    private Integer rolled;
+public class RouletteResponseModel extends SlimUserInitiatedServerContext {
+    private Boolean result;
 }

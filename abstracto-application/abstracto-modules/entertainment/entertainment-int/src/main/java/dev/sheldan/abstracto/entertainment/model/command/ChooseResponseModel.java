@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.entertainment.model;
+package dev.sheldan.abstracto.entertainment.model.command;
 
 import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-public class EightBallResponseModel extends SlimUserInitiatedServerContext {
-    private String chosenKey;
+public class ChooseResponseModel extends SlimUserInitiatedServerContext {
+    private String chosenValue;
 }

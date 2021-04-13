@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
-import dev.sheldan.abstracto.entertainment.model.RouletteResponseModel;
+import dev.sheldan.abstracto.entertainment.model.command.RouletteResponseModel;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
 import org.junit.Assert;
 import org.junit.Test;

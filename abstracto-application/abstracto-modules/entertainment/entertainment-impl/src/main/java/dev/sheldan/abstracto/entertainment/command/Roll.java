@@ -15,7 +15,7 @@ import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureConfig;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
-import dev.sheldan.abstracto.entertainment.model.RollResponseModel;
+import dev.sheldan.abstracto.entertainment.model.command.RollResponseModel;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

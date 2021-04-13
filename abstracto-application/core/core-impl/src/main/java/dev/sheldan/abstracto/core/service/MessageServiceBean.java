@@ -195,6 +195,11 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public CompletableFuture<Message> loadMessage(Message message) {
+        return loadMessage(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
+    }
+
+    @Override
     public MessageAction editMessage(Message message, MessageEmbed messageEmbed) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return message.editMessage(messageEmbed);

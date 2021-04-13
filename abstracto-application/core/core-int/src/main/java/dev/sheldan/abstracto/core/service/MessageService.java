@@ -34,6 +34,7 @@ public interface MessageService {
     CompletableFuture<Void> editMessageInDMChannel(User user, MessageToSend messageToSend, Long messageId);
     CompletableFuture<Message> loadMessageFromCachedMessage(CachedMessage cachedMessage);
     CompletableFuture<Message> loadMessage(Long serverId, Long channelId, Long messageId);
+    CompletableFuture<Message> loadMessage(Message message);
     MessageAction editMessage(Message message, MessageEmbed messageEmbed);
     MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed);
     AuditableRestAction<Void> deleteMessageWithAction(Message message);

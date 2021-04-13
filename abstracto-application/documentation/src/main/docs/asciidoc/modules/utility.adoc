@@ -195,3 +195,7 @@ Roll a virtual die::
 Mock the message of another user::
 * Usage: `mock <text/message>`
 * Description: Takes the `text` and prints the text with the characters with alternating upper and lower case. If no text is provided, this command requires that the command has been executed in a message which replies to another message. In this case the text to be mocked will be the content of the message which has been replied to.
+
+Add text as reactions to another message::
+* Usage: `react <message> <text>`
+* Description: Takes the `text`, converts it into unicode characters, while trying to avoid duplicates, and adds the reactions to the given `message`. If it was not possible to avoid duplicates, or the overall reactions (including already existing reactions) would go over the Discord limit, this command will show an error message, without adding any reaction. Some characters can be replaced with one unicode character, for example 'SOS'.

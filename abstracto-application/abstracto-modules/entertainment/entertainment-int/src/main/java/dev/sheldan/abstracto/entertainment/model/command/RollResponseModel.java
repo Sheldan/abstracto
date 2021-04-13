@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.entertainment.model;
+package dev.sheldan.abstracto.entertainment.model.command;
 
 import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
 import lombok.Getter;
@@ -8,7 +8,6 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-public class MockResponseModel extends SlimUserInitiatedServerContext {
-    private String originalText;
-    private String mockingText;
+public class RollResponseModel extends SlimUserInitiatedServerContext {
+    private Integer rolled;
 }
