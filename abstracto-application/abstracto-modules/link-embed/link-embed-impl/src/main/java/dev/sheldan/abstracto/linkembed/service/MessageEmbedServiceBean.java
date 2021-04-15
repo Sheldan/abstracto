@@ -143,8 +143,8 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         List<ServerChannelMessage> serverChannelMessages = embeddedMessages.stream().map(embeddedMessage ->
             ServerChannelMessage
                     .builder()
-                    .serverId(embeddedMessage.getEmbeddedServer().getId())
-                    .channelId(embeddedMessage.getEmbeddedChannel().getId())
+                    .serverId(embeddedMessage.getEmbeddingServer().getId())
+                    .channelId(embeddedMessage.getEmbeddingChannel().getId())
                     .messageId(embeddedMessage.getEmbeddingMessageId())
                     .build()
         )
