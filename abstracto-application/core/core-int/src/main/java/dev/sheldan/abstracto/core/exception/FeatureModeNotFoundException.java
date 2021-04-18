@@ -11,7 +11,11 @@ public class FeatureModeNotFoundException extends AbstractoRunTimeException impl
 
     public FeatureModeNotFoundException(String featureMode, List<String> availableModes) {
         super("Feature mode not found.");
-        this.model = FeatureModeNotFoundExceptionModel.builder().availableModes(availableModes).featureMode(featureMode).build();
+        this.model = FeatureModeNotFoundExceptionModel
+                .builder()
+                .availableModes(availableModes)
+                .featureMode(featureMode)
+                .build();
     }
 
     @Override

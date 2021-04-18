@@ -14,6 +14,7 @@ public class TrackedEmoteNotFoundException extends AbstractoRunTimeException imp
     }
 
     public TrackedEmoteNotFoundException() {
+        super("Tracked emote not found.");
     }
 
     @Override

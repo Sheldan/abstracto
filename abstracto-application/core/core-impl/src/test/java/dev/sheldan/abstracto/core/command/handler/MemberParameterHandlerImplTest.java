@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.internal.utils.concurrent.task.GatewayTask;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,28 +77,33 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         Assert.assertEquals(member, parsed.join());
     }
 
-    @Test(expected = AbstractoTemplatedException.class)
+    @Test
     public void testNotExistingMember() {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getMembersByName(input, true)).thenReturn(new ArrayList<>());
-        testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
+        GatewayTask task = new GatewayTask(CompletableFuture.completedFuture(new ArrayList()), () -> {});
+        when(guild.retrieveMembersByPrefix(input, 1)).thenReturn(task);
+        CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
+        Assert.assertTrue(future.isCompletedExceptionally());
     }
 
-    @Test(expected = AbstractoTemplatedException.class)
+    @Test
     public void testMultipleFoundMemberByName() {
         String input = "test";
         Member secondMember = Mockito.mock(Member.class);
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getMembersByName(input, true)).thenReturn(Arrays.asList(member, secondMember));
-        testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
+        GatewayTask task = new GatewayTask(CompletableFuture.completedFuture(Arrays.asList(member, secondMember)), () -> {});
+        when(guild.retrieveMembersByPrefix(input, 1)).thenReturn(task);
+        CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
+        Assert.assertTrue(future.isCompletedExceptionally());
     }
 
     @Test
     public void testFindMemberByName() {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getMembersByName(input, true)).thenReturn(Arrays.asList(member));
+        GatewayTask task = new GatewayTask(CompletableFuture.completedFuture(Arrays.asList(member)), () -> {});
+        when(guild.retrieveMembersByPrefix(input, 1)).thenReturn(task);
         CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
         Member returnedMember = (Member) future.join();
         Assert.assertFalse(future.isCompletedExceptionally());

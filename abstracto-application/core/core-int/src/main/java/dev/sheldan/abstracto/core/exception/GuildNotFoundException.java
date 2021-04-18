@@ -8,7 +8,10 @@ public class GuildNotFoundException extends AbstractoRunTimeException implements
 
     public GuildNotFoundException(Long guildId) {
         super("Guild not found");
-        this.model = GuildNotFoundExceptionModel.builder().guildId(guildId).build();
+        this.model = GuildNotFoundExceptionModel
+                .builder()
+                .guildId(guildId)
+                .build();
     }
 
     @Override

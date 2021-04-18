@@ -12,7 +12,12 @@ public class IncorrectFeatureModeException extends AbstractoRunTimeException imp
     private final IncorrectFeatureModeModel model;
 
     public IncorrectFeatureModeException(FeatureDefinition featureDefinition, List<FeatureMode> requiredModes) {
-        this.model = IncorrectFeatureModeModel.builder().featureDefinition(featureDefinition).requiredModes(requiredModes).build();
+        super("Incorrect feature mode.");
+        this.model = IncorrectFeatureModeModel
+                .builder()
+                .featureDefinition(featureDefinition)
+                .requiredModes(requiredModes)
+                .build();
     }
 
     @Override

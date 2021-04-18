@@ -107,11 +107,6 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("channelGroupCreatedListener");
     }
 
-    @Bean(name = "channelGroupDeletedExecutor")
-    public TaskExecutor channelGroupDeletedExecutor() {
-        return executorService.setupExecutorFor("channelGroupDeletedListener");
-    }
-
     @Bean(name = "serverJoinExecutor")
     public TaskExecutor serverJoinExecutor() {
         return executorService.setupExecutorFor("serverJoinListener");

@@ -16,6 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static dev.sheldan.abstracto.core.command.CommandConstants.COMMAND_CHANNEL_GROUP_KEY;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -50,14 +51,15 @@ public class ChannelGroupCommandServiceBeanTest {
 
     @Test
     public void testNoChannelGroup() {
-        when(channelGroupCommandService.getAllGroupCommandsForCommand(command)).thenReturn(new ArrayList<>());
+        when(channelGroupCommandService.getAllGroupCommandsForCommandWithType(command, COMMAND_CHANNEL_GROUP_KEY)).thenReturn(new ArrayList<>());
         Assert.assertTrue(testUnit.isCommandEnabled(command, channel));
     }
 
     @Test
     public void testOneDisabledChannelGroup() {
-        when(channelGroupCommandService.getAllGroupCommandsForCommand(command)).thenReturn(Arrays.asList(channelGroupCommand));
+        when(channelGroupCommandService.getAllGroupCommandsForCommandWithType(command, COMMAND_CHANNEL_GROUP_KEY)).thenReturn(Arrays.asList(channelGroupCommand));
         when(channelGroupCommand.getGroup()).thenReturn(channelGroup);
+        when(channelGroup.getEnabled()).thenReturn(true);
         when(channelGroup.getChannels()).thenReturn(Arrays.asList(channel));
         when(channelGroupCommand.getEnabled()).thenReturn(false);
         Assert.assertFalse(testUnit.isCommandEnabled(command, channel));
@@ -65,8 +67,9 @@ public class ChannelGroupCommandServiceBeanTest {
 
     @Test
     public void testOneEnabledChannelGroup() {
-        when(channelGroupCommandService.getAllGroupCommandsForCommand(command)).thenReturn(Arrays.asList(channelGroupCommand));
+        when(channelGroupCommandService.getAllGroupCommandsForCommandWithType(command, COMMAND_CHANNEL_GROUP_KEY)).thenReturn(Arrays.asList(channelGroupCommand));
         when(channelGroupCommand.getGroup()).thenReturn(channelGroup);
+        when(channelGroup.getEnabled()).thenReturn(true);
         when(channelGroup.getChannels()).thenReturn(Arrays.asList(channel));
         when(channelGroupCommand.getEnabled()).thenReturn(true);
         Assert.assertTrue(testUnit.isCommandEnabled(command, channel));
@@ -74,8 +77,9 @@ public class ChannelGroupCommandServiceBeanTest {
 
     @Test
     public void testDisabledInOneGroupChannelIsNotPartOf() {
-        when(channelGroupCommandService.getAllGroupCommandsForCommand(command)).thenReturn(Arrays.asList(channelGroupCommand));
+        when(channelGroupCommandService.getAllGroupCommandsForCommandWithType(command, COMMAND_CHANNEL_GROUP_KEY)).thenReturn(Arrays.asList(channelGroupCommand));
         when(channelGroupCommand.getGroup()).thenReturn(channelGroup);
+        when(channelGroup.getEnabled()).thenReturn(true);
         when(channelGroup.getChannels()).thenReturn(Arrays.asList(secondChannel));
         when(channel.getId()).thenReturn(CHANNEL_ID);
         when(secondChannel.getId()).thenReturn(CHANNEL_ID_2);

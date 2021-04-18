@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Component;
 
@@ -38,14 +39,19 @@ public class MemberParameterHandlerImpl implements MemberParameterHandler {
                 long userId = Long.parseLong(inputString);
                 return context.getGuild().retrieveMemberById(userId).submit().thenApply(member -> member);
             } else {
-                List<Member> possibleMembers = context.getGuild().getMembersByName(inputString, true);
-                if(possibleMembers.isEmpty()) {
-                    throw new AbstractoTemplatedException("No member found with name.", "no_member_found_by_name_exception");
-                }
-                if(possibleMembers.size() > 1) {
-                    throw new AbstractoTemplatedException("Multiple members found with name.", "multiple_members_found_by_name_exception");
-                }
-                return CompletableFuture.completedFuture(possibleMembers.get(0));
+                Task<List<Member>> listTask = context.getGuild().retrieveMembersByPrefix(inputString, 1);
+                CompletableFuture<Object> memberFuture = new CompletableFuture<>();
+                listTask.onSuccess(members -> {
+                    if(members.isEmpty()) {
+                        memberFuture.completeExceptionally(new AbstractoTemplatedException("No member found with name.", "no_member_found_by_name_exception"));
+                    } else if(members.size() > 1) {
+                        memberFuture.completeExceptionally(new AbstractoTemplatedException("Multiple members found with name.", "multiple_members_found_by_name_exception"));
+                    } else {
+                        memberFuture.complete(members.get(0));
+                    }
+                });
+                listTask.onError(memberFuture::completeExceptionally);
+                return memberFuture;
             }
 
         }

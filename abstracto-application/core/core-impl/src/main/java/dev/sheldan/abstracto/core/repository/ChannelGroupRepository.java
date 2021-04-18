@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface ChannelGroupRepository extends JpaRepository<AChannelGroup, Long> {
 
-    Optional<AChannelGroup> findByGroupNameAndServer(String name, AServer server);
+    Optional<AChannelGroup> findByGroupNameIgnoreCaseAndServer(String name, AServer server);
 
     Optional<AChannelGroup> findByGroupNameAndServerAndChannelGroupType_GroupTypeKey(String name, AServer server, String groupTyeKey);
 
@@ -20,7 +20,7 @@ public interface ChannelGroupRepository extends JpaRepository<AChannelGroup, Lon
 
     List<AChannelGroup> findByServer(AServer server);
 
-    boolean existsByGroupNameAndServer(String name, AServer server);
+    boolean existsByGroupNameIgnoreCaseAndServer(String name, AServer server);
 
     List<AChannelGroup> findAllByChannels(AChannel channel);
 }

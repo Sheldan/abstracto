@@ -5,6 +5,10 @@ import dev.sheldan.abstracto.core.templating.Templatable;
 
 public class YoutubeVideoNotFoundException extends AbstractoRunTimeException implements Templatable {
 
+    public YoutubeVideoNotFoundException() {
+        super("No youtube video found.");
+    }
+
     @Override
     public String getTemplateName() {
         return "webservices_youtube_video_not_found_exception";

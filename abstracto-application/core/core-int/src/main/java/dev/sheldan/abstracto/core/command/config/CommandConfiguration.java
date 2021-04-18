@@ -32,6 +32,8 @@ public class CommandConfiguration {
     private boolean templated = false;
     private HelpInfo help;
 
+    private CommandCoolDownConfig coolDownConfig;
+
     public int getNecessaryParameterCount(){
         return (int) parameters.stream().filter(parameter -> !parameter.isOptional()).count();
     }

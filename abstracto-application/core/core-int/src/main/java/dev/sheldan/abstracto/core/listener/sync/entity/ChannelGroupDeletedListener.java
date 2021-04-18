@@ -4,5 +4,5 @@ import dev.sheldan.abstracto.core.listener.AbstractoListener;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.models.listener.ChannelGroupDeletedListenerModel;
 
-public interface AsyncChannelGroupDeletedListener extends AbstractoListener<ChannelGroupDeletedListenerModel, DefaultListenerResult> {
+public interface ChannelGroupDeletedListener extends AbstractoListener<ChannelGroupDeletedListenerModel, DefaultListenerResult> {
 }

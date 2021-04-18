@@ -61,6 +61,9 @@ public class ACommandInAServer implements Serializable {
     @Column(name = "updated")
     private Instant updated;
 
+    @Column(name = "cool_down")
+    private Long coolDown;
+
 
 }
 

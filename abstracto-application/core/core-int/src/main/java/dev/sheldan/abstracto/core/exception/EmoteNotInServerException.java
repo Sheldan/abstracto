@@ -9,7 +9,10 @@ public class EmoteNotInServerException extends AbstractoRunTimeException impleme
 
     public EmoteNotInServerException(Long emoteId) {
         super("Emote not available in server");
-        this.model = EmoteNotInServerExceptionModel.builder().emoteId(emoteId).build();
+        this.model = EmoteNotInServerExceptionModel
+                .builder()
+                .emoteId(emoteId)
+                .build();
     }
 
     @Override

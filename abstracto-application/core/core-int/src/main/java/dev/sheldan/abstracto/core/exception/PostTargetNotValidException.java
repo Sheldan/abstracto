@@ -11,7 +11,11 @@ public class PostTargetNotValidException extends AbstractoRunTimeException imple
 
     public PostTargetNotValidException(String key, List<String> available) {
         super("Given post target was not in the list of valid post targets");
-        this.model = PostTargetNotValidExceptionModel.builder().availableTargets(available).postTargetKey(key).build();
+        this.model = PostTargetNotValidExceptionModel
+                .builder()
+                .availableTargets(available)
+                .postTargetKey(key)
+                .build();
     }
 
     @Override

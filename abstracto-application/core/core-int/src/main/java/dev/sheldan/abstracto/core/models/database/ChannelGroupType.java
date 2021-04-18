@@ -28,4 +28,10 @@ public class ChannelGroupType {
 
     @Column(name = "updated")
     private Instant updated;
+
+    @Column(name = "allows_channel_in_multiple")
+    private Boolean allowsChannelsInMultiple;
+
+    @Column(name = "allows_commands_in_multiple")
+    private Boolean allowsCommandsInMultiple;
 }

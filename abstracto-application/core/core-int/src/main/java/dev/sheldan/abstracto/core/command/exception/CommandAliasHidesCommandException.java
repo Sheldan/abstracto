@@ -9,6 +9,7 @@ public class CommandAliasHidesCommandException extends AbstractoRunTimeException
     private final CommandAliasHidesCommandModel model;
 
     public CommandAliasHidesCommandException(String existingCommand) {
+        super("Command alias hides existing command");
         this.model = CommandAliasHidesCommandModel
                 .builder()
                 .existingCommand(existingCommand)

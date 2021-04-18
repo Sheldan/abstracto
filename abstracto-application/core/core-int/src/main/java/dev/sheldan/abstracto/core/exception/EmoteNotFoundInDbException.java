@@ -9,7 +9,10 @@ public class EmoteNotFoundInDbException extends AbstractoRunTimeException implem
 
     public EmoteNotFoundInDbException(Integer emoteId) {
         super("Emote not found in database");
-        this.model = EmoteNotFoundInDbExceptionModel.builder().emoteId(emoteId).build();
+        this.model = EmoteNotFoundInDbExceptionModel
+                .builder()
+                .emoteId(emoteId)
+                .build();
     }
 
     @Override

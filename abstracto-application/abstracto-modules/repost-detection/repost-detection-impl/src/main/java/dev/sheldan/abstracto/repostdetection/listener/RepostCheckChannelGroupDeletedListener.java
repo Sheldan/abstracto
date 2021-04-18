@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.repostdetection.listener;
 
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
-import dev.sheldan.abstracto.core.listener.sync.entity.AsyncChannelGroupDeletedListener;
+import dev.sheldan.abstracto.core.listener.sync.entity.ChannelGroupDeletedListener;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.listener.ChannelGroupDeletedListenerModel;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RepostCheckAsyncChannelGroupDeletedListener implements AsyncChannelGroupDeletedListener {
+public class RepostCheckChannelGroupDeletedListener implements ChannelGroupDeletedListener {
 
     @Autowired
     private RepostCheckChannelGroupManagement checkChannelGroupManagement;

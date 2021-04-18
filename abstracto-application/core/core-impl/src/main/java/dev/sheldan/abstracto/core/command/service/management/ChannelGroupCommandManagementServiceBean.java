@@ -1,8 +1,8 @@
 package dev.sheldan.abstracto.core.command.service.management;
 
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundInGroupException;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.repository.ChannelGroupCommandRepository;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,23 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
 
         groupCommand.setEnabled(enabled);
         log.debug("Setting command {} enabled in group {} to {}.", command.getName(), group.getId(), enabled);
-        groupCommandRepository.save(groupCommand);
+    }
+
+    @Override
+    public void addCommandToGroup(ACommand command, AChannelGroup group) {
+        Optional<AChannelGroupCommand> groupCommandOptional = groupCommandRepository.findByCommandAndGroup(command, group);
+        if(!groupCommandOptional.isPresent()) {
+            createCommandInGroup(command, group);
+        }
+    }
+
+    @Override
+    public void removeCommandFromGroup(ACommand command, AChannelGroup group) {
+        Optional<AChannelGroupCommand> groupCommandOptional = groupCommandRepository.findByCommandAndGroup(command, group);
+        if(!groupCommandOptional.isPresent()) {
+            throw new CommandNotFoundInGroupException();
+        }
+        groupCommandOptional.ifPresent(channelGroupCommand -> groupCommandRepository.delete(channelGroupCommand));
     }
 
     @Override
@@ -36,7 +52,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
                 .command(command)
                 .server(group.getServer())
                 .group(group)
-                .enabled(false)
+                .enabled(true)
                 .build();
 
         log.info("Creating command {} in group {}.", command.getName(), group.getId());
@@ -46,7 +62,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
 
     @Override
     public AChannelGroupCommand getChannelGroupCommand(ACommand command, AChannelGroup group) {
-        return groupCommandRepository.findByCommandAndGroup(command, group).orElseThrow(() -> new AbstractoRunTimeException("Command not found in group."));
+        return groupCommandRepository.findByCommandAndGroup(command, group).orElseThrow(CommandNotFoundInGroupException::new);
     }
 
     @Override
@@ -54,5 +70,14 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
         return groupCommandRepository.findByCommand(command);
     }
 
+    @Override
+    public List<AChannelGroupCommand> getAllGroupCommandsForCommandInGroups(ACommand command, List<AChannelGroup> groups) {
+        return groupCommandRepository.findByCommandAndGroupIn(command, groups);
+    }
+
+    @Override
+    public List<AChannelGroupCommand> getAllGroupCommandsForCommandWithType(ACommand command, String channelGroupType) {
+        return groupCommandRepository.findByCommandAndGroup_ChannelGroupType_GroupTypeKey(command, channelGroupType);
+    }
 
 }

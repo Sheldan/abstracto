@@ -9,6 +9,7 @@ public class YoutubeAPIException extends AbstractoRunTimeException implements Te
     private final YoutubeAPIExceptionModel model;
 
     public YoutubeAPIException(Throwable throwable) {
+        super("Youtube api exception.");
         this.model = YoutubeAPIExceptionModel
                 .builder()
                 .exception(throwable)

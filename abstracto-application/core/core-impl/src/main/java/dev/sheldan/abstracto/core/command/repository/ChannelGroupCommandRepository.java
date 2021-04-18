@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface ChannelGroupCommandRepository extends JpaRepository<AChannelGroupCommand, Long> {
 
     Optional<AChannelGroupCommand> findByCommandAndGroup(ACommand command, AChannelGroup group);
+    List<AChannelGroupCommand> findByCommandAndGroupIn(ACommand command, List<AChannelGroup> groups);
 
     List<AChannelGroupCommand> findByCommand(ACommand command);
+    List<AChannelGroupCommand> findByCommandAndGroup_ChannelGroupType_GroupTypeKey(ACommand command, String groupType);
 }

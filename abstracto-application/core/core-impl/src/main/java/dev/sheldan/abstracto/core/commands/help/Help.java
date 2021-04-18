@@ -8,16 +8,14 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
-import dev.sheldan.abstracto.core.command.service.CommandInServerAliasService;
-import dev.sheldan.abstracto.core.command.service.CommandRegistry;
-import dev.sheldan.abstracto.core.command.service.CommandService;
-import dev.sheldan.abstracto.core.command.service.ModuleRegistry;
+import dev.sheldan.abstracto.core.command.service.*;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.models.ServerIdChannelId;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpCommandDetailsModel;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleDetailsModel;
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOverviewModel;
@@ -31,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -69,6 +68,9 @@ public class Help implements Command {
 
     @Autowired
     private CommandInServerAliasService commandInServerAliasService;
+
+    @Autowired
+    private CommandCoolDownService commandCoolDownService;
 
     public static final String HELP_COMMAND_EXECUTED_METRIC = "help.executions";
     public static final String CATEGORY = "category";
@@ -133,12 +135,20 @@ public class Help implements Command {
                 if(commandOptional.isPresent()) {
                     metricService.incrementCounter(HELP_COMMAND_COMMAND_METRIC);
                     Command command = commandOptional.get();
+                    ServerIdChannelId contextIds = ServerIdChannelId
+                            .builder()
+                            .channelId(commandContext.getChannel().getIdLong())
+                            .serverId(commandContext.getGuild().getIdLong())
+                            .build();
+
                     log.debug("Displaying help for command {}.", command.getConfiguration().getName());
                     ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
                     List<String> aliases = commandInServerAliasService.getAliasesForCommand(commandContext.getGuild().getIdLong(), command.getConfiguration().getName());
                     ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getGuild().getIdLong());
                     HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
                     model.setServerSpecificAliases(aliases);
+                    CommandCoolDownConfig coolDownConfig = getCoolDownConfig(command, contextIds);
+                    model.setCooldowns(coolDownConfig);
                     if(Boolean.TRUE.equals(aCommandInAServer.getRestricted())) {
                         model.setImmuneRoles(roleService.getRolesFromGuild(aCommandInAServer.getImmuneRoles()));
                         model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
@@ -155,6 +165,24 @@ public class Help implements Command {
                 }
             }
         }
+    }
+
+    private CommandCoolDownConfig getCoolDownConfig(Command command, ServerIdChannelId contextIds) {
+        Duration serverCooldown = commandCoolDownService.getServerCoolDownForCommand(command, contextIds.getServerId());
+        Duration channelCooldown = commandCoolDownService.getChannelGroupCoolDownForCommand(command, contextIds);
+        Duration memberCooldown = commandCoolDownService.getMemberCoolDownForCommand(command, contextIds);
+        boolean hasMemberCooldown = !memberCooldown.equals(Duration.ZERO);
+        boolean hasServerCoolDown = !serverCooldown.equals(Duration.ZERO);
+        boolean hasChannelCoolDown = !channelCooldown.equals(Duration.ZERO);
+        if(!hasMemberCooldown && !hasServerCoolDown && !hasChannelCoolDown) {
+            return null;
+        }
+        return CommandCoolDownConfig
+                .builder()
+                .memberCoolDown(hasMemberCooldown ? memberCooldown : null)
+                .serverCoolDown(hasServerCoolDown ? serverCooldown: null)
+                .channelCoolDown(hasChannelCoolDown ? channelCooldown: null)
+                .build();
     }
 
     private CompletableFuture<CommandResult> displayHelpOverview(CommandContext commandContext) {

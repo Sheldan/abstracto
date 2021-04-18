@@ -9,7 +9,10 @@ public class PostTargetNotFoundException extends AbstractoRunTimeException imple
 
     public PostTargetNotFoundException(String key) {
         super("Post target not found");
-        this.model = PostTargetNotFoundExceptionModel.builder().postTargetKey(key).build();
+        this.model = PostTargetNotFoundExceptionModel
+                .builder()
+                .postTargetKey(key)
+                .build();
     }
 
     @Override

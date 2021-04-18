@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+import static dev.sheldan.abstracto.core.command.CommandConstants.COMMAND_CHANNEL_GROUP_KEY;
+
 @Component
 @Slf4j
 public class ChannelGroupCommandServiceBean implements ChannelGroupCommandService {
@@ -24,12 +26,17 @@ public class ChannelGroupCommandServiceBean implements ChannelGroupCommandServic
 
     @Override
     public Boolean isCommandEnabled(ACommand command, AChannel channel) {
-        List<AChannelGroupCommand> allChannelGroupsOfCommand = channelGroupCommandService.getAllGroupCommandsForCommand(command);
+        List<AChannelGroupCommand> allChannelGroupsOfCommand =
+                channelGroupCommandService.getAllGroupCommandsForCommandWithType(command, COMMAND_CHANNEL_GROUP_KEY);
         for (AChannelGroupCommand aChannelGroupCommand : allChannelGroupsOfCommand) {
+            if(!aChannelGroupCommand.getGroup().getEnabled()) {
+                continue;
+            }
             Optional<AChannel> channelInGroup = aChannelGroupCommand.getGroup()
                     .getChannels().stream().filter(innerChannel -> innerChannel.getId().equals(channel.getId())).findAny();
             if (channelInGroup.isPresent() && !aChannelGroupCommand.getEnabled()) {
-                log.debug("Command {} is disabled because the channel is part of group {} in server.", command.getName(), aChannelGroupCommand.getGroup().getId());
+                log.debug("Command {} is disabled because the channel is part of group {} in server.", command.getName(),
+                        aChannelGroupCommand.getGroup().getId());
                 return false;
             }
         }

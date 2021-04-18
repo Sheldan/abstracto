@@ -8,8 +8,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.service.CommandDisabledService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,21 +20,21 @@ import java.util.List;
 public class DisableCommand extends AbstractConditionableCommand {
 
     @Autowired
-    private ChannelGroupService channelGroupService;
+    private CommandDisabledService disableCommandInChannelGroup;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String commandName = (String) commandContext.getParameters().getParameters().get(0);
         String channelGroupName = (String) commandContext.getParameters().getParameters().get(1);
-        channelGroupService.disableCommandInChannelGroup(commandName, channelGroupName, commandContext.getGuild().getIdLong());
+        disableCommandInChannelGroup.disableCommandInChannelGroup(commandName, channelGroupName, commandContext.getGuild().getIdLong());
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelGroupName = Parameter.builder().name("commandName").type(String.class).templated(true).build();
-        Parameter channelToAdd = Parameter.builder().name("channelGroupName").type(String.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(channelGroupName, channelToAdd);
+        Parameter commandName = Parameter.builder().name("commandName").type(String.class).templated(true).build();
+        Parameter channelGroupName = Parameter.builder().name("channelGroupName").type(String.class).templated(true).build();
+        List<Parameter> parameters = Arrays.asList(commandName, channelGroupName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("disableCommand")

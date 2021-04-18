@@ -9,7 +9,11 @@ public class CategoryNotFoundException extends AbstractoRunTimeException impleme
 
     public CategoryNotFoundException(Long categoryId, Long guildId) {
         super("Category not found");
-        this.model = CategoryNotFoundExceptionModel.builder().categoryId(categoryId).guildId(guildId).build();
+        this.model = CategoryNotFoundExceptionModel
+                .builder()
+                .categoryId(categoryId)
+                .guildId(guildId)
+                .build();
     }
 
     @Override

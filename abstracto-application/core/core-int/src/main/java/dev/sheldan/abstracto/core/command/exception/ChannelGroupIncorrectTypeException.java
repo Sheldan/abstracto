@@ -14,7 +14,7 @@ public class ChannelGroupIncorrectTypeException extends AbstractoRunTimeExceptio
     }
     @Override
     public String getTemplateName() {
-        return "channel_group_not_found_exception";
+        return "channel_group_incorrect_type_exception";
     }
 
     @Override

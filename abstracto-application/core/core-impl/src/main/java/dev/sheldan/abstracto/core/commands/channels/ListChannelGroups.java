@@ -10,22 +10,18 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
-import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
 import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsModel;
+import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class ListChannelGroups extends AbstractConditionableCommand {
@@ -42,39 +38,18 @@ public class ListChannelGroups extends AbstractConditionableCommand {
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private ChannelGroupService channelGroupService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
         List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
         ListChannelGroupsModel template = (ListChannelGroupsModel) ContextConverter.fromCommandContext(commandContext, ListChannelGroupsModel.class);
-        template.setGroups(convertAChannelGroupToChannelGroupChannel(channelGroups));
+        template.setGroups(channelGroupService.convertAChannelGroupToChannelGroupChannel(channelGroups));
         MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template, commandContext.getGuild().getIdLong());
         channelService.sendMessageToSendToChannel(response, commandContext.getChannel());
         return CommandResult.fromIgnored();
-    }
-
-    private List<ChannelGroupModel> convertAChannelGroupToChannelGroupChannel(List<AChannelGroup> channelGroups) {
-        List<ChannelGroupModel> converted = new ArrayList<>();
-        channelGroups.forEach(group -> {
-            List<ChannelGroupChannelModel> convertedChannels = new ArrayList<>();
-            group.getChannels().forEach(channel -> {
-                Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
-                ChannelGroupChannelModel convertedChannel = ChannelGroupChannelModel
-                        .builder()
-                        .channel(channel)
-                        .discordChannel(textChannelInGuild.orElse(null))
-                        .build();
-                convertedChannels.add(convertedChannel);
-            });
-            ChannelGroupModel channelGroup = ChannelGroupModel
-                    .builder()
-                    .name(group.getGroupName())
-                    .typeKey(group.getChannelGroupType().getGroupTypeKey())
-                    .channels(convertedChannels)
-                    .build();
-            converted.add(channelGroup);
-        });
-        return converted;
     }
 
     @Override

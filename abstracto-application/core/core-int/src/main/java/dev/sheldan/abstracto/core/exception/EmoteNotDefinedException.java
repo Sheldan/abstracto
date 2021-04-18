@@ -9,7 +9,10 @@ public class EmoteNotDefinedException extends AbstractoRunTimeException implemen
 
     public EmoteNotDefinedException(String key) {
         super(String.format("Emote %s not defined", key));
-        this.model = EmoteNotDefinedExceptionModel.builder().emoteKey(key).build();
+        this.model = EmoteNotDefinedExceptionModel
+                .builder()
+                .emoteKey(key)
+                .build();
     }
 
     @Override

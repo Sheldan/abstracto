@@ -33,7 +33,7 @@ public class AChannelGroup implements Serializable {
     @JoinColumn(name = "group_type_id")
     private ChannelGroupType channelGroupType;
 
-    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<AChannelGroupCommand> channelGroupCommands;
 
     @Column(name = "created")
@@ -48,6 +48,9 @@ public class AChannelGroup implements Serializable {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "channel_id"))
     private List<AChannel> channels;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
 
 
 }

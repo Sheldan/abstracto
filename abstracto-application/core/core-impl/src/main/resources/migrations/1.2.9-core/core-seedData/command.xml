@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+    <property name="coreFeature" value="(SELECT id FROM feature WHERE key = 'core')"/>
+    <property name="configModule" value="(SELECT id FROM module WHERE name = 'config')"/>
+    <property name="channelsModule" value="(SELECT id FROM module WHERE name = 'channels')"/>
+    <changeSet author="Sheldan" id="cool_down-commands" >
+        <insert tableName="command">
+            <column name="name" value="commandCoolDownChannelGroup"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="commandCoolDownServer"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="addCommandToChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeCommandFromChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="clearCommandCoolDowns"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="enableChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="disableChannelGroup"/>
+            <column name="module_id" valueComputed="${channelsModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

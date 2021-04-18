@@ -5,23 +5,29 @@ import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.ChannelGroupCommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.AChannelGroup;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
+import dev.sheldan.abstracto.core.exception.ChannelInMultipleChannelGroupsException;
+import dev.sheldan.abstracto.core.exception.CommandInMultipleChannelGroupsException;
+import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.provider.ChannelGroupInformation;
+import dev.sheldan.abstracto.core.models.provider.ChannelGroupInformationRequest;
+import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupChannelModel;
+import dev.sheldan.abstracto.core.models.template.commands.ChannelGroupModel;
+import dev.sheldan.abstracto.core.provider.ChannelGroupInformationProvider;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dev.sheldan.abstracto.core.command.CommandConstants.COMMAND_CHANNEL_GROUP_KEY;
-
 @Component
+@Slf4j
 public class ChannelGroupServiceBean implements ChannelGroupService {
 
     @Autowired
@@ -39,6 +45,11 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private ChannelService channelService;
+
+    @Autowired
+    private List<ChannelGroupInformationProvider> channelGroupInformationProviders;
 
     @Override
     public AChannelGroup createChannelGroup(String name, Long serverId, ChannelGroupType channelGroupType) {
@@ -70,6 +81,12 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         if(channelGroup == null) {
             throw new ChannelGroupNotFoundException(channelGroupName, channelGroupManagementService.getAllAvailableAsString(server));
         }
+        if(!channelGroup.getChannelGroupType().getAllowsChannelsInMultiple()) {
+            List<AChannelGroup> existingGroups = getChannelGroupsOfChannelWithType(channel, channelGroup.getChannelGroupType().getGroupTypeKey());
+            if(!existingGroups.isEmpty()) {
+                throw new ChannelInMultipleChannelGroupsException(existingGroups.get(0).getGroupName());
+            }
+        }
         channelGroupManagementService.addChannelToChannelGroup(channelGroup, channel);
     }
 
@@ -95,25 +112,50 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     }
 
     @Override
-    public void disableCommandInChannelGroup(String commandName, String channelGroupName, Long serverId) {
+    public void addCommandToChannelGroup(String commandName, String channelGroupName, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServerAndType(channelGroupName, server, COMMAND_CHANNEL_GROUP_KEY);
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
             throw new CommandNotFoundException();
         }
-        channelGroupCommandManagementService.setCommandInGroupTo(command, channelGroup, false);
+        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
+        if(!channelGroup.getChannelGroupType().getAllowsCommandsInMultiple()) {
+            List<AChannelGroupCommand> existingChannelGroupCommands = channelGroupCommandManagementService
+                    .getAllGroupCommandsForCommandWithType(command, channelGroup.getChannelGroupType().getGroupTypeKey());
+            if(!existingChannelGroupCommands.isEmpty()) {
+                throw new CommandInMultipleChannelGroupsException(existingChannelGroupCommands.get(0).getGroup().getGroupName());
+            }
+        }
+        channelGroupCommandManagementService.addCommandToGroup(command, channelGroup);
+        log.info("Adding command {} to channel group {}.", command.getId(), channelGroup.getId());
     }
 
     @Override
-    public void enableCommandInChannelGroup(String commandName, String channelGroupName, Long serverId) {
+    public void removeCommandFromChannelGroup(String commandName, String channelGroupName, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServerAndType(channelGroupName, server, COMMAND_CHANNEL_GROUP_KEY);
         ACommand command = commandManagementService.findCommandByName(commandName);
         if(command == null) {
             throw new CommandNotFoundException();
         }
-        channelGroupCommandManagementService.setCommandInGroupTo(command, channelGroup, true);
+        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
+        channelGroupCommandManagementService.removeCommandFromGroup(command, channelGroup);
+        log.info("Removing command {} from channel group {}.", command.getId(), channelGroup.getId());
+    }
+
+    @Override
+    public void disableChannelGroup(String channelGroupName, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
+        log.info("Disabling channel group {} in server {}.", channelGroup.getId(), serverId);
+        channelGroup.setEnabled(false);
+    }
+
+    @Override
+    public void enableChannelGroup(String channelGroupName, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        AChannelGroup channelGroup = channelGroupManagementService.findByNameAndServer(channelGroupName, server);
+        log.info("Enabling channel group {} in server {}.", channelGroup.getId(), serverId);
+        channelGroup.setEnabled(true);
     }
 
     @Override
@@ -129,5 +171,49 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
                 .stream()
                 .filter(aChannelGroup -> aChannelGroup.getChannelGroupType().getGroupTypeKey().equals(groupTypeKey))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ChannelGroupModel> convertAChannelGroupToChannelGroupChannel(List<AChannelGroup> channelGroups) {
+        List<ChannelGroupModel> converted = new ArrayList<>();
+        channelGroups.forEach(group -> {
+            List<ChannelGroupChannelModel> convertedChannels = new ArrayList<>();
+            group.getChannels().forEach(channel -> {
+                Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
+                ChannelGroupChannelModel convertedChannel = ChannelGroupChannelModel
+                        .builder()
+                        .channel(channel)
+                        .discordChannel(textChannelInGuild.orElse(null))
+                        .build();
+                convertedChannels.add(convertedChannel);
+            });
+            ChannelGroupModel channelGroup = ChannelGroupModel
+                    .builder()
+                    .name(group.getGroupName())
+                    .typeKey(group.getChannelGroupType().getGroupTypeKey())
+                    .channels(convertedChannels)
+                    .enabled(group.getEnabled())
+                    .channelGroupInformation(getAdditionalInformation(group))
+                    .build();
+            converted.add(channelGroup);
+        });
+        return converted;
+    }
+
+    private ChannelGroupInformation getAdditionalInformation(AChannelGroup channelGroup) {
+        if(channelGroupInformationProviders == null) {
+            return null;
+        }
+        ChannelGroupInformationRequest request = ChannelGroupInformationRequest
+                .builder()
+                .channelGroupId(channelGroup.getId())
+                .channelGroupType(channelGroup.getChannelGroupType().getGroupTypeKey())
+                .build();
+        for (ChannelGroupInformationProvider provider : channelGroupInformationProviders) {
+            if(provider.handlesRequest(request)) {
+                return provider.retrieveInformation(request);
+            }
+        }
+        return null;
     }
 }

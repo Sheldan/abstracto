@@ -10,7 +10,10 @@ public class ConfiguredEmoteNotUsableException extends AbstractoRunTimeException
 
     public ConfiguredEmoteNotUsableException(AEmote emote) {
         super("Emote was configured in database, but is not usable by the bot anymore.");
-        this.model = EmoteConfiguredButNotUsableExceptionModel.builder().emote(emote).build();
+        this.model = EmoteConfiguredButNotUsableExceptionModel
+                .builder()
+                .emote(emote)
+                .build();
     }
 
     @Override

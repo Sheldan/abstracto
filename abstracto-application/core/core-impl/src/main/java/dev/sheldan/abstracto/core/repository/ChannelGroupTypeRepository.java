@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ChannelGroupTypeRepository extends JpaRepository<ChannelGroupType, Integer> {
-    Optional<ChannelGroupType> findByGroupTypeKey(String key);
+    Optional<ChannelGroupType> findByGroupTypeKeyIgnoreCase(String key);
 }

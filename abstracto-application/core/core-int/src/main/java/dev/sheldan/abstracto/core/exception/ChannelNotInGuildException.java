@@ -9,7 +9,10 @@ public class ChannelNotInGuildException extends AbstractoRunTimeException implem
 
     public ChannelNotInGuildException(Long channelId) {
         super("Channel not found in guild");
-        this.model = ChannelNotFoundExceptionModel.builder().channelId(channelId).build();
+        this.model = ChannelNotFoundExceptionModel
+                .builder()
+                .channelId(channelId)
+                .build();
     }
 
     @Override

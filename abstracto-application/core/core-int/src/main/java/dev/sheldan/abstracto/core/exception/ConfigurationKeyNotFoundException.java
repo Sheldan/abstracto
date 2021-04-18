@@ -9,7 +9,10 @@ public class ConfigurationKeyNotFoundException extends AbstractoRunTimeException
 
     public ConfigurationKeyNotFoundException(String key) {
         super("Configuration key not found");
-        this.model = ConfigurationKeyNotFoundExceptionModel.builder().key(key).build();
+        this.model = ConfigurationKeyNotFoundExceptionModel
+                .builder()
+                .key(key)
+                .build();
     }
 
     @Override

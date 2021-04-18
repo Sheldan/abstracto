@@ -11,7 +11,11 @@ public class EmoteNotFoundException extends AbstractoRunTimeException implements
 
     public EmoteNotFoundException(String key, List<String> availableEmotes) {
         super("Emote not found");
-        this.model = EmoteNotFoundExceptionModel.builder().emoteKey(key).available(availableEmotes).build();
+        this.model = EmoteNotFoundExceptionModel
+                .builder()
+                .emoteKey(key)
+                .available(availableEmotes)
+                .build();
     }
 
     @Override

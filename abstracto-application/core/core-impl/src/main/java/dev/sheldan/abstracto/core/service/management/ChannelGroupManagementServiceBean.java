@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.command.exception.*;
 import dev.sheldan.abstracto.core.listener.async.entity.AsyncChannelGroupCreatedListenerManager;
-import dev.sheldan.abstracto.core.listener.async.entity.AsyncChannelGroupDeletedListenerManager;
+import dev.sheldan.abstracto.core.listener.sync.entity.SyncChannelGroupDeletedListenerManager;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -31,7 +31,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private AsyncChannelGroupDeletedListenerManager deletedListenerManager;
+    private SyncChannelGroupDeletedListenerManager deletedListenerManager;
 
     @Autowired
     private AsyncChannelGroupCreatedListenerManager createdListenerManager;
@@ -41,7 +41,6 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
 
     @Override
     public AChannelGroup createChannelGroup(String name, AServer server, ChannelGroupType channelGroupType) {
-        name = name.toLowerCase();
         if(doesChannelGroupExist(name, server)) {
             throw new ChannelGroupExistsException(name);
         }
@@ -50,6 +49,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
                 .groupName(name)
                 .channelGroupType(channelGroupType)
                 .server(server)
+                .enabled(true)
                 .build();
         log.info("Creating new channel group in server {}.", server.getId());
         channelGroup = channelGroupRepository.save(channelGroup);
@@ -74,7 +74,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
 
     @Override
     public boolean doesChannelGroupExist(String name, AServer server) {
-        return channelGroupRepository.existsByGroupNameAndServer(name, server);
+        return channelGroupRepository.existsByGroupNameIgnoreCaseAndServer(name, server);
     }
 
     @Override
@@ -85,9 +85,11 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
             throw new ChannelGroupNotFoundException(name, getAllAvailableAsString(server));
         }
         log.info("Deleting channel group {} in server {}.", existing.getId(), server.getId());
-        channelGroupRepository.delete(existing);
+        // we need to execute the _sync_ listeners before actually deleting it, in order to allow others to delete their instance
+        // this is a strong binding to listeners, might need to remove the direct connection at some point
         ChannelGroupDeletedListenerModel model = getDeletionModel(existing);
-        applicationEventPublisher.publishEvent(model);
+        deletedListenerManager.executeListener(model);
+        channelGroupRepository.delete(existing);
     }
 
     @Override
@@ -126,13 +128,13 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
     @Override
     public AChannelGroup findByNameAndServer(String name, AServer server) {
         String lowerCaseName = name.toLowerCase();
-        return channelGroupRepository.findByGroupNameAndServer(lowerCaseName, server)
+        return channelGroupRepository.findByGroupNameIgnoreCaseAndServer(lowerCaseName, server)
                 .orElseThrow(() -> new ChannelGroupNotFoundException(name, getAllAvailableAsString(server)));
     }
 
     @Override
     public Optional<AChannelGroup> findByNameAndServerOptional(String name, AServer server) {
-        return channelGroupRepository.findByGroupNameAndServer(name, server);
+        return channelGroupRepository.findByGroupNameIgnoreCaseAndServer(name, server);
     }
 
     @Override
@@ -140,7 +142,7 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         String lowerName = name.toLowerCase();
         Optional<AChannelGroup> channelOptional = channelGroupRepository.findByGroupNameAndServerAndChannelGroupType_GroupTypeKey(lowerName, server, expectedType);
         return channelOptional.orElseThrow(() -> {
-            if(channelGroupRepository.existsByGroupNameAndServer(lowerName, server)) {
+            if(channelGroupRepository.existsByGroupNameIgnoreCaseAndServer(lowerName, server)) {
                 return new ChannelGroupIncorrectTypeException(name.toLowerCase(), expectedType);
             } else {
                 List<String> channelGroupNames = extractChannelGroupNames(findAllInServerWithType(server.getId(), expectedType));

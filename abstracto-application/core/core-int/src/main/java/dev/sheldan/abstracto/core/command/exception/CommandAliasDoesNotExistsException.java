@@ -2,10 +2,12 @@ package dev.sheldan.abstracto.core.command.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 public class CommandAliasDoesNotExistsException extends AbstractoRunTimeException implements Templatable {
+
+    public CommandAliasDoesNotExistsException() {
+        super("Command Alias does not exist.");
+    }
 
     @Override
     public String getTemplateName() {

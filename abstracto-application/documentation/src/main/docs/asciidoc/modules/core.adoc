@@ -167,7 +167,28 @@ Deleting a profanity group::
 Showing the uptime of the bot::
 * Usage: `uptime`
 * Shows the uptime and start time of the bot instance.
-
+Adding a command to a channel group::
+* Usage: `addCommandToChannelGroup <channelGroupName> <commandName>`
+* Description: Adds the command `commandName` to the channel group `channelGroupName`. This can be used to add the command to a channel group which can disable the command or set a cooldown on the command.
+Disabling a channel group::
+* Usage: `disableChannelGroup <channelGroupName>`
+* Description: Disables the effect the channel group `channelGroupName` has.
+Enabling a channel group::
+* Usage: `enableChannelGroup <channelGroupName>`
+* Description: Enables the effect the channel group `channelGroupName` has.
+Removing a command from a channel group::
+* Usage: `removeCommandFromChannelGroup <channelGroupName> <commandName>`
+* Description: Removes the command `commandName` from the channel group `channelGroupName`. This can be used to remove the command from a channel group which can enable the command or remove a cooldown on the command.
+Clearing cooldowns::
+* Usage: `clearCommandCoolDowns`
+* Description: Resets all currently active cooldowns of the current server, so every command can be used again.
+Setting channel and member cooldowns in a channel group::
+* Usage: `commandCoolDownChannelGroup <channelGroupName> <channelDuration> <memberDuration>`
+* Description: Sets the cooldown of the commands of the channel group `channelGroupName` to `channelDuration` for the channel group
+and `memberDuration` for each member.
+Setting the global cooldown for a command::
+* Usage: `commandCoolDownServer <command> <duration>`
+* Description: Sets the cooldown for command `command` to `duration` for the whole server.
 
 .What does it mean if a role is immune?
 A command can take a member as a target, for example `ban`. If a role is considered immune, this means, if the member which is the target of the command has the given role, this command will fail. Not all commands support this feature, but only the following:
@@ -189,3 +210,8 @@ If the feature mode is enabled, the messages from the thread are logged in the r
 .What is a profanity group?
 A profanity group is just a container for various regexes. They are grouped together in order to be identified together and kept organized.
 Each profanity regex within that group has another identified. For example a regex group handles the word 'test'. Then a profanity regex is for all lower cases, this regex can be named 'lower', and the regex group is then named 'test'.
+
+.How do multiple cooldowns interact
+If there are multiple cooldowns on a command active, the longest cooldown will decide the cool down.
+A channel cannot be in multiple cool down channel groups and this is actively enforced by the command.
+If a cooldown is active, an error message is shown with the duration after which the command can be used again.

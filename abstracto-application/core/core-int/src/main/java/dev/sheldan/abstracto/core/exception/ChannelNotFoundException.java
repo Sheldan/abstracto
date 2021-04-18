@@ -9,7 +9,10 @@ public class ChannelNotFoundException extends AbstractoRunTimeException implemen
 
     public ChannelNotFoundException(Long channelId) {
         super("Channel not found in database");
-        this.model = ChannelNotFoundExceptionModel.builder().channelId(channelId).build();
+        this.model = ChannelNotFoundExceptionModel
+                .builder()
+                .channelId(channelId)
+                .build();
     }
 
     @Override

@@ -9,6 +9,7 @@ public class CommandAliasAlreadyExistsException extends AbstractoRunTimeExceptio
     private final CommandAliasAlreadyExistsModel model;
 
     public CommandAliasAlreadyExistsException(String existingCommand) {
+        super("Command alias already exists.");
         this.model = CommandAliasAlreadyExistsModel
                 .builder()
                 .existingCommand(existingCommand)

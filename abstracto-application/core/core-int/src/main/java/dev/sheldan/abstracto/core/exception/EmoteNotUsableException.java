@@ -10,7 +10,10 @@ public class EmoteNotUsableException extends AbstractoRunTimeException implement
 
     public EmoteNotUsableException(Emote emote) {
         super(String.format("Emote %s not usable by bot.", emote.getId()));
-        this.model = EmoteNotUsableExceptionModel.builder().emote(emote).build();
+        this.model = EmoteNotUsableExceptionModel
+                .builder()
+                .emote(emote)
+                .build();
     }
 
     @Override

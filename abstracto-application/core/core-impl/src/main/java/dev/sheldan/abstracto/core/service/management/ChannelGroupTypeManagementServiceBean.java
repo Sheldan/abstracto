@@ -18,7 +18,7 @@ public class ChannelGroupTypeManagementServiceBean implements ChannelGroupTypeMa
 
     @Override
     public Optional<ChannelGroupType> findChannelGroupTypeByKeyOptional(String key) {
-        return repository.findByGroupTypeKey(key);
+        return repository.findByGroupTypeKeyIgnoreCase(key);
     }
 
     @Override

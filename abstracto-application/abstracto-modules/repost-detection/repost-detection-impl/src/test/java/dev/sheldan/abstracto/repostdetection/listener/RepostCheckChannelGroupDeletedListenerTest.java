@@ -16,10 +16,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RepostCheckAsyncChannelGroupDeletedListenerTest {
+public class RepostCheckChannelGroupDeletedListenerTest {
 
     @InjectMocks
-    private RepostCheckAsyncChannelGroupDeletedListener testUnit;
+    private RepostCheckChannelGroupDeletedListener testUnit;
 
     @Mock
     private RepostCheckChannelGroupManagement checkChannelGroupManagement;

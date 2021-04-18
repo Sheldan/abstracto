@@ -12,7 +12,11 @@ public class DurationFormatException extends AbstractoRunTimeException implement
 
     public DurationFormatException(String wrongFormat, List<String> validFormats) {
         super("Duration format exception ");
-        this.model = DurationFormatExceptionModel.builder().invalidFormat(wrongFormat).validFormats(validFormats).build();
+        this.model = DurationFormatExceptionModel
+                .builder()
+                .invalidFormat(wrongFormat)
+                .validFormats(validFormats)
+                .build();
     }
 
     @Override

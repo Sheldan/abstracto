@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.models.template.commands.help;
 
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.CommandCoolDownConfig;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,4 +20,5 @@ public class HelpCommandDetailsModel extends UserInitiatedServerContext {
     private List<Role> allowedRoles;
     private List<Role> immuneRoles;
     private Boolean restricted;
+    private CommandCoolDownConfig cooldowns;
 }

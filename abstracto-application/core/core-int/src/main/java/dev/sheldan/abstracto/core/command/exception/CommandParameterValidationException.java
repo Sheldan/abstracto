@@ -17,6 +17,7 @@ public class CommandParameterValidationException extends AbstractoRunTimeExcepti
     private final CommandParameterValidationExceptionModel model;
 
     public CommandParameterValidationException(List<ValidatorParam> validatorParams, String template, Parameter parameter) {
+        super("Command parameter failed to validate.");
         this.model = CommandParameterValidationExceptionModel
                 .builder()
                 .validationTemplate(template)

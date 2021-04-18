@@ -10,7 +10,11 @@ public class ChannelGroupTypeNotFound extends AbstractoRunTimeException implemen
     private final ChannelGroupTypeNotFoundExceptionModel model;
 
     public ChannelGroupTypeNotFound(List<String> channelGroupTypeKeys) {
-        this.model = ChannelGroupTypeNotFoundExceptionModel.builder().availableGroupTypeKeys(channelGroupTypeKeys).build();
+        super("Channel group type not found.");
+        this.model = ChannelGroupTypeNotFoundExceptionModel
+                .builder()
+                .availableGroupTypeKeys(channelGroupTypeKeys)
+                .build();
     }
 
     @Override
