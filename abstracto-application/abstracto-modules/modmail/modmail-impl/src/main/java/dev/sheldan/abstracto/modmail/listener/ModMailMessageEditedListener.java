@@ -5,11 +5,11 @@ import dev.sheldan.abstracto.core.command.service.CommandRegistry;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
-import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageUpdatedListener;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
+import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedListener {
+public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener {
 
     public static final String DEFAULT_COMMAND_FOR_MODMAIL_EDIT = "reply";
     @Autowired
@@ -64,7 +64,7 @@ public class ModMailMessageEditedListener implements AsyncMessageTextUpdatedList
     private ModMailThreadService modMailThreadService;
 
     @Override
-    public DefaultListenerResult execute(MessageTextUpdatedModel model) {
+    public DefaultListenerResult execute(MessageUpdatedModel model) {
         CachedMessage messageBefore = model.getBefore();
         Message message = model.getAfter();
         if(!modMailThreadService.isModMailThread(messageBefore.getChannelId())) {

@@ -1,0 +1,68 @@
+package dev.sheldan.abstracto.logging.listener;
+
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageUpdatedListener;
+import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.service.MemberService;
+import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.logging.config.LoggingFeatureDefinition;
+import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
+import dev.sheldan.abstracto.logging.model.template.MessageEditedLog;
+import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+@Slf4j
+public class MessageEditedListener implements AsyncMessageUpdatedListener {
+
+    public static final String MESSAGE_EDITED_TEMPLATE = "message_edited";
+
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private PostTargetService postTargetService;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private ChannelService channelService;
+
+    @Override
+    public DefaultListenerResult execute(MessageUpdatedModel model) {
+        Message messageAfter = model.getAfter();
+        CachedMessage messageBefore = model.getBefore();
+        if(messageBefore.getContent().equals(messageAfter.getContentRaw())) {
+            log.debug("Message content was the same. Possible reason was: message was not in cache.");
+            return DefaultListenerResult.IGNORED;
+        }
+        log.debug("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), model.getServerId());
+        TextChannel textChannel = channelService.getTextChannelFromServer(model.getServerId(), messageBefore.getChannelId());
+        MessageEditedLog log = MessageEditedLog
+                .builder()
+                .messageAfter(messageAfter)
+                .messageBefore(messageBefore)
+                .messageChannel(textChannel)
+                .guild(textChannel.getGuild())
+                .member(messageAfter.getMember())
+                .build();
+        MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, log, model.getServerId());
+        postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, model.getServerId());
+        return DefaultListenerResult.PROCESSED;
+    }
+
+    @Override
+    public FeatureDefinition getFeature() {
+        return LoggingFeatureDefinition.LOGGING;
+    }
+
+}

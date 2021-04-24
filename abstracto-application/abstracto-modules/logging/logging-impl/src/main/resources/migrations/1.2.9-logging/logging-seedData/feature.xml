@@ -6,24 +6,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <changeSet author="Sheldan"  id="moderation_feature-insertion">
+    <changeSet author="Sheldan"  id="logging_feature-insertion">
         <insert tableName="feature">
-            <column name="key" value="moderation"/>
-        </insert>
-        <insert tableName="feature">
-            <column name="key" value="warnings"/>
-        </insert>
-        <insert tableName="feature">
-            <column name="key" value="warnDecay"/>
-        </insert>
-        <insert tableName="feature">
-            <column name="key" value="muting"/>
-        </insert>
-        <insert tableName="feature">
-            <column name="key" value="userNotes"/>
-        </insert>
-        <insert tableName="feature">
-            <column name="key" value="inviteFilter"/>
+            <column name="key" value="logging"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.core.listener;
 
-import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageTextUpdatedListener;
-import dev.sheldan.abstracto.core.listener.sync.jda.MessageTextUpdatedListener;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageUpdatedListener;
+import dev.sheldan.abstracto.core.listener.sync.jda.MessageUpdatedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
+import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ import static dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListen
 public class MessageUpdatedListenerBean extends ListenerAdapter {
 
     @Autowired(required = false)
-    private List<MessageTextUpdatedListener> listenerList;
+    private List<MessageUpdatedListener> listenerList;
 
     @Autowired
     private MessageCache messageCache;
@@ -44,7 +44,7 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Autowired(required = false)
-    private List<AsyncMessageTextUpdatedListener> asyncListenerList;
+    private List<AsyncMessageUpdatedListener> asyncListenerList;
 
     @Autowired
     @Qualifier("messageUpdatedExecutor")
@@ -84,12 +84,12 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     @Transactional
     public void executeListener(CachedMessage cachedMessage, GuildMessageUpdateEvent event) {
         if(listenerList == null) return;
-        MessageTextUpdatedModel model = getModel(event, cachedMessage);
-        listenerList.forEach(messageTextUpdatedListener -> listenerService.executeFeatureAwareListener(messageTextUpdatedListener, model));
+        MessageUpdatedModel model = getModel(event, cachedMessage);
+        listenerList.forEach(messageUpdatedListener -> listenerService.executeFeatureAwareListener(messageUpdatedListener, model));
     }
 
-    private MessageTextUpdatedModel getModel(GuildMessageUpdateEvent event, CachedMessage oldMessage) {
-        return MessageTextUpdatedModel
+    private MessageUpdatedModel getModel(GuildMessageUpdateEvent event, CachedMessage oldMessage) {
+        return MessageUpdatedModel
                 .builder()
                 .after(event.getMessage())
                 .before(oldMessage)
@@ -98,7 +98,7 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
 
     private void executeAsyncListeners(GuildMessageUpdateEvent event, CachedMessage oldMessage) {
         if(asyncListenerList == null) return;
-        MessageTextUpdatedModel model = getModel(event, oldMessage);
+        MessageUpdatedModel model = getModel(event, oldMessage);
         asyncListenerList.forEach(messageTextUpdatedListener ->
                 listenerService.executeFeatureAwareListener(messageTextUpdatedListener, model, messageUpdatedExecutor)
         );

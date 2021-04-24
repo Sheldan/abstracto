@@ -7,7 +7,6 @@ import lombok.Getter;
 public enum ModerationFeatureDefinition implements FeatureDefinition {
     MODERATION("moderation"),
     WARNING("warnings"),
-    LOGGING("logging"),
     MUTING("muting"),
     AUTOMATIC_WARN_DECAY("warnDecay"),
     USER_NOTES("userNotes"),

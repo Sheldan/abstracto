@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.listener.MessageTextUpdatedModel;
+import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -103,7 +103,7 @@ public class ModMailMessageEditedListenerTest {
     private ArgumentCaptor<ModMailModeratorReplyModel> replyModelArgumentCaptor;
 
     @Mock
-    private MessageTextUpdatedModel model;
+    private MessageUpdatedModel model;
 
     private static final Long CHANNEL_ID = 5L;
     private static final Long MESSAGE_ID = 6L;

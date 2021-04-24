@@ -50,7 +50,7 @@ public class LeaveListenerBean extends ListenerAdapter {
         return MemberLeaveModel
                 .builder()
                 .leavingUser(serverUser)
-                .member(event.getMember())
+                .user(event.getUser())
                 .build();
     }
 

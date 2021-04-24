@@ -24,6 +24,7 @@
         <module>suggestion</module>
         <module>repost-detection</module>
         <module>webservices</module>
+        <module>logging</module>
     </modules>
 
 
