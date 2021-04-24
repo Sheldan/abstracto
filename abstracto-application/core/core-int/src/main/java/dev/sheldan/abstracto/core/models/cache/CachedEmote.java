@@ -5,11 +5,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Builder
 @EqualsAndHashCode
-public class CachedEmote {
+public class CachedEmote implements Serializable {
     private String emoteName;
     private Long emoteId;
     private Boolean external;

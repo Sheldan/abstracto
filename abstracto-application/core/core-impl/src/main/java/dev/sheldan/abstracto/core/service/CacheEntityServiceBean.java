@@ -67,6 +67,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
     public CachedAttachment getCachedAttachment(Message.Attachment attachment) {
         return CachedAttachment
                 .builder()
+                .id(attachment.getIdLong())
                 .fileName(attachment.getFileName())
                 .height(attachment.getHeight())
                 .proxyUrl(attachment.getProxyUrl())
@@ -132,6 +133,15 @@ public class CacheEntityServiceBean implements CacheEntityService {
     }
 
     @Override
+    public List<CachedAttachment> getCachedAttachments(List<Message.Attachment> attachments) {
+        List<CachedAttachment> cachedAttachments = new ArrayList<>();
+        attachments.forEach(attachment ->
+                cachedAttachments.add(getCachedAttachment(attachment))
+        );
+        return cachedAttachments;
+    }
+
+    @Override
     public CachedThumbnail buildCachedThumbnail(MessageEmbed.Thumbnail thumbnail) {
         return CachedThumbnail
                 .builder()
@@ -181,11 +191,8 @@ public class CacheEntityServiceBean implements CacheEntityService {
     @Override
     public CompletableFuture<CachedMessage> buildCachedMessageFromMessage(Message message, boolean loadReferenced) {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
-        List<CachedAttachment> attachments = new ArrayList<>();
         log.debug("Caching {} attachments.", message.getAttachments().size());
-        message.getAttachments().forEach(attachment ->
-                attachments.add(getCachedAttachment(attachment))
-        );
+        List<CachedAttachment> attachments = getCachedAttachments(message.getAttachments());
         log.debug("Caching {} embeds.", message.getEmbeds().size());
         List<CachedEmbed> embeds = new ArrayList<>();
         message.getEmbeds().forEach(embed ->

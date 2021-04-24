@@ -1,18 +1,22 @@
-package dev.sheldan.abstracto.core.listener;
+package dev.sheldan.abstracto.core.listener.combo;
 
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageUpdatedListener;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageUpdatedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.models.cache.CachedAttachment;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
+import dev.sheldan.abstracto.core.service.CacheEntityService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -23,6 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListenerBean.ACTION;
 import static dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListenerBean.MESSAGE_METRIC;
@@ -53,6 +58,9 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     @Autowired
     private MetricService metricService;
 
+    @Autowired
+    private CacheEntityService cacheEntityService;
+
     private static final CounterMetric MESSAGE_UPDATED_COUNTER = CounterMetric
             .builder()
             .name(MESSAGE_METRIC)
@@ -66,12 +74,16 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
         Message message = event.getMessage();
         messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getTextChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {
             try {
-                executeAsyncListeners(event, cachedMessage);
-                if (listenerList != null) {
-                    self.executeListener(cachedMessage, event);
-                }
+                // we need to provide a copy of the object, so modifications here dont influence the async execution
+                // because we do modify it, as we are the one responsible for caching it
+                executeAsyncListeners(event, SerializationUtils.clone(cachedMessage));
+                self.executeListener(cachedMessage, event);
             } finally {
                 cachedMessage.setContent(message.getContentRaw());
+                List<CachedAttachment> remainingAttachments = cachedMessage.getAttachments().stream().filter(cachedAttachment ->
+                        message.getAttachments().stream().anyMatch(attachment -> attachment.getIdLong() == cachedAttachment.getId())
+                ).collect(Collectors.toList());
+                cachedMessage.setAttachments(remainingAttachments);
                 messageCache.putMessageInCache(cachedMessage);
             }
         }).exceptionally(throwable -> {

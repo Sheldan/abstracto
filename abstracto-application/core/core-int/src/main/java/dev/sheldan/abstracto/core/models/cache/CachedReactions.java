@@ -6,12 +6,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-public class CachedReactions {
+public class CachedReactions implements Serializable {
     private CachedEmote emote;
     private Boolean self;
     private List<ServerUser> users;

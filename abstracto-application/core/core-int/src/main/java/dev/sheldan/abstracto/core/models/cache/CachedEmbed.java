@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.EmbedType;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-public class CachedEmbed {
+public class CachedEmbed implements Serializable {
     private CachedEmbedAuthor author;
     private CachedEmbedTitle title;
     private CachedEmbedColor color;
