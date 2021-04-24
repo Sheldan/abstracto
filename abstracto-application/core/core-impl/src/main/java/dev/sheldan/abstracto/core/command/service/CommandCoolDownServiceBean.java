@@ -21,9 +21,11 @@ import dev.sheldan.abstracto.core.service.management.CoolDownChannelGroupManagem
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -235,6 +237,9 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         }
         try {
             Duration coolDown = getServerCoolDownForCommand(command, serverId);
+            if(coolDown.equals(Duration.ZERO)) {
+                return;
+            }
             Instant newExecutionPoint = Instant.now().plus(coolDown);
             String commandName = command.getConfiguration().getName();
             Map<Long, CommandReUseMap> serverCoolDowns = storage.getServerCoolDowns();
@@ -258,6 +263,9 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         }
         try {
             Duration coolDown = getChannelGroupCoolDownForCommand(command, serverIdChannelId);
+            if(coolDown.equals(Duration.ZERO)) {
+                return;
+            }
             Instant newExecutionPoint = Instant.now().plus(coolDown);
             String commandName = command.getConfiguration().getName();
             Long serverId = serverIdChannelId.getServerId();
@@ -322,8 +330,11 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
             takeLock();
         }
         try {
-            Long serverId = serverChannelUserId.getGuildId();
             Duration coolDown = getMemberCoolDownForCommand(command, serverChannelUserId.toServerChannelId());
+            if(coolDown.equals(Duration.ZERO)) {
+                return;
+            }
+            Long serverId = serverChannelUserId.getGuildId();
             Instant newExecutionPoint = Instant.now().plus(coolDown);
             String commandName = command.getConfiguration().getName();
             Map<Long, Map<Long, CommandReUseMap>> serverMemberCoolDowns = storage.getMemberCoolDowns();
@@ -397,5 +408,39 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         Map<String, Instant> reUseTimes = new HashMap<>();
         reUseTimes.put(commandName, newExecutionPoint);
         return CommandReUseMap.builder().reUseTimes(reUseTimes).build();
+    }
+
+    @Transactional
+    public void cleanUpCooldownStorage() {
+        takeLock();
+        try {
+            cleanUpLongReUseMap(storage.getServerCoolDowns());
+            cleanUpLongLongReUseMap(storage.getMemberCoolDowns());
+            cleanUpLongLongReUseMap(storage.getChannelGroupCoolDowns());
+        } finally {
+            releaseLock();
+        }
+    }
+
+    private void cleanUpLongLongReUseMap(Map<Long, Map<Long, CommandReUseMap>> longLongReuseMap) {
+        longLongReuseMap.forEach((aLong, longCommandReUseMapMap) -> cleanUpLongReUseMap(longCommandReUseMapMap));
+        longLongReuseMap.entrySet().removeIf(longMapEntry -> longMapEntry.getValue().isEmpty());
+    }
+
+    private void cleanUpLongReUseMap(Map<Long, CommandReUseMap> map) {
+        map.forEach((aLong, commandReUseMap) -> cleanUpReUseMap(commandReUseMap));
+        map.entrySet().removeIf(longCommandReUseMapEntry -> longCommandReUseMapEntry.getValue().getReUseTimes().isEmpty());
+    }
+
+    private void cleanUpReUseMap(CommandReUseMap commandReUseMap) {
+        List<String> commandsToRemove = new ArrayList<>();
+        Instant now = Instant.now();
+        commandReUseMap.getReUseTimes().forEach((commandName, reUseTime) -> {
+            if(reUseTime.isBefore(now)) {
+                commandsToRemove.add(commandName);
+            }
+        });
+        log.debug("Deleting {} command mappings.", commandsToRemove.size());
+        commandsToRemove.forEach(commandName -> commandReUseMap.getReUseTimes().remove(commandName));
     }
 }

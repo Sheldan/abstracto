@@ -6,7 +6,14 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
     http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
-    <include file="command.xml" relativeToChangelogFile="true"/>
-    <include file="channel_group_type.xml" relativeToChangelogFile="true"/>
-    <include file="command_cooldown_cleanup_job.xml" relativeToChangelogFile="true"/>
+    <changeSet  author="Sheldan"  id="commandCooldown-cleanup-insert">
+        <insert tableName="scheduler_job">
+            <column name="name" value="commandCooldownCleanupJob"/>
+            <column name="group_name" value="commmand"/>
+            <column name="clazz" value="dev.sheldan.abstracto.core.command.job.CommandCooldownMapCleanupJob"/>
+            <column name="active" value="true"/>
+            <column name="cron_expression" value="0 0 * * * ?"/>
+            <column name="recovery" value="false"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
