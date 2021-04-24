@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
 import dev.sheldan.abstracto.entertainment.exception.ReactTooManyReactionsException;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@Slf4j
 public class React extends AbstractConditionableCommand {
 
     @Autowired
@@ -38,6 +40,7 @@ public class React extends AbstractConditionableCommand {
         List<String> reactionChars = entertainmentService.convertTextToEmojis(text);
         int existingReactions = message.getReactions().size();
         if(reactionChars.size() + existingReactions > Message.MAX_REACTIONS) {
+            log.error("Message has already {} reactions, {} would be added.", existingReactions, reactionChars.size());
             throw new ReactTooManyReactionsException();
         }
         List<CompletableFuture<Void>> futures = new ArrayList<>();

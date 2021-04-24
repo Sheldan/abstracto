@@ -123,11 +123,14 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
             Long channelSeconds = channelCooldown != null ? channelCooldown.getSeconds() : 0L;
             Long memberSeconds = memberCooldown != null ? memberCooldown.getSeconds() : 0L;
             if(serverSeconds > channelSeconds && serverSeconds > memberSeconds) {
+                log.info("Rejecting command {}, because of server cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, serverSeconds);
                 return CoolDownCheckResult.getServerCoolDown(serverCooldown);
             }
             if(channelSeconds > serverSeconds && channelSeconds > memberSeconds) {
+                log.info("Rejecting command {}, because of channel cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, channelCooldown);
                 return CoolDownCheckResult.getChannelGroupCoolDown(channelCooldown);
             }
+            log.info("Rejecting command {}, because of member cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, memberCooldown);
             return CoolDownCheckResult.getMemberCoolDown(memberCooldown);
         }
         return CoolDownCheckResult.noCoolDown();
@@ -240,6 +243,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
             if(coolDown.equals(Duration.ZERO)) {
                 return;
             }
+            log.info("Updating cooldowns for command {} in server {}.", command.getConfiguration().getName(), serverId);
             Instant newExecutionPoint = Instant.now().plus(coolDown);
             String commandName = command.getConfiguration().getName();
             Map<Long, CommandReUseMap> serverCoolDowns = storage.getServerCoolDowns();
@@ -266,6 +270,8 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
             if(coolDown.equals(Duration.ZERO)) {
                 return;
             }
+            log.info("Updating cooldowns for command {} in server {} in channel {}.",
+                    command.getConfiguration().getName(), serverIdChannelId.getServerId(), serverIdChannelId.getChannelId());
             Instant newExecutionPoint = Instant.now().plus(coolDown);
             String commandName = command.getConfiguration().getName();
             Long serverId = serverIdChannelId.getServerId();
@@ -334,6 +340,9 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
             if(coolDown.equals(Duration.ZERO)) {
                 return;
             }
+            log.info("Updating cooldowns for command {} in server {} in channel {} for user {}.",
+                    command.getConfiguration().getName(), serverChannelUserId.getGuildId(), serverChannelUserId.getChannelId(),
+                    serverChannelUserId.getUserId());
             Long serverId = serverChannelUserId.getGuildId();
             Instant newExecutionPoint = Instant.now().plus(coolDown);
             String commandName = command.getConfiguration().getName();
@@ -388,6 +397,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
     public void clearCoolDownsForServer(Long serverId) {
         takeLock();
          try {
+             log.info("Clearing coldowns for server {}.", serverId);
              storage.getServerCoolDowns().remove(serverId);
              storage.getChannelGroupCoolDowns().remove(serverId);
              storage.getMemberCoolDowns().remove(serverId);
@@ -414,6 +424,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
     public void cleanUpCooldownStorage() {
         takeLock();
         try {
+            log.info("Cleaning up old cooldowns in storage.");
             cleanUpLongReUseMap(storage.getServerCoolDowns());
             cleanUpLongLongReUseMap(storage.getMemberCoolDowns());
             cleanUpLongLongReUseMap(storage.getChannelGroupCoolDowns());

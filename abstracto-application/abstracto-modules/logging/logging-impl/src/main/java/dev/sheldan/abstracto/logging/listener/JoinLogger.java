@@ -41,6 +41,7 @@ public class JoinLogger implements AsyncJoinListener {
                 .builder()
                 .member(listenerModel.getMember())
                 .build();
+        log.debug("Logging join event for user {} in server {}.", listenerModel.getMember().getIdLong(), listenerModel.getServerId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_JOIN_TEMPLATE, model, listenerModel.getServerId());
         postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.JOIN_LOG, listenerModel.getServerId());
         return DefaultListenerResult.PROCESSED;

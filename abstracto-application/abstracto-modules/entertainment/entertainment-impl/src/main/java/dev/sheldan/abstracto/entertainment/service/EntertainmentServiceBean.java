@@ -128,6 +128,7 @@ public class EntertainmentServiceBean implements EntertainmentService {
                 }
             }
         }
+        log.debug("Replaced {} combos.", replacedCombos.size());
         Set<String> usedReplacements = new HashSet<>();
         char[] split = text.toCharArray();
 
@@ -152,6 +153,7 @@ public class EntertainmentServiceBean implements EntertainmentService {
             }
             // reject any other character, as the ones we can deal with
             if (!this.reactMapping.getSingle().containsKey(charAsString)) {
+                log.info("Cannot find mapping. Not replacing with emote.");
                 continue;
             }
             List<String> listToUse = this.reactMapping.getSingle().get(charAsString);
@@ -168,6 +170,7 @@ public class EntertainmentServiceBean implements EntertainmentService {
                 throw new ReactDuplicateCharacterException();
             }
         }
+        log.debug("We used {} replacements for a string of length {}.", usedReplacements.size(), text.length());
         return result;
     }
 
@@ -182,6 +185,8 @@ public class EntertainmentServiceBean implements EntertainmentService {
             JsonReader reader = new JsonReader(new InputStreamReader(reactMappingSource.getInputStream()));
             this.reactMapping = gson.fromJson(reader, ReactMapping.class);
             this.reactMapping.populateKeys();
+            log.info("Loaded {} single replacement mappings.", this.reactMapping.getSingle().size());
+            log.info("Loaded {} combo replacements.", this.reactMapping.getCombination().size());
         } catch (IOException e) {
             log.error("Failed to load react bindings.", e);
         }

@@ -73,7 +73,7 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
             List<CachedAttachment> removedAttachments = messageBefore.getAttachments().stream().filter(cachedAttachment ->
                 messageAfter.getAttachments().stream().noneMatch(attachment -> attachment.getIdLong() == cachedAttachment.getId())
             ).collect(Collectors.toList());
-            log.info("Logging deletion of {} attachments.", removedAttachments.size());
+            log.debug("Logging deletion of {} attachments.", removedAttachments.size());
             for (int i = 0; i < removedAttachments.size(); i++) {
                 MessageDeletedAttachmentLog log = MessageDeletedAttachmentLog
                         .builder()

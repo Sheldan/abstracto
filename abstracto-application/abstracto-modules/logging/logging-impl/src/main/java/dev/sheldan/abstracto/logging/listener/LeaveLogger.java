@@ -44,6 +44,7 @@ public class LeaveLogger implements AsyncLeaveListener {
                 .builder()
                 .user(listenerModel.getUser())
                 .build();
+        log.debug("Logging leave event for user {} in server {}.", listenerModel.getUser().getIdLong(), listenerModel.getServerId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_LEAVE_TEMPLATE, model, listenerModel.getServerId());
         postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.LEAVE_LOG, listenerModel.getServerId());
         return DefaultListenerResult.PROCESSED;
