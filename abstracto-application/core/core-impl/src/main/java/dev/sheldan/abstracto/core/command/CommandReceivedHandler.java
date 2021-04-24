@@ -273,7 +273,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
                             parsedParameters.add(ParseResult.builder().parameter(param).result(future).build());
                         } else {
                             Object result = handler.handle(value, iterators, param, message, command);
-                            parsedParameters.add(ParseResult.builder().parameter(param).result(result).build());
+                            if(result != null) {
+                                parsedParameters.add(ParseResult.builder().parameter(param).result(result).build());
+                            }
                         }
                         break;
                     }
@@ -300,13 +302,15 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 }).collect(Collectors.toList());
                 List<ParseResult> parseResults = new ArrayList<>();
                 for (int i = 0; i < allParamResults.size(); i++) {
-                    ParseResult parseResult = ParseResult
-                            .builder()
-                            .result(allParamResults.get(i))
-                            // all parameters beyond the most possible ones are attributed to be from the last parameter
-                            .parameter(parameters.get(Math.min(i, parameters.size() - 1)))
-                            .build();
-                    parseResults.add(parseResult);
+                    if(allParamResults.get(i) != null) {
+                        ParseResult parseResult = ParseResult
+                                .builder()
+                                .result(allParamResults.get(i))
+                                // all parameters beyond the most possible ones are attributed to be from the last parameter
+                                .parameter(parameters.get(Math.min(i, parameters.size() - 1)))
+                                .build();
+                        parseResults.add(parseResult);
+                    }
                 }
                 multipleFuturesFuture.complete(Parameters.builder().parameters(extractParametersFromParsed(parseResults)).build());
             });

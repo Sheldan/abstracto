@@ -13,7 +13,11 @@ public class StringParameterHandlerImpl implements StringParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return input.getValue().toString();
+        if(input.getValue() instanceof String) {
+            return input.getValue().toString();
+        } else {
+            return null;
+        }
     }
 
     @Override
