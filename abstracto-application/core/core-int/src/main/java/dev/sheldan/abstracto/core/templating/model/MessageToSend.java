@@ -29,6 +29,7 @@ public class MessageToSend {
      * The file handle to send attached to the message.
      */
     private File fileToSend;
+    private MessageConfig messageConfig;
 
     public boolean hasFileToSend() {
         return fileToSend != null;

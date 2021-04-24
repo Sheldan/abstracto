@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -37,7 +34,7 @@ public class AllowedMentionServiceBean implements AllowedMentionService {
     }
 
     @Override
-    public List<Message.MentionType> getAllowedMentionTypesForServer(Long serverId) {
+    public Set<Message.MentionType> getAllowedMentionTypesForServer(Long serverId) {
         AllowedMention allowedMention = getEffectiveAllowedMention(serverId);
         return mapAllowedMentionToMentionType(allowedMention);
     }
@@ -79,12 +76,12 @@ public class AllowedMentionServiceBean implements AllowedMentionService {
         throw new UnknownMentionTypeException();
     }
 
-    private List<Message.MentionType> mapAllowedMentionToMentionType(AllowedMention allowedMention) {
+    private Set<Message.MentionType> mapAllowedMentionToMentionType(AllowedMention allowedMention) {
         // if all are allowed, we dont want to restrict it
         if(allowedMention.allAllowed()) {
             return null;
         }
-        List<Message.MentionType> types = new ArrayList<>();
+        Set<Message.MentionType> types = new HashSet<>();
         if(allowedMention.getEveryone()) {
             types.add(Message.MentionType.EVERYONE);
         }

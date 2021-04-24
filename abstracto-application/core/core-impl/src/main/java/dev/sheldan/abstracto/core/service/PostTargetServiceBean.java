@@ -80,7 +80,8 @@ public class PostTargetServiceBean implements PostTargetService {
         }
     }
 
-    private PostTarget getPostTarget(PostTargetEnum postTargetName, Long serverId) {
+    @Override
+    public PostTarget getPostTarget(PostTargetEnum postTargetName, Long serverId) {
         PostTarget postTarget = postTargetManagement.getPostTarget(postTargetName.getKey(), serverId);
         if(postTarget != null) {
             return postTarget;

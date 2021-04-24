@@ -16,6 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -68,7 +69,7 @@ public class AllowedMentionServiceBeanTest {
     public void getAllowedMentionTypesForServerEmpty() {
         allDefaultConfigAllowed();
         when(allowedMentionManagementService.getCustomAllowedMentionFor(SERVER_ID)).thenReturn(Optional.empty());
-        List<Message.MentionType> allowedMentions = testUnit.getAllowedMentionTypesForServer(SERVER_ID);
+        Set<Message.MentionType> allowedMentions = testUnit.getAllowedMentionTypesForServer(SERVER_ID);
         Assert.assertNull(allowedMentions);
     }
 
@@ -78,9 +79,9 @@ public class AllowedMentionServiceBeanTest {
         when(allowedMentionConfig.getRole()).thenReturn(false);
         when(allowedMentionConfig.getUser()).thenReturn(false);
         when(allowedMentionManagementService.getCustomAllowedMentionFor(SERVER_ID)).thenReturn(Optional.empty());
-        List<Message.MentionType> allowedMentions = testUnit.getAllowedMentionTypesForServer(SERVER_ID);
+        Set<Message.MentionType> allowedMentions = testUnit.getAllowedMentionTypesForServer(SERVER_ID);
         Assert.assertEquals(1, allowedMentions.size());
-        Assert.assertEquals(Message.MentionType.EVERYONE, allowedMentions.get(0));
+        Assert.assertEquals(Message.MentionType.EVERYONE, allowedMentions.iterator().next());
     }
 
     @Test
@@ -89,7 +90,7 @@ public class AllowedMentionServiceBeanTest {
         when(allowedMentionConfig.getRole()).thenReturn(false);
         when(allowedMentionConfig.getUser()).thenReturn(false);
         when(allowedMentionManagementService.getCustomAllowedMentionFor(SERVER_ID)).thenReturn(Optional.empty());
-        List<Message.MentionType> allowedMentions = testUnit.getAllowedMentionTypesForServer(SERVER_ID);
+        Set<Message.MentionType> allowedMentions = testUnit.getAllowedMentionTypesForServer(SERVER_ID);
         Assert.assertEquals(0, allowedMentions.size());
     }
 

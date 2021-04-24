@@ -3,11 +3,11 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.models.database.AllowedMention;
 import net.dv8tion.jda.api.entities.Message;
 
-import java.util.List;
+import java.util.Set;
 
 public interface AllowedMentionService {
     boolean allMentionsAllowed(Long serverId);
-    List<Message.MentionType> getAllowedMentionTypesForServer(Long serverId);
+    Set<Message.MentionType> getAllowedMentionTypesForServer(Long serverId);
     void allowMentionForServer(Message.MentionType mentionType, Long serverId);
     void disAllowMentionForServer(Message.MentionType mentionType, Long serverId);
     AllowedMention getDefaultAllowedMention();

@@ -123,7 +123,10 @@ public class TemplateServiceBean implements TemplateService {
         List<String> messages = new ArrayList<>();
         String additionalMessage = embedConfiguration.getAdditionalMessage();
         if(additionalMessage != null) {
-            Long segmentLimit = embedConfiguration.getAdditionalMessageLengthLimit() != null ? embedConfiguration.getAdditionalMessageLengthLimit() : Long.valueOf(Message.MAX_CONTENT_LENGTH);
+            Long segmentLimit = embedConfiguration.getMetaConfig() != null
+                    && embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit() != null ?
+                    embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit() :
+                    Long.valueOf(Message.MAX_CONTENT_LENGTH);
             if(additionalMessage.length() > segmentLimit) {
                 int segmentStart = 0;
                 int segmentEnd = segmentLimit.intValue();
@@ -150,8 +153,8 @@ public class TemplateServiceBean implements TemplateService {
         if(serverContext.getServerId() != null) {
             messageLimit = Math.min(messageLimit, configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, serverContext.getServerId()));
         }
-        if(embedConfiguration.getMessageLimit() != null) {
-            messageLimit = Math.min(messageLimit, embedConfiguration.getMessageLimit());
+        if(embedConfiguration.getMetaConfig() != null && embedConfiguration.getMetaConfig().getMessageLimit() != null) {
+            messageLimit = Math.min(messageLimit, embedConfiguration.getMetaConfig().getMessageLimit());
         }
         if(embeds.size() > messageLimit) {
             log.info("Limiting size of embeds. Max allowed: {}, currently: {}.", messageLimit, embeds.size());
@@ -164,7 +167,20 @@ public class TemplateServiceBean implements TemplateService {
 
         return MessageToSend.builder()
                 .embeds(embeds)
+                .messageConfig(createMessageConfig(embedConfiguration.getMetaConfig()))
                 .messages(messages)
+                .build();
+    }
+
+    private MessageConfig createMessageConfig(MetaEmbedConfiguration metaEmbedConfiguration) {
+        if(metaEmbedConfiguration == null) {
+            return null;
+        }
+        return MessageConfig
+                .builder()
+                .allowsEveryoneMention(metaEmbedConfiguration.isAllowsEveryoneMention())
+                .allowsUserMention(metaEmbedConfiguration.isAllowsUserMention())
+                .allowsRoleMention(metaEmbedConfiguration.isAllowsRoleMention())
                 .build();
     }
 
@@ -211,7 +227,7 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     private boolean isEmptyEmbed(EmbedConfiguration configuration) {
-        if (configuration.isPreventEmptyEmbed()) {
+        if (configuration.getMetaConfig() != null && configuration.getMetaConfig().isPreventEmptyEmbed()) {
             return configuration.getFields() == null && configuration.getDescription() == null && configuration.getImageUrl() == null;
         }
         return false;

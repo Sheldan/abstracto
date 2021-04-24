@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.templating.model.MessageConfig;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FileService;
@@ -22,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.sheldan.abstracto.core.config.MetricConstants.DISCORD_API_INTERACTION_METRIC;
@@ -126,21 +124,34 @@ public class ChannelServiceBean implements ChannelService {
         log.debug("Sending message {} from channel {} and server {} to channel {}.",
                 message.getId(), message.getChannel().getId(), message.getGuild().getId(), channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(message).allowedMentions(getAllowedMentionsFor(channel)).submit();
+        return channel.sendMessage(message).allowedMentions(getAllowedMentionsFor(channel, null)).submit();
     }
 
-    private List<Message.MentionType> getAllowedMentionsFor(MessageChannel channel) {
+    private Set<Message.MentionType> getAllowedMentionsFor(MessageChannel channel, MessageToSend messageToSend) {
+        Set<Message.MentionType> allowedMentions = new HashSet<>();
         if(channel instanceof GuildChannel) {
-            return allowedMentionService.getAllowedMentionTypesForServer(((GuildChannel) channel).getGuild().getIdLong());
+            allowedMentions.addAll(allowedMentionService.getAllowedMentionTypesForServer(((GuildChannel) channel).getGuild().getIdLong()));
         }
-        return null;
+        if(messageToSend != null && messageToSend.getMessageConfig() != null) {
+            MessageConfig messageConfig = messageToSend.getMessageConfig();
+            if(messageConfig.isAllowsEveryoneMention()) {
+                allowedMentions.add(Message.MentionType.EVERYONE);
+            }
+            if(messageConfig.isAllowsUserMention()) {
+                allowedMentions.add(Message.MentionType.USER);
+            }
+            if(messageConfig.isAllowsRoleMention()) {
+                allowedMentions.add(Message.MentionType.ROLE);
+            }
+        }
+        return allowedMentions;
     }
 
     @Override
     public CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel) {
         log.debug("Sending text to channel {}.", channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(text).allowedMentions(getAllowedMentionsFor(channel)).submit();
+        return channel.sendMessage(text).allowedMentions(getAllowedMentionsFor(channel, null)).submit();
     }
 
     @Override
@@ -169,7 +180,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(embed).allowedMentions(getAllowedMentionsFor(channel));
+        return channel.sendMessage(embed).allowedMentions(getAllowedMentionsFor(channel, null));
     }
 
     @Override
@@ -232,7 +243,7 @@ public class ChannelServiceBean implements ChannelService {
                 allMessageActions.add(textChannel.sendFile(messageToSend.getFileToSend()));
             }
         }
-        List<Message.MentionType> allowedMentions = getAllowedMentionsFor(textChannel);
+        Set<Message.MentionType> allowedMentions = getAllowedMentionsFor(textChannel, messageToSend);
         allMessageActions.forEach(messageAction ->
             futures.add(messageAction.allowedMentions(allowedMentions).submit())
         );

@@ -9,7 +9,7 @@
     <changeSet author="Sheldan" id="command_disabled_channel_group-table">
         <createTable tableName="command_disabled_channel_group">
             <column name="id" type="BIGINT">
-                <constraints nullable="true"/>
+                <constraints nullable="true" primaryKey="true" primaryKeyName="pk_disabled_channel_group"/>
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
                 <constraints nullable="true"/>
