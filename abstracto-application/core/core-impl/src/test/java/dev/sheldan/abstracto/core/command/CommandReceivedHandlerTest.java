@@ -95,6 +95,9 @@ public class CommandReceivedHandlerTest {
     @Mock
     private Command command;
 
+    @Mock
+    private MessageChannel channel;
+
     @Captor
     private ArgumentCaptor<Parameters> parametersArgumentCaptor;
 
@@ -157,6 +160,7 @@ public class CommandReceivedHandlerTest {
         when(event.getMessage()).thenReturn(message);
         when(commandManager.isCommand(message)).thenReturn(true);
         when(event.getGuild()).thenReturn(guild);
+        when(event.getChannel()).thenReturn(channel);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(message.getContentRaw()).thenReturn(MESSAGE_CONTENT_COMMAND_ONLY);
         when(commandManager.getCommandName(anyString(), eq(SERVER_ID))).thenReturn(COMMAND_NAME);
