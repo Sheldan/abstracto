@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.remind.exception.NotPossibleToSnoozeException;
 import dev.sheldan.abstracto.remind.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
 import dev.sheldan.abstracto.remind.model.template.commands.ExecutedReminderModel;
@@ -90,7 +91,13 @@ public class RemindServiceBean implements ReminderService {
         log.info("Creating reminder for user {} in guild {} due at {}.",
                 user.getUserReference().getId(), user.getServerReference().getId(), remindAt);
 
+        scheduleReminder(remindIn, reminder);
+        return reminder;
+    }
+
+    private void scheduleReminder(Duration remindIn, Reminder reminder) {
         if(remindIn.getSeconds() < 60) {
+            reminder.setJobTriggerKey(null);
             log.info("Directly scheduling unremind for reminder {}, because it was below the threshold.", reminder.getId());
             instantReminderScheduler.schedule(() -> {
                 try {
@@ -108,7 +115,6 @@ public class RemindServiceBean implements ReminderService {
             reminder.setJobTriggerKey(triggerKey);
             reminderManagementService.saveReminder(reminder);
         }
-        return reminder;
     }
 
     @Override
@@ -163,5 +169,17 @@ public class RemindServiceBean implements ReminderService {
             log.debug("Stopping scheduled trigger {} for reminder {}.", reminder.getJobTriggerKey(), reminderId);
             schedulerService.stopTrigger(reminder.getJobTriggerKey());
         }
+    }
+
+    @Override
+    public void snoozeReminder(Long reminderId, AUserInAServer user, Duration newDuration) {
+        Reminder reminder = reminderManagementService.getReminderByAndByUser(user, reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
+        if(reminder.getTargetDate().isAfter(Instant.now())) {
+            throw new NotPossibleToSnoozeException();
+        }
+        log.info("Snoozing reminder {} to be executed in {}.", reminderId, newDuration);
+        reminder.setTargetDate(Instant.now().plus(newDuration));
+        reminder.setReminded(false);
+        scheduleReminder(newDuration, reminder);
     }
 }

@@ -7,15 +7,17 @@ Feature key: `remind`
 ==== Commands
 Create a reminder::
 * Usage: `remind <duration> <text>`
-* Description: Creates a reminder with `text` which will be triggered after `duration`. This command uses duration parsing. The reminder will ping when the duration has passed and provide
-the context of the reminder.
+* Description: Creates a reminder with `text` which will be triggered after `duration`. This command uses duration parsing. The reminder will ping when the duration has passed and provide the context of the reminder.
 * Example: `remind 1h2m3s text` in order to be reminded in 1 hour 2 minutes and 3 seconds with the reason `text`
 Cancelling a reminder::
 * Usage `unRemind <reminderId>`
-* Description: Cancels this reminder reminder and will cause this reminder to not be executed.
+* Description: Cancels this reminder and will cause this reminder to not be executed. Only possible for reminders started by you.
 Listing all active reminders::
 * Usage: `reminders`
 * Description: Lists all the currently not yet executed reminders and information about each of them.
+Re-schedule a past reminder::
+* Usage: `snooze <reminderId> <duration>`
+* Description: Schedules the reminder identified by `reminderId` to be triggered after `duration` again. It is only possible to do this for reminders which have already been executed. Only possible for reminders started by you.
 
 
 === Starboard

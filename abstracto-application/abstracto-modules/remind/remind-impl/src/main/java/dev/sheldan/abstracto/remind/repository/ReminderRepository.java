@@ -13,5 +13,6 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     List<Reminder> getByRemindedUserAndRemindedFalse(AUserInAServer aUserInAServer);
 
     Reminder getByIdAndRemindedUserAndRemindedFalse(Long reminderId, AUserInAServer aUserInAServer);
+    Reminder getByIdAndRemindedUser(Long reminderId, AUserInAServer aUserInAServer);
 
 }

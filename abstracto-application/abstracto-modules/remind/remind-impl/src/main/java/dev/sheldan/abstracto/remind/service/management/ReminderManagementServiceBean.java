@@ -70,5 +70,10 @@ public class ReminderManagementServiceBean implements ReminderManagementService 
         return Optional.ofNullable(reminderRepository.getByIdAndRemindedUserAndRemindedFalse(reminderId, aUserInAServer));
     }
 
+    @Override
+    public Optional<Reminder> getReminderByAndByUser(AUserInAServer aUserInAServer, Long reminderId) {
+        return Optional.ofNullable(reminderRepository.getByIdAndRemindedUser(reminderId, aUserInAServer));
+    }
+
 
 }

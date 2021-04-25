@@ -11,4 +11,5 @@ public interface ReminderService {
     Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Long channelId, Long messageId);
     void executeReminder(Long reminderId);
     void unRemind(Long reminderId, AUserInAServer userInAServer);
+    void snoozeReminder(Long reminderId, AUserInAServer user, Duration newDuration);
 }

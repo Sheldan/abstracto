@@ -16,4 +16,5 @@ public interface ReminderManagementService {
     Reminder saveReminder(Reminder reminder);
     List<Reminder> getActiveRemindersForUser(AUserInAServer aUserInAServer);
     Optional<Reminder> getReminderByAndByUserNotReminded(AUserInAServer aUserInAServer, Long reminderId);
+    Optional<Reminder> getReminderByAndByUser(AUserInAServer aUserInAServer, Long reminderId);
 }
