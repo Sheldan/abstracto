@@ -24,9 +24,6 @@ public class CommandCoolDownCondition implements CommandCondition {
             if(result.getCanExecute()) {
                 return ConditionResult.builder().result(true).build();
             } else {
-                if(result.getExecuteIn().compareTo(Duration.ofSeconds(1)) < 0) {
-                    result.setExecuteIn(Duration.ofSeconds(1));
-                }
                 return ConditionResult.builder().result(false).conditionDetail(new CommandCoolDownDetail(result)).build();
             }
         } finally {

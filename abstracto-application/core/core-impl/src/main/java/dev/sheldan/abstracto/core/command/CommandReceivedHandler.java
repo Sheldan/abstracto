@@ -118,7 +118,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
             tryToExecuteFoundCommand(event, foundCommand, unParsedParameter);
 
         } catch (Exception e) {
-            reportException(event, null, e, "Exception when executing command.");
+            reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
+            ,event.getMessage().getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
         }
     }
 

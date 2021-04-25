@@ -118,19 +118,26 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
                 }
             }
         }
+        return createCooldownCheckResult(serverId, commandName, serverCooldown, channelCooldown, memberCooldown);
+    }
+
+    public CoolDownCheckResult createCooldownCheckResult(Long serverId, String commandName, Duration serverCooldown, Duration channelCooldown, Duration memberCooldown) {
         if(serverCooldown != null || channelCooldown != null || memberCooldown != null) {
             Long serverSeconds = serverCooldown != null ? serverCooldown.getSeconds() : 0L;
             Long channelSeconds = channelCooldown != null ? channelCooldown.getSeconds() : 0L;
             Long memberSeconds = memberCooldown != null ? memberCooldown.getSeconds() : 0L;
+            if(serverSeconds == 0 && channelSeconds == 0 && memberSeconds == 0) {
+                return CoolDownCheckResult.noCoolDown();
+            }
             if(serverSeconds > channelSeconds && serverSeconds > memberSeconds) {
                 log.info("Rejecting command {}, because of server cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, serverSeconds);
                 return CoolDownCheckResult.getServerCoolDown(serverCooldown);
             }
             if(channelSeconds > serverSeconds && channelSeconds > memberSeconds) {
-                log.info("Rejecting command {}, because of channel cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, channelCooldown);
+                log.info("Rejecting command {}, because of channel cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, channelSeconds);
                 return CoolDownCheckResult.getChannelGroupCoolDown(channelCooldown);
             }
-            log.info("Rejecting command {}, because of member cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, memberCooldown);
+            log.info("Rejecting command {}, because of member cooldown in server {}. Can be executed in {} seconds.", commandName, serverId, memberSeconds);
             return CoolDownCheckResult.getMemberCoolDown(memberCooldown);
         }
         return CoolDownCheckResult.noCoolDown();
