@@ -8,11 +8,11 @@
         <key-type>java.lang.String</key-type>
         <value-type>java.util.concurrent.CompletableFuture</value-type>
         <expiry>
-            <ttl unit="seconds">600</ttl>
+            <ttl unit="seconds">7200</ttl>
         </expiry>
 
         <resources>
-            <heap unit="entries">500</heap>
+            <heap unit="entries">2000</heap>
         </resources>
     </cache>
     <cache-template name="default">
