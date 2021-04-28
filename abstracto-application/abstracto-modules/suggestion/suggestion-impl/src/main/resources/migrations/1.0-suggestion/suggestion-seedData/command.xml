@@ -25,6 +25,16 @@
             <column name="module_id" valueComputed="${utilityModule}"/>
             <column name="feature_id" valueComputed="${suggestionFeature}"/>
         </insert>
+        <insert tableName="command">
+            <column name="name" value="unSuggest"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${suggestionFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="veto"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${suggestionFeature}"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

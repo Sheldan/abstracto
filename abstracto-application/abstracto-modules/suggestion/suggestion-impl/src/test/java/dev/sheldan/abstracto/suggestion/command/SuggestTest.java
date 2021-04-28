@@ -31,9 +31,9 @@ public class SuggestTest {
     public void testExecuteCommand() throws ExecutionException, InterruptedException {
         String text = "text";
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(text));
-        when(suggestionService.createSuggestionMessage(eq(context.getAuthor()), eq(text), any(SuggestionLog.class))).thenReturn(CompletableFuture.completedFuture(null));
+        when(suggestionService.createSuggestionMessage(eq(context.getMessage()), eq(text))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
-        verify(suggestionService, times(1)).createSuggestionMessage(eq(context.getAuthor()), eq(text), any(SuggestionLog.class));
+        verify(suggestionService, times(1)).createSuggestionMessage(eq(context.getMessage()), eq(text));
         CommandTestUtilities.checkSuccessfulCompletion(result.get());
     }
 

@@ -76,13 +76,19 @@ Creating a suggestion::
 * Usage: `suggest <text>`
 * Description: Posts the text to the `suggest` post target and places the emotes for up and down voting.
 Accepting a suggestion::
-* Usage: `accept <suggestionId> [note]`
-* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `note` will be used in this re-post, if provided.
+* Usage: `accept <suggestionId> [reason]`
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `reason` will be used in this re-post, if provided.
 * Example: `accept 1 okay` in order to accept the suggestion `1` with the reason `okay`
 Rejecting a suggestion::
-* Usage: `reject <suggestionId> [note]`
-* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `note` will be used in this re-post, if provided.
+* Usage: `reject <suggestionId> [reason]`
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `reason` will be used in this re-post, if provided.
 * Example: `deny 1 not okay` in order to reject the suggestion `1` with the reason `not okay`
+Removing a suggestion you created::
+* Usage: `unSuggest <suggestionId>`
+* Description: This will delete the suggestion identified by `suggestionId` from the channel and the database, but this is only possible within a specicied time range.
+Vetoing a suggestion::
+* Usage : `veto <suggestion> [reason]`
+* Description: This command will veto the suggestion, this means, it should be indicated that the suggestion was not rejected by votes, but because it was not acceptable on a fundamental level. This is basically just a different state of the suggestion.
 
 === Miscellaneous
 

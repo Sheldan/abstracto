@@ -74,7 +74,9 @@ public class SuggestionManagementServiceBeanTest {
         ArgumentCaptor<Suggestion> suggestionArgumentCaptor = ArgumentCaptor.forClass(Suggestion.class);
         Suggestion savedSuggestion = Mockito.mock(Suggestion.class);
         when(suggestionRepository.save(suggestionArgumentCaptor.capture())).thenReturn(savedSuggestion);
-        Suggestion createdSuggestion = testUnit.createSuggestion(aUserInAServer, text, message, suggestionId);
+        Message commandMessage = Mockito.mock(Message.class);
+        when(commandMessage.getChannel()).thenReturn(messageChannel);
+        Suggestion createdSuggestion = testUnit.createSuggestion(aUserInAServer, text, message, suggestionId, commandMessage);
         Assert.assertEquals(savedSuggestion, createdSuggestion);
         Suggestion capturedSuggestion = suggestionArgumentCaptor.getValue();
         Assert.assertEquals(SuggestionState.NEW, capturedSuggestion.getState());
@@ -100,7 +102,9 @@ public class SuggestionManagementServiceBeanTest {
         ArgumentCaptor<Suggestion> suggestionArgumentCaptor = ArgumentCaptor.forClass(Suggestion.class);
         Suggestion savedSuggestion = Mockito.mock(Suggestion.class);
         when(suggestionRepository.save(suggestionArgumentCaptor.capture())).thenReturn(savedSuggestion);
-        Suggestion createdSuggestion = testUnit.createSuggestion(member, text, message, suggestionId);
+        Message commandMessage = Mockito.mock(Message.class);
+        when(commandMessage.getChannel()).thenReturn(messageChannel);
+        Suggestion createdSuggestion = testUnit.createSuggestion(member, text, message, suggestionId, commandMessage);
         Assert.assertEquals(savedSuggestion, createdSuggestion);
         Suggestion capturedSuggestion = suggestionArgumentCaptor.getValue();
         Assert.assertEquals(SuggestionState.NEW, capturedSuggestion.getState());
@@ -112,7 +116,7 @@ public class SuggestionManagementServiceBeanTest {
     public void testGetSuggestion() {
         Suggestion foundSuggestion = createSuggestion();
         when(suggestionRepository.findById(new ServerSpecificId(SERVER_ID, SUGGESTION_ID))).thenReturn(Optional.of(foundSuggestion));
-        Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(SUGGESTION_ID, SERVER_ID);
+        Optional<Suggestion> suggestionOptional = testUnit.getSuggestionOptional(SERVER_ID, SUGGESTION_ID);
         Assert.assertTrue(suggestionOptional.isPresent());
         suggestionOptional.ifPresent(suggestion -> Assert.assertEquals(SUGGESTION_ID, suggestion.getSuggestionId().getId().longValue()));
     }
@@ -120,7 +124,7 @@ public class SuggestionManagementServiceBeanTest {
     @Test
     public void testGetSuggestionNotFound() {
         when(suggestionRepository.findById(new ServerSpecificId(SERVER_ID, SUGGESTION_ID))).thenReturn(Optional.empty());
-        Optional<Suggestion> suggestionOptional = testUnit.getSuggestion(SUGGESTION_ID, SERVER_ID);
+        Optional<Suggestion> suggestionOptional = testUnit.getSuggestionOptional(SERVER_ID, SUGGESTION_ID);
         Assert.assertFalse(suggestionOptional.isPresent());
     }
 

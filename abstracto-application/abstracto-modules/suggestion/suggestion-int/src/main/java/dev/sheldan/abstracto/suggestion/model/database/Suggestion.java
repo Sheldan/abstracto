@@ -45,10 +45,6 @@ public class Suggestion implements Serializable {
     private AServer server;
 
     @Getter
-    @Column(name = "suggestion_date")
-    private Instant suggestionDate;
-
-    @Getter
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private SuggestionState state;
@@ -58,5 +54,16 @@ public class Suggestion implements Serializable {
 
     @Column(name = "updated")
     private Instant updated;
+
+    @Column(name = "suggestion_text")
+    private String suggestionText;
+
+    @Getter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "command_channel_id")
+    private AChannel commandChannel;
+
+    @Column(name = "command_message_id")
+    private Long commandMessageId;
 
 }

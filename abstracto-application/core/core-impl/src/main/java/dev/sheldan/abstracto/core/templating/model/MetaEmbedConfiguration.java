@@ -16,4 +16,6 @@ public class MetaEmbedConfiguration {
     private boolean allowsEveryoneMention;
     @Builder.Default
     private boolean allowsUserMention = true;
+    @Builder.Default
+    private boolean mentionsReferencedMessage = true;
 }

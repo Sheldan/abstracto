@@ -504,7 +504,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         CompletableFuture<Message> future = messageService.sendMessageToSendToUser(targetMember.getUser(), messageToSend);
         CompletableFuture<Message> sameThreadMessageFuture;
         if(featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, modMailThread.getServer(), ModMailMode.SEPARATE_MESSAGE)) {
-            sameThreadMessageFuture = channelService.sendMessageToSendToAChannel(messageToSend, modMailThread.getChannel()).get(0);
+            sameThreadMessageFuture = channelService.sendMessageEmbedToSendToAChannel(messageToSend, modMailThread.getChannel()).get(0);
         } else {
             sameThreadMessageFuture = CompletableFuture.completedFuture(null);
         }

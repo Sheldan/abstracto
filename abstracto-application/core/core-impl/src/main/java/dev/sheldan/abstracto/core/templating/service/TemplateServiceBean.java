@@ -164,11 +164,13 @@ public class TemplateServiceBean implements TemplateService {
             log.info("Limiting size of messages. Max allowed: {}, currently: {}.", messageLimit, messages.size());
             messages.subList(messageLimit.intValue(), messages.size()).clear();
         }
+        Long referencedMessageId = embedConfiguration.getReferencedMessageId();
 
         return MessageToSend.builder()
                 .embeds(embeds)
                 .messageConfig(createMessageConfig(embedConfiguration.getMetaConfig()))
                 .messages(messages)
+                .referencedMessageId(referencedMessageId)
                 .build();
     }
 
@@ -181,6 +183,7 @@ public class TemplateServiceBean implements TemplateService {
                 .allowsEveryoneMention(metaEmbedConfiguration.isAllowsEveryoneMention())
                 .allowsUserMention(metaEmbedConfiguration.isAllowsUserMention())
                 .allowsRoleMention(metaEmbedConfiguration.isAllowsRoleMention())
+                .mentionsReferencedMessage(metaEmbedConfiguration.isMentionsReferencedMessage())
                 .build();
     }
 

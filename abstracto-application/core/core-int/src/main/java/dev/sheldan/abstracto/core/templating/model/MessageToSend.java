@@ -30,6 +30,7 @@ public class MessageToSend {
      */
     private File fileToSend;
     private MessageConfig messageConfig;
+    private Long referencedMessageId;
 
     public boolean hasFileToSend() {
         return fileToSend != null;

@@ -51,6 +51,7 @@ public class EmbedConfiguration {
      * The {@link OffsetDateTime} object used as the time stamp in the {@link net.dv8tion.jda.api.entities.MessageEmbed}
      */
     private OffsetDateTime timeStamp;
+    private Long referencedMessageId;
     /**
      * The message which is posted along the {@link net.dv8tion.jda.api.entities.MessageEmbed} as a normal message.
      */

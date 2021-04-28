@@ -184,7 +184,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel) {
+    public List<CompletableFuture<Message>> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel) {
         Optional<TextChannel> textChannelFromServer = getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
         if(textChannelFromServer.isPresent()) {
             return sendMessageToSendToChannel(messageToSend, textChannelFromServer.get());
@@ -193,7 +193,7 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public CompletableFuture<Message> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel, Integer embedIndex) {
+    public CompletableFuture<Message> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel, Integer embedIndex) {
         return sendEmbedToAChannel(messageToSend.getEmbeds().get(embedIndex), channel);
     }
 
@@ -244,9 +244,15 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
         Set<Message.MentionType> allowedMentions = getAllowedMentionsFor(textChannel, messageToSend);
-        allMessageActions.forEach(messageAction ->
-            futures.add(messageAction.allowedMentions(allowedMentions).submit())
-        );
+        allMessageActions.forEach(messageAction -> {
+            if(messageToSend.getReferencedMessageId() != null) {
+                messageAction = messageAction.referenceById(messageToSend.getReferencedMessageId());
+                if(messageToSend.getMessageConfig() != null && !messageToSend.getMessageConfig().isMentionsReferencedMessage()) {
+                    messageAction = messageAction.mentionRepliedUser(false);
+                }
+            }
+            futures.add(messageAction.allowedMentions(allowedMentions).submit());
+        });
         return futures;
     }
 
@@ -283,6 +289,9 @@ public class ChannelServiceBean implements ChannelService {
             } else {
                 throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }
+        }
+        if(messageToSend.getReferencedMessageId() != null) {
+            messageAction = messageAction.referenceById(messageToSend.getReferencedMessageId());
         }
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return messageAction.submit();

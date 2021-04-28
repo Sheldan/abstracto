@@ -34,9 +34,9 @@ public class AcceptTest {
         String text = "text";
         Long suggestionId = 5L;
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(suggestionId, text));
-        when(suggestionService.acceptSuggestion(eq(suggestionId), eq(text), any(SuggestionLog.class))).thenReturn(CompletableFuture.completedFuture(null));
+        when(suggestionService.acceptSuggestion(eq(suggestionId), eq(context.getMessage()), eq(text))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
-        verify(suggestionService, times(1)).acceptSuggestion(eq(suggestionId), eq(text), any(SuggestionLog.class));
+        verify(suggestionService, times(1)).acceptSuggestion(eq(suggestionId), eq(context.getMessage()), eq(text));
         CommandTestUtilities.checkSuccessfulCompletion(result.get());
     }
 

@@ -80,7 +80,7 @@ public class MessageServiceBean implements MessageService {
 
     @Override
     public CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, AChannel channel) {
-        return channelService.sendMessageToSendToAChannel(messageToSend, channel).get(0);
+        return channelService.sendMessageEmbedToSendToAChannel(messageToSend, channel).get(0);
     }
 
     @Override

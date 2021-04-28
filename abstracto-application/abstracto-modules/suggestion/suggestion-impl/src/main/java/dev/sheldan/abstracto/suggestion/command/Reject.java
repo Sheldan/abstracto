@@ -9,10 +9,8 @@ import dev.sheldan.abstracto.core.command.config.ParameterValidator;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureDefinition;
-import dev.sheldan.abstracto.suggestion.model.template.SuggestionLog;
 import dev.sheldan.abstracto.suggestion.service.SuggestionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +34,7 @@ public class Reject extends AbstractConditionableCommand {
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
         log.debug("Using default reason for accept: {}.", parameters.size() != 2);
-        SuggestionLog suggestionModel = (SuggestionLog) ContextConverter.fromCommandContext(commandContext, SuggestionLog.class);
-        return suggestionService.rejectSuggestion(suggestionId, text, suggestionModel)
+        return suggestionService.rejectSuggestion(suggestionId, commandContext.getMessage(), text)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 

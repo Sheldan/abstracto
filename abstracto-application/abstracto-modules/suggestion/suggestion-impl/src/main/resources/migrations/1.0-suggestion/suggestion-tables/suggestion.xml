@@ -17,9 +17,6 @@
             <column name="state" type="VARCHAR(255)">
                 <constraints nullable="true"/>
             </column>
-            <column name="suggestion_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
-            </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
                 <constraints nullable="true"/>
             </column>
@@ -33,11 +30,29 @@
             <column name="suggester_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="suggestion_text" type="VARCHAR(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="command_message_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="command_channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <addPrimaryKey columnNames="server_id, id" tableName="suggestion" constraintName="pk_suggestion" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="suggestion" constraintName="fk_suggestion_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="suggester_user_in_server_id" baseTableName="suggestion" constraintName="fk_suggestion_suggester" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="suggestion" constraintName="fk_suggestion_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="suggestion" constraintName="fk_suggestion_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="command_channel_id" baseTableName="suggestion" constraintName="fk_suggestion_command_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="suggester_user_in_server_id" baseTableName="suggestion" constraintName="fk_suggestion_suggester"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="suggestion" constraintName="fk_suggestion_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="server" validate="true"/>
         <sql>
             DROP TRIGGER IF EXISTS suggestion_update_trigger ON suggestion;
             CREATE TRIGGER suggestion_update_trigger BEFORE UPDATE ON suggestion FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
@@ -47,7 +62,7 @@
             CREATE TRIGGER suggestion_insert_trigger BEFORE INSERT ON suggestion FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
         </sql>
         <sql>
-            ALTER TABLE suggestion ADD CONSTRAINT check_suggestion_state CHECK (state IN ('NEW','ACCEPTED', 'REJECTED'));
+            ALTER TABLE suggestion ADD CONSTRAINT check_suggestion_state CHECK (state IN ('NEW','ACCEPTED', 'REJECTED', 'VETOED'));
         </sql>
     </changeSet>
 </databaseChangeLog>

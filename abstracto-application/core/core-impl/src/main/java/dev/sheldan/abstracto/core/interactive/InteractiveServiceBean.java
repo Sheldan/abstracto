@@ -51,7 +51,7 @@ public class InteractiveServiceBean implements InteractiveService {
 
     @Override
     public void createMessageWithResponse(MessageToSend messageToSend, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction) {
-        channelService.sendMessageToSendToAChannel(messageToSend, channel);
+        channelService.sendMessageEmbedToSendToAChannel(messageToSend, channel);
         Long userId = responder.getUserReference().getId();
         eventWaiter.waitForEvent(MessageReceivedEvent.class, event -> {
             if(event != null) {

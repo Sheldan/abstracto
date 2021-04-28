@@ -21,8 +21,8 @@ public interface ChannelService {
     CompletableFuture<Message> sendEmbedToAChannel(MessageEmbed embed, AChannel channel);
     CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel);
     MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel);
-    List<CompletableFuture<Message>> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel);
-    CompletableFuture<Message> sendMessageToSendToAChannel(MessageToSend messageToSend, AChannel channel, Integer embedIndex);
+    List<CompletableFuture<Message>> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel);
+    CompletableFuture<Message> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel, Integer embedIndex);
 
     CompletableFuture<Message> retrieveMessageInChannel(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Message> retrieveMessageInChannel(MessageChannel channel, Long messageId);
