@@ -8,10 +8,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementServ
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureConfig;
-import dev.sheldan.abstracto.experience.model.LeaderBoard;
-import dev.sheldan.abstracto.experience.model.LeaderBoardEntry;
-import dev.sheldan.abstracto.experience.model.RoleCalculationResult;
-import dev.sheldan.abstracto.experience.model.ServerExperience;
+import dev.sheldan.abstracto.experience.model.*;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
@@ -167,6 +164,7 @@ public class AUserExperienceServiceBeanTest {
 
     private static final Long ROLE_ID = 4L;
     private static final Long SECOND_ROLE_ID = 7L;
+    private static final Long MESSAGE_COUNT = 10L;
 
     @Before
     public void setup() {
@@ -221,8 +219,34 @@ public class AUserExperienceServiceBeanTest {
     }
 
     @Test
+    public void testHandleExperienceGainSingleUser() {
+        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
+        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
+        when(memberService.getMemberInServerAsync(aUserInAServer)).thenReturn(CompletableFuture.completedFuture(firstMember));
+        when(serverExperience.getServerId()).thenReturn(SERVER_ID);
+        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArgumentCaptor<List<CompletableFuture<Member>>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(self, times(1)).updateFoundMembers(listArgumentCaptor.capture(), eq(SERVER_ID), anyList(), anyList());
+        Assert.assertEquals(firstMember, listArgumentCaptor.getValue().get(0).join());
+    }
+
+    @Test
+    public void testHandleExperienceMemberFailed() {
+        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
+        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
+        CompletableFuture<Member> future = new CompletableFuture<>();
+        when(memberService.getMemberInServerAsync(aUserInAServer)).thenReturn(future);
+        future.completeExceptionally(new RuntimeException());
+        when(serverExperience.getServerId()).thenReturn(SERVER_ID);
+        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArgumentCaptor<List<CompletableFuture<Member>>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(self, times(1)).updateFoundMembers(listArgumentCaptor.capture(), eq(SERVER_ID), anyList(), anyList());
+        Assert.assertTrue(listArgumentCaptor.getValue().get(0).isCompletedExceptionally());
+    }
+
+    @Test
     public void testGainExpSingleUserLvlUpOneServerWithoutRole() {
-        /**
+        /*
          * In this scenario, the user has a role before, but the config changed, and now there are no experience roles.
          * Hence the user should lose the experience role.
          */
@@ -230,19 +254,30 @@ public class AUserExperienceServiceBeanTest {
         setupLevels(3);
         when(experienceRole1.getRole()).thenReturn(aRole1);
         setExperienceRoleLevels();
-        AExperienceRole previousExperienceRole = experienceRole1;
         setupServerConfig();
         setupDefaultConfig();
         setupLevelsAndRolesAndNoDisallowed();
         setupUserInServer();
+        when(userExperience.getMessageCount()).thenReturn(MESSAGE_COUNT);
+        when(experienceRoleService.calculateRole(eq(experienceRoles), any())).thenReturn(null);
         when(userExperience.getExperience()).thenReturn(500L);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        when(userExperience.getCurrentExperienceRole()).thenReturn(previousExperienceRole);
+        when(userExperience.getCurrentExperienceRole()).thenReturn(experienceRole1);
+        when(userExperience.getUser()).thenReturn(aUserInAServer);
         when(roleService.removeRoleFromUserFuture(aUserInAServer, aRole1)).thenReturn(CompletableFuture.completedFuture(null));
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
+        Assert.assertEquals(1, experienceResults.size());
+        ExperienceGainResult result = experienceResults.get(0);
+        Assert.assertEquals(MESSAGE_COUNT + 1, result.getNewMessageCount().longValue());
+        Assert.assertEquals(1, roleCalculationResults.size());
+        RoleCalculationResult roleCalcResult = roleCalculationResults.get(0).join();
+        Assert.assertNull(roleCalcResult.getExperienceRoleId());
+        Assert.assertEquals(USER_IN_SERVER_ID, roleCalcResult.getUserInServerId());
         verify(roleService, times(1)).removeRoleFromUserFuture(aUserInAServer, aRole1);
         verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any());
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -262,10 +297,12 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRoleService.calculateRole(eq(experienceRoles), any())).thenReturn(newRole);
         when(roleService.memberHasRole(firstMember, ROLE_ID)).thenReturn(true);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).addRoleToUser(any(AUserInAServer.class), any(ARole.class));
         verify(roleService, times(0)).removeRoleFromUser(any(AUserInAServer.class), any(ARole.class));
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -286,10 +323,12 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRoleService.calculateRole(eq(experienceRoles), any())).thenReturn(newRole);
 
         when(roleService.memberHasRole(firstMember, ROLE_ID)).thenReturn(true);
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).addRoleToUser(any(AUserInAServer.class), any(ARole.class));
         verify(roleService, times(0)).removeRoleFromUser(any(AUserInAServer.class), any(ARole.class));
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -310,12 +349,12 @@ public class AUserExperienceServiceBeanTest {
         when(roleService.addRoleToMemberFuture(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
         when(roleService.addRoleToMemberFuture(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
-        CompletableFuture<Void> future = testUnit.handleExperienceGain(Arrays.asList(serverExperience));
-        future.join();
-        Assert.assertFalse(future.isCompletedExceptionally());
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any(ARole.class));
         verify(roleService, times(0)).removeRoleFromUserFuture(any(AUserInAServer.class), any());
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -327,14 +366,15 @@ public class AUserExperienceServiceBeanTest {
         setupUserInServer();
         when(userExperience.getExperience()).thenReturn(50L);
         setExperienceRoleLevels();
-        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
         when(userExperience.getCurrentExperienceRole()).thenReturn(null);
         when(experienceRoleService.calculateRole(eq(experienceRoles), any())).thenReturn(null);
 
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).removeRoleFromUserFuture(any(AUserInAServer.class), any());
         verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any());
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -353,10 +393,12 @@ public class AUserExperienceServiceBeanTest {
 
         when(roleService.removeRoleFromUserFuture(eq(aUserInAServer), any())).thenReturn(CompletableFuture.completedFuture(null));
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).addRoleToUserFuture(eq(aUserInAServer), any());
         verify(roleService, times(1)).removeRoleFromUserFuture(eq(aUserInAServer), any());
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -366,44 +408,46 @@ public class AUserExperienceServiceBeanTest {
         setupDefaultConfig();
         setupLevelsAndRolesAndNoDisallowed();
         setExperienceRoleLevels();
-        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
         when(aUserInAServer.getUserReference()).thenReturn(user);
-        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
-        when(memberService.getMemberInServer(aUserInAServer)).thenReturn(firstMember);
         when(userExperience.getExperienceGainDisabled()).thenReturn(true);
 
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(userInServerManagementService.loadOrCreateUser(firstMember)).thenReturn(aUserInAServer);
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        testUnit.handleExperienceGain(Arrays.asList(serverExperience)).join();
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).removeRoleFromUserFuture(eq(aUserInAServer), any());
         verify(roleService, times(0)).addRoleToUserFuture(eq(aUserInAServer), any());
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
     public void testHandleExperienceGainForGainDisabledForRole() {
         setupServerId();
-        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
-        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
         setupServerConfig();
         setupDefaultConfig();
         setupLevelsAndRolesAndNoDisallowed();
         setExperienceRoleLevels();
-        CompletableFuture<Void> future = testUnit.handleExperienceGain(Arrays.asList(serverExperience));
-        future.join();
-        Assert.assertFalse(future.isCompletedExceptionally());
+        when(experienceRole1.getLevel()).thenReturn(level0);
+        when(experienceRole2.getLevel()).thenReturn(level1);
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        when(roleService.hasAnyOfTheRoles(eq(firstMember), anyList())).thenReturn(true);
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(userInServerManagementService.loadOrCreateUser(firstMember)).thenReturn(aUserInAServer);
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).removeRoleFromUser(aUserInAServer, aRole1);
         verify(roleService, times(0)).addRoleToUser(eq(aUserInAServer), any(ARole.class));
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
     public void testHandleExperienceForUserNotLevelingUpWithExistingRole() {
         setupServerId();
-        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
         when(userExperience.getUser()).thenReturn(aUserInAServer);
-        when(memberService.getMemberInServer(aUserInAServer)).thenReturn(firstMember);
         when(aUserInAServer.getUserReference()).thenReturn(user);
         when(aUserInAServer.getServerReference()).thenReturn(server);
         when(roleService.hasAnyOfTheRoles(eq(firstMember), anyList())).thenReturn(false);
@@ -414,11 +458,15 @@ public class AUserExperienceServiceBeanTest {
         setupDefaultConfig();
         setupLevelsAndRolesAndNoDisallowed();
 
-        CompletableFuture<Void> future = testUnit.handleExperienceGain(Arrays.asList(serverExperience));
-        future.join();
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(userInServerManagementService.loadOrCreateUser(firstMember)).thenReturn(aUserInAServer);
+
+        ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
+        ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
+        List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
+        testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).removeRoleFromUser(aUserInAServer, aRole1);
         verify(roleService, times(0)).addRoleToUser(eq(aUserInAServer), any(ARole.class));
-        verify(self, times(1)).persistExperienceChanges(anyList());
     }
 
     @Test
@@ -435,6 +483,8 @@ public class AUserExperienceServiceBeanTest {
         when(memberService.getMemberInServerAsync(aUserInAServer)).thenReturn(CompletableFuture.completedFuture(firstMember));
 
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(experienceRoles);
+        when(experienceRole1.getLevel()).thenReturn(level0);
+        when(experienceRole2.getLevel()).thenReturn(level1);
         when(experienceRoleService.calculateRole(experienceRoles, userExperience.getLevelOrDefault())).thenReturn(afterRole);
         when(memberService.getMemberInServerAsync(userExperience.getUser())).thenReturn(CompletableFuture.completedFuture(firstMember));
         when(roleService.addRoleToMemberFuture(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
@@ -455,6 +505,8 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(experienceRoles);
         when(experienceRoleService.calculateRole(experienceRoles, userExperience.getLevelOrDefault())).thenReturn(null);
         when(roleService.removeRoleFromUserFuture(aUserInAServer, aRole1)).thenReturn(CompletableFuture.completedFuture(null));
+        when(experienceRole1.getLevel()).thenReturn(level0);
+        when(experienceRole2.getLevel()).thenReturn(level1);
         CompletableFuture<RoleCalculationResult> calculationFuture = testUnit.syncForSingleUser(userExperience);
         RoleCalculationResult result = calculationFuture.join();
         Assert.assertNull(result.getExperienceRoleId());
@@ -477,6 +529,8 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRoleService.calculateRole(experienceRoles, userExperience.getLevelOrDefault())).thenReturn(afterRole);
         when(memberService.getMemberInServerAsync(userExperience.getUser())).thenReturn(CompletableFuture.completedFuture(firstMember));
         when(roleService.memberHasRole(firstMember, ROLE_ID)).thenReturn(true);
+        when(experienceRole1.getLevel()).thenReturn(level0);
+        when(experienceRole2.getLevel()).thenReturn(level1);
         CompletableFuture<RoleCalculationResult> calculationFuture = testUnit.syncForSingleUser(userExperience);
         RoleCalculationResult result = calculationFuture.join();
         Assert.assertEquals(ROLE_ID, result.getExperienceRoleId());
@@ -504,6 +558,8 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(experienceRoles);
         when(experienceRoleService.calculateRole(experienceRoles, userExperience.getLevelOrDefault())).thenReturn(afterRole);
         when(memberService.getMemberInServerAsync(aUserInAServer)).thenReturn(CompletableFuture.completedFuture(firstMember));
+        when(experienceRole1.getLevel()).thenReturn(level0);
+        when(experienceRole2.getLevel()).thenReturn(level1);
         when(roleService.memberHasRole(firstMember, SECOND_ROLE_ID)).thenReturn(false);
         when(roleService.removeRoleFromMemberAsync(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         when(roleService.addRoleToMemberFuture(firstMember, SECOND_ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
@@ -589,6 +645,8 @@ public class AUserExperienceServiceBeanTest {
         when(roleService.addRoleToMemberFuture(firstMember,SECOND_ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         List<AUserExperience> experiences = Arrays.asList(userExperience, userExperience2);
         when(userExperienceManagementService.loadAllUsers(server)).thenReturn(experiences);
+        when(experienceRole1.getLevel()).thenReturn(level0);
+        when(experienceRole2.getLevel()).thenReturn(level1);
         List<CompletableFuture<RoleCalculationResult>> calculationFutures = testUnit.syncUserRoles(server);
         verify(roleService, times(0)).removeRoleFromMemberAsync(secondMember, ROLE_ID);
         verify(roleService, times(0)).addRoleToMemberFuture(secondMember, SECOND_ROLE_ID);
@@ -666,10 +724,10 @@ public class AUserExperienceServiceBeanTest {
 
     private void setupUserInServer() {
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        when(serverExperience.getUserInServerIds()).thenReturn(Arrays.asList(USER_IN_SERVER_ID));
-        when(userInServerManagementService.loadOrCreateUser(USER_IN_SERVER_ID)).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadOrCreateUser(firstMember)).thenReturn(aUserInAServer);
         when(aUserInAServer.getUserReference()).thenReturn(user);
-        when(memberService.getMemberInServer(aUserInAServer)).thenReturn(firstMember);
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(memberService.getMemberInServerAsync(aUserInAServer)).thenReturn(CompletableFuture.completedFuture(firstMember));
         when(userExperience.getUser()).thenReturn(aUserInAServer);
         when(aUserInAServer.getServerReference()).thenReturn(server);
         when(user.getId()).thenReturn(USER_ID);
@@ -682,7 +740,6 @@ public class AUserExperienceServiceBeanTest {
 
     private void setupServerId() {
         when(server.getId()).thenReturn(SERVER_ID);
-        when(serverExperience.getServerId()).thenReturn(SERVER_ID);
         when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
     }
 
