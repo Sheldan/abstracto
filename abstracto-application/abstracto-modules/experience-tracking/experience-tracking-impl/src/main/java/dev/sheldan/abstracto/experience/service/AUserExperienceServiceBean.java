@@ -399,6 +399,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         List<AUserExperience> aUserExperiences = userExperienceManagementService.loadAllUsers(server);
         log.info("Found {} users to synchronize", aUserExperiences.size());
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+        roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
         for (int i = 0; i < aUserExperiences.size(); i++) {
             AUserExperience userExperience = aUserExperiences.get(i);
             log.debug("Synchronizing {} out of {}", i, aUserExperiences.size());
@@ -413,6 +414,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         List<AUserExperience> aUserExperiences = userExperienceManagementService.loadAllUsers(server);
         log.info("Found {} users to synchronize", aUserExperiences.size());
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+        roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
         CompletableFutureList<RoleCalculationResult> calculations = executeActionOnUserExperiencesWithFeedBack(aUserExperiences, channel, (AUserExperience experience) -> updateUserRole(experience, roles, experience.getLevelOrDefault()));
         return calculations.getMainFuture().thenAccept(aVoid ->
             self.syncRolesInStorage(calculations.getObjects())
@@ -502,6 +504,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         AUserInAServer user = userExperience.getUser();
         log.info("Synchronizing for user {} in server {}", user.getUserReference().getId(), user.getServerReference().getId());
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(user.getServerReference());
+        roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
         return updateUserRole(userExperience, roles, userExperience.getLevelOrDefault());
     }
 

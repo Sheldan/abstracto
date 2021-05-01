@@ -92,6 +92,7 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
                 log.info("Recalculating the roles for {} users, because their current role was removed from experience tracking.", roleInServer.getUsers().size());
                 List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(role.getServer());
                 roles.removeIf(role1 -> role1.getId().equals(roleInServer.getId()));
+                roles.sort(Comparator.comparing(innerRole -> innerRole.getLevel().getLevel()));
                 Long roleId = role.getId();
                 CompletableFutureList<RoleCalculationResult> calculationResults = userExperienceService.executeActionOnUserExperiencesWithFeedBack(roleInServer.getUsers(), channel,
                         (AUserExperience ex) -> userExperienceService.updateUserRole(ex, roles, ex.getLevelOrDefault()));
