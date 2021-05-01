@@ -152,31 +152,52 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     public CompletableFuture<Void> handleExperienceGain(List<ServerExperience> servers) {
         List<ExperienceGainResult> resultFutures = new ArrayList<>();
         List<CompletableFuture<RoleCalculationResult>> futures = new ArrayList<>();
+        CompletableFuture<Void> experienceFuture = new CompletableFuture<>();
+        // TODO what if there are a lot in here...., transaction size etc
+        servers.forEach(serverExp -> {
+            List<CompletableFuture<Member>> memberFutures = new ArrayList<>();
+            serverExp.getUserInServerIds().forEach(userInAServerId -> {
+                AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(userInAServerId);
+                CompletableFuture<Member> memberFuture = memberService.getMemberInServerAsync(userInAServer);
+                memberFutures.add(memberFuture);
+            });
+
+            FutureUtils.toSingleFutureGeneric(memberFutures).whenComplete((unused, throwable) -> {
+                self.updateFoundMembers(memberFutures, serverExp.getServerId(), resultFutures, futures);
+                experienceFuture.complete(null);
+            });
+        });
+        return experienceFuture
+                .thenCompose(unused -> FutureUtils.toSingleFutureGeneric(futures))
+                .whenComplete((unused, throwable) -> self.persistExperienceChanges(resultFutures));
+    }
+
+    @Transactional
+    public void updateFoundMembers(List<CompletableFuture<Member>> memberFutures, Long serverId, List<ExperienceGainResult> resultFutures, List<CompletableFuture<RoleCalculationResult>> futures) {
         List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
         SystemConfigProperty defaultExpMultiplier = defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY);
         SystemConfigProperty defaultMinExp = defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.MIN_EXP_KEY);
         SystemConfigProperty defaultMaxExp = defaultConfigManagementService.getDefaultConfig(ExperienceFeatureConfig.MAX_EXP_KEY);
-        // TODO what if there are a lot in here...., transaction size etc
-        servers.forEach(serverExp -> {
-            AServer server = serverManagementService.loadOrCreate(serverExp.getServerId());
-            log.info("Handling {} experience for server {}", serverExp.getUserInServerIds().size(), serverExp.getServerId());
-            int minExp = configService.getLongValue(ExperienceFeatureConfig.MIN_EXP_KEY, serverExp.getServerId(), defaultMinExp.getLongValue()).intValue();
-            int maxExp = configService.getLongValue(ExperienceFeatureConfig.MAX_EXP_KEY, serverExp.getServerId(), defaultMaxExp.getLongValue()).intValue();
-            Double multiplier = configService.getDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverExp.getServerId(), defaultExpMultiplier.getDoubleValue());
-            PrimitiveIterator.OfInt iterator = new Random().ints(serverExp.getUserInServerIds().size(), minExp, maxExp + 1).iterator();
-            levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
-            List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
-            List<ADisabledExpRole> disabledExpRoles = disabledExpRoleManagementService.getDisabledRolesForServer(server);
-            List<ARole> disabledRoles = disabledExpRoles.stream().map(ADisabledExpRole::getRole).collect(Collectors.toList());
-            roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
-            serverExp.getUserInServerIds().forEach(userInAServerId -> {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        log.info("Handling {} experience for server {}", memberFutures.size(), serverId);
+        int minExp = configService.getLongValue(ExperienceFeatureConfig.MIN_EXP_KEY, serverId, defaultMinExp.getLongValue()).intValue();
+        int maxExp = configService.getLongValue(ExperienceFeatureConfig.MAX_EXP_KEY, serverId, defaultMaxExp.getLongValue()).intValue();
+        Double multiplier = configService.getDoubleValue(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverId, defaultExpMultiplier.getDoubleValue());
+        PrimitiveIterator.OfInt iterator = new Random().ints(memberFutures.size(), minExp, maxExp + 1).iterator();
+        levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
+        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+        List<ADisabledExpRole> disabledExpRoles = disabledExpRoleManagementService.getDisabledRolesForServer(server);
+        List<ARole> disabledRoles = disabledExpRoles.stream().map(ADisabledExpRole::getRole).collect(Collectors.toList());
+        roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
+        memberFutures.forEach(future -> {
+            if(!future.isCompletedExceptionally()) {
                 Integer gainedExperience = iterator.next();
-                AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(userInAServerId);
                 gainedExperience = (int) Math.floor(gainedExperience * multiplier);
-                Member member = memberService.getMemberInServer(userInAServer);
-                if(member != null && !roleService.hasAnyOfTheRoles(member, disabledRoles)) {
+                Member member = future.join();
+                AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
+                if(!roleService.hasAnyOfTheRoles(member, disabledRoles)) {
                     log.debug("Handling {}. The user gains {}", userInAServer.getUserReference().getId(), gainedExperience);
-                    Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServerId);
+                    Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
                     if(aUserExperienceOptional.isPresent()) {
                         AUserExperience aUserExperience = aUserExperienceOptional.get();
                         if(Boolean.FALSE.equals(aUserExperience.getExperienceGainDisabled())) {
@@ -218,14 +239,10 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                         futures.add(resultFuture);
                     }
                 } else {
-                    log.debug("User {} has a role which makes the user unable to gain experience or the member could not be found in the server.", userInAServer.getUserInServerId());
+                    log.info("User {} has a role which makes the user unable to gain experience.", userInAServer.getUserInServerId());
                 }
-            });
+            }
         });
-
-        return FutureUtils.toSingleFutureGeneric(futures).thenAccept(aVoid ->
-           self.persistExperienceChanges(resultFutures)
-        );
     }
 
     /**
@@ -240,17 +257,6 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      * @return A {@link CompletableFuture future} containing the {@link RoleCalculationResult result} of the role calculation, which completes after the user has been awarded the role.
      */
     private CompletableFuture<RoleCalculationResult> applyInitialRole(AUserInAServer aUserInAServer, List<AExperienceRole> roles, Integer currentLevel) {
-        // we are in the process of attributing experience, which means the member should have send a message, therefore is in the case
-        // if the member is actually _not_ in the guild anymore (would mean, joined, send a message, and left immediately) this check is required
-        // this is backed by the cache
-        if(!memberService.isUserInGuild(aUserInAServer)) {
-            log.debug("User {} is not in server {} anymore. No role calculation done.", aUserInAServer.getUserInServerId(), aUserInAServer.getServerReference().getId());
-            return CompletableFuture.completedFuture(RoleCalculationResult
-                    .builder()
-                    .userInServerId(aUserInAServer.getUserInServerId())
-                    .experienceRoleId(null)
-                    .build());
-        }
         AExperienceRole role = experienceRoleService.calculateRole(roles, currentLevel);
         if(role == null) {
             log.debug("No experience role calculated. Applying none to user {} in server {}.",
