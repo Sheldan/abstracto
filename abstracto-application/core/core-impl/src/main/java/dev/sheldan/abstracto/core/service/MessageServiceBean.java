@@ -126,14 +126,20 @@ public class MessageServiceBean implements MessageService {
                 .collect(Collectors.groupingBy(ServerChannelMessage::getServerId));
         serverMessages.forEach((serverId, channelMessagesNonGrouped) -> {
             Guild guild = guildService.getGuildById(serverId);
-            Map<Long, List<ServerChannelMessage>> channelMessages = channelMessagesNonGrouped
-                    .stream()
-                    .collect(Collectors.groupingBy(ServerChannelMessage::getChannelId));
-            channelMessages.forEach((channelId, serverChannelMessages) -> {
-                MessageChannel channel = guild.getTextChannelById(channelId);
-                serverChannelMessages.forEach(serverChannelMessage ->
-                        messageFutures.add(channelService.retrieveMessageInChannel(channel, serverChannelMessage.getMessageId())));
-            });
+            // in case the gild is not available anymore, this would cause the job to fail
+            if(guild != null) {
+                Map<Long, List<ServerChannelMessage>> channelMessages = channelMessagesNonGrouped
+                        .stream()
+                        .collect(Collectors.groupingBy(ServerChannelMessage::getChannelId));
+                channelMessages.forEach((channelId, serverChannelMessages) -> {
+                    MessageChannel channel = guild.getTextChannelById(channelId);
+                    // in case the channel was deleted, this would cause the job to fail
+                    if(channel != null) {
+                        serverChannelMessages.forEach(serverChannelMessage ->
+                                messageFutures.add(channelService.retrieveMessageInChannel(channel, serverChannelMessage.getMessageId())));
+                    }
+                });
+            }
         });
         return messageFutures;
     }
