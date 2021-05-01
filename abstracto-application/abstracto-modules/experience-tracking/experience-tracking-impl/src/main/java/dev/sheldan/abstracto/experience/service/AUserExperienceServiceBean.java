@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureConfig;
+import dev.sheldan.abstracto.experience.exception.NoExperienceTrackedException;
 import dev.sheldan.abstracto.experience.model.*;
 import dev.sheldan.abstracto.experience.model.database.*;
 import dev.sheldan.abstracto.experience.model.template.UserSyncStatusModel;
@@ -529,13 +530,15 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Override
     public LeaderBoardEntry getRankOfUserInServer(AUserInAServer userInAServer) {
         log.debug("Retrieving rank for {}", userInAServer.getUserReference().getId());
-        AUserExperience aUserExperience = userExperienceManagementService.findUserInServer(userInAServer);
+        Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
+        if(!aUserExperienceOptional.isPresent()) {
+            throw new NoExperienceTrackedException();
+        }
         Integer rank = 0;
-        if(aUserExperience != null) {
-            LeaderBoardEntryResult rankOfUserInServer = userExperienceManagementService.getRankOfUserInServer(aUserExperience);
-            if(rankOfUserInServer != null) {
-                rank = rankOfUserInServer.getRank();
-            }
+        AUserExperience aUserExperience = aUserExperienceOptional.get();
+        LeaderBoardEntryResult rankOfUserInServer = userExperienceManagementService.getRankOfUserInServer(aUserExperience);
+        if(rankOfUserInServer != null) {
+            rank = rankOfUserInServer.getRank();
         }
         return LeaderBoardEntry.builder().experience(aUserExperience).rank(rank).build();
     }

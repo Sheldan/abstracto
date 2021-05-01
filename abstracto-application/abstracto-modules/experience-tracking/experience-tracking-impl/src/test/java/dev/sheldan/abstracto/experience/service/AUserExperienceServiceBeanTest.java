@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementServ
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureConfig;
+import dev.sheldan.abstracto.experience.exception.NoExperienceTrackedException;
 import dev.sheldan.abstracto.experience.model.*;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
@@ -661,7 +662,8 @@ public class AUserExperienceServiceBeanTest {
         int rank = 1;
         AUserExperience experienceObj = Mockito.mock(AUserExperience.class);
         when(aUserInAServer.getUserReference()).thenReturn(user);
-        when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(experienceObj);
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(experienceObj));
         LeaderBoardEntryResult leaderBoardEntryTest = Mockito.mock(LeaderBoardEntryResult.class);
         when(leaderBoardEntryTest.getRank()).thenReturn(rank);
         when(userExperienceManagementService.getRankOfUserInServer(experienceObj)).thenReturn(leaderBoardEntryTest);
@@ -670,20 +672,20 @@ public class AUserExperienceServiceBeanTest {
         Assert.assertEquals(rank, rankOfUserInServer.getRank().intValue());
     }
 
-    @Test
-    public void testGetRankForUserNotExisting() {
+    @Test(expected = NoExperienceTrackedException.class)
+    public void testGetRankForUserNoExperienceFound() {
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
         when(aUserInAServer.getUserReference()).thenReturn(user);
-        when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(null);
-        LeaderBoardEntry rankOfUserInServer = testUnit.getRankOfUserInServer(aUserInAServer);
-        Assert.assertNull(rankOfUserInServer.getExperience());
-        Assert.assertEquals(0, rankOfUserInServer.getRank().intValue());
+        when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
+        testUnit.getRankOfUserInServer(aUserInAServer);
     }
 
     @Test
     public void testGetRankWhenRankReturnsNull() {
         AUserExperience experienceObj = Mockito.mock(AUserExperience.class);
         when(aUserInAServer.getUserReference()).thenReturn(user);
-        when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(experienceObj);
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
+        when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(experienceObj));
         when(userExperienceManagementService.getRankOfUserInServer(experienceObj)).thenReturn(null);
         LeaderBoardEntry rankOfUserInServer = testUnit.getRankOfUserInServer(aUserInAServer);
         Assert.assertEquals(experienceObj, rankOfUserInServer.getExperience());
