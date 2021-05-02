@@ -26,12 +26,13 @@ public class RoleParameterHandlerImpl implements RoleParameterHandler {
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         String inputString = ((String) input.getValue()).trim();
         Matcher matcher = Message.MentionType.ROLE.getPattern().matcher(inputString);
+        Role foundRole;
         if(matcher.matches() && iterators.getRoleIterator().hasNext()) {
-            return iterators.getRoleIterator().next();
+            foundRole = iterators.getRoleIterator().next();
         } else {
             if(NumberUtils.isParsable(inputString)) {
                 long roleId = Long.parseLong(inputString);
-                return context.getGuild().getRoleById(roleId);
+                foundRole = context.getGuild().getRoleById(roleId);
             } else {
                 List<Role> roles = context.getGuild().getRolesByName(inputString, true);
                 if(roles.isEmpty()) {
@@ -40,9 +41,13 @@ public class RoleParameterHandlerImpl implements RoleParameterHandler {
                 if(roles.size() > 1) {
                     throw new AbstractoTemplatedException("Multiple roles found with name.", "multiple_roles_found_by_name_exception");
                 }
-                return roles.get(0);
+                foundRole = roles.get(0);
             }
         }
+        if(foundRole != null && foundRole.isPublicRole()) {
+            throw new AbstractoTemplatedException("Public role cannot be used for role parameter.", "everyone_role_not_allowed_exception");
+        }
+        return foundRole;
     }
 
     @Override
