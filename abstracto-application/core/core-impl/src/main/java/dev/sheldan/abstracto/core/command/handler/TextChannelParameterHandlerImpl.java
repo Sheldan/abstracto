@@ -24,7 +24,7 @@ public class TextChannelParameterHandlerImpl implements TextChannelParameterHand
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        String inputString = (String) input.getValue();
+        String inputString = ((String) input.getValue()).trim();
         Matcher matcher = Message.MentionType.CHANNEL.getPattern().matcher(inputString);
         if(matcher.matches() && iterators.getChannelIterator().hasNext()) {
             return iterators.getChannelIterator().next();

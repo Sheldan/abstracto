@@ -17,7 +17,7 @@ jobs:
         id: version
         run: echo "version=$(mvn --file abstracto-application/pom.xml -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_ENV
       - name: Publish to GitHub Packages
-        run: mvn --file abstracto-application/pom.xml -B deploy -P documentation,deployment-docker -Dmaven.wagon.http.pool=false -DskipTests=true
+        run: mvn --file abstracto-application/pom.xml -B deploy -P documentation,javadoc -Dmaven.wagon.http.pool=false -DskipTests=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy documentation to GitHub pages

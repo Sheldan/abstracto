@@ -19,7 +19,7 @@ public class IntegerParameterHandlerImpl implements IntegerParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return Integer.parseInt((String) input.getValue());
+        return Integer.parseInt(((String) input.getValue()).trim());
     }
 
     @Override

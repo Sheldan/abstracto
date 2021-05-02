@@ -22,7 +22,7 @@ public class EmoteParameterHandlerImpl implements EmoteParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        String inputString = (String) input.getValue();
+        String inputString = ((String) input.getValue()).trim();
         Matcher matcher = Message.MentionType.EMOTE.getPattern().matcher(inputString);
         if(matcher.matches() && iterators.getEmoteIterator().hasNext()) {
             return iterators.getEmoteIterator().next();

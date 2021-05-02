@@ -30,7 +30,7 @@ public class MemberParameterHandlerImpl implements MemberParameterHandler {
 
     @Override
     public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        String inputString = (String) input.getValue();
+        String inputString = ((String) input.getValue()).trim();
         Matcher matcher = Message.MentionType.USER.getPattern().matcher(inputString);
         if(matcher.matches() && iterators.getMemberIterator().hasNext()) {
             return CompletableFuture.completedFuture(iterators.getMemberIterator().next());

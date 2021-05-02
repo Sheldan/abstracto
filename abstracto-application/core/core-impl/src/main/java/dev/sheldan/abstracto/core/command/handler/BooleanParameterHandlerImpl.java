@@ -18,7 +18,7 @@ public class BooleanParameterHandlerImpl implements BooleanParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return Boolean.valueOf((String) input.getValue());
+        return Boolean.valueOf(((String) input.getValue()).trim());
     }
 
     @Override

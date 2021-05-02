@@ -21,7 +21,7 @@ public class DurationParameterHandlerImpl implements DurationParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return ParseUtils.parseDuration((String) input.getValue());
+        return ParseUtils.parseDuration(((String) input.getValue()).trim());
     }
 
     @Override

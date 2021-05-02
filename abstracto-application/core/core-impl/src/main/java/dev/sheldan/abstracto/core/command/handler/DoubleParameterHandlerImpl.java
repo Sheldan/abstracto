@@ -18,7 +18,7 @@ public class DoubleParameterHandlerImpl implements DoubleParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return Double.parseDouble((String) input.getValue());
+        return Double.parseDouble(((String) input.getValue()).trim());
     }
 
     @Override

@@ -60,11 +60,6 @@ public class LongParameterHandlerImplTest extends AbstractParameterHandlerTest {
     }
 
     @Test(expected = NumberFormatException.class)
-    public void testNullInput() {
-        testUnit.handle(getPieceWithValue(null), null, parameter, null, command);
-    }
-
-    @Test(expected = NumberFormatException.class)
     public void testEmptyStringAsInput() {
         testUnit.handle(getPieceWithValue(""), null, parameter, null, command);
     }

@@ -29,7 +29,7 @@ public class ChannelGroupTypeParameterHandlerImpl implements ChannelGroupTypePar
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        ChannelGroupType actualGroupType = channelGroupTypeManagementService.findChannelGroupTypeByKey((String) input.getValue());
+        ChannelGroupType actualGroupType = channelGroupTypeManagementService.findChannelGroupTypeByKey(((String) input.getValue()).trim());
         return ChannelGroupType
                 .builder()
                 .groupTypeKey(actualGroupType.getGroupTypeKey())

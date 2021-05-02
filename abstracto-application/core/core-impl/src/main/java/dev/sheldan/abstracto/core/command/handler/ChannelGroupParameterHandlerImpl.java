@@ -28,7 +28,7 @@ public class ChannelGroupParameterHandlerImpl implements ChannelGroupParameterHa
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         AServer server = serverManagementService.loadServer(context.getGuild().getIdLong());
-        String inputString = (String) input.getValue();
+        String inputString = ((String) input.getValue()).trim();
         AChannelGroup actualInstance = channelGroupManagementService.findByNameAndServerOptional(inputString, server)
                 .orElseThrow(() -> new ChannelGroupNotFoundException(inputString, channelGroupManagementService.getAllAvailableAsString(server)));
         ChannelGroupType channelGroupType = ChannelGroupType

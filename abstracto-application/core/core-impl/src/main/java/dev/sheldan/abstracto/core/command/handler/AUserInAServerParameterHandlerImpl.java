@@ -41,7 +41,7 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
                     Member member = (Member) o;
                     actualInstance = userInServerManagementService.loadOrCreateUser(member);
                 } else {
-                    Long userId = Long.parseLong((String) input.getValue());
+                    Long userId = Long.parseLong(((String) input.getValue()).trim());
                     actualInstance = userInServerManagementService.loadAUserInAServerOptional(context.getGuild().getIdLong(), userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
                 }
                 future.complete(AUserInAServer.builder().userInServerId(actualInstance.getUserInServerId()).build());

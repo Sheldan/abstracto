@@ -19,7 +19,7 @@ public class LongParameterHandlerImpl implements LongParameterHandler {
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return Long.parseLong((String) input.getValue());
+        return Long.parseLong(((String) input.getValue()).trim());
     }
 
     @Override

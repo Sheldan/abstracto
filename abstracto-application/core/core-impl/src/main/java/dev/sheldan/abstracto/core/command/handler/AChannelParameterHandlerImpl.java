@@ -35,7 +35,7 @@ public class AChannelParameterHandlerImpl implements AChannelParameterHandler {
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         TextChannel textChannel = (TextChannel) textChannelParameterHandler.handle(input, iterators, param, context, command);
         if(textChannel == null) {
-            Long channelId = Long.parseLong((String) input.getValue());
+            Long channelId = Long.parseLong(((String) input.getValue()).trim());
             AChannel actualInstance = channelManagementService.loadChannel(channelId);
             return AChannel.builder().fake(true).id(actualInstance.getId()).build();
         } else {

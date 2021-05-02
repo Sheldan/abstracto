@@ -55,11 +55,6 @@ public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTe
     }
 
     @Test(expected = DurationFormatException.class)
-    public void testNullInput() {
-        testUnit.handle(getPieceWithValue(null), null, parameter, null, command);
-    }
-
-    @Test(expected = DurationFormatException.class)
     public void testEmptyStringAsInput() {
         testUnit.handle(getPieceWithValue(""), null, parameter, null, command);
     }

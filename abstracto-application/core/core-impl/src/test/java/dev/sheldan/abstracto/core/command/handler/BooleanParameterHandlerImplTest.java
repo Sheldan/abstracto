@@ -52,12 +52,6 @@ public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTes
     }
 
     @Test
-    public void testNullInput() {
-        UnparsedCommandParameterPiece piece = getPieceWithValue(null);
-        Assert.assertFalse((Boolean)testUnit.handle(piece, null, parameter, null, command));
-    }
-
-    @Test
     public void testEmptyStringAsInput() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("");
         Assert.assertFalse((Boolean)testUnit.handle(piece, null, parameter, null, command));

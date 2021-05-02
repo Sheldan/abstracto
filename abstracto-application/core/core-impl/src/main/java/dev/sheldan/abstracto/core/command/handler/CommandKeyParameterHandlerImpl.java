@@ -20,7 +20,7 @@ public class CommandKeyParameterHandlerImpl implements CommandKeyParameterHandle
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
-        return CommandParameterKey.getEnumFromKey(param.getType(), (String) input.getValue());
+        return CommandParameterKey.getEnumFromKey(param.getType(), ((String) input.getValue()).trim());
     }
 
     @Override
