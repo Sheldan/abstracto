@@ -14,7 +14,7 @@ An example implementation of this bot can be seen [here](https://github.com/Shel
 
 
 ## Technologies
-* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 4.2.1_254
+* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 4.2.1_262
 * [Spring boot](https://github.com/spring-projects/spring-boot) is used as a framework to create standalone application in Java with Java EE methods. (including Dependency injection and more)
 * [Hibernate](https://github.com/hibernate/hibernate-orm) is used as a reference implementation of JPA.
 * [Freemarker](https://github.com/apache/freemarker) is used as a templating engine. This is used to provide internationalization for user facing text and enable dynamic embed configuration.
@@ -25,7 +25,7 @@ An example implementation of this bot can be seen [here](https://github.com/Shel
 * [Liquibase](https://github.com/liquibase/liquibase) is used to manage changes to the database
 
 ## Documentation
-A detailed documentation of the pure form of Abstracto including the terminology and commands in HTML form is available [here](https://sheldan.github.io/abstracto-docs/). The PDF is available [here](https://sheldan.github.io/abstracto-docs/documentation.pdf)
+A detailed documentation of the pure form of Abstracto including the terminology and commands in HTML form is available [here](https://sheldan.github.io/abstracto-docs/current). The PDF is available [here](https://sheldan.github.io/abstracto-docs/current/documentation.pdf)
 If you want to view the documentation to an earlier released version you need to append the desired version to the URL. The current version will be available aforementioned URL, but it is not right now, because Abstracto has not been released yet.
 
 ## Customization documentation 
