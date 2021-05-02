@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 @Component
 public class MemberParameterHandlerImpl implements MemberParameterHandler {
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(Member.class);
     }
 
@@ -32,7 +32,7 @@ public class MemberParameterHandlerImpl implements MemberParameterHandler {
     public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         String inputString = (String) input.getValue();
         Matcher matcher = Message.MentionType.USER.getPattern().matcher(inputString);
-        if(matcher.matches()) {
+        if(matcher.matches() && iterators.getMemberIterator().hasNext()) {
             return CompletableFuture.completedFuture(iterators.getMemberIterator().next());
         } else {
             if(NumberUtils.isParsable(inputString)) {

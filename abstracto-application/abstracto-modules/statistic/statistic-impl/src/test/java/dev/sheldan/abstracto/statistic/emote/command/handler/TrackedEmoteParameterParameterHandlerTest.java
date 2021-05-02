@@ -61,16 +61,19 @@ public class TrackedEmoteParameterParameterHandlerTest {
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     private static final String WRONG_FORMATTED_INPUT = "input";
 
     @Test
     public void testHandleIncorrect() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testHandleCorrect() {
-        Assert.assertTrue(testUnit.handles(TrackEmoteParameter.class));
+        Assert.assertTrue(testUnit.handles(TrackEmoteParameter.class, unparsedCommandParameterPiece));
     }
 
     @Test

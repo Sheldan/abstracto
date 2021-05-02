@@ -21,7 +21,7 @@ public class StringParameterHandlerImpl implements StringParameterHandler {
     }
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(String.class);
     }
 

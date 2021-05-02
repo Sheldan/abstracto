@@ -44,7 +44,7 @@ public class CombinedParameterHandlerImpl implements CombinedParametersHandler {
         for (Object concreteParameter: possibleTypes) {
             for (CommandParameterHandler handler : parameterHandlers) {
                 try {
-                    if (handler.handles((Class) concreteParameter)) {
+                    if (handler.handles((Class) concreteParameter, input)) {
                         if (handler.async()) {
                             futures.add(handler.handleAsync(input, iterators, param, context, command));
                         } else {
@@ -75,7 +75,7 @@ public class CombinedParameterHandlerImpl implements CombinedParametersHandler {
     }
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(CombinedParameter.class);
     }
 

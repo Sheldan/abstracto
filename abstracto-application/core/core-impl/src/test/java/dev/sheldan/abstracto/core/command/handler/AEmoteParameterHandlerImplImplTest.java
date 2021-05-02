@@ -54,14 +54,17 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(AEmote.class));
+        Assert.assertTrue(testUnit.handles(AEmote.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

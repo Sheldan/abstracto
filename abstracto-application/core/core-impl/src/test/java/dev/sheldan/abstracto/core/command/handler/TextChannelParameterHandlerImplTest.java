@@ -3,6 +3,8 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -44,16 +46,20 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     private static final Long CHANNEL_ID = 111111111111111111L;
 
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(TextChannel.class));
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+        Assert.assertTrue(testUnit.handles(TextChannel.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

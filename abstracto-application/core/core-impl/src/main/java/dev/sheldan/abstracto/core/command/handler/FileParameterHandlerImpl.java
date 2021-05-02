@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.NoAttachmentFoundException;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.FileParameterHandler;
 import dev.sheldan.abstracto.core.service.HttpService;
@@ -44,8 +45,8 @@ public class FileParameterHandlerImpl implements FileParameterHandler {
     }
 
     @Override
-    public boolean handles(Class clazz) {
-        return clazz.equals(File.class);
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
+        return clazz.equals(File.class) && value.getType().equals(ParameterPieceType.ATTACHMENT);
     }
 
     @Override

@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.service.CommandService;
-import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
 import net.dv8tion.jda.api.entities.Message;
@@ -54,14 +53,17 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(ARole.class));
+        Assert.assertTrue(testUnit.handles(ARole.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

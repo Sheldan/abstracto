@@ -27,7 +27,7 @@ public class ARoleParameterHandlerImpl implements ARoleParameterHandler {
     private CommandService commandService;
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(ARole.class);
     }
 

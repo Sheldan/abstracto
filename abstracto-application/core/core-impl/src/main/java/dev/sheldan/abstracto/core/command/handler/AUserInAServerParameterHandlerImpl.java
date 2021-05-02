@@ -55,7 +55,7 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
     }
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(AUserInAServer.class);
     }
 

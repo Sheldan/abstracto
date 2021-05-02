@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.ChannelGroupTypeParameterHandler;
 import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
@@ -22,8 +23,8 @@ public class ChannelGroupTypeParameterHandlerImpl implements ChannelGroupTypePar
     private ServerManagementService serverManagementService;
 
     @Override
-    public boolean handles(Class clazz) {
-        return clazz.equals(ChannelGroupType.class);
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
+        return clazz.equals(ChannelGroupType.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

@@ -175,7 +175,7 @@ public class CommandReceivedHandlerTest {
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter));
         when(parameter.getType()).thenReturn(Duration.class);
         Duration parsedDuration = Duration.ofMinutes(1);
-        when(parameterHandler.handles(Duration.class)).thenReturn(true);
+        when(parameterHandler.handles(eq(Duration.class), any())).thenReturn(true);
         when(parameterHandler.handle(any(UnparsedCommandParameterPiece.class), any(CommandParameterIterators.class), eq(parameter), eq(message), eq(command))).thenReturn(parsedDuration);
         testUnit.onMessageReceived(event);
         verify(self, times(1)).executeCommand(eq(event), eq(command), parametersArgumentCaptor.capture());
@@ -190,7 +190,7 @@ public class CommandReceivedHandlerTest {
         setupCommandAndMessage(MESSAGE_CONTENT_ONE_PARAMETER);
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter));
         when(parameter.getType()).thenReturn(String.class);
-        when(parameterHandler.handles(String.class)).thenReturn(true);
+        when(parameterHandler.handles(eq(String.class), any())).thenReturn(true);
         when(parameterHandler.handle(any(UnparsedCommandParameterPiece.class), any(CommandParameterIterators.class), eq(parameter), eq(message), eq(command))).thenReturn(PARAMETER_TEXT_1);
         testUnit.onMessageReceived(event);
         verify(self, times(1)).executeCommand(eq(event), eq(command), parametersArgumentCaptor.capture());
@@ -206,7 +206,7 @@ public class CommandReceivedHandlerTest {
         when(parameter.isRemainder()).thenReturn(true);
         when(parameter.getType()).thenReturn(String.class);
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter));
-        when(parameterHandler.handles(String.class)).thenReturn(true);
+        when(parameterHandler.handles(eq(String.class), any())).thenReturn(true);
         when(parameterHandler.handle(argThat(parameterPieceMatcher(PARAMETER_TEXT_1)), any(CommandParameterIterators.class), eq(parameter), eq(message), eq(command))).thenReturn(PARAMETER_TEXT_1);
         when(parameterHandler.handle(argThat(parameterPieceMatcher(PARAMETER_TEXT_2)), any(CommandParameterIterators.class), eq(parameter), eq(message), eq(command))).thenReturn(PARAMETER_TEXT_2);
         testUnit.onMessageReceived(event);
@@ -225,8 +225,8 @@ public class CommandReceivedHandlerTest {
         when(secondParameter.getType()).thenReturn(String.class);
         when(secondParameter.isRemainder()).thenReturn(true);
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter, secondParameter));
-        when(parameterHandler.handles(Duration.class)).thenReturn(true);
-        when(secondParameterHandler.handles(String.class)).thenReturn(true);
+        when(parameterHandler.handles(eq(Duration.class), any())).thenReturn(true);
+        when(secondParameterHandler.handles(eq(String.class), any())).thenReturn(true);
         Duration parsedDuration = Duration.ofMinutes(1);
         when(parameterHandler.handle(argThat(parameterPieceMatcher(PARAMETER_TEXT_1)), any(CommandParameterIterators.class), eq(parameter), eq(message), eq(command))).thenReturn(parsedDuration);
         when(secondParameterHandler.handle(argThat(parameterPieceMatcher(PARAMETER_TEXT_2)), any(CommandParameterIterators.class), eq(secondParameter), eq(message), eq(command))).thenReturn(PARAMETER_TEXT_2);
@@ -245,7 +245,7 @@ public class CommandReceivedHandlerTest {
         when(parameter.getType()).thenReturn(Duration.class);
         when(parameter.isRemainder()).thenReturn(false);
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter, secondParameter));
-        when(parameterHandler.handles(Duration.class)).thenReturn(true);
+        when(parameterHandler.handles(eq(Duration.class), any())).thenReturn(true);
         when(parameterHandler.async()).thenReturn(true);
         Duration parsedDuration = Duration.ofMinutes(1);
         when(parameterHandler.handleAsync(argThat(parameterPieceMatcher(PARAMETER_TEXT_1)), any(CommandParameterIterators.class),
@@ -266,8 +266,8 @@ public class CommandReceivedHandlerTest {
         when(secondParameter.getType()).thenReturn(String.class);
         when(secondParameter.isRemainder()).thenReturn(true);
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter, secondParameter));
-        when(parameterHandler.handles(Duration.class)).thenReturn(true);
-        when(secondParameterHandler.handles(String.class)).thenReturn(true);
+        when(parameterHandler.handles(eq(Duration.class), any())).thenReturn(true);
+        when(secondParameterHandler.handles(eq(String.class), any())).thenReturn(true);
         when(secondParameterHandler.async()).thenReturn(true);
         Duration parsedDuration = Duration.ofMinutes(1);
         when(parameterHandler.handle(argThat(parameterPieceMatcher(PARAMETER_TEXT_1)), any(CommandParameterIterators.class), eq(parameter), eq(message), eq(command))).thenReturn(parsedDuration);

@@ -28,7 +28,7 @@ public class FullRoleParameterHandlerImpl implements FullRoleParameterHandler {
     private CommandService commandService;
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(FullRole.class);
     }
 

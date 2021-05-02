@@ -37,10 +37,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -257,17 +254,22 @@ public class CommandReceivedHandler extends ListenerAdapter {
         Iterator<Role> roleIterator = message.getMentionedRolesBag().iterator();
         Parameter param = parameters.get(0);
         CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
+        Set<CommandParameterHandler> usedParameterHandler = findNecessaryCommandParameterHandlers(parameters, unParsedCommandParameter);
         List<CompletableFuture> futures = new ArrayList<>();
+        // the actual parameters which were handled, might not coincide with the unparsed parameters
+        // because we might ignore some parameters (for example referenced messages) in case the command does not use this as a parameter
+        int parsedParameter = 0;
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
-            if(i < parameters.size() && !param.isRemainder()) {
-                param = parameters.get(i);
+            if(parsedParameter < parameters.size() && !param.isRemainder()) {
+                param = parameters.get(parsedParameter);
             } else {
                 param = parameters.get(parameters.size() - 1);
             }
             UnparsedCommandParameterPiece value = unParsedCommandParameter.getParameters().get(i);
-            for (CommandParameterHandler handler : parameterHandlers) {
+            // TODO might be able to do this without iterating, if we directly associated the handler required for each parameter
+            for (CommandParameterHandler handler : usedParameterHandler) {
                 try {
-                    if (handler.handles(param.getType())) {
+                    if (handler.handles(param.getType(), value)) {
                         if (handler.async()) {
                             CompletableFuture future = handler.handleAsync(value, iterators, param, message, command);
                             futures.add(future);
@@ -278,6 +280,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                                 parsedParameters.add(ParseResult.builder().parameter(param).result(result).build());
                             }
                         }
+                        parsedParameter++;
                         break;
                     }
                 } catch (AbstractoRunTimeException abstractoRunTimeException) {
@@ -325,6 +328,29 @@ public class CommandReceivedHandler extends ListenerAdapter {
             Parameters resultParameters = Parameters.builder().parameters(extractParametersFromParsed(parsedParameters)).build();
             return CompletableFuture.completedFuture(resultParameters);
         }
+    }
+
+    private Set<CommandParameterHandler> findNecessaryCommandParameterHandlers(List<Parameter> parameters, UnParsedCommandParameter unParsedCommandParameter) {
+        Set<CommandParameterHandler> foundHandlers = new HashSet<>();
+        Parameter param = parameters.get(0);
+        int parsedParameter = 0;
+        for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
+            if (parsedParameter < parameters.size() && !param.isRemainder()) {
+                param = parameters.get(parsedParameter);
+            } else {
+                param = parameters.get(parameters.size() - 1);
+            }
+            UnparsedCommandParameterPiece value = unParsedCommandParameter.getParameters().get(i);
+            for (Parameter parameter : parameters) {
+                for (CommandParameterHandler handler : parameterHandlers) {
+                    if (!foundHandlers.contains(handler) && handler.handles(parameter.getType(), value)) {
+                        foundHandlers.add(handler);
+                        parsedParameter++;
+                    }
+                }
+            }
+        }
+        return foundHandlers;
     }
 
     private List<Object> extractParametersFromParsed(List<ParseResult> results) {

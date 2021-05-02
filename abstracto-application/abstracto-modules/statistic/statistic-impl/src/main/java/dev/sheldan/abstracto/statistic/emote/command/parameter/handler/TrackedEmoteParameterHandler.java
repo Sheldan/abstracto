@@ -33,10 +33,11 @@ public class TrackedEmoteParameterHandler implements CommandParameterHandler {
     /**
      * This {@link CommandParameterHandler} only handles {@link TrackedEmote}
      * @param clazz The desired {@link Class} of a parameter
+     * @param value
      * @return Whether or not the given {@link Class} will be handled by this {@link CommandParameterHandler}
      */
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(TrackedEmote.class);
     }
 

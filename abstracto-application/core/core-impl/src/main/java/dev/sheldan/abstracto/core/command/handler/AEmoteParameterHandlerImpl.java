@@ -27,7 +27,7 @@ public class AEmoteParameterHandlerImpl implements AEmoteParameterHandler {
     private CommandService commandService;
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(AEmote.class);
     }
 

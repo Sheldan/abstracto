@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.exception.DurationFormatException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,6 +14,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTest {
@@ -25,14 +29,18 @@ public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(Duration.class));
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+        Assert.assertTrue(testUnit.handles(Duration.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

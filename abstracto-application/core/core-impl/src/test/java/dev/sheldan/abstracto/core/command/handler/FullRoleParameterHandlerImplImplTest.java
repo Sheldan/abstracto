@@ -54,14 +54,17 @@ public class FullRoleParameterHandlerImplImplTest extends AbstractParameterHandl
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(FullRole.class));
+        Assert.assertTrue(testUnit.handles(FullRole.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

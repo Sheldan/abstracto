@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -41,17 +42,20 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     private static final Long EMOTE_ID = 111111111111111111L;
     private static final String EMOTE_NAME = "test";
 
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(Emote.class));
+        Assert.assertTrue(testUnit.handles(Emote.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

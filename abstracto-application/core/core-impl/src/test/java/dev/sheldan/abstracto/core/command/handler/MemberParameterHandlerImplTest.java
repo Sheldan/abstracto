@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
+import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -47,16 +47,19 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     private static final Long USER_ID = 111111111111111111L;
 
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(Member.class));
+        Assert.assertTrue(testUnit.handles(Member.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

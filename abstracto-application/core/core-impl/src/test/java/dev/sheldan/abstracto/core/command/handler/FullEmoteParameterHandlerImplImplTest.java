@@ -54,14 +54,17 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(FullEmote.class));
+        Assert.assertTrue(testUnit.handles(FullEmote.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

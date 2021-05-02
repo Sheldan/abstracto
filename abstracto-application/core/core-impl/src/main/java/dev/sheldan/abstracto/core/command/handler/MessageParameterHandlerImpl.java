@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.MessageParameterHandler;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -29,8 +30,8 @@ public class MessageParameterHandlerImpl implements MessageParameterHandler {
     }
 
     @Override
-    public boolean handles(Class clazz) {
-        return clazz.equals(Message.class);
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
+        return clazz.equals(Message.class) && value.getType().equals(ParameterPieceType.REFERENCED_MESSAGE);
     }
 
     @Override

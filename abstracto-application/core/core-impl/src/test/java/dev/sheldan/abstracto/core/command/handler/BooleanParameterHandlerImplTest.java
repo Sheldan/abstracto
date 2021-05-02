@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,6 +10,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTest {
@@ -22,14 +25,18 @@ public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTes
     @Mock
     private Command command;
 
+    @Mock
+    private UnparsedCommandParameterPiece unparsedCommandParameterPiece;
+
     @Test
     public void testSuccessfulCondition() {
-        Assert.assertTrue(testUnit.handles(Boolean.class));
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+        Assert.assertTrue(testUnit.handles(Boolean.class, unparsedCommandParameterPiece));
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class));
+        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
     }
 
     @Test

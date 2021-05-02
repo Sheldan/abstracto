@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 public class EmoteParameterHandlerImpl implements EmoteParameterHandler {
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(Emote.class);
     }
 
@@ -24,7 +24,7 @@ public class EmoteParameterHandlerImpl implements EmoteParameterHandler {
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         String inputString = (String) input.getValue();
         Matcher matcher = Message.MentionType.EMOTE.getPattern().matcher(inputString);
-        if(matcher.matches()) {
+        if(matcher.matches() && iterators.getEmoteIterator().hasNext()) {
             return iterators.getEmoteIterator().next();
         } else {
             if(StringUtils.isNumeric(inputString)) {

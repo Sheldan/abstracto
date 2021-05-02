@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.ChannelGroupNotFoundException;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.ChannelGroupParameterHandler;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
@@ -44,8 +45,8 @@ public class ChannelGroupParameterHandlerImpl implements ChannelGroupParameterHa
     }
 
     @Override
-    public boolean handles(Class clazz) {
-        return clazz.equals(AChannelGroup.class);
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
+        return clazz.equals(AChannelGroup.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

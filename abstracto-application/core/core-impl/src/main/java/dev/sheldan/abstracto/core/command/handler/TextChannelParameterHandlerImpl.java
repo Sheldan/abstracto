@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.TextChannelParameterHandler;
 import net.dv8tion.jda.api.entities.Message;
@@ -17,15 +18,15 @@ import java.util.regex.Matcher;
 @Component
 public class TextChannelParameterHandlerImpl implements TextChannelParameterHandler {
     @Override
-    public boolean handles(Class clazz) {
-        return clazz.equals(TextChannel.class);
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
+        return clazz.equals(TextChannel.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         String inputString = (String) input.getValue();
         Matcher matcher = Message.MentionType.CHANNEL.getPattern().matcher(inputString);
-        if(matcher.matches()) {
+        if(matcher.matches() && iterators.getChannelIterator().hasNext()) {
             return iterators.getChannelIterator().next();
         } else {
             if(NumberUtils.isParsable(inputString)) {

@@ -27,7 +27,7 @@ public class AChannelParameterHandlerImpl implements AChannelParameterHandler {
     private ChannelManagementService channelManagementService;
 
     @Override
-    public boolean handles(Class clazz) {
+    public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
         return clazz.equals(AChannel.class);
     }
 
