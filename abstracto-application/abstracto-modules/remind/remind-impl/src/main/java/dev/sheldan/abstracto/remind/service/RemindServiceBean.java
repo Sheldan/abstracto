@@ -174,7 +174,7 @@ public class RemindServiceBean implements ReminderService {
     @Override
     public void snoozeReminder(Long reminderId, AUserInAServer user, Duration newDuration) {
         Reminder reminder = reminderManagementService.getReminderByAndByUser(user, reminderId).orElseThrow(() -> new ReminderNotFoundException(reminderId));
-        if(reminder.getTargetDate().isAfter(Instant.now())) {
+        if(reminder.getTargetDate().isAfter(Instant.now()) && !reminder.isReminded()) {
             throw new NotPossibleToSnoozeException();
         }
         log.info("Snoozing reminder {} to be executed in {}.", reminderId, newDuration);

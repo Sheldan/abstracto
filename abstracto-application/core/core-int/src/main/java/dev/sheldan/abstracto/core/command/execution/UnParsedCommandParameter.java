@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 @Getter
 public class UnParsedCommandParameter {
 
-    private static Pattern SPLIT_REGEX  = Pattern.compile("\"([^\"]*)\"|(\\S+\\n*)");
+    private static Pattern SPLIT_REGEX  = Pattern.compile("\"([^\"]*)\"|([\\S\\n]+)");
 
     public UnParsedCommandParameter(String parameters, Message message) {
         this.parameters = new ArrayList<>();
