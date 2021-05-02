@@ -262,8 +262,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
             if(parsedParameter < parameters.size() && !param.isRemainder()) {
                 param = parameters.get(parsedParameter);
-            } else {
+            } else if(param.isRemainder()) {
                 param = parameters.get(parameters.size() - 1);
+            } else {
+                break;
             }
             UnparsedCommandParameterPiece value = unParsedCommandParameter.getParameters().get(i);
             // TODO might be able to do this without iterating, if we directly associated the handler required for each parameter
