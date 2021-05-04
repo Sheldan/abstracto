@@ -53,7 +53,7 @@ public class ResetConfig extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         Parameter keyToChange = Parameter.builder().name("key").type(String.class).optional(true).templated(true).build();
         List<Parameter> parameters = Arrays.asList(keyToChange);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("resetConfig")
                 .module(ConfigModuleDefinition.CONFIG)
