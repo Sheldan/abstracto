@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.repostdetection.service.management;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.repostdetection.exception.RepostCheckChannelGroupNotFoundException;
 import dev.sheldan.abstracto.repostdetection.model.database.RepostCheckChannelGroup;
-import dev.sheldan.abstracto.repostdetection.repository.RepostCheckChannelRepository;
+import dev.sheldan.abstracto.repostdetection.repository.RepostCheckChannelGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,26 +13,26 @@ import java.util.Optional;
 public class RepostCheckChannelGroupManagementBean implements RepostCheckChannelGroupManagement {
 
     @Autowired
-    private RepostCheckChannelRepository repository;
+    private RepostCheckChannelGroupRepository repository;
 
     @Override
     public RepostCheckChannelGroup loadRepostChannelGroupById(Long channelGroupId) {
-        return loadRepostChanelGroupByIdOptional(channelGroupId).orElseThrow(() -> new RepostCheckChannelGroupNotFoundException(channelGroupId));
+        return loadRepostChannelGroupByIdOptional(channelGroupId).orElseThrow(() -> new RepostCheckChannelGroupNotFoundException(channelGroupId));
     }
 
     @Override
-    public Optional<RepostCheckChannelGroup> loadRepostChanelGroupByIdOptional(Long channelGroupId) {
+    public Optional<RepostCheckChannelGroup> loadRepostChannelGroupByIdOptional(Long channelGroupId) {
         return repository.findById(channelGroupId);
     }
 
     @Override
     public boolean repostCheckChannelGroupExists(Long channelGroupId) {
-        return loadRepostChanelGroupByIdOptional(channelGroupId).isPresent();
+        return loadRepostChannelGroupByIdOptional(channelGroupId).isPresent();
     }
 
     @Override
     public Optional<RepostCheckChannelGroup> loadRepostChannelGroupByChannelGroupOptional(AChannelGroup channelGroup) {
-        return loadRepostChanelGroupByIdOptional(channelGroup.getId());
+        return loadRepostChannelGroupByIdOptional(channelGroup.getId());
     }
 
     @Override

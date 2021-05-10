@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.linkembed.listener;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.ConsumableListenerResult;
+import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
@@ -61,6 +62,9 @@ public class MessageEmbedListener implements MessageReceivedListener {
     @Override
     public ConsumableListenerResult execute(MessageReceivedModel model) {
         Message message = model.getMessage();
+        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
+            return ConsumableListenerResult.IGNORED;
+        }
         String messageRaw = message.getContentRaw();
         List<MessageEmbedLink> links = messageEmbedService.getLinksInMessage(messageRaw);
         if(!links.isEmpty()) {

@@ -182,4 +182,9 @@ public class ChannelGroupManagementServiceBean implements ChannelGroupManagement
         AServer server = serverManagementService.loadServer(serverId);
         return channelGroupRepository.findByServerAndChannelGroupType_GroupTypeKey(server, type);
     }
+
+    @Override
+    public boolean isChannelInEnabledChannelGroupOfType(String channelGroupType, Long channelId) {
+        return channelGroupRepository.existsChannelInGroupOfType(channelGroupType, channelId);
+    }
 }

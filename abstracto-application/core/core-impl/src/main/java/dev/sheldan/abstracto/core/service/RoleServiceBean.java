@@ -222,6 +222,11 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
+    public Optional<ARole> getFirstRole(Member member, List<ARole> roles) {
+        return roles.stream().filter(role -> member.getRoles().stream().anyMatch(role1 -> role1.getIdLong() == role.getId())).findFirst();
+    }
+
+    @Override
     public boolean memberHasRole(Member member, Role role) {
         return memberHasRole(member, role.getIdLong());
     }

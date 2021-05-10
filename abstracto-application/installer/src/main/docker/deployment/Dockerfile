@@ -2,7 +2,7 @@ FROM ubuntu as base
 MAINTAINER Sheldan
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG liquibase_version=3.8.9
+ARG liquibase_version=4.3.5
 ARG postgres_driver_version=42.2.14
 # Install prerequisities for Ansible
 RUN apt-get update \

@@ -91,22 +91,6 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
-    public void makeRoleImmuneForCommand(ACommand aCommand, ARole role) {
-        ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
-        if(commandForServer.getImmuneRoles().stream().noneMatch(role1 -> role1.getId().equals(role.getId()))) {
-            commandForServer.getImmuneRoles().add(role);
-        }
-        log.info("Making role {} immune from command {} in server {}.", role.getId(), aCommand.getName(), role.getServer().getId());
-    }
-
-    @Override
-    public void makeRoleAffectedByCommand(ACommand aCommand, ARole role) {
-        ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, role.getServer());
-        commandForServer.getImmuneRoles().removeIf(role1 -> role1.getId().equals(role.getId()));
-        log.info("Making role {} affected from command {} in server {}.", role.getId(), aCommand.getName(), role.getServer().getId());
-    }
-
-    @Override
     public void restrictCommand(ACommand aCommand, AServer server) {
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, server);
         commandForServer.setRestricted(true);

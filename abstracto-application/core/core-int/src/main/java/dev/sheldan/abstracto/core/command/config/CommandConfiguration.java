@@ -31,6 +31,8 @@ public class CommandConfiguration {
     @Builder.Default
     private boolean templated = false;
     private HelpInfo help;
+    @Builder.Default
+    private List<EffectConfig> effects = new ArrayList<>();
 
     private CommandCoolDownConfig coolDownConfig;
 

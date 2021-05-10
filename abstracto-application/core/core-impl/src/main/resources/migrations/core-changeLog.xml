@@ -3,9 +3,9 @@
                    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
                    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/pro dbchangelog-3.8.xsd" >
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
     <include file="1.0-core/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.0-templating/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.1-core/collection.xml" relativeToChangelogFile="true"/>
@@ -14,4 +14,5 @@
     <include file="1.2.7-core/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.8-core/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.9-core/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.2.11-core/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

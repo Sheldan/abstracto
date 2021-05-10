@@ -39,14 +39,6 @@ public class ACommandInAServer implements Serializable {
     @Getter
     private List<ARole> allowedRoles;
 
-    @ManyToMany
-    @JoinTable(
-            name = "command_in_server_immune_role",
-            joinColumns = @JoinColumn(name = "command_in_server_id", referencedColumnName = "command_in_server_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    @Getter
-    private List<ARole> immuneRoles;
-
     @OneToMany(mappedBy = "commandInAServer", fetch = FetchType.LAZY)
     private List<ACommandInServerAlias> aliases;
 

@@ -1,0 +1,47 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+
+    <changeSet author="Sheldan" id="allowed_invite_link-table">
+        <createTable tableName="allowed_invite_link">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="allowed_invite_link_pkey"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="target_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_allowed_invite_code_server" tableName="allowed_invite_link">
+            <column name="code"/>
+            <column name="server_id"/>
+        </createIndex>
+        <createIndex indexName="idx_allowed_invite_target_server" tableName="allowed_invite_link">
+            <column name="target_server_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="allowed_invite_link" constraintName="fk_allowed_invite_link_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS allowed_invite_link_update_trigger ON allowed_invite_link;
+            CREATE TRIGGER allowed_invite_link_update_trigger BEFORE UPDATE ON allowed_invite_link FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS allowed_invite_link_insert_trigger ON allowed_invite_link;
+            CREATE TRIGGER allowed_invite_link_insert_trigger BEFORE INSERT ON allowed_invite_link FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -10,4 +10,5 @@ import net.dv8tion.jda.api.entities.Role;
 @Builder
 public class ImmuneUserConditionDetailModel {
     private Role role;
+    private String effectTypeKey;
 }

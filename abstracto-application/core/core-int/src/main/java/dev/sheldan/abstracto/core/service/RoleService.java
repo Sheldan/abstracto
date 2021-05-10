@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface RoleService {
@@ -28,6 +29,7 @@ public interface RoleService {
     Role getRoleFromGuild(ARole role);
     List<Role> getRolesFromGuild(List<ARole> roles);
     boolean hasAnyOfTheRoles(Member member, List<ARole> roles);
+    Optional<ARole> getFirstRole(Member member, List<ARole> roles);
     boolean memberHasRole(Member member, Role role);
     boolean memberHasRole(Member member, ARole role);
     boolean memberHasRole(Member member, Long roleId);

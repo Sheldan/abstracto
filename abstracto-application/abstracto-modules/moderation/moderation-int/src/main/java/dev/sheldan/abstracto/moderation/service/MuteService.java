@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 public interface MuteService {
+    String MUTE_EFFECT_KEY = "mute";
     CompletableFuture<Void> muteMember(Member memberToMute, Member userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
     CompletableFuture<Void> muteUserInServer(FullUserInServer userToMute, FullUserInServer userMuting, String reason, Instant unMuteDate, ServerChannelMessage message);
     CompletableFuture<Void> applyMuteRole(AUserInAServer aUserInAServer);

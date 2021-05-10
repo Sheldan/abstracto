@@ -24,4 +24,5 @@ public interface ChannelGroupManagementService {
     List<AChannelGroup> findAllInServer(Long serverId);
     List<AChannelGroup> getAllChannelGroupsOfChannel(AChannel channel);
     List<AChannelGroup> findAllInServerWithType(Long serverId, String type);
+    boolean isChannelInEnabledChannelGroupOfType(String channelGroupType, Long channelId);
 }

@@ -3,13 +3,11 @@
                    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
                    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
     <include file="mute.xml" relativeToChangelogFile="true"/>
     <include file="mute_role.xml" relativeToChangelogFile="true"/>
     <include file="user_note.xml" relativeToChangelogFile="true"/>
     <include file="warning.xml" relativeToChangelogFile="true"/>
-    <include file="allowed_invite_link.xml" relativeToChangelogFile="true"/>
-    <include file="filtered_invite_link.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

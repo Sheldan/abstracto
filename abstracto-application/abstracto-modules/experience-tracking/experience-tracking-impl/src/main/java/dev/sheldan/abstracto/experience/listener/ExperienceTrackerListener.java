@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,10 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
 
     @Override
     public DefaultListenerResult execute(MessageReceivedModel model) {
+        Message message = model.getMessage();
+        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
+            return DefaultListenerResult.IGNORED;
+        }
         AUserInAServer cause = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getMessage().getAuthor().getIdLong());
         userExperienceService.addExperience(cause);
         return DefaultListenerResult.PROCESSED;

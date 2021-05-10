@@ -21,6 +21,7 @@ public interface ChannelGroupService {
     void removeCommandFromChannelGroup(String commandName, String channelGroupName, Long serverId);
     void disableChannelGroup(String channelGroupName, Long serverId);
     void enableChannelGroup(String channelGroupName, Long serverId);
+    boolean isChannelInEnabledChannelGroupOfType(String channelGroupType, Long channelId);
     boolean doesGroupExist(String groupName, Long serverId);
     List<AChannelGroup> getChannelGroupsOfChannelWithType(AChannel channel, String groupTypeKey);
     List<ChannelGroupModel> convertAChannelGroupToChannelGroupChannel(List<AChannelGroup> channelGroups);

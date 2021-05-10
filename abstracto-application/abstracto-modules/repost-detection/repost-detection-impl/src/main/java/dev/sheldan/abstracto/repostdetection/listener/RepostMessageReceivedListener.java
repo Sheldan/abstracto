@@ -36,6 +36,9 @@ public class RepostMessageReceivedListener implements AsyncMessageReceivedListen
     @Override
     public DefaultListenerResult execute(MessageReceivedModel model) {
         Message message = model.getMessage();
+        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
+            return DefaultListenerResult.IGNORED;
+        }
         AChannel channel = channelManagementService.loadChannel(message.getTextChannel().getIdLong());
         if(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)) {
             repostService.processMessageAttachmentRepostCheck(message);

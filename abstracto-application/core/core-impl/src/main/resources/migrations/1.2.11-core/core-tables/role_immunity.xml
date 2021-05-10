@@ -1,0 +1,46 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="role_immunity-table">
+        <createTable tableName="role_immunity">
+            <column name="effect_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="effect_id,role_id" tableName="role_immunity" constraintName="pk_role_immunity" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS role_immunity_update_trigger ON role_immunity;
+            CREATE TRIGGER role_immunity_update_trigger BEFORE UPDATE ON role_immunity FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS role_immunity_insert_trigger ON role_immunity;
+            CREATE TRIGGER role_immunity_insert_trigger BEFORE INSERT ON role_immunity FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+        <addForeignKeyConstraint baseColumnNames="effect_id" baseTableName="role_immunity" constraintName="fk_role_immunity_effect"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="effect_type" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="role_immunity" constraintName="fk_role_immunity_role"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="role" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="profanity_group" constraintName="fk_role_immunity_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="server" validate="true"/>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -9,10 +9,7 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedService;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,11 +79,19 @@ public class MessageEmbedListenerTest {
     public void testNoLinkFoundExecution() {
         String text = "text";
         when(message.getContentRaw()).thenReturn(text);
+        setupMessageConfig();
         List<MessageEmbedLink> foundMessageLinks = new ArrayList<>();
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
         when(model.getMessage()).thenReturn(message);
         testUnit.execute(model);
         verify(messageService, times(0)).deleteMessage(message);
+    }
+
+    private void setupMessageConfig() {
+        when(message.isFromGuild()).thenReturn(true);
+        when(message.isWebhookMessage()).thenReturn(false);
+        MessageType type = MessageType.DEFAULT;
+        when(message.getType()).thenReturn(type);
     }
 
     @Test
@@ -113,6 +118,7 @@ public class MessageEmbedListenerTest {
         String text = linkText + "more text";
         AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         when(message.getContentRaw()).thenReturn(text);
+        setupMessageConfig();
         MessageEmbedLink foundLink = Mockito.mock(MessageEmbedLink.class);
         when(foundLink.getMessageId()).thenReturn(FIRST_MESSAGE_ID);
         when(foundLink.getServerId()).thenReturn(SECOND_SERVER_ID);
@@ -145,7 +151,7 @@ public class MessageEmbedListenerTest {
         when(embeddingUser.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
         String completeMessage = firstText.concat(secondText);
         when(message.getContentRaw()).thenReturn(completeMessage);
-
+        setupMessageConfig();
         Member author = Mockito.mock(Member.class);
         when(message.getMember()).thenReturn(author);
         when(message.getGuild()).thenReturn(guild);
@@ -177,7 +183,7 @@ public class MessageEmbedListenerTest {
         AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         when(userInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
         when(message.getContentRaw()).thenReturn(text);
-
+        setupMessageConfig();
         Member author = Mockito.mock(Member.class);
         when(message.getMember()).thenReturn(author);
         when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
@@ -206,6 +212,7 @@ public class MessageEmbedListenerTest {
     private void executeLinkEmbedTest(String linkText, String text) {
         AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         when(message.getContentRaw()).thenReturn(text);
+        setupMessageConfig();
         MessageEmbedLink foundLink = Mockito.mock(MessageEmbedLink.class);
         when(foundLink.getWholeUrl()).thenReturn(linkText);
         when(foundLink.getMessageId()).thenReturn(FIRST_MESSAGE_ID);

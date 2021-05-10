@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 
 public interface WarnService {
+    String WARN_EFFECT_KEY = "warn";
     CompletableFuture<Void> notifyAndLogFullUserWarning(WarnContext context);
     CompletableFuture<Void> warnUserWithLog(WarnContext context);
     void decayWarning(Warning warning, Instant decayDate);

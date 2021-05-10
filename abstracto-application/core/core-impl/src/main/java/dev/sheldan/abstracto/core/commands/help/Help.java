@@ -32,12 +32,11 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class Help implements Command {
-
 
     @Autowired
     private ModuleRegistry moduleService;
@@ -150,9 +149,17 @@ public class Help implements Command {
                     CommandCoolDownConfig coolDownConfig = getCoolDownConfig(command, contextIds);
                     model.setCooldowns(coolDownConfig);
                     if(Boolean.TRUE.equals(aCommandInAServer.getRestricted())) {
-                        model.setImmuneRoles(roleService.getRolesFromGuild(aCommandInAServer.getImmuneRoles()));
                         model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
                         model.setRestricted(true);
+                    }
+                    List<String> effects = command
+                            .getConfiguration()
+                            .getEffects()
+                            .stream()
+                            .map(EffectConfig::getEffectKey)
+                            .collect(Collectors.toList());
+                    if(!effects.isEmpty()) {
+                        model.setEffects(effects);
                     }
                     model.setUsage(commandService.generateUsage(command));
                     model.setCommand(command.getConfiguration());

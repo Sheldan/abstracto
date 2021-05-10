@@ -88,6 +88,14 @@ public class OkHttpMetrics implements Interceptor {
                     .name(MODERATION_PURGE_METRIC)
                     .build();
 
+
+    private static final CounterMetric OKTTHP_502_RESPONSE =
+            CounterMetric
+                    .builder()
+                    .tagList(Arrays.asList(MetricTag.getTag(HTTP_CODE, "502")))
+                    .name(MODERATION_PURGE_METRIC)
+                    .build();
+
     private static final HashMap<Integer, CounterMetric> METRICS = new HashMap<>();
 
     @Override
@@ -117,6 +125,7 @@ public class OkHttpMetrics implements Interceptor {
         metricService.registerCounter(OKTTHP_404_RESPONSE, "Amount of HTTP 404 responses in okhttp");
         metricService.registerCounter(OKTTHP_429_RESPONSE, "Amount of HTTP 429 responses in okhttp");
         metricService.registerCounter(OKTTHP_500_RESPONSE, "Amount of HTTP 500 responses in okhttp");
+        metricService.registerCounter(OKTTHP_502_RESPONSE, "Amount of HTTP 502 responses in okhttp");
         METRICS.put(200, OKTTHP_200_RESPONSE);
         METRICS.put(201, OKTTHP_201_RESPONSE);
         METRICS.put(202, OKTTHP_202_RESPONSE);
@@ -126,5 +135,6 @@ public class OkHttpMetrics implements Interceptor {
         METRICS.put(404, OKTTHP_404_RESPONSE);
         METRICS.put(429, OKTTHP_429_RESPONSE);
         METRICS.put(500, OKTTHP_500_RESPONSE);
+        METRICS.put(502, OKTTHP_502_RESPONSE);
     }
 }

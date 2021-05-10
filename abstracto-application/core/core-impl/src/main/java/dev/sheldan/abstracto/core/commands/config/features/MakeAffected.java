@@ -7,17 +7,11 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.model.database.ACommand;
-import dev.sheldan.abstracto.core.command.service.CommandService;
-import dev.sheldan.abstracto.core.command.service.CommandServiceBean;
-import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
-import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,44 +22,23 @@ import java.util.List;
 public class MakeAffected extends AbstractConditionableCommand {
 
     @Autowired
-    private FeatureManagementService featureManagementService;
-
-    @Autowired
-    private CommandManagementService commandManagementService;
-
-    @Autowired
-    private CommandService commandService;
-
-    @Autowired
     private RoleManagementService roleManagementService;
 
     @Autowired
-    private TemplateService templateService;
+    private RoleImmunityService roleImmunityService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         ARole actualRole = roleManagementService.findRole(role.getId());
-        if(featureManagementService.featureExists(name)) {
-            AFeature feature = featureManagementService.getFeature(name);
-            feature.getCommands().forEach(command ->
-                commandService.makeRoleAffectedByCommand(command, actualRole)
-            );
-        } else if(commandManagementService.doesCommandExist(name)) {
-            ACommand command = commandManagementService.findCommandByName(name);
-            commandService.makeRoleAffectedByCommand(command, actualRole);
-        } else {
-            // TODO refactor to use exception
-            return CommandResult.fromError(templateService.renderTemplate(CommandServiceBean.NO_FEATURE_COMMAND_FOUND_EXCEPTION_TEMPLATE,
-                    new Object(), commandContext.getGuild().getIdLong()));
-        }
+        roleImmunityService.makeRoleAffected(actualRole, name);
         return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("component").type(String.class).templated(true).build();
+        Parameter featureName = Parameter.builder().name("effect").type(String.class).templated(true).build();
         Parameter role = Parameter.builder().name("role").type(ARole.class).templated(true).build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
@@ -73,6 +46,7 @@ public class MakeAffected extends AbstractConditionableCommand {
                 .name("makeAffected")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)
                 .causesReaction(true)

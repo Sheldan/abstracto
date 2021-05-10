@@ -18,7 +18,7 @@ public class HelpCommandDetailsModel extends UserInitiatedServerContext {
     private List<String> serverSpecificAliases;
     private String usage;
     private List<Role> allowedRoles;
-    private List<Role> immuneRoles;
     private Boolean restricted;
     private CommandCoolDownConfig cooldowns;
+    private List<String> effects;
 }

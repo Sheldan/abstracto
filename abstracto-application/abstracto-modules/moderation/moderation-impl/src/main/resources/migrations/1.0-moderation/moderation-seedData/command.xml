@@ -3,9 +3,9 @@
                    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
                    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog ../../dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext ../../dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/pro ../../dbchangelog-3.8.xsd" >
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
     <property name="moderationModule" value="(SELECT id FROM module WHERE name = 'moderation')"/>
     <property name="moderationFeature" value="(SELECT id FROM feature WHERE key = 'moderation')"/>
     <property name="warningsFeature" value="(SELECT id FROM feature WHERE key = 'warnings')"/>
@@ -13,7 +13,6 @@
     <property name="mutingFeature" value="(SELECT id FROM feature WHERE key = 'muting')"/>
     <property name="warnDecayFeature" value="(SELECT id FROM feature WHERE key = 'warnDecay')"/>
     <property name="userNotesFeature" value="(SELECT id FROM feature WHERE key = 'userNotes')"/>
-    <property name="inviteLinkFilteringFeature" value="(SELECT id FROM feature WHERE key = 'inviteFilter')"/>
 
     <changeSet  author="Sheldan"  id="moderation_moderation-commands">
         <insert tableName="command">
@@ -112,29 +111,6 @@
             <column name="name" value="userNotes"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${userNotesFeature}"/>
-        </insert>
-    </changeSet>
-
-    <changeSet  author="Sheldan"  id="moderation_inviteFilter-commands">
-        <insert tableName="command">
-            <column name="name" value="allowInvite"/>
-            <column name="module_id" valueComputed="${moderationModule}"/>
-            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-        </insert>
-        <insert tableName="command">
-            <column name="name" value="disAllowInvite"/>
-            <column name="module_id" valueComputed="${moderationModule}"/>
-            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-        </insert>
-        <insert tableName="command">
-            <column name="name" value="removeTrackedInviteLinks"/>
-            <column name="module_id" valueComputed="${moderationModule}"/>
-            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
-        </insert>
-        <insert tableName="command">
-            <column name="name" value="showTrackedInviteLinks"/>
-            <column name="module_id" valueComputed="${moderationModule}"/>
-            <column name="feature_id" valueComputed="${inviteLinkFilteringFeature}"/>
         </insert>
     </changeSet>
 

@@ -5,10 +5,7 @@ import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.repostdetection.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.repostdetection.service.RepostService;
-import net.dv8tion.jda.api.entities.EmbedType;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,6 +90,10 @@ public class RepostMessageReceivedListenerTest {
 
     private void setupRepostCheckEnabled(boolean b) {
         when(message.getTextChannel()).thenReturn(textChannel);
+        when(message.isFromGuild()).thenReturn(true);
+        when(message.isWebhookMessage()).thenReturn(false);
+        MessageType type = MessageType.DEFAULT;
+        when(message.getType()).thenReturn(type);
         when(model.getMessage()).thenReturn(message);
         when(textChannel.getIdLong()).thenReturn(CHANNEL_ID);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(channel);

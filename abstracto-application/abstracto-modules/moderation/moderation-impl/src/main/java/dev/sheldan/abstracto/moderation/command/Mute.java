@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.moderation.command;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.EffectConfig;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -20,8 +21,11 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.sheldan.abstracto.moderation.service.MuteService.MUTE_EFFECT_KEY;
 
 @Component
 public class Mute extends AbstractConditionableCommand {
@@ -63,11 +67,13 @@ public class Mute extends AbstractConditionableCommand {
         parameters.add(Parameter.builder().name("duration").templated(true).type(Duration.class).build());
         parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).optional(true).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
+        List<EffectConfig> effectConfig = Arrays.asList(EffectConfig.builder().position(0).effectKey(MUTE_EFFECT_KEY).build());
         return CommandConfiguration.builder()
                 .name("mute")
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)
+                .effects(effectConfig)
                 .causesReaction(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface RepostCheckChannelGroupManagement {
     RepostCheckChannelGroup loadRepostChannelGroupById(Long channelGroupId);
-    Optional<RepostCheckChannelGroup> loadRepostChanelGroupByIdOptional(Long channelGroupId);
+    Optional<RepostCheckChannelGroup> loadRepostChannelGroupByIdOptional(Long channelGroupId);
     boolean repostCheckChannelGroupExists(Long channelGroupId);
     Optional<RepostCheckChannelGroup> loadRepostChannelGroupByChannelGroupOptional(AChannelGroup channelGroup);
     RepostCheckChannelGroup loadRepostChannelGroupByChannelGroup(AChannelGroup channelGroup);

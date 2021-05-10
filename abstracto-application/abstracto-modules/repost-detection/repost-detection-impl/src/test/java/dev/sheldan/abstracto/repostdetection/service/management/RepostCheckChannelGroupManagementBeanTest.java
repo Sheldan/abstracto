@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.repostdetection.service.management;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.repostdetection.exception.RepostCheckChannelGroupNotFoundException;
 import dev.sheldan.abstracto.repostdetection.model.database.RepostCheckChannelGroup;
-import dev.sheldan.abstracto.repostdetection.repository.RepostCheckChannelRepository;
+import dev.sheldan.abstracto.repostdetection.repository.RepostCheckChannelGroupRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,7 @@ public class RepostCheckChannelGroupManagementBeanTest {
     private RepostCheckChannelGroupManagementBean testUnit;
 
     @Mock
-    private RepostCheckChannelRepository repository;
+    private RepostCheckChannelGroupRepository repository;
 
     @Mock
     private RepostCheckChannelGroup checkChannelGroup;
@@ -50,7 +50,7 @@ public class RepostCheckChannelGroupManagementBeanTest {
     @Test
     public void testLoadRepostChannelGroupByIdOptional() {
         when(repository.findById(CHANNEL_GROUP_ID)).thenReturn(Optional.of(checkChannelGroup));
-        Optional<RepostCheckChannelGroup> resultChannelGroupOptional = testUnit.loadRepostChanelGroupByIdOptional(CHANNEL_GROUP_ID);
+        Optional<RepostCheckChannelGroup> resultChannelGroupOptional = testUnit.loadRepostChannelGroupByIdOptional(CHANNEL_GROUP_ID);
         Assert.assertTrue(resultChannelGroupOptional.isPresent());
         resultChannelGroupOptional.ifPresent(repostCheckChannelGroup -> Assert.assertEquals(checkChannelGroup, repostCheckChannelGroup));
     }

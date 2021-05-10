@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.statistic.emote.listener;
 
-import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
@@ -8,6 +7,7 @@ import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageType;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 import org.junit.Assert;
@@ -16,9 +16,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -58,6 +55,7 @@ public class EmoteTrackingListenerTest {
         emotesBag.add(emote1);
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         when(messageReceivedModel.getMessage()).thenReturn(message);
+        setupMessage();
         when(messageReceivedModel.getServerId()).thenReturn(SERVER_ID);
         when(message.getEmotesBag()).thenReturn(emotesBag);
         testUnit.execute(messageReceivedModel);
@@ -71,6 +69,7 @@ public class EmoteTrackingListenerTest {
         when(emote2.getIdLong()).thenReturn(EMOTE_ID);
         emotesBag.add(emote1);
         emotesBag.add(emote2);
+        setupMessage();
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         when(messageReceivedModel.getServerId()).thenReturn(SERVER_ID);
         when(messageReceivedModel.getMessage()).thenReturn(message);
@@ -86,6 +85,7 @@ public class EmoteTrackingListenerTest {
         when(emote2.getIdLong()).thenReturn(EMOTE_ID + 1);
         emotesBag.add(emote1);
         emotesBag.add(emote2);
+        setupMessage();
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
         when(messageReceivedModel.getServerId()).thenReturn(SERVER_ID);
         when(messageReceivedModel.getMessage()).thenReturn(message);
@@ -99,10 +99,17 @@ public class EmoteTrackingListenerTest {
     public void testExecuteNoEmote() {
         when(message.getEmotesBag()).thenReturn(new HashBag<>());
         when(messageReceivedModel.getMessage()).thenReturn(message);
+        setupMessage();
         testUnit.execute(messageReceivedModel);
         verify(trackedEmoteService, times(0)).addEmoteToRuntimeStorage(any(Emote.class), any(), anyLong());
     }
 
+    private void setupMessage() {
+        when(message.isFromGuild()).thenReturn(true);
+        when(message.isWebhookMessage()).thenReturn(false);
+        MessageType type = MessageType.DEFAULT;
+        when(message.getType()).thenReturn(type);
+    }
 
     @Test
     public void testFeature() {

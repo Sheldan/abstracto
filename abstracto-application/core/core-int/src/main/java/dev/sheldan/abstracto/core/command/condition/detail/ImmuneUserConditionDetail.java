@@ -8,8 +8,12 @@ public class ImmuneUserConditionDetail implements ConditionDetail {
 
     private final ImmuneUserConditionDetailModel model;
 
-    public ImmuneUserConditionDetail(Role role) {
-        this.model = ImmuneUserConditionDetailModel.builder().role(role).build();
+    public ImmuneUserConditionDetail(Role role, String effectTypeKey) {
+        this.model = ImmuneUserConditionDetailModel
+                .builder()
+                .role(role)
+                .effectTypeKey(effectTypeKey)
+                .build();
     }
 
     @Override

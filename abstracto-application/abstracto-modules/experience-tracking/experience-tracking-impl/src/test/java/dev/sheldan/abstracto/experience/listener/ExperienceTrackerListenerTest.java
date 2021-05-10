@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +41,10 @@ public class ExperienceTrackerListenerTest {
     public void testExperienceTracking() {
         AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         Message mockedMessage = Mockito.mock(Message.class);
+        when(mockedMessage.isFromGuild()).thenReturn(true);
+        when(mockedMessage.isWebhookMessage()).thenReturn(false);
+        MessageType type = MessageType.DEFAULT;
+        when(mockedMessage.getType()).thenReturn(type);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(userInAServer);
         when(model.getMessage()).thenReturn(mockedMessage);
         when(model.getServerId()).thenReturn(SERVER_ID);

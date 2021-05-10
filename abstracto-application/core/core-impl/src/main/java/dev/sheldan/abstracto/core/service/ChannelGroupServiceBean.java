@@ -159,6 +159,11 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     }
 
     @Override
+    public boolean isChannelInEnabledChannelGroupOfType(String channelGroupType, Long channelId) {
+        return channelGroupManagementService.isChannelInEnabledChannelGroupOfType(channelGroupType, channelId);
+    }
+
+    @Override
     public boolean doesGroupExist(String groupName, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return channelGroupManagementService.findByNameAndServer(groupName, server) != null;

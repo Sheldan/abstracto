@@ -19,8 +19,6 @@ public interface CommandService {
     boolean doesCommandExist(String name);
     void allowCommandForRole(ACommand aCommand, ARole role);
     void allowFeatureForRole(FeatureDefinition featureDefinition, ARole role);
-    void makeRoleImmuneForCommand(ACommand aCommand, ARole role);
-    void makeRoleAffectedByCommand(ACommand aCommand, ARole role);
     void restrictCommand(ACommand aCommand, AServer server);
     String generateUsage(Command command);
     void unRestrictCommand(ACommand aCommand, AServer server);

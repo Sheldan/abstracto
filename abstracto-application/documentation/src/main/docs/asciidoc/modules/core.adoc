@@ -98,13 +98,16 @@ Forbidding a role to execute a command::
 * Description: Removes the `role` from the list of allowed roles for all commands in the `feature`/the `command`.
 * Example: `disAllowRole moderation @Staff` to forbid the role `Staff` to execute all commands in the `moderation` feature (where @Staff is a role mention)
 Make a role affected by a command::
-* Usage: `makeAffected <featureName|commandName> <role>`
-* Description: Makes the role affected by all commands in the `feature`/the `command`.
-* Example: `makeAffected ban @Staff` in order so the role `Staff` can be banned via the command (where @Staff is a role mention)
+* Usage: `makeAffected <effect> <role>`
+* Description: Makes the `role` affected by the `effect`.
+* Example: `makeAffected ban @Staff` in order so the role `Staff` can be banned (where @Staff is a role mention)
 Make a role immune against a command::
-* Usage: `makeImmune <featureName|commandName> <role>`
-* Description: Makes the role immune from all commands in the `feature`/the `command`.
-* Example: `makeImmune ban @Staff` in order so the role `Staff` cannot be banned via the command (where @Staff is a role mention)
+* Usage: `makeImmune <effect> <role>`
+* Description: Makes the `role` immune to `effect`.
+* Example: `makeImmune ban @Staff` in order so the role `Staff` cannot be banned (where @Staff is a role mention)
+Show all effects::
+* Usage: `showEffects`
+* Description: Shows the currently possible effects and a short description of them.
 Enforce the role restrictions of commands::
 * Usage: `restrict <featureName|commandName>`
 * Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
@@ -189,16 +192,6 @@ and `memberDuration` for each member.
 Setting the global cooldown for a command::
 * Usage: `commandCoolDownServer <command> <duration>`
 * Description: Sets the cooldown for command `command` to `duration` for the whole server.
-
-.What does it mean if a role is immune?
-A command can take a member as a target, for example `ban`. If a role is considered immune, this means, if the member which is the target of the command has the given role, this command will fail. Not all commands support this feature, but only the following:
-
-* Ban
-* Kick
-* Warn
-* Mute
-
-While a role can be made immune for any command, only these commands actually use this information.
 
 .What is a feature mode?
 A feature mode is a very specific way in which a feature behaves for a certain decision. These feature modes can be defined for each server and are directly bound to a feature.
