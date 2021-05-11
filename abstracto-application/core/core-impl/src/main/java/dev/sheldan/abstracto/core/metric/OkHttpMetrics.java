@@ -60,6 +60,14 @@ public class OkHttpMetrics implements Interceptor {
                     .name(MODERATION_PURGE_METRIC)
                     .build();
 
+    private static final CounterMetric OKTTHP_400_RESPONSE =
+            CounterMetric
+                    .builder()
+                    .tagList(Arrays.asList(MetricTag.getTag(HTTP_CODE, "400")))
+                    .name(MODERATION_PURGE_METRIC)
+                    .build();
+
+
     private static final CounterMetric OKTTHP_403_RESPONSE =
             CounterMetric
                     .builder()
@@ -120,6 +128,7 @@ public class OkHttpMetrics implements Interceptor {
         metricService.registerCounter(OKTTHP_201_RESPONSE, "Amount of HTTP 201 responses in okhttp");
         metricService.registerCounter(OKTTHP_202_RESPONSE, "Amount of HTTP 202 responses in okhttp");
         metricService.registerCounter(OKTTHP_204_RESPONSE, "Amount of HTTP 204 responses in okhttp");
+        metricService.registerCounter(OKTTHP_400_RESPONSE, "Amount of HTTP 400 responses in okhttp");
         metricService.registerCounter(OKTTHP_401_RESPONSE, "Amount of HTTP 401 responses in okhttp");
         metricService.registerCounter(OKTTHP_403_RESPONSE, "Amount of HTTP 403 responses in okhttp");
         metricService.registerCounter(OKTTHP_404_RESPONSE, "Amount of HTTP 404 responses in okhttp");
@@ -130,6 +139,7 @@ public class OkHttpMetrics implements Interceptor {
         METRICS.put(201, OKTTHP_201_RESPONSE);
         METRICS.put(202, OKTTHP_202_RESPONSE);
         METRICS.put(204, OKTTHP_204_RESPONSE);
+        METRICS.put(400, OKTTHP_400_RESPONSE);
         METRICS.put(401, OKTTHP_401_RESPONSE);
         METRICS.put(403, OKTTHP_403_RESPONSE);
         METRICS.put(404, OKTTHP_404_RESPONSE);

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.io.Serializable;
 
@@ -21,5 +22,13 @@ public class ServerUser implements Serializable {
                 .builder()
                 .serverId(aUserInAServer.getServerReference().getId())
                 .userId(aUserInAServer.getUserReference().getId()).build();
+    }
+
+    public static ServerUser fromMember(Member member) {
+        return ServerUser
+                .builder()
+                .serverId(member.getGuild().getIdLong())
+                .userId(member.getIdLong())
+                .build();
     }
 }
