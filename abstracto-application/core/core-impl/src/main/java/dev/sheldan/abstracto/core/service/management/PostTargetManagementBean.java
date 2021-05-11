@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.config.PostTargetEnum;
+import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.exception.ServerChannelConflictException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -44,11 +47,11 @@ public class PostTargetManagementBean implements PostTargetManagement {
 
     @Override
     public PostTarget createOrUpdate(String name, AChannel targetChannel) {
-        PostTarget existing = postTargetRepository.findPostTargetByNameAndServerReference(name, targetChannel.getServer());
-        if(existing == null){
+        Optional<PostTarget> existingTargetOptional = getPostTargetOptional(name, targetChannel.getServer().getId());
+        if(!existingTargetOptional.isPresent()){
             return this.createPostTarget(name, targetChannel);
         } else {
-            return this.updatePostTarget(existing, targetChannel);
+            return this.updatePostTarget(existingTargetOptional.get(), targetChannel);
         }
     }
 
@@ -72,13 +75,29 @@ public class PostTargetManagementBean implements PostTargetManagement {
 
     @Override
     public PostTarget getPostTarget(String name, AServer server) {
-        return postTargetRepository.findPostTargetByNameAndServerReference(name, server);
+        return postTargetRepository.findPostTargetByNameAndServerReference(name, server).orElseThrow(() -> new PostTargetNotFoundException(name));
+    }
+
+    @Override
+    public PostTarget getPostTarget(PostTargetEnum postTargetEnum, AServer server) {
+        return getPostTarget(postTargetEnum.getKey(), server);
     }
 
     @Override
     public PostTarget getPostTarget(String name, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return getPostTarget(name, server);
+    }
+
+    @Override
+    public Optional<PostTarget> getPostTargetOptional(String name, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return postTargetRepository.findPostTargetByNameAndServerReference(name, server);
+    }
+
+    @Override
+    public Optional<PostTarget> getPostTargetOptional(PostTargetEnum postTargetEnum, Long serverId) {
+        return getPostTargetOptional(postTargetEnum.getKey(), serverId);
     }
 
     @Override

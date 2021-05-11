@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
-import dev.sheldan.abstracto.core.exception.PostTargetNotFoundException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
@@ -81,31 +80,20 @@ public class PostTargetServiceBean implements PostTargetService {
     }
 
     @Override
-    public PostTarget getPostTarget(PostTargetEnum postTargetName, Long serverId) {
-        PostTarget postTarget = postTargetManagement.getPostTarget(postTargetName.getKey(), serverId);
-        if(postTarget != null) {
-            return postTarget;
-        } else {
-            log.error("PostTarget {} in server {} was not found!", postTargetName, serverId);
-            throw new PostTargetNotFoundException(postTargetName.getKey());
-        }
-    }
-
-    @Override
     public CompletableFuture<Message>  sendTextInPostTarget(String text, PostTargetEnum postTargetEnum, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetEnum, serverId);
+        PostTarget postTarget = getPostTarget(postTargetEnum, serverId);
         return this.sendTextInPostTarget(text, postTarget);
     }
 
     @Override
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTarget postTarget = getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(embed, postTarget);
     }
 
     @Override
     public CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTargetEnum postTargetName, Long serverId) {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTarget postTarget = getPostTarget(postTargetName, serverId);
         return sendMessageInPostTarget(message, postTarget);
     }
 
@@ -117,7 +105,7 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTarget postTarget = getPostTarget(postTargetName, serverId);
         return this.sendEmbedInPostTarget(message, postTarget);
     }
 
@@ -189,13 +177,13 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTarget postTarget = getPostTarget(postTargetName, serverId);
         return this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget);
     }
 
     @Override
     public void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId) {
-        PostTarget postTarget = postTargetManagement.getPostTarget(name.getKey(), serverId);
+        PostTarget postTarget = getPostTarget(name, serverId);
         if(postTarget == null) {
             throw new PostTargetNotValidException(name.getKey(), defaultPostTargetManagementService.getDefaultPostTargetKeys());
         }
@@ -208,8 +196,12 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = this.getPostTarget(postTargetName, serverId);
+        PostTarget postTarget = getPostTarget(postTargetName, serverId);
         return editEmbedInPostTarget(messageId, message, postTarget);
+    }
+
+    private PostTarget getPostTarget(PostTargetEnum postTargetEnum, Long serverId) {
+        return postTargetManagement.getPostTarget(postTargetEnum.getKey(), serverId);
     }
 
     @Override

@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.linkembed.listener;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.ConsumableListenerResult;
-import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
@@ -85,7 +84,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
                         });
             }
         }
-        if(StringUtils.isBlank(messageRaw) && !links.isEmpty()) {
+        if(StringUtils.isBlank(messageRaw) && !links.isEmpty() && message.getAttachments().isEmpty()) {
             messageService.deleteMessage(message);
             return ConsumableListenerResult.DELETED;
         }

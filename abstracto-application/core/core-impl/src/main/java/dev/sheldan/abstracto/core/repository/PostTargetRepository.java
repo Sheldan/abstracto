@@ -6,11 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostTargetRepository extends JpaRepository<PostTarget, Long> {
 
-    PostTarget findPostTargetByNameAndServerReference(String name, AServer server);
+    Optional<PostTarget> findPostTargetByNameAndServerReference(String name, AServer server);
 
     boolean existsByNameAndServerReference(String name, AServer server);
 
