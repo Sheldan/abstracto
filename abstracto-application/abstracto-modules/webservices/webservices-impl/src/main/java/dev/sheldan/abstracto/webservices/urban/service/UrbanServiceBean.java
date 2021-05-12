@@ -2,9 +2,11 @@ package dev.sheldan.abstracto.webservices.urban.service;
 
 import com.google.gson.Gson;
 import dev.sheldan.abstracto.webservices.urban.exception.NoUrbanDefinitionFoundException;
+import dev.sheldan.abstracto.webservices.urban.exception.UrbanDictionaryRequestException;
 import dev.sheldan.abstracto.webservices.urban.model.UrbanDefinition;
 import dev.sheldan.abstracto.webservices.urban.model.UrbanResponse;
 import dev.sheldan.abstracto.webservices.urban.model.UrbanResponseDefinition;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class UrbanServiceBean implements UrbanService {
 
     @Autowired
@@ -30,6 +33,13 @@ public class UrbanServiceBean implements UrbanService {
     public UrbanDefinition getUrbanDefinition(String query) throws IOException {
         Request request = new Request.Builder().url(String.format(requestUrl, query)).get().build();
         Response response = okHttpClient.newCall(request).execute();
+        if(!response.isSuccessful()) {
+            if(log.isDebugEnabled()) {
+                log.error("Failed to retrieve urban dictionary definition. Response had code {} with body {}.",
+                        response.code(), response.body());
+            }
+            throw new UrbanDictionaryRequestException(response.code());
+        }
         UrbanResponse urbanResponse = gson.fromJson(response.body().string(), UrbanResponse.class);
         if(urbanResponse.getList().isEmpty()) {
             throw new NoUrbanDefinitionFoundException();
