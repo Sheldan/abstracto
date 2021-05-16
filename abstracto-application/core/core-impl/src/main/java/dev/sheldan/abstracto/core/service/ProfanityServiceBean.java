@@ -68,17 +68,22 @@ public class ProfanityServiceBean implements ProfanityService {
 
     @Override
     public boolean containsProfanity(String input, Long serverId) {
+        return getProfanityRegex(input, serverId).isPresent();
+    }
+
+    @Override
+    public Optional<ProfanityRegex> getProfanityRegex(String input, Long serverId) {
         if(regex.containsKey(serverId)) {
             List<PatternReplacement> regexes = regex.get(serverId);
             log.debug("Checking existence of {} regexes for server {}.", regexes.size(), serverId);
             for (PatternReplacement pattern: regexes) {
                 Matcher matcher = pattern.getPattern().matcher(input);
-                if(matcher.matches()) {
-                    return true;
+                if(matcher.find()) {
+                    return profanityRegexManagementService.getProfanityRegexViaIdOptional(pattern.profanityRegexId);
                 }
             }
         }
-        return false;
+        return Optional.empty();
     }
 
     @Override
@@ -132,16 +137,26 @@ public class ProfanityServiceBean implements ProfanityService {
         regex = new HashMap<>();
         List<ProfanityGroup> allGroups = profanityGroupManagementService.getAllGroups();
         allGroups.forEach(profanityGroup -> profanityGroup.getProfanities().forEach(profanityRegex -> {
-            Pattern pattern = Pattern.compile(profanityRegex.getRegex());
-            List<PatternReplacement> newPatterns = new ArrayList<>();
             Long serverId = profanityGroup.getServer().getId();
-            if(regex.containsKey(serverId)) {
-                regex.get(serverId).add(PatternReplacement.builder().pattern(pattern).replacement(profanityRegex.getReplacement()).build());
-            } else {
-                newPatterns.add(PatternReplacement.builder().pattern(pattern).replacement(profanityRegex.getReplacement()).build());
-                regex.put(serverId, newPatterns);
-            }
+            loadProfanityRegex(profanityRegex, serverId);
         }));
+    }
+
+    private void loadProfanityRegex(ProfanityRegex profanityRegex, Long serverId) {
+        Pattern pattern = Pattern.compile(profanityRegex.getRegex());
+        List<PatternReplacement> newPatterns = new ArrayList<>();
+        PatternReplacement patternReplacement = PatternReplacement
+                .builder()
+                .pattern(pattern)
+                .replacement(profanityRegex.getReplacement())
+                .profanityRegexId(profanityRegex.getId())
+                .build();
+        if (regex.containsKey(serverId)) {
+            regex.get(serverId).add(patternReplacement);
+        } else {
+            newPatterns.add(patternReplacement);
+            regex.put(serverId, newPatterns);
+        }
     }
 
     @Override
@@ -152,22 +167,16 @@ public class ProfanityServiceBean implements ProfanityService {
         }
         regex.remove(serverId);
         List<ProfanityGroup> allGroups = profanityGroupManagementService.getAllForServer(serverId);
-        allGroups.forEach(profanityGroup -> profanityGroup.getProfanities().forEach(profanityRegex -> {
-            Pattern pattern = Pattern.compile(profanityRegex.getRegex());
-            List<PatternReplacement> newPatterns = new ArrayList<>();
-            if(regex.containsKey(serverId)) {
-                regex.get(serverId).add(PatternReplacement.builder().pattern(pattern).replacement(profanityRegex.getReplacement()).build());
-            } else {
-                newPatterns.add(PatternReplacement.builder().pattern(pattern).replacement(profanityRegex.getReplacement()).build());
-                regex.put(serverId, newPatterns);
-            }
-        }));
+        allGroups
+                .forEach(profanityGroup -> profanityGroup.getProfanities()
+                .forEach(profanityRegex -> loadProfanityRegex(profanityRegex, serverId)));
     }
 
 
     @Getter
     @Builder
     private static class PatternReplacement {
+        private final Long profanityRegexId;
         private final Pattern pattern;
         private final String replacement;
     }

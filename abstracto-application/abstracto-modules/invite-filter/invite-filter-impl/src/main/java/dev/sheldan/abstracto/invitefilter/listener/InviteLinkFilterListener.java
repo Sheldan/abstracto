@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.*;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
@@ -25,7 +24,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -67,14 +65,14 @@ public class InviteLinkFilterListener implements AsyncMessageReceivedListener {
     @Autowired
     private RoleImmunityService roleImmunityService;
 
-    public static final String MODERATION_PURGE_METRIC = "invite.filter";
+    public static final String INVITE_FILTER_METRIC = "invite.filter";
     public static final String CONSEQUENCE = "consequence";
 
     private static final CounterMetric MESSAGE_INVITE_FILTERED =
             CounterMetric
                     .builder()
                     .tagList(Arrays.asList(MetricTag.getTag(CONSEQUENCE, "filtered")))
-                    .name(MODERATION_PURGE_METRIC)
+                    .name(INVITE_FILTER_METRIC)
                     .build();
 
     public static final String INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY = "invite_link_deleted_notification";

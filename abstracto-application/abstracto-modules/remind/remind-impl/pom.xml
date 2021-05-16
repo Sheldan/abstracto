@@ -55,7 +55,6 @@
             <version>${project.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
             <artifactId>core-int</artifactId>
@@ -63,8 +62,6 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
 </project>

@@ -11,6 +11,8 @@ public interface ProfanityGroupManagementService {
     List<ProfanityGroup> getAllForServer(Long serverId);
     ProfanityGroup createProfanityGroup(AServer server, String name);
     boolean doesProfanityGroupExist(AServer server, String name);
+    Optional<ProfanityGroup> getProfanityGroupByIdOptional(Long profanityGroupId);
+    ProfanityGroup getProfanityGroupById(Long profanityGroupId);
     Optional<ProfanityGroup> getProfanityGroupOptional(AServer server, String name);
     ProfanityGroup getProfanityGroup(AServer server, String name);
     void deleteProfanityGroup(ProfanityGroup profanityGroup);

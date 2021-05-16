@@ -13,7 +13,7 @@ Help::
 This information includes a description and the available commands of this module. If the provided parameter matches a command name, information about this command is displayed.
 The module matching takes precedence over command matching.
 This information includes the a short description, a more detailed description, aliases (if any), parameters (if any), which roles are allowed to execute the command,
-or if it is not restricted and which roles are immune against the command.
+or if it is not restricted and which effects a command has.
 Changing the system configuration::
 * Usage `setConfig <key> <value>`
 * Description: Changes the value of this configuration identified by `key` to `value`. Some of these configurations have separate commands, but this works in general.

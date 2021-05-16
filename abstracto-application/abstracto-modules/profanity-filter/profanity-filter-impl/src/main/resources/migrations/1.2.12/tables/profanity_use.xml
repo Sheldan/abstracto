@@ -1,0 +1,76 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+
+    <changeSet author="Sheldan" id="profanity_use-table">
+        <createTable tableName="profanity_use">
+            <column name="report_message_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_profanity_use"/>
+            </column>
+            <column name="profanity_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="profanity_user_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="report_channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="profane_message_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="profane_channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="confirmed" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="verified" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_profanity_use_user_in_server" tableName="profanity_use">
+            <column name="profanity_user_in_server_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="profanity_use" constraintName="fk_profanity_use_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="report_channel_id" baseTableName="profanity_use" constraintName="fk_profanity_use_report_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="channel" validate="true"/>
+
+        <addForeignKeyConstraint baseColumnNames="profane_channel_id" baseTableName="profanity_use" constraintName="fk_profanity_use_profane_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="channel" validate="true"/>
+
+        <addForeignKeyConstraint baseColumnNames="profanity_group_id" baseTableName="profanity_use" constraintName="fk_profanity_use_profanity_group"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="profanity_group" validate="true"/>
+
+        <addForeignKeyConstraint baseColumnNames="profanity_user_in_server_id" baseTableName="profanity_use" constraintName="fk_profanity_use_profanity_user"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="profanity_user_in_server" validate="true"/>
+
+        <sql>
+            DROP TRIGGER IF EXISTS profanity_use_update_trigger ON profanity_use;
+            CREATE TRIGGER profanity_use_update_trigger BEFORE UPDATE ON profanity_use FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS profanity_use_insert_trigger ON profanity_use;
+            CREATE TRIGGER profanity_use_insert_trigger BEFORE INSERT ON profanity_use FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

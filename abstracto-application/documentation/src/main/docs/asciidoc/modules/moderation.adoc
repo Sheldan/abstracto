@@ -199,3 +199,29 @@ Remove all or individual invites from the tracked filtered invites::
 * Usage: `removeTrackedInviteLinks [invite]`
 * Description: Removes the stored statistic for the given `invite`. In case `invite` is not given, it will delete all tracked filtered invites from the server.
 * Mode Restriction: This command is only available when the feature mode `trackUses` is enabled.
+
+=== Profanity filter
+
+Feature key `profanityFilter`
+
+This functionality provides the ability to automatically delete any detected profanities. These profanities are configured via the profanity groups and profanity regexes. Every group in these groups are active and every profanity regex will be evaluated and (depending on the feature mode) reported to be voted on.
+The uses of profanities can be tracked and a command is available to show the profanities for a user.
+
+==== Post targets
+`profanityQueue`:: target for reports to be voted on - if the feature mode `filterNotifications` is enabled.
+
+==== Feature modes
+`autoDeleteProfanities`:: if enabled, each detected profanity will be deleted immediately. Disabled by default.
+`profanityReport`:: if enabled, sends a notification to the `profanityQueue` post target to notify about a detected profanity. Enabled by default.
+`profanityVote`:: if enabled, sends a notification to the `profanityQueue` post target to notify about a detected profanity to be voted on. Requires feature mode `profanityReport` to be enabled. Enabled by default.
+`autoDeleteAfterVote`:: if enabled, after a profanity vote has reached the threshold (system config key `profanityVotes`), depending on the outcome, it will be deleted. Requires feature mode `profanityVote` to be enabled. Enabled by default.
+`trackProfanities`:: if enabled, the command `profanities` is available to show the profanities of a member. Requires feature mode `profanityVote` to be enabled. Enabled by default.
+
+==== Emotes
+* `profanityFilterAgreeEmote` reaction emote to indicate agreement about a reported profanity
+* `profanityFilterDisagreeEmote` reaction emote to indicate disagreement about a reported profanity
+
+==== Commands
+Show the profanities of a member::
+* Usage `profanities <member>`
+* Description: Shows the true and false positive profanities of the given member. Also, if there any, shows the recent true positive reports.

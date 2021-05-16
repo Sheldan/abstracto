@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service.management;
 
+import dev.sheldan.abstracto.core.exception.ProfanityRegexNotFoundException;
 import dev.sheldan.abstracto.core.models.database.ProfanityGroup;
 import dev.sheldan.abstracto.core.models.database.ProfanityRegex;
 import dev.sheldan.abstracto.core.repository.ProfanityRegexRepository;
@@ -53,5 +54,15 @@ public class ProfanityRegexManagementServiceBean  implements ProfanityRegexManag
     @Override
     public Optional<ProfanityRegex> getProfanityRegexOptional(ProfanityGroup profanityGroup, String name) {
         return repository.findByGroupAndRegexNameIgnoreCase(profanityGroup, name);
+    }
+
+    @Override
+    public Optional<ProfanityRegex> getProfanityRegexViaIdOptional(Long profanityRegexId) {
+        return repository.findById(profanityRegexId);
+    }
+
+    @Override
+    public ProfanityRegex getProfanityRegexViaId(Long profanityRegexId) {
+        return getProfanityRegexViaIdOptional(profanityRegexId).orElseThrow(ProfanityRegexNotFoundException::new);
     }
 }

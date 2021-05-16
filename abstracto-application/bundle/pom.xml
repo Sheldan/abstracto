@@ -206,13 +206,25 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
-                <artifactId>loggingg-int</artifactId>
+                <artifactId>logging-int</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>logging-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>profanity-filter-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>profanity-filter-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

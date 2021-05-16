@@ -12,4 +12,6 @@ public interface ProfanityRegexManagementService {
     void deleteProfanityRegex(ProfanityGroup group, String profanityName);
     boolean doesProfanityRegexExist(ProfanityGroup profanityGroup, String name);
     Optional<ProfanityRegex> getProfanityRegexOptional(ProfanityGroup profanityGroup, String name);
+    Optional<ProfanityRegex> getProfanityRegexViaIdOptional(Long profanityRegexId);
+    ProfanityRegex getProfanityRegexViaId(Long profanityRegexId);
 }

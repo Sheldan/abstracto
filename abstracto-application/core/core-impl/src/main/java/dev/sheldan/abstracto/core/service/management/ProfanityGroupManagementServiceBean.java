@@ -45,6 +45,16 @@ public class ProfanityGroupManagementServiceBean implements ProfanityGroupManage
     }
 
     @Override
+    public Optional<ProfanityGroup> getProfanityGroupByIdOptional(Long profanityGroupId) {
+        return repository.findById(profanityGroupId);
+    }
+
+    @Override
+    public ProfanityGroup getProfanityGroupById(Long profanityGroupId) {
+        return getProfanityGroupByIdOptional(profanityGroupId).orElseThrow(ProfanityGroupNotFoundException::new);
+    }
+
+    @Override
     public Optional<ProfanityGroup> getProfanityGroupOptional(AServer server, String name) {
         return repository.findByServerAndGroupNameIgnoreCase(server, name);
     }
