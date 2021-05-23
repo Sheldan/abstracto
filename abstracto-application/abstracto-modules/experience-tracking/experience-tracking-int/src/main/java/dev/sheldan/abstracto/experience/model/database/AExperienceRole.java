@@ -28,7 +28,7 @@ public class AExperienceRole implements Serializable {
      * The ID of the {@link ARole} to be awarded at a certain experience level
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
@@ -57,13 +57,13 @@ public class AExperienceRole implements Serializable {
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     /**

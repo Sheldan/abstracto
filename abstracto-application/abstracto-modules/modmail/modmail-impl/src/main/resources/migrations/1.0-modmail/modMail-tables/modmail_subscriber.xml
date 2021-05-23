@@ -12,7 +12,7 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="mod_mail_subscriber_pkey"/>
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="user_in_server_id" type="BIGINT">

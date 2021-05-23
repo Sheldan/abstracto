@@ -19,18 +19,19 @@ import java.util.List;
 public class AServer implements SnowFlake, Serializable {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @Setter
-    @Column(name = "admin_mode")
-    private Boolean adminMode;
+    @Builder.Default
+    @Column(name = "admin_mode", nullable = false)
+    private Boolean adminMode = true;
 
     @Transient
     private boolean fake;

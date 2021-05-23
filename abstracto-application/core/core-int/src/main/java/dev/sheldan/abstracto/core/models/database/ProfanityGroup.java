@@ -19,10 +19,10 @@ public class ProfanityGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String groupName;
 
     @OneToMany(
@@ -39,7 +39,7 @@ public class ProfanityGroup {
     @Setter
     private AServer server;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
 }

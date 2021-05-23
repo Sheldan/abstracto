@@ -26,7 +26,7 @@ public class MuteRole implements Serializable {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
@@ -45,10 +45,10 @@ public class MuteRole implements Serializable {
     @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

@@ -9,14 +9,14 @@
     <changeSet author="Sheldan" id="repost_check_channel_group-table">
         <createTable tableName="repost_check_channel_group">
             <column name="id" type="BIGINT">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="enabled" type="BOOLEAN">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="id" baseTableName="repost_check_channel_group" constraintName="fk_repost_check_channel_group_group"

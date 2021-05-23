@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 /**
@@ -19,11 +20,11 @@ import java.time.Instant;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class ModMailThreadSubscriber {
+public class ModMailThreadSubscriber implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long subscriberId;
 
     /**
@@ -44,10 +45,10 @@ public class ModMailThreadSubscriber {
     @JoinColumn(name = "mod_mail_thread_id", nullable = false)
     private ModMailThread threadReference;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

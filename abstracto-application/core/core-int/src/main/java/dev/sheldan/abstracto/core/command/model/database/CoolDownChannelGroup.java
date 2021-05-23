@@ -16,7 +16,7 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class CoolDownChannelGroup {
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -29,9 +29,9 @@ public class CoolDownChannelGroup {
     @Column(name = "member_cool_down")
     private Long memberCoolDown;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 }

@@ -18,7 +18,7 @@ public class AUserInAServer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_in_server_id")
+    @Column(name = "user_in_server_id", nullable = false)
     private Long userInServerId;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -29,10 +29,10 @@ public class AUserInAServer implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer serverReference;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

@@ -24,6 +24,6 @@ public class Counter implements Serializable {
     @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
     private AServer server;
 
-    @Column(name = "counter")
+    @Column(name = "counter", nullable = false)
     private Long counter;
 }

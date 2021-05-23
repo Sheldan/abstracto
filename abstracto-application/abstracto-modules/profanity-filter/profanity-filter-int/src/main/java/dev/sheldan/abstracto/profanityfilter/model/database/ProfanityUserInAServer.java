@@ -18,7 +18,7 @@ import java.util.List;
 @EqualsAndHashCode
 public class ProfanityUserInAServer {
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
@@ -32,10 +32,10 @@ public class ProfanityUserInAServer {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @OneToMany(mappedBy = "profanityUser", fetch = FetchType.LAZY)

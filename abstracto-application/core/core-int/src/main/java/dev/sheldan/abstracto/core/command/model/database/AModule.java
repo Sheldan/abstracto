@@ -18,7 +18,7 @@ import java.util.List;
 public class AModule implements Serializable {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -31,10 +31,10 @@ public class AModule implements Serializable {
     @Builder.Default
     private List<ACommand> commands = new ArrayList<>();
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

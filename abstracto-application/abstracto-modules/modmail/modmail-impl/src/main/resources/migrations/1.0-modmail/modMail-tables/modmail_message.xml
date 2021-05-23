@@ -11,24 +11,20 @@
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="mod_mail_message_pkey"/>
             </column>
-            <column name="created_message_in_dm" type="BIGINT" >
-                <constraints nullable="true"/>
-            </column>
-            <column name="created_message_in_channel" type="BIGINT" >
-                <constraints nullable="true"/>
-            </column>
+            <column name="created_message_in_dm" type="BIGINT" />
+            <column name="created_message_in_channel" type="BIGINT" />
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="anonymous" type="BOOLEAN">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="dm_channel" type="BOOLEAN">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="author_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>

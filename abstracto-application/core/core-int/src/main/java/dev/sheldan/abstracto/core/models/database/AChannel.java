@@ -18,7 +18,7 @@ public class AChannel implements SnowFlake, Serializable {
 
     @Id
     @Getter
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     public Long id;
 
     @Getter
@@ -35,16 +35,17 @@ public class AChannel implements SnowFlake, Serializable {
     @Enumerated(EnumType.STRING)
     private AChannelType type;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @Getter
     @Setter
-    @Column
-    private Boolean deleted;
+    @Builder.Default
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
 
     @Transient
     private boolean fake;

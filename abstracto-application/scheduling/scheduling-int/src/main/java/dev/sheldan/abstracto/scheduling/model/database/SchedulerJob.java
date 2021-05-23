@@ -22,25 +22,25 @@ public class SchedulerJob implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
      * The name of the job
      */
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     /**
      * The group of the job
      */
-    @Column(name = "group_name")
+    @Column(name = "group_name", nullable = false)
     private String groupName;
 
     /**
      * The absolute path of a class extending {@link org.springframework.scheduling.quartz.QuartzJobBean} which should be executed by this job
      */
-    @Column(name = "clazz")
+    @Column(name = "clazz", nullable = false)
     private String clazz;
 
     /**

@@ -19,6 +19,6 @@ import java.io.Serializable;
 @Getter
 public class ALock implements Serializable {
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 }

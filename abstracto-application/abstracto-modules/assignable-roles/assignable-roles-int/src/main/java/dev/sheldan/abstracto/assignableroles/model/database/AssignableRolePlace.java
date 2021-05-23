@@ -33,14 +33,14 @@ public class AssignableRolePlace implements Serializable {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
      * The channel in which the {@link AssignableRolePlacePost posts} for this place should be created
      */
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="channel_id")
+    @JoinColumn(name="channel_id", nullable = false)
     private AChannel channel;
 
     /**
@@ -53,7 +53,7 @@ public class AssignableRolePlace implements Serializable {
     /**
      * The key this place is associated with via commands. Unique per server.
      */
-    @Column(name = "key")
+    @Column(name = "key", nullable = false)
     private String key;
 
     /**
@@ -84,47 +84,47 @@ public class AssignableRolePlace implements Serializable {
     /**
      * The text which is displayed in the first description area of the created {@link AssignableRolePlacePost}
      */
-    @Column(name = "text")
+    @Column(name = "text", nullable = false)
     private String text;
 
     /**
      * Whether or not the reactions placed onto the posts should be acted upon
      */
     @Builder.Default
-    @Column(name = "active")
+    @Column(name = "active", nullable = false)
     private Boolean active = true;
 
     /**
      * Whether or not the fields containing the descriptions should be inline
      */
     @Builder.Default
-    @Column(name = "inline")
+    @Column(name = "inline", nullable = false)
     private Boolean inline = false;
 
     /**
      * Whether or not it should be restricted, that a {@link AssignedRoleUser} should only have one role of this place
      */
     @Builder.Default
-    @Column(name = "unique_roles")
+    @Column(name = "unique_roles", nullable = false)
     private Boolean uniqueRoles = false;
 
     /**
      * Whether or not the added reactions should be removed automatically
      */
     @Builder.Default
-    @Column(name = "auto_remove")
+    @Column(name = "auto_remove", nullable = false)
     private Boolean autoRemove = false;
 
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

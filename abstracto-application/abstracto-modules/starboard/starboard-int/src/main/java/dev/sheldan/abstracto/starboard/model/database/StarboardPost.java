@@ -22,17 +22,17 @@ public class StarboardPost implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_user_in_server_id", nullable = false)
     private AUserInAServer author;
 
-    @Column(name = "starboard_message_id")
+    @Column(name = "starboard_message_id", nullable = false)
     private Long starboardMessageId;
 
-    @Column(name = "post_message_id")
+    @Column(name = "post_message_id", nullable = false)
     private Long postMessageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,10 +51,10 @@ public class StarboardPost implements Serializable {
     @Transient
     private Integer reactionCount;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @PostLoad
@@ -69,11 +69,12 @@ public class StarboardPost implements Serializable {
             mappedBy = "starboardPost")
     private List<StarboardPostReaction> reactions;
 
-    @Column(name = "starred_date")
+    @Column(name = "starred_date", nullable = false)
     private Instant starredDate;
 
-    @Column(name = "ignored")
-    private boolean ignored;
+    @Builder.Default
+    @Column(name = "ignored", nullable = false)
+    private boolean ignored = false;
 
     public int getReactionCount() {
         if(this.reactions == null) {

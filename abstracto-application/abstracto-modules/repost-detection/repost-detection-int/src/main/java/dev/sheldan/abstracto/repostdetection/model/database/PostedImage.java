@@ -40,13 +40,13 @@ public class PostedImage {
     @Setter
     private PostIdentifier postId;
 
-    @Column(name = "image_hash")
+    @Column(name = "image_hash", nullable = false)
     private String imageHash;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @Getter

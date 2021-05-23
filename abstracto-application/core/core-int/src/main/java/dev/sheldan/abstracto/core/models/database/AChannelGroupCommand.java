@@ -18,7 +18,7 @@ public class AChannelGroupCommand implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "command_in_group_id")
+    @Column(name = "command_in_group_id", nullable = false)
     private Long commandInGroupId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,7 +27,7 @@ public class AChannelGroupCommand implements Serializable {
     private ACommand command;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="server_id")
+    @JoinColumn(name="server_id", nullable = false)
     private AServer server;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,13 +36,14 @@ public class AChannelGroupCommand implements Serializable {
     private AChannelGroup group;
 
     @Setter
-    @Column(name = "enabled")
-    private Boolean enabled;
+    @Builder.Default
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled = true;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

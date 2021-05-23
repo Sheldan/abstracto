@@ -17,11 +17,11 @@ import java.time.Instant;
 public class AConfig implements Serializable {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "string_value")
@@ -37,10 +37,10 @@ public class AConfig implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     public String getValueAsString() {

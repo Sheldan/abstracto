@@ -10,18 +10,18 @@
         <createTable tableName="mute">
             <column name="id" type="BIGINT" />
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="reason" type="VARCHAR(255)">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="trigger_key" type="VARCHAR(255)" />
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="mute_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="target_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="muted_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -32,7 +32,9 @@
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="mute_ended" type="BOOLEAN"/>
+            <column name="mute_ended" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
             <column name="message_id" type="BIGINT"/>
             <column name="muting_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>

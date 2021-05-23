@@ -29,6 +29,7 @@ public class AssignableRole implements Serializable {
      * The unique ID of this {@link AssignableRole assignableRole}
      */
     @Id
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -36,7 +37,7 @@ public class AssignableRole implements Serializable {
      * The {@link AEmote emote} this role is associated with
      */
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn(name = "emote_id")
+    @JoinColumn(name = "emote_id", nullable = false)
     private AEmote emote;
 
     /**
@@ -80,7 +81,7 @@ public class AssignableRole implements Serializable {
     /**
      * The description which is shown in the embeds of the posts of the {@link AssignableRolePlace}
      */
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     /**
@@ -93,18 +94,18 @@ public class AssignableRole implements Serializable {
      * The position of this assignable role within the {@link AssignableRole}. This is required in order to show them
      * the same order as the descriptions in the fields and also to move them around and switch positions
      */
-    @Column(name = "position")
+    @Column(name = "position", nullable = false)
     private Integer position;
 
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 }

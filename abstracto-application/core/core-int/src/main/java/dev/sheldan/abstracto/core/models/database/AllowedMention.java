@@ -18,7 +18,7 @@ import java.time.Instant;
 public class AllowedMention implements Serializable {
 
     @Id
-    @Column(name = "server_id")
+    @Column(name = "server_id", nullable = false)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -27,21 +27,24 @@ public class AllowedMention implements Serializable {
     private AServer server;
 
     @Getter
-    @Column(name = "everyone_mention")
-    private Boolean everyone;
+    @Builder.Default
+    @Column(name = "everyone_mention", nullable = false)
+    private Boolean everyone = false;
 
     @Getter
-    @Column(name = "user_mention")
-    private Boolean user;
+    @Builder.Default
+    @Column(name = "user_mention", nullable = false)
+    private Boolean user = false;
 
     @Getter
-    @Column(name = "role_mention")
-    private Boolean role;
+    @Builder.Default
+    @Column(name = "role_mention", nullable = false)
+    private Boolean role = false;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     public boolean allAllowed() {

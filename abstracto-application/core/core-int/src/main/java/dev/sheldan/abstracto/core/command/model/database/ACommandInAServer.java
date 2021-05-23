@@ -20,7 +20,7 @@ public class ACommandInAServer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "command_in_server_id")
+    @Column(name = "command_in_server_id", nullable = false)
     private Long commandInServerId;
 
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -44,13 +44,14 @@ public class ACommandInAServer implements Serializable {
 
     @Getter
     @Setter
-    @Column(name = "restricted")
-    private Boolean restricted;
+    @Builder.Default
+    @Column(name = "restricted", nullable = false)
+    private Boolean restricted = false;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @Column(name = "cool_down")

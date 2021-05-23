@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <include file="allowed_mention.xml" relativeToChangelogFile="true"/>
+    <include file="auser.xml" relativeToChangelogFile="true"/>
+    <include file="channel.xml" relativeToChangelogFile="true"/>
+    <include file="channel_group.xml" relativeToChangelogFile="true"/>
+    <include file="channel_group_command.xml" relativeToChangelogFile="true"/>
+    <include file="channel_group_type.xml" relativeToChangelogFile="true"/>
+    <include file="command.xml" relativeToChangelogFile="true"/>
+    <include file="command_disabled_channel_group.xml" relativeToChangelogFile="true"/>
+    <include file="command_in_server.xml" relativeToChangelogFile="true"/>
+    <include file="command_in_server_alias.xml" relativeToChangelogFile="true"/>
+    <include file="cool_down_channel_group.xml" relativeToChangelogFile="true"/>
+    <include file="custom_template.xml" relativeToChangelogFile="true"/>
+    <include file="default_emote.xml" relativeToChangelogFile="true"/>
+    <include file="effect_type.xml" relativeToChangelogFile="true"/>
+    <include file="emote.xml" relativeToChangelogFile="true"/>
+    <include file="feature.xml" relativeToChangelogFile="true"/>
+    <include file="feature_flag.xml" relativeToChangelogFile="true"/>
+    <include file="feature_mode.xml" relativeToChangelogFile="true"/>
+    <include file="module.xml" relativeToChangelogFile="true"/>
+    <include file="post_target.xml" relativeToChangelogFile="true"/>
+    <include file="profanity_group.xml" relativeToChangelogFile="true"/>
+    <include file="profanity_regex.xml" relativeToChangelogFile="true"/>
+    <include file="role.xml" relativeToChangelogFile="true"/>
+    <include file="role_immunity.xml" relativeToChangelogFile="true"/>
+    <include file="server.xml" relativeToChangelogFile="true"/>
+    <include file="system_config.xml" relativeToChangelogFile="true"/>
+    <include file="template.xml" relativeToChangelogFile="true"/>
+    <include file="user_in_server.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

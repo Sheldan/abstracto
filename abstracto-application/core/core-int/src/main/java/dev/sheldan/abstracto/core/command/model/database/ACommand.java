@@ -19,11 +19,11 @@ import java.util.List;
 @EqualsAndHashCode
 public class ACommand implements Serializable {
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,10 +37,10 @@ public class ACommand implements Serializable {
     @JoinColumn(name = "feature_id", nullable = false)
     private AFeature feature;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

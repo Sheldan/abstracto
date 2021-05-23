@@ -27,7 +27,7 @@ public class ModMailMessage implements Serializable {
      * The ID of the message which caused this message to be created, either the message containing the command or the message received from the user
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long messageId;
 
     /**
@@ -62,18 +62,20 @@ public class ModMailMessage implements Serializable {
      * true: message was send via command, false: message was send from the user
      * This is used to decide where to get the message from in case of logging, because the user might delete the message and we do not want to re-parse the command message
      */
-    @Column(name = "dm_channel")
-    private Boolean dmChannel;
+    @Builder.Default
+    @Column(name = "dm_channel", nullable = false)
+    private Boolean dmChannel = false;
 
     /**
      * Staff only: Whether or not this message meant to be sent anonymous
      */
-    @Column(name = "anonymous")
-    private Boolean anonymous;
+    @Builder.Default
+    @Column(name = "anonymous", nullable = false)
+    private Boolean anonymous = false;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 }

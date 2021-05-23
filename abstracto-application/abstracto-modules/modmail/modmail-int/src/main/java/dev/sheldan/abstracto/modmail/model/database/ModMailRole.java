@@ -26,7 +26,7 @@ public class ModMailRole implements Serializable {
      * Unique ID of the mod mail role
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long modMailRoleId;
 
@@ -44,10 +44,10 @@ public class ModMailRole implements Serializable {
     @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

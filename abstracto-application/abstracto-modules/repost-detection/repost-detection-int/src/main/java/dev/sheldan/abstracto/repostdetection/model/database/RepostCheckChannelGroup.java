@@ -24,13 +24,14 @@ public class RepostCheckChannelGroup {
     @PrimaryKeyJoinColumn
     private AChannelGroup channelGroup;
 
-    @Column(name = "enabled")
-    private Boolean checkEnabled;
+    @Builder.Default
+    @Column(name = "enabled", nullable = false)
+    private Boolean checkEnabled = true;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

@@ -27,16 +27,16 @@ public class Suggestion implements Serializable {
 
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "suggester_user_in_server_id")
+    @JoinColumn(name = "suggester_user_in_server_id", nullable = false)
     private AUserInAServer suggester;
 
     @Getter
-    @Column(name = "message_id")
+    @Column(name = "message_id", nullable = false)
     private Long messageId;
 
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id")
+    @JoinColumn(name = "channel_id", nullable = false)
     private AChannel channel;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -46,16 +46,16 @@ public class Suggestion implements Serializable {
 
     @Getter
     @Enumerated(EnumType.STRING)
-    @Column(name = "state")
+    @Column(name = "state", nullable = false)
     private SuggestionState state;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
-    @Column(name = "suggestion_text")
+    @Column(name = "suggestion_text", nullable = false)
     private String suggestionText;
 
     @Getter

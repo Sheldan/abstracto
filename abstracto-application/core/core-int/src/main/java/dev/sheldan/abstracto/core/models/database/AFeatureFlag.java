@@ -19,7 +19,7 @@ public class AFeatureFlag implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     public Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,13 +33,14 @@ public class AFeatureFlag implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "featureFlag")
     private List<AFeatureMode> modes;
 
-    @Column(name = "enabled")
-    private boolean enabled;
+    @Builder.Default
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = false;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updateTimestamp;
 
 }

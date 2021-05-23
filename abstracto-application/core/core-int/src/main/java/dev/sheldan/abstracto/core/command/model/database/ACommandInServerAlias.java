@@ -23,7 +23,7 @@ public class ACommandInServerAlias implements Serializable {
     @JoinColumn(name = "command_in_server_id", referencedColumnName = "command_in_server_id", nullable = false)
     private ACommandInAServer commandInAServer;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
 }

@@ -12,16 +12,16 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="user_experience_pkey"/>
             </column>
             <column name="experience" type="BIGINT">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="experience_gain_disabled" type="BOOLEAN">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="message_count" type="BIGINT">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="role_id" type="BIGINT"/>

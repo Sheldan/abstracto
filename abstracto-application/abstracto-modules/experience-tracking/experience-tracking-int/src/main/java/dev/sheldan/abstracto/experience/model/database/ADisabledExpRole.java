@@ -24,7 +24,7 @@ public class ADisabledExpRole implements Serializable {
      * The ID of the {@link ARole role} which is being marked to be used as a marker for {@link net.dv8tion.jda.api.entities.Member} which should not gain experience
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
@@ -37,12 +37,12 @@ public class ADisabledExpRole implements Serializable {
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 }

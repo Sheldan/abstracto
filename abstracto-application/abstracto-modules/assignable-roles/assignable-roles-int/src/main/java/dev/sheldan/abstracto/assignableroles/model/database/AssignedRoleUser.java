@@ -27,7 +27,7 @@ public class AssignedRoleUser implements Serializable {
      * The ID of the associated {@link AUserInAServer userInAServer}
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -48,13 +48,13 @@ public class AssignedRoleUser implements Serializable {
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

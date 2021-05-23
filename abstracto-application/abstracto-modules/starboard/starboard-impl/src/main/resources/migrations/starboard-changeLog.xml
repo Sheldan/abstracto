@@ -8,4 +8,5 @@
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
     <include file="1.0-starboard/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.3-starboard/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.2.12/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

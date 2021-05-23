@@ -28,14 +28,14 @@ public class AssignableRolePlacePost implements Serializable {
      * The ID of the {@link net.dv8tion.jda.api.entities.Message message} which represents this post with the reactions.
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
      * The actual {@link AChannel channel} in which the post ended up in
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id")
+    @JoinColumn(name = "channel_id", nullable = false)
     private AChannel usedChannel;
 
     /**
@@ -66,13 +66,13 @@ public class AssignableRolePlacePost implements Serializable {
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

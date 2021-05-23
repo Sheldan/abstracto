@@ -18,17 +18,17 @@ public class FilteredInviteLink {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Column(name = "target_server_id")
+    @Column(name = "target_server_id", nullable = false)
     private Long targetServerId;
 
-    @Column(name = "server_name")
+    @Column(name = "server_name", nullable = false)
     private String serverName;
 
     /**
@@ -37,10 +37,10 @@ public class FilteredInviteLink {
     @Column(name = "uses")
     private Long uses;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

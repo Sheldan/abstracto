@@ -27,7 +27,7 @@ public class AUserExperience implements Serializable {
      * The ID of the {@link AUserInAServer user} which is represented by this object
      */
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     /**
@@ -44,20 +44,21 @@ public class AUserExperience implements Serializable {
     /**
      * The total amount of experience the user has in the guild
      */
-    @Column(name = "experience")
+    @Column(name = "experience", nullable = false)
     private Long experience;
 
     /**
      * The total amount of messages the user has written in the guild resulting in the experience.
      */
-    @Column(name = "message_count")
+    @Column(name = "message_count", nullable = false)
     private Long messageCount;
 
     /**
      * Whether or not the experience gain has been disabled for this user
      */
-    @Column(name = "experience_gain_disabled")
-    private Boolean experienceGainDisabled;
+    @Builder.Default
+    @Column(name = "experience_gain_disabled", nullable = false)
+    private Boolean experienceGainDisabled = false;
 
     /**
      * The {@link AExperienceLevel level} which the user currently has.
@@ -76,13 +77,13 @@ public class AUserExperience implements Serializable {
     /**
      * The {@link Instant} this entity was created
      */
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     /**
      * The {@link Instant} this entity was updated
      */
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     public Integer getLevelOrDefault() {

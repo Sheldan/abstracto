@@ -31,13 +31,13 @@ public class UserNote implements Serializable {
     @JoinColumn(name = "user_in_server_id", nullable = false)
     private AUserInAServer user;
 
-    @Column(length = 2000, name = "note")
+    @Column(length = 2000, name = "note", nullable = false)
     private String note;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

@@ -73,10 +73,10 @@ public class TrackedEmote implements Serializable, Fakeable {
     @Column(name = "external_url")
     private String externalUrl;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     /**

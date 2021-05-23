@@ -18,10 +18,10 @@ public class AEmote implements Serializable, Fakeable {
 
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     // the way discord calls them and the unicode char for default Tweemoji emotes
@@ -37,18 +37,19 @@ public class AEmote implements Serializable, Fakeable {
     @Setter
     private Boolean animated;
 
-    @Column(name = "custom")
+    @Builder.Default
+    @Column(name = "custom", nullable = false)
     @Setter
-    private Boolean custom;
+    private Boolean custom = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer serverRef;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @Column(name = "changeable")

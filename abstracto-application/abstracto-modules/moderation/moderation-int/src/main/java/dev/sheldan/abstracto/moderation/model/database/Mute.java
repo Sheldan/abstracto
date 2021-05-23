@@ -51,13 +51,13 @@ public class Mute implements Serializable {
     /**
      * The reason of the mute which is stored
      */
-    @Column(name = "reason")
+    @Column(name = "reason", nullable = false)
     private String reason;
 
     /**
      * The date when the mute was cast, and the start date
      */
-    @Column(name = "mute_date")
+    @Column(name = "mute_date", nullable = false)
     private Instant muteDate;
 
     /**
@@ -69,8 +69,9 @@ public class Mute implements Serializable {
     /**
      * Whether or not the mute already ended, be it manually or when the time passed
      */
-    @Column(name = "mute_ended")
-    private Boolean muteEnded;
+    @Builder.Default
+    @Column(name = "mute_ended", nullable = false)
+    private Boolean muteEnded = false;
 
     /**
      * The message which contained the command which caused this mute
@@ -82,7 +83,7 @@ public class Mute implements Serializable {
      * The channel in which this mute was cast
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mutingChannel", nullable = false)
+    @JoinColumn(name = "mutingChannel")
     private AChannel mutingChannel;
 
     /**
@@ -91,7 +92,7 @@ public class Mute implements Serializable {
     @Column(name = "trigger_key")
     private String triggerKey;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
     @PrePersist
@@ -99,7 +100,7 @@ public class Mute implements Serializable {
         this.muteDate = Instant.now();
     }
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

@@ -16,13 +16,13 @@ import java.time.Instant;
 public class ProfanityRegex {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String regexName;
 
-    @Column(name = "regex")
+    @Column(name = "regex", nullable = false)
     private String regex;
 
     @Column(name = "replacement")
@@ -34,6 +34,6 @@ public class ProfanityRegex {
     @Setter
     private ProfanityGroup group;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 }

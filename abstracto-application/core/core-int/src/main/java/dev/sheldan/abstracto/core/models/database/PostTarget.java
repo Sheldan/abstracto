@@ -17,11 +17,11 @@ public class PostTarget implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @Getter
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -36,10 +36,10 @@ public class PostTarget implements Serializable {
     @Setter
     private AServer serverReference;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

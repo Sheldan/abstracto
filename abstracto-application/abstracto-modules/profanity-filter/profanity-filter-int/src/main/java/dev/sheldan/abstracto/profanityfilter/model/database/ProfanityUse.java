@@ -26,7 +26,7 @@ public class ProfanityUse {
     @JoinColumn(name = "profanity_user_in_server_id", referencedColumnName = "id", nullable = false)
     private ProfanityUserInAServer profanityUser;
 
-    @Column(name = "report_message_id")
+    @Column(name = "report_message_id", nullable = false)
     @Id
     private Long reportMessageId;
 
@@ -38,22 +38,22 @@ public class ProfanityUse {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Column(name = "profane_message_id")
+    @Column(name = "profane_message_id", nullable = false)
     private Long profaneMessageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profane_channel_id", nullable = false)
     private AChannel profaneChannel;
 
-    @Column(name = "confirmed")
+    @Column(name = "confirmed", nullable = false)
     private Boolean confirmed;
 
-    @Column(name = "verified")
+    @Column(name = "verified", nullable = false)
     private Boolean verified;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 }

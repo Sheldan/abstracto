@@ -33,9 +33,9 @@ public class RoleImmunity {
     @JoinColumn(name="server_id", nullable = false)
     private AServer server;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 }

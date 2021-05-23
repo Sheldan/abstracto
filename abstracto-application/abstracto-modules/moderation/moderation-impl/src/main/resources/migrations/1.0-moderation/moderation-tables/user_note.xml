@@ -9,10 +9,10 @@
     <changeSet author="Sheldan" id="user_note-table">
         <createTable tableName="user_note">
             <column autoIncrement="true" name="id" type="BIGINT" >
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
             <column name="note" type="VARCHAR(2000)"/>

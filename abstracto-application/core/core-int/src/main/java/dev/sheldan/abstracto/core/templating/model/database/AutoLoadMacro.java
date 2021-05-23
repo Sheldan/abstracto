@@ -14,6 +14,7 @@ import javax.persistence.*;
 public class AutoLoadMacro {
 
     @Id
+    @Column(name = "key", nullable = false)
     private String key;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

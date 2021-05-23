@@ -20,12 +20,12 @@ public class AFeature implements SnowFlake, Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     public Long id;
 
     @Getter
     @Setter
-    @Column(name = "key")
+    @Column(name = "key", nullable = false)
     private String key;
 
     @Getter
@@ -33,10 +33,10 @@ public class AFeature implements SnowFlake, Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "feature")
     private List<ACommand> commands;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

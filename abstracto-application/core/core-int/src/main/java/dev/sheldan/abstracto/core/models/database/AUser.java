@@ -17,7 +17,7 @@ import java.util.List;
 public class AUser implements Serializable {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @OneToMany(
@@ -26,10 +26,10 @@ public class AUser implements Serializable {
             mappedBy = "serverReference")
     private List<AUserInAServer> servers;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

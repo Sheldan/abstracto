@@ -64,7 +64,7 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
-    @Column(name = "warn_date")
+    @Column(name = "warn_date", nullable = false)
     private Instant warnDate;
 
     /**
@@ -72,8 +72,9 @@ public class Warning implements Serializable {
      */
     @Getter
     @Setter
-    @Column(name = "decayed")
-    private Boolean decayed;
+    @Builder.Default
+    @Column(name = "decayed", nullable = false)
+    private Boolean decayed = false;
 
     /**
      * The date at which the warning was decayed
@@ -83,10 +84,10 @@ public class Warning implements Serializable {
     @Column(name = "decay_date")
     private Instant decayDate;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

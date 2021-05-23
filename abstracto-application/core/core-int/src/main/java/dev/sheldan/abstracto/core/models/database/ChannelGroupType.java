@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
@@ -13,25 +14,27 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class ChannelGroupType {
+public class ChannelGroupType implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "group_type_key")
+    @Column(name = "group_type_key", nullable = false)
     private String groupTypeKey;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
-    @Column(name = "allows_channel_in_multiple")
-    private Boolean allowsChannelsInMultiple;
+    @Builder.Default
+    @Column(name = "allows_channel_in_multiple", nullable = false)
+    private Boolean allowsChannelsInMultiple = true;
 
-    @Column(name = "allows_commands_in_multiple")
-    private Boolean allowsCommandsInMultiple;
+    @Builder.Default
+    @Column(name = "allows_commands_in_multiple", nullable = false)
+    private Boolean allowsCommandsInMultiple = true;
 }

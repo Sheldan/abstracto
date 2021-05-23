@@ -19,10 +19,10 @@ public class AChannelGroup implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "group_name")
+    @Column(name = "group_name", nullable = false)
     private String groupName;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,16 +30,16 @@ public class AChannelGroup implements Serializable {
     private AServer server;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_type_id")
+    @JoinColumn(name = "group_type_id", nullable = false)
     private ChannelGroupType channelGroupType;
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<AChannelGroupCommand> channelGroupCommands;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @ManyToMany
@@ -49,8 +49,9 @@ public class AChannelGroup implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "channel_id"))
     private List<AChannel> channels;
 
-    @Column(name = "enabled")
-    private Boolean enabled;
+    @Column(name = "enabled", nullable = false)
+    @Builder.Default
+    private Boolean enabled = true;
 
 
 }

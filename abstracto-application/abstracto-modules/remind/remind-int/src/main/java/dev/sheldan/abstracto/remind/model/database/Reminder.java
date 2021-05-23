@@ -21,7 +21,7 @@ public class Reminder implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,20 +39,21 @@ public class Reminder implements Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant reminderDate;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
-    @Column(name = "target_date")
+    @Column(name = "target_date", nullable = false)
     private Instant targetDate;
 
     @Column(name = "text")
     private String text;
 
-    @Column(name = "reminded")
-    private boolean reminded;
+    @Builder.Default
+    @Column(name = "reminded", nullable = false)
+    private boolean reminded = false;
 
     @Column(name = "job_trigger_key")
     private String jobTriggerKey;

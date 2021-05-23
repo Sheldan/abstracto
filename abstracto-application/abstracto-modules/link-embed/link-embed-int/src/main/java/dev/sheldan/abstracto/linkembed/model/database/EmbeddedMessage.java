@@ -39,7 +39,7 @@ public class EmbeddedMessage implements Serializable {
     @JoinColumn(name = "embedded_channel_id", nullable = false)
     private AChannel embeddedChannel;
 
-    @Column(name = "embedded_message_id")
+    @Column(name = "embedded_message_id", nullable = false)
     private Long embeddedMessageId;
 
     @Getter
@@ -52,14 +52,14 @@ public class EmbeddedMessage implements Serializable {
     @JoinColumn(name = "embedding_channel_id", nullable = false)
     private AChannel embeddingChannel;
 
-    @Column(name = "embedding_message_id")
+    @Column(name = "embedding_message_id", nullable = false)
     @Id
     private Long embeddingMessageId;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
 }

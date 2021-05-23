@@ -36,6 +36,7 @@ public class ProfanityUseManagementServiceBean implements ProfanityUseManagement
                 .reportMessageId(reportMessage.getMessageId())
                 .reportChannel(reportChannel)
                 .verified(false)
+                .confirmed(false)
                 .server(reportedUser.getServer())
                 .build();
         return profanityUseRepository.save(profanityUse);

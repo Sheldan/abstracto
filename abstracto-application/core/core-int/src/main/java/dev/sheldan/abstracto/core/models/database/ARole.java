@@ -18,6 +18,7 @@ public class ARole implements SnowFlake, Serializable {
     @Id
     @Getter
     @Setter
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,13 +29,14 @@ public class ARole implements SnowFlake, Serializable {
 
     @Getter
     @Setter
-    @Column(name = "deleted")
-    private Boolean deleted;
+    @Builder.Default
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @Column(name = "updated")
+    @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
     @Transient
