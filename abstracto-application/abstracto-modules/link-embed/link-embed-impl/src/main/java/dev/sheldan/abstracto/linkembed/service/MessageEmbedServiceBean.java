@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MessageEmbedServiceBean implements MessageEmbedService {
 
-    private final Pattern messageRegex = Pattern.compile("(?<whole>(?:https?://)?(?:\\w+\\.)?discord(?:app)?\\.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+");
+    private final Pattern messageRegex = Pattern.compile("(?<whole>(?:https?://)?(?:\\w+\\.)?discord(?:app)?\\.com/channels/(?<server>\\d+)/(?<channel>\\d+)/(?<message>\\d+)(?:.*?))+", Pattern.CASE_INSENSITIVE);
 
     public static final String MESSAGE_EMBED_TEMPLATE = "message_embed";
     public static final String REMOVAL_EMOTE = "removeEmbed";

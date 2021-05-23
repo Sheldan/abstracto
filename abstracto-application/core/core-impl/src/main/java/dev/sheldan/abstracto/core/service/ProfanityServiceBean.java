@@ -143,7 +143,7 @@ public class ProfanityServiceBean implements ProfanityService {
     }
 
     private void loadProfanityRegex(ProfanityRegex profanityRegex, Long serverId) {
-        Pattern pattern = Pattern.compile(profanityRegex.getRegex());
+        Pattern pattern = Pattern.compile(profanityRegex.getRegex(), Pattern.CASE_INSENSITIVE);
         List<PatternReplacement> newPatterns = new ArrayList<>();
         PatternReplacement patternReplacement = PatternReplacement
                 .builder()
