@@ -4,6 +4,9 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.invitefilter.model.database.FilteredInviteLink;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Invite;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,4 +28,7 @@ public interface InviteLinkFilterService {
     List<FilteredInviteLink> getTopFilteredInviteLinks(Long serverId, Integer count);
     List<FilteredInviteLink> getTopFilteredInviteLinks(Long serverId);
     CompletableFuture<Invite> resolveInvite(JDA jda, String code);
+    boolean isInviteFilterActiveInChannel(MessageChannel channel);
+    boolean isMemberImmuneAgainstInviteFilter(Member member);
+    List<String> findInvitesInMessage(Message message);
 }

@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.invitefilter.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
-import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageReceivedListener;
-import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
+import dev.sheldan.abstracto.core.listener.async.jda.AsyncMessageUpdatedListener;
+import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
 import dev.sheldan.abstracto.invitefilter.config.InviteFilterFeatureDefinition;
 import dev.sheldan.abstracto.invitefilter.service.InviteLinkFilterService;
 import dev.sheldan.abstracto.invitefilter.service.InviteLinkFilterServiceBean;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class InviteLinkFilterListener implements AsyncMessageReceivedListener {
+public class InviteLinkFilterEditedListener implements AsyncMessageUpdatedListener {
 
     @Autowired
     private InviteLinkFilterService inviteLinkFilterService;
@@ -30,8 +30,8 @@ public class InviteLinkFilterListener implements AsyncMessageReceivedListener {
     }
 
     @Override
-    public DefaultListenerResult execute(MessageReceivedModel model) {
-        Message message = model.getMessage();
+    public DefaultListenerResult execute(MessageUpdatedModel model) {
+        Message message = model.getAfter();
 
         if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
             return DefaultListenerResult.IGNORED;
