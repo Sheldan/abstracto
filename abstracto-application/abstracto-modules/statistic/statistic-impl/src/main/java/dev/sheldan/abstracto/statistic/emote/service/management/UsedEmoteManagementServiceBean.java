@@ -28,9 +28,14 @@ public class UsedEmoteManagementServiceBean implements UsedEmoteManagementServic
 
     @Override
     public UsedEmote createEmoteUsageForToday(TrackedEmote trackedEmote, Long count) {
+        return createEmoteUsageFor(trackedEmote, count, Instant.now());
+    }
+
+    @Override
+    public UsedEmote createEmoteUsageFor(TrackedEmote trackedEmote, Long count, Instant instant) {
         UsedEmote usedEmote = UsedEmote
                 .builder()
-                .emoteId(new UsedEmoteDay(trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), Instant.now()))
+                .emoteId(new UsedEmoteDay(trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), instant))
                 .amount(count)
                 .build();
         log.debug("Creating emote usage for emote {} in server {} with count {}.", trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), count);

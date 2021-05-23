@@ -30,6 +30,15 @@ public interface UsedEmoteManagementService {
     UsedEmote createEmoteUsageForToday(TrackedEmote trackedEmote, Long count);
 
     /**
+     * Creates and persists and instance of {@link UsedEmote} from the given {@link TrackedEmote}, with the defined count and the given date.
+     * @param trackedEmote The {@link TrackedEmote} for which to create a {@link UsedEmote} for
+     * @param count The amount of usages for the {@link UsedEmote}
+     * @param instant The date to create the {@link UsedEmote emoteUsage} for
+     * @return The created {@link UsedEmote} instance int he database
+     */
+    UsedEmote createEmoteUsageFor(TrackedEmote trackedEmote, Long count, Instant instant);
+
+    /**
      * Loads {@link UsedEmote} for the {@link AServer} which are newer than the given {@link Instant}
      * @param server The {@link AServer} to retrieve the {@link UsedEmote} for
      * @param since The {@link Instant} since when the emote stats should be retrieved. Only the date portion is considered.
