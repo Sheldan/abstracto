@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.internal.utils.IOUtil;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,10 @@ public class BotServiceBean implements BotService {
         JDABuilder builder = JDABuilder.createDefault(System.getenv("TOKEN"));
         builder.enableIntents(GUILD_VOICE_STATES, GUILD_BANS,
         GUILD_EMOJIS, GUILD_MEMBERS, GUILD_MESSAGES,
-        GUILD_MESSAGE_REACTIONS, DIRECT_MESSAGES);
+        GUILD_MESSAGE_REACTIONS, DIRECT_MESSAGES, GUILD_PRESENCES);
+
+        builder.enableCache(CacheFlag.ACTIVITY);
+        builder.enableCache(CacheFlag.ONLINE_STATUS);
 
         builder.setBulkDeleteSplittingEnabled(false);
         builder.setMemberCachePolicy(MemberCachePolicy.DEFAULT);
