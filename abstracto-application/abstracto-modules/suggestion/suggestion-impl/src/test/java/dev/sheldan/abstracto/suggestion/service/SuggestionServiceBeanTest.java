@@ -11,9 +11,10 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureDefinition;
+import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureMode;
 import dev.sheldan.abstracto.suggestion.config.SuggestionPostTarget;
 import dev.sheldan.abstracto.suggestion.exception.SuggestionNotFoundException;
-import dev.sheldan.abstracto.suggestion.exception.UnSuggestNotPossibleException;
 import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
 import dev.sheldan.abstracto.suggestion.model.template.SuggestionLog;
@@ -77,6 +78,9 @@ public class SuggestionServiceBeanTest {
     private ServerManagementService serverManagementService;
 
     @Mock
+    private FeatureModeService featureModeService;
+
+    @Mock
     private UserService userService;
 
     @Mock
@@ -125,10 +129,11 @@ public class SuggestionServiceBeanTest {
     @Test
     public void testCreateSuggestion() {
         when(member.getGuild()).thenReturn(guild);
-        when(guild.getId()).thenReturn("5");
+        when(guild.getIdLong()).thenReturn(SERVER_ID);
         String text = "text";
         Message message = Mockito.mock(Message.class);
         Message commandMessage = Mockito.mock(Message.class);
+        when(featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, SERVER_ID, SuggestionFeatureMode.SUGGESTION_REMINDER)).thenReturn(false);
         testUnit.persistSuggestionInDatabase(member, text, message, SUGGESTION_ID, commandMessage);
         verify(suggestionManagementService, times(1)).createSuggestion(member, text, message, SUGGESTION_ID, commandMessage);
     }

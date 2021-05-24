@@ -21,6 +21,13 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>dev.sheldan.abstracto.scheduling</groupId>
+            <artifactId>scheduling-int</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <properties>

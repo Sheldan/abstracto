@@ -1,5 +1,8 @@
 package dev.sheldan.abstracto.suggestion.service;
 
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
@@ -8,11 +11,16 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
+import dev.sheldan.abstracto.scheduling.service.SchedulerService;
+import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureDefinition;
+import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureMode;
 import dev.sheldan.abstracto.suggestion.config.SuggestionPostTarget;
 import dev.sheldan.abstracto.suggestion.exception.UnSuggestNotPossibleException;
 import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
 import dev.sheldan.abstracto.suggestion.model.template.SuggestionLog;
+import dev.sheldan.abstracto.suggestion.model.template.SuggestionReminderModel;
 import dev.sheldan.abstracto.suggestion.service.management.SuggestionManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
@@ -24,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -36,6 +46,7 @@ public class SuggestionServiceBean implements SuggestionService {
     public static final String SUGGESTION_YES_EMOTE = "suggestionYes";
     public static final String SUGGESTION_NO_EMOTE = "suggestionNo";
     public static final String SUGGESTION_COUNTER_KEY = "suggestion";
+    public static final String SUGGESTION_REMINDER_TEMPLATE_KEY = "suggest_suggestion_reminder";
 
     @Autowired
     private SuggestionManagementService suggestionManagementService;
@@ -72,6 +83,15 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SchedulerService schedulerService;
+
+    @Autowired
+    private FeatureModeService featureModeService;
+
+    @Autowired
+    private ConfigService configService;
 
     @Value("${abstracto.feature.suggestion.removalMaxAge}")
     private Long removalMaxAgeSeconds;
@@ -114,8 +134,25 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Transactional
     public void persistSuggestionInDatabase(Member member, String text, Message message, Long suggestionId, Message commandMessage) {
-        log.info("Persisting suggestion {} for server {} in database.", suggestionId, member.getGuild().getId());
-        suggestionManagementService.createSuggestion(member, text, message, suggestionId, commandMessage);
+        Long serverId = member.getGuild().getIdLong();
+        log.info("Persisting suggestion {} for server {} in database.", suggestionId, serverId);
+        Suggestion suggestion = suggestionManagementService.createSuggestion(member, text, message, suggestionId, commandMessage);
+        if(featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_REMINDER)) {
+            String triggerKey = scheduleSuggestionReminder(serverId, suggestionId);
+            suggestion.setSuggestionReminderJobTriggerKey(triggerKey);
+        }
+    }
+
+    private String scheduleSuggestionReminder(Long serverId, Long suggestionId) {
+        HashMap<Object, Object> parameters = new HashMap<>();
+        parameters.put("serverId", serverId.toString());
+        parameters.put("suggestionId", suggestionId.toString());
+        JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
+        Long days = configService.getLongValueOrConfigDefault(SuggestionService.SUGGESTION_REMINDER_DAYS_CONFIG_KEY, serverId);
+        Instant targetDate = Instant.now().plus(days, ChronoUnit.DAYS);
+        String triggerKey = schedulerService.executeJobWithParametersOnce("suggestionReminderJob", "suggestion", jobParameters, Date.from(targetDate));
+        log.info("Starting scheduled job  with trigger {} to execute suggestion reminder in server {} for suggestion {}.", triggerKey, serverId, suggestionId);
+        return triggerKey;
     }
 
     @Override
@@ -123,6 +160,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Long serverId = commandMessage.getGuild().getIdLong();
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
+        cancelSuggestionReminder(suggestion);
         log.info("Accepting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         return updateSuggestion(commandMessage.getMember(), text, suggestion);
     }
@@ -132,6 +170,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Long serverId = commandMessage.getGuild().getIdLong();
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.VETOED);
+        cancelSuggestionReminder(suggestion);
         log.info("Vetoing suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         return updateSuggestion(commandMessage.getMember(), text, suggestion);
     }
@@ -186,6 +225,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Long serverId = commandMessage.getGuild().getIdLong();
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
+        cancelSuggestionReminder(suggestion);
         log.info("Rejecting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         return updateSuggestion(commandMessage.getMember(), text, suggestion);
     }
@@ -213,8 +253,50 @@ public class SuggestionServiceBean implements SuggestionService {
         suggestionManagementService.deleteSuggestion(suggestionsToRemove);
     }
 
+    @Override
+    @Transactional
+    public CompletableFuture<Void> remindAboutSuggestion(ServerSpecificId suggestionId) {
+        Long serverId = suggestionId.getServerId();
+        Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId.getId());
+        ServerChannelMessage suggestionServerChannelMessage = ServerChannelMessage
+                .builder()
+                .serverId(serverId)
+                .channelId(suggestion.getChannel().getId())
+                .messageId(suggestion.getMessageId())
+                .build();
+        ServerChannelMessage commandServerChannelMessage = ServerChannelMessage
+                .builder()
+                .serverId(serverId)
+                .channelId(suggestion.getCommandChannel().getId())
+                .messageId(suggestion.getCommandMessageId())
+                .build();
+        SuggestionReminderModel model = SuggestionReminderModel
+                .builder()
+                .serverId(serverId)
+                .serverUser(ServerUser.fromAUserInAServer(suggestion.getSuggester()))
+                .suggestionCreationDate(suggestion.getCreated())
+                .suggestionId(suggestionId.getId())
+                .suggestionMessage(suggestionServerChannelMessage)
+                .suggestionCommandMessage(commandServerChannelMessage)
+                .build();
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_REMINDER_TEMPLATE_KEY, model, serverId);
+        log.info("Reminding about suggestion {} in server {}.", suggestionId.getId(), serverId);
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
+        return FutureUtils.toSingleFutureGeneric(completableFutures);
+    }
+
+    @Override
+    public void cancelSuggestionReminder(Suggestion suggestion) {
+        if(suggestion.getSuggestionReminderJobTriggerKey() != null) {
+            log.info("Cancelling reminder for suggestion {} in server {}.", suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId());
+            schedulerService.stopTrigger(suggestion.getSuggestionReminderJobTriggerKey());
+        }
+    }
+
     @Transactional
     public void deleteSuggestion(Long suggestionId, Long serverId) {
-        suggestionManagementService.deleteSuggestion(serverId, suggestionId);
+        Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
+        cancelSuggestionReminder(suggestion);
+        suggestionManagementService.deleteSuggestion(suggestion);
     }
 }

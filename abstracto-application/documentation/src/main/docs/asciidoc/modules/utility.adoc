@@ -64,31 +64,38 @@ This feature provides the ability for members to post suggestions containing tex
 
 Feature key: `suggestion`
 
+==== Feature modes
+`suggestionReminder`:: If this is enabled, a message will be sent to the post target `suggestionReminder`, after the amount of days configured in `suggestionReminderDays`. Disabled by default.
+
 ==== Post targets
 `suggestions`:: the target of the messages containing the suggestions
+`suggestionReminder`:: the target for the message to remind about suggestions. Requires feature mode `suggestionReminder` to be enabled
 
 ==== Emotes
 * `suggestionYes` for up-voting a suggestion
 * `suggestionNo` for down-voting a suggestion
 
+==== Relevant system configuration
+`suggestionReminderDays` The amount of days in which the reminder, from feature mode `suggestionReminder`, should be posted in. Default: 7
+
 ==== Commands
 Creating a suggestion::
 * Usage: `suggest <text>`
-* Description: Posts the text to the `suggest` post target and places the emotes for up and down voting.
+* Description: Posts the text to the `suggest` post target and places the emotes for up and down voting. If `suggestionReminder` is enabled, this will create a suggestion reminder.
 Accepting a suggestion::
 * Usage: `accept <suggestionId> [reason]`
-* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `reason` will be used in this re-post, if provided.
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `reason` will be used in this re-post, if provided. This will cancel the suggestion reminder (if it exists)
 * Example: `accept 1 okay` in order to accept the suggestion `1` with the reason `okay`
 Rejecting a suggestion::
 * Usage: `reject <suggestionId> [reason]`
-* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `reason` will be used in this re-post, if provided.
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `reason` will be used in this re-post, if provided. This will cancel the suggestion reminder (if it exists)
 * Example: `deny 1 not okay` in order to reject the suggestion `1` with the reason `not okay`
 Removing a suggestion you created::
 * Usage: `unSuggest <suggestionId>`
-* Description: This will delete the suggestion identified by `suggestionId` from the channel and the database, but this is only possible within a specicied time range.
+* Description: This will delete the suggestion identified by `suggestionId` from the channel and the database, but this is only possible within a specified time range. This will cancel the suggestion reminder (if it exists)
 Vetoing a suggestion::
 * Usage : `veto <suggestion> [reason]`
-* Description: This command will veto the suggestion, this means, it should be indicated that the suggestion was not rejected by votes, but because it was not acceptable on a fundamental level. This is basically just a different state of the suggestion.
+* Description: This command will veto the suggestion, this means, it should be indicated that the suggestion was not rejected by votes, but because it was not acceptable on a fundamental level. This is basically just a different state of the suggestion. This will cancel the suggestion reminder (if it exists)
 
 === Miscellaneous
 

@@ -6,7 +6,13 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-suggestion/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.12/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.13/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet  author="Sheldan"  id="suggestion-reminder-job-insert">
+        <insert tableName="scheduler_job">
+            <column name="name" value="suggestionReminderJob"/>
+            <column name="group_name" value="suggestion"/>
+            <column name="clazz" value="dev.sheldan.abstracto.suggestion.job.SuggestionReminderJob"/>
+            <column name="active" value="true"/>
+            <column name="recovery" value="false"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

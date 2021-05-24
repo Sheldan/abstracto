@@ -66,4 +66,7 @@ public class Suggestion implements Serializable {
     @Column(name = "command_message_id")
     private Long commandMessageId;
 
+    @Column(name = "job_trigger_key")
+    private String suggestionReminderJobTriggerKey;
+
 }

@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum SuggestionPostTarget implements PostTargetEnum {
-    SUGGESTION("suggestions");
+    SUGGESTION("suggestions"), SUGGESTION_REMINDER("suggestionReminder");
 
     private String key;
 
