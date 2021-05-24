@@ -239,7 +239,12 @@ public class SuggestionServiceBean implements SuggestionService {
             throw new UnSuggestNotPossibleException();
         }
         return messageService.deleteMessageInChannelInServer(suggestion.getServer().getId(), suggestion.getChannel().getId(), suggestion.getMessageId())
-                .thenAccept(unused -> self.deleteSuggestion(suggestionId, serverId));
+                .thenAccept(unused -> self.deleteSuggestion(suggestionId, serverId))
+                .exceptionally(throwable -> {
+                    log.info("Suggestion message for suggestion {} in server {} did not exist anymore - ignoring.", suggestionId, serverId);
+                    self.deleteSuggestion(suggestionId, serverId);
+                    return null;
+                });
     }
 
     @Override
