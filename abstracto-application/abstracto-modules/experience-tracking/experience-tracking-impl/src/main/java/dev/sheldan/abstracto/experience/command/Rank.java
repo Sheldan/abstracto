@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -24,6 +23,7 @@ import dev.sheldan.abstracto.experience.service.management.UserExperienceManagem
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,10 +66,15 @@ public class Rank extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        RankModel rankModel = (RankModel) ContextConverter.slimFromCommandContext(commandContext, RankModel.class);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
+        List<Object> parameters = commandContext.getParameters().getParameters();
+        Member parameter = !parameters.isEmpty() ? (Member) parameters.get(0) : commandContext.getAuthor();
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(parameter);
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
         CompletableFuture<LeaderBoardEntryModel> future = converter.fromLeaderBoardEntry(userRank);
+        RankModel rankModel = RankModel
+                .builder()
+                .member(parameter)
+                .build();
         return future.thenCompose(leaderBoardEntryModel ->
             self.renderAndSendRank(commandContext, rankModel, leaderBoardEntryModel)
         ).thenApply(result -> CommandResult.fromIgnored());
@@ -89,6 +94,7 @@ public class Rank extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
+        parameters.add(Parameter.builder().name("member").templated(true).type(Member.class).optional(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("rank")

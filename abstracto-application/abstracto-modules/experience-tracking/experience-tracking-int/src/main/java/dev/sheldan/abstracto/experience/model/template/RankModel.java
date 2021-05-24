@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.experience.model.template;
 
-import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import net.dv8tion.jda.api.entities.Member;
 
 /**
  * Object containing the provided property to render the rank command template. This includes the
@@ -12,8 +12,8 @@ import lombok.experimental.SuperBuilder;
  */
 @Getter
 @Setter
-@SuperBuilder
-public class RankModel extends SlimUserInitiatedServerContext {
+@Builder
+public class RankModel {
     /**
      * The {@link LeaderBoardEntryModel} containing the experience information about the user executing the rank
      * command.
@@ -23,4 +23,8 @@ public class RankModel extends SlimUserInitiatedServerContext {
      * The necessary experience to the next level up.
      */
     private Long experienceToNextLevel;
+    /**
+     * The member to show the rank for
+     */
+    private Member member;
 }
