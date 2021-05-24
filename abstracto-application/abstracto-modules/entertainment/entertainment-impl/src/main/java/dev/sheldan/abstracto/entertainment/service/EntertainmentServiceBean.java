@@ -151,6 +151,11 @@ public class EntertainmentServiceBean implements EntertainmentService {
                 }
                 continue;
             }
+            if(replacedCombos.contains(charAsString) && (!usedReplacements.contains(charAsString) || allowDuplicates)) {
+                usedReplacements.add(charAsString);
+                result.add(charAsString);
+                continue;
+            }
             // reject any other character, as the ones we can deal with
             if (!this.reactMapping.getSingle().containsKey(charAsString)) {
                 log.info("Cannot find mapping. Not replacing with emote.");
