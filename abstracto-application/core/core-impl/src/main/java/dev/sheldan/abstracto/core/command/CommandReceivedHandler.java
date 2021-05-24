@@ -1,12 +1,10 @@
 package dev.sheldan.abstracto.core.command;
 
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
-import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.ParameterValidator;
-import dev.sheldan.abstracto.core.command.config.Parameters;
-import dev.sheldan.abstracto.core.command.config.ParseResult;
+import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterValidationException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
+import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -202,7 +200,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     private void validateCommandParameters(Parameters parameters, Command foundCommand) {
-        List<Parameter> parameterList = foundCommand.getConfiguration().getParameters();
+        CommandConfiguration commandConfiguration = foundCommand.getConfiguration();
+        List<Parameter> parameterList = commandConfiguration.getParameters();
         // we iterate only over the actually found parameters, that way we dont have to consider the optional parameters
         // the parameters are going from left to right anyway
         for (int i = 0; i < parameters.getParameters().size(); i++) {
@@ -210,10 +209,14 @@ public class CommandReceivedHandler extends ListenerAdapter {
             for (ParameterValidator parameterValidator : parameter.getValidators()) {
                 boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
                 if(!validate) {
-                    log.debug("Parameter {} in command {} failed to validate.", parameter.getName(), foundCommand.getConfiguration().getName());
+                    log.debug("Parameter {} in command {} failed to validate.", parameter.getName(), commandConfiguration.getName());
                     throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getExceptionTemplateName(), parameter);
                 }
             }
+        }
+        if(commandConfiguration.getNecessaryParameterCount() > parameters.getParameters().size()) {
+            String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
+            throw new InsufficientParametersException(foundCommand, nextParameterName);
         }
     }
 
