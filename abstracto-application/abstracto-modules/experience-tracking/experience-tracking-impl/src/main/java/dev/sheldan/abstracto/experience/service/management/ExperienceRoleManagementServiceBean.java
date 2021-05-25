@@ -30,10 +30,14 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
      * @param server The server in which this should happen
      */
     @Override
-    public void removeAllRoleAssignmentsForLevelInServer(AExperienceLevel level, AServer server) {
+    public void removeAllRoleAssignmentsForLevelInServerExceptRole(AExperienceLevel level, AServer server, ARole role) {
         List<AExperienceRole> existingExperienceRoles = experienceRoleRepository.findByLevelAndRoleServer(level, server);
         log.info("Removing all role assignments ({}) for level {} in server {}.", existingExperienceRoles.size(), level.getLevel(), server.getId());
-        existingExperienceRoles.forEach(existingRole -> experienceRoleRepository.delete(existingRole));
+        existingExperienceRoles.forEach(existingRole -> {
+            if(!existingRole.getRole().getId().equals(role.getId())) {
+                experienceRoleRepository.delete(existingRole);
+            }
+        });
     }
 
     @Override
@@ -96,5 +100,10 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
             return experienceRoleRepository.save(experienceRole);
         }
         return experienceRole;
+    }
+
+    @Override
+    public List<AExperienceRole> getExperienceRolesAtLevelInServer(AExperienceLevel level, AServer server) {
+        return experienceRoleRepository.findByLevelAndRoleServer(level, server);
     }
 }

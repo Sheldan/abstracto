@@ -409,7 +409,6 @@ public class AUserExperienceServiceBeanTest {
         setupDefaultConfig();
         setupLevelsAndRolesAndNoDisallowed();
         setExperienceRoleLevels();
-        when(aUserInAServer.getUserReference()).thenReturn(user);
         when(userExperience.getExperienceGainDisabled()).thenReturn(true);
 
         ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();

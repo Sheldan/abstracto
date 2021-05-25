@@ -38,7 +38,7 @@ public class ExperienceLevelServiceBeanTest {
     public void testExperienceToNextLevelCalculation() {
         AExperienceLevel level = mock(AExperienceLevel.class);
         when(level.getExperienceNeeded()).thenReturn(15L);
-        when(experienceLevelManagementService.getLevel(51)).thenReturn(Optional.of(level));
+        when(experienceLevelManagementService.getLevelOptional(51)).thenReturn(Optional.of(level));
         Long experience = testingUnit.calculateExperienceToNextLevel(50, 10L);
         Assert.assertEquals(5L, experience.longValue());
     }
@@ -55,7 +55,7 @@ public class ExperienceLevelServiceBeanTest {
 
     @Test(expected = AbstractoRunTimeException.class)
     public void testExperienceToNextLevelCalculationOverExistingLevel() {
-        when(experienceLevelManagementService.getLevel(51)).thenReturn(Optional.empty());
+        when(experienceLevelManagementService.getLevelOptional(51)).thenReturn(Optional.empty());
         testingUnit.calculateExperienceToNextLevel(50, 10L);
     }
 

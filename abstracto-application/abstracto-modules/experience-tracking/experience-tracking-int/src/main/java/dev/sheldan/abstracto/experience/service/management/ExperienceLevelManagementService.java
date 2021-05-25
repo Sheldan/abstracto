@@ -29,7 +29,8 @@ public interface ExperienceLevelManagementService {
      * @param level The {@link AExperienceLevel level} of the wanted level number
      * @return Returns an optional containing the {@link AExperienceLevel level} if it exists, and empty otherwise
      */
-    Optional<AExperienceLevel> getLevel(Integer level);
+    Optional<AExperienceLevel> getLevelOptional(Integer level);
+    AExperienceLevel getLevel(Integer level);
 
     /**
      * Loads the complete level configuration and returns all found {@link AExperienceLevel levels} from the database.

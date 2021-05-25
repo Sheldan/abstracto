@@ -54,7 +54,7 @@ public class ExperienceLevelManagementServiceBeanTest {
         when(level.getLevel()).thenReturn(levelValue);
         when(level.getExperienceNeeded()).thenReturn(experienceAmount);
         when(experienceLevelRepository.findById(levelValue)).thenReturn(Optional.of(level));
-        Optional<AExperienceLevel> foundLevelOptional = testUnit.getLevel(levelValue);
+        Optional<AExperienceLevel> foundLevelOptional = testUnit.getLevelOptional(levelValue);
         Assert.assertTrue(foundLevelOptional.isPresent());
         if(foundLevelOptional.isPresent()) {
             AExperienceLevel foundLevel = foundLevelOptional.get();
@@ -70,7 +70,7 @@ public class ExperienceLevelManagementServiceBeanTest {
         int levelValue = 1;
         Optional<AExperienceLevel> level = Optional.empty();
         when(experienceLevelRepository.findById(levelValue)).thenReturn(level);
-        Optional<AExperienceLevel> foundLevelOptional = testUnit.getLevel(levelValue);
+        Optional<AExperienceLevel> foundLevelOptional = testUnit.getLevelOptional(levelValue);
         Assert.assertFalse(foundLevelOptional.isPresent());
     }
 

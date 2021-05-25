@@ -23,13 +23,14 @@ public interface ExperienceRoleManagementService {
      * @return the created or updated {@link AExperienceRole experienceRole}
      */
     AExperienceRole setLevelToRole(AExperienceLevel level, ARole role);
+    List<AExperienceRole> getExperienceRolesAtLevelInServer(AExperienceLevel level, AServer server);
 
     /**
      * Deletes *all* (if there are multiple by some chance) roles which were set to be given at the provided {@link AExperienceLevel level} in the {@link AServer server}
      * @param level The level to remove the roles for
      * @param server The server in which this should happen
      */
-    void removeAllRoleAssignmentsForLevelInServer(AExperienceLevel level, AServer server);
+    void removeAllRoleAssignmentsForLevelInServerExceptRole(AExperienceLevel level, AServer server, ARole role);
 
     /**
      * Deletes a singular {@link AExperienceRole experienceRole} directly.

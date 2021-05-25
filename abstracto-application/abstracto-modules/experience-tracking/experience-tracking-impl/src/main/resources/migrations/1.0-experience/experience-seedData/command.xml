@@ -64,6 +64,11 @@
             <column name="module_id" valueComputed="${experienceModule}"/>
             <column name="feature_id" valueComputed="${experienceFeature}"/>
         </insert>
+        <insert tableName="command">
+            <column name="name" value="levelRoles"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

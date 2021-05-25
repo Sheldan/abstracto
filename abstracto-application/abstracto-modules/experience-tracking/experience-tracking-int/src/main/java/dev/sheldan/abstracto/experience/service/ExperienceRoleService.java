@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
+import dev.sheldan.abstracto.experience.model.template.LevelRole;
 import net.dv8tion.jda.api.entities.Role;
 
 import java.util.List;
@@ -38,7 +39,10 @@ public interface ExperienceRoleService {
      * @return A {@link CompletableFuture future} which completes, after all the updates on the {@link net.dv8tion.jda.api.entities.Member}
      * have been completed
      */
-    CompletableFuture<Void> unsetRole(ARole role, Long channelId);
+    CompletableFuture<Void> unsetRoles(ARole role, Long channelId);
+    List<AExperienceRole> getExperienceRolesAtLevel(Integer level, AServer server);
+    CompletableFuture<Void> unsetRoles(List<ARole> roles, Long channelId);
+    CompletableFuture<Void> unsetRoles(List<ARole> roles, Long channelId, AExperienceRole toAdd);
 
     /**
      * Calculates the appropriate {@link AExperienceRole experienceRole} based on the provided list of {@link AExperienceRole experienceRole}
@@ -57,4 +61,5 @@ public interface ExperienceRoleService {
      * @return The next {@link AExperienceLevel} a {@link AExperienceRole} is awarded at, this will be null if there are no roles or there is no further role to reach
      */
     AExperienceLevel getLevelOfNextRole(AExperienceLevel startLevel, AServer server);
+    List<LevelRole> loadLevelRoleConfigForServer(AServer server);
 }

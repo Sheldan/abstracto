@@ -10,12 +10,16 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
+import dev.sheldan.abstracto.experience.exception.ExperienceRoleNotFoundException;
+import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
+import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -31,13 +35,20 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     @Autowired
     private RoleManagementService roleManagementService;
 
+    @Autowired
+    private ExperienceRoleManagementService experienceRoleManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
         // do not check for the existence of the role, because if the role was deleted, users should be able
         // to get rid of it in the configuration
-        return experienceRoleService.unsetRole(actualRole, commandContext.getChannel().getIdLong())
+        Optional<AExperienceRole> experienceRole = experienceRoleManagementService.getRoleInServerOptional(actualRole);
+        if(!experienceRole.isPresent()) {
+            throw new ExperienceRoleNotFoundException();
+        }
+        return experienceRoleService.unsetRoles(actualRole, commandContext.getChannel().getIdLong())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

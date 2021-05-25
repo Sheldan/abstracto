@@ -62,7 +62,7 @@ public class UserExperienceManagementServiceBeanTest {
         when(repository.findById(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
         AExperienceLevel startLevel = Mockito.mock(AExperienceLevel.class);
         when(startLevel.getLevel()).thenReturn(START_LEVEL);
-        when(experienceLevelManagementService.getLevel(START_LEVEL)).thenReturn(Optional.of(startLevel));
+        when(experienceLevelManagementService.getLevelOptional(START_LEVEL)).thenReturn(Optional.of(startLevel));
         AUserExperience userInServer = testUnit.findUserInServer(user);
         Assert.assertEquals(0L, userInServer.getExperience().longValue());
         Assert.assertEquals(0L, userInServer.getMessageCount().longValue());
@@ -81,7 +81,7 @@ public class UserExperienceManagementServiceBeanTest {
         when(user.getUserReference()).thenReturn(aUser);
         AExperienceLevel startLevel = Mockito.mock(AExperienceLevel.class);
         when(startLevel.getLevel()).thenReturn(START_LEVEL);
-        when(experienceLevelManagementService.getLevel(START_LEVEL)).thenReturn(Optional.of(startLevel));
+        when(experienceLevelManagementService.getLevelOptional(START_LEVEL)).thenReturn(Optional.of(startLevel));
         AUserExperience userInServer = testUnit.createUserInServer(user);
         Assert.assertEquals(0L, userInServer.getExperience().longValue());
         Assert.assertEquals(0L, userInServer.getMessageCount().longValue());

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.experience.service.management;
 
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.repository.ExperienceLevelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class    ExperienceLevelManagementServiceBean implements ExperienceLevelManagementService {
+public class ExperienceLevelManagementServiceBean implements ExperienceLevelManagementService {
 
     @Autowired
     private ExperienceLevelRepository experienceLevelRepository;
@@ -30,8 +31,13 @@ public class    ExperienceLevelManagementServiceBean implements ExperienceLevelM
     }
 
     @Override
-    public Optional<AExperienceLevel> getLevel(Integer level) {
+    public Optional<AExperienceLevel> getLevelOptional(Integer level) {
         return experienceLevelRepository.findById(level);
+    }
+
+    @Override
+    public AExperienceLevel getLevel(Integer level) {
+        return getLevelOptional(level).orElseThrow(() -> new AbstractoRunTimeException("Level not found."));
     }
 
     @Override

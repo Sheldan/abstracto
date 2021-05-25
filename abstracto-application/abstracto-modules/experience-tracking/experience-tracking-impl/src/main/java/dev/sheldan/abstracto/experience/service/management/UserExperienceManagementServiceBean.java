@@ -45,7 +45,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     @Override
     public AUserExperience createUserInServer(AUserInAServer aUserInAServer) {
         log.info("Creating user experience for user {} in server {}.", aUserInAServer.getUserReference().getId(),aUserInAServer.getServerReference().getId());
-        AExperienceLevel startingLevel = experienceLevelManagementService.getLevel(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
+        AExperienceLevel startingLevel = experienceLevelManagementService.getLevelOptional(0).orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", 0)));
         return AUserExperience
                 .builder()
                 .experience(0L)

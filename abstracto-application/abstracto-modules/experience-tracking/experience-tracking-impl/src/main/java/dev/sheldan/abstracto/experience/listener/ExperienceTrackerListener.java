@@ -31,7 +31,7 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
     @Override
     public DefaultListenerResult execute(MessageReceivedModel model) {
         Message message = model.getMessage();
-        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
+        if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem() || message.getAuthor().isBot()) {
             return DefaultListenerResult.IGNORED;
         }
         AUserInAServer cause = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getMessage().getAuthor().getIdLong());

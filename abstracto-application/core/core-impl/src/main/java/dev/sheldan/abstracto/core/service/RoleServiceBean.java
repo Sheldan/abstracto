@@ -269,6 +269,11 @@ public class RoleServiceBean implements RoleService {
                 .build();
     }
 
+    @Override
+    public ARole getFakeRoleFromId(Long roleId) {
+        return ARole.builder().id(roleId).fake(true).build();
+    }
+
     @PostConstruct
     public void postConstruct() {
         metricService.registerCounter(ROLE_ASSIGNED_METRIC, "Amount of roles assigned");

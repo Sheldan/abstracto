@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.handler.provided.RoleParameterHandler;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class ARoleParameterHandlerImpl implements ARoleParameterHandler {
     private RoleService roleService;
 
     @Autowired
+    private RoleManagementService roleManagementService;
+
+    @Autowired
     private CommandService commandService;
 
     @Override
@@ -36,7 +40,12 @@ public class ARoleParameterHandlerImpl implements ARoleParameterHandler {
         Parameter cloned = commandService.cloneParameter(param);
         cloned.setType(Role.class);
         Role role = (Role) roleParameterHandler.handle(input, iterators, cloned, context, command);
-        return roleService.getFakeRoleFromRole(role);
+        if(role != null) {
+            return roleService.getFakeRoleFromRole(role);
+        }
+        Long roleId = Long.parseLong(((String) input.getValue()).trim());
+        roleManagementService.findRole(roleId);
+        return roleService.getFakeRoleFromId(roleId);
     }
 
     @Override

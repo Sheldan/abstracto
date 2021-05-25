@@ -50,9 +50,14 @@ public class ExperienceRoleManagementServiceBeanTest {
     public void testRemovingAllRoleAssignmentsForLevel() {
         when(level.getLevel()).thenReturn(10);
         AExperienceRole secondRole = Mockito.mock(AExperienceRole.class);
+        ARole anotherARole = Mockito.mock(ARole.class);
+        when(anotherARole.getId()).thenReturn(ROLE_ID + 1);
+        when(role.getId()).thenReturn(ROLE_ID);
+        when(experienceRole.getRole()).thenReturn(anotherARole);
+        when(secondRole.getRole()).thenReturn(anotherARole);
         List<AExperienceRole> experienceRoles = Arrays.asList(experienceRole, secondRole);
         when(experienceRoleRepository.findByLevelAndRoleServer(level, server)).thenReturn(experienceRoles);
-        testUnit.removeAllRoleAssignmentsForLevelInServer(level, server);
+        testUnit.removeAllRoleAssignmentsForLevelInServerExceptRole(level, server, role);
         verify(experienceRoleRepository, times(1)).findByLevelAndRoleServer(level, server);
         verify(experienceRoleRepository, times(experienceRoles.size())).delete(roleArgumentCaptor.capture());
         List<AExperienceRole> allValues = roleArgumentCaptor.getAllValues();
@@ -66,7 +71,7 @@ public class ExperienceRoleManagementServiceBeanTest {
         when(level.getLevel()).thenReturn(10);
         List<AExperienceRole> experienceRoles = new ArrayList<>();
         when(experienceRoleRepository.findByLevelAndRoleServer(level, server)).thenReturn(experienceRoles);
-        testUnit.removeAllRoleAssignmentsForLevelInServer(level, server);
+        testUnit.removeAllRoleAssignmentsForLevelInServerExceptRole(level, server, role);
         verify(experienceRoleRepository, times(1)).findByLevelAndRoleServer(level, server);
         verify(experienceRoleRepository, times(experienceRoles.size())).delete(roleArgumentCaptor.capture());
         List<AExperienceRole> allValues = roleArgumentCaptor.getAllValues();

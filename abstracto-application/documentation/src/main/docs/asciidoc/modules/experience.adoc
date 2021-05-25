@@ -67,3 +67,7 @@ Disable experience gain for specific member::
 Enable experience gain for specific member::
 * Usage: `enableExpGain <member>`
 * Description: Enables the ability to gain experience for this certain member.
+
+Show the currently configured experience roles in the server::
+* Usage: `levelRoles`
+* Description: Shows the current configured experience roles, and the level they are awarded at.
