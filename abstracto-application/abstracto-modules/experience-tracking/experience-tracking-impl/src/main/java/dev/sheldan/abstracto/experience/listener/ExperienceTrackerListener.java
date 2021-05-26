@@ -34,9 +34,13 @@ public class ExperienceTrackerListener implements AsyncMessageReceivedListener {
         if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem() || message.getAuthor().isBot()) {
             return DefaultListenerResult.IGNORED;
         }
-        AUserInAServer cause = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getMessage().getAuthor().getIdLong());
-        userExperienceService.addExperience(cause);
-        return DefaultListenerResult.PROCESSED;
+        if(userExperienceService.experienceGainEnabledInChannel(message.getChannel())) {
+            AUserInAServer cause = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getMessage().getAuthor().getIdLong());
+            userExperienceService.addExperience(cause);
+            return DefaultListenerResult.PROCESSED;
+        } else  {
+            return DefaultListenerResult.IGNORED;
+        }
     }
 
     @Override

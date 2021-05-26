@@ -6,10 +6,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="experience_level.xml" relativeToChangelogFile="true"/>
-    <include file="feature.xml" relativeToChangelogFile="true"/>
-    <include file="module.xml" relativeToChangelogFile="true"/>
-    <include file="command.xml" relativeToChangelogFile="true"/>
-    <include file="experience_job.xml" relativeToChangelogFile="true"/>
-    <include file="channel_group_types.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan"  id="experience_gain_channel_group_type-insertion">
+        <insert tableName="channel_group_type">
+            <column name="group_type_key" value="experienceGain"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

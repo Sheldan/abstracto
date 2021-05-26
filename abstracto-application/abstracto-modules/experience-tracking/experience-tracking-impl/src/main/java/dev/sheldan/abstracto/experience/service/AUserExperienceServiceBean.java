@@ -1,15 +1,9 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.models.database.ARole;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.property.SystemConfigProperty;
 import dev.sheldan.abstracto.core.service.*;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.service.management.*;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureConfig;
@@ -26,6 +20,7 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +76,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
     @Autowired
     private ChannelManagementService channelManagementService;
+
+    @Autowired
+    private ChannelGroupService channelGroupService;
 
     @Autowired
     private DefaultConfigManagementService defaultConfigManagementService;
@@ -455,6 +453,33 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean experienceGainEnabledInChannel(MessageChannel messageChannel) {
+        AChannel channel = channelManagementService.loadChannel(messageChannel.getIdLong());
+        List<AChannelGroup> channelGroups = channelGroupService.getChannelGroupsOfChannelWithType(channel, EXPERIENCE_GAIN_CHANNEL_GROUP_KEY);
+        if(!channelGroups.isEmpty()) {
+            return channelGroups.stream().noneMatch(AChannelGroup::getEnabled);
+        }
+        return true;
+    }
+
+    @Override
+    public AUserExperience createUserExperienceForUser(AUserInAServer aUserInAServer, Long experience, Long messageCount) {
+        List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
+        levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
+        return createUserExperienceForUser(aUserInAServer, experience, messageCount, levels);
+    }
+
+    @Override
+    public AUserExperience createUserExperienceForUser(AUserInAServer aUserInAServer, Long experience, Long messageCount, List<AExperienceLevel> levels) {
+        AExperienceLevel level = calculateLevel(levels, experience);
+        AUserExperience userExperience = userExperienceManagementService.createUserInServer(aUserInAServer);
+        userExperience.setCurrentLevel(level);
+        userExperience.setExperience(experience);
+        userExperience.setMessageCount(messageCount);
+        return userExperience;
     }
 
     @Override

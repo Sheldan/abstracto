@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.experience.model.ServerExperience;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -22,6 +23,7 @@ import java.util.function.Function;
  * user in the guild and retrieving {@link LeaderBoard leaderboard} data.
  */
 public interface AUserExperienceService {
+    String EXPERIENCE_GAIN_CHANNEL_GROUP_KEY = "experienceGain";
     /**
      * Adds the given {@link AUserInAServer userInAServer} to the list of user who gained experience in the current minute.
      * Does not add the user to the list of users, if it is already in there.
@@ -150,4 +152,9 @@ public interface AUserExperienceService {
      * @param results The list of {@link RoleCalculationResult} which should be updated in the database
      */
     void syncRolesInStorage(List<RoleCalculationResult> results);
+
+    boolean experienceGainEnabledInChannel(MessageChannel messageChannel);
+
+    AUserExperience createUserExperienceForUser(AUserInAServer aUserInAServer, Long experience, Long messageCount);
+    AUserExperience createUserExperienceForUser(AUserInAServer aUserInAServer, Long experience, Long messageCount, List<AExperienceLevel> levels);
 }
