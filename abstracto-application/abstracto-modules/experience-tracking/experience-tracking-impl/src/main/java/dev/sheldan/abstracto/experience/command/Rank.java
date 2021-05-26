@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -70,13 +71,13 @@ public class Rank extends AbstractConditionableCommand {
         Member parameter = !parameters.isEmpty() ? (Member) parameters.get(0) : commandContext.getAuthor();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(parameter);
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
-        CompletableFuture<LeaderBoardEntryModel> future = converter.fromLeaderBoardEntry(userRank);
+        CompletableFuture<List<LeaderBoardEntryModel>> future = converter.fromLeaderBoardEntry(Arrays.asList(userRank));
         RankModel rankModel = RankModel
                 .builder()
                 .member(parameter)
                 .build();
         return future.thenCompose(leaderBoardEntryModel ->
-            self.renderAndSendRank(commandContext, rankModel, leaderBoardEntryModel)
+            self.renderAndSendRank(commandContext, rankModel, leaderBoardEntryModel.get(0))
         ).thenApply(result -> CommandResult.fromIgnored());
     }
 

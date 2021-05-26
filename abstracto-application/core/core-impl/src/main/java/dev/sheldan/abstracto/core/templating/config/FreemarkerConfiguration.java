@@ -49,6 +49,8 @@ public class FreemarkerConfiguration {
         Configuration configuration = factory.createConfiguration();
         configuration.setSharedVariable("fmtDuration", durationMethod);
         configuration.setSharedVariable("formatDate", instantMethod);
+        // 10 minutes template cache
+        configuration.setTemplateUpdateDelayMilliseconds(600000);
         List<String> macrosToLoad = macroManagementService.loadAllMacros().stream()
                 .map(AutoLoadMacro::getKey).collect(Collectors.toList());
         configuration.setAutoIncludes(macrosToLoad);

@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface MemberService {
@@ -16,6 +17,7 @@ public interface MemberService {
     CompletableFuture<GuildChannelMember> getServerChannelUserAsync(Long serverId, Long channelId, Long userId);
     Member getMemberInServer(Long serverId, Long memberId);
     CompletableFuture<Member> getMemberInServerAsync(Long serverId, Long memberId);
+    CompletableFuture<List<Member>> getMembersInServerAsync(Long serverId, List<Long> memberIds);
     CompletableFuture<Member> retrieveMemberInServer(ServerUser serverUser);
     CompletableFuture<User> retrieveUserById(Long userId);
     boolean isUserInGuild(AUserInAServer aUserInAServer);

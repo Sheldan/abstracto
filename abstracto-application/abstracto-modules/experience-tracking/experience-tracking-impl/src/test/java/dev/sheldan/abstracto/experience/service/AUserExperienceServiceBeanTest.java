@@ -759,7 +759,7 @@ public class AUserExperienceServiceBeanTest {
         when(userExperience2.getExperience()).thenReturn(MID_EXP);
         when(userExperience2.getCurrentLevel()).thenReturn(level1);
         when(userExperience2.getUser()).thenReturn(aUserInAServer2);
-        when(userExperienceManagementService.findLeaderBoardUsersPaginated(server, (page - 1) * pageSize, page * pageSize)).thenReturn(experiences);
+        when(userExperienceManagementService.findLeaderBoardUsersPaginated(server, page - 1, pageSize)).thenReturn(experiences);
         LeaderBoard leaderBoardData = testUnit.findLeaderBoardData(server, page);
         page--;
         List<LeaderBoardEntry> entries = leaderBoardData.getEntries();

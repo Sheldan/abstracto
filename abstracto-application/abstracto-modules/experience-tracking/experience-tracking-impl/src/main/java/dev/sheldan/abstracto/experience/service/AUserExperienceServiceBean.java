@@ -548,12 +548,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         page--;
         int pageSize = 10;
         log.debug("Loading leaderboard page {} for server {}.", page, server.getId());
-        List<AUserExperience> experiences = userExperienceManagementService.findLeaderBoardUsersPaginated(server, page * pageSize, (page + 1) * pageSize);
+        List<AUserExperience> experiences = userExperienceManagementService.findLeaderBoardUsersPaginated(server, page, pageSize);
         List<LeaderBoardEntry> entries = new ArrayList<>();
         log.debug("Found {} experiences.", experiences.size());
+        int pageOffset = page * pageSize;
         for (int i = 0; i < experiences.size(); i++) {
             AUserExperience userExperience = experiences.get(i);
-            entries.add(LeaderBoardEntry.builder().experience(userExperience).rank((page * pageSize) + i + 1).build());
+            entries.add(LeaderBoardEntry.builder().experience(userExperience).rank(pageOffset + i + 1).build());
         }
         return LeaderBoard.builder().entries(entries).build();
     }

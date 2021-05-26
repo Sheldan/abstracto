@@ -52,11 +52,11 @@ public interface UserExperienceManagementService {
     /**
      * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience#experience} and only returns the positions between {@code start} and @{code end}.
      * @param server The {@link AServer} to retrieve the users for
-     * @param start The start index in the complete ordered list to return the {@link AUserExperience} elements for
-     * @param end The end index for which to return a sublist of {@link AUserExperience} elements for
+     * @param page The page to retrieve
+     * @param size The size of each page
      * @return A list desc ordered by {@link AUserExperience#experience} only containing the elements between {@code start} and @{code end}
      */
-    List<AUserExperience> findLeaderBoardUsersPaginated(AServer server, Integer start, Integer end);
+    List<AUserExperience> findLeaderBoardUsersPaginated(AServer server, Integer page, Integer size);
 
     /**
      * Returns the {@link LeaderBoardEntryResult} of the given {@link AUserExperience}.

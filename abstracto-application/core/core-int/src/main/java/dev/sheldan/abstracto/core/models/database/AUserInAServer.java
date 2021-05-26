@@ -21,11 +21,11 @@ public class AUserInAServer implements Serializable {
     @Column(name = "user_in_server_id", nullable = false)
     private Long userInServerId;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private AUser userReference;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
     private AServer serverReference;
 

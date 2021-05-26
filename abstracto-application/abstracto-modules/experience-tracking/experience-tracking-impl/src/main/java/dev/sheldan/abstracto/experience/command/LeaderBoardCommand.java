@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * Shows the experience gain information of the top 10 users in the server, or if a page number is provided as a parameter, only the members which are on this page.
@@ -69,18 +68,18 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
         LeaderBoard leaderBoard = userExperienceService.findLeaderBoardData(server, page);
         LeaderBoardModel leaderBoardModel = (LeaderBoardModel) ContextConverter.slimFromCommandContext(commandContext, LeaderBoardModel.class);
-        List<CompletableFuture<LeaderBoardEntryModel>> futures = new ArrayList<>();
-        List<CompletableFuture<LeaderBoardEntryModel>> completableFutures = converter.fromLeaderBoard(leaderBoard);
-        futures.addAll(completableFutures);
+        List<CompletableFuture> futures = new ArrayList<>();
+        CompletableFuture<List<LeaderBoardEntryModel>> completableFutures = converter.fromLeaderBoard(leaderBoard);
+        futures.add(completableFutures);
         log.info("Rendering leaderboard for page {} in server {} for user {}.", page, commandContext.getAuthor().getId(), commandContext.getGuild().getId());
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
-        CompletableFuture<LeaderBoardEntryModel> userRankFuture = converter.fromLeaderBoardEntry(userRank);
+        CompletableFuture<List<LeaderBoardEntryModel>> userRankFuture = converter.fromLeaderBoardEntry(Arrays.asList(userRank));
         futures.add(userRankFuture);
-        return FutureUtils.toSingleFutureGeneric(futures).thenCompose(aVoid -> {
-            List<LeaderBoardEntryModel> finalModels = completableFutures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+        return FutureUtils.toSingleFuture(futures).thenCompose(aVoid -> {
+            List<LeaderBoardEntryModel> finalModels = completableFutures.join();
             leaderBoardModel.setUserExperiences(finalModels);
-            leaderBoardModel.setUserExecuting(userRankFuture.join());
+            leaderBoardModel.setUserExecuting(userRankFuture.join().get(0));
             MessageToSend messageToSend = templateService.renderEmbedTemplate(LEADER_BOARD_POST_EMBED_TEMPLATE, leaderBoardModel, commandContext.getGuild().getIdLong());
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));
         }).thenApply(aVoid -> CommandResult.fromIgnored());

@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -77,6 +78,19 @@ public class MemberServiceBean implements MemberService {
         } else {
             throw new GuildNotFoundException(serverId);
         }
+    }
+
+    @Override
+    public CompletableFuture<List<Member>> getMembersInServerAsync(Long serverId, List<Long> memberIds) {
+        log.debug("Retrieving member {} in server {} from cache.", memberIds, serverId);
+        Guild guildById = guildService.getGuildById(serverId);
+        CompletableFuture<List<Member>> future = new CompletableFuture<>();
+        if(guildById != null) {
+            guildById.retrieveMembersByIds(memberIds).onSuccess(future::complete).onError(future::completeExceptionally);
+        } else {
+            throw new GuildNotFoundException(serverId);
+        }
+        return future;
     }
 
     @Override

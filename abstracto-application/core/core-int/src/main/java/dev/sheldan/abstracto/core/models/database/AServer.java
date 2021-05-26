@@ -36,7 +36,7 @@ public class AServer implements SnowFlake, Serializable {
     @Transient
     private boolean fake;
 
-    @OneToOne(mappedBy = "server", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "server", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @PrimaryKeyJoinColumn
     private AllowedMention allowedMention;
 

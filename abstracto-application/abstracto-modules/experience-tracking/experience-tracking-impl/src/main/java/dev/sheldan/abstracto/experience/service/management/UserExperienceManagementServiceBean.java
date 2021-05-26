@@ -64,8 +64,8 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     }
 
     @Override
-    public List<AUserExperience> findLeaderBoardUsersPaginated(AServer aServer, Integer start, Integer end) {
-        return repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(aServer, PageRequest.of(start, end));
+    public List<AUserExperience> findLeaderBoardUsersPaginated(AServer aServer, Integer page, Integer size) {
+        return repository.findTop10ByUser_ServerReferenceOrderByExperienceDesc(aServer, PageRequest.of(page, size));
     }
 
     @Override

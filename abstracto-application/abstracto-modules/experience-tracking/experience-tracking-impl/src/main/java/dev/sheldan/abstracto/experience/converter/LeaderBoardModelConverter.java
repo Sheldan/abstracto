@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.experience.converter;
 
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.experience.model.LeaderBoard;
 import dev.sheldan.abstracto.experience.model.LeaderBoardEntry;
@@ -11,11 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Converter used to convert from {@link LeaderBoard leaderBoard} to a list of {@link LeaderBoardEntryModel leaderBoardEntryModels}
@@ -40,40 +42,36 @@ public class LeaderBoardModelConverter {
      * @return The list of {@link LeaderBoardEntryModel leaderboarEntryModels} which contain the fully fledged information provided to the
      * leader board template
      */
-    public List<CompletableFuture<LeaderBoardEntryModel>> fromLeaderBoard(LeaderBoard leaderBoard) {
-        List<CompletableFuture<LeaderBoardEntryModel>> models = new ArrayList<>();
+    public CompletableFuture<List<LeaderBoardEntryModel>> fromLeaderBoard(LeaderBoard leaderBoard) {
         log.debug("Converting {} entries to a list of leaderboard entries.", leaderBoard.getEntries().size());
-        leaderBoard.getEntries().forEach(leaderBoardEntry -> {
-            CompletableFuture<LeaderBoardEntryModel> entry = fromLeaderBoardEntry(leaderBoardEntry);
-            models.add(entry);
+        return fromLeaderBoardEntry(leaderBoard.getEntries());
+    }
+
+    public CompletableFuture<List<LeaderBoardEntryModel>> fromLeaderBoardEntry(List<LeaderBoardEntry> leaderBoardEntries) {
+        List<Long> userIds = new ArrayList<>();
+        Long serverId = leaderBoardEntries.get(0).getExperience().getServer().getId();
+        Map<Long, LeaderBoardEntryModel> models = leaderBoardEntries
+                .stream()
+                .map(leaderBoardEntry -> {
+                    AUserExperience experience = leaderBoardEntry.getExperience();
+                    Long userId = experience.getUser().getUserReference().getId();
+                    userIds.add(userId);
+                    return LeaderBoardEntryModel
+                            .builder()
+                            .userId(userId)
+                            .experience(experience.getExperience())
+                            .messageCount(experience.getMessageCount())
+                            .level(experience.getLevelOrDefault())
+                            .rank(leaderBoardEntry.getRank())
+                            .build();
+                })
+                .collect(Collectors.toMap(LeaderBoardEntryModel::getUserId, Function.identity()));
+        return memberService.getMembersInServerAsync(serverId, userIds).thenApply(members -> {
+            members.forEach(member -> models.get(member.getIdLong()).setMember(member));
+            return new ArrayList<>(models.values())
+                    .stream()
+                    .sorted(Comparator.comparing(LeaderBoardEntryModel::getRank)).
+                            collect(Collectors.toList());
         });
-        return models;
-    }
-
-    /**
-     * Converts the given {@link LeaderBoardEntry entry} to a {@link LeaderBoardEntryModel model}, which provides a reference to the
-     * {@link Member member} object of the given {@link AUserInAServer user} for convenience in the template
-     * @param leaderBoardEntry The {@link LeaderBoardEntry entry} to be converted
-     * @return The {@link LeaderBoardEntryModel model} accompanied with the {@link Member member} reference, might be null, if the
-     * user left the guild
-     */
-    public CompletableFuture<LeaderBoardEntryModel> fromLeaderBoardEntry(LeaderBoardEntry leaderBoardEntry) {
-        AUserInAServer entryUser = leaderBoardEntry.getExperience().getUser();
-        Long userInServerId = leaderBoardEntry.getExperience().getUser().getUserInServerId();
-        Integer rank = leaderBoardEntry.getRank();
-        return memberService.getMemberInServerAsync(entryUser.getServerReference().getId(), entryUser.getUserReference().getId())
-            .thenApply(member -> self.buildLeaderBoardModel(userInServerId, member, rank))
-                .exceptionally(throwable -> self.buildLeaderBoardModel(userInServerId, null, rank));
-    }
-
-    @Transactional
-    public LeaderBoardEntryModel buildLeaderBoardModel(Long userInServerId, Member member, Integer rank) {
-        AUserExperience experience = userExperienceManagementService.findByUserInServerId(userInServerId);
-        return LeaderBoardEntryModel
-                .builder()
-                .experience(experience)
-                .member(member)
-                .rank(rank)
-                .build();
     }
 }
