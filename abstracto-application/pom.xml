@@ -11,7 +11,7 @@
 
     <groupId>dev.sheldan.abstracto</groupId>
     <artifactId>abstracto-application</artifactId>
-    <version>1.3.14-SNAPSHOT</version>
+    <version>1.2.13-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
