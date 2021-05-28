@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /**
  * If a {@link Member member} joins, this {@link JoinListener listener} retrieves the previously stored {@link AUserExperience experience} and gives the
  * member the necessary {@link net.dv8tion.jda.api.entities.Role role} according to the current configuration, if any
@@ -36,10 +38,10 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
     @Override
     public DefaultListenerResult execute(MemberJoinModel model) {
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getJoiningUser().getUserId());
-        AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
-        if(userExperience != null) {
+        Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
+        if(userExperienceOptional.isPresent()) {
             log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", model.getJoiningUser().getUserId(), model.getServerId());
-            userExperienceService.syncForSingleUser(userExperience).thenAccept(result ->
+            userExperienceService.syncForSingleUser(userExperienceOptional.get()).thenAccept(result ->
                 log.info("Finished re-assigning experience for re-joining user {} in server {}.", model.getJoiningUser().getUserId(), model.getServerId())
             );
         } else {

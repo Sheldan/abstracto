@@ -290,7 +290,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     @Transactional
     public void persistExperienceChanges(List<ExperienceGainResult> resultFutures) {
         // we do have the _value_ of the level, but we require the actual instance
-        List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
+        Map<Integer, AExperienceLevel> levels = experienceLevelManagementService.getLevelConfigAsMap();
         log.info("Storing {} experience gain results.", resultFutures.size());
         HashMap<Long, List<AExperienceRole>> serverRoleMapping = new HashMap<>();
         resultFutures.forEach(experienceGainResult -> {
@@ -305,11 +305,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             userExperience.setMessageCount(experienceGainResult.getNewMessageCount());
             userExperience.setExperience(experienceGainResult.getNewExperience());
             // only search the levels if the level changed, or if there is no level currently set
-            boolean userExperienceHasLevel = userExperience.getCurrentLevel() != null;
-            if(!userExperienceHasLevel || !userExperience.getCurrentLevel().getLevel().equals(experienceGainResult.getNewLevel())) {
-                Optional<AExperienceLevel> foundLevel = levels.stream().filter(level -> level.getLevel().equals(experienceGainResult.getNewLevel())).findFirst();
-                if(foundLevel.isPresent()) {
-                    userExperience.setCurrentLevel(foundLevel.get());
+            AExperienceLevel currentLevel = userExperience.getCurrentLevel();
+            boolean userExperienceHasLevel = currentLevel != null;
+            if(!userExperienceHasLevel || !currentLevel.getLevel().equals(experienceGainResult.getNewLevel())) {
+                AExperienceLevel foundLevel = levels.get(experienceGainResult.getNewLevel());
+                if(foundLevel != null) {
+                    log.info("User {} in server {} changed the level. Old level {}. New level {}.", experienceGainResult.getUserInServerId(), experienceGainResult.getServerId(), currentLevel.getLevel(), experienceGainResult.getNewLevel());
+                    userExperience.setCurrentLevel(foundLevel);
                 } else {
                     log.warn("User {} was present, but no level matching the calculation result {} could be found.", userExperience.getUser().getUserReference().getId(), experienceGainResult.getNewLevel());
                 }

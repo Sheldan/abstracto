@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class ExperienceLevelManagementServiceBean implements ExperienceLevelManagementService {
@@ -43,5 +46,10 @@ public class ExperienceLevelManagementServiceBean implements ExperienceLevelMana
     @Override
     public List<AExperienceLevel> getLevelConfig() {
         return experienceLevelRepository.findAll();
+    }
+
+    @Override
+    public Map<Integer, AExperienceLevel> getLevelConfigAsMap() {
+        return getLevelConfig().stream().collect(Collectors.toMap(AExperienceLevel::getLevel, Function.identity()));
     }
 }

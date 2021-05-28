@@ -15,7 +15,7 @@ public interface ChannelGroupRepository extends JpaRepository<AChannelGroup, Lon
 
     Optional<AChannelGroup> findByGroupNameIgnoreCaseAndServer(String name, AServer server);
 
-    Optional<AChannelGroup> findByGroupNameAndServerAndChannelGroupType_GroupTypeKey(String name, AServer server, String groupTyeKey);
+    Optional<AChannelGroup> findByGroupNameIgnoreCaseAndServerAndChannelGroupType_GroupTypeKey(String name, AServer server, String groupTyeKey);
 
     List<AChannelGroup> findByServerAndChannelGroupType_GroupTypeKey(AServer server, String groupTyeKey);
 

@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
@@ -48,19 +49,21 @@ public class JoiningUserRoleListenerTest {
 
     private static final Long SERVER_ID = 1L;
     private static final Long USER_ID = 2L;
+    private static final Long USER_IN_SERVER_ID = 3L;
 
     @Before
     public void setup() {
         when(serverUser.getUserId()).thenReturn(USER_ID);
         when(model.getJoiningUser()).thenReturn(serverUser);
         when(model.getServerId()).thenReturn(SERVER_ID);
+        when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(aUserInAServer);
     }
 
     @Test
     public void testUserWithExperienceRejoining() {
         AUserExperience experience = Mockito.mock(AUserExperience.class);
-        when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(experience);
+        when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(experience));
         when(userExperienceService.syncForSingleUser(experience)).thenReturn(CompletableFuture.completedFuture(null));
         DefaultListenerResult result = testUnit.execute(model);
         Assert.assertEquals(DefaultListenerResult.PROCESSED, result);
@@ -68,7 +71,7 @@ public class JoiningUserRoleListenerTest {
 
     @Test
     public void testUserWithOutExperienceRejoining() {
-        when(userExperienceManagementService.findUserInServer(aUserInAServer)).thenReturn(null);
+        when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
         testUnit.execute(model);
         verify(userExperienceService, times(0)).syncForSingleUser(any());
     }

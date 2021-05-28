@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.service.management;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -37,4 +38,5 @@ public interface ExperienceLevelManagementService {
      * @return A list of {@link AExperienceLevel levels} representing the currently active configuration.
      */
     List<AExperienceLevel> getLevelConfig();
+    Map<Integer, AExperienceLevel> getLevelConfigAsMap();
 }
