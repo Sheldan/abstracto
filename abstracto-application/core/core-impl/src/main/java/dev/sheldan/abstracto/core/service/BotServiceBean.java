@@ -53,7 +53,7 @@ public class BotServiceBean implements BotService {
         builder.enableCache(CacheFlag.ONLINE_STATUS);
 
         builder.setBulkDeleteSplittingEnabled(false);
-        builder.setMemberCachePolicy(MemberCachePolicy.DEFAULT);
+        builder.setMemberCachePolicy(MemberCachePolicy.ONLINE);
         OkHttpClient.Builder defaultBuilder = IOUtil.newHttpClientBuilder();
         defaultBuilder.addInterceptor(okHttpMetrics);
         builder.setHttpClientBuilder(defaultBuilder);
