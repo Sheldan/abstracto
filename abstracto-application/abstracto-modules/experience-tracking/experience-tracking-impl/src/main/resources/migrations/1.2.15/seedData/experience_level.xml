@@ -1,0 +1,212 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet  author="Sheldan" id="experience_levels_expansion-insert">
+        <insert tableName="experience_level">
+            <column name="level" value="101"/>
+            <column name="experience_needed"  value="1954350"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="102"/>
+            <column name="experience_needed"  value="2010505"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="103"/>
+            <column name="experience_needed"  value="2067725"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="104"/>
+            <column name="experience_needed"  value="2126020"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="105"/>
+            <column name="experience_needed"  value="2185400"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="106"/>
+            <column name="experience_needed"  value="2245875"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="107"/>
+            <column name="experience_needed"  value="2307455"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="108"/>
+            <column name="experience_needed"  value="2370150"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="109"/>
+            <column name="experience_needed"  value="2433970"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="110"/>
+            <column name="experience_needed"  value="2498925"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="111"/>
+            <column name="experience_needed"  value="2565025"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="112"/>
+            <column name="experience_needed"  value="2632280"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="113"/>
+            <column name="experience_needed"  value="2700700"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="114"/>
+            <column name="experience_needed"  value="2770295"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="115"/>
+            <column name="experience_needed"  value="2841075"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="116"/>
+            <column name="experience_needed"  value="2913050"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="117"/>
+            <column name="experience_needed"  value="2986230"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="118"/>
+            <column name="experience_needed"  value="3060625"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="119"/>
+            <column name="experience_needed"  value="3136245"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="120"/>
+            <column name="experience_needed"  value="3213100"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="121"/>
+            <column name="experience_needed"  value="3291200"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="122"/>
+            <column name="experience_needed"  value="3370555"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="123"/>
+            <column name="experience_needed"  value="3451175"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="124"/>
+            <column name="experience_needed"  value="3533070"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="125"/>
+            <column name="experience_needed"  value="3616250"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="126"/>
+            <column name="experience_needed"  value="3700725"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="127"/>
+            <column name="experience_needed"  value="3786505"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="128"/>
+            <column name="experience_needed"  value="3873600"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="129"/>
+            <column name="experience_needed"  value="3962020"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="130"/>
+            <column name="experience_needed"  value="4051775"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="131"/>
+            <column name="experience_needed"  value="4142875"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="132"/>
+            <column name="experience_needed"  value="4235330"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="133"/>
+            <column name="experience_needed"  value="4329150"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="134"/>
+            <column name="experience_needed"  value="4424345"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="135"/>
+            <column name="experience_needed"  value="4520925"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="136"/>
+            <column name="experience_needed"  value="4618900"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="137"/>
+            <column name="experience_needed"  value="4718280"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="138"/>
+            <column name="experience_needed"  value="4819075"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="139"/>
+            <column name="experience_needed"  value="4921295"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="140"/>
+            <column name="experience_needed"  value="5024950"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="141"/>
+            <column name="experience_needed"  value="5130050"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="142"/>
+            <column name="experience_needed"  value="5236605"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="143"/>
+            <column name="experience_needed"  value="5344625"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="144"/>
+            <column name="experience_needed"  value="5454120"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="145"/>
+            <column name="experience_needed"  value="5565100"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="146"/>
+            <column name="experience_needed"  value="5677575"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="147"/>
+            <column name="experience_needed"  value="5791555"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="148"/>
+            <column name="experience_needed"  value="5907050"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="149"/>
+            <column name="experience_needed"  value="6024070"/>
+        </insert>
+        <insert tableName="experience_level">
+            <column name="level" value="150"/>
+            <column name="experience_needed"  value="6142625"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
