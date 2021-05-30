@@ -83,7 +83,7 @@ public class Mute implements Serializable {
      * The channel in which this mute was cast
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mutingChannel")
+    @JoinColumn(name = "muting_channel_id")
     private AChannel mutingChannel;
 
     /**

@@ -6,7 +6,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-moderation/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.11-moderation/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.15/collection.xml" relativeToChangelogFile="true"/>
+    <include file="feature.xml" relativeToChangelogFile="true"/>
+    <include file="default_emote.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

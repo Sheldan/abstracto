@@ -26,9 +26,7 @@
             <column name="muted_user_in_server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="channel_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
+            <column name="muting_channel_id" type="BIGINT" />
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -41,7 +39,7 @@
             </column>
         </createTable>
         <addPrimaryKey columnNames="server_id, id" tableName="mute" constraintName="pk_mute" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="mute" constraintName="fk_mute_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="muting_channel_id" baseTableName="mute" constraintName="fk_mute_channel" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="channel" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="muting_user_in_server_id" baseTableName="mute" constraintName="fk_mute_muting_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="muted_user_in_server_id" baseTableName="mute" constraintName="fk_mute_muted_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="mute" constraintName="fk_mute_server_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>

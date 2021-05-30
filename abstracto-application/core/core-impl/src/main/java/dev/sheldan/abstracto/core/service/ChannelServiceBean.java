@@ -332,6 +332,18 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
+    public CompletableFuture<Message> editFieldValueInMessage(MessageChannel channel, Long messageId, Integer index, String newValue) {
+        return retrieveMessageInChannel(channel, messageId).thenCompose(message -> {
+            EmbedBuilder embedBuilder = new EmbedBuilder(message.getEmbeds().get(index));
+            MessageEmbed.Field existingField = embedBuilder.getFields().get(index);
+            MessageEmbed.Field newField = new MessageEmbed.Field(existingField.getName(), newValue, existingField.isInline());
+            embedBuilder.getFields().set(index, newField);
+            log.debug("Updating field with index {} from message {}.", index, messageId);
+            return editEmbedMessageInAChannel(embedBuilder.build(), channel, messageId);
+        });
+    }
+
+    @Override
     public CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index, Integer embedIndex) {
         return retrieveMessageInChannel(channel, messageId).thenCompose(message -> {
             EmbedBuilder embedBuilder = new EmbedBuilder(message.getEmbeds().get(embedIndex));

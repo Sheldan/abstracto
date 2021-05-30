@@ -225,3 +225,19 @@ The uses of profanities can be tracked and a command is available to show the pr
 Show the profanities of a member::
 * Usage `profanities <member>`
 * Description: Shows the true and false positive profanities of the given member. Also, if there any, shows the recent true positive reports.
+
+=== Reporting a message via reaction
+
+Feature key `reportReactions`
+
+This functionality is used to report user by members via adding a reaction to a message. This message is then send to the post target `reactionReports`
+notifying the moderation of the server. Additional reports of the same user, within the cooldown defined by system config `reactionReportCooldownSeconds` in seconds, increment the report counter instead of adding another notification. A reporting user also cannot report another user within a time range defined by the same system config.
+
+==== Relevant system configuration
+`reactionReportCooldownSeconds` The amount of seconds between the reports to create a new report for a user. The amount of seconds necessary for a new report of a user to be reported again. Default: 300
+
+==== Post targets
+`reactionReports`:: target for report notification messages
+
+==== Emotes
+* `reactionReport` reaction emote to report a message
