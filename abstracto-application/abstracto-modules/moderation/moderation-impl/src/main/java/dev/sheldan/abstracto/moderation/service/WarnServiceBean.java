@@ -21,11 +21,13 @@ import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
 import dev.sheldan.abstracto.moderation.model.template.command.WarnNotification;
 import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayLogModel;
 import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayWarning;
+import dev.sheldan.abstracto.moderation.model.template.listener.WarnDecayMemberNotificationModel;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -85,6 +89,7 @@ public class WarnServiceBean implements WarnService {
     public static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
     public static final String WARNINGS_COUNTER_KEY = "WARNINGS";
     public static final String WARN_DECAY_LOG_TEMPLATE_KEY = "warn_decay_log";
+    public static final String WARN_DECAY_NOTIFICATION_TEMPLATE_KEY = "warn_decay_member_notification";
 
     @Override
     public CompletableFuture<Void> notifyAndLogFullUserWarning(WarnContext context)  {
@@ -131,6 +136,7 @@ public class WarnServiceBean implements WarnService {
         Instant cutOffDay = Instant.now().minus(days, ChronoUnit.DAYS);
         log.info("Decaying warnings on server {} which are older than {}.", server.getId(), cutOffDay);
         List<Warning> warningsToDecay = warnManagementService.getActiveWarningsInServerOlderThan(server, cutOffDay);
+        List<Long> userIds = new ArrayList<>(getUserIdsForWarnings(warningsToDecay));
         List<Long> warningIds = flattenWarnings(warningsToDecay);
         Long serverId = server.getId();
         CompletableFuture<Void> completableFuture;
@@ -141,9 +147,55 @@ public class WarnServiceBean implements WarnService {
             log.debug("Not logging automatic warn decay, because feature {} has its mode {} disabled in server {}.", ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, WarnDecayMode.AUTOMATIC_WARN_DECAY_LOG, server.getId());
             completableFuture = CompletableFuture.completedFuture(null);
         }
+        if(featureModeService.featureModeActive(ModerationFeatureDefinition.AUTOMATIC_WARN_DECAY, server, WarnDecayMode.NOTIFY_MEMBER_WARNING_DECAYS)) {
+            CompletableFuture<List<Member>> membersInServerAsync = memberService.getMembersInServerAsync(server.getId(), userIds);
+            membersInServerAsync
+                    .thenAccept(members -> self.sendMemberNotifications(serverId, warningIds, members, cutOffDay)).exceptionally(throwable -> {
+                        log.error("Failed to notify members about warn decays.", throwable);
+                        return null;
+                    });
+            log.info("Notifying members about warn decay in server {}.", server.getId());
+        } else {
+            log.info("Not notifying members about warn decay in server {}.", server.getId());
+        }
         return completableFuture.thenAccept(aVoid ->
             self.decayWarnings(warningIds, serverId)
         );
+    }
+
+    @Transactional
+    public CompletableFuture<Void> sendMemberNotifications(Long serverId, List<Long> warnIds, List<Member> members, Instant cutOffDay) {
+        List<Warning> decayingWarnings = warnManagementService.getWarningsViaId(warnIds, serverId);
+        AServer server = decayingWarnings.get(0).getWarnedUser().getServerReference();
+        List<CompletableFuture<Message>> notificationFutures = new ArrayList<>();
+        Map<Long, Member> userIdToMember = members.stream().collect(Collectors.toMap(ISnowflake::getIdLong, Function.identity()));
+        decayingWarnings.forEach(warning -> {
+            Long userId = warning.getWarnedUser().getUserReference().getId();
+            Long warningId = warning.getWarnId().getId();
+            if(userIdToMember.containsKey(userId)) {
+                Member memberToSendTo = userIdToMember.get(userId);
+                List<Warning> remainingWarnings = warnManagementService.getActiveWarningsInServerYoungerThan(server, cutOffDay);
+                WarnDecayMemberNotificationModel model =
+                        WarnDecayMemberNotificationModel
+                                .builder()
+                                .warnDate(warning.getWarnDate())
+                                .warnReason(warning.getReason())
+                                .remainingWarningsCount(remainingWarnings.size())
+                                .build();
+                MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_NOTIFICATION_TEMPLATE_KEY, model, serverId);
+                log.info("Notifying user {} in server {} about decayed warning {}.", userId, serverId, warningId);
+                notificationFutures.add(messageService.sendMessageToSendToUser(memberToSendTo.getUser(), messageToSend).exceptionally(throwable -> {
+                    log.error("Failed to send warn decay message to user {} in server {} to notify about decay warning {}.", userId, server, warningId);
+                    return null;
+                }));
+            } else {
+                log.warn("Could not find user {} in server {}. Not notifying about decayed warning {}.", userId, serverId, warningId);
+            }
+        });
+        CompletableFuture<Void> future = new CompletableFuture();
+        FutureUtils.toSingleFutureGeneric(notificationFutures)
+                .whenComplete((unused, throwable) -> future.complete(null));
+        return future;
     }
 
     private List<Long> flattenWarnings(List<Warning> warningsToDecay) {
@@ -152,6 +204,12 @@ public class WarnServiceBean implements WarnService {
             warningIds.add(warning.getWarnId().getId())
         );
         return warningIds;
+    }
+
+    private Set<Long> getUserIdsForWarnings(List<Warning> warnings) {
+        Set<Long> userIds = new HashSet<>();
+        warnings.forEach(warning -> userIds.add(warning.getWarnedUser().getUserReference().getId()));
+        return userIds;
     }
 
     @Transactional

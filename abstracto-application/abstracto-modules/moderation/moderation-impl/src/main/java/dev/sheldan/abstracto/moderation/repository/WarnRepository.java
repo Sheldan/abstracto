@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.moderation.repository;
 
+import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.moderation.model.database.Warning;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface WarnRepository extends JpaRepository<Warning, Long> {
+public interface WarnRepository extends JpaRepository<Warning, ServerSpecificId> {
     List<Warning> findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateLessThan(AServer server, Instant cutOffDate);
+    List<Warning> findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateGreaterThan(AServer server, Instant cutOffDate);
 
     List<Warning> findAllByWarnedUser_ServerReference(AServer server);
 
@@ -23,10 +24,6 @@ public interface WarnRepository extends JpaRepository<Warning, Long> {
     Long countByWarnedUserAndDecayedFalse(AUserInAServer aUserInAServer);
 
     List<Warning> findByWarnedUser(AUserInAServer aUserInAServer);
-
-    @NotNull
-    @Override
-    Optional<Warning> findById(@NonNull Long aLong);
 
     @NotNull
     Optional<Warning> findByWarnId_IdAndWarnId_ServerId(Long warnId, Long serverId);

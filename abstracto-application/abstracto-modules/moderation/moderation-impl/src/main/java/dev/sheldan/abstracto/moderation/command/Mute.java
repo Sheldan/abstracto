@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
@@ -30,15 +31,21 @@ import static dev.sheldan.abstracto.moderation.service.MuteService.MUTE_EFFECT_K
 @Component
 public class Mute extends AbstractConditionableCommand {
 
+    public static final String MUTE_DEFAULT_REASON_TEMPLATE = "mute_default_reason";
+
     @Autowired
     private MuteService muteService;
+
+    @Autowired
+    private TemplateService templateService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         Duration duration = (Duration) parameters.get(1);
-        String reason = (String) parameters.get(2);
+        String defaultReason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
+        String reason = parameters.size() == 3 ? (String) parameters.get(2) : defaultReason;
         ServerChannelMessage context = ServerChannelMessage
                 .builder()
                 .serverId(commandContext.getGuild().getIdLong())

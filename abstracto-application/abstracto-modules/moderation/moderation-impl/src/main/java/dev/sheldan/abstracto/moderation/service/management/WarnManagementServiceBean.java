@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -44,6 +45,11 @@ public class WarnManagementServiceBean implements WarnManagementService {
     }
 
     @Override
+    public List<Warning> getActiveWarningsInServerYoungerThan(AServer server, Instant date) {
+        return warnRepository.findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateGreaterThan(server, date);
+    }
+
+    @Override
     public Long getTotalWarnsForUser(AUserInAServer aUserInAServer) {
         return warnRepository.countByWarnedUser(aUserInAServer);
     }
@@ -71,6 +77,15 @@ public class WarnManagementServiceBean implements WarnManagementService {
     @Override
     public Warning findById(Long id, Long serverId) {
         return findByIdOptional(id, serverId).orElseThrow(() -> new AbstractoRunTimeException("Warning not found."));
+    }
+
+    @Override
+    public List<Warning> getWarningsViaId(List<Long> warnIds, Long serverId) {
+        List<ServerSpecificId> serverWarnIds = warnIds
+                .stream()
+                .map(aLong -> new ServerSpecificId(serverId, aLong))
+        .collect(Collectors.toList());
+        return warnRepository.findAllById(serverWarnIds);
     }
 
     @Override

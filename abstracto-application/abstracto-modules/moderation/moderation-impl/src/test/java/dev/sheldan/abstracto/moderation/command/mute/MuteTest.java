@@ -2,8 +2,10 @@ package dev.sheldan.abstracto.moderation.command.mute;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
+import dev.sheldan.abstracto.moderation.command.Ban;
 import dev.sheldan.abstracto.moderation.command.Mute;
 import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
 import dev.sheldan.abstracto.moderation.service.MuteService;
@@ -28,6 +30,9 @@ public class MuteTest {
 
     @Mock
     private MuteService muteService;
+
+    @Mock
+    private TemplateService templateService;
 
     @Captor
     private ArgumentCaptor<MuteContext> muteLogArgumentCaptor;

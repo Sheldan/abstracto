@@ -6,7 +6,9 @@ import lombok.Getter;
 
 @Getter
 public enum WarnDecayMode implements FeatureMode {
-    AUTOMATIC_WARN_DECAY_LOG("automaticWarnDecayLogging");
+    AUTOMATIC_WARN_DECAY_LOG("automaticWarnDecayLogging"),
+    NOTIFY_MEMBER_WARNING_DECAYS("notifyMemberWarningDecays")
+    ;
 
     private final String key;
 

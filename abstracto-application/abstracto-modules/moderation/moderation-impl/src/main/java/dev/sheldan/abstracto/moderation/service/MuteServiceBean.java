@@ -181,7 +181,7 @@ public class MuteServiceBean implements MuteService {
                 .messageId(muteContext.getContext().getMessageId())
                 .build();
         AUserInAServer userInServerBeingMuted = userInServerManagementService.loadOrCreateUser(muteContext.getMutedUser());
-        AUserInAServer userInServerMuting = userInServerManagementService.loadOrCreateUser(muteContext.getMutedUser());
+        AUserInAServer userInServerMuting = userInServerManagementService.loadOrCreateUser(muteContext.getMutingUser());
         muteManagementService.createMute(userInServerBeingMuted, userInServerMuting, muteContext.getReason(), muteContext.getMuteTargetDate(), origin, triggerKey, muteContext.getMuteId());
     }
 
