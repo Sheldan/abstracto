@@ -21,11 +21,6 @@
             <column name="feature_id" valueComputed="${moderationFeature}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="banId"/>
-            <column name="module_id" valueComputed="${moderationModule}"/>
-            <column name="feature_id" valueComputed="${moderationFeature}"/>
-        </insert>
-        <insert tableName="command">
             <column name="name" value="kick"/>
             <column name="module_id" valueComputed="${moderationModule}"/>
             <column name="feature_id" valueComputed="${moderationFeature}"/>

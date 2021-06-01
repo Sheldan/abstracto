@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum MutingMode implements FeatureMode {
-    MUTE_LOGGING("muteLogging"), UN_MUTE_LOGGING("unMuteLogging"), MANUAL_UN_MUTE_LOGGING("manualUnMuteLogging");
+    MANUAL_UN_MUTE_LOGGING("manualUnMuteLogging");
 
     private final String key;
 

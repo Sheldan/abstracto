@@ -8,15 +8,13 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.model.template.command.BanLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,22 +39,18 @@ public class Ban extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
-        Member member = (Member) parameters.get(0);
+        User user = (User) parameters.get(0);
         String defaultReason = templateService.renderSimpleTemplate(BAN_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
 
-        BanLog banLogModel = (BanLog) ContextConverter.fromCommandContext(commandContext, BanLog.class);
-        banLogModel.setBannedUser(member);
-        banLogModel.setBanningUser(commandContext.getAuthor());
-        banLogModel.setReason(reason);
-        return banService.banMember(member, reason, banLogModel)
+        return banService.banUser(user, reason, commandContext.getAuthor(), commandContext.getMessage())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("user").templated(true).type(Member.class).build());
+        parameters.add(Parameter.builder().name("user").templated(true).type(User.class).build());
         parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).optional(true).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         List<EffectConfig> effectConfig = Arrays.asList(EffectConfig.builder().position(0).effectKey(BAN_EFFECT_KEY).build());

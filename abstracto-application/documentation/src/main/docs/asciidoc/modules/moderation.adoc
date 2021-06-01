@@ -3,26 +3,22 @@
 Feature key: `moderation`
 
 ==== Post targets
-`banLog`:: target of the log message containing information about the ban for both `ban` and `banId`. Will still ban if not setup.
+`banLog`:: target of the message notifying about bans, both via command and via UI. Will still ban if not setup.
+`unBanLog`:: target of the message notifying about un-bans, both via command and via UI. Will still ban if not setup.
 `kickLog`:: target of the log message containing information about the kick. Will still kick if not setup.
-
-==== Feature modes
-`banLogging`:: if enabled, log bans to the post target `banLog`. Enabled by default.
-`kickLogging`:: if enabled, log bans to the post target `kickLog`. Enabled by default.
 
 ==== Commands
 Ban a member::
 * Usage: `ban <member> [reason]`
 * Description:
-Bans the given given `member` with the given optional `reason`. This sends a logging message to the `banLog` post target.
+Bans the given `member` with the given optional `reason`. This sends a logging message to the `banLog` post target.
 Banning this way does not delete old messages of the member on the server. If the `reason` is not provided, a default reason is used.
+It is also possible to ban users via ID, if they are not part of the server anymore.
 * Example: `ban @Member bad` in order to ban `Member` with the reason `bad` (the @Member is a user mention)
 * Required bot permission: `BAN_MEMBERS`
-Ban a user by ID::
-* Usage: `banId <userId> [reason]`
-* Description: Bans the `user` by his id with the optional `reason`. . This command can be used in case the user is not part of the server anymore.
-This will also send a log message to `banLog` and not delete old messages.
-* Example: `banId 1234 bad` in order to ban the user with ID `1234` with the reason `bad`
+Unban a user::
+* Usage: `unBan <userId>`
+* Description: Un-bans the given user with the id `userId`.
 * Required bot permission: `BAN_MEMBERS`
 Kick a member::
 * Usage: `kick <member> [reason]`
@@ -50,7 +46,6 @@ Feature key: `warnings`
 `decayLog`:: will be used when all the warnings are decayed by `decayAllWarnings` and feature mode `warnDecayLogging` is enabled.
 
 ==== Feature modes
-`warnLogging`:: if enabled, each warn is logged to the post target `warnLog`. Enabled by default.
 `automaticWarnDecayLogging`:: if enabled, warn decays by `decayAllWarnings` are logged to the post target `decayLog`. Enabled by default.
 
 

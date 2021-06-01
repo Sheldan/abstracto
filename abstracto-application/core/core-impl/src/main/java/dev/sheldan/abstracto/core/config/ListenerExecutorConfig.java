@@ -132,4 +132,14 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("channelDeletedListener");
     }
 
+    @Bean(name = "userUnBannedListenerExecutor")
+    public TaskExecutor userUnBannedListenerExecutor() {
+        return executorService.setupExecutorFor("userUnBannedListener");
+    }
+
+    @Bean(name = "userBannedListenerExecutor")
+    public TaskExecutor userBannedListenerExecutor() {
+        return executorService.setupExecutorFor("userBannedListener");
+    }
+
 }

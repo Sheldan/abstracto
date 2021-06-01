@@ -14,17 +14,13 @@ import net.dv8tion.jda.api.entities.User;
 @Getter
 @Builder
 @Setter
-public class BanLog {
+public class UnBanLog {
     /**
-     * The reason of the ban
+     * The member executing the unban
      */
-    private String reason;
+    private Member unBanningMember;
     /**
-     * The member executing the ban
-     */
-    private Member banningMember;
-    /**
-     * The user being banned
+     * The user being unbanned
      */
     private User bannedUser;
     private Message commandMessage;

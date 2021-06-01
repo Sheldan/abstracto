@@ -99,13 +99,9 @@ public class WarnServiceBean implements WarnService {
         String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification, server.getId());
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         futures.add(messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage));
-        if(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, server.getId(), WarningMode.WARN_LOG)) {
-            log.debug("Logging warning for server {}.", server.getId());
-            MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context, server.getId());
-            futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
-        } else {
-            log.debug("Not logging warning because of feature {} with feature mode {} in server {}.", ModerationFeatureDefinition.WARNING, WarningMode.WARN_LOG, server.getId());
-        }
+        log.debug("Logging warning for server {}.", server.getId());
+        MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context, server.getId());
+        futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
 
         return FutureUtils.toSingleFutureGeneric(futures);
     }

@@ -4,22 +4,21 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
-import dev.sheldan.abstracto.moderation.model.template.command.BanLog;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
@@ -36,25 +35,23 @@ public class BanTest {
     private TemplateService templateService;
 
     @Captor
-    private ArgumentCaptor<BanLog> banLogModelCaptor;
+    private ArgumentCaptor<Member> banLogModelCaptor;
 
     private static final String REASON = "reason";
     private static final Long SERVER_ID = 1L;
 
     @Mock
-    private Member bannedMember;
+    private User bannedMember;
 
     @Test
     public void testBanWithDefaultReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember));
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
-        when(banService.banMember(eq(bannedMember), eq(REASON), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        when(banService.banUser(eq(bannedMember), eq(REASON), banLogModelCaptor.capture(), any(Message.class))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
-        BanLog usedModel = banLogModelCaptor.getValue();
-        Assert.assertEquals(REASON, usedModel.getReason());
-        Assert.assertEquals(bannedMember, usedModel.getBannedUser());
-        Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
+        Member banningMember = banLogModelCaptor.getValue();
+        Assert.assertEquals(parameters.getAuthor(), banningMember);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 
@@ -64,12 +61,10 @@ public class BanTest {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember, customReason));
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
-        when(banService.banMember(eq(bannedMember), eq(customReason), banLogModelCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
+        when(banService.banUser(eq(bannedMember), eq(customReason), banLogModelCaptor.capture(), any(Message.class))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
-        BanLog usedModel = banLogModelCaptor.getValue();
-        Assert.assertEquals(customReason, usedModel.getReason());
-        Assert.assertEquals(bannedMember, usedModel.getBannedUser());
-        Assert.assertEquals(parameters.getAuthor(), usedModel.getBanningUser());
+        Member banningMember = banLogModelCaptor.getValue();
+        Assert.assertEquals(parameters.getAuthor(), banningMember);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
 

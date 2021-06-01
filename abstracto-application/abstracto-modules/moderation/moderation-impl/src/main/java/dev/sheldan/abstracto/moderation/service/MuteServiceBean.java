@@ -242,29 +242,19 @@ public class MuteServiceBean implements MuteService {
 
     private CompletableFuture<Void> sendMuteLog(MuteContext muteLogModel, AServer server)  {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)) {
-            log.debug("Sending mute log to the mute post target.");
-            MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
-            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
-            completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
-        } else {
-            completableFuture = CompletableFuture.completedFuture(null);
-            log.debug("Not sending mute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
-        }
+        log.debug("Sending mute log to the mute post target.");
+        MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
+        completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         return completableFuture;
     }
 
     private CompletableFuture<Void> sendUnMuteLogMessage(UnMuteLog muteLogModel, AServer server)  {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)) {
-            log.debug("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
-            MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
-            List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
-            completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
-        } else {
-            completableFuture = CompletableFuture.completedFuture(null);
-            log.debug("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, server.getId());
-        }
+        log.debug("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
+        MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
+        completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
         return completableFuture;
     }
 
@@ -289,11 +279,10 @@ public class MuteServiceBean implements MuteService {
         CompletableFuture<Void> completableFuture;
         if(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, guild.getIdLong(), MutingMode.MANUAL_UN_MUTE_LOGGING)) {
             completableFuture = self.sendUnmuteLog(muteId, guild, mutingMemberFuture, mutedMemberFuture);
-            log.debug("Sending un mute notification for manual un mute for mute {} in server {}.", muteId, guild.getIdLong());
+            log.info("Sending un mute notification for manual un mute for mute {} in server {}.", muteId, guild.getIdLong());
         } else {
             completableFuture = CompletableFuture.completedFuture(null);
-            log.debug("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MANUAL_UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, guild.getIdLong());
-
+            log.info("Not sending unMute log, because feature mode {} in feature {} has been disabled for server {}.", MutingMode.MANUAL_UN_MUTE_LOGGING, ModerationFeatureDefinition.WARNING, guild.getIdLong());
         }
         return completableFuture;
     }

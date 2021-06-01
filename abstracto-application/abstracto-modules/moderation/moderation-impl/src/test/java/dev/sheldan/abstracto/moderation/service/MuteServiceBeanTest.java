@@ -270,7 +270,6 @@ public class MuteServiceBeanTest {
         when(muteLog.getMuteTargetDate()).thenReturn(unMuteDate);
         when(server.getId()).thenReturn(SERVER_ID);
         when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
-        when(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)).thenReturn(true);
         String notificationText = "text";
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
@@ -301,7 +300,6 @@ public class MuteServiceBeanTest {
         when(muteLog.getContext()).thenReturn(serverChannelMessage);
         when(muteLog.getMuteTargetDate()).thenReturn(unMuteDate);
         when(serverManagementService.loadOrCreate(SERVER_ID)).thenReturn(server);
-        when(featureModeService.featureModeActive(ModerationFeatureDefinition.MUTING, server, MutingMode.MUTE_LOGGING)).thenReturn(false);
         String notificationText = "text";
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
@@ -344,6 +342,7 @@ public class MuteServiceBeanTest {
     public void testSendUnmuteLog() {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(muteManagementService.findMute(MUTE_ID, SERVER_ID)).thenReturn(mute);
+        when(mute.getMuteId()).thenReturn(new ServerSpecificId(SERVER_ID, MUTE_ID));
         when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
         testUnit.sendUnmuteLog(MUTE_ID, guild, CompletableFuture.completedFuture(memberMuting), CompletableFuture.completedFuture(memberBeingMuted));
         verify(self, times(1)).endMuteInDatabase(MUTE_ID, SERVER_ID);

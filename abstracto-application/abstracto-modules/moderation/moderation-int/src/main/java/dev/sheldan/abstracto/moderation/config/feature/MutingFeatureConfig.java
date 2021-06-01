@@ -26,6 +26,6 @@ public class MutingFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(MutingMode.MANUAL_UN_MUTE_LOGGING, MutingMode.MUTE_LOGGING, MutingMode.UN_MUTE_LOGGING);
+        return Arrays.asList(MutingMode.MANUAL_UN_MUTE_LOGGING);
     }
 }

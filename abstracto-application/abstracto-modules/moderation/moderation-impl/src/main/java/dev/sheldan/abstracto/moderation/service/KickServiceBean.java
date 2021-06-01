@@ -3,8 +3,6 @@ package dev.sheldan.abstracto.moderation.service;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
-import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.config.feature.mode.ModerationMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
 import dev.sheldan.abstracto.moderation.model.template.command.KickLogModel;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
@@ -43,14 +41,9 @@ public class KickServiceBean implements KickService {
 
     private CompletableFuture<Void> sendKickLog(KickLogModel kickLogModel)  {
         CompletableFuture<Void> completableFuture;
-        if(featureModeService.featureModeActive(ModerationFeatureDefinition.MODERATION, kickLogModel.getGuild().getIdLong(), ModerationMode.KICK_LOG)) {
-            MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, kickLogModel.getGuild().getIdLong());
-            log.debug("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
-            completableFuture = FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
-        } else {
-            log.debug("Feature {} has mode {} for logging disabled for server {}. Not sending kick notification.", ModerationFeatureDefinition.MODERATION, ModerationMode.BAN_LOG, kickLogModel.getGuild().getIdLong());
-            completableFuture = CompletableFuture.completedFuture(null);
-        }
+        MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, kickLogModel.getGuild().getIdLong());
+        log.debug("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
+        completableFuture = FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
         return completableFuture;
     }
 }

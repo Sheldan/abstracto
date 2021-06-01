@@ -203,7 +203,6 @@ public class WarnServiceBeanTest {
     @Test
     public void testWarnFullUser() {
         setupWarnContext();
-        when(featureModeService.featureModeActive(ModerationFeatureDefinition.WARNING, SERVER_ID, WarningMode.WARN_LOG)).thenReturn(true);
         setupMocksForWarning();
         CompletableFuture<Void> future = testUnit.notifyAndLogFullUserWarning(context);
         future.join();
