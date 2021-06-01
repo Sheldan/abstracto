@@ -97,7 +97,9 @@ public class Mute implements Serializable {
 
     @PrePersist
     private void onInsert() {
-        this.muteDate = Instant.now();
+        if(muteDate == null) {
+            this.muteDate = Instant.now();
+        }
     }
 
     @Column(name = "updated", insertable = false, updatable = false)

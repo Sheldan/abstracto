@@ -19,7 +19,7 @@
             <column name="decayed" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
-            <column name="reason" type="VARCHAR(255)">
+            <column name="reason" type="VARCHAR(2048)">
                 <constraints nullable="false"/>
             </column>
             <column name="warn_date" type="TIMESTAMP WITHOUT TIME ZONE">
