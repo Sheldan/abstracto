@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.logging.OkHttpLogger;
 import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
@@ -34,6 +35,9 @@ public class BotServiceBean implements BotService {
     private OkHttpMetrics okHttpMetrics;
 
     @Autowired
+    private OkHttpLogger okHttpLogger;
+
+    @Autowired
     private MetricService metricService;
 
     public static final String DISCORD_GATEWAY_PING = "discord.gateway.ping";
@@ -56,6 +60,7 @@ public class BotServiceBean implements BotService {
         builder.setMemberCachePolicy(MemberCachePolicy.ONLINE);
         OkHttpClient.Builder defaultBuilder = IOUtil.newHttpClientBuilder();
         defaultBuilder.addInterceptor(okHttpMetrics);
+        defaultBuilder.addInterceptor(okHttpLogger);
         builder.setHttpClientBuilder(defaultBuilder);
 
         this.instance = builder.build();

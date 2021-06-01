@@ -4,6 +4,7 @@ import ch.qos.logback.core.net.ssl.SecureRandomFactoryBean;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import dev.sheldan.abstracto.core.logging.OkHttpLogger;
 import dev.sheldan.abstracto.core.metric.OkHttpMetrics;
 import dev.sheldan.abstracto.core.service.BotService;
 import okhttp3.OkHttpClient;
@@ -32,6 +33,9 @@ public class CoreConfig {
     @Autowired
     private OkHttpMetrics okHttpMetrics;
 
+    @Autowired
+    private OkHttpLogger okHttpLogger;
+
     @Bean
     public Gson gson() {
         return new GsonBuilder()
@@ -50,7 +54,10 @@ public class CoreConfig {
 
     @Bean
     public OkHttpClient client() {
-        return new OkHttpClient.Builder().addInterceptor(okHttpMetrics).build();
+        return new OkHttpClient.Builder()
+                .addInterceptor(okHttpMetrics)
+                .addInterceptor(okHttpLogger)
+                .build();
     }
 
     @Bean
