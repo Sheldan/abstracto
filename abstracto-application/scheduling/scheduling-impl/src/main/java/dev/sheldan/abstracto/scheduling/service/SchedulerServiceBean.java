@@ -68,7 +68,18 @@ public class SchedulerServiceBean implements SchedulerService {
                     scheduler.addJob(jobDetail, true);
                 }
             } else {
-                log.info("Not scheduling job {}, because it was already scheduled.", schedulerJob.getName());
+                if(isRecurringJob(schedulerJob)) {
+                    jobDetail = scheduleCreator.createJob((Class<? extends QuartzJobBean>) Class.forName(schedulerJob.getClazz()),
+                            true, context, schedulerJob.getName(), schedulerJob.getGroupName(), schedulerJob.isRecovery());
+                    List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobDetail.getKey());
+
+                    Trigger trigger = scheduleCreator.createBasicCronTrigger(new Date(),
+                            schedulerJob.getCronExpression());
+                    scheduler.rescheduleJob(triggers.get(0).getKey(), trigger);
+                    log.info("Rescheduling job {}, its a cron job and the definition might have changed.", schedulerJob.getName());
+                } else {
+                    log.info("Not scheduling job {}, because it was already scheduled.", schedulerJob.getName());
+                }
             }
         } catch (ClassNotFoundException | SchedulerException e) {
             log.error("Failed to schedule job", e);

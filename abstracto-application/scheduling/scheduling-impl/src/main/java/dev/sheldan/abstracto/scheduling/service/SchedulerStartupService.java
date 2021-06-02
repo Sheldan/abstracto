@@ -28,7 +28,7 @@ public class SchedulerStartupService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
         schedulerJobManagementServiceBean.findAll().forEach(schedulerJob -> {
-            if(!schedulerJobManagementServiceBean.doesJobExist(schedulerJob) || !schedulerJobManagementServiceBean.isJobDefinitionTheSame(schedulerJob)) {
+            if(!schedulerJobManagementServiceBean.doesJobExist(schedulerJob)) {
                 schedulerJobManagementServiceBean.createOrUpdate(schedulerJob);
             }
         });

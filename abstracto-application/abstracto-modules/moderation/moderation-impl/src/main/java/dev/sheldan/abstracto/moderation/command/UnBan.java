@@ -42,7 +42,7 @@ public class UnBan extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").templated(true).type(User.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
+        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("unBan")
                 .module(ModerationModuleDefinition.MODERATION)

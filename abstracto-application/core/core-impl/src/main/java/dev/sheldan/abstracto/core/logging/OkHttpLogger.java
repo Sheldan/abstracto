@@ -14,7 +14,7 @@ public class OkHttpLogger implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-        log.debug("Executing request towards towards {}.", request.url().toString());
+        log.debug("Executing request of method {} towards towards {}.", request.method(), request.url().toString());
         Response response = chain.proceed(request);
         long startTime = response.sentRequestAtMillis();
         long endTime = response.receivedResponseAtMillis();

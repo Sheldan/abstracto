@@ -207,8 +207,8 @@ public class MuteServiceBean implements MuteService {
         } else {
             log.debug("Starting scheduled job to execute unMute.");
             HashMap<Object, Object> parameters = new HashMap<>();
-            parameters.put("muteId", muteId);
-            parameters.put("serverId", serverId);
+            parameters.put("muteId", muteId.toString());
+            parameters.put("serverId", serverId.toString());
             JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
             return schedulerService.executeJobWithParametersOnce("unMuteJob", "moderation", jobParameters, Date.from(unMuteDate));
         }

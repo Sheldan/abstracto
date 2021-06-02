@@ -165,7 +165,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
     @Override
     public CompletableFuture<CachedReactions> getCachedReactionFromReaction(MessageReaction reaction) {
         CompletableFuture<CachedReactions> future = new CompletableFuture<>();
-        ReactionPaginationAction users = reaction.retrieveUsers().cache(false);
+        ReactionPaginationAction users = reaction.retrieveUsers();
         CachedReactions.CachedReactionsBuilder builder = CachedReactions.builder();
 
         List<ServerUser> aUsers = new ArrayList<>();
