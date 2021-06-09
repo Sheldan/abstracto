@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.moderation.converter;
 
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -45,6 +46,8 @@ public class WarnEntryConverterTest {
     private static final Long SERVER_ID = 5L;
     private static final Long WARN_ID_1 = 6L;
     private static final Long WARN_ID_2 = 7L;
+    private static final Long USER_ID_1 = 8L;
+    private static final Long USER_ID_2 = 9L;
 
     @Test
     public void testWithEmptyList() {
@@ -79,6 +82,12 @@ public class WarnEntryConverterTest {
     public void testLoadingFullWarnings() {
         AUserInAServer warnedUser = Mockito.mock(AUserInAServer.class);
         AUserInAServer warningUser = Mockito.mock(AUserInAServer.class);
+        AUser firstUser = Mockito.mock(AUser.class);
+        when(firstUser.getId()).thenReturn(USER_ID_1);
+        when(warnedUser.getUserReference()).thenReturn(firstUser);
+        AUser secondUser = Mockito.mock(AUser.class);
+        when(secondUser.getId()).thenReturn(USER_ID_2);
+        when(warningUser.getUserReference()).thenReturn(secondUser);
         Member warningMember = Mockito.mock(Member.class);
         Member warnedMember = Mockito.mock(Member.class);
         Warning warning1 = Mockito.mock(Warning.class);
@@ -104,15 +113,15 @@ public class WarnEntryConverterTest {
         WarnEntry firstEntry = models.get(0);
         Assert.assertEquals(warningMember, firstEntry.getWarningUser().getMember());
         Assert.assertEquals(warnedMember, firstEntry.getWarnedUser().getMember());
-        Assert.assertEquals(warnedUser, firstEntry.getWarnedUser().getAUserInAServer());
-        Assert.assertEquals(warningUser, firstEntry.getWarningUser().getAUserInAServer());
+        Assert.assertEquals(USER_ID_1, firstEntry.getWarnedUser().getUserId());
+        Assert.assertEquals(USER_ID_2, firstEntry.getWarningUser().getUserId());
         Assert.assertEquals(WARN_ID_1, firstEntry.getWarning().getWarnId().getId());
         Assert.assertEquals(SERVER_ID, firstEntry.getWarning().getWarnId().getServerId());
         WarnEntry secondEntry = models.get(1);
         Assert.assertEquals(warningMember, secondEntry.getWarningUser().getMember());
         Assert.assertEquals(warnedMember, secondEntry.getWarnedUser().getMember());
-        Assert.assertEquals(warnedUser, secondEntry.getWarnedUser().getAUserInAServer());
-        Assert.assertEquals(warningUser, secondEntry.getWarningUser().getAUserInAServer());
+        Assert.assertEquals(USER_ID_1, secondEntry.getWarnedUser().getUserId());
+        Assert.assertEquals(USER_ID_2, secondEntry.getWarningUser().getUserId());
         Assert.assertEquals(WARN_ID_2, secondEntry.getWarning().getWarnId().getId());
         Assert.assertEquals(SERVER_ID, secondEntry.getWarning().getWarnId().getServerId());
     }

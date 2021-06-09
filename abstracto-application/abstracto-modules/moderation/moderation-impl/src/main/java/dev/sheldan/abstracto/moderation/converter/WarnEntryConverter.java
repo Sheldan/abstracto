@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.moderation.converter;
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
+import dev.sheldan.abstracto.core.models.MemberDisplayModel;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -47,10 +47,15 @@ public class WarnEntryConverter {
             allFutures.add(warningMemberFuture);
             allFutures.add(warnedMemberFuture);
         });
-        return FutureUtils.toSingleFutureGeneric(allFutures).thenApply(aVoid ->
-            self.loadFullWarnEntries(loadedWarnings)
-        );
-
+        CompletableFuture<List<WarnEntry>> future = new CompletableFuture<>();
+        FutureUtils.toSingleFutureGeneric(allFutures).whenComplete((unused, throwable) -> {
+            try {
+                future.complete(self.loadFullWarnEntries(loadedWarnings));
+            } catch (Exception exception) {
+                future.completeExceptionally(exception);
+            }
+        });
+        return future;
     }
 
     @Transactional
@@ -60,17 +65,17 @@ public class WarnEntryConverter {
             Warning warn = warnManagementService.findById(warning.getId(), warning.getServerId());
             FutureMemberPair memberPair = loadedWarnInfo.get(warning);
             Member warnedMember = !memberPair.getSecondMember().isCompletedExceptionally() ? memberPair.getSecondMember().join() : null;
-            FullUserInServer warnedUser = FullUserInServer
+            MemberDisplayModel warnedUser = MemberDisplayModel
                     .builder()
                     .member(warnedMember)
-                    .aUserInAServer(warn.getWarnedUser())
+                    .userId(warn.getWarnedUser().getUserReference().getId())
                     .build();
 
             Member warningMember = !memberPair.getFirstMember().isCompletedExceptionally() ? memberPair.getFirstMember().join() : null;
-            FullUserInServer warningUser = FullUserInServer
+            MemberDisplayModel warningUser = MemberDisplayModel
                     .builder()
                     .member(warningMember)
-                    .aUserInAServer(warn.getWarningUser())
+                    .userId(warn.getWarningUser().getUserReference().getId())
                     .build();
             WarnEntry entry = WarnEntry
                     .builder()

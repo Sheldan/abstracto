@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
+import dev.sheldan.abstracto.core.models.MemberDisplayModel;
 import dev.sheldan.abstracto.moderation.model.database.Warning;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,11 +19,11 @@ public class WarnEntry {
      */
     private Warning warning;
     /**
-     * The {@link FullUserInServer} containing information about the user being warned. The member property is null if the user left the server
+     * The {@link MemberDisplayModel} containing information about the user being warned. The member property is null if the user left the server
      */
-    private FullUserInServer warnedUser;
+    private MemberDisplayModel warnedUser;
     /**
-     * The {@link FullUserInServer} containing information about the user warning. The member property is null if the user left the server
+     * The {@link MemberDisplayModel} containing information about the user warning. The member property is null if the user left the server
      */
-    private FullUserInServer warningUser;
+    private MemberDisplayModel warningUser;
 }
