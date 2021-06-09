@@ -165,6 +165,9 @@ public class WarnServiceBean implements WarnService {
 
     @Transactional
     public CompletableFuture<Void> sendMemberNotifications(Long serverId, List<Long> warnIds, List<Member> members, Instant cutOffDay) {
+        if(warnIds.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
         List<Warning> decayingWarnings = warnManagementService.getWarningsViaId(warnIds, serverId);
         AServer server = decayingWarnings.get(0).getWarnedUser().getServerReference();
         List<CompletableFuture<Message>> notificationFutures = new ArrayList<>();
@@ -174,7 +177,7 @@ public class WarnServiceBean implements WarnService {
             Long warningId = warning.getWarnId().getId();
             if(userIdToMember.containsKey(userId)) {
                 Member memberToSendTo = userIdToMember.get(userId);
-                List<Warning> remainingWarnings = warnManagementService.getActiveWarningsInServerYoungerThan(server, cutOffDay);
+                List<Warning> remainingWarnings = warnManagementService.getActiveWarningsFromUserYoungerThan(warning.getWarnedUser(), cutOffDay);
                 WarnDecayMemberNotificationModel model =
                         WarnDecayMemberNotificationModel
                                 .builder()

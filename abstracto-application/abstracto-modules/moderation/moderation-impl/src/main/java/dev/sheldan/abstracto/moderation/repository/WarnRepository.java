@@ -16,6 +16,7 @@ import java.util.Optional;
 public interface WarnRepository extends JpaRepository<Warning, ServerSpecificId> {
     List<Warning> findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateLessThan(AServer server, Instant cutOffDate);
     List<Warning> findAllByWarnedUser_ServerReferenceAndDecayedFalseAndWarnDateGreaterThan(AServer server, Instant cutOffDate);
+    List<Warning> findAllByWarnedUserAndDecayedFalseAndWarnDateGreaterThan(AUserInAServer user, Instant cutOffDate);
 
     List<Warning> findAllByWarnedUser_ServerReference(AServer server);
 

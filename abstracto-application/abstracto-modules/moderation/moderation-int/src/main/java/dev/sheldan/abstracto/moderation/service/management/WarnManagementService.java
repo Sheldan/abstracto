@@ -12,6 +12,7 @@ public interface WarnManagementService {
     Warning createWarning(AUserInAServer warnedAUser, AUserInAServer warningAUser, String reason, Long warnId);
     List<Warning> getActiveWarningsInServerOlderThan(AServer server, Instant date);
     List<Warning> getActiveWarningsInServerYoungerThan(AServer server, Instant date);
+    List<Warning> getActiveWarningsFromUserYoungerThan(AUserInAServer user, Instant date);
     Long getTotalWarnsForUser(AUserInAServer aUserInAServer);
     List<Warning> getAllWarnsForUser(AUserInAServer aUserInAServer);
     List<Warning> getAllWarningsOfServer(AServer server);

@@ -50,6 +50,11 @@ public class WarnManagementServiceBean implements WarnManagementService {
     }
 
     @Override
+    public List<Warning> getActiveWarningsFromUserYoungerThan(AUserInAServer user, Instant date) {
+        return warnRepository.findAllByWarnedUserAndDecayedFalseAndWarnDateGreaterThan(user, date);
+    }
+
+    @Override
     public Long getTotalWarnsForUser(AUserInAServer aUserInAServer) {
         return warnRepository.countByWarnedUser(aUserInAServer);
     }
