@@ -286,7 +286,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_REMINDER_TEMPLATE_KEY, model, serverId);
         log.info("Reminding about suggestion {} in server {}.", suggestionId.getId(), serverId);
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
+        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION_REMINDER, serverId);
         return FutureUtils.toSingleFutureGeneric(completableFutures);
     }
 
