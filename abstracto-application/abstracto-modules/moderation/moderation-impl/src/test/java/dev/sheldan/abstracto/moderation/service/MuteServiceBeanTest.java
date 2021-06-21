@@ -323,7 +323,7 @@ public class MuteServiceBeanTest {
 
     @Test
     public void testEndMute() {
-        setupUnMuteMocks(true);
+        setupUnMuteMocks();
         when(mute.getMutedUser()).thenReturn(userBeingMuted);
         when(userBeingMuted.getUserReference()).thenReturn(user);
         when(mute.getMutingUser()).thenReturn(userMuting);
@@ -356,12 +356,7 @@ public class MuteServiceBeanTest {
 
     @Test
     public void testUnMuteMemberInGuild() {
-        executeUnMuteWithLogTest(true);
-    }
-
-    @Test
-    public void testUnMuteMemberWhoLeftGuild() {
-        executeUnMuteWithLogTest(false);
+        executeUnMuteWithLogTest();
     }
 
     @Test
@@ -427,14 +422,14 @@ public class MuteServiceBeanTest {
         verify(postTargetService, times(0)).sendEmbedInPostTarget(any(MessageToSend.class), eq(MutingPostTarget.MUTE_LOG), eq(SERVER_ID));
     }
 
-    private void executeUnMuteWithLogTest(boolean stillInGuild) {
+    private void executeUnMuteWithLogTest() {
         when(userBeingMuted.getUserReference()).thenReturn(user);
         when(mute.getMutedUser()).thenReturn(userBeingMuted);
         when(mute.getMutingUser()).thenReturn(userMuting);
         when(mute.getServer()).thenReturn(server);
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
         when(muteRole.getRole()).thenReturn(aRole);
-        setupUnMuteMocks(stillInGuild);
+        setupUnMuteMocks();
         when(roleService.removeRoleFromUserFuture(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
         when(memberService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
         when(memberService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
@@ -442,13 +437,12 @@ public class MuteServiceBeanTest {
 
     }
 
-    private void setupUnMuteMocks(boolean stillInGuild) {
+    private void setupUnMuteMocks() {
         when(mute.getMuteId()).thenReturn(new ServerSpecificId(SERVER_ID, MUTE_ID));
         when(muteManagementService.getAMuteOf(userBeingMuted)).thenReturn(mute);
         when(muteManagementService.hasActiveMute(userBeingMuted)).thenReturn(true);
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
         when(guildService.getGuildById(server.getId())).thenReturn(guild);
-        when(memberService.isUserInGuild(guild, userBeingMuted)).thenReturn(stillInGuild);
     }
 
     private void verifyDirectMute() {
