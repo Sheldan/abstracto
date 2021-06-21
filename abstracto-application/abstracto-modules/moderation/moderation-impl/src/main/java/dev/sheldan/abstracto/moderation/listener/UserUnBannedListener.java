@@ -42,28 +42,36 @@ public class UserUnBannedListener implements AsyncUserUnBannedListener {
 
     @Override
     public DefaultListenerResult execute(UserUnBannedModel model) {
+        log.info("Notifying about unban of user {} in guild {}.", model.getUnbannedUser().getUserId(), model.getServerId());
         model.getGuild()
                 .retrieveAuditLogs()
                 .type(ActionType.UNBAN)
                 .limit(5)
                 .queue(auditLogEntries -> {
-                    if(auditLogEntries.isEmpty()) {
-                        log.info("Did not find recent bans in guild {}.", model.getServerId());
-                        return;
-                    }
-                    Optional<AuditLogEntry> banEntryOptional = auditLogEntries
-                            .stream()
-                            .filter(auditLogEntry -> auditLogEntry.getTargetIdLong() == model.getUnbannedUser().getUserId())
-                            .findFirst();
-                    if(banEntryOptional.isPresent()) {
-                        AuditLogEntry auditLogEntry = banEntryOptional.get();
-                        if(!model.getGuild().getJDA().getSelfUser().equals(auditLogEntry.getUser())) {
-                            self.sendUnBannedNotification(model.getUser(), auditLogEntry.getUser(), model.getServerId());
+                    try {
+                        if(auditLogEntries.isEmpty()) {
+                            log.info("Did not find recent bans in guild {}.", model.getServerId());
+                            return;
                         }
-                    } else {
-                        log.info("Did not find the un-banned user in the most recent un-bans for guild {}. Not adding audit log information.", model.getServerId());
-                        self.sendUnBannedNotification(model.getUser(), null, model.getServerId());
+                        Optional<AuditLogEntry> banEntryOptional = auditLogEntries
+                                .stream()
+                                .filter(auditLogEntry -> auditLogEntry.getTargetIdLong() == model.getUnbannedUser().getUserId())
+                                .findFirst();
+                        if(banEntryOptional.isPresent()) {
+                            AuditLogEntry auditLogEntry = banEntryOptional.get();
+                            if(!model.getGuild().getJDA().getSelfUser().equals(auditLogEntry.getUser())) {
+                                self.sendUnBannedNotification(model.getUser(), auditLogEntry.getUser(), model.getServerId());
+                            }
+                        } else {
+                            log.info("Did not find the un-banned user in the most recent un-bans for guild {}. Not adding audit log information.", model.getServerId());
+                            self.sendUnBannedNotification(model.getUser(), null, model.getServerId());
+                        }
+                    } catch (Exception exception) {
+                        log.error("Failed to properly send un ban log with error.", exception);
                     }
+                }, throwable -> {
+                    log.error("Failed to retrieve audit log entries for unban log.", throwable);
+                    self.sendUnBannedNotification(model.getUser(), null, model.getServerId());
                 });
         return DefaultListenerResult.PROCESSED;
     }

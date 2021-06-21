@@ -294,19 +294,13 @@ public class MuteServiceBean implements MuteService {
             return CompletableFuture.completedFuture(null);
         }
         Long muteId = mute.getMuteId().getId();
+        Long serverId = mute.getMuteId().getServerId();
         AServer mutingServer = mute.getServer();
         log.info("UnMuting {} in server {}", mute.getMutedUser().getUserReference().getId(), mutingServer.getId());
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
         log.debug("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
         Guild guild = guildService.getGuildById(mutingServer.getId());
-        CompletableFuture<Void> roleRemovalFuture;
-        // TODO replace with future, because caching
-        if(memberService.isUserInGuild(guild, mute.getMutedUser())) {
-            roleRemovalFuture = roleService.removeRoleFromUserFuture(mute.getMutedUser(), muteRole.getRole());
-        } else {
-            roleRemovalFuture = CompletableFuture.completedFuture(null);
-            log.info("User to unMute left the guild.");
-        }
+        CompletableFuture<Void> roleRemovalFuture = roleService.removeRoleFromUserFuture(mute.getMutedUser(), muteRole.getRole());
         CompletableFuture<Member> mutingMemberFuture = memberService.getMemberInServerAsync(mute.getMutingUser());
         CompletableFuture<Member> mutedMemberFuture = memberService.getMemberInServerAsync(mute.getMutedUser());
         CompletableFuture<Void> finalFuture = new CompletableFuture<>();
@@ -314,7 +308,11 @@ public class MuteServiceBean implements MuteService {
             if(sendNotification) {
                 self.sendUnmuteLog(muteId, guild, mutingMemberFuture, mutedMemberFuture).thenAccept(aVoid1 ->
                         finalFuture.complete(null)
-                );
+                ).exceptionally(throwable1 -> {
+                    log.error("Unmute log failed to send for mute {} in server {}.", muteId, serverId, throwable1);
+                    finalFuture.complete(null);
+                    return null;
+                });
             } else {
                 finalFuture.complete(null);
             }
