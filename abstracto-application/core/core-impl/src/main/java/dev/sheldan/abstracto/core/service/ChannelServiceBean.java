@@ -511,6 +511,33 @@ public class ChannelServiceBean implements ChannelService {
         }
     }
 
+    @Override
+    public List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, TextChannel channel) {
+        File tempFile = fileService.createTempFile(fileName);
+        try {
+            fileService.writeContentToFile(tempFile, fileContent);
+            long maxFileSize = channel.getGuild().getMaxFileSize();
+            // in this case, we cannot upload the file, so we need to fail
+            if(tempFile.length() > maxFileSize) {
+                throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
+            }
+            MessageToSend messageToSend = MessageToSend
+                    .builder()
+                    .fileToSend(tempFile)
+                    .build();
+            return sendMessageToSendToChannel(messageToSend, channel);
+        } catch (IOException e) {
+            log.error("Failed to write local temporary file for template download.", e);
+            throw new AbstractoRunTimeException(e);
+        } finally {
+            try {
+                fileService.safeDelete(tempFile);
+            } catch (IOException e) {
+                log.error("Failed to safely delete local temporary file for template download.", e);
+            }
+        }
+    }
+
 
     @PostConstruct
     public void postConstruct() {

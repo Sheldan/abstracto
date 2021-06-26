@@ -1,0 +1,1 @@
+https://github.com/everit-org/json-schema

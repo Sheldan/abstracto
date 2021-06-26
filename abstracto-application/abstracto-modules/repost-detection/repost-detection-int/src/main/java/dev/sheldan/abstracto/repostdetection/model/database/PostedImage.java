@@ -52,7 +52,7 @@ public class PostedImage {
     @Getter
     @OneToMany(fetch = FetchType.LAZY,
             orphanRemoval = true,
-            cascade =  {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            cascade =  {CascadeType.PERSIST, CascadeType.MERGE},
             mappedBy = "originalPost")
     private List<Repost> reposts;
 

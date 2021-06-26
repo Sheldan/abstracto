@@ -215,6 +215,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                                             .newExperience(newExperienceCount)
                                             .newMessageCount(newMessageCount)
                                             .newLevel(newLevel.getLevel())
+                                            .serverId(serverId)
                                             .userInServerId(userInAServer.getUserInServerId())
                                             .build();
                             resultFutures.add(calculationResult);

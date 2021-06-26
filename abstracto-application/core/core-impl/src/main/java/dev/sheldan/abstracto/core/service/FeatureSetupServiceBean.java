@@ -106,23 +106,33 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
             TextChannel textChannel = textChannelInGuild.get();
             String text = templateService.renderTemplate(FEATURE_SETUP_INITIAL_MESSAGE_TEMPLATE_KEY, setupInitialMessageModel, user.getGuildId());
             channelService.sendTextToChannel(text, textChannel);
-            return executeFeatureSetup(featureConfig, steps, user, new ArrayList<>());
+            ArrayList<DelayedActionConfig> delayedActionConfigs = new ArrayList<>();
+            featureConfig
+                    .getAutoSetupSteps()
+                    .forEach(autoDelayedAction -> delayedActionConfigs.add(autoDelayedAction.getDelayedActionConfig(user)));
+            return executeFeatureSetup(featureConfig, steps, user, delayedActionConfigs);
         }
         throw new ChannelNotInGuildException(user.getChannelId());
     }
 
     @Override
     public CompletableFuture<Void> executeFeatureSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs) {
-        SetupExecution nextStep = steps.get(0);
-        return executeStep(user, nextStep, delayedActionConfigs, featureConfig);
+        if(!steps.isEmpty()) {
+            SetupExecution nextStep = steps.get(0);
+            return executeStep(user, nextStep, delayedActionConfigs, featureConfig);
+        } else {
+            log.info("Feature had no setup steps. Executing post setups steps immediately. As there can be automatic steps.");
+            self.executePostSetupSteps(delayedActionConfigs, user, null, featureConfig);
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     private CompletableFuture<Void> executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
         log.debug("Executing step {} in server {} in channel {} for user {}.", execution.getStep().getClass(), aUserInAServer.getGuildId(), aUserInAServer.getChannelId(), aUserInAServer.getUserId());
-        return execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(aVoid -> {
-            if(aVoid.getResult().equals(SetupStepResultType.SUCCESS)) {
+        return execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(setpResult -> {
+            if(setpResult.getResult().equals(SetupStepResultType.SUCCESS)) {
                 log.info("Step {} in server {} has been executed successfully. Proceeding.", execution.getStep().getClass(), aUserInAServer.getGuildId());
-                delayedActionConfigs.addAll(aVoid.getDelayedActionConfigList());
+                delayedActionConfigs.addAll(setpResult.getDelayedActionConfigList());
                 if(execution.getNextStep() != null) {
                     log.debug("Executing next step {}.", execution.getNextStep().getStep().getClass());
                     executeStep(aUserInAServer, execution.getNextStep(), delayedActionConfigs, featureConfig);

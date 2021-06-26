@@ -7,13 +7,13 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name="channel")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 public class AChannel implements SnowFlake, Serializable {
 
     @Id
@@ -50,5 +50,16 @@ public class AChannel implements SnowFlake, Serializable {
     @Transient
     private boolean fake;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AChannel channel = (AChannel) o;
+        return id.equals(channel.id);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

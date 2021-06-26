@@ -65,4 +65,5 @@ public interface ChannelService {
     TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
     CompletableFuture<Void> setSlowModeInChannel(TextChannel textChannel, Integer seconds);
     List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, TextChannel channel);
+    List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, TextChannel channel);
 }

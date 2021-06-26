@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.config;
 
+import dev.sheldan.abstracto.core.interactive.AutoDelayedAction;
 import dev.sheldan.abstracto.core.interactive.SetupStep;
 import dev.sheldan.abstracto.core.service.FeatureValidator;
 
@@ -21,4 +22,5 @@ public interface FeatureConfig extends Serializable {
     default List<String> getRequiredEmotes() { return Collections.emptyList(); }
     default List<FeatureMode> getAvailableModes() { return Collections.emptyList(); }
     default List<SetupStep> getCustomSetupSteps() { return Collections.emptyList(); }
+    default List<AutoDelayedAction> getAutoSetupSteps() { return Collections.emptyList(); }
 }

@@ -24,7 +24,8 @@ public class MessageToSend {
     /**
      * The string content to be used in the first message.
      */
-    private List<String> messages;
+    @Builder.Default
+    private List<String> messages = new ArrayList<>();
     /**
      * The file handle to send attached to the message.
      */

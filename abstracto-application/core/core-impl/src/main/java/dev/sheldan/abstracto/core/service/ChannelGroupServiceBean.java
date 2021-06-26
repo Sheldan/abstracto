@@ -170,6 +170,11 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
     }
 
     @Override
+    public boolean isChannelInGroup(AChannel channel, AChannelGroup aChannelGroup) {
+        return aChannelGroup.getChannels().contains(channel);
+    }
+
+    @Override
     public List<AChannelGroup> getChannelGroupsOfChannelWithType(AChannel channel, String groupTypeKey) {
         List<AChannelGroup> channelGroups = channelGroupManagementService.getAllChannelGroupsOfChannel(channel);
         return channelGroups
