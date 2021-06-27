@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
@@ -46,6 +47,8 @@ public class UnSetExpRoleTest {
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(changedRole));
         when(context.getChannel().getIdLong()).thenReturn(CHANNEL_ID);
         ARole actualRole = Mockito.mock(ARole.class);
+        AServer server = Mockito.mock(AServer.class);
+        when(actualRole.getServer()).thenReturn(server);
         when(roleManagementService.findRole(changedRole.getId())).thenReturn(actualRole);
         when(experienceRoleManagementService.getRoleInServerOptional(actualRole)).thenReturn(Optional.of(Mockito.mock(AExperienceRole.class)));
         when(experienceRoleService.unsetRoles(actualRole, CHANNEL_ID)).thenReturn(CompletableFuture.completedFuture(null));

@@ -43,6 +43,7 @@ public class PurgeTest {
         Member messageAuthor = Mockito.mock(Member.class);
         Integer count = 10;
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(count, messageAuthor));
+        when(messageAuthor.getGuild()).thenReturn(parameters.getGuild());
         when(purgeService.purgeMessagesInChannel(count, parameters.getChannel(), parameters.getMessage(), messageAuthor)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         Assert.assertEquals(ResultState.SELF_DESTRUCT, result.join().getResult());

@@ -55,6 +55,7 @@ public class UserNotesTest {
     public void testExecuteUserNotesCommandForMember() {
         Member member = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
+        when(member.getGuild()).thenReturn(parameters.getGuild());
         AUserInAServer userNoteUser = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userNoteUser);
         UserNote firstNote = Mockito.mock(UserNote.class);

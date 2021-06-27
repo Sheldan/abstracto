@@ -43,7 +43,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
-        if(!role.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+        if(!actualRole.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
             throw new EntityGuildMismatchException();
         }
         // do not check for the existence of the role, because if the role was deleted, users should be able

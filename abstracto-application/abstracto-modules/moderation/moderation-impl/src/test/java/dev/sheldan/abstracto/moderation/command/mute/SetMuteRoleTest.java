@@ -45,6 +45,7 @@ public class SetMuteRoleTest {
         ARole aRole = Mockito.mock(ARole.class);
         when(roleManagementService.findRole(roleId)).thenReturn(aRole);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(role));
+        when(role.getGuild()).thenReturn(parameters.getGuild());
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(parameters.getGuild())).thenReturn(server);
         CommandResult result = testUnit.execute(parameters);

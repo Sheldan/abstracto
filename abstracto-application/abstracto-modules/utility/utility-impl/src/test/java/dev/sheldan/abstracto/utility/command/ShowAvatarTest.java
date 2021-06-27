@@ -33,6 +33,7 @@ public class ShowAvatarTest {
     @Test
     public void executeWithoutParameter() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
+        when(noParameters.getAuthor().getGuild()).thenReturn(noParameters.getGuild());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(ShowAvatar.SHOW_AVATAR_RESPONSE_TEMPLATE), argumentCaptor.capture(), eq(noParameters.getChannel()));
         ShowAvatarModel usedModel = argumentCaptor.getValue();
@@ -44,6 +45,7 @@ public class ShowAvatarTest {
     public void executeWithParameter() {
         Member target = Mockito.mock(Member.class);
         CommandContext noParameters = CommandTestUtilities.getWithParameters(Arrays.asList(target));
+        when(target.getGuild()).thenReturn(noParameters.getGuild());
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(ShowAvatar.SHOW_AVATAR_RESPONSE_TEMPLATE), argumentCaptor.capture(), eq(noParameters.getChannel()));
         ShowAvatarModel usedModel = argumentCaptor.getValue();

@@ -51,6 +51,7 @@ public class SlowModeTest {
         String duration = "off";
         TextChannel channel = Mockito.mock(TextChannel.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration, channel));
+        when(channel.getGuild()).thenReturn(parameters.getGuild());
         when(slowModeService.setSlowMode(channel, Duration.ZERO)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
@@ -61,6 +62,7 @@ public class SlowModeTest {
         String duration = "1m";
         TextChannel channel = Mockito.mock(TextChannel.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration, channel));
+        when(channel.getGuild()).thenReturn(parameters.getGuild());
         when(slowModeService.setSlowMode(channel, Duration.ofMinutes(1))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);

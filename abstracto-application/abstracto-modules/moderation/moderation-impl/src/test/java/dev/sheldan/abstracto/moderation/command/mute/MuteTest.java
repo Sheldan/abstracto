@@ -43,6 +43,7 @@ public class MuteTest {
         String reason = "reason";
         Duration duration = Duration.ofMinutes(1);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(mutedMember, duration, reason));
+        when(mutedMember.getGuild()).thenReturn(parameters.getGuild());
         when(muteService.muteMemberWithLog(muteLogArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);

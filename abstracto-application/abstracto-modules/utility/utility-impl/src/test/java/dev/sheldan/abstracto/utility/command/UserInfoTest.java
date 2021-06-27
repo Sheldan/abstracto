@@ -41,6 +41,7 @@ public class UserInfoTest {
     @Test
     public void executeWithoutParameterAndLoadedMember() {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
+        when(noParameters.getAuthor().getGuild()).thenReturn(noParameters.getGuild());
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(true);
         when(self.sendResponse(eq(noParameters),any(UserInfoModel.class))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
@@ -55,7 +56,7 @@ public class UserInfoTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(false);
         Member loadedAuthor = Mockito.mock(Member.class);
-        when(noParameters.getAuthor().getGuild()).thenReturn(Mockito.mock(Guild.class));
+        when(noParameters.getAuthor().getGuild()).thenReturn(noParameters.getGuild());
         when(memberService.forceReloadMember(noParameters.getAuthor())).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(noParameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
@@ -69,6 +70,7 @@ public class UserInfoTest {
         Member member = Mockito.mock(Member.class);
         when(member.hasTimeJoined()).thenReturn(true);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
+        when(member.getGuild()).thenReturn(parameters.getGuild());
         when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         UserInfoModel usedModel = modelArgumentCaptor.getValue();
@@ -81,8 +83,8 @@ public class UserInfoTest {
         Member member = Mockito.mock(Member.class);
         when(member.hasTimeJoined()).thenReturn(false);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
+        when(member.getGuild()).thenReturn(parameters.getGuild());
         Member loadedAuthor = Mockito.mock(Member.class);
-        when(member.getGuild()).thenReturn(Mockito.mock(Guild.class));
         when(memberService.forceReloadMember(member)).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);

@@ -37,6 +37,7 @@ public class UserNoteCommandTest {
         AUserInAServer userInAServer = Mockito.mock(AUserInAServer.class);
         String note = "note";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member, note));
+        when(member.getGuild()).thenReturn(parameters.getGuild());
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
         CommandResult result = testUnit.execute(parameters);
         verify(userNoteManagementService, times(1)).createUserNote(userInAServer, note);

@@ -44,6 +44,7 @@ public class UnMuteTest {
     @Test
     public void testUnMuteCommand() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToUnMute));
+        when(memberToUnMute.getGuild()).thenReturn(parameters.getGuild());
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(memberToUnMute)).thenReturn(user);
         when(muteService.unMuteUser(user)).thenReturn(CompletableFuture.completedFuture(null));
@@ -54,6 +55,7 @@ public class UnMuteTest {
     @Test(expected = NoMuteFoundException.class)
     public void testUnMuteCommandWithoutExistingMute() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToUnMute));
+        when(memberToUnMute.getGuild()).thenReturn(parameters.getGuild());
         AUserInAServer user = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(memberToUnMute)).thenReturn(user);
         when(muteService.unMuteUser(user)).thenThrow(new NoMuteFoundException());

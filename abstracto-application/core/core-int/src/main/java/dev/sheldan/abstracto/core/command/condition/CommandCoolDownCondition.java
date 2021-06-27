@@ -8,8 +8,6 @@ import dev.sheldan.abstracto.core.command.service.CommandCoolDownService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-
 @Component
 public class CommandCoolDownCondition implements CommandCondition {
 

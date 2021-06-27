@@ -47,6 +47,7 @@ public class KickTest {
     @Test
     public void testKickMemberWithoutReason() {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToKick));
+        when(memberToKick.getGuild()).thenReturn(parameters.getGuild());
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         when(templateService.renderSimpleTemplate(Kick.KICK_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
         when(kickService.kickMember(eq(memberToKick), eq(REASON), logModelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
@@ -62,6 +63,7 @@ public class KickTest {
     public void testKickMemberWithReason() {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(memberToKick, customReason));
+        when(memberToKick.getGuild()).thenReturn(parameters.getGuild());
         when(kickService.kickMember(eq(memberToKick), eq(customReason), logModelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         KickLogModel usedLogModel = logModelArgumentCaptor.getValue();

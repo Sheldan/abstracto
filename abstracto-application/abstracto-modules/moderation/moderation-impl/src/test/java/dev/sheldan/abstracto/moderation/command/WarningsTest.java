@@ -100,6 +100,7 @@ public class WarningsTest {
     public void testExecuteWarningsForMember(){
         Member member = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
+        when(member.getGuild()).thenReturn(parameters.getGuild());
         AUserInAServer warnedUser = Mockito.mock(AUserInAServer.class);
         Warning firstWarning = Mockito.mock(Warning.class);
         WarnEntry firstModelWarning = Mockito.mock(WarnEntry.class);

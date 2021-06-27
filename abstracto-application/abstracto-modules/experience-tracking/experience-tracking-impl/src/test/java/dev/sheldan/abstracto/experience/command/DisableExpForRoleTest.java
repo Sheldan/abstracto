@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.models.database.ARole;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
@@ -47,6 +48,8 @@ public class DisableExpForRoleTest {
         ARole actualRole = Mockito.mock(ARole.class);
         when(parameterRole.getId()).thenReturn(5L);
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(parameterRole));
+        AServer server = Mockito.mock(AServer.class);
+        when(actualRole.getServer()).thenReturn(server);
         when(roleManagementService.findRole(parameterRole.getId())).thenReturn(actualRole);
         when(disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)).thenReturn(value);
         CommandResult result = testUnit.execute(context);

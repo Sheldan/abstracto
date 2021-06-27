@@ -42,6 +42,7 @@ public class WarnTest {
         Member warnedMember = Mockito.mock(Member.class);
         String reason = "reason";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(warnedMember, reason));
+        when(warnedMember.getGuild()).thenReturn(parameters.getGuild());
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         when(templateService.renderSimpleTemplate(Warn.WARN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(DEFAULT_REASON);
         when(warnService.warnUserWithLog(parameterCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
@@ -57,6 +58,7 @@ public class WarnTest {
     public void testExecuteWarnCommandWithDefaultReason() {
         Member warnedMember = Mockito.mock(Member.class);
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(warnedMember));
+        when(warnedMember.getGuild()).thenReturn(parameters.getGuild());
         when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
         when(templateService.renderSimpleTemplate(Warn.WARN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(DEFAULT_REASON);
         when(warnService.warnUserWithLog(parameterCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));

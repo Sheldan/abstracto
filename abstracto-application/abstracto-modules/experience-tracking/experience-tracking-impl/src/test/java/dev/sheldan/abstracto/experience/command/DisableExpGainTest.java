@@ -36,6 +36,7 @@ public class DisableExpGainTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         AUserInAServer parameterUser = Mockito.mock(AUserInAServer.class);
         Member member = Mockito.mock(Member.class);
+        when(member.getGuild()).thenReturn(noParameters.getGuild());
         CommandContext context = CommandTestUtilities.enhanceWithParameters(noParameters, Arrays.asList(member));
         when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(parameterUser);
         CommandResult result = testUnit.execute(context);
