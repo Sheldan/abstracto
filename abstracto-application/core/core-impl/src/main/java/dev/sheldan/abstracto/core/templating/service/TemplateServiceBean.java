@@ -78,6 +78,14 @@ public class TemplateServiceBean implements TemplateService {
         EmbedConfiguration embedConfiguration = gson.fromJson(embedConfig, EmbedConfiguration.class);
         List<EmbedBuilder> embedBuilders = new ArrayList<>();
         embedBuilders.add(new EmbedBuilder());
+        if(embedConfiguration.getMetaConfig() != null &&
+           embedConfiguration.getDescription() != null &&
+           embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit() != null &&
+           embedConfiguration.getDescription().length() >  embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit())
+        {
+            embedConfiguration.setDescription(embedConfiguration.getDescription().substring(0,
+                    embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit()));
+        }
         String description = embedConfiguration.getDescription();
         if (description != null) {
             handleEmbedDescription(embedBuilders, description);
@@ -121,11 +129,20 @@ public class TemplateServiceBean implements TemplateService {
         }
 
         List<String> messages = new ArrayList<>();
+        if(
+                embedConfiguration.getMetaConfig() != null &&
+                embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit() != null &&
+                embedConfiguration.getAdditionalMessage().length() > embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit()
+        ) {
+            embedConfiguration.setAdditionalMessage(embedConfiguration.getAdditionalMessage().substring(0, embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit()));
+        }
+
+
         String additionalMessage = embedConfiguration.getAdditionalMessage();
         if(additionalMessage != null) {
             Long segmentLimit = embedConfiguration.getMetaConfig() != null
-                    && embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit() != null ?
-                    embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit() :
+                    && embedConfiguration.getMetaConfig().getAdditionalMessageSplitLength() != null ?
+                    embedConfiguration.getMetaConfig().getAdditionalMessageSplitLength() :
                     Long.valueOf(Message.MAX_CONTENT_LENGTH);
             if(additionalMessage.length() > segmentLimit) {
                 int segmentStart = 0;
@@ -257,6 +274,15 @@ public class TemplateServiceBean implements TemplateService {
         // and we need to insert the "first" element last, so it actually gets the correct field index
         comparator = comparator.thenComparing(additionalEmbedField -> additionalEmbedField.innerFieldIndex).reversed();
         TreeSet<AdditionalEmbedField> toInsert = new TreeSet<>(comparator);
+
+        configuration.getFields().forEach(embedField -> {
+            if(embedField.getValueLengthLimit() != null && embedField.getValueLengthLimit() < embedField.getValue().length()) {
+                embedField.setValue(embedField.getValue().substring(0, embedField.getValueLengthLimit()));
+            }
+            if(embedField.getNameLengthLimit() != null && embedField.getNameLengthLimit() < embedField.getName().length()) {
+                embedField.setName(embedField.getName().substring(0, embedField.getNameLengthLimit()));
+            }
+        });
         for (int i = 0; i < configuration.getFields().size(); i++) {
             EmbedField field = configuration.getFields().get(i);
             if (field != null && field.getValue() != null && field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {

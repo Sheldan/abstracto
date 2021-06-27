@@ -25,4 +25,12 @@ public class EmbedField {
      */
     private Boolean inline;
     private Boolean forceNewMessage;
+    /**
+     * this will actively limit the length, not create another field
+      */
+    private Integer valueLengthLimit;
+    /**
+     * this will actively limit the length, not create another field
+     */
+    private Integer nameLengthLimit;
 }

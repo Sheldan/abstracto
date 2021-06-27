@@ -8,8 +8,11 @@ import lombok.Setter;
 @Setter
 @Builder
 public class MetaEmbedConfiguration {
-    private Long additionalMessageLengthLimit;
-    private Long messageLimit;
+    private Integer additionalMessageLengthLimit;
+    private Integer additionalMessageSplitLength;
+    private Integer descriptionMessageLengthLimit;
+    private Integer messageLimit;
+
 
     private boolean preventEmptyEmbed;
     private boolean allowsRoleMention;

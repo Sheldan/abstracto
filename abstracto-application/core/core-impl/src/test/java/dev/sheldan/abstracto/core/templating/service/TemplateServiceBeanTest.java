@@ -101,9 +101,9 @@ public class TemplateServiceBeanTest {
         EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
         MetaEmbedConfiguration metaConfig = Mockito.mock(MetaEmbedConfiguration.class);
         when(config.getMetaConfig()).thenReturn(metaConfig);
-        when(metaConfig.getAdditionalMessageLengthLimit()).thenReturn(2000L);
+        when(metaConfig.getAdditionalMessageSplitLength()).thenReturn(2000);
         when(config.getAdditionalMessage()).thenReturn(additionalMessage);
-        when(metaConfig.getMessageLimit()).thenReturn(5L);
+        when(metaConfig.getMessageLimit()).thenReturn(5);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(new Template(getEmbedTemplateKey(), templateContent, getNonMockedConfiguration()));
         when(gson.fromJson(templateContent, EmbedConfiguration.class)).thenReturn(config);
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new Object());
@@ -121,9 +121,9 @@ public class TemplateServiceBeanTest {
         EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
         MetaEmbedConfiguration metaConfig = Mockito.mock(MetaEmbedConfiguration.class);
         when(config.getMetaConfig()).thenReturn(metaConfig);
-        when(metaConfig.getAdditionalMessageLengthLimit()).thenReturn(2000L);
+        when(metaConfig.getAdditionalMessageSplitLength()).thenReturn(2000);
         when(config.getAdditionalMessage()).thenReturn(additionalMessage);
-        when(metaConfig.getMessageLimit()).thenReturn(1L);
+        when(metaConfig.getMessageLimit()).thenReturn(1);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(new Template(getEmbedTemplateKey(), templateContent, getNonMockedConfiguration()));
         when(gson.fromJson(templateContent, EmbedConfiguration.class)).thenReturn(config);
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new Object());
@@ -140,8 +140,8 @@ public class TemplateServiceBeanTest {
         EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
         MetaEmbedConfiguration metaConfig = Mockito.mock(MetaEmbedConfiguration.class);
         when(config.getMetaConfig()).thenReturn(metaConfig);
-        when(metaConfig.getAdditionalMessageLengthLimit()).thenReturn(500L);
-        when(metaConfig.getMessageLimit()).thenReturn(5L);
+        when(metaConfig.getAdditionalMessageSplitLength()).thenReturn(500);
+        when(metaConfig.getMessageLimit()).thenReturn(5);
         when(config.getAdditionalMessage()).thenReturn(additionalMessage);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(new Template(getEmbedTemplateKey(), templateContent, getNonMockedConfiguration()));
         when(gson.fromJson(templateContent, EmbedConfiguration.class)).thenReturn(config);
