@@ -208,13 +208,13 @@ public class MessageServiceBean implements MessageService {
     @Override
     public MessageAction editMessage(Message message, MessageEmbed messageEmbed) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        return message.editMessage(messageEmbed);
+        return message.editMessageEmbeds(messageEmbed);
     }
 
     @Override
     public MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        return message.editMessage(text).embed(messageEmbed);
+        return message.editMessage(text).setEmbeds(messageEmbed);
     }
 
     @Override

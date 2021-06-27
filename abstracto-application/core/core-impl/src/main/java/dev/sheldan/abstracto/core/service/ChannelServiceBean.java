@@ -180,7 +180,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(embed).allowedMentions(getAllowedMentionsFor(channel, null));
+        return channel.sendMessageEmbeds(embed).allowedMentions(getAllowedMentionsFor(channel, null));
     }
 
     @Override
@@ -218,7 +218,7 @@ public class ChannelServiceBean implements ChannelService {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             String text = messageToSend.getMessages().get(i);
             MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            MessageAction messageAction = textChannel.sendMessage(text).embed(embed);
+            MessageAction messageAction = textChannel.sendMessage(text).setEmbeds(embed);
             allMessageActions.add(messageAction);
         }
         // one of these loops will get additional iterations, if the number is different, not both
@@ -231,7 +231,7 @@ public class ChannelServiceBean implements ChannelService {
         for (int i = iterations; i < messageToSend.getEmbeds().size(); i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            MessageAction messageAction = textChannel.sendMessage(embed);
+            MessageAction messageAction = textChannel.sendMessageEmbeds(embed);
             allMessageActions.add(messageAction);
         }
         if(messageToSend.hasFileToSend()) {
@@ -280,12 +280,12 @@ public class ChannelServiceBean implements ChannelService {
             messageAction = channel.editMessageById(messageId, messageToSend.getMessages().get(0));
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 log.debug("Also editing the embed for message {}.", messageId);
-                messageAction = messageAction.embed(messageToSend.getEmbeds().get(0));
+                messageAction = messageAction.setEmbeds(messageToSend.getEmbeds().get(0));
             }
         } else {
             log.debug("Editing message {} with new embeds.", messageId);
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
-                messageAction = channel.editMessageById(messageId, messageToSend.getEmbeds().get(0));
+                messageAction = channel.editMessageEmbedsById(messageId, messageToSend.getEmbeds().get(0));
             } else {
                 throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }
@@ -300,7 +300,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> editEmbedMessageInAChannel(MessageEmbed embedToSend, MessageChannel channel, Long messageId) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        return channel.editMessageById(messageId, embedToSend).submit();
+        return channel.editMessageEmbedsById(messageId, embedToSend).submit();
     }
 
     @Override
@@ -312,7 +312,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> editTextMessageInAChannel(String text, MessageEmbed messageEmbed, MessageChannel channel, Long messageId) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        return channel.editMessageById(messageId, text).embed(messageEmbed).submit();
+        return channel.editMessageById(messageId, text).setEmbeds(messageEmbed).submit();
     }
 
     @Override
