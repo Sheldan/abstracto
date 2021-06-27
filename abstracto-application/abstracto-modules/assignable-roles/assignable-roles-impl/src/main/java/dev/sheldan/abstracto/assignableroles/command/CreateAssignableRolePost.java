@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.command.config.validator.MaxStringLengthValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -40,6 +41,9 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
         String name = (String) parameters.get(0);
         TextChannel channel = (TextChannel) parameters.get(1);
         String text =  (String) parameters.get(2);
+        if(!channel.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         AChannel chosenChannel = channelManagementService.loadChannel(channel.getIdLong());
         service.createAssignableRolePlace(name, chosenChannel, text);
         return CommandResult.fromSuccess();

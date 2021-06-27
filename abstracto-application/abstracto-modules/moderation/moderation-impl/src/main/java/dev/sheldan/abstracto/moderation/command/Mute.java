@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
@@ -43,6 +44,9 @@ public class Mute extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
+        if(!member.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         Duration duration = (Duration) parameters.get(1);
         String defaultReason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
         String reason = parameters.size() == 3 ? (String) parameters.get(2) : defaultReason;

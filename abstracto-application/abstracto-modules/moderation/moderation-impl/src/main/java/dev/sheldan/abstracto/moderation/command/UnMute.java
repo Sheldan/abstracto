@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
@@ -37,6 +38,9 @@ public class UnMute extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
+        if(!member.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         AUserInAServer userToUnMute = userInServerManagementService.loadOrCreateUser(member);
         return muteService.unMuteUser(userToUnMute).thenApply(aVoid ->
             CommandResult.fromSuccess()

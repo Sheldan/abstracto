@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
@@ -42,6 +43,9 @@ public class Warn extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
+        if(!member.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         String defaultReason = templateService.renderSimpleTemplate(WARN_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
         WarnContext warnLogModel =  (WarnContext) ContextConverter.slimFromCommandContext(commandContext, WarnContext.class);

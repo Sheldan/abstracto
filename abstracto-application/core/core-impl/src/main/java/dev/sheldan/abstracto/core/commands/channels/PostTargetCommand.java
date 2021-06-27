@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
@@ -80,6 +81,9 @@ public class PostTargetCommand extends AbstractConditionableCommand {
             throw new PostTargetNotValidException(targetName, postTargetService.getAvailablePostTargets());
         }
         GuildChannel channel = (GuildChannel) commandContext.getParameters().getParameters().get(1);
+        if(!channel.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         Guild guild = channel.getGuild();
         postTargetManagement.createOrUpdate(targetName, guild.getIdLong(), channel.getIdLong());
         return CompletableFuture.completedFuture(CommandResult.fromSuccess());

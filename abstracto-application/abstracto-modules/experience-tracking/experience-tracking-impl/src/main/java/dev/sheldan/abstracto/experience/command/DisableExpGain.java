@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
@@ -33,6 +34,9 @@ public class DisableExpGain extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Member para = (Member) commandContext.getParameters().getParameters().get(0);
+        if(!para.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(para);
         aUserExperienceService.disableExperienceForUser(userInAServer);
         return CommandResult.fromSuccess();

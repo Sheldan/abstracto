@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
@@ -43,6 +44,9 @@ public class SetExpRole extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
         Role role = (Role) commandContext.getParameters().getParameters().get(1);
+        if(!role.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, role.getGuild().getId());
         return experienceRoleService.setRoleToLevel(role, level, commandContext.getChannel().getIdLong())
                 .thenApply(aVoid -> CommandResult.fromSuccess());

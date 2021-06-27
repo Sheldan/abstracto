@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -41,6 +42,9 @@ public class UserInfo extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getAuthor();
+        if(!memberToShow.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         UserInfoModel model = (UserInfoModel) ContextConverter.slimFromCommandContext(commandContext, UserInfoModel.class);
         if(!memberToShow.hasTimeJoined()) {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());

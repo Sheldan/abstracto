@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -38,6 +39,9 @@ public class SlowMode extends AbstractConditionableCommand {
         }
         if(commandContext.getParameters().getParameters().size() == 2) {
             channel = (TextChannel) commandContext.getParameters().getParameters().get(1);
+            if(!channel.getGuild().equals(commandContext.getGuild())) {
+                throw new EntityGuildMismatchException();
+            }
         } else {
             channel = commandContext.getChannel();
         }

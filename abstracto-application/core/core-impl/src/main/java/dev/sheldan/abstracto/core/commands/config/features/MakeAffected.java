@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -32,6 +33,9 @@ public class MakeAffected extends AbstractConditionableCommand {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         ARole actualRole = roleManagementService.findRole(role.getId());
+        if(!actualRole.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+            throw new EntityGuildMismatchException();
+        }
         roleImmunityService.makeRoleAffected(actualRole, name);
         return CommandResult.fromSuccess();
     }

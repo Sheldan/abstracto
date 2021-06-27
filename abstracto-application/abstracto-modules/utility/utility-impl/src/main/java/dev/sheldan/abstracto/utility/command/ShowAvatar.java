@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
@@ -34,6 +35,9 @@ public class ShowAvatar extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member memberToShow = parameters.size() == 1 ? (Member) parameters.get(0) : commandContext.getUserInitiatedContext().getMember();
+        if(!memberToShow.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         ShowAvatarModel model = (ShowAvatarModel) ContextConverter.fromCommandContext(commandContext, ShowAvatarModel.class);
         log.info("Showing avatar for member {} towards user {} in channel {} in server {}.",
                 memberToShow.getId(), commandContext.getAuthor().getId(), commandContext.getChannel().getId(), commandContext.getGuild().getId());

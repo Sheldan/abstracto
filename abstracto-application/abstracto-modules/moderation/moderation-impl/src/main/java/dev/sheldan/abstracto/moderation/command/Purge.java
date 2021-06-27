@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValida
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.service.PurgeService;
@@ -33,6 +34,9 @@ public class Purge extends AbstractConditionableCommand {
         Member memberToPurgeMessagesOf = null;
         if(commandContext.getParameters().getParameters().size() == 2) {
             memberToPurgeMessagesOf = (Member) commandContext.getParameters().getParameters().get(1);
+            if(!memberToPurgeMessagesOf.getGuild().equals(commandContext.getGuild())) {
+                throw new EntityGuildMismatchException();
+            }
         }
         return purgeService.purgeMessagesInChannel(amountOfMessages, commandContext.getChannel(), commandContext.getMessage(), memberToPurgeMessagesOf)
                 .thenApply(aVoid -> CommandResult.fromSelfDestruct());

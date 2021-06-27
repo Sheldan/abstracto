@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.command.service.management.CommandManagementSe
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -47,6 +48,9 @@ public class DisAllowRole extends AbstractConditionableCommand {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         ARole role = (ARole) commandContext.getParameters().getParameters().get(1);
         ARole actualRole = roleManagementService.findRole(role.getId());
+        if(!actualRole.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+            throw new EntityGuildMismatchException();
+        }
         if(featureManagementService.featureExists(name)) {
             AFeature feature = featureManagementService.getFeature(name);
             feature.getCommands().forEach(command ->

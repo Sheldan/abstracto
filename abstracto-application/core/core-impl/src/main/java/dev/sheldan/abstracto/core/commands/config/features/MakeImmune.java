@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class MakeImmune extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         Role role = (Role) commandContext.getParameters().getParameters().get(1);
+        if(!role.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         roleImmunityService.makeRoleImmune(role, name);
         return CommandResult.fromSuccess();
     }

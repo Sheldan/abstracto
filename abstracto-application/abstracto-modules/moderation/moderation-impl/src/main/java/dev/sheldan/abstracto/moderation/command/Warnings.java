@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -60,6 +61,9 @@ public class Warnings extends AbstractConditionableCommand {
         List<Warning> warnsToDisplay;
         if(!commandContext.getParameters().getParameters().isEmpty()) {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);
+            if(!member.getGuild().equals(commandContext.getGuild())) {
+                throw new EntityGuildMismatchException();
+            }
             warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadOrCreateUser(member));
         } else {
             AServer server = serverManagementService.loadServer(commandContext.getGuild());

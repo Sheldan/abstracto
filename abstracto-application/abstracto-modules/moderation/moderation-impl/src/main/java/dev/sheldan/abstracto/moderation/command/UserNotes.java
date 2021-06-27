@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -56,6 +57,9 @@ public class UserNotes extends AbstractConditionableCommand {
         ListNotesModel model = (ListNotesModel) ContextConverter.fromCommandContext(commandContext, ListNotesModel.class);
         if(parameters.size() == 1) {
             Member member = (Member) parameters.get(0);
+            if(!member.getGuild().equals(commandContext.getGuild())) {
+                throw new EntityGuildMismatchException();
+            }
             AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
             userNotes = userNoteManagementService.loadNotesForUser(userInAServer);
             FullUserInServer specifiedUser = FullUserInServer

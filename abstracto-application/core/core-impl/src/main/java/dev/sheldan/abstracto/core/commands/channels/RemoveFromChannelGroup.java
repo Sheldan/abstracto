@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -31,6 +32,9 @@ public class RemoveFromChannelGroup extends AbstractConditionableCommand {
         String name = (String) commandContext.getParameters().getParameters().get(0);
         AChannel fakeChannel = (AChannel) commandContext.getParameters().getParameters().get(1);
         AChannel actualChannel = channelManagementService.loadChannel(fakeChannel.getId());
+        if(!actualChannel.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+            throw new EntityGuildMismatchException();
+        }
         channelGroupService.removeChannelFromChannelGroup(name, actualChannel);
         return CommandResult.fromSuccess();
     }

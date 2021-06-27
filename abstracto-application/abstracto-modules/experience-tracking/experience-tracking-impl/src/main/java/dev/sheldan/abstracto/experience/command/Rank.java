@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -69,6 +70,9 @@ public class Rank extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member parameter = !parameters.isEmpty() ? (Member) parameters.get(0) : commandContext.getAuthor();
+        if(!parameter.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(parameter);
         LeaderBoardEntry userRank = userExperienceService.getRankOfUserInServer(aUserInAServer);
         CompletableFuture<List<LeaderBoardEntryModel>> future = converter.fromLeaderBoardEntry(Arrays.asList(userRank));

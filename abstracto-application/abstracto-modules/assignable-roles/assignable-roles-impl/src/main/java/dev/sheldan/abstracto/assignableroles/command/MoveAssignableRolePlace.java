@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class MoveAssignableRolePlace extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         TextChannel newChannel = (TextChannel) parameters.get(1);
+        if(!newChannel.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         placeManagementService.moveAssignableRolePlace(name, newChannel);
         return CommandResult.fromSuccess();
     }

@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
@@ -36,6 +37,9 @@ public class SetMuteRole extends AbstractConditionableCommand {
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Role jdaRole = (Role) commandContext.getParameters().getParameters().get(0);
+        if(!jdaRole.getGuild().equals(commandContext.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
         ARole role = roleManagementService.findRole(jdaRole.getIdLong());
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
         muteRoleManagementService.setMuteRoleForServer(server, role);

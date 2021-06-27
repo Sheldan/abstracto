@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
@@ -42,6 +43,9 @@ public class UnSetExpRole extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         ARole role = (ARole) commandContext.getParameters().getParameters().get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
+        if(!role.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+            throw new EntityGuildMismatchException();
+        }
         // do not check for the existence of the role, because if the role was deleted, users should be able
         // to get rid of it in the configuration
         Optional<AExperienceRole> experienceRole = experienceRoleManagementService.getRoleInServerOptional(actualRole);

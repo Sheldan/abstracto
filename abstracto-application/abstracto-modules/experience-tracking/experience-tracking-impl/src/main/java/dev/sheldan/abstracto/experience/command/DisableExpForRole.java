@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
@@ -34,6 +35,9 @@ public class DisableExpForRole extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         ARole role = (ARole) parameters.get(0);
         ARole actualRole = roleManagementService.findRole(role.getId());
+        if(!actualRole.getServer().getId().equals(commandContext.getGuild().getIdLong())) {
+            throw new EntityGuildMismatchException();
+        }
         // as we mange experience disabled roles via the existence of them in a table, we should not do anything
         // in case it is used a second time as a disabled experience role
         if(!disabledExpRoleManagementService.isExperienceDisabledForRole(actualRole)) {
