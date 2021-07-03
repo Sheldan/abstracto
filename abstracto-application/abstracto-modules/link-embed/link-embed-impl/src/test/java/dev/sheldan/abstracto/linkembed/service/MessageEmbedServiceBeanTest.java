@@ -4,7 +4,9 @@ import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
+import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
+import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureMode;
+import dev.sheldan.abstracto.linkembed.model.template.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -66,6 +68,9 @@ public class MessageEmbedServiceBeanTest {
 
     @Mock
     private ReactionService reactionService;
+
+    @Mock
+    private FeatureModeService featureModeService;
 
     @Mock
     private TextChannel textChannel;
@@ -211,8 +216,8 @@ public class MessageEmbedServiceBeanTest {
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
         when(userService.retrieveUserForId(USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddedUser));
         MessageEmbeddedModel model = Mockito.mock(MessageEmbeddedModel.class);
-        when(self.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser)).thenReturn(model);
-        when(self.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, model)).thenReturn(CompletableFuture.completedFuture(null));
+        when(self.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser, false)).thenReturn(model);
+        when(self.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, model, false)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<Void> embedFuture = testUnit.embedLink(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage);
         Assert.assertTrue(embedFuture.isDone());
     }
@@ -225,6 +230,8 @@ public class MessageEmbedServiceBeanTest {
         CachedAuthor cachedAuthor = Mockito.mock(CachedAuthor.class);
         when(cachedAuthor.getAuthorId()).thenReturn(USER_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
+        when(textChannel.getGuild()).thenReturn(guild);
+        when(featureModeService.featureModeActive(LinkEmbedFeatureDefinition.LINK_EMBEDS, guild, LinkEmbedFeatureMode.DELETE_BUTTON)).thenReturn(false);
         when(userService.retrieveUserForId(USER_ID)).thenReturn(CompletableFuture.completedFuture(embeddedUser));
         testUnit.embedLink(cachedMessage, textChannel, userEmbeddingUserInServerId, embeddingMessage);
         verify(messageCache, times(0)).getMessageFromCache(anyLong(), anyLong(), anyLong());
@@ -243,18 +250,16 @@ public class MessageEmbedServiceBeanTest {
         List<CompletableFuture<Message>> messageFutures = CommandTestUtilities.messageFutureList();
         when(channelService.sendMessageToSendToChannel(messageToSend, textChannel)).thenReturn(messageFutures);
         Message createdMessage = messageFutures.get(0).join();
-        when(reactionService.addReactionToMessageAsync(MessageEmbedServiceBean.REMOVAL_EMOTE, cachedMessage.getServerId(),
-                createdMessage)).thenReturn(CompletableFuture.completedFuture(null));
-        CompletableFuture<Void> future = testUnit.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, embeddedModel);
+        when(self.addDeletionPossibility(cachedMessage, embeddedModel, createdMessage, 0L, false)).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<Void> future = testUnit.sendEmbeddingMessage(cachedMessage, textChannel, EMBEDDING_USER_IN_SERVER_ID, embeddedModel, false);
         Assert.assertFalse(future.isCompletedExceptionally());
-        verify(self, times(1)).loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, createdMessage);
     }
 
     @Test
     public void testLoadUserAndPersistMessage() {
         when(userInServerManagementService.loadOrCreateUser(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(embeddingUser);
-        testUnit.loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage);
-        verify(messageEmbedPostManagementService, times(1)).createMessageEmbed(cachedMessage, embeddingMessage, embeddingUser);
+        testUnit.loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage, null);
+        verify(messageEmbedPostManagementService, times(1)).createMessageEmbed(cachedMessage, embeddingMessage, embeddingUser, null);
     }
 
     @Test
@@ -265,7 +270,7 @@ public class MessageEmbedServiceBeanTest {
         when(embeddingMessage.getGuild()).thenReturn(guild);
         when(embeddingMessage.getChannel()).thenReturn(textChannel);
         when(embeddingMessage.getMember()).thenReturn(embeddingMember);
-        MessageEmbeddedModel createdModel = testUnit.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser);
+        MessageEmbeddedModel createdModel = testUnit.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser, false);
         Assert.assertEquals(textChannel, createdModel.getSourceChannel());
         Assert.assertEquals(guild, createdModel.getGuild());
         Assert.assertEquals(textChannel, createdModel.getMessageChannel());

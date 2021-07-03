@@ -56,6 +56,9 @@ public class EmbeddedMessage implements Serializable {
     @Id
     private Long embeddingMessageId;
 
+    @Column(name = "deletion_component_id", length = 100)
+    private String deletionComponentId;
+
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 

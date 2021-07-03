@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagemen
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -90,6 +91,11 @@ public class FeatureModeServiceBean implements FeatureModeService {
     public boolean featureModeActive(FeatureDefinition featureDefinition, Long serverId, FeatureMode mode) {
         AServer server = serverManagementService.loadServer(serverId);
         return featureModeActive(featureDefinition, server, mode);
+    }
+
+    @Override
+    public boolean featureModeActive(FeatureDefinition featureDefinition, Guild guild, FeatureMode mode) {
+        return featureModeActive(featureDefinition, guild.getIdLong(), mode);
     }
 
     @Override

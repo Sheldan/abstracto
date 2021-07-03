@@ -1,7 +1,8 @@
-package dev.sheldan.abstracto.core.models.template.listener;
+package dev.sheldan.abstracto.linkembed.model.template;
 
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -17,4 +18,6 @@ public class MessageEmbeddedModel extends UserInitiatedServerContext {
     private User author;
     private TextChannel sourceChannel;
     private Member embeddingUser;
+    private ButtonConfigModel buttonConfigModel;
+    private Boolean useButton;
 }

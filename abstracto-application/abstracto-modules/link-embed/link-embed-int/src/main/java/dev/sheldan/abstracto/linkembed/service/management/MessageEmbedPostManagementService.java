@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MessageEmbedPostManagementService {
-    void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer cause);
+    void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer cause, String deletionButtonId);
     Optional<EmbeddedMessage> findEmbeddedPostByMessageId(Long messageId);
     void deleteEmbeddedMessage(EmbeddedMessage embeddedMessage);
     List<EmbeddedMessage> getEmbeddedMessagesOlderThan(Instant date);

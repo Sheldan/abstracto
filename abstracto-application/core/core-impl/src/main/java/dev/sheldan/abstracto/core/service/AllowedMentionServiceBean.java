@@ -4,8 +4,12 @@ import dev.sheldan.abstracto.core.config.AllowedMentionConfig;
 import dev.sheldan.abstracto.core.models.database.AllowedMention;
 import dev.sheldan.abstracto.core.exception.UnknownMentionTypeException;
 import dev.sheldan.abstracto.core.service.management.AllowedMentionManagementService;
+import dev.sheldan.abstracto.core.templating.model.MessageConfig;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -111,6 +115,27 @@ public class AllowedMentionServiceBean implements AllowedMentionService {
         if (!customAllowedMentionOptional.isPresent()) {
             allowedMentionManagementService.createCustomAllowedMention(serverId, customAllowedMention);
         }
+    }
+
+    @Override
+    public Set<Message.MentionType> getAllowedMentionsFor(MessageChannel channel, MessageToSend messageToSend) {
+        Set<Message.MentionType> allowedMentions = new HashSet<>();
+        if(channel instanceof GuildChannel) {
+            allowedMentions.addAll(getAllowedMentionTypesForServer(((GuildChannel) channel).getGuild().getIdLong()));
+        }
+        if(messageToSend != null && messageToSend.getMessageConfig() != null) {
+            MessageConfig messageConfig = messageToSend.getMessageConfig();
+            if(messageConfig.isAllowsEveryoneMention()) {
+                allowedMentions.add(Message.MentionType.EVERYONE);
+            }
+            if(messageConfig.isAllowsUserMention()) {
+                allowedMentions.add(Message.MentionType.USER);
+            }
+            if(messageConfig.isAllowsRoleMention()) {
+                allowedMentions.add(Message.MentionType.ROLE);
+            }
+        }
+        return allowedMentions;
     }
 
     @PostConstruct

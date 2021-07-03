@@ -38,7 +38,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
 
     @Override
     @Transactional
-    public void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer embeddingUser) {
+    public void createMessageEmbed(CachedMessage embeddedMessage, Message messageContainingEmbed, AUserInAServer embeddingUser, String deletionComponentId) {
         AServer embeddedServer = serverManagementService.loadOrCreate(embeddedMessage.getServerId());
         AServer embeddingServer = serverManagementService.loadOrCreate(messageContainingEmbed.getGuild().getIdLong());
         if(!embeddedMessage.getServerId().equals(messageContainingEmbed.getGuild().getIdLong())) {
@@ -52,6 +52,7 @@ public class MessageEmbedPostManagementServiceBean implements MessageEmbedPostMa
                 .embeddedMessageId(embeddedMessage.getMessageId())
                 .embeddedChannel(embeddedChannel)
                 .embeddedServer(embeddedServer)
+                .deletionComponentId(deletionComponentId)
                 .embeddingServer(embeddingServer)
                 .embeddingChannel(embeddingChannel)
                 .embeddingMessageId(messageContainingEmbed.getIdLong())

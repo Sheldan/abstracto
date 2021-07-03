@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.templating.config;
 import dev.sheldan.abstracto.core.templating.loading.DatabaseTemplateLoader;
 import dev.sheldan.abstracto.core.templating.method.DateMethod;
 import dev.sheldan.abstracto.core.templating.method.DurationMethod;
+import dev.sheldan.abstracto.core.templating.method.JSONMethod;
 import dev.sheldan.abstracto.core.templating.model.database.AutoLoadMacro;
 import dev.sheldan.abstracto.core.templating.service.management.AutoLoadMacroManagementService;
 import freemarker.template.Configuration;
@@ -29,6 +30,9 @@ public class FreemarkerConfiguration {
     private DurationMethod durationMethod;
 
     @Autowired
+    private JSONMethod jsonMethod;
+
+    @Autowired
     private DateMethod instantMethod;
 
     @Autowired
@@ -49,6 +53,7 @@ public class FreemarkerConfiguration {
         Configuration configuration = factory.createConfiguration();
         configuration.setSharedVariable("fmtDuration", durationMethod);
         configuration.setSharedVariable("formatDate", instantMethod);
+        configuration.setSharedVariable("toJSON", jsonMethod);
         // 10 minutes template cache
         configuration.setTemplateUpdateDelayMilliseconds(600000);
         List<String> macrosToLoad = macroManagementService.loadAllMacros().stream()

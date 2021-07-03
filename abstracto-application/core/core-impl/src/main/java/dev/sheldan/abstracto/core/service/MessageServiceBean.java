@@ -228,6 +228,11 @@ public class MessageServiceBean implements MessageService {
         return deleteMessageWithAction(message).submit();
     }
 
+    @Override
+    public CompletableFuture<Void> clearButtons(Message message) {
+        return message.editMessage(message).setActionRows().submit().thenApply(message1 -> null);
+    }
+
     @PostConstruct
     public void postConstruct() {
         metricService.registerCounter(MESSAGE_SEND_METRIC, "Messages send to discord");

@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.templating.service;
 import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.config.ServerContext;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.exception.TemplatingException;
@@ -15,8 +16,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -95,6 +99,57 @@ public class TemplateServiceBean implements TemplateService {
         if (author != null) {
             firstBuilder.setAuthor(author.getName(), author.getUrl(), author.getAvatar());
         }
+        List<ActionRow> buttons = new ArrayList<>();
+        Map<String, MessageToSend.ComponentConfig> componentPayloads = new HashMap<>();
+        if(embedConfiguration.getButtons() != null) {
+            ActionRow currentRow = null;
+            for (ButtonConfig buttonConfig : embedConfiguration.getButtons()) {
+                ButtonMetaConfig metaConfig = buttonConfig.getMetaConfig() != null ? buttonConfig.getMetaConfig() : null;
+                String id = metaConfig != null && Boolean.TRUE.equals(metaConfig.getGenerateRandomUUID()) ?
+                        UUID.randomUUID().toString() : buttonConfig.getId();
+                String componentOrigin = metaConfig != null ? metaConfig.getButtonOrigin() : null;
+                MessageToSend.ComponentConfig componentConfig = null;
+                try {
+                    componentConfig = MessageToSend.ComponentConfig
+                            .builder()
+                            .componentOrigin(componentOrigin)
+                            .persistCallback(metaConfig != null && Boolean.TRUE.equals(metaConfig.getPersistCallback()))
+                            .payload(buttonConfig.getButtonPayload())
+                            .payloadType(buttonConfig.getPayloadType() != null ? Class.forName(buttonConfig.getPayloadType()) : null)
+                            .build();
+                } catch (ClassNotFoundException e) {
+                    throw new AbstractoRunTimeException("Referenced class in button config could not be found: " + buttonConfig.getPayloadType(), e);
+                }
+                componentPayloads.put(id, componentConfig);
+                Button createdButton = Button.primary(id, buttonConfig.getLabel());
+                if (buttonConfig.getUrl() != null) {
+                    createdButton = createdButton.withUrl(buttonConfig.getUrl());
+                }
+                if (buttonConfig.getDisabled() != null) {
+                    createdButton = createdButton.withDisabled(buttonConfig.getDisabled());
+                }
+                if (buttonConfig.getEmoteMarkdown() != null) {
+                    createdButton = createdButton.withEmoji(Emoji.fromMarkdown(buttonConfig.getEmoteMarkdown()));
+                }
+                createdButton = createdButton.withStyle(ButtonStyleConfig.getStyle(buttonConfig.getButtonStyle()));
+                if(currentRow == null) {
+                    currentRow = ActionRow.of(createdButton);
+                } else if (
+                        (
+                                metaConfig != null &&
+                                Boolean.TRUE.equals(metaConfig.getForceNewRow())
+                        )
+                        || currentRow.getComponents().size() == 5) {
+                    buttons.add(currentRow);
+                    currentRow = ActionRow.of(createdButton);
+                } else {
+                    currentRow.getComponents().add(createdButton);
+                }
+            }
+            if(currentRow != null) {
+                buttons.add(currentRow);
+            }
+        }
 
         String thumbnail = embedConfiguration.getThumbnail();
         if (thumbnail != null) {
@@ -137,6 +192,10 @@ public class TemplateServiceBean implements TemplateService {
             embedConfiguration.setAdditionalMessage(embedConfiguration.getAdditionalMessage().substring(0, embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit()));
         }
 
+        boolean isEphemeral = false;
+        if(embedConfiguration.getMetaConfig() != null) {
+            isEphemeral = Boolean.TRUE.equals(embedConfiguration.getMetaConfig().isEphemeral());
+        }
 
         String additionalMessage = embedConfiguration.getAdditionalMessage();
         if(additionalMessage != null) {
@@ -187,6 +246,9 @@ public class TemplateServiceBean implements TemplateService {
                 .embeds(embeds)
                 .messageConfig(createMessageConfig(embedConfiguration.getMetaConfig()))
                 .messages(messages)
+                .ephemeral(isEphemeral)
+                .actionRows(buttons)
+                .componentPayloads(componentPayloads)
                 .referencedMessageId(referencedMessageId)
                 .build();
     }

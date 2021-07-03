@@ -4,10 +4,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A full message which is ready to be send. This message can contain an arbitrary amount of embeds and a string message.
@@ -32,8 +35,25 @@ public class MessageToSend {
     private File fileToSend;
     private MessageConfig messageConfig;
     private Long referencedMessageId;
+    @Builder.Default
+    private List<ActionRow> actionRows = new ArrayList<>();
+    @Builder.Default
+    private Map<String, ComponentConfig> componentPayloads = new HashMap<>();
+
+    @Builder.Default
+    private Boolean ephemeral = false;
 
     public boolean hasFileToSend() {
         return fileToSend != null;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class ComponentConfig {
+        private String payload;
+        private String componentOrigin;
+        private Class payloadType;
+        private Boolean persistCallback;
     }
 }

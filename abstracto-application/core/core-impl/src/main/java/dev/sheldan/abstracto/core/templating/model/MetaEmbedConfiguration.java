@@ -13,6 +13,8 @@ public class MetaEmbedConfiguration {
     private Integer descriptionMessageLengthLimit;
     private Integer messageLimit;
 
+    @Builder.Default
+    private boolean ephemeral = false;
 
     private boolean preventEmptyEmbed;
     private boolean allowsRoleMention;

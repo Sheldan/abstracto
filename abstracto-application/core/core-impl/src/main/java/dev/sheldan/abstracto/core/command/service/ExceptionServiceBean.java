@@ -4,10 +4,14 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.model.exception.GenericExceptionModel;
+import dev.sheldan.abstracto.core.interaction.GenericInteractionExceptionModel;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.listener.async.jda.ButtonClickedListener;
 import dev.sheldan.abstracto.core.models.FullUser;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.ButtonClickedListenerModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserManagementService;
@@ -39,6 +43,9 @@ public class ExceptionServiceBean implements ExceptionService {
     @Autowired
     private UserManagementService userManagementService;
 
+    @Autowired
+    private InteractionService interactionService;
+
     @Override
     public CommandResult reportExceptionToContext(Throwable throwable, CommandContext context, Command command) {
         if(command != null) {
@@ -60,9 +67,32 @@ public class ExceptionServiceBean implements ExceptionService {
         return CommandResult.fromReportedError();
     }
 
+    @Override
+    public void reportExceptionToInteraction(Throwable exception, ButtonClickedListenerModel interactionContext, ButtonClickedListener executedListener) {
+        if(executedListener != null) {
+            log.info("Reporting generic exception {} of listener {} towards channel {} in server {}.",
+                    exception.getClass().getSimpleName(), executedListener.getClass().getSimpleName(), interactionContext.getEvent().getChannel().getIdLong(),
+                    interactionContext.getEvent().getGuild().getIdLong());
+        } else {
+            log.info("Reporting generic exception {} towards channel {} in server {}.",
+                    exception.getClass().getSimpleName(), interactionContext.getEvent().getChannel().getIdLong(),
+                    interactionContext.getEvent().getGuild().getIdLong());
+        }
+        try {
+            reportGenericInteractionException(exception, interactionContext);
+        } catch (Exception e) {
+            log.error("Failed to notify about exception.", e);
+        }
+    }
+
     private void reportGenericException(Throwable throwable, CommandContext context) {
         GenericExceptionModel exceptionModel = buildCommandModel(throwable, context);
         channelService.sendEmbedTemplateInTextChannelList("generic_command_exception", exceptionModel, context.getChannel());
+    }
+
+    private void reportGenericInteractionException(Throwable throwable, ButtonClickedListenerModel interactionContext) {
+        GenericInteractionExceptionModel exceptionModel = buildInteractionExceptionModel(throwable, interactionContext);
+        interactionService.sendMessageToInteraction("generic_interaction_exception", exceptionModel, interactionContext.getEvent().getInteraction().getHook());
     }
 
     @Override
@@ -98,6 +128,14 @@ public class ExceptionServiceBean implements ExceptionService {
         }
     }
 
+    private GenericInteractionExceptionModel buildInteractionExceptionModel(Throwable throwable, ButtonClickedListenerModel context) {
+        return GenericInteractionExceptionModel
+                .builder()
+                .member(context.getEvent().getMember())
+                .user(context.getEvent().getUser())
+                .throwable(throwable)
+                .build();
+    }
     private GenericExceptionModel buildCommandModel(Throwable throwable, CommandContext context) {
         FullUserInServer fullUser = FullUserInServer.builder().member(context.getAuthor()).aUserInAServer(userInServerManagementService.loadUserOptional(context.getGuild().getIdLong(), context.getAuthor().getIdLong()).orElse(null)).build();
         return GenericExceptionModel

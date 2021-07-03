@@ -3,9 +3,6 @@ package dev.sheldan.abstracto.linkembed.listener;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionAddedListener;
-import dev.sheldan.abstracto.core.metric.service.CounterMetric;
-import dev.sheldan.abstracto.core.metric.service.MetricService;
-import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
 import dev.sheldan.abstracto.core.service.BotService;
@@ -13,17 +10,13 @@ import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
 import dev.sheldan.abstracto.linkembed.model.database.EmbeddedMessage;
+import dev.sheldan.abstracto.linkembed.service.MessageEmbedMetricService;
 import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.Arrays;
 import java.util.Optional;
-
-import static dev.sheldan.abstracto.linkembed.listener.MessageEmbedListener.MESSAGE_EMBEDDED;
-import static dev.sheldan.abstracto.linkembed.listener.MessageEmbedListener.MESSAGE_EMBED_ACTION;
 
 @Component
 @Slf4j
@@ -44,19 +37,7 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
     private EmoteService emoteService;
 
     @Autowired
-    private MetricService metricService;
-
-    private static final CounterMetric MESSAGE_EMBED_REMOVED_CREATOR = CounterMetric
-            .builder()
-            .name(MESSAGE_EMBEDDED)
-            .tagList(Arrays.asList(MetricTag.getTag(MESSAGE_EMBED_ACTION, "removed.creator")))
-            .build();
-
-    private static final CounterMetric MESSAGE_EMBED_REMOVED_SOURCE = CounterMetric
-            .builder()
-            .name(MESSAGE_EMBEDDED)
-            .tagList(Arrays.asList(MetricTag.getTag(MESSAGE_EMBED_ACTION, "removed.source")))
-            .build();
+    private MessageEmbedMetricService messageEmbedMetricService;
 
     @Override
     public DefaultListenerResult execute(ReactionAddedModel model) {
@@ -75,11 +56,7 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
                     messageService.deleteMessageInChannelInServer(serverId, channelId, messageId).thenAccept(aVoid -> {
                         Optional<EmbeddedMessage> innerOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(messageId);
                         innerOptional.ifPresent(value -> messageEmbedPostManagementService.deleteEmbeddedMessage(value));
-                        if(embeddedUserRemoves) {
-                            metricService.incrementCounter(MESSAGE_EMBED_REMOVED_SOURCE);
-                        } else {
-                            metricService.incrementCounter(MESSAGE_EMBED_REMOVED_CREATOR);
-                        }
+                        messageEmbedMetricService.incrementMessageEmbedDeletedMetric(embeddedUserRemoves);
                     });
                 } else {
                     log.debug("Somebody besides the original author and the user embedding added the removal reaction to the message {} in channel {} in server {}.",
@@ -101,12 +78,6 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
     @Override
     public FeatureDefinition getFeature() {
         return LinkEmbedFeatureDefinition.LINK_EMBEDS;
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        metricService.registerCounter(MESSAGE_EMBED_REMOVED_CREATOR, "Message embeds which are created by the embedding user.");
-        metricService.registerCounter(MESSAGE_EMBED_REMOVED_SOURCE, "Message embeds which are created by the embedded user.");
     }
 
 }

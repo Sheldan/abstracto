@@ -57,4 +57,5 @@ public class EmbedConfiguration {
      */
     private String additionalMessage;
     private MetaEmbedConfiguration metaConfig;
+    private List<ButtonConfig> buttons;
 }

@@ -2,8 +2,14 @@ package dev.sheldan.abstracto.linkembed.service;
 
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.listener.MessageEmbeddedModel;
+import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
+import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
+import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureMode;
+import dev.sheldan.abstracto.linkembed.model.template.MessageEmbedDeleteButtonPayload;
+import dev.sheldan.abstracto.linkembed.model.template.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -26,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -84,8 +87,19 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     @Autowired
     private EmoteService emoteService;
 
+    @Autowired
+    private ComponentService componentServiceBean;
+
+    @Autowired
+    private FeatureModeService featureModeService;
+
+    @Autowired
+    private ComponentPayloadManagementService componentPayloadManagementService;
+
     @Value("${abstracto.feature.linkEmbed.removalDays}")
     private Long embedRemovalDays;
+
+    public static final String MESSAGE_EMBED_DELETE_ORIGIN = "messageEmbedDelete";
 
     @Override
     public List<MessageEmbedLink> getLinksInMessage(String message) {
@@ -126,8 +140,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     @Override
     @Transactional
     public CompletableFuture<Void> embedLink(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, Message embeddingMessage) {
-        return buildTemplateParameter(embeddingMessage, cachedMessage).thenCompose(messageEmbeddedModel ->
-            self.sendEmbeddingMessage(cachedMessage, target, userEmbeddingUserInServerId, messageEmbeddedModel)
+        boolean deletionButtonEnabled = featureModeService.featureModeActive(LinkEmbedFeatureDefinition.LINK_EMBEDS, target.getGuild(), LinkEmbedFeatureMode.DELETE_BUTTON);
+        return buildTemplateParameter(embeddingMessage, cachedMessage, deletionButtonEnabled).thenCompose(messageEmbeddedModel ->
+            self.sendEmbeddingMessage(cachedMessage, target, userEmbeddingUserInServerId, messageEmbeddedModel, deletionButtonEnabled)
         );
     }
 
@@ -140,30 +155,50 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             return CompletableFuture.completedFuture(null);
         }
         log.info("Cleaning up {} embedded embeddedMessages", embeddedMessages.size());
-        List<ServerChannelMessage> serverChannelMessages = embeddedMessages.stream().map(embeddedMessage ->
-            ServerChannelMessage
-                    .builder()
-                    .serverId(embeddedMessage.getEmbeddingServer().getId())
-                    .channelId(embeddedMessage.getEmbeddingChannel().getId())
-                    .messageId(embeddedMessage.getEmbeddingMessageId())
-                    .build()
-        )
+        List<ServerChannelMessage> reactionChannelMessages = embeddedMessages.stream()
+                .filter(embeddedMessage -> embeddedMessage.getDeletionComponentId() == null)
+                .map(this::convertEmbedMessageToServerChannelMessage)
         .collect(Collectors.toList());
+
+        List<ServerChannelMessage> buttonChannelMessages = embeddedMessages.stream()
+                .filter(embeddedMessage -> embeddedMessage.getDeletionComponentId() != null)
+                .map(this::convertEmbedMessageToServerChannelMessage)
+                .collect(Collectors.toList());
         List<Long> embeddedMessagesHandled = embeddedMessages
                 .stream()
                 .map(EmbeddedMessage::getEmbeddingMessageId)
                 .collect(Collectors.toList());
-        List<CompletableFuture<Message>> messageFutures = messageService.retrieveMessages(serverChannelMessages);
-        CompletableFutureList<Message> future = new CompletableFutureList<>(messageFutures);
-        return future.getMainFuture()
-                .handle((unused, throwable) -> self.removeReactions(future.getObjects()))
+        List<CompletableFuture<Message>> reactionMessageFutures = messageService.retrieveMessages(reactionChannelMessages);
+        List<CompletableFuture<Message>> buttonMessageFutures = messageService.retrieveMessages(buttonChannelMessages);
+        CompletableFutureList<Message> reactionFutureList = new CompletableFutureList<>(reactionMessageFutures);
+        CompletableFutureList<Message> buttonFutureList = new CompletableFutureList<>(buttonMessageFutures);
+        return reactionFutureList.getMainFuture()
+                .handle((unused, throwable) -> self.removeReactions(reactionFutureList.getObjects()))
                 .thenCompose(Function.identity())
+                .thenCompose(unused -> buttonFutureList.getMainFuture())
+                .handle((unused, throwable) -> self.removeButtons(buttonFutureList.getObjects()))
                 // deleting the messages from db regardless of exceptions, at most the reaction remains
+                .thenCompose(Function.identity())
                 .whenComplete((unused, throwable) -> self.deleteEmbeddedMessages(embeddedMessagesHandled))
                 .exceptionally(throwable -> {
                     log.error("Failed to clean up embedded messages.", throwable);
                     return null;
                 });
+    }
+
+    public CompletableFuture<Void> removeButtons(List<Message> messages) {
+        List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
+        messages.forEach(message -> removalFutures.add(messageService.clearButtons(message)));
+        return FutureUtils.toSingleFutureGeneric(removalFutures);
+    }
+
+    private ServerChannelMessage convertEmbedMessageToServerChannelMessage(EmbeddedMessage embeddedMessage) {
+        return ServerChannelMessage
+                .builder()
+                .serverId(embeddedMessage.getEmbeddingServer().getId())
+                .channelId(embeddedMessage.getEmbeddingChannel().getId())
+                .messageId(embeddedMessage.getEmbeddingMessageId())
+                .build();
     }
 
     @Transactional
@@ -186,39 +221,79 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     @Transactional
-    public CompletableFuture<Void> sendEmbeddingMessage(CachedMessage cachedMessage, TextChannel target, Long userEmbeddingUserInServerId, MessageEmbeddedModel messageEmbeddedModel) {
+    public CompletableFuture<Void> sendEmbeddingMessage(CachedMessage cachedMessage, TextChannel target,
+                                                        Long userEmbeddingUserInServerId, MessageEmbeddedModel messageEmbeddedModel, Boolean deletionButtonEnabled) {
         MessageToSend embed = templateService.renderEmbedTemplate(MESSAGE_EMBED_TEMPLATE, messageEmbeddedModel, target.getGuild().getIdLong());
         AUserInAServer cause = userInServerManagementService.loadOrCreateUser(userEmbeddingUserInServerId);
         List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(embed, target);
+        Long embeddingUserId = cause.getUserReference().getId();
         log.debug("Embedding message {} from channel {} from server {}, because of user {}", cachedMessage.getMessageId(),
-                cachedMessage.getChannelId(), cachedMessage.getServerId(), cause.getUserReference().getId());
+                cachedMessage.getChannelId(), cachedMessage.getServerId(), embeddingUserId);
         return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).thenCompose(aVoid -> {
             Message createdMessage = completableFutures.get(0).join();
-            return reactionService.addReactionToMessageAsync(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage).thenAccept(aVoid1 ->
-                self.loadUserAndPersistMessage(cachedMessage, userEmbeddingUserInServerId, createdMessage)
-            );
+            return self.addDeletionPossibility(cachedMessage, messageEmbeddedModel, createdMessage, embeddingUserId, deletionButtonEnabled);
         });
     }
 
     @Transactional
-    public void loadUserAndPersistMessage(CachedMessage cachedMessage, Long embeddingUserId, Message createdMessage) {
-        AUserInAServer innerCause = userInServerManagementService.loadOrCreateUser(embeddingUserId);
-        messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, innerCause);
+    public CompletableFuture<Void> addDeletionPossibility(CachedMessage cachedMessage, MessageEmbeddedModel messageEmbeddedModel,
+                                                          Message createdMessage, Long embeddingUserId, Boolean deletionButtonEnabled) {
+        Long serverId = createdMessage.getGuild().getIdLong();
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(serverId, embeddingUserId);
+        Long embeddingUserInServerId = aUserInAServer.getUserInServerId();
+        if(deletionButtonEnabled) {
+            ButtonConfigModel buttonConfigModel = messageEmbeddedModel.getButtonConfigModel();
+            buttonConfigModel.setButtonPayload(getButtonPayload(createdMessage, cachedMessage, embeddingUserId));
+            buttonConfigModel.setOrigin(MESSAGE_EMBED_DELETE_ORIGIN);
+            buttonConfigModel.setPayloadType(MessageEmbedDeleteButtonPayload.class);
+            AServer server = serverManagementService.loadServer(serverId);
+            componentPayloadManagementService.createPayload(buttonConfigModel, server);
+            self.loadUserAndPersistMessage(cachedMessage, embeddingUserInServerId, createdMessage, messageEmbeddedModel.getButtonConfigModel().getButtonId());
+            return CompletableFuture.completedFuture(null);
+        } else {
+            return reactionService.addReactionToMessageAsync(REMOVAL_EMOTE, cachedMessage.getServerId(), createdMessage).thenAccept(aVoid1 ->
+                self.loadUserAndPersistMessage(cachedMessage, embeddingUserInServerId, createdMessage, null)
+            );
+        }
     }
 
-    private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage) {
+    public MessageEmbedDeleteButtonPayload getButtonPayload(Message embeddingMessage, CachedMessage embeddedMessage, Long embeddingUserId){
+        return MessageEmbedDeleteButtonPayload
+                .builder()
+                .embeddedMessageId(embeddedMessage.getMessageId())
+                .embeddedChannelId(embeddedMessage.getChannelId())
+                .embeddedServerId(embeddedMessage.getServerId())
+                .embeddedUserId(embeddedMessage.getAuthor().getAuthorId())
+                .embeddingMessageId(embeddingMessage.getIdLong())
+                .embeddingChannelId(embeddingMessage.getChannel().getIdLong())
+                .embeddingServerId(embeddingMessage.getGuild().getIdLong())
+                .embeddingUserId(embeddingUserId)
+                .build();
+    }
+
+    @Transactional
+    public void loadUserAndPersistMessage(CachedMessage cachedMessage, Long embeddingUserId, Message createdMessage, String deletionButtonId) {
+        AUserInAServer innerCause = userInServerManagementService.loadOrCreateUser(embeddingUserId);
+        messageEmbedPostManagementService.createMessageEmbed(cachedMessage, createdMessage, innerCause, deletionButtonId);
+    }
+
+    private CompletableFuture<MessageEmbeddedModel> buildTemplateParameter(Message message, CachedMessage embeddedMessage, Boolean deletionButtonEnabled) {
         return userService.retrieveUserForId(embeddedMessage.getAuthor().getAuthorId()).thenApply(authorUser ->
-            self.loadMessageEmbedModel(message, embeddedMessage, authorUser)
+            self.loadMessageEmbedModel(message, embeddedMessage, authorUser, deletionButtonEnabled)
         ).exceptionally(throwable -> {
             log.warn("Failed to retrieve author for user {}.", embeddedMessage.getAuthor().getAuthorId(), throwable);
-            return self.loadMessageEmbedModel(message, embeddedMessage, null);
+            return self.loadMessageEmbedModel(message, embeddedMessage, null, deletionButtonEnabled);
         });
     }
 
     @Transactional
-    public MessageEmbeddedModel loadMessageEmbedModel(Message message, CachedMessage embeddedMessage, User userAuthor) {
+    public MessageEmbeddedModel loadMessageEmbedModel(Message message, CachedMessage embeddedMessage, User userAuthor, Boolean deletionButtonEnabled) {
         Optional<TextChannel> textChannelFromServer = channelService.getTextChannelFromServerOptional(embeddedMessage.getServerId(), embeddedMessage.getChannelId());
         TextChannel sourceChannel = textChannelFromServer.orElse(null);
+        ButtonConfigModel buttonConfigModel = ButtonConfigModel
+                .builder()
+                .buttonId(deletionButtonEnabled ? componentServiceBean.generateComponentId() : null)
+                .build();
         return MessageEmbeddedModel
                 .builder()
                 .member(message.getMember())
@@ -227,7 +302,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .embeddingUser(message.getMember())
                 .messageChannel(message.getChannel())
                 .guild(message.getGuild())
+                .useButton(deletionButtonEnabled)
                 .embeddedMessage(embeddedMessage)
+                .buttonConfigModel(buttonConfigModel)
                 .build();
     }
 }

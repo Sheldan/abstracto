@@ -6,13 +6,15 @@ import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.templating.model.MessageConfig;
+import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +53,12 @@ public class ChannelServiceBean implements ChannelService {
 
     @Autowired
     private MetricService metricService;
+
+    @Autowired
+    private ComponentPayloadManagementService componentPayloadManagementService;
+
+    @Autowired
+    private ServerManagementService serverManagementService;
 
     public static final CounterMetric CHANNEL_CREATE_METRIC = CounterMetric
             .builder()
@@ -124,34 +132,14 @@ public class ChannelServiceBean implements ChannelService {
         log.debug("Sending message {} from channel {} and server {} to channel {}.",
                 message.getId(), message.getChannel().getId(), message.getGuild().getId(), channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(message).allowedMentions(getAllowedMentionsFor(channel, null)).submit();
-    }
-
-    private Set<Message.MentionType> getAllowedMentionsFor(MessageChannel channel, MessageToSend messageToSend) {
-        Set<Message.MentionType> allowedMentions = new HashSet<>();
-        if(channel instanceof GuildChannel) {
-            allowedMentions.addAll(allowedMentionService.getAllowedMentionTypesForServer(((GuildChannel) channel).getGuild().getIdLong()));
-        }
-        if(messageToSend != null && messageToSend.getMessageConfig() != null) {
-            MessageConfig messageConfig = messageToSend.getMessageConfig();
-            if(messageConfig.isAllowsEveryoneMention()) {
-                allowedMentions.add(Message.MentionType.EVERYONE);
-            }
-            if(messageConfig.isAllowsUserMention()) {
-                allowedMentions.add(Message.MentionType.USER);
-            }
-            if(messageConfig.isAllowsRoleMention()) {
-                allowedMentions.add(Message.MentionType.ROLE);
-            }
-        }
-        return allowedMentions;
+        return channel.sendMessage(message).allowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null)).submit();
     }
 
     @Override
     public CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel) {
         log.debug("Sending text to channel {}.", channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(text).allowedMentions(getAllowedMentionsFor(channel, null)).submit();
+        return channel.sendMessage(text).allowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null)).submit();
     }
 
     @Override
@@ -180,7 +168,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessageEmbeds(embed).allowedMentions(getAllowedMentionsFor(channel, null));
+        return channel.sendMessageEmbeds(embed).allowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null));
     }
 
     @Override
@@ -211,6 +199,9 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel) {
+        if(messageToSend.getEphemeral()) {
+            throw new IllegalArgumentException("Ephemeral messages are only supported in interaction context.");
+        }
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         List<MessageAction> allMessageActions = new ArrayList<>();
         int iterations = Math.min(messageToSend.getMessages().size(), messageToSend.getEmbeds().size());
@@ -234,6 +225,21 @@ public class ChannelServiceBean implements ChannelService {
             MessageAction messageAction = textChannel.sendMessageEmbeds(embed);
             allMessageActions.add(messageAction);
         }
+
+        List<ActionRow> actionRows = messageToSend.getActionRows();
+        if(!actionRows.isEmpty() && textChannel instanceof GuildChannel) {
+            GuildChannel channel = (GuildChannel) textChannel;
+            AServer server = serverManagementService.loadServer(channel.getGuild());
+            allMessageActions.set(0, allMessageActions.get(0).setActionRows(actionRows));
+            actionRows.forEach(components -> components.forEach(component -> {
+                String id = component.getId();
+                MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                if(payload.getPersistCallback()) {
+                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server);
+                }
+            }));
+        }
+
         if(messageToSend.hasFileToSend()) {
             if(!allMessageActions.isEmpty()) {
                 // in case there has not been a message, we need to increment it
@@ -243,7 +249,7 @@ public class ChannelServiceBean implements ChannelService {
                 allMessageActions.add(textChannel.sendFile(messageToSend.getFileToSend()));
             }
         }
-        Set<Message.MentionType> allowedMentions = getAllowedMentionsFor(textChannel, messageToSend);
+        Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(textChannel, messageToSend);
         allMessageActions.forEach(messageAction -> {
             if(messageToSend.getReferencedMessageId() != null) {
                 messageAction = messageAction.referenceById(messageToSend.getReferencedMessageId());

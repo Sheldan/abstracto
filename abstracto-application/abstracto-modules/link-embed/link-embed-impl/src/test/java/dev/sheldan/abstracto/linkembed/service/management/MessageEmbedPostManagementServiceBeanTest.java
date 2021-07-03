@@ -80,7 +80,7 @@ public class MessageEmbedPostManagementServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(embeddingMessage.getIdLong()).thenReturn(EMBEDDING_MESSAGE_ID);
         when(userInServerManagementService.loadOrCreateUser(SERVER_ID, EMBEDDED_USER_ID)).thenReturn(embeddedUser);
-        testUnit.createMessageEmbed(cachedMessage, embeddingMessage, embeddingUser);
+        testUnit.createMessageEmbed(cachedMessage, embeddingMessage, embeddingUser, null);
         verify(embeddedMessageRepository, times(1)).save(messageArgumentCaptor.capture());
         EmbeddedMessage savedMessage = messageArgumentCaptor.getValue();
         Assert.assertEquals(EMBEDDED_MESSAGE_ID, savedMessage.getEmbeddedMessageId());
@@ -108,7 +108,7 @@ public class MessageEmbedPostManagementServiceBeanTest {
         Guild guild = Mockito.mock(Guild.class);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
-        testUnit.createMessageEmbed(cachedMessage, message, embeddingUser);
+        testUnit.createMessageEmbed(cachedMessage, message, embeddingUser, null);
     }
 
     @Test

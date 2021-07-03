@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
+import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public interface FeatureModeService {
     void disableFeatureModeForFeature(FeatureDefinition featureDefinition, AServer server, FeatureMode mode);
     boolean featureModeActive(FeatureDefinition featureDefinition, AServer server, FeatureMode mode);
     boolean featureModeActive(FeatureDefinition featureDefinition, Long serverId, FeatureMode mode);
+    boolean featureModeActive(FeatureDefinition featureDefinition, Guild guild, FeatureMode mode);
     void validateActiveFeatureMode(Long serverId, FeatureDefinition featureDefinition, FeatureMode mode);
     FeatureMode getFeatureModeForKey(String key);
     List<FeatureMode> getAllAvailableFeatureModes();

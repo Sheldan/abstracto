@@ -39,4 +39,5 @@ public interface MessageService {
     MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed);
     AuditableRestAction<Void> deleteMessageWithAction(Message message);
     CompletableFuture<Void> deleteMessage(Message message);
+    CompletableFuture<Void> clearButtons(Message message);
 }

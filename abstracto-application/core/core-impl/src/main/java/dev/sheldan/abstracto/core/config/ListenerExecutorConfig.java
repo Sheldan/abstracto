@@ -52,6 +52,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("emoteCreatedListener");
     }
 
+    @Bean(name = "buttonClickedExecutor")
+    public TaskExecutor buttonClickedExecutor() {
+        return executorService.setupExecutorFor("buttonClickedListener");
+    }
+
     @Bean(name = "emoteDeletedExecutor")
     public TaskExecutor emoteDeletedExecutor() {
         return executorService.setupExecutorFor("emoteDeletedListener");

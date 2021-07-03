@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="component_payload-table">
+        <createTable tableName="component_payload">
+            <column name="id" type="VARCHAR(100)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="component_payload_pkey"/>
+            </column>
+            <column name="payload" type="TEXT" />
+            <column name="origin" type="VARCHAR(128)" />
+            <column name="payload_type" type="VARCHAR(255)" />
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="component_payload" constraintName="fk_component_payload_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS component_payload_insert_trigger ON component_payload;
+            CREATE TRIGGER component_payload_insert_trigger BEFORE INSERT ON component_payload FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+</databaseChangeLog>
