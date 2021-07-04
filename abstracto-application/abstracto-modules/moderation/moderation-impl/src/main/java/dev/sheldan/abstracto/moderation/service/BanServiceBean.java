@@ -1,13 +1,12 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.service.FeatureModeService;
-import dev.sheldan.abstracto.core.service.GuildService;
-import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.model.template.command.BanLog;
+import dev.sheldan.abstracto.moderation.model.template.command.BanNotificationModel;
 import dev.sheldan.abstracto.moderation.model.template.command.UnBanLog;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,6 +25,8 @@ public class BanServiceBean implements BanService {
 
     public static final String BAN_LOG_TEMPLATE = "ban_log";
     public static final String UN_BAN_LOG_TEMPLATE = "unBan_log";
+    public static final String BAN_NOTIFICATION = "ban_notification";
+    public static final String BAN_NOTIFICATION_NOT_POSSIBLE = "ban_notification_not_possible";
 
     @Autowired
     private GuildService guildService;
@@ -41,6 +42,12 @@ public class BanServiceBean implements BanService {
 
     @Autowired
     private BanServiceBean self;
+
+    @Autowired
+    private MessageService messageService;
+
+    @Autowired
+    private ChannelService channelService;
 
     @Override
     public CompletableFuture<Void> banMember(Member member, String reason, Member banningMember, Message message) {
@@ -66,9 +73,34 @@ public class BanServiceBean implements BanService {
                 .reason(reason)
                 .build();
         Guild guild = banningMember.getGuild();
-        CompletableFuture<Void> banFuture = banUser(guild, user, reason);
-        CompletableFuture<Void> messageFuture = sendBanLogMessage(banLog, guild.getIdLong(), BAN_LOG_TEMPLATE);
-        return CompletableFuture.allOf(banFuture, messageFuture);
+        CompletableFuture<Void>  returningFuture = new CompletableFuture<>();
+        sendBanNotification(user, reason, message.getGuild()).whenComplete((unused, throwable) -> {
+            if(throwable != null) {
+                String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, guild.getIdLong());
+                channelService.sendTextToChannel(errorNotification, message.getChannel())
+                        .thenAccept(message1 -> log.info("Notified about not being able to send ban notification in server {} and channel {} based on message {} from user {}."
+                , message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong(), message.getAuthor().getIdLong()));
+            }
+            CompletableFuture<Void> banFuture = banUser(guild, user, reason);
+            CompletableFuture<Void> messageFuture = sendBanLogMessage(banLog, guild.getIdLong(), BAN_LOG_TEMPLATE);
+            CompletableFuture.allOf(banFuture, messageFuture)
+                .thenAccept(unused1 -> returningFuture.complete(null))
+                .exceptionally(throwable1 -> {
+                    returningFuture.completeExceptionally(throwable1);
+                    return null;
+            });
+        });
+        return returningFuture;
+    }
+
+    private CompletableFuture<Void> sendBanNotification(User user, String reason, Guild guild) {
+        BanNotificationModel model = BanNotificationModel
+                .builder()
+                .serverName(guild.getName())
+                .reason(reason)
+                .build();
+        String message = templateService.renderTemplate(BAN_NOTIFICATION, model, guild.getIdLong());
+        return messageService.sendMessageToUser(user, message).thenAccept(message1 -> {});
     }
 
     @Override
