@@ -281,7 +281,7 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId) {
         MessageAction messageAction;
-        if(!StringUtils.isBlank(messageToSend.getMessages().get(0))) {
+        if(!messageToSend.getMessages().isEmpty() && !StringUtils.isBlank(messageToSend.getMessages().get(0))) {
             log.debug("Editing message {} with new text content.", messageId);
             messageAction = channel.editMessageById(messageId, messageToSend.getMessages().get(0));
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {

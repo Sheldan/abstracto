@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
@@ -52,7 +53,14 @@ public class CloseSilently extends AbstractConditionableCommand {
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
         AChannel channel = channelManagementService.loadChannel(commandContext.getChannel());
         ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
-        return modMailThreadService.closeModMailThread(thread, note, false, commandContext.getUndoActions(), true)
+        ClosingContext context = ClosingContext
+                .builder()
+                .closingMember(commandContext.getAuthor())
+                .notifyUser(false)
+                .log(true)
+                .note(note)
+                .build();
+        return modMailThreadService.closeModMailThread(thread, context, commandContext.getUndoActions())
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

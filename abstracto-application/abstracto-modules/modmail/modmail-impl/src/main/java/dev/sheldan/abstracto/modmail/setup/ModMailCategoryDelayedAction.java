@@ -28,7 +28,7 @@ public class ModMailCategoryDelayedAction implements DelayedAction {
     public void execute(DelayedActionConfig delayedActionConfig) {
         ModMailCategoryDelayedActionConfig concrete = (ModMailCategoryDelayedActionConfig) delayedActionConfig;
         log.info("Executing delayed action for configuration the mdomail category to {} in server {}.", concrete.getCategoryId(), concrete.getServerId());
-        configService.setLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, concrete.getServerId(), concrete.getCategoryId());
+        configService.setOrCreateConfigValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, concrete.getServerId(), concrete.getCategoryId().toString());
     }
 
     /**

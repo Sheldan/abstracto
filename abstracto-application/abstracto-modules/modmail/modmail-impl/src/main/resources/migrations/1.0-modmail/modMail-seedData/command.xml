@@ -21,11 +21,6 @@
             <column name="feature_id" valueComputed="${modmailFeature}"/>
         </insert>
         <insert tableName="command">
-            <column name="name" value="closeNoLog"/>
-            <column name="module_id" valueComputed="${modmailModule}"/>
-            <column name="feature_id" valueComputed="${modmailFeature}"/>
-        </insert>
-        <insert tableName="command">
             <column name="name" value="closeSilently"/>
             <column name="module_id" valueComputed="${modmailModule}"/>
             <column name="feature_id" valueComputed="${modmailFeature}"/>

@@ -4,8 +4,11 @@ import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 
 import java.time.Duration;
+import java.time.Instant;
 
 /**
  * This model is used when rendering the message before logging the messages in a closed {@link ModMailThread} and contains
@@ -22,13 +25,20 @@ public class ModMailClosingHeaderModel {
     /**
      * The {@link ModMailThread} which was closed
      */
-    private ModMailThread closedThread;
+    private Integer messageCount;
+    private Instant startDate;
+    private Long userId;
 
     /**
      * The duration between the creation and closed date of a {@link ModMailThread}
      * @return The duration between the creation date and the date the thread has been closed
      */
     public Duration getDuration() {
-        return Duration.between(closedThread.getCreated(), closedThread.getClosed());
+        return Duration.between(startDate, Instant.now());
     }
+
+    private Member closingMember;
+    private Boolean silently;
+    private User user;
+    private Long serverId;
 }

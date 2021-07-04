@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.linkembed.listener;
 
-import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.ButtonClickedListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.ButtonClickedListener;
@@ -25,9 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Slf4j
 public class MessageEmbedDeleteButtonClickedListener implements ButtonClickedListener {
-
-    @Autowired
-    private Gson gson;
 
     @Autowired
     private MessageService messageService;

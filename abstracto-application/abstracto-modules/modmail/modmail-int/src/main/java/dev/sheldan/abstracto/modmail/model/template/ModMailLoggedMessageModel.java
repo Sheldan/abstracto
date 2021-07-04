@@ -1,12 +1,11 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 
 /**
  * This model is used to render a message from a mod mail thread when closing the thread and logging the thread to the logging post target
@@ -25,9 +24,9 @@ public class ModMailLoggedMessageModel {
     private ModMailMessage modMailMessage;
 
     /**
-     * A reference to the {@link FullUserInServer} which is the author. The member part is null, if the member left the guild.
+     * A reference to the {@link User} which is the author. The member part is null, if the member left the guild.
      */
-    private Member author;
+    private User author;
 
 
 }

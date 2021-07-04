@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -79,13 +80,10 @@ public interface ModMailThreadService {
      * post target. This also takes an optional note, which will be displayed in the first message of the logging. This method changes the state of the
      * {@link ModMailThread} to CLOSED and notifies the user about closing.
      * @param modMailThread The {@link ModMailThread} which is being closed.
-     * @param note The text of the note used for the header message of the logged mod mail thread.
-     * @param notifyUser Whether or not the user should be notified
-     * @param log whether or not the closed {@link ModMailThread} should be logged (if the {@link dev.sheldan.abstracto.core.config.FeatureMode} is enabled)
      * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @return A {@link CompletableFuture future} which completes when the {@link ModMailThread thread} has been closed.
      */
-    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, List<UndoActionInstance> undoActions, Boolean log);
+    CompletableFuture<Void> closeModMailThreadEvaluateLogging(ModMailThread modMailThread, ClosingContext closingConfig, List<UndoActionInstance> undoActions);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,
@@ -93,14 +91,11 @@ public interface ModMailThreadService {
      * be displayed in the first message of the logging. This method changes the state of the {@link ModMailThread} to
      * CLOSED and notifies the user about closing.
      * @param modMailThread The {@link ModMailThread} which is being closed.
-     * @param note The text of the note used for the header message of the logged mod mail thread, this is only required when actually
-     *             logging the mod mail thread
-     * @param notifyUser Whether or not the user should be notified
-     * @param logThread Whether or not the thread should be logged to the appropriate post target
+     * @param closingConfig The {@link ClosingContext config} how the thread shoudl be closed
      * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @return A {@link CompletableFuture future} which completes when the {@link ModMailThread thread} has been closed
      */
-    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, String note, boolean notifyUser, boolean logThread, List<UndoActionInstance> undoActions);
+    CompletableFuture<Void> closeModMailThread(ModMailThread modMailThread, ClosingContext closingConfig, List<UndoActionInstance> undoActions);
 
     boolean isModMailThread(AChannel channel);
     boolean isModMailThread(Long channelId);

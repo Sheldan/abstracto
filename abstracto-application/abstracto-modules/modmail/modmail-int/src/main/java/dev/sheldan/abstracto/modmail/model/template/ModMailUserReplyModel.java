@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,8 +24,8 @@ public class ModMailUserReplyModel {
      */
     private Message postedMessage;
     /**
-     * List of {@link FullUserInServer} which are registered as subscribers for a particular mod mail thread and will be pinged
+     * List of {@link Member} which are registered as subscribers for a particular mod mail thread and will be pinged
      * when the user sends a new message
      */
-    private List<FullUserInServer> subscribers;
+    private List<Member> subscribers;
 }

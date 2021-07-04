@@ -26,7 +26,6 @@ import java.util.List;
 public class ModMailThread implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 

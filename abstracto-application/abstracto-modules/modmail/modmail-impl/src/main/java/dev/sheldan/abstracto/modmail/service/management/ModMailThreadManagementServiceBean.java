@@ -104,6 +104,7 @@ public class ModMailThreadManagementServiceBean implements ModMailThreadManageme
     public ModMailThread createModMailThread(AUserInAServer userInAServer, AChannel channel) {
         ModMailThread thread = ModMailThread
                 .builder()
+                .id(channel.getId())
                 .channel(channel)
                 .created(Instant.now())
                 .user(userInAServer)

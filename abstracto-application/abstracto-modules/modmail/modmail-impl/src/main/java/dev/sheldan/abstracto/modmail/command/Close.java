@@ -12,10 +12,12 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +31,10 @@ import java.util.concurrent.CompletableFuture;
  * This command takes an optional parameter, the note, which will be replaced with a default value, if not present
  */
 @Component
+@Slf4j
 public class Close extends AbstractConditionableCommand {
 
+    public static final String MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY = "modmail_close_default_note";
     @Autowired
     private ModMailContextCondition requiresModMailCondition;
 
@@ -50,10 +54,17 @@ public class Close extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // the default value of the note is configurable via template
-        String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
+        String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate(MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY, new Object());
         AChannel channel = channelManagementService.loadChannel(commandContext.getChannel());
         ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
-        return modMailThreadService.closeModMailThread(thread, note, true, commandContext.getUndoActions(), true)
+        ClosingContext context = ClosingContext
+                .builder()
+                .closingMember(commandContext.getAuthor())
+                .notifyUser(true)
+                .log(true)
+                .note(note)
+                .build();
+        return modMailThreadService.closeModMailThread(thread, context, commandContext.getUndoActions())
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

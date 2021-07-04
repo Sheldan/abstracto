@@ -75,7 +75,8 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
             messageOptional.ifPresent(modMailMessage -> {
                 log.info("Editing send message {} in channel {} in mod mail thread {} in server {}.", messageBefore.getMessageId(), messageBefore.getChannelId(), modMailMessage.getThreadReference().getId(), messageBefore.getServerId());
                 String contentStripped = message.getContentStripped();
-                String commandName = commandRegistry.getCommandName(contentStripped.substring(0, contentStripped.indexOf(" ")), messageBefore.getServerId());
+                int spaceIndex = contentStripped.contains(" ") ? contentStripped.indexOf(" ") : contentStripped.length() - 1;
+                String commandName = commandRegistry.getCommandName(contentStripped.substring(0, spaceIndex), messageBefore.getServerId());
                 if(!commandService.doesCommandExist(commandName)) {
                     commandName = DEFAULT_COMMAND_FOR_MODMAIL_EDIT;
                     log.info("Edit did not contain the original command to retrieve the parameters for. Resulting to {}.", DEFAULT_COMMAND_FOR_MODMAIL_EDIT);
@@ -85,7 +86,10 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
                 CompletableFuture<Member> loadEditingUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getAuthor().getUserReference().getId());
                 CompletableFuture.allOf(parameterParseFuture, loadTargetUser, loadEditingUser).thenAccept(unused ->
                     self.updateMessageInThread(message, parameterParseFuture.join(), loadTargetUser.join(), loadEditingUser.join())
-                );
+                ).exceptionally(throwable -> {
+                    log.error("Failed to update reply for mod mail thread in channel {}.", model.getAfter().getChannel().getIdLong(), throwable);
+                    return null;
+                });
             });
             return DefaultListenerResult.PROCESSED;
         }

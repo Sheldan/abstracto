@@ -206,6 +206,12 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public CompletableFuture<Message> editMessageWithNewTemplate(Message message, String templateKey, Object model) {
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model, message.getGuild().getIdLong());
+        return channelService.editMessageInAChannelFuture(messageToSend, message.getChannel(), message.getIdLong());
+    }
+
+    @Override
     public MessageAction editMessage(Message message, MessageEmbed messageEmbed) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return message.editMessageEmbeds(messageEmbed);
