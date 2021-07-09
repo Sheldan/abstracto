@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.model.template;
 
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.core.models.template.display.ChannelDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,10 +15,10 @@ import java.util.List;
 @Setter
 @Builder
 public class AssignableRolePlaceConfig {
-    /**
-     * The {@link AssignableRolePlace place} to show the config of
-     */
-    private AssignableRolePlace place;
+    private String placeName;
+    private String placeText;
+    private ChannelDisplay channelDisplay;
+    private Boolean uniqueRoles;
     /**
      * The {@link AssignableRolePlaceConfig roles} which are contained in this {@link AssignableRolePlace}
      */

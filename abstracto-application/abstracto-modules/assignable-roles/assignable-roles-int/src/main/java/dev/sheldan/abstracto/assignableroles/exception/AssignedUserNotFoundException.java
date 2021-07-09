@@ -15,7 +15,10 @@ public class AssignedUserNotFoundException extends AbstractoRunTimeException imp
 
     public AssignedUserNotFoundException(AUserInAServer userInAServer) {
         super("Assigned user was not found");
-        this.model = AssignedUserNotFoundExceptionModel.builder().aUserInAServer(userInAServer).build();
+        this.model = AssignedUserNotFoundExceptionModel
+                .builder()
+                .userId(userInAServer.getUserReference().getId())
+                .build();
     }
 
     @Override

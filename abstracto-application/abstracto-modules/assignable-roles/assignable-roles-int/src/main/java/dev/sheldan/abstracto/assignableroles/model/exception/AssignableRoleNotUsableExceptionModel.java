@@ -1,9 +1,8 @@
 package dev.sheldan.abstracto.assignableroles.model.exception;
 
-import dev.sheldan.abstracto.core.models.FullRole;
+import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import lombok.Builder;
 import lombok.Getter;
-import net.dv8tion.jda.api.entities.Guild;
 
 import java.io.Serializable;
 
@@ -13,12 +12,5 @@ import java.io.Serializable;
 @Getter
 @Builder
 public class AssignableRoleNotUsableExceptionModel implements Serializable {
-    /**
-     * The {@link FullRole role} which is not usable as an {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRole role}
-     */
-    private final FullRole role;
-    /**
-     * The {@link Guild server} in which it was not possible to use the {@link net.dv8tion.jda.api.entities.Role role}
-     */
-    private final transient Guild guild;
+    private final RoleDisplay roleDisplay;
 }

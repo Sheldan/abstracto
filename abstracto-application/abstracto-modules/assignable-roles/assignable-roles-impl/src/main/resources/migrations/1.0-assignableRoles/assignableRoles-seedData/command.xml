@@ -6,83 +6,78 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <property name="experienceModule" value="(SELECT id FROM module WHERE name = 'assignableRoles')"/>
-    <property name="experienceFeature" value="(SELECT id FROM feature WHERE key = 'assignableRole')"/>
+    <property name="assignableRoleModule" value="(SELECT id FROM module WHERE name = 'assignableRoles')"/>
+    <property name="assignableRoleFeature" value="(SELECT id FROM feature WHERE key = 'assignableRole')"/>
     <changeSet  author="Sheldan"  id="assignable_roles-commands">
         <insert tableName="command">
             <column name="name" value="addRoleToAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="setupAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="activateAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="deactivateAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="removeRoleFromAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="changeAssignableRolePlaceConfig"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
-        </insert>
-        <insert tableName="command">
-            <column name="name" value="setAssignableRolePosition"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
-        </insert>
-        <insert tableName="command">
-            <column name="name" value="swapAssignableRolePosition"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
-        </insert>
-        <insert tableName="command">
-            <column name="name" value="testAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="deleteAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="createAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="showAssignableRolePlaceConfig"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="editAssignableRolePlaceText"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="moveAssignableRolePlace"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
         <insert tableName="command">
             <column name="name" value="showAssignableRolePlaces"/>
-            <column name="module_id" valueComputed="${experienceModule}"/>
-            <column name="feature_id" valueComputed="${experienceFeature}"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="addAssignableRoleCondition"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeAssignableRoleCondition"/>
+            <column name="module_id" valueComputed="${assignableRoleModule}"/>
+            <column name="feature_id" valueComputed="${assignableRoleFeature}"/>
         </insert>
     </changeSet>
 

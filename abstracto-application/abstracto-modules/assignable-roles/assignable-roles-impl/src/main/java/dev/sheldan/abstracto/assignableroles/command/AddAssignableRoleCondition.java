@@ -1,7 +1,8 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
-import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
+import dev.sheldan.abstracto.assignableroles.model.condition.AssignableRoleConditionType;
+import dev.sheldan.abstracto.assignableroles.service.AssignableRoleConditionService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
@@ -9,49 +10,44 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-/**
- * Command used to show how an {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace place}
- *  would look like in the current {@link net.dv8tion.jda.api.entities.TextChannel channel}
- */
 @Component
-public class TestAssignableRolePlace extends AbstractConditionableCommand {
+public class AddAssignableRoleCondition extends AbstractConditionableCommand {
 
     @Autowired
-    private AssignableRolePlaceService service;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
+    private AssignableRoleConditionService assignableRoleConditionService;
 
     @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
+    public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        return service.testAssignableRolePlace(server, name, commandContext.getChannel())
-                .thenApply(aVoid -> CommandResult.fromIgnored());
+        Role role = (Role) parameters.get(1);
+        AssignableRoleConditionType configKey = (AssignableRoleConditionType) parameters.get(2);
+        String parameterValue = (String) parameters.get(3);
+        assignableRoleConditionService.createAssignableRoleCondition(name, role, configKey, parameterValue);
+        return CommandResult.fromSuccess();
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(rolePostName);
+        Parameter placeName = Parameter.builder().name("name").type(String.class).templated(true).build();
+        Parameter role = Parameter.builder().name("role").type(Role.class).templated(true).build();
+        Parameter conditionKey = Parameter.builder().name("conditionKey").type(AssignableRoleConditionType.class).templated(true).build();
+        Parameter conditionValue = Parameter.builder().name("conditionParameter").type(String.class).templated(true).build();
+        List<Parameter> parameters = Arrays.asList(placeName, role, conditionKey, conditionValue);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("testAssignableRolePlace")
+                .name("addAssignableRoleCondition")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
-                .causesReaction(true)
-                .async(true)
                 .supportsEmbedException(true)
+                .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

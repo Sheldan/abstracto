@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.assignableroles.model.database;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.ComponentPayload;
 import lombok.*;
 
 import javax.persistence.*;
@@ -33,12 +34,8 @@ public class AssignableRole implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * The {@link AEmote emote} this role is associated with
-     */
-    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn(name = "emote_id", nullable = false)
-    private AEmote emote;
+    @Column(name = "emote_markdown")
+    private String emoteMarkdown;
 
     /**
      * The {@link ARole} which given via this {@link AssignableRole assignableRole}
@@ -62,14 +59,6 @@ public class AssignableRole implements Serializable {
     private AssignableRolePlace assignablePlace;
 
     /**
-     * The {@link AssignableRolePlacePost} this assignable role is currently available as a reaction.
-     * This is necessary, to easier find the reaction which are valid, in case a reaction is added to a post
-     */
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "place_post_id")
-    private AssignableRolePlacePost assignableRolePlacePost;
-
-    /**
      * The {@link AssignedRoleUser users} which currently have this role assigned via this mechanism.
      * This is necessary to enforce the unique property of {@link AssignableRolePlace}, in which you only may chose one
      * role.
@@ -79,23 +68,14 @@ public class AssignableRole implements Serializable {
     private List<AssignedRoleUser> assignedUsers = new ArrayList<>();
 
     /**
-     * The description which is shown in the embeds of the posts of the {@link AssignableRolePlace}
+     * The display text which is used for the button
      */
     @Column(name = "description", nullable = false)
     private String description;
 
-    /**
-     * The level in experience which is required in order to receive this {@link AssignableRole}
-     */
-    @Column(name = "required_level")
-    private Integer requiredLevel;
-
-    /**
-     * The position of this assignable role within the {@link AssignableRole}. This is required in order to show them
-     * the same order as the descriptions in the fields and also to move them around and switch positions
-     */
-    @Column(name = "position", nullable = false)
-    private Integer position;
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "component_id", nullable = false)
+    private ComponentPayload componentPayload;
 
     /**
      * The {@link Instant} this entity was created
@@ -108,4 +88,13 @@ public class AssignableRole implements Serializable {
      */
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true,
+            mappedBy = "assignableRole"
+    )
+    @Builder.Default
+    private List<AssignableRoleCondition> conditions = new ArrayList<>();
 }

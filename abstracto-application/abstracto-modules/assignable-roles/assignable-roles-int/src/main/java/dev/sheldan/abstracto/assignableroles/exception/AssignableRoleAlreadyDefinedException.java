@@ -2,8 +2,9 @@ package dev.sheldan.abstracto.assignableroles.exception;
 
 import dev.sheldan.abstracto.assignableroles.model.exception.AssignableRoleAlreadyDefinedExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.models.FullEmote;
+import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.templating.Templatable;
+import net.dv8tion.jda.api.entities.Role;
 
 /**
  * Exception thrown in case the {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRole} has already been
@@ -13,14 +14,18 @@ import dev.sheldan.abstracto.core.templating.Templatable;
 public class AssignableRoleAlreadyDefinedException extends AbstractoRunTimeException implements Templatable {
     private final AssignableRoleAlreadyDefinedExceptionModel model;
 
-    public AssignableRoleAlreadyDefinedException(FullEmote emote, String placeName) {
+    public AssignableRoleAlreadyDefinedException(Role role, String placeName) {
         super("Assignable role already assigned");
-        this.model = AssignableRoleAlreadyDefinedExceptionModel.builder().emote(emote).placeName(placeName).build();
+        this.model = AssignableRoleAlreadyDefinedExceptionModel
+                .builder()
+                .roleDisplay(RoleDisplay.fromRole(role))
+                .placeName(placeName)
+                .build();
     }
 
     @Override
     public String getTemplateName() {
-        return "assignable_role_place_emote_already_defined_exception";
+        return "assignable_role_already_defined_exception";
     }
 
     @Override

@@ -188,7 +188,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     public CompletableFuture<Void> removeButtons(List<Message> messages) {
         List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
-        messages.forEach(message -> removalFutures.add(messageService.clearButtons(message)));
+        messages.forEach(message -> removalFutures.add(componentServiceBean.clearButtons(message)));
         return FutureUtils.toSingleFutureGeneric(removalFutures);
     }
 

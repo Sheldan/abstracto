@@ -8,8 +8,6 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.config.feature.mode.MutingMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.MutingPostTarget;
 import dev.sheldan.abstracto.moderation.exception.MuteRoleNotSetupException;
 import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
@@ -165,7 +163,7 @@ public class MuteServiceBeanTest {
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(NOTIFICATION_TEXT);
 
         when(messageService.sendMessageToUser(jdaUserBeingMuted, NOTIFICATION_TEXT)).thenReturn(CompletableFuture.completedFuture(null));
-        when(roleService.addRoleToUserFuture(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToUserAsync(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
 
         CompletableFuture<Void> future = testUnit.muteUserInServer(mutedUser, mutingUser, REASON, unMuteDate, cause);
         future.join();
@@ -199,7 +197,7 @@ public class MuteServiceBeanTest {
         String notificationText = "text";
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
-        when(roleService.addRoleToUserFuture(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToUserAsync(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<Void> future = testUnit.muteUserInServer(mutedUser, mutingUser, REASON, unMuteDate, cause);
         future.join();
         Assert.assertFalse(future.isCompletedExceptionally() );
@@ -245,7 +243,7 @@ public class MuteServiceBeanTest {
         String notificationText = "text";
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
-        when(roleService.addRoleToUserFuture(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToUserAsync(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.muteMember(memberBeingMuted, memberMuting, REASON, unMuteDate, cause);
         verifyDirectMute();
     }
@@ -274,7 +272,7 @@ public class MuteServiceBeanTest {
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
         when(templateService.renderEmbedTemplate(eq(MuteServiceBean.MUTE_LOG_TEMPLATE), any(MuteContext.class), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(roleService.addRoleToUserFuture(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToUserAsync(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.muteMemberWithLog(muteLog);
         verifyDirectMute();
         verify(templateService, times(1)).renderEmbedTemplate(eq(MuteServiceBean.MUTE_LOG_TEMPLATE), any(MuteContext.class), eq(SERVER_ID));
@@ -303,7 +301,7 @@ public class MuteServiceBeanTest {
         String notificationText = "text";
         when(templateService.renderTemplate(eq(MUTE_NOTIFICATION_TEMPLATE), any(MuteNotification.class), eq(SERVER_ID))).thenReturn(notificationText);
         when(messageService.sendMessageToUser(memberBeingMuted.getUser(), notificationText)).thenReturn(CompletableFuture.completedFuture(null));
-        when(roleService.addRoleToUserFuture(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToUserAsync(userBeingMuted, muteRole.getRole())).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.muteMemberWithLog(muteLog);
         verifyDirectMute();
         verify(postTargetService, times(0)).sendEmbedInPostTarget(messageToSend, MutingPostTarget.MUTE_LOG, SERVER_ID);
@@ -331,7 +329,7 @@ public class MuteServiceBeanTest {
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
         when(muteRole.getRole()).thenReturn(aRole);
         when(muteManagementService.findMuteOptional(MUTE_ID, SERVER_ID)).thenReturn(Optional.of(mute));
-        when(roleService.removeRoleFromUserFuture(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.removeRoleFromUserAsync(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
         when(memberService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
         when(memberService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
         testUnit.endMute(MUTE_ID, SERVER_ID);
@@ -430,7 +428,7 @@ public class MuteServiceBeanTest {
         when(muteRoleManagementService.retrieveMuteRoleForServer(server)).thenReturn(muteRole);
         when(muteRole.getRole()).thenReturn(aRole);
         setupUnMuteMocks();
-        when(roleService.removeRoleFromUserFuture(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.removeRoleFromUserAsync(userBeingMuted, aRole)).thenReturn(CompletableFuture.completedFuture(null));
         when(memberService.getMemberInServerAsync(userBeingMuted)).thenReturn(CompletableFuture.completedFuture(memberBeingMuted));
         when(memberService.getMemberInServerAsync(userMuting)).thenReturn(CompletableFuture.completedFuture(memberMuting));
         testUnit.unMuteUser(userBeingMuted);

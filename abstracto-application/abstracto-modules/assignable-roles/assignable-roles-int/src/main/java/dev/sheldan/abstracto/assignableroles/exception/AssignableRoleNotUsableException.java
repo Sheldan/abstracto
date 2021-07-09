@@ -2,9 +2,9 @@ package dev.sheldan.abstracto.assignableroles.exception;
 
 import dev.sheldan.abstracto.assignableroles.model.exception.AssignableRoleNotUsableExceptionModel;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.models.FullRole;
+import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.templating.Templatable;
-import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 
 /**
  * Exception thrown in case the defined {@link net.dv8tion.jda.api.entities.Role role} cannot be interacted with by the bot,
@@ -14,14 +14,17 @@ import net.dv8tion.jda.api.entities.Guild;
 public class AssignableRoleNotUsableException extends AbstractoRunTimeException implements Templatable {
     private final AssignableRoleNotUsableExceptionModel model;
 
-    public AssignableRoleNotUsableException(FullRole role, Guild guild) {
+    public AssignableRoleNotUsableException(Role role) {
         super("Role is not usable as assignable role");
-        this.model = AssignableRoleNotUsableExceptionModel.builder().role(role).guild(guild).build();
+        this.model = AssignableRoleNotUsableExceptionModel
+                .builder()
+                .roleDisplay(RoleDisplay.fromRole(role))
+                .build();
     }
 
     @Override
     public String getTemplateName() {
-        return "assignable_role_place_role_not_usable_exception";
+        return "assignable_role_not_usable_exception";
     }
 
     @Override

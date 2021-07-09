@@ -677,7 +677,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 closingMessage.put("closingMessage", configService.getStringValue(MODMAIL_CLOSING_MESSAGE_TEXT, modMailThread.getServer().getId(), defaultValue));
                 return messageService.sendEmbedToUser(modMailThreaduser.getUser(), "modmail_closing_user_message", closingMessage).thenAccept(message ->
                     self.deleteChannelAndClose(modMailThreadId, undoActions)
-                );
+                ).exceptionally(throwable -> {
+                    self.deleteChannelAndClose(modMailThreadId, undoActions);
+                    return null;
+                });
             } else {
                 log.info("NOT Notifying user about the closed modmail thread {}.", modMailThreadId);
                 return deleteChannelAndClose(modMailThreadId, undoActions);
@@ -786,7 +789,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             List<CompletableFuture<Message>> completableFutures = new ArrayList<>();
             log.debug("Sending close header and individual mod mail messages to mod mail log target for thread {}.", modMailThreadId);
             CompletableFuture<Message> headerFuture = loadUserAndSendClosingHeader(modMailThread, context);
-            // TODO in case the rendering fails, the already sent messages are not deleted
+            // TODO the header might end up later on discord servers, this look out of order
             completableFutures.add(headerFuture);
             completableFutures.addAll(self.sendMessagesToPostTarget(modMailThread, loggedMessages, updateMessage));
             return new CompletableFutureList<>(completableFutures);

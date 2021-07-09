@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
@@ -40,5 +41,6 @@ public interface MessageService {
     MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed);
     AuditableRestAction<Void> deleteMessageWithAction(Message message);
     CompletableFuture<Void> deleteMessage(Message message);
-    CompletableFuture<Void> clearButtons(Message message);
+    CompletableFuture<Void> editMessageWithActionRows(Message message, List<ActionRow> rows);
+    CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows);
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Command used to deactive an {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace place}
@@ -30,12 +31,12 @@ public class DeactivateAssignableRolePlace extends AbstractConditionableCommand 
     private ServerManagementService serverManagementService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        service.deactivateAssignableRolePlace(server, name);
-        return CommandResult.fromSuccess();
+        return service.deactivateAssignableRolePlace(server, name)
+                .thenApply(unused -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -47,6 +48,7 @@ public class DeactivateAssignableRolePlace extends AbstractConditionableCommand 
                 .name("deactivateAssignableRolePlace")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
+                .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

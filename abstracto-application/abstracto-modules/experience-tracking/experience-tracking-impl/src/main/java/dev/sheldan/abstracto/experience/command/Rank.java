@@ -81,16 +81,16 @@ public class Rank extends AbstractConditionableCommand {
                 .member(parameter)
                 .build();
         return future.thenCompose(leaderBoardEntryModel ->
-            self.renderAndSendRank(commandContext, rankModel, leaderBoardEntryModel.get(0))
+            self.renderAndSendRank(commandContext, parameter, rankModel, leaderBoardEntryModel.get(0))
         ).thenApply(result -> CommandResult.fromIgnored());
     }
 
     @Transactional
-    public CompletableFuture<Void> renderAndSendRank(CommandContext commandContext, RankModel rankModel, LeaderBoardEntryModel leaderBoardEntryModel) {
+    public CompletableFuture<Void> renderAndSendRank(CommandContext commandContext, Member toRender, RankModel rankModel, LeaderBoardEntryModel leaderBoardEntryModel) {
         rankModel.setRankUser(leaderBoardEntryModel);
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(toRender);
         AUserExperience experienceObj = userExperienceManagementService.findUserInServer(aUserInAServer);
-        log.info("Rendering rank for user {} in server {}.", commandContext.getAuthor().getId(), commandContext.getGuild().getId());
+        log.info("Rendering rank for user {} in server {}.", toRender.getId(), commandContext.getGuild().getId());
         rankModel.setExperienceToNextLevel(experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience()));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel, commandContext.getGuild().getIdLong());
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()));

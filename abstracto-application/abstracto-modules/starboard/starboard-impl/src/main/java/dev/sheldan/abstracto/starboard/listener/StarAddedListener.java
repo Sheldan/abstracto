@@ -32,6 +32,9 @@ public class StarAddedListener extends StarboardListener implements AsyncReactio
         if(model.getUserReacting().getUserId().equals(model.getMessage().getAuthor().getAuthorId())) {
             return DefaultListenerResult.IGNORED;
         }
+        if(model.getMemberReacting().getUser().isBot()) {
+            return DefaultListenerResult.IGNORED;
+        }
         Long serverId = model.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, serverId);
         if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {

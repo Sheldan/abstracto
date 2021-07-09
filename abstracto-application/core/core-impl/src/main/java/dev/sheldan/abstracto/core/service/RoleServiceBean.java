@@ -55,43 +55,48 @@ public class RoleServiceBean implements RoleService {
             .build();
 
     @Override
-    public void addRoleToUser(AUserInAServer aUserInAServer, ARole role) {
+    public void addRoleToMember(AUserInAServer aUserInAServer, ARole role) {
         Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
-            addRoleToUser(guildById.get(), role, aUserInAServer.getUserReference().getId());
+            addRoleToMember(guildById.get(), role, aUserInAServer.getUserReference().getId());
         } else {
             throw new GuildNotFoundException(aUserInAServer.getServerReference().getId());
         }
     }
 
     @Override
-    public CompletableFuture<Void> addRoleToUserFuture(AUserInAServer aUserInAServer, ARole role) {
+    public CompletableFuture<Void> addRoleToUserAsync(AUserInAServer aUserInAServer, ARole role) {
         Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
-            return addRoleToUserFuture(guildById.get(), aUserInAServer.getUserReference().getId(), role);
+            return addRoleToUserAsync(guildById.get(), aUserInAServer.getUserReference().getId(), role);
         } else {
             throw new GuildNotFoundException(aUserInAServer.getServerReference().getId());
         }
     }
 
     @Override
-    public CompletableFuture<Void> addRoleToMemberFuture(Member member, Long roleId) {
+    public CompletableFuture<Void> addRoleToMemberAsync(Member member, Long roleId) {
         Role role = member.getGuild().getRoleById(roleId);
         if(role == null) {
             throw new RoleNotFoundInGuildException(roleId, member.getGuild().getIdLong());
         }
-        return addRoleToUser(member.getGuild(), member.getIdLong(), role);
+        return addRoleToMemberAsync(member.getGuild(), member.getIdLong(), role);
+    }
+
+    @Override
+    public CompletableFuture<Void> addRoleToMemberAsync(Member member, Role role) {
+        return addRoleToMemberAsync(member.getGuild(), member.getIdLong(), role);
     }
 
 
     @Override
     public void addRoleToMember(Member member, ARole role) {
-        addRoleToMemberFuture(member, role.getId());
+        addRoleToMemberAsync(member, role.getId());
     }
 
     @Override
-    public CompletableFuture<Void> addRoleToMemberFuture(Member member, ARole role) {
-        return addRoleToMemberFuture(member, role.getId());
+    public CompletableFuture<Void> addRoleToMemberAsync(Member member, ARole role) {
+        return addRoleToMemberAsync(member, role.getId());
     }
 
     @Override
@@ -114,7 +119,7 @@ public class RoleServiceBean implements RoleService {
         return member.getGuild().removeRoleFromMember(member, role).submit();
     }
 
-    private CompletableFuture<Void> addRoleToUserFuture(Guild guild, Long userId, ARole role) {
+    private CompletableFuture<Void> addRoleToUserAsync(Guild guild, Long userId, ARole role) {
         if(role.getDeleted()) {
             log.warn("Not possible to add role to user. Role {} was marked as deleted.", role.getId());
             throw new RoleDeletedException(role);
@@ -122,27 +127,27 @@ public class RoleServiceBean implements RoleService {
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
             log.info("Adding role {} to user {} in server {}.", role.getId(), userId, guild.getId());
-            return addRoleToUser(guild, userId, roleById);
+            return addRoleToMemberAsync(guild, userId, roleById);
         } else {
             throw new RoleNotFoundInGuildException(role.getId(), guild.getIdLong());
         }
     }
 
     @Override
-    public CompletableFuture<Void> addRoleToUser(Guild guild, Long userId, Role roleById) {
+    public CompletableFuture<Void> addRoleToMemberAsync(Guild guild, Long userId, Role roleById) {
         metricService.incrementCounter(ROLE_ASSIGNED_METRIC);
         return guild.addRoleToMember(userId, roleById).submit();
     }
 
     @Override
-    public CompletableFuture<Void> removeRoleFromUser(Guild guild, Long userId, Role roleById) {
+    public CompletableFuture<Void> removeRoleFromUserAsync(Guild guild, Long userId, Role roleById) {
         metricService.incrementCounter(ROLE_REMOVED_METRIC);
         return guild.removeRoleFromMember(userId, roleById).submit();
     }
 
 
-    private void addRoleToUser(Guild guild, ARole role,  Long userId) {
-        addRoleToUserFuture(guild, userId, role);
+    private void addRoleToMember(Guild guild, ARole role, Long userId) {
+        addRoleToUserAsync(guild, userId, role);
     }
 
     private CompletableFuture<Void> removeRoleFromUserFuture(Guild guild, ARole role,  Long userId) {
@@ -153,7 +158,7 @@ public class RoleServiceBean implements RoleService {
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
             log.info("Removing role {} from user {} in server {}.", role.getId(), userId, guild.getId());
-            return removeRoleFromUser(guild, userId, roleById);
+            return removeRoleFromUserAsync(guild, userId, roleById);
         } else {
             throw new RoleNotFoundInGuildException(role.getId(), guild.getIdLong());
         }
@@ -175,13 +180,18 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
-    public CompletableFuture<Void> removeRoleFromUserFuture(AUserInAServer aUserInAServer, ARole role) {
+    public CompletableFuture<Void> removeRoleFromUserAsync(AUserInAServer aUserInAServer, ARole role) {
         Optional<Guild> guildById = guildService.getGuildByIdOptional(aUserInAServer.getServerReference().getId());
         if(guildById.isPresent()) {
             return removeRoleFromUserFuture(guildById.get(), role, aUserInAServer.getUserReference().getId());
         } else {
             throw new GuildNotFoundException(aUserInAServer.getServerReference().getId());
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> removeRoleFromUserAsync(Member member, Role role) {
+        return removeRoleFromUserAsync(member.getGuild(), member.getIdLong(), role);
     }
 
     @Override
@@ -249,8 +259,13 @@ public class RoleServiceBean implements RoleService {
     @Override
     public boolean canBotInteractWithRole(ARole role) {
         Role jdaRole = getRoleFromGuild(role);
-        Member selfMember = jdaRole.getGuild().getSelfMember();
-        return selfMember.canInteract(jdaRole);
+        return canBotInteractWithRole(jdaRole);
+    }
+
+    @Override
+    public boolean canBotInteractWithRole(Role role) {
+        Member selfMember = role.getGuild().getSelfMember();
+        return selfMember.canInteract(role);
     }
 
     @Override

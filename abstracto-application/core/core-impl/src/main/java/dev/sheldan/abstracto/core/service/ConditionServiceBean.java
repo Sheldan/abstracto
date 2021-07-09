@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -38,7 +38,7 @@ public class ConditionServiceBean implements ConditionService {
 
     private void verifyConditionContext(ConditionContextInstance contextInstance, SystemCondition condition) {
         for (ConditionContextVariable conditionContextVariable : condition.getExpectedContext().getRequiredVariables()) {
-            HashMap<String, Object> providedParameters = contextInstance.getParameters();
+            Map<String, Object> providedParameters = contextInstance.getParameters();
             if(!providedParameters.containsKey(conditionContextVariable.getName())) {
                 throw new InvalidConditionParametersException(String.format("Variable %s was not present", conditionContextVariable.getName()));
             }

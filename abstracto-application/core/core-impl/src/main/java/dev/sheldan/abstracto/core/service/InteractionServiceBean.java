@@ -89,7 +89,7 @@ public class InteractionServiceBean implements InteractionService {
                 String id = component.getId();
                 MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
                 if(payload.getPersistCallback()) {
-                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server);
+                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
                 }
             }));
         }

@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.config.ServerContext;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.models.database.ComponentType;
+import dev.sheldan.abstracto.core.service.ComponentServiceBean;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.exception.TemplatingException;
@@ -113,6 +115,7 @@ public class TemplateServiceBean implements TemplateService {
                     componentConfig = MessageToSend.ComponentConfig
                             .builder()
                             .componentOrigin(componentOrigin)
+                            .componentType(ComponentType.BUTTON)
                             .persistCallback(metaConfig != null && Boolean.TRUE.equals(metaConfig.getPersistCallback()))
                             .payload(buttonConfig.getButtonPayload())
                             .payloadType(buttonConfig.getPayloadType() != null ? Class.forName(buttonConfig.getPayloadType()) : null)
@@ -139,7 +142,7 @@ public class TemplateServiceBean implements TemplateService {
                                 metaConfig != null &&
                                 Boolean.TRUE.equals(metaConfig.getForceNewRow())
                         )
-                        || currentRow.getComponents().size() == 5) {
+                        || currentRow.getComponents().size() == ComponentServiceBean.MAX_BUTTONS_PER_ROW) {
                     buttons.add(currentRow);
                     currentRow = ActionRow.of(createdButton);
                 } else {

@@ -36,9 +36,6 @@ public class AssignableRolePlace implements Serializable {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    /**
-     * The channel in which the {@link AssignableRolePlacePost posts} for this place should be created
-     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="channel_id", nullable = false)
     private AChannel channel;
@@ -57,19 +54,6 @@ public class AssignableRolePlace implements Serializable {
     private String key;
 
     /**
-     * The {@link AssignableRolePlacePost posts} which were created when this place was setup. Is empty in the beginning
-     * and actively maintained in case a post is deleted.
-     */
-    @OneToMany(
-            fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            orphanRemoval = true,
-            mappedBy = "assignablePlace"
-    )
-    @Builder.Default
-    private List<AssignableRolePlacePost> messagePosts = new ArrayList<>();
-
-    /**
      * A List containing the {@link AssignableRole} which are associated with this place
      */
     @OneToMany(
@@ -81,25 +65,11 @@ public class AssignableRolePlace implements Serializable {
     @Builder.Default
     private List<AssignableRole> assignableRoles = new ArrayList<>();
 
-    /**
-     * The text which is displayed in the first description area of the created {@link AssignableRolePlacePost}
-     */
+    @Column(name = "message_id")
+    private Long messageId;
+
     @Column(name = "text", nullable = false)
     private String text;
-
-    /**
-     * Whether or not the reactions placed onto the posts should be acted upon
-     */
-    @Builder.Default
-    @Column(name = "active", nullable = false)
-    private Boolean active = true;
-
-    /**
-     * Whether or not the fields containing the descriptions should be inline
-     */
-    @Builder.Default
-    @Column(name = "inline", nullable = false)
-    private Boolean inline = false;
 
     /**
      * Whether or not it should be restricted, that a {@link AssignedRoleUser} should only have one role of this place
@@ -107,13 +77,6 @@ public class AssignableRolePlace implements Serializable {
     @Builder.Default
     @Column(name = "unique_roles", nullable = false)
     private Boolean uniqueRoles = false;
-
-    /**
-     * Whether or not the added reactions should be removed automatically
-     */
-    @Builder.Default
-    @Column(name = "auto_remove", nullable = false)
-    private Boolean autoRemove = false;
 
     /**
      * The {@link Instant} this entity was created

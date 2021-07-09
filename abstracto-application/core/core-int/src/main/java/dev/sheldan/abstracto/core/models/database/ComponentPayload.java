@@ -29,6 +29,11 @@ public class ComponentPayload {
     @Column(name = "payload")
     private String payload;
 
+    @Getter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private ComponentType type;
+
     @Column(name = "payload_type", length = 255)
     private String payloadType;
 

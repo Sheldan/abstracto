@@ -14,7 +14,11 @@ public class AssignableRolePlaceChannelDoesNotExistException extends AbstractoRu
 
     public AssignableRolePlaceChannelDoesNotExistException(Long channelId, String placeName) {
         super("Assignable role place channel does not exist");
-        this.model = AssignableRolePlaceChannelDoesNotExistExceptionModel.builder().channelId(channelId).placeName(placeName).build();
+        this.model = AssignableRolePlaceChannelDoesNotExistExceptionModel
+                .builder()
+                .channelId(channelId)
+                .placeName(placeName)
+                .build();
     }
 
     @Override

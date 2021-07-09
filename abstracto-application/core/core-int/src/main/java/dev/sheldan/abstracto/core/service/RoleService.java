@@ -12,18 +12,20 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface RoleService {
-    void addRoleToUser(AUserInAServer aUserInAServer, ARole role);
-    CompletableFuture<Void> addRoleToUserFuture(AUserInAServer aUserInAServer, ARole role);
-    CompletableFuture<Void> addRoleToMemberFuture(Member member, Long roleId);
+    void addRoleToMember(AUserInAServer aUserInAServer, ARole role);
+    CompletableFuture<Void> addRoleToUserAsync(AUserInAServer aUserInAServer, ARole role);
+    CompletableFuture<Void> addRoleToMemberAsync(Member member, Long roleId);
+    CompletableFuture<Void> addRoleToMemberAsync(Member member, Role role);
     void addRoleToMember(Member member, ARole role);
-    CompletableFuture<Void> addRoleToMemberFuture(Member member, ARole role);
+    CompletableFuture<Void> addRoleToMemberAsync(Member member, ARole role);
     void removeRoleFromMember(Member member, ARole role);
     CompletableFuture<Void> removeRoleFromMemberAsync(Member member, ARole role);
     CompletableFuture<Void> removeRoleFromMemberAsync(Member member, Long roleId);
-    CompletableFuture<Void> addRoleToUser(Guild guild, Long userId, Role roleById);
-    CompletableFuture<Void> removeRoleFromUser(Guild guild, Long userId, Role roleById);
+    CompletableFuture<Void> addRoleToMemberAsync(Guild guild, Long userId, Role roleById);
+    CompletableFuture<Void> removeRoleFromUserAsync(Guild guild, Long userId, Role roleById);
     void removeRoleFromUser(AUserInAServer aUserInAServer, ARole role);
-    CompletableFuture<Void> removeRoleFromUserFuture(AUserInAServer aUserInAServer, ARole role);
+    CompletableFuture<Void> removeRoleFromUserAsync(AUserInAServer aUserInAServer, ARole role);
+    CompletableFuture<Void> removeRoleFromUserAsync(Member member, Role role);
     void markDeleted(Role role, AServer server);
     void markDeleted(Long id, AServer server);
     Role getRoleFromGuild(ARole role);
@@ -35,6 +37,7 @@ public interface RoleService {
     boolean memberHasRole(Member member, Long roleId);
     boolean isRoleInServer(ARole role);
     boolean canBotInteractWithRole(ARole role);
+    boolean canBotInteractWithRole(Role role);
     ARole getFakeRoleFromRole(Role role);
     ARole getFakeRoleFromId(Long roleId);
 }

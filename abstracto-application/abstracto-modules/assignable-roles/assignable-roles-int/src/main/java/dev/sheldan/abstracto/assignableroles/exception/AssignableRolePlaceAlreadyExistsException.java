@@ -14,7 +14,10 @@ public class AssignableRolePlaceAlreadyExistsException extends AbstractoRunTimeE
 
     public AssignableRolePlaceAlreadyExistsException(String name) {
         super("Assignable role place already exists");
-        this.model = AssignableRolePlaceAlreadyExistsExceptionModel.builder().name(name).build();
+        this.model = AssignableRolePlaceAlreadyExistsExceptionModel
+                .builder()
+                .name(name)
+                .build();
     }
 
     @Override

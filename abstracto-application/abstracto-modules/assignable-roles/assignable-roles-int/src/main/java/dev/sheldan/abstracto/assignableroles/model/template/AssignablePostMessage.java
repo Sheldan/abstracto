@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Model used to render the {@link AssignableRolePlace place}
@@ -14,10 +16,8 @@ import java.util.List;
 @Setter
 @Builder
 public class AssignablePostMessage {
-    /**
-     * The {@link AssignableRolePlace place} to render
-     */
-    private AssignableRolePlace place;
+    private Long placeId;
+    private String placeDescription;
     /**
      * The awarded {@link AssignablePostRole roles} for this {@link AssignableRolePlace place}
      */
@@ -27,4 +27,6 @@ public class AssignablePostMessage {
      * {@link AssignableRolePlace place}
      */
     private Integer maxPosition;
+    @Builder.Default
+    private Map<String, Long> componentIdToRole = new HashMap<>();
 }

@@ -265,7 +265,7 @@ public class AUserExperienceServiceBeanTest {
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
         when(userExperience.getCurrentExperienceRole()).thenReturn(experienceRole1);
         when(userExperience.getUser()).thenReturn(aUserInAServer);
-        when(roleService.removeRoleFromUserFuture(aUserInAServer, aRole1)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.removeRoleFromUserAsync(aUserInAServer, aRole1)).thenReturn(CompletableFuture.completedFuture(null));
         ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
         ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
@@ -277,8 +277,8 @@ public class AUserExperienceServiceBeanTest {
         RoleCalculationResult roleCalcResult = roleCalculationResults.get(0).join();
         Assert.assertNull(roleCalcResult.getExperienceRoleId());
         Assert.assertEquals(USER_IN_SERVER_ID, roleCalcResult.getUserInServerId());
-        verify(roleService, times(1)).removeRoleFromUserFuture(aUserInAServer, aRole1);
-        verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any());
+        verify(roleService, times(1)).removeRoleFromUserAsync(aUserInAServer, aRole1);
+        verify(roleService, times(0)).addRoleToUserAsync(any(AUserInAServer.class), any());
     }
 
     @Test
@@ -302,7 +302,7 @@ public class AUserExperienceServiceBeanTest {
         ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
-        verify(roleService, times(0)).addRoleToUser(any(AUserInAServer.class), any(ARole.class));
+        verify(roleService, times(0)).addRoleToMember(any(AUserInAServer.class), any(ARole.class));
         verify(roleService, times(0)).removeRoleFromUser(any(AUserInAServer.class), any(ARole.class));
     }
 
@@ -328,7 +328,7 @@ public class AUserExperienceServiceBeanTest {
         ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
-        verify(roleService, times(0)).addRoleToUser(any(AUserInAServer.class), any(ARole.class));
+        verify(roleService, times(0)).addRoleToMember(any(AUserInAServer.class), any(ARole.class));
         verify(roleService, times(0)).removeRoleFromUser(any(AUserInAServer.class), any(ARole.class));
     }
 
@@ -347,15 +347,15 @@ public class AUserExperienceServiceBeanTest {
         when(aRole1.getId()).thenReturn(ROLE_ID);
         setupTwoExperienceRoles();
         when(roleService.memberHasRole(firstMember, ROLE_ID)).thenReturn(false);
-        when(roleService.addRoleToMemberFuture(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToMemberAsync(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
-        when(roleService.addRoleToMemberFuture(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToMemberAsync(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
         ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
-        verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any(ARole.class));
-        verify(roleService, times(0)).removeRoleFromUserFuture(any(AUserInAServer.class), any());
+        verify(roleService, times(0)).addRoleToUserAsync(any(AUserInAServer.class), any(ARole.class));
+        verify(roleService, times(0)).removeRoleFromUserAsync(any(AUserInAServer.class), any());
     }
 
     @Test
@@ -374,8 +374,8 @@ public class AUserExperienceServiceBeanTest {
         ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
-        verify(roleService, times(0)).removeRoleFromUserFuture(any(AUserInAServer.class), any());
-        verify(roleService, times(0)).addRoleToUserFuture(any(AUserInAServer.class), any());
+        verify(roleService, times(0)).removeRoleFromUserAsync(any(AUserInAServer.class), any());
+        verify(roleService, times(0)).addRoleToUserAsync(any(AUserInAServer.class), any());
     }
 
     @Test
@@ -392,14 +392,14 @@ public class AUserExperienceServiceBeanTest {
         setExperienceRoleLevels();
         when(experienceRoleService.calculateRole(eq(experienceRoles), any())).thenReturn(null);
 
-        when(roleService.removeRoleFromUserFuture(eq(aUserInAServer), any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.removeRoleFromUserAsync(eq(aUserInAServer), any())).thenReturn(CompletableFuture.completedFuture(null));
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
         ArrayList<ExperienceGainResult> experienceResults = new ArrayList<>();
         ArrayList<CompletableFuture<RoleCalculationResult>> roleCalculationResults = new ArrayList<>();
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
-        verify(roleService, times(0)).addRoleToUserFuture(eq(aUserInAServer), any());
-        verify(roleService, times(1)).removeRoleFromUserFuture(eq(aUserInAServer), any());
+        verify(roleService, times(0)).addRoleToUserAsync(eq(aUserInAServer), any());
+        verify(roleService, times(1)).removeRoleFromUserAsync(eq(aUserInAServer), any());
     }
 
     @Test
@@ -419,8 +419,8 @@ public class AUserExperienceServiceBeanTest {
 
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(userExperience));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
-        verify(roleService, times(0)).removeRoleFromUserFuture(eq(aUserInAServer), any());
-        verify(roleService, times(0)).addRoleToUserFuture(eq(aUserInAServer), any());
+        verify(roleService, times(0)).removeRoleFromUserAsync(eq(aUserInAServer), any());
+        verify(roleService, times(0)).addRoleToUserAsync(eq(aUserInAServer), any());
     }
 
     @Test
@@ -440,7 +440,7 @@ public class AUserExperienceServiceBeanTest {
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).removeRoleFromUser(aUserInAServer, aRole1);
-        verify(roleService, times(0)).addRoleToUser(eq(aUserInAServer), any(ARole.class));
+        verify(roleService, times(0)).addRoleToMember(eq(aUserInAServer), any(ARole.class));
     }
 
     @Test
@@ -466,7 +466,7 @@ public class AUserExperienceServiceBeanTest {
         List<CompletableFuture<Member>> memberFutures = Arrays.asList(CompletableFuture.completedFuture(firstMember));
         testUnit.updateFoundMembers(memberFutures, SERVER_ID, experienceResults, roleCalculationResults);
         verify(roleService, times(0)).removeRoleFromUser(aUserInAServer, aRole1);
-        verify(roleService, times(0)).addRoleToUser(eq(aUserInAServer), any(ARole.class));
+        verify(roleService, times(0)).addRoleToMember(eq(aUserInAServer), any(ARole.class));
     }
 
     @Test
@@ -487,7 +487,7 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRole2.getLevel()).thenReturn(level1);
         when(experienceRoleService.calculateRole(experienceRoles, userExperience.getLevelOrDefault())).thenReturn(afterRole);
         when(memberService.getMemberInServerAsync(userExperience.getUser())).thenReturn(CompletableFuture.completedFuture(firstMember));
-        when(roleService.addRoleToMemberFuture(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToMemberAsync(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<RoleCalculationResult> calculationFuture = testUnit.syncForSingleUser(userExperience);
         RoleCalculationResult result = calculationFuture.join();
         Assert.assertEquals(ROLE_ID, result.getExperienceRoleId());
@@ -504,7 +504,7 @@ public class AUserExperienceServiceBeanTest {
 
         when(experienceRoleManagementService.getExperienceRolesForServer(server)).thenReturn(experienceRoles);
         when(experienceRoleService.calculateRole(experienceRoles, userExperience.getLevelOrDefault())).thenReturn(null);
-        when(roleService.removeRoleFromUserFuture(aUserInAServer, aRole1)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.removeRoleFromUserAsync(aUserInAServer, aRole1)).thenReturn(CompletableFuture.completedFuture(null));
         when(experienceRole1.getLevel()).thenReturn(level0);
         when(experienceRole2.getLevel()).thenReturn(level1);
         CompletableFuture<RoleCalculationResult> calculationFuture = testUnit.syncForSingleUser(userExperience);
@@ -562,7 +562,7 @@ public class AUserExperienceServiceBeanTest {
         when(experienceRole2.getLevel()).thenReturn(level1);
         when(roleService.memberHasRole(firstMember, SECOND_ROLE_ID)).thenReturn(false);
         when(roleService.removeRoleFromMemberAsync(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
-        when(roleService.addRoleToMemberFuture(firstMember, SECOND_ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToMemberAsync(firstMember, SECOND_ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<RoleCalculationResult> calculationFuture = testUnit.syncForSingleUser(userExperience);
         RoleCalculationResult result = calculationFuture.join();
         Assert.assertEquals(SECOND_ROLE_ID, result.getExperienceRoleId());
@@ -642,14 +642,14 @@ public class AUserExperienceServiceBeanTest {
         when(roleService.memberHasRole(firstMember, ROLE_ID)).thenReturn(true);
         when(roleService.memberHasRole(secondMember, SECOND_ROLE_ID)).thenReturn(true);
         when(roleService.removeRoleFromMemberAsync(firstMember, ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
-        when(roleService.addRoleToMemberFuture(firstMember,SECOND_ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(roleService.addRoleToMemberAsync(firstMember,SECOND_ROLE_ID)).thenReturn(CompletableFuture.completedFuture(null));
         List<AUserExperience> experiences = Arrays.asList(userExperience, userExperience2);
         when(userExperienceManagementService.loadAllUsers(server)).thenReturn(experiences);
         when(experienceRole1.getLevel()).thenReturn(level0);
         when(experienceRole2.getLevel()).thenReturn(level1);
         List<CompletableFuture<RoleCalculationResult>> calculationFutures = testUnit.syncUserRoles(server);
         verify(roleService, times(0)).removeRoleFromMemberAsync(secondMember, ROLE_ID);
-        verify(roleService, times(0)).addRoleToMemberFuture(secondMember, SECOND_ROLE_ID);
+        verify(roleService, times(0)).addRoleToMemberAsync(secondMember, SECOND_ROLE_ID);
         RoleCalculationResult firstResult = calculationFutures.get(0).join();
         Assert.assertEquals(SECOND_ROLE_ID, firstResult.getExperienceRoleId());
         RoleCalculationResult secondResult = calculationFutures.get(1).join();

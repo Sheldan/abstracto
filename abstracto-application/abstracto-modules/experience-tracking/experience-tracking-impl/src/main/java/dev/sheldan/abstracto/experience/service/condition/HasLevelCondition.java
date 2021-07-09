@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -36,7 +36,7 @@ public class HasLevelCondition implements SystemCondition {
 
     @Override
     public boolean checkCondition(ConditionContextInstance conditionContext) {
-        HashMap<String, Object> parameters = conditionContext.getParameters();
+        Map<String, Object> parameters = conditionContext.getParameters();
         Long userInServerId = (Long) parameters.get(USER_IN_SERVER_ID_VARIABLE_KEY);
         Integer level = (Integer) parameters.get(LEVEL_VARIABLE);
         log.info("Evaluating has level condition.");
@@ -48,7 +48,7 @@ public class HasLevelCondition implements SystemCondition {
             AUserExperience user = userExperienceManagementService.findUserInServer(userInServer);
             return user.getCurrentLevel() != null && user.getCurrentLevel().getLevel() >= level;
         }
-        log.info("No user experience object was found. Evaluating to false.");
+        log.info("No user in server object was found. Evaluating to false.");
 
         return false;
     }
@@ -60,8 +60,19 @@ public class HasLevelCondition implements SystemCondition {
 
     @Override
     public ConditionContext getExpectedContext() {
-        ConditionContextVariable userIdVariable = ConditionContextVariable.builder().name(USER_IN_SERVER_ID_VARIABLE_KEY).type(Long.class).build();
-        ConditionContextVariable levelVariable = ConditionContextVariable.builder().name(LEVEL_VARIABLE).type(Integer.class).build();
-        return ConditionContext.builder().requiredVariables(Arrays.asList(userIdVariable, levelVariable)).build();
+        ConditionContextVariable userIdVariable = ConditionContextVariable
+                .builder()
+                .name(USER_IN_SERVER_ID_VARIABLE_KEY)
+                .type(Long.class)
+                .build();
+        ConditionContextVariable levelVariable = ConditionContextVariable
+                .builder()
+                .name(LEVEL_VARIABLE)
+                .type(Integer.class)
+                .build();
+        return ConditionContext
+                .builder()
+                .requiredVariables(Arrays.asList(userIdVariable, levelVariable))
+                .build();
     }
 }

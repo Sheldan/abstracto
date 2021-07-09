@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.jetbrains.annotations.NotNull;
@@ -235,8 +236,14 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public CompletableFuture<Void> clearButtons(Message message) {
-        return message.editMessage(message).setActionRows().submit().thenApply(message1 -> null);
+    public CompletableFuture<Void> editMessageWithActionRows(Message message, List<ActionRow> rows) {
+        return editMessageWithActionRowsMessage(message, rows).thenApply(message1 -> null);
+    }
+
+    @Override
+    public CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows) {
+        metricService.incrementCounter(MESSAGE_EDIT_METRIC);
+        return message.editMessage(message).setActionRows(rows).submit();
     }
 
     @PostConstruct

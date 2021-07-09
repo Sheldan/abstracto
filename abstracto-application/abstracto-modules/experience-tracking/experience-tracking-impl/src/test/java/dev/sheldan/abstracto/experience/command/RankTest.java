@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.experience.service.ExperienceLevelService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.entities.Member;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -75,7 +76,7 @@ public class RankTest {
         LeaderBoardEntryModel leaderBoardEntryModel = Mockito.mock(LeaderBoardEntryModel.class);
         when(context.getAuthor().getGuild()).thenReturn(context.getGuild());
         when(converter.fromLeaderBoardEntry(Arrays.asList(leaderBoardEntry))).thenReturn(CompletableFuture.completedFuture(Arrays.asList(leaderBoardEntryModel)));
-        when(self.renderAndSendRank(eq(context), any(RankModel.class), eq(leaderBoardEntryModel))).thenReturn(CompletableFuture.completedFuture(null));
+        when(self.renderAndSendRank(eq(context), any(Member.class), any(RankModel.class), eq(leaderBoardEntryModel))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
@@ -99,7 +100,7 @@ public class RankTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel, SERVER_ID)).thenReturn(messageToSend);
         when(channelService.sendMessageToSendToChannel(messageToSend, context.getChannel())).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
-        testUnit.renderAndSendRank(context, rankModel, leaderBoardEntryModel).join();
+        testUnit.renderAndSendRank(context, context.getAuthor(), rankModel, leaderBoardEntryModel).join();
     }
 
     @Test

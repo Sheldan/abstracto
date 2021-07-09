@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.models.FullEmote;
+import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +36,17 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
-        FullEmote emote = (FullEmote) parameters.get(1);
+        ARole role = (ARole) parameters.get(1);
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        return service.removeRoleFromAssignableRolePlace(server, name, emote)
+        return service.removeRoleFromAssignableRolePlace(server, name, role)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter emote = Parameter.builder().name("emote").type(FullEmote.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(rolePostName, emote);
+        Parameter role = Parameter.builder().name("role").type(ARole.class).templated(true).build();
+        List<Parameter> parameters = Arrays.asList(rolePostName, role);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("removeRoleFromAssignableRolePlace")

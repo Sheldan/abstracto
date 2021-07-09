@@ -39,8 +39,7 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
 
     @Override
     public AssignableRolePlace findByServerAndKey(AServer server, String name) {
-        // todo use other exception or adapt exception
-        return repository.findByServerAndKey(server, name).orElseThrow(() -> new AssignableRolePlaceNotFoundException(0L));
+        return repository.findByServerAndKey(server, name).orElseThrow(AssignableRolePlaceNotFoundException::new);
     }
 
     @Override
@@ -50,7 +49,7 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
 
     @Override
     public AssignableRolePlace findByPlaceId(Long id) {
-        return findByPlaceIdOptional(id).orElseThrow(() -> new AssignableRolePlaceNotFoundException(id));
+        return findByPlaceIdOptional(id).orElseThrow(AssignableRolePlaceNotFoundException::new);
     }
 
     @Override

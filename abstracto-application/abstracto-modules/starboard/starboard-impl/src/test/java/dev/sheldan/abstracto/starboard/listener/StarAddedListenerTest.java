@@ -15,7 +15,10 @@ import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import dev.sheldan.abstracto.starboard.service.StarboardService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorManagementService;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.User;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -96,12 +99,25 @@ public class StarAddedListenerTest {
     private AEmote starEmote;
 
     @Mock
+    private User user;
+
+    @Mock
+    private Member member;
+
+    @Mock
     private ReactionAddedModel model;
 
     private static final Long MESSAGE_ID = 5L;
     private static final Long SERVER_ID = 6L;
     private static final Long AUTHOR_ID = 4L;
     private static final Long USER_ACTING_ID = 7L;
+
+    @Before
+    public void setup() {
+        when(member.getUser()).thenReturn(user);
+        when(model.getMemberReacting()).thenReturn(member);
+        when(user.isBot()).thenReturn(false);
+    }
 
     @Test
     public void testAuthorAddingStar() {

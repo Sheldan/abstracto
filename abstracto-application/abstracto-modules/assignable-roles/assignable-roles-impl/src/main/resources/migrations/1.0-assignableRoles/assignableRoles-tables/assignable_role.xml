@@ -11,8 +11,8 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="assignable_role_pkey"/>
             </column>
-            <column name="emote_id" type="INTEGER">
-                <constraints nullable="false"/>
+            <column name="emote_markdown" type="VARCHAR(100)">
+                <constraints nullable="true"/>
             </column>
             <column name="role_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -23,26 +23,22 @@
             <column name="server_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="place_post_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
             <column name="description" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="required_level" type="INTEGER"/>
-            <column name="position" type="INTEGER">
-                <constraints nullable="false"/>
-            </column>
+            <column name="component_id" type="VARCHAR(100)" />
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
                 <constraints nullable="false"/>
             </column>
             <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
         </createTable>
-        <addForeignKeyConstraint baseColumnNames="emote_id" baseTableName="assignable_role" constraintName="fk_assignable_role_emote" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="emote" validate="true"/>
+        <createIndex indexName="idx_assignable_role_role_id" tableName="assignable_role">
+            <column name="role_id"/>
+        </createIndex>
         <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="assignable_role" constraintName="fk_assignable_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="assignable_place_id" baseTableName="assignable_role" constraintName="fk_assignable_role_place" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role_place" validate="true"/>
-        <addForeignKeyConstraint baseColumnNames="place_post_id" baseTableName="assignable_role" constraintName="fk_assignable_role_post" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role_place_post" validate="true"/>
         <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="assignable_role" constraintName="fk_assignable_role_server" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="component_id" baseTableName="assignable_role" constraintName="fk_assignable_role_payload" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="component_payload" validate="true"/>
         <sql>
             DROP TRIGGER IF EXISTS assignable_role_update_trigger ON assignable_role;
             CREATE TRIGGER assignable_role_update_trigger BEFORE UPDATE ON assignable_role FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();

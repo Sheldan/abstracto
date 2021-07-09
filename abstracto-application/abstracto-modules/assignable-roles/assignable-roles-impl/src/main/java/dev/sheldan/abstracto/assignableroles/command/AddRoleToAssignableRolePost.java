@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
-import dev.sheldan.abstracto.assignableroles.exception.AssignableRoleAlreadyDefinedException;
 import dev.sheldan.abstracto.assignableroles.exception.AssignableRoleNotUsableException;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
@@ -12,10 +11,10 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.FullEmote;
-import dev.sheldan.abstracto.core.models.FullRole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,27 +42,31 @@ public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
-        FullEmote emote = (FullEmote) parameters.get(1);
-        String description = (String) parameters.get(2);
-        FullRole role = (FullRole) parameters.get(3);
+        Role role = (Role) parameters.get(1);
+        String description = null;
+        if (parameters.size() > 2) {
+            description = (String) parameters.get(2);
+        }
+        FullEmote emote = null;
+        if(parameters.size() > 3) {
+            emote = (FullEmote) parameters.get(3);
+        }
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        if(service.hasAssignableRolePlaceEmote(server, name, emote.getFakeEmote())) {
-            throw new AssignableRoleAlreadyDefinedException(emote, name);
+        // already used check via role and assignable role place name
+        if(!roleService.canBotInteractWithRole(role)) {
+            throw new AssignableRoleNotUsableException(role);
         }
-        if(!roleService.canBotInteractWithRole(role.getRole())) {
-            throw new AssignableRoleNotUsableException(role, commandContext.getGuild());
-        }
-        return service.addRoleToAssignableRolePlace(server, name, role.getRole(), emote, description)
+        return service.addRoleToAssignableRolePlace(server, name, role, emote, description)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter emote = Parameter.builder().name("emote").type(FullEmote.class).templated(true).build();
-        Parameter description = Parameter.builder().name("description").type(String.class).templated(true).build();
-        Parameter role = Parameter.builder().name("role").type(FullRole.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(rolePostName, emote, description, role);
+        Parameter placeName = Parameter.builder().name("name").type(String.class).templated(true).build();
+        Parameter role = Parameter.builder().name("role").type(Role.class).templated(true).build();
+        Parameter rolePostName = Parameter.builder().name("displayText").type(String.class).templated(true).build();
+        Parameter emote = Parameter.builder().name("emote").type(FullEmote.class).optional(true).templated(true).build();
+        List<Parameter> parameters = Arrays.asList(placeName, role, rolePostName, emote);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("addRoleToAssignableRolePlace")

@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="assignable_role_condition-table">
+        <createTable tableName="assignable_role_condition">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="assignable_role_condition_pkey"/>
+            </column>
+            <column name="type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignable_role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="condition_value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="assignable_role_id" baseTableName="assignable_role_condition" constraintName="fk_assignable_role_condition_assignable_role"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="assignable_role" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS assignable_role_condition_insert_trigger ON assignable_role_condition;
+            CREATE TRIGGER assignable_role_condition_insert_trigger BEFORE INSERT ON assignable_role_condition FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

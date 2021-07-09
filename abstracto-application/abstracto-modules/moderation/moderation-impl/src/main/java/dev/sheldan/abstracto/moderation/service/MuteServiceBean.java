@@ -188,7 +188,7 @@ public class MuteServiceBean implements MuteService {
     @Override
     public CompletableFuture<Void> applyMuteRole(AUserInAServer aUserInAServer) {
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(aUserInAServer.getServerReference());
-        return roleService.addRoleToUserFuture(aUserInAServer, muteRole.getRole());
+        return roleService.addRoleToUserAsync(aUserInAServer, muteRole.getRole());
     }
 
     @Override
@@ -300,7 +300,7 @@ public class MuteServiceBean implements MuteService {
         MuteRole muteRole = muteRoleManagementService.retrieveMuteRoleForServer(mutingServer);
         log.debug("Using the mute role {} mapping to role {}", muteRole.getId(), muteRole.getRole().getId());
         Guild guild = guildService.getGuildById(mutingServer.getId());
-        CompletableFuture<Void> roleRemovalFuture = roleService.removeRoleFromUserFuture(mute.getMutedUser(), muteRole.getRole());
+        CompletableFuture<Void> roleRemovalFuture = roleService.removeRoleFromUserAsync(mute.getMutedUser(), muteRole.getRole());
         CompletableFuture<Member> mutingMemberFuture = memberService.getMemberInServerAsync(mute.getMutingUser());
         CompletableFuture<Member> mutedMemberFuture = memberService.getMemberInServerAsync(mute.getMutedUser());
         CompletableFuture<Void> finalFuture = new CompletableFuture<>();

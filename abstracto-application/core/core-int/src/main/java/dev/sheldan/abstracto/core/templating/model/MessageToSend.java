@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.templating.model;
 
+import dev.sheldan.abstracto.core.models.database.ComponentType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,6 +54,7 @@ public class MessageToSend {
     public static class ComponentConfig {
         private String payload;
         private String componentOrigin;
+        private ComponentType componentType;
         private Class payloadType;
         private Boolean persistCallback;
     }

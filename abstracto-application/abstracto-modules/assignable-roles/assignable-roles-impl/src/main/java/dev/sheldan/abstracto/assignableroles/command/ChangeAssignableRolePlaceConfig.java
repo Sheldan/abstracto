@@ -39,7 +39,7 @@ public class ChangeAssignableRolePlaceConfig extends AbstractConditionableComman
         List<Object> parameters = commandContext.getParameters().getParameters();
         String name = (String) parameters.get(0);
         AssignableRolePlaceParameterKey configKey = (AssignableRolePlaceParameterKey) parameters.get(1);
-        Object parameterValue = parameters.get(2);
+        String parameterValue = (String) parameters.get(2);
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
         return service.changeConfiguration(server, name, configKey, parameterValue)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
@@ -49,7 +49,7 @@ public class ChangeAssignableRolePlaceConfig extends AbstractConditionableComman
     public CommandConfiguration getConfiguration() {
         Parameter assignableRolePlaceName = Parameter.builder().name("name").type(String.class).templated(true).build();
         Parameter parameterKey = Parameter.builder().name("key").type(AssignableRolePlaceParameterKey.class).templated(true).build();
-        Parameter parameterValue = Parameter.builder().name("value").type(Object.class).templated(true).build();
+        Parameter parameterValue = Parameter.builder().name("value").type(String.class).templated(true).build();
 
         List<Parameter> parameters = Arrays.asList(assignableRolePlaceName, parameterKey, parameterValue);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();

@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -229,13 +230,20 @@ public class ChannelServiceBean implements ChannelService {
         List<ActionRow> actionRows = messageToSend.getActionRows();
         if(!actionRows.isEmpty() && textChannel instanceof GuildChannel) {
             GuildChannel channel = (GuildChannel) textChannel;
+            List<List<ActionRow>> groupedActionRows = ListUtils.partition(actionRows, ComponentService.MAX_BUTTONS_PER_ROW);
+            for (int i = 0; i < allMessageActions.size(); i++) {
+                allMessageActions.set(i, allMessageActions.get(i).setActionRows(groupedActionRows.get(i)));
+            }
+            for (int i = allMessageActions.size(); i < groupedActionRows.size(); i++) {
+                // TODO maybe possible nicer
+                allMessageActions.add(textChannel.sendMessage(".").setActionRows(groupedActionRows.get(i)));
+            }
             AServer server = serverManagementService.loadServer(channel.getGuild());
-            allMessageActions.set(0, allMessageActions.get(0).setActionRows(actionRows));
             actionRows.forEach(components -> components.forEach(component -> {
                 String id = component.getId();
                 MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                if(payload.getPersistCallback()) {
-                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server);
+                if(payload != null && payload.getPersistCallback()) {
+                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
                 }
             }));
         }

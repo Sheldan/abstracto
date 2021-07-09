@@ -24,4 +24,5 @@ public class FullEmote implements Serializable {
             return fakeEmote.getEmoteId().toString();
         }
     }
+
 }

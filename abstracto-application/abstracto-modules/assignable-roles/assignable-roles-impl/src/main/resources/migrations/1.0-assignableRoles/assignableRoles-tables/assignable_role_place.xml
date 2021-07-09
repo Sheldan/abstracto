@@ -23,18 +23,10 @@
             <column name="text" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="active" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="inline" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
             <column name="unique_roles" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
-            <column name="auto_remove" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
+            <column name="message_id" type="BIGINT" />
             <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
                 <constraints nullable="false"/>
             </column>

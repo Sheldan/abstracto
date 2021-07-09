@@ -275,7 +275,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         Long userInServerId = aUserInAServer.getUserInServerId();
         log.debug("Applying {} as the first experience role for user {} in server {}.",
                 experienceRoleId, aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
-        return roleService.addRoleToUserFuture(aUserInAServer, role.getRole()).thenApply(aVoid -> RoleCalculationResult
+        return roleService.addRoleToUserAsync(aUserInAServer, role.getRole()).thenApply(aVoid -> RoleCalculationResult
                 .builder()
                 .experienceRoleId(experienceRoleId)
                 .userInServerId(userInServerId)
@@ -352,7 +352,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                     user.getUserReference().getId(), serverId);
             // if the user has a experience role currently, remove it
             if(!currentlyHasNoExperienceRole && !userExperience.getCurrentExperienceRole().getRole().getDeleted()){
-                return roleService.removeRoleFromUserFuture(user, userExperience.getCurrentExperienceRole().getRole())
+                return roleService.removeRoleFromUserAsync(user, userExperience.getCurrentExperienceRole().getRole())
                         .thenApply(returnNullRole);
             }
             return CompletableFuture.completedFuture(returnNullRole.apply(null));
@@ -389,7 +389,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 CompletableFuture<Void> addRoleFuture;
                 if(!userHasRoleAlready) {
                     log.info("User {} in server {} gets a new role {} because of experience.", userId, serverId, roleId);
-                    addRoleFuture = roleService.addRoleToMemberFuture(member, roleId);
+                    addRoleFuture = roleService.addRoleToMemberAsync(member, roleId);
                 } else {
                     addRoleFuture = CompletableFuture.completedFuture(null);
                 }

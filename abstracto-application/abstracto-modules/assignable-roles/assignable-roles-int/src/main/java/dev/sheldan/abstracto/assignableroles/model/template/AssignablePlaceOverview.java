@@ -19,5 +19,5 @@ public class AssignablePlaceOverview {
      * The {@link AssignableRolePlace places} in the server to display
      */
     @Builder.Default
-    private List<AssignableRolePlace> places = new ArrayList<>();
+    private List<AssignableRolePlaceConfig> places = new ArrayList<>();
 }
