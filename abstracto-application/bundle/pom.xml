@@ -73,6 +73,18 @@
             </dependency>
 
             <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>voice-channel-context-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>voice-channel-context-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>dev.sheldan.abstracto.scheduling</groupId>
                 <artifactId>scheduling-impl</artifactId>
                 <version>${project.version}</version>

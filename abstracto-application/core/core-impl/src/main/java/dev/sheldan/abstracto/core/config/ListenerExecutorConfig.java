@@ -147,4 +147,14 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("userBannedListener");
     }
 
+    @Bean(name = "voiceChatJoinedExecutor")
+    public TaskExecutor voiceChatJoinedExecutor() {
+        return executorService.setupExecutorFor("voiceChatJoinedListener");
+    }
+
+    @Bean(name = "voiceChatLeftExecutor")
+    public TaskExecutor voiceChatLeftExecutor() {
+        return executorService.setupExecutorFor("voiceChatLeftListener");
+    }
+
 }

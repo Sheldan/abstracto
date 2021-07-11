@@ -214,3 +214,20 @@ Mock the message of another user::
 Add text as reactions to another message::
 * Usage: `react <message> <text>`
 * Description: Takes the `text`, converts it into unicode characters, while trying to avoid duplicates, and adds the reactions to the given `message`. If it was not possible to avoid duplicates, or the overall reactions (including already existing reactions) would go over the Discord limit, this command will show an error message, without adding any reaction. Some characters can be replaced with one unicode character, for example 'SOS'.
+
+
+=== Voice channel context
+
+This feature provides the ability to show certain text channels for certain voice channels and enable voice channels to be used for chatting while in voice channels.
+
+Feature key: `voiceChannelContext`
+
+Create a voice channel context::
+* Usage `createVoiceChannelContext <voiceChannel> <role>`
+* Description: Creates a connection between the `voiceChannel` and the given `role`. When a member joins the `voiceChannel` they will be given the `role`.
+This role can then be used to provide the 'view channel' permission on a text channel which can be used as a 'context channel' for the voice chat.
+The voice channel can be provided as a parameter via a mention (type '#!' + voice channel name), channel ID or the channel name.
+
+Deleting a voice channel context::
+* Usage `deleteVoiceChannelContext <voiceChannel>`
+* Description: Deletes any voice channel context for the given `voiceChannel`. Members will no longer receive a role, when joining the voice channel. The `voiceChannel` can also be a channel ID.

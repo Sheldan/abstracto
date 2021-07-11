@@ -27,6 +27,7 @@
         <module>logging</module>
         <module>invite-filter</module>
         <module>profanity-filter</module>
+        <module>voice-channel-context</module>
     </modules>
 
 </project>
