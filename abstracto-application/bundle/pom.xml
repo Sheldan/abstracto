@@ -182,6 +182,18 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>dynamic-activity-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>dynamic-activity-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>starboard-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>

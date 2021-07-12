@@ -28,6 +28,7 @@
         <module>invite-filter</module>
         <module>profanity-filter</module>
         <module>voice-channel-context</module>
+        <module>dynamic-activity</module>
     </modules>
 
 </project>

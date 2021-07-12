@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
+import dev.sheldan.abstracto.core.listener.AsyncStartupListener;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AChannelType;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.security.auth.login.LoginException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,6 +38,12 @@ public class StartupServiceBean implements Startup {
 
     @Autowired
     private List<? extends  ListenerAdapter> listeners;
+
+    @Autowired(required = false)
+    private List<AsyncStartupListener> startupListeners;
+
+    @Autowired
+    private StartupServiceBean self;
 
     @Autowired
     private ServerManagementService serverManagementService;
@@ -67,7 +75,35 @@ public class StartupServiceBean implements Startup {
         log.info("Synchronizing servers.");
         synchronizeServers();
         log.info("Done synchronizing servers");
+        executeStartUpListeners();
         profanityService.reloadRegex();
+    }
+
+
+    private void executeStartUpListeners() {
+        if(startupListeners == null) {
+            return;
+        }
+        log.info("Executing {} startup listeners.", startupListeners.size());
+        startupListeners.forEach(asyncStartupListener ->
+            CompletableFuture.runAsync(() -> {
+                try {
+                    log.info("Executing startup listener {}.", asyncStartupListener);
+                    self.executeStartupListener(asyncStartupListener);
+                } catch (Exception e) {
+                    log.error("Startup listener {} failed.", asyncStartupListener);
+                }
+            }).thenAccept(unused -> log.info("Startup listener {} finished.", asyncStartupListener))
+            .exceptionally(throwable -> {
+                log.error("Startup listener {} failed.", asyncStartupListener);
+                return null;
+            })
+        );
+    }
+
+    @Transactional
+    public void executeStartupListener(AsyncStartupListener startupListener) {
+        startupListener.execute();
     }
 
     private void synchronizeServers(){

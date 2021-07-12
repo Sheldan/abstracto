@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 
 @Entity
 @Table(name="voice_channel_context")
@@ -28,5 +29,8 @@ public class VoiceChannelContext implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private ARole role;
+
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
+    private Instant created;
 
 }
