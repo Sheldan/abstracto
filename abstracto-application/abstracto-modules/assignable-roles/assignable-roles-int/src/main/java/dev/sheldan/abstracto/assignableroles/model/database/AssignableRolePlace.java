@@ -10,11 +10,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The place entity holding the {@link AssignableRole roles} and {@link AssignableRolePlacePost posts} together.
- * This is also the entity holding all the configuration for the place and is identified by a key as a String, which is unique
- * for each server. This place holds the {@link AChannel} in which the
- */
 @Entity
 @Table(name = "assignable_role_place")
 @Builder
