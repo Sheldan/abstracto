@@ -378,4 +378,10 @@ public class MuteServiceBean implements MuteService {
         completelyUnMuteUser(userInServerManagementService.loadOrCreateUser(member));
     }
 
+    @Override
+    public CompletableFuture<Void> muteMemberWithoutContext(Member member) {
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
+        return applyMuteRole(aUserInAServer);
+    }
+
 }

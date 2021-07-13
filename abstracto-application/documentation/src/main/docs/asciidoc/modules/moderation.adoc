@@ -236,3 +236,17 @@ notifying the moderation of the server. Additional reports of the same user, wit
 
 ==== Emotes
 * `reactionReport` reaction emote to report a message
+
+
+=== Mass mention automatic mute
+
+Feature key `massPingLog`
+
+This functionality requires the feature `mutes` to be enabled and optionally has configuration for integration for `experience` feature.
+This functionality will automatically mute a member who mentions more than a configured amount of users.
+
+==== Post targets
+`massPingLog`:: target for notifications of automatic mutes
+
+==== Relevant system configuration
+`massPingMinLevel`:: The level at which members are allowed to mass ping and not get muted.

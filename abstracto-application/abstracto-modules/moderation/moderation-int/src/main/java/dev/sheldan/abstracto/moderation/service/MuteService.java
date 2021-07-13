@@ -23,4 +23,5 @@ public interface MuteService {
     CompletableFuture<Void> endMute(Long muteId, Long serverId);
     void completelyUnMuteUser(AUserInAServer aUserInAServer);
     void completelyUnMuteMember(Member member);
+    CompletableFuture<Void> muteMemberWithoutContext(Member member);
 }

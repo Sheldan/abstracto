@@ -46,7 +46,9 @@ public class HasLevelCondition implements SystemCondition {
             log.info("Evaluating has level condition for user {} in server {} with level {}.",
                     userInServer.getUserReference().getId(), userInServer.getServerReference().getId(), level);
             AUserExperience user = userExperienceManagementService.findUserInServer(userInServer);
-            return user.getCurrentLevel() != null && user.getCurrentLevel().getLevel() >= level;
+            boolean conditionResult = user.getCurrentLevel() != null && user.getCurrentLevel().getLevel() >= level;
+            log.info("Condition evaluated to {}", conditionResult);
+            return conditionResult;
         }
         log.info("No user in server object was found. Evaluating to false.");
 

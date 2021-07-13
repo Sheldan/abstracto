@@ -29,6 +29,7 @@
         <module>profanity-filter</module>
         <module>voice-channel-context</module>
         <module>dynamic-activity</module>
+        <module>anti-raid</module>
     </modules>
 
 </project>
