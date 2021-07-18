@@ -3,16 +3,18 @@
 This feature enables creating and maintaining so-called 'assignable role places'. These places are messages at which buttons are added, and when a member clicks such a button, a configured role, is assigned to the user.
 A place can be disabled, which causes the buttons to become disabled. Such places can be made 'unique', which means that users can only have one role available in the place.
 
-Deleting the actual role behind an assignable role causes the assignable role place to become non-functional: the button will remain and can still be clicked, but users will receive and error message.
+An assignable role place can have a type. This type can either be `DEFAULT`, or `BOOSTER´. The `BOOSTER` type comes with special functionalities: if a member clicked a button, it will evaluate whether the member has boosted the server and reject if not. There is also functionality to automatically remove the assigned roles for members who stopped boosting.
+
+Deleting the actual role behind an assignable role causes the assignable role place to become non-functional: the button will remain and can still be clicked, but users will receive an error message.
 
 Feature key: `assignableRole`
 
 
 ==== Commands
 Create a new assignable role place::
-* Usage: `createAssignableRolePlace <name> <channel> <text>`
+* Usage: `createAssignableRolePlace <name> <channel> <text> [type]`
 * Description: Creates a new assignable role place with the key `name`. The `text` will be shown in the description of the first message.
-When the place is setup, it will be posted in the `channel`. The created place is active and inline by default.
+When the place is setup, it will be posted in the `channel`. If `type` is not provided, it will be `DEFAULT`. Possible values for are `booster` and `default`.
 
 Add a role to an assignable role place::
 * Usage: `addRoleToAssignableRolePlace <name> <role> <text> [emote]`

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.service.management;
 
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceType;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 
@@ -9,7 +10,7 @@ import java.util.Optional;
 
 public interface AssignableRolePlaceManagementService {
 
-    AssignableRolePlace createPlace(String name, AChannel channel, String text);
+    AssignableRolePlace createPlace(String name, AChannel channel, String text, AssignableRolePlaceType type);
 
     boolean doesPlaceExist(AServer server, String name);
 

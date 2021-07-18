@@ -4,12 +4,14 @@ import dev.sheldan.abstracto.assignableroles.model.condition.AssignableRoleCondi
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRoleCondition;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRoleConditionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class AssignableRoleConditionManagementServiceBean implements AssignableRoleConditionManagementService {
 
     @Autowired
@@ -23,12 +25,14 @@ public class AssignableRoleConditionManagementServiceBean implements AssignableR
                 .type(type)
                 .conditionValue(value)
                 .build();
+        log.info("Creating condition of type {} for assignable role {}", assignableRole.getId(), type);
         assignableRole.getConditions().add(condition);
         return repository.save(condition);
     }
 
     @Override
     public void deleteAssignableRoleCondition(AssignableRoleCondition condition) {
+        log.info("Deleting condition {}.", condition.getId());
         repository.delete(condition);
     }
 

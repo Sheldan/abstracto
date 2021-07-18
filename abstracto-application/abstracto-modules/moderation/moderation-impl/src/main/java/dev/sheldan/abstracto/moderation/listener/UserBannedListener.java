@@ -50,6 +50,7 @@ public class UserBannedListener implements AsyncUserBannedListener {
                 .queue(auditLogEntries -> {
                     if(auditLogEntries.isEmpty()) {
                         log.info("Did not find recent bans in guild {}.", model.getServerId());
+                        self.sendBannedNotification(model.getUser(), null, null, model.getServerId());
                         return;
                     }
                     Optional<AuditLogEntry> banEntryOptional = auditLogEntries
@@ -65,6 +66,9 @@ public class UserBannedListener implements AsyncUserBannedListener {
                         log.info("Did not find the banned user in the most recent bans for guild {}. Not adding audit log information.", model.getServerId());
                         self.sendBannedNotification(model.getUser(), null, null, model.getServerId());
                     }
+                }, throwable -> {
+                    log.error("Retrieving bans for guild {} failed - logging ban regardless.", model.getServerId());
+                    self.sendBannedNotification(model.getUser(), null, null, model.getServerId());
                 });
         return DefaultListenerResult.PROCESSED;
     }

@@ -219,7 +219,6 @@ public class StarboardServiceBeanTest {
 
     @Test
     public void testUpdateStarboardPost() {
-        Long newPostId = 37L;
         Long oldPostId = 36L;
         AChannel sourceChannel = Mockito.mock(AChannel.class);
         when(sourceChannel.getServer()).thenReturn(server);
@@ -234,22 +233,16 @@ public class StarboardServiceBeanTest {
         when(post.getStarboardMessageId()).thenReturn(oldPostId);
         when(post.getSourceChannel()).thenReturn(sourceChannel);
         when(post.getId()).thenReturn(starboardPostId);
-        MessageToSend postMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(StarboardServiceBean.STARBOARD_POST_TEMPLATE), starboardPostModelArgumentCaptor.capture(), eq(SERVER_ID))).thenReturn(postMessage);
-        when(postTargetService.editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(sendPost)));
-        when(sendPost.getIdLong()).thenReturn(newPostId);
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
         when(config.getLongValue()).thenReturn(1L);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeatureConfig.STAR_LEVELS_CONFIG_KEY)).thenReturn(config);
         when(defaultConfigManagementService.getDefaultConfig(StarboardFeatureConfig.STAR_LVL_CONFIG_PREFIX + 1)).thenReturn(config);
-        when(starboardPostManagementService.findByStarboardPostId(starboardPostId)).thenReturn(Optional.of(post));
         when(userService.retrieveUserForId(STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredJdaUser));
+        when(self.sendStarboardPost(eq(oldPostId), eq(message), eq(starboardPostId), any(StarboardPostModel.class))).thenReturn(CompletableFuture.completedFuture(null));
         List<AUserInAServer > userExceptAuthor = new ArrayList<>();
         CompletableFuture<Void> future = testUnit.updateStarboardPost(post, message, userExceptAuthor);
         future.join();
         Assert.assertFalse(future.isCompletedExceptionally());
-        verify(postTargetService, times(1)).editOrCreatedInPostTarget(oldPostId, postMessage, StarboardPostTarget.STARBOARD, SERVER_ID);
-        verify(starboardPostManagementService, times(1)).setStarboardPostMessageId(post, newPostId);
     }
 
     @Test

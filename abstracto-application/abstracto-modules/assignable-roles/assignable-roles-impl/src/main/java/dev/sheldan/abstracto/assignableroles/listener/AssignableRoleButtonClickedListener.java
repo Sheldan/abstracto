@@ -2,11 +2,13 @@ package dev.sheldan.abstracto.assignableroles.listener;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
 import dev.sheldan.abstracto.assignableroles.exception.AssignableRoleNotFoundException;
+import dev.sheldan.abstracto.assignableroles.exception.BoosterAssignableRolePlaceMemberNotBoostingException;
 import dev.sheldan.abstracto.assignableroles.model.condition.AssignableRoleConditionResult;
 import dev.sheldan.abstracto.assignableroles.model.AssignableRolePlacePayload;
 import dev.sheldan.abstracto.assignableroles.model.condition.AssignableRolePlaceConditionModel;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceType;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.assignableroles.model.template.AssignableRoleSuccessNotificationModel;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRoleConditionServiceBean;
@@ -73,9 +75,10 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
         ButtonClickEvent event = model.getEvent();
-        AssignableRolePlacePayload payload = (AssignableRolePlacePayload) model.getDeserializedPayload();
-        AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(payload.getPlaceId());
-        if(event.getGuild() != null && event.getMember() != null) {
+        Member member = event.getMember();
+        if(event.getGuild() != null && member != null) {
+            AssignableRolePlacePayload payload = (AssignableRolePlacePayload) model.getDeserializedPayload();
+            AssignableRolePlace place = assignableRolePlaceManagementService.findByPlaceId(payload.getPlaceId());
             Guild guild = event.getGuild();
             List<Role> removedRoles = new ArrayList<>();
             Role roleById = guild.getRoleById(payload.getRoleId());
@@ -88,18 +91,22 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                 throw new AssignableRoleNotFoundException(payload.getRoleId());
             }
             if(roleById != null) {
-                boolean memberHasRole = event
-                        .getMember()
+                boolean memberHasRole = member
                         .getRoles()
                         .stream()
                         .anyMatch(memberRole -> memberRole.getIdLong() == payload.getRoleId());
                 if(!memberHasRole) {
+                    if(place.getType().equals(AssignableRolePlaceType.BOOSTER) && member.getTimeBoosted() == null) {
+                        throw new BoosterAssignableRolePlaceMemberNotBoostingException();
+                    }
                     AssignableRole assignableRole = assignableRoleOptional.get();
-                    AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
+                    AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
                     if(!assignableRole.getConditions().isEmpty()) {
+                        log.debug("Evaluating {} conditions for assignable role {}.", assignableRole.getConditions().size(), assignableRole.getId());
                         AssignableRoleConditionResult conditionResult =
                                 assignableRoleConditionServiceBean.evaluateConditions(assignableRole.getConditions(), aUserInAServer, roleById);
                         if(!conditionResult.getFulfilled()) {
+                            log.info("One condition failed to be fullfilled - notifying user.");
                             self.notifyUserAboutConditionFail(model, event.getInteraction(), conditionResult.getModel());
                             return ButtonClickedListenerResult.ACKNOWLEDGED;
                         }
@@ -116,9 +123,10 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                                     .map(roleOfUser -> guild.getRoleById(roleOfUser.getRole().getId()))
                                     .filter(Objects::nonNull)
                                     .collect(Collectors.toList());
+                            log.info("Removing {} because of unique role configuration in place {}.", rolesToRemove.size(), place.getId());
                             removedRoles.addAll(rolesToRemove);
                             List<CompletableFuture<Void>> removalFutures = new ArrayList<>();
-                            rolesToRemove.forEach(roleToRemove -> removalFutures.add(roleService.removeRoleFromUserAsync(event.getMember(), roleToRemove)));
+                            rolesToRemove.forEach(roleToRemove -> removalFutures.add(roleService.removeRoleFromUserAsync(member, roleToRemove)));
                             removalFuture = new CompletableFutureList<>(removalFutures).getMainFuture();
                         } else {
                             removalFuture = CompletableFuture.completedFuture(null);
@@ -126,29 +134,29 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                     } else {
                         removalFuture = CompletableFuture.completedFuture(null);
                     }
-                    CompletableFuture<Void> roleAdditionFuture = roleService.addRoleToMemberAsync(event.getMember(), roleById);
+                    CompletableFuture<Void> roleAdditionFuture = roleService.addRoleToMemberAsync(member, roleById);
                     CompletableFuture.allOf(removalFuture, roleAdditionFuture).whenComplete((unused, throwable) -> {
                         if(throwable != null) {
                             log.error("Failed to either add or remove roles for assignable role place {} in server {}.", payload.getPlaceId(), guild.getIdLong());
                         }
                         if(!roleAdditionFuture.isCompletedExceptionally()) {
                             log.info("Added role {} to member {} in server {} for assignable role interaction {} on component {}.",
-                                    roleById.getId(), event.getMember().getId(), guild.getIdLong(), event.getInteraction().getId(), event.getComponentId());
+                                    roleById.getId(), member.getId(), guild.getIdLong(), event.getInteraction().getId(), event.getComponentId());
                             self.notifyUser(model, true, roleById, event.getInteraction(), removedRoles).thenAccept(unused1 -> {
-                                log.info("Persisting adding assignable role update for user {} in server {} of role {}.", event.getMember().getIdLong(), guild.getIdLong(), roleById.getId());
-                                self.persistAssignableUser(event.getMember(), payload, false);
+                                log.info("Persisting adding assignable role update for user {} in server {} of role {}.", member.getIdLong(), guild.getIdLong(), roleById.getId());
+                                self.persistAssignableUser(member, payload, false);
                             });
                         }
                     });
                 } else {
-                    roleService.removeRoleFromUserAsync(event.getMember(), roleById)
+                    roleService.removeRoleFromUserAsync(member, roleById)
                         .thenAccept(unused -> {
                             self.notifyUser(model, false, roleById, event.getInteraction(), new ArrayList<>());
                             log.info("Removed role {} from member {} in server {} for assignable role interaction {} on component {}.",
-                                    roleById.getId(), event.getMember().getId(), guild.getIdLong(), event.getInteraction().getId(), event.getComponentId());
+                                    roleById.getId(), member.getId(), guild.getIdLong(), event.getInteraction().getId(), event.getComponentId());
                         }).thenAccept(unused -> {
-                            log.info("Persisting remove assignable role update for user {} in server {} of role {}.", event.getMember().getIdLong(), guild.getIdLong(), roleById.getId());
-                            self.persistAssignableUser(event.getMember(), payload, true);
+                            log.info("Persisting remove assignable role update for user {} in server {} of role {}.", member.getIdLong(), guild.getIdLong(), roleById.getId());
+                            self.persistAssignableUser(member, payload, true);
                     });
                 }
             } else {
@@ -183,6 +191,8 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
 
     @Transactional
     public CompletableFuture<Void> notifyUser(ButtonClickedListenerModel model, boolean roleAdded, Role role, ButtonInteraction buttonInteraction, List<Role> removedRoles) {
+        log.info("Notifying user {} in server {} in channel {} about role change with role {}.",
+                buttonInteraction.getUser().getIdLong(), buttonInteraction.getGuild().getIdLong(), buttonInteraction.getChannel().getIdLong(), role.getId());
         AssignableRoleSuccessNotificationModel notificationModel = AssignableRoleSuccessNotificationModel
                 .builder()
                 .added(roleAdded)
@@ -196,6 +206,8 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
     @Transactional
     public CompletableFuture<Void> notifyUserAboutConditionFail(ButtonClickedListenerModel model, ButtonInteraction buttonInteraction,
                                                                 AssignableRolePlaceConditionModel conditionModel) {
+        log.info("Notifying user {} in server {} in channel {} about failed condition.", buttonInteraction.getUser().getIdLong(),
+                buttonInteraction.getGuild().getIdLong(), buttonInteraction.getChannel().getIdLong());
         return FutureUtils.toSingleFutureGeneric(
                 interactionService.sendMessageToInteraction("assignable_role_condition_notification", conditionModel, buttonInteraction.getHook()))                ;
     }

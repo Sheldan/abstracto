@@ -36,7 +36,7 @@ public class ActivityServiceBean implements ActivityService {
         List<CustomActivity> activities = activityManagementService.getAllActivities();
         if(!activities.isEmpty()) {
             CustomActivity chosen = activities.get(secureRandom.nextInt(activities.size()));
-            log.info("Chosen {} activity.", chosen.getId());
+            log.info("Chosen activity {}.", chosen.getId());
             switchToActivity(chosen);
         } else {
             log.info("No activities configured.");

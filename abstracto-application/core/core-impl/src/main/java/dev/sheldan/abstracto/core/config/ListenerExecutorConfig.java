@@ -22,6 +22,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("leaveListener");
     }
 
+    @Bean(name = "boostTimeUpdateExecutor")
+    public TaskExecutor boostTimeUpdateExecutor() {
+        return executorService.setupExecutorFor("boostTimeUpdateListener");
+    }
+
     @Bean(name = "messageReceivedExecutor")
     public TaskExecutor messageReceivedExecutor() {
         return executorService.setupExecutorFor("messageReceivedListener");

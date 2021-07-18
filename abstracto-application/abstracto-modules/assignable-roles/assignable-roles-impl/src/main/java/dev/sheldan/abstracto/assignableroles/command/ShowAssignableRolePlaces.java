@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.assignableroles.command;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRoleFeatureDefinition;
+import dev.sheldan.abstracto.assignableroles.model.template.AssignablePlaceOverview;
 import dev.sheldan.abstracto.assignableroles.service.AssignableRolePlaceService;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -9,7 +10,9 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,11 +31,16 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private ChannelService channelService;
+
+    public static final String ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY = "assignable_role_places_overview";
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        return service.showAllAssignableRolePlaces(server, commandContext.getChannel())
-                .thenApply(aVoid -> CommandResult.fromIgnored());
+        AssignablePlaceOverview model = service.getAssignableRolePlaceOverview(commandContext.getGuild());
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(ASSIGNABLE_ROLE_PLACES_OVERVIEW_TEMPLATE_KEY, model, commandContext.getChannel()))
+                .thenApply(unused -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -42,7 +50,6 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
                 .name("showAssignableRolePlaces")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
-                .causesReaction(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

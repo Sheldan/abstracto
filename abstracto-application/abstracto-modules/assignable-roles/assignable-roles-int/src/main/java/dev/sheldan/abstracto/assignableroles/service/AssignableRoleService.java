@@ -2,11 +2,13 @@ package dev.sheldan.abstracto.assignableroles.service;
 
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRole;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -66,5 +68,7 @@ public interface AssignableRoleService {
     AssignableRole getAssignableRoleInPlace(AssignableRolePlace place, Role role);
     AssignableRole getAssignableRoleInPlace(AssignableRolePlace place, ARole role);
     AssignableRole getAssignableRoleInPlace(AssignableRolePlace place, Long roleId);
+
+    void removeAssignableRolesFromAssignableRoleUser(List<AssignableRole> roles, AssignedRoleUser roleUser);
 
 }

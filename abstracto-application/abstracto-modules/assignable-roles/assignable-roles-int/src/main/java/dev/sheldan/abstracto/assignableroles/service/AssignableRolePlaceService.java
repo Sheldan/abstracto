@@ -2,17 +2,21 @@ package dev.sheldan.abstracto.assignableroles.service;
 
 import dev.sheldan.abstracto.assignableroles.config.AssignableRolePlaceParameterKey;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceType;
+import dev.sheldan.abstracto.assignableroles.model.template.AssignablePlaceOverview;
+import dev.sheldan.abstracto.assignableroles.model.template.AssignableRolePlaceConfig;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.concurrent.CompletableFuture;
 
 public interface AssignableRolePlaceService {
-    void createAssignableRolePlace(String name, AChannel channel, String text);
+    void createAssignableRolePlace(String name, AChannel channel, String text, AssignableRolePlaceType type);
 
     CompletableFuture<Void> addRoleToAssignableRolePlace(AServer server, String placeName, Role role, FullEmote emote, String description);
 
@@ -42,7 +46,7 @@ public interface AssignableRolePlaceService {
 
     void multipleAssignableRolePlace(AssignableRolePlace place);
 
-    CompletableFuture<Void> showAssignablePlaceConfig(AServer server, String name, TextChannel channel);
+    AssignableRolePlaceConfig getAssignableRolePlaceConfig(Guild guild, String name);
 
     CompletableFuture<Void> moveAssignableRolePlace(AServer server, String name, TextChannel newChannel);
 
@@ -52,5 +56,5 @@ public interface AssignableRolePlaceService {
 
     CompletableFuture<Void> changeConfiguration(AServer server, String name, AssignableRolePlaceParameterKey keyToChange, String newValue);
 
-    CompletableFuture<Void> showAllAssignableRolePlaces(AServer server, TextChannel channel);
+    AssignablePlaceOverview getAssignableRolePlaceOverview(Guild guild);
 }

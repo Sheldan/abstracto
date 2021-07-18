@@ -85,4 +85,8 @@ public class AssignableRolePlace implements Serializable {
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private AssignableRolePlaceType type;
+
 }

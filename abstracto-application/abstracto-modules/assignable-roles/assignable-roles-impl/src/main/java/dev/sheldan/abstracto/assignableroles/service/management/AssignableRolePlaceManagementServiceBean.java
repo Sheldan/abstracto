@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.assignableroles.service.management;
 
 import dev.sheldan.abstracto.assignableroles.exception.AssignableRolePlaceNotFoundException;
 import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace;
+import dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlaceType;
 import dev.sheldan.abstracto.assignableroles.repository.AssignableRolePlaceRepository;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -20,12 +21,18 @@ public class AssignableRolePlaceManagementServiceBean implements AssignableRoleP
     private AssignableRolePlaceRepository repository;
 
     @Override
-    public AssignableRolePlace createPlace(String name, AChannel channel, String text) {
+    public AssignableRolePlace createPlace(String name, AChannel channel, String text, AssignableRolePlaceType type) {
+        boolean unique = false;
+        if(type.equals(AssignableRolePlaceType.BOOSTER)) {
+            unique = true;
+        }
         AssignableRolePlace place = AssignableRolePlace
                 .builder()
                 .channel(channel)
                 .server(channel.getServer())
                 .text(text)
+                .uniqueRoles(unique)
+                .type(type)
                 .key(name)
                 .build();
         log.info("Creating assignable role place in channel {} on server {}.", channel.getId(), channel.getServer().getId());

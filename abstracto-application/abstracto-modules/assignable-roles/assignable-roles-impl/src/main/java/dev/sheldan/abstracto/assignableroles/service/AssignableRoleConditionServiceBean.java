@@ -16,6 +16,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class AssignableRoleConditionServiceBean implements AssignableRoleConditionService {
 
     @Autowired
@@ -55,12 +57,15 @@ public class AssignableRoleConditionServiceBean implements AssignableRoleConditi
 
     @Override
     public AssignableRoleConditionResult evaluateConditions(List<AssignableRoleCondition> conditions, AUserInAServer aUserInAServer, Role role) {
+        log.debug("Evaluating {} conditions for role {}.", conditions.size(), role.getId());
         for (AssignableRoleCondition condition : conditions) {
             if(assignableRoleConditionEvaluators != null) {
                 Optional<AssignableRoleConditionEvaluator> evaluatorOptional = findEvaluatorForCondition(condition.getType());
                 if(evaluatorOptional.isPresent()) {
                     AssignableRoleConditionEvaluator evaluator = evaluatorOptional.get();
+                    log.debug("Evaluating condition {} with evaluator {}.", condition.getType(), evaluator.getClass());
                     if(!evaluator.fulfillsCondition(condition, aUserInAServer)) {
+                        log.info("Condition {} failed for role {} in server {}.", condition.getType(), role.getId(), aUserInAServer.getServerReference().getId());
                         return AssignableRoleConditionResult.fromFail(condition.getType(), evaluator.createNotificationModel(condition, role));
                     }
                 }
@@ -94,6 +99,7 @@ public class AssignableRoleConditionServiceBean implements AssignableRoleConditi
         if(assignableRoleConditionManagementService.findAssignableRoleCondition(assignableRole, type).isPresent()) {
             throw new AssignableRoleConditionAlreadyExistsException();
         }
+        log.info("Creating new condition for  role {} in place {} in server {}.", place.getId(), role.getId(), role.getGuild().getIdLong());
         return assignableRoleConditionManagementService.createAssignableRoleCondition(assignableRole, type, value);
     }
 
@@ -106,6 +112,7 @@ public class AssignableRoleConditionServiceBean implements AssignableRoleConditi
         if(!existingCondition.isPresent()) {
             throw new AssignableRoleConditionDoesNotExistException();
         }
+        log.info("Deleting assignable role condition on place {} for role {} in server {}.", place.getId(), role.getId(), role.getGuild().getIdLong());
         existingCondition.ifPresent(condition -> assignableRoleConditionManagementService.deleteAssignableRoleCondition(condition));
     }
 

@@ -175,15 +175,30 @@ public class StarboardServiceBean implements StarboardService {
     public CompletableFuture<Void> updateStarboardPost(StarboardPost post, CachedMessage message, List<AUserInAServer> userExceptAuthor)  {
         int starCount = userExceptAuthor.size();
         log.info("Updating starboard post {} in server {} with reactors {}.", post.getId(), post.getSourceChannel().getServer().getId(), starCount);
-        return buildStarboardPostModel(message, starCount).thenCompose(starboardPostModel -> {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel, message.getServerId());
-            List<CompletableFuture<Message>> futures = postTargetService.editOrCreatedInPostTarget(post.getStarboardMessageId(), messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
-            Long starboardPostId = post.getId();
-            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(aVoid -> {
-                Optional<StarboardPost> innerPost = starboardPostManagementService.findByStarboardPostId(starboardPostId);
-                innerPost.ifPresent(starboardPost -> starboardPostManagementService.setStarboardPostMessageId(starboardPost, futures.get(0).join().getIdLong()));
-            });
-        });
+        Long starboardPostId = post.getId();
+        Long postMessageId = post.getStarboardMessageId();
+        return buildStarboardPostModel(message, starCount)
+                .thenCompose(starboardPostModel -> self.sendStarboardPost(postMessageId, message, starboardPostId, starboardPostModel));
+    }
+
+    @Transactional
+    public CompletableFuture<Void> sendStarboardPost(Long starboardPostMessageId, CachedMessage message, Long starboardPostId, StarboardPostModel starboardPostModel) {
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(STARBOARD_POST_TEMPLATE, starboardPostModel, message.getServerId());
+        log.info("Updating/Creating message with ID {} for post {}", starboardPostMessageId, starboardPostId);
+        List<CompletableFuture<Message>> futures = postTargetService.editOrCreatedInPostTarget(starboardPostMessageId, messageToSend, StarboardPostTarget.STARBOARD, message.getServerId());
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenAccept(aVoid -> self.persistStarboardPostMessageId(starboardPostId, futures));
+    }
+
+    @Transactional
+    public void persistStarboardPostMessageId(Long starboardPostId, List<CompletableFuture<Message>> futures) {
+        Optional<StarboardPost> innerPost = starboardPostManagementService.findByStarboardPostId(starboardPostId);
+        long messageId = futures.get(0).join().getIdLong();
+        log.debug("Updating starboard post {} to message ID {}.", starboardPostId, messageId);
+        innerPost.ifPresent(starboardPost -> starboardPostManagementService.setStarboardPostMessageId(starboardPost, messageId));
+        if(!innerPost.isPresent()) {
+            log.warn("Starboard post {} was not found. Not updating message ID to {}.", starboardPostId, messageId);
+        }
     }
 
     @Override

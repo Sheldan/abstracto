@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -145,6 +146,13 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
             }
         }
         throw new AssignableRoleNotFoundException(roleId);
+    }
+
+    @Override
+    public void removeAssignableRolesFromAssignableRoleUser(List<AssignableRole> roles, AssignedRoleUser roleUser) {
+        log.info("Removing {} assignable roles from user {} in server {}.", roles.size(), roleUser.getUser().getUserReference().getId(),
+                roleUser.getUser().getServerReference().getId());
+        roles.forEach(assignableRole -> assignedRoleUserManagementServiceBean.removeAssignedRoleFromUser(assignableRole, roleUser));
     }
 
     @PostConstruct
