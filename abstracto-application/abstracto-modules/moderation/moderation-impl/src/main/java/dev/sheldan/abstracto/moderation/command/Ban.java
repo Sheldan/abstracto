@@ -40,8 +40,7 @@ public class Ban extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         User user = (User) parameters.get(0);
-        String defaultReason = templateService.renderSimpleTemplate(BAN_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
-        String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
+        String reason = (String) parameters.get(1);
 
         return banService.banUser(user, reason, commandContext.getAuthor(), commandContext.getMessage())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
@@ -51,7 +50,7 @@ public class Ban extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").templated(true).type(User.class).build());
-        parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).optional(true).remainder(true).build());
+        parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         List<EffectConfig> effectConfig = Arrays.asList(EffectConfig.builder().position(0).effectKey(BAN_EFFECT_KEY).build());
         return CommandConfiguration.builder()
