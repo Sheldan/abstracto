@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -58,7 +59,7 @@ public class BanServiceBean implements BanService {
                 .commandMessage(message)
                 .reason(reason)
                 .build();
-        CompletableFuture<Void> banFuture = banUser(member.getGuild(), member.getUser(), reason);
+        CompletableFuture<Void> banFuture = banUser(member.getGuild(), member.getUser(), 0, reason);
         CompletableFuture<Void> messageFuture = sendBanLogMessage(banLog, member.getGuild().getIdLong(), BAN_LOG_TEMPLATE);
         return CompletableFuture.allOf(banFuture, messageFuture);
     }
@@ -81,7 +82,7 @@ public class BanServiceBean implements BanService {
                         .thenAccept(message1 -> log.info("Notified about not being able to send ban notification in server {} and channel {} based on message {} from user {}."
                 , message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong(), message.getAuthor().getIdLong()));
             }
-            CompletableFuture<Void> banFuture = banUser(guild, user, reason);
+            CompletableFuture<Void> banFuture = banUser(guild, user, 0, reason);
             CompletableFuture<Void> messageFuture = sendBanLogMessage(banLog, guild.getIdLong(), BAN_LOG_TEMPLATE);
             CompletableFuture.allOf(banFuture, messageFuture)
                 .thenAccept(unused1 -> returningFuture.complete(null))
@@ -111,8 +112,27 @@ public class BanServiceBean implements BanService {
                 .bannedUser(user)
                 .unBanningMember(unBanningMember)
                 .build();
-        return unBanUser(guild, user)
+        return unbanUser(guild, user)
                 .thenCompose(unused -> self.sendUnBanLogMessage(banLog, guild.getIdLong(), UN_BAN_LOG_TEMPLATE));
+    }
+
+    @Override
+    public CompletableFuture<Void> banUser(Guild guild, User user, Integer deletionDays, String reason) {
+        log.info("Banning user {} in guild {}.", user.getIdLong(), guild.getId());
+        return guild.ban(user, deletionDays, reason).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> unbanUser(Guild guild, User user) {
+        log.info("Unbanning user {} in guild {}.", user.getIdLong(), guild.getId());
+        return guild.unban(user).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> softBanUser(Guild guild, User user, Duration delDays) {
+        Long days = delDays.toDays();
+        return banUser(guild, user, days.intValue(), "")
+                .thenCompose(unused -> unbanUser(guild, user));
     }
 
     public CompletableFuture<Void> sendBanLogMessage(BanLog banLog, Long guildId, String template) {
@@ -131,15 +151,5 @@ public class BanServiceBean implements BanService {
         List<CompletableFuture<Message>> notificationFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.UN_BAN_LOG, guildId);
         completableFuture = FutureUtils.toSingleFutureGeneric(notificationFutures);
         return completableFuture;
-    }
-
-    private CompletableFuture<Void> banUser(Guild guild, User user, String reason) {
-        log.info("Banning user {} in guild {}.", user.getIdLong(), guild.getId());
-        return guild.ban(user, 0, reason).submit();
-    }
-
-    private CompletableFuture<Void> unBanUser(Guild guild, User user) {
-        log.info("Unbanning user {} in guild {}.", user.getIdLong(), guild.getId());
-        return guild.unban(user).submit();
     }
 }

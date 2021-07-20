@@ -31,36 +31,16 @@ public class BanTest {
     @Mock
     private BanService banService;
 
-    @Mock
-    private TemplateService templateService;
-
     @Captor
     private ArgumentCaptor<Member> banLogModelCaptor;
-
-    private static final String REASON = "reason";
-    private static final Long SERVER_ID = 1L;
 
     @Mock
     private User bannedMember;
 
     @Test
-    public void testBanWithDefaultReason() {
-        CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember));
-        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
-        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
-        when(banService.banUser(eq(bannedMember), eq(REASON), banLogModelCaptor.capture(), any(Message.class))).thenReturn(CompletableFuture.completedFuture(null));
-        CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
-        Member banningMember = banLogModelCaptor.getValue();
-        Assert.assertEquals(parameters.getAuthor(), banningMember);
-        CommandTestUtilities.checkSuccessfulCompletionAsync(result);
-    }
-
-    @Test
     public void testBanWithReason() {
         String customReason = "reason2";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(bannedMember, customReason));
-        when(parameters.getGuild().getIdLong()).thenReturn(SERVER_ID);
-        when(templateService.renderSimpleTemplate(Ban.BAN_DEFAULT_REASON_TEMPLATE, SERVER_ID)).thenReturn(REASON);
         when(banService.banUser(eq(bannedMember), eq(customReason), banLogModelCaptor.capture(), any(Message.class))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         Member banningMember = banLogModelCaptor.getValue();

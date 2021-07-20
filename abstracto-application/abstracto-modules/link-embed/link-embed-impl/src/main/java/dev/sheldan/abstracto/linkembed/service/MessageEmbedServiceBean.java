@@ -173,13 +173,28 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
         CompletableFutureList<Message> reactionFutureList = new CompletableFutureList<>(reactionMessageFutures);
         CompletableFutureList<Message> buttonFutureList = new CompletableFutureList<>(buttonMessageFutures);
         return reactionFutureList.getMainFuture()
-                .handle((unused, throwable) -> self.removeReactions(reactionFutureList.getObjects()))
+                .handle((unused, throwable) -> {
+                    if(throwable != null) {
+                        log.warn("Embedded messages reaction message loading failed.", throwable);
+                    }
+                    return self.removeReactions(reactionFutureList.getObjects());
+                })
                 .thenCompose(Function.identity())
                 .thenCompose(unused -> buttonFutureList.getMainFuture())
-                .handle((unused, throwable) -> self.removeButtons(buttonFutureList.getObjects()))
+                .handle((unused, throwable) -> {
+                    if(throwable != null) {
+                        log.warn("Embedded messages button message loading failed.", throwable);
+                    }
+                    return self.removeButtons(buttonFutureList.getObjects());
+                })
                 // deleting the messages from db regardless of exceptions, at most the reaction remains
                 .thenCompose(Function.identity())
-                .whenComplete((unused, throwable) -> self.deleteEmbeddedMessages(embeddedMessagesHandled))
+                .whenComplete((unused, throwable) -> {
+                    if(throwable != null) {
+                        log.warn("Embedded message button clearing failed.", throwable);
+                    }
+                    self.deleteEmbeddedMessages(embeddedMessagesHandled);
+                })
                 .exceptionally(throwable -> {
                     log.error("Failed to clean up embedded messages.", throwable);
                     return null;

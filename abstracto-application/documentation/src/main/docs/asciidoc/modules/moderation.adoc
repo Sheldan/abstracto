@@ -34,6 +34,9 @@ Purging messages in a channel::
 * Description: Deletes the last `messageCount` messages in the current channel. If a `member` is provided as parameter, only the messages by this member
 will be deleted. The deletion of this messages will *not* be logged by the logging mechanism. The messages to be deleted need to be from within the last 2 weeks, but there is no limit on how much messages can be deleted besides that.
 While the command is ongoing, a status update message will be shown indicating how far the command is. This message will be deleted after the command is done.
+Deleting all messages and kicking a member::
+* Usage `softBan <user> [delDays]`
+* Description: Bans the given `user` and deletes the messages for the given time period in `delDays`. This duration must be in days and can be at most 7 days. When no duration is provided 7 days are used. This command automatically unbans the user afterwards.
 
 === Warning
 
