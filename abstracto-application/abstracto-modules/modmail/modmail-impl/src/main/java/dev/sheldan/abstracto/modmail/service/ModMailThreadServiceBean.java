@@ -39,6 +39,7 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +63,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * The config key to use for the ID of the category to create {@link MessageChannel} in
      */
     public static final String MODMAIL_CATEGORY = "modmailCategory";
+    public static final String TEXT_CHANNEL_NAME_TEMPLATE_KEY = "modMail_channel_name";
     /**
      * The template key used for default mod mail exceptions
      */
@@ -189,7 +191,16 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         metricService.incrementCounter(MODMAIL_THREAD_CREATED_COUNTER);
         User user = member.getUser();
         log.info("Creating modmail channel for user {} in category {} on server {}.", user.getId(), categoryId, serverId);
-        CompletableFuture<TextChannel> textChannelFuture = channelService.createTextChannel(user.getName() + user.getDiscriminator(), server, categoryId);
+        ModMailChannelNameModel model = ModMailChannelNameModel
+                .builder()
+                .serverId(serverId)
+                .userId(member.getIdLong())
+                .randomText(RandomStringUtils.randomAlphanumeric(25))
+                .uuid(UUID.randomUUID().toString())
+                .currentDate(Instant.now())
+                .build();
+        String channelName = templateService.renderTemplate(TEXT_CHANNEL_NAME_TEMPLATE_KEY, model, serverId);
+        CompletableFuture<TextChannel> textChannelFuture = channelService.createTextChannel(channelName, server, categoryId);
         return textChannelFuture.thenCompose(channel -> {
             undoActions.add(UndoActionInstance.getChannelDeleteAction(serverId, channel.getIdLong()));
             return self.performModMailThreadSetup(member, initialMessage, channel, userInitiated, undoActions, feedBackChannel);
