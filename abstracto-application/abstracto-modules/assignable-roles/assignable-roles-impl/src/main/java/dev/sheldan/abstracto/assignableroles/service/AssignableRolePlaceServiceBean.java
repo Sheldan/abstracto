@@ -84,6 +84,9 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     private AssignableRoleConditionService assignableRoleConditionService;
 
     @Autowired
+    private AssignedRoleUserManagementServiceBean assignedRoleUserManagementServiceBean;
+
+    @Autowired
     private ServerManagementService serverManagementService;
 
     @Override
@@ -122,7 +125,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             String emoteMarkdown = fakeEmote != null ? fakeEmote.getEmoteRepr() : null;
             if (assignableRolePlace.getMessageId() != null) {
                 log.debug("Assignable role place {} has already message post with ID {} - updating.", assignableRolePlace.getId(), assignableRolePlace.getMessageId());
-                return componentService.addButtonToMessage(assignableRolePlace.getMessageId(), textChannel, buttonId, description, emoteMarkdown, ButtonStyle.PRIMARY)
+                return componentService.addButtonToMessage(assignableRolePlace.getMessageId(), textChannel, buttonId, description, emoteMarkdown, ButtonStyle.SECONDARY)
                         .thenAccept(message -> self.persistAssignableRoleAddition(placeId, role, description, fakeEmote, buttonId));
             } else {
                 log.info("Assignable role place {} is not yet setup - only adding role to the database.", assignableRolePlace.getId());
@@ -149,6 +152,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         for (AssignableRole assignableRole : assignableRolePlace.getAssignableRoles()) {
             if (assignableRole.getRole().getId().equals(role.getId())) {
                 log.info("Found {} role to be removed - removing button from place.", role.getId());
+                // TODO we might want to actually remove all the assigned roles as well
                 return removeButtonFromAssignableRolePlace(assignableRole, assignableRolePlace).thenAccept(aVoid ->
                         self.deleteAssignableRoleFromPlace(assignableRolePlaceId, assignableRole.getId())
                 );
@@ -179,6 +183,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 .findAny();
         roleToRemoveOptional.ifPresent(assignableRole -> {
             ComponentPayload componentPayload = assignableRole.getComponentPayload();
+            assignedRoleUserManagementServiceBean.removeAssignedRoleFromUsers(assignableRole);
             assignableRoleManagementServiceBean.deleteAssignableRole(assignableRole);
             componentPayloadManagementService.deletePayload(componentPayload);
         });

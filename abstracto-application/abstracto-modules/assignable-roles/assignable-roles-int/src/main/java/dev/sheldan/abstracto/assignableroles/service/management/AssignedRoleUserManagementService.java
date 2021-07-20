@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.assignableroles.model.database.AssignedRoleUser;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -25,6 +26,8 @@ public interface AssignedRoleUserManagementService {
      * @param aUserInAServer The {@link AUserInAServer user} from whom the {@link AssignableRole role} should be removed
      */
     void removeAssignedRoleFromUser(AssignableRole assignableRole, AUserInAServer aUserInAServer);
+    void removeAssignedRoleFromUsers(AssignableRole assignableRole, List<AssignedRoleUser> users);
+    void removeAssignedRoleFromUsers(AssignableRole assignableRole);
 
     /**
      * Removes the given {@link AssignableRole assignableFrom} from the given {@link AssignedRoleUser user}.

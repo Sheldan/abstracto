@@ -62,6 +62,8 @@ public class AssignableRoleManagementServiceBean implements AssignableRoleManage
 
     @Override
     public void deleteAssignableRole(AssignableRole assignableRole) {
+        assignableRole.getAssignablePlace().getAssignableRoles().remove(assignableRole);
+        assignableRole.setAssignablePlace(null);
         repository.delete(assignableRole);
     }
 

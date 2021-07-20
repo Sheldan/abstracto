@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -41,6 +42,18 @@ public class AssignedRoleUserManagementServiceBean implements AssignedRoleUserMa
                 assignableRole.getAssignablePlace().getId());
         AssignedRoleUser user = findByUserInServer(aUserInAServer);
         removeAssignedRoleFromUser(assignableRole, user);
+    }
+
+    @Override
+    public void removeAssignedRoleFromUsers(AssignableRole assignableRole, List<AssignedRoleUser> users) {
+        log.info("Clearing all assignable role {} for {} users.", assignableRole.getId(), users.size());
+        assignableRole.getAssignedUsers().removeAll(users);
+        users.forEach(roleUser -> roleUser.getRoles().remove(assignableRole));
+    }
+
+    @Override
+    public void removeAssignedRoleFromUsers(AssignableRole assignableRole) {
+        removeAssignedRoleFromUsers(assignableRole, assignableRole.getAssignedUsers());
     }
 
     @Override
