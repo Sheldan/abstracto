@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -50,6 +51,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
 
     @Test
     public void testSuccessfulCondition() {
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
         Assert.assertTrue(testUnit.handles(Emote.class, unparsedCommandParameterPiece));
     }
 

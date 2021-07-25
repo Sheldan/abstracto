@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.UserParameterHandler;
@@ -24,7 +25,7 @@ public class UserParameterHandlerImpl implements UserParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(User.class);
+        return clazz.equals(User.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

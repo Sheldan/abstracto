@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -51,6 +52,7 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
 
     @Test
     public void testSuccessfulCondition() {
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
         Assert.assertTrue(testUnit.handles(AChannel.class, unparsedCommandParameterPiece));
     }
 

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.statistic.emote.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
@@ -73,6 +74,7 @@ public class TrackedEmoteParameterParameterHandlerTest {
 
     @Test
     public void testHandleCorrect() {
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
         Assert.assertTrue(testUnit.handles(TrackEmoteParameter.class, unparsedCommandParameterPiece));
     }
 

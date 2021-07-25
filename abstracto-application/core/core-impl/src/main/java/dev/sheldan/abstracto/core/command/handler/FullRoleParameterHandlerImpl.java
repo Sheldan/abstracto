@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.FullRoleParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.RoleParameterHandler;
@@ -29,7 +30,7 @@ public class FullRoleParameterHandlerImpl implements FullRoleParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(FullRole.class);
+        return clazz.equals(FullRole.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

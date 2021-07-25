@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AUserInAServerParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
@@ -56,7 +57,7 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(AUserInAServer.class);
+        return clazz.equals(AUserInAServer.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

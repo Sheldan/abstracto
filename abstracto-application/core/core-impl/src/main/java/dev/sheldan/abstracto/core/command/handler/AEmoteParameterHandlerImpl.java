@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AEmoteParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
@@ -28,7 +29,7 @@ public class AEmoteParameterHandlerImpl implements AEmoteParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(AEmote.class);
+        return clazz.equals(AEmote.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

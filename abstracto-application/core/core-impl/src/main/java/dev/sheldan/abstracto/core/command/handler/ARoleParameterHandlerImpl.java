@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.ARoleParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.RoleParameterHandler;
@@ -32,7 +33,7 @@ public class ARoleParameterHandlerImpl implements ARoleParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(ARole.class);
+        return clazz.equals(ARole.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

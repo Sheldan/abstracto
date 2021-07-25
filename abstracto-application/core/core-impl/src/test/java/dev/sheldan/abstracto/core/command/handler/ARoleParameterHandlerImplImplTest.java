@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.database.ARole;
@@ -58,6 +59,7 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
 
     @Test
     public void testSuccessfulCondition() {
+        when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
         Assert.assertTrue(testUnit.handles(ARole.class, unparsedCommandParameterPiece));
     }
 

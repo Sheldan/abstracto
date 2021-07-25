@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.MemberParameterHandler;
 import net.dv8tion.jda.api.entities.Member;
@@ -20,7 +21,7 @@ import java.util.regex.Matcher;
 public class MemberParameterHandlerImpl implements MemberParameterHandler {
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(Member.class);
+        return clazz.equals(Member.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

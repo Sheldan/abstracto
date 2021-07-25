@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.AChannelParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.TextChannelParameterHandler;
@@ -28,7 +29,7 @@ public class AChannelParameterHandlerImpl implements AChannelParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(AChannel.class);
+        return clazz.equals(AChannel.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

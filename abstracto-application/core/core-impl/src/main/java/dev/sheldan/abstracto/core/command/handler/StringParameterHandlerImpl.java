@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.StringParameterHandler;
 import net.dv8tion.jda.api.entities.Message;
@@ -22,7 +23,7 @@ public class StringParameterHandlerImpl implements StringParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(String.class);
+        return clazz.equals(String.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override

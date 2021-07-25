@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.command.handler;
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.provided.FullEmoteParameterHandler;
@@ -29,7 +30,7 @@ public class FullEmoteParameterHandlerImpl implements FullEmoteParameterHandler 
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(FullEmote.class);
+        return clazz.equals(FullEmote.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override
