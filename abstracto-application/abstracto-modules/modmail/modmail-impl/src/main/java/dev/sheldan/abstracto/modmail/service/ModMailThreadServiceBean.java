@@ -763,11 +763,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .build();
         List<CompletableFuture<Message>> updateMessageFutures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_CLOSE_PROGRESS_TEMPLATE_KEY, progressModel, channel);
         return FutureUtils.toSingleFutureGeneric(updateMessageFutures)
-                .thenApply(updateMessage -> self.logMessages(modMailThreadId, messages, context, updateMessageFutures.get(0).join()));
+                .thenCompose(updateMessage -> self.logMessages(modMailThreadId, messages, context, updateMessageFutures.get(0).join()));
     }
 
     @Transactional
-    public CompletableFutureList<Message> logMessages(Long modMailThreadId, ModmailLoggingThreadMessages messages, ClosingContext context, Message updateMessage) {
+    public CompletableFuture<CompletableFutureList<Message>> logMessages(Long modMailThreadId, ModmailLoggingThreadMessages messages, ClosingContext context, Message updateMessage) {
         Optional<ModMailThread> modMailThreadOpt = modMailThreadManagementService.getByIdOptional(modMailThreadId);
         if(modMailThreadOpt.isPresent()) {
             ModMailThread modMailThread = modMailThreadOpt.get();
@@ -800,10 +800,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             List<CompletableFuture<Message>> completableFutures = new ArrayList<>();
             log.debug("Sending close header and individual mod mail messages to mod mail log target for thread {}.", modMailThreadId);
             CompletableFuture<Message> headerFuture = loadUserAndSendClosingHeader(modMailThread, context);
-            // TODO the header might end up later on discord servers, this look out of order
             completableFutures.add(headerFuture);
-            completableFutures.addAll(self.sendMessagesToPostTarget(modMailThread, loggedMessages, updateMessage));
-            return new CompletableFutureList<>(completableFutures);
+            return headerFuture.thenApply(message -> {
+                completableFutures.addAll(self.sendMessagesToPostTarget(modMailThreadId, loggedMessages, updateMessage));
+                return new CompletableFutureList<>(completableFutures);
+            });
         } else {
             throw new ModMailThreadNotFoundException(modMailThreadId);
         }
@@ -854,11 +855,11 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     /**
      * Renders the retrieved {@link Message} which are in {@link ModMailLoggedMessageModel} into {@link MessageToSend} and
      * sends this to the appropriate logging {@link PostTarget}
-     * @param modMailThread The {@link ModMailThread} to which the loaded messages belong to
+     * @param modMailThreadId The ID of {@link ModMailThread} to which the loaded messages belong to
      * @param loadedMessages The list of {@link ModMailLoggedMessageModel} which can be rendered
      * @return A list of {@link CompletableFuture} which represent each of the messages being send to the {@link PostTarget}
      */
-    public List<CompletableFuture<Message>> sendMessagesToPostTarget(ModMailThread modMailThread, List<ModMailLoggedMessageModel> loadedMessages, Message updateMessage) {
+    public List<CompletableFuture<Message>> sendMessagesToPostTarget(Long modMailThreadId, List<ModMailLoggedMessageModel> loadedMessages, Message updateMessage) {
         List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
         ClosingProgressModel progressModel = ClosingProgressModel
                 .builder()
@@ -868,9 +869,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         loadedMessages = loadedMessages.stream().sorted(Comparator.comparing(o -> o.getMessage().getTimeCreated())).collect(Collectors.toList());
         for (int i = 0; i < loadedMessages.size(); i++) {
             ModMailLoggedMessageModel message = loadedMessages.get(i);
-            log.debug("Sending message {} of modmail thread {} to modmail log post target.", modMailThread.getId(), message.getMessage().getId());
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_logged_message", message, modMailThread.getServer().getId());
-            List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, modMailThread.getServer().getId());
+            log.debug("Sending message {} of modmail thread {} to modmail log post target.", modMailThreadId, message.getMessage().getId());
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_close_logged_message", message, updateMessage.getGuild().getIdLong());
+            List<CompletableFuture<Message>> logFuture = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_LOG, updateMessage.getGuild().getIdLong());
             if(i != 0 && (i % 10) == 0) {
                 progressModel.setLoggedMessages(i);
                 messageService.editMessageWithNewTemplate(updateMessage, MODMAIL_CLOSE_PROGRESS_TEMPLATE_KEY, progressModel);
