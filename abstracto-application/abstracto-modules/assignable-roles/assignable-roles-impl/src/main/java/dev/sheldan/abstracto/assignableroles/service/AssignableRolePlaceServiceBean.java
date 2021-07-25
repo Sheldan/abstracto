@@ -140,7 +140,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     @Transactional
     public void persistAssignableRoleAddition(Long placeId, Role role, String description, FullEmote fakeEmote, String componentId) {
         AssignableRolePlace place = assignableRolePlaceManagementServiceBean.findByPlaceId(placeId);
-        log.info("Adding role {} to assignable role place {} with component ID {}.", role.getId(), place, componentId);
+        log.info("Adding role {} to assignable role place {} with component ID {}.", role.getId(), place.getId(), componentId);
         ComponentPayload payload = persistButtonCallback(place, componentId, role.getIdLong());
         assignableRoleManagementServiceBean.addRoleToPlace(fakeEmote, role, description, place, payload);
     }

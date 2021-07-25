@@ -90,8 +90,16 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     public static final String COMMAND_PROCESSED = "command.processed";
     public static final String STATUS_TAG = "status";
-    public static final CounterMetric COMMANDS_PROCESSED_COUNTER = CounterMetric.builder().name(COMMAND_PROCESSED).tagList(Arrays.asList(MetricTag.getTag(STATUS_TAG, "processed"))).build();
-    public static final CounterMetric COMMANDS_WRONG_PARAMETER_COUNTER = CounterMetric.builder().name(COMMAND_PROCESSED).tagList(Arrays.asList(MetricTag.getTag(STATUS_TAG, "parameter.wrong"))).build();
+    public static final CounterMetric COMMANDS_PROCESSED_COUNTER = CounterMetric
+            .builder()
+            .name(COMMAND_PROCESSED)
+            .tagList(Arrays.asList(MetricTag.getTag(STATUS_TAG, "processed")))
+            .build();
+    public static final CounterMetric COMMANDS_WRONG_PARAMETER_COUNTER = CounterMetric
+            .builder()
+            .name(COMMAND_PROCESSED)
+            .tagList(Arrays.asList(MetricTag.getTag(STATUS_TAG, "parameter.wrong")))
+            .build();
 
     @Override
     @Transactional

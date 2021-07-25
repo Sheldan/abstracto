@@ -97,6 +97,7 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                         .anyMatch(memberRole -> memberRole.getIdLong() == payload.getRoleId());
                 if(!memberHasRole) {
                     if(place.getType().equals(AssignableRolePlaceType.BOOSTER) && member.getTimeBoosted() == null) {
+                        assignableRoleService.assignableRoleConditionFailure();
                         throw new BoosterAssignableRolePlaceMemberNotBoostingException();
                     }
                     AssignableRole assignableRole = assignableRoleOptional.get();
@@ -106,8 +107,9 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                         AssignableRoleConditionResult conditionResult =
                                 assignableRoleConditionServiceBean.evaluateConditions(assignableRole.getConditions(), aUserInAServer, roleById);
                         if(!conditionResult.getFulfilled()) {
-                            log.info("One condition failed to be fullfilled - notifying user.");
+                            log.info("One condition failed to be fulfilled - notifying user.");
                             self.notifyUserAboutConditionFail(model, event.getInteraction(), conditionResult.getModel());
+                            assignableRoleService.assignableRoleConditionFailure();
                             return ButtonClickedListenerResult.ACKNOWLEDGED;
                         }
                     }
@@ -134,7 +136,7 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                     } else {
                         removalFuture = CompletableFuture.completedFuture(null);
                     }
-                    CompletableFuture<Void> roleAdditionFuture = roleService.addRoleToMemberAsync(member, roleById);
+                    CompletableFuture<Void> roleAdditionFuture = assignableRoleService.assignAssignableRoleToUser(roleById, member);
                     CompletableFuture.allOf(removalFuture, roleAdditionFuture).whenComplete((unused, throwable) -> {
                         if(throwable != null) {
                             log.error("Failed to either add or remove roles for assignable role place {} in server {}.", payload.getPlaceId(), guild.getIdLong());
@@ -149,7 +151,7 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                         }
                     });
                 } else {
-                    roleService.removeRoleFromUserAsync(member, roleById)
+                    assignableRoleService.removeAssignableRoleFromUser(roleById, member)
                         .thenAccept(unused -> {
                             self.notifyUser(model, false, roleById, event.getInteraction(), new ArrayList<>());
                             log.info("Removed role {} from member {} in server {} for assignable role interaction {} on component {}.",

@@ -53,7 +53,11 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
 
     public static final String MESSAGE_METRIC = "message";
     public static final String ACTION = "action";
-    private static final CounterMetric MESSAGE_RECEIVED_COUNTER = CounterMetric.builder().name(MESSAGE_METRIC).tagList(Arrays.asList(MetricTag.getTag(ACTION, "received"))).build();
+    private static final CounterMetric MESSAGE_RECEIVED_COUNTER = CounterMetric
+            .builder()
+            .name(MESSAGE_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(ACTION, "received")))
+            .build();
 
     @Override
     @Transactional

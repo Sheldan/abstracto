@@ -72,12 +72,34 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
                     .tagList(Arrays.asList(MetricTag.getTag(ACTION, "removed")))
                     .build();
 
+    private static final CounterMetric ASSIGNABLE_ROLES_CONDITION_FAILED =
+            CounterMetric
+                    .builder()
+                    .name(ASSIGNABLE_ROLES_METRIC)
+                    .tagList(Arrays.asList(MetricTag.getTag(ACTION, "condition")))
+                    .build();
+
     @Override
     public CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member member) {
-        metricService.incrementCounter(ASSIGNABLE_ROLES_ASSIGNED);
         AssignableRole role = assignableRoleManagementServiceBean.getByAssignableRoleId(assignableRoleId);
         log.info("Assigning role {} to member {} in server {}.", assignableRoleId, member.getId(), member.getGuild().getId());
+        metricService.incrementCounter(ASSIGNABLE_ROLES_ASSIGNED);
         return roleService.addRoleToMemberAsync(member, role.getRole());
+    }
+
+    @Override
+    public CompletableFuture<Void> assignAssignableRoleToUser(Role role, Member member) {
+        return assignRoleToUser(role.getIdLong(), member);
+    }
+
+    @Override
+    public void assignableRoleConditionFailure() {
+        metricService.incrementCounter(ASSIGNABLE_ROLES_CONDITION_FAILED);
+    }
+
+    private CompletableFuture<Void> assignRoleToUser(Long roleId, Member member) {
+        metricService.incrementCounter(ASSIGNABLE_ROLES_ASSIGNED);
+        return roleService.addRoleToMemberAsync(member, roleId);
     }
 
     @Override
@@ -103,8 +125,17 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     @Override
     public CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, Member member) {
         log.info("Removing assignable role {} from user {} in server {}.", assignableRole.getId(), member.getId(), member.getGuild().getId());
+        return removeRoleFromUser(assignableRole.getRole().getId(), member);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeAssignableRoleFromUser(Role role, Member member) {
+        return removeRoleFromUser(role.getIdLong(), member);
+    }
+
+    private CompletableFuture<Void> removeRoleFromUser(Long roleId, Member member) {
         metricService.incrementCounter(ASSIGNABLE_ROLES_REMOVED);
-        return roleService.removeRoleFromMemberAsync(member, assignableRole.getRole());
+        return roleService.removeRoleFromMemberAsync(member, roleId);
     }
 
     @Override
@@ -159,5 +190,6 @@ public class AssignableRoleServiceBean implements AssignableRoleService {
     public void postConstruct() {
         metricService.registerCounter(ASSIGNABLE_ROLES_ASSIGNED, "Assignable roles assigned.");
         metricService.registerCounter(ASSIGNABLE_ROLES_REMOVED, "Assignable roles removed.");
+        metricService.registerCounter(ASSIGNABLE_ROLES_CONDITION_FAILED, "Assignable roles failed to assign because of condition.");
     }
 }

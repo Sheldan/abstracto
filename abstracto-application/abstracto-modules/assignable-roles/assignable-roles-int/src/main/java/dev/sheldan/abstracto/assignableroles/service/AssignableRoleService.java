@@ -24,6 +24,8 @@ public interface AssignableRoleService {
      */
 
     CompletableFuture<Void> assignAssignableRoleToUser(Long assignableRoleId, Member member);
+    CompletableFuture<Void> assignAssignableRoleToUser(Role role, Member member);
+    void assignableRoleConditionFailure();
 
     /**
      * Clears all {@link AssignableRole assignableRoles} which are currently given to the {@link AUserInAServer user} of a certain
@@ -41,6 +43,7 @@ public interface AssignableRoleService {
      *  has been removed from the {@link Member member}
      */
     CompletableFuture<Void> removeAssignableRoleFromUser(AssignableRole assignableRole, Member member);
+    CompletableFuture<Void> removeAssignableRoleFromUser(Role role, Member member);
 
     /**
      * Removes the {@link AssignableRole role} from the given {@link Member member}
