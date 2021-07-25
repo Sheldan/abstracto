@@ -4,3 +4,6 @@ url: jdbc:postgresql://{{ db_host }}:{{ db_port }}/{{ db_database }}
 username: {{ db_user }}
 password: {{ db_password }}
 classpath: {{ postgres_driver_path }}
+{% for key, value in variables.items() %}
+parameter.{{ key }}: {{ value }}
+{% endfor %}

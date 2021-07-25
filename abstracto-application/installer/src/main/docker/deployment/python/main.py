@@ -3,6 +3,7 @@ import json
 import liquibase_deploy
 import os
 import sys
+import re
 import templates_deploy
 from zipfile import ZipFile
 
@@ -39,6 +40,12 @@ if not use_folder:
     print("Loading templates")
     templateLoader = jinja2.FileSystemLoader(searchpath="/python/templates")
     templateEnv = jinja2.Environment(loader=templateLoader)
+    variable_prefix_pattern = re.compile(r'ABSTRACTO_\w+')
+    variables = {}
+    for key, val in os.environ.items():
+        if variable_prefix_pattern.match(key):
+            variables[key.lower().replace('_', '')] = val
+
     template = templateEnv.get_template("liquibase.properties.j2")
 
     if deploy_liquibase:
@@ -50,7 +57,8 @@ if not use_folder:
                 liquibase_zip.extractall(target_folder)
             change_log_file = liquibase_artifact['file']
             liquibase_config_text = template.render(change_log_file=change_log_file, db_host=db_config.host, db_port=db_config.port,
-                                                    db_database=db_config.database, db_user=db_config.user, db_password=db_config.password, postgres_driver_path=postgres_driver_path)
+                                                    db_database=db_config.database, db_user=db_config.user, db_password=db_config.password,
+                                                    postgres_driver_path=postgres_driver_path, variables=variables)
             property_path = target_folder + '/liquibase.properties'
             with open(property_path, 'w') as liquibase_target_properties:
                 liquibase_target_properties.write(liquibase_config_text)
