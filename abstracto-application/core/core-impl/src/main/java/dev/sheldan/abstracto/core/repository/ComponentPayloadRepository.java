@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface ComponentPayloadRepository extends JpaRepository<ComponentPayload, String> {
     List<ComponentPayload> findByServerAndOrigin(AServer server, String buttonOrigin);
+    void deleteByIdIn(List<String> componentIds);
 }

@@ -59,6 +59,11 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     }
 
     @Override
+    public void deletePayloads(List<String> ids) {
+        repository.deleteByIdIn(ids);
+    }
+
+    @Override
     public void deletePayload(ComponentPayload payload) {
         repository.delete(payload);
     }

@@ -14,5 +14,6 @@ public interface ComponentPayloadManagementService {
     Optional<ComponentPayload> findPayload(String id);
     List<ComponentPayload> findPayloadsOfOriginInServer(String buttonOrigin, AServer server);
     void deletePayload(String id);
+    void deletePayloads(List<String> id);
     void deletePayload(ComponentPayload payload);
 }

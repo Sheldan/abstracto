@@ -168,6 +168,12 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .stream()
                 .map(EmbeddedMessage::getEmbeddingMessageId)
                 .collect(Collectors.toList());
+        List<String> componentPayloadsToDelete = embeddedMessages
+                .stream()
+                .map(EmbeddedMessage::getDeletionComponentId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
         List<CompletableFuture<Message>> reactionMessageFutures = messageService.retrieveMessages(reactionChannelMessages);
         List<CompletableFuture<Message>> buttonMessageFutures = messageService.retrieveMessages(buttonChannelMessages);
         CompletableFutureList<Message> reactionFutureList = new CompletableFutureList<>(reactionMessageFutures);
@@ -193,7 +199,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                     if(throwable != null) {
                         log.warn("Embedded message button clearing failed.", throwable);
                     }
-                    self.deleteEmbeddedMessages(embeddedMessagesHandled);
+                    self.deleteEmbeddedMessages(embeddedMessagesHandled, componentPayloadsToDelete);
                 })
                 .exceptionally(throwable -> {
                     log.error("Failed to clean up embedded messages.", throwable);
@@ -231,8 +237,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
     }
 
     @Transactional
-    public void deleteEmbeddedMessages(List<Long> embeddedMessagesToDelete) {
+    public void deleteEmbeddedMessages(List<Long> embeddedMessagesToDelete, List<String> componentPayloadsToDelete) {
         messageEmbedPostManagementService.deleteEmbeddedMessagesViaId(embeddedMessagesToDelete);
+        componentPayloadManagementService.deletePayloads(componentPayloadsToDelete);
     }
 
     @Transactional
