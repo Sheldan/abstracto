@@ -372,7 +372,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                                             future.completeExceptionally(exception);
                                             return future;
                                         }
-                                    }).exceptionally(throwable -> {
+                            }).exceptionally(throwable -> {
                                 log.error("Failed to load member {} for modmail in server {}.", userId, chosenServerId, throwable);
                                 return null;
                             });
@@ -548,7 +548,6 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     @Transactional
     public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions, Member targetMember) {
         log.info("Relaying message {} to user {} in modmail thread {} on server {}.", replyCommandMessage.getId(), targetMember.getId(), modmailThreadId, targetMember.getGuild().getId());
-        AUserInAServer moderator = userInServerManagementService.loadOrCreateUser(replyCommandMessage.getMember());
         metricService.incrementCounter(MDOMAIL_THREAD_MESSAGE_SENT);
         ModMailThread modMailThread = modMailThreadManagementService.getById(modmailThreadId);
         FullUserInServer fullThreadUser = FullUserInServer
@@ -567,9 +566,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             log.debug("Message is sent anonymous.");
             modMailModeratorReplyModelBuilder.moderator(memberService.getBotInGuild(modMailThread.getServer()));
         } else {
-            // should be loaded, because we are currently processing a command caused by the message
-            Member moderatorMember = memberService.getMemberInServer(moderator);
-            modMailModeratorReplyModelBuilder.moderator(moderatorMember);
+            modMailModeratorReplyModelBuilder.moderator(replyCommandMessage.getMember());
         }
         ModMailModeratorReplyModel modMailUserReplyModel = modMailModeratorReplyModelBuilder.build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel, modMailThread.getServer().getId());
@@ -581,7 +578,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             sameThreadMessageFuture = CompletableFuture.completedFuture(null);
         }
         return CompletableFuture.allOf(future, sameThreadMessageFuture).thenAccept(avoid ->
-                self.saveSendMessagesAndUpdateState(modmailThreadId, anonymous, moderator, future.join(), replyCommandMessage, sameThreadMessageFuture.join())
+                self.saveSendMessagesAndUpdateState(modmailThreadId, anonymous, future.join(), replyCommandMessage, sameThreadMessageFuture.join())
         );
     }
 
@@ -815,11 +812,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .builder()
                 .closingMember(closingContext.getClosingMember())
                 .note(closingContext.getNote())
-                .silently(closingContext.getNotifyUser())
+                .silently(!closingContext.getNotifyUser())
                 .messageCount(modMailThread.getMessages().size())
                 .startDate(modMailThread.getCreated())
                 .serverId(modMailThread.getServer().getId())
-                .silently(!closingContext.getNotifyUser())
                 .userId(modMailThread.getUser().getUserReference().getId())
                 .build();
         return userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenApply(user -> {
@@ -886,15 +882,15 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * and updates the state of the {@link ModMailThread}.
      * @param modMailThreadId The ID of the {@link ModMailThread} for which the messages were sent for
      * @param anonymous Whether or not the messages were send anonymous
-     * @param moderator The original {@link AUserInAServer} which authored the messages
      * @param createdMessageInDM The {@link Message message} which was sent to the private channel with the {@link User user}
      * @param modMailThreadMessage The {@link Message message} which was sent in the channel representing the {@link ModMailThread thread}. Might be null.
      * @param replyCommandMessage The {@link Message message} which contained the command used to reply to the user
      * @throws ModMailThreadNotFoundException in case the {@link ModMailThread} is not found by the ID
      */
     @Transactional
-    public void saveSendMessagesAndUpdateState(Long modMailThreadId, Boolean anonymous, AUserInAServer moderator, Message createdMessageInDM, Message replyCommandMessage, Message modMailThreadMessage) {
+    public void saveSendMessagesAndUpdateState(Long modMailThreadId, Boolean anonymous, Message createdMessageInDM, Message replyCommandMessage, Message modMailThreadMessage) {
         Optional<ModMailThread> modMailThreadOpt = modMailThreadManagementService.getByIdOptional(modMailThreadId);
+        AUserInAServer moderator = userInServerManagementService.loadOrCreateUser(replyCommandMessage.getMember());
         if(modMailThreadOpt.isPresent()) {
             ModMailThread modMailThread = modMailThreadOpt.get();
             log.debug("Adding (anonymous: {}) message {} of moderator to modmail thread {} and setting state to {}.", anonymous, createdMessageInDM.getId(), modMailThreadId, ModMailThreadState.MOD_REPLIED);

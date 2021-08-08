@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.logging.config.LoggingFeatureDefinition;
 import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedAttachmentLog;
@@ -81,11 +82,14 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
                 .member(authorMember)
                 .build();
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel, messageFromCache.getServerId());
-        postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
+        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId())).exceptionally(throwable -> {
+            log.error("Failed to send message deleted log.", throwable);
+            return null;
+        });
         if(messageFromCache.getAttachments() != null){
             log.debug("Notifying about deletions of {} attachments.", messageFromCache.getAttachments().size());
             for (int i = 0; i < messageFromCache.getAttachments().size(); i++) {
-                MessageDeletedAttachmentLog log = MessageDeletedAttachmentLog
+                MessageDeletedAttachmentLog attachmentLogModel = MessageDeletedAttachmentLog
                         .builder()
                         .imageUrl(messageFromCache.getAttachments().get(i).getProxyUrl())
                         .counter(i + 1)
@@ -93,8 +97,12 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
                         .channel(textChannel)
                         .member(authorMember)
                         .build();
-                MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, log, messageFromCache.getServerId());
-                postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId());
+                MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, attachmentLogModel, messageFromCache.getServerId());
+                FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId()))
+                        .exceptionally(throwable -> {
+                    log.error("Failed to send message deleted log.", throwable);
+                    return null;
+                });
             }
         }
     }

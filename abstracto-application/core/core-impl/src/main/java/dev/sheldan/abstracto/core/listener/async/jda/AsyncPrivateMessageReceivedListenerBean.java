@@ -50,27 +50,25 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
             return;
         }
         cacheEntityService.buildCachedMessageFromMessage(event.getMessage()).thenAccept(cachedMessage ->
-            privateMessageReceivedListeners.forEach(messageReceivedListener -> {
-                try {
-                    CompletableFuture.runAsync(() ->
-                        self.executeIndividualPrivateMessageReceivedListener(cachedMessage, messageReceivedListener)
-                        , privateMessageReceivedExecutor)
-                        .exceptionally(throwable -> {
-                            log.error("Async private message receiver listener {} failed.", messageReceivedListener, throwable);
-                            return null;
-                        });
-                } catch (Exception e) {
-                    log.error("Private message received {} had exception when executing.", messageReceivedListener, e);
-                    exceptionService.reportExceptionToPrivateMessageReceivedContext(e, event);
-                }
-            })
+            privateMessageReceivedListeners.forEach(messageReceivedListener -> CompletableFuture.runAsync(() ->
+                self.executeIndividualPrivateMessageReceivedListener(cachedMessage, messageReceivedListener, event)
+                , privateMessageReceivedExecutor)
+                .exceptionally(throwable -> {
+                    log.error("Async private message receiver listener {} failed.", messageReceivedListener, throwable);
+                    return null;
+                }))
         );
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualPrivateMessageReceivedListener(CachedMessage cachedMessage, AsyncPrivateMessageReceivedListener messageReceivedListener) {
-        log.debug("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), cachedMessage.getAuthor().getAuthorId());
-        messageReceivedListener.execute(cachedMessage);
+    public void executeIndividualPrivateMessageReceivedListener(CachedMessage cachedMessage, AsyncPrivateMessageReceivedListener messageReceivedListener, PrivateMessageReceivedEvent event) {
+        try {
+            log.debug("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), cachedMessage.getAuthor().getAuthorId());
+            messageReceivedListener.execute(cachedMessage);
+        } catch (Exception e) {
+            log.error("Private message received {} had exception when executing.", messageReceivedListener, e);
+            exceptionService.reportExceptionToPrivateMessageReceivedContext(e, event);
+        }
     }
 
 }
