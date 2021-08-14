@@ -39,7 +39,6 @@ public class HasLevelCondition implements SystemCondition {
         Map<String, Object> parameters = conditionContext.getParameters();
         Long userInServerId = (Long) parameters.get(USER_IN_SERVER_ID_VARIABLE_KEY);
         Integer level = (Integer) parameters.get(LEVEL_VARIABLE);
-        log.info("Evaluating has level condition.");
         Optional<AUserInAServer> userInServerOptional = userInServerManagementService.loadUserOptional(userInServerId);
         if(userInServerOptional.isPresent()) {
             AUserInAServer userInServer = userInServerOptional.get();
@@ -50,7 +49,7 @@ public class HasLevelCondition implements SystemCondition {
             log.info("Condition evaluated to {}", conditionResult);
             return conditionResult;
         }
-        log.info("No user in server object was found. Evaluating to false.");
+        log.info("No user in server object was found. Evaluating has level to false.");
 
         return false;
     }

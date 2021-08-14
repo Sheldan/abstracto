@@ -131,7 +131,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         parsingFuture.thenAccept(parsedParameters ->
             self.executeCommand(event, foundCommand, parsedParameters)
         ).exceptionally(throwable -> {
-            self.reportException(event, foundCommand, throwable, "Exception when parsing command.");
+            self.reportException(event, foundCommand, throwable, "Exception when executing or parsing command.");
             return null;
         });
     }

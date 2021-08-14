@@ -424,7 +424,7 @@ public class ChannelServiceBean implements ChannelService {
             Category categoryById = guild.getCategoryById(categoryId);
             if(categoryById != null) {
                 metricService.incrementCounter(CHANNEL_CREATE_METRIC);
-                log.info("Creating channel on server {} in category {}.", server.getId(), categoryById);
+                log.info("Creating channel on server {} in category {}.", server.getId(), categoryId);
                 return categoryById.createTextChannel(name).submit();
             }
             throw new CategoryNotFoundException(categoryId, server.getId());
