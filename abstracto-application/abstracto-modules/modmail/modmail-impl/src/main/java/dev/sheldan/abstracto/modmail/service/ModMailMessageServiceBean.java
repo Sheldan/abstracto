@@ -101,7 +101,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                 }
                 List<Message> loadedMessages = new ArrayList<>();
                 CompletableFuture.allOf(threadHistoryFuture, privateHistoryFuture)
-                        .thenCompose(unused -> loadMoreMessages(messageIdsToLoad, privateHistoryFuture.join(), modMailThread, threadHistoryFuture.join(), privateChannel, loadedMessages, 0))
+                        .thenCompose(unused -> loadMoreMessages(messageIdsToLoad.size(), messageIdsToLoad, privateHistoryFuture.join(), modMailThread, threadHistoryFuture.join(), privateChannel, loadedMessages, 0))
                 .thenAccept(unused -> {
                     Set<Long> userIds = messageIds
                             .stream()
@@ -124,10 +124,11 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
         return future;
     }
 
-    public CompletableFuture<Void> loadMoreMessages(List<Long> messagesToLoad,
+    public CompletableFuture<Void> loadMoreMessages(Integer totalMessageCount, List<Long> messagesToLoad,
                                                     MessageHistory privateMessageHistory, TextChannel thread,
                                                     MessageHistory threadMessageHistory, PrivateChannel dmChannel, List<Message> loadedMessages, Integer counter) {
-        if(counter == messagesToLoad.size()) {
+        // TODO maybe find a better mechanism for this...  one which does not lead to infinite loops, but also doesnt miss out on history
+        if(counter.equals(totalMessageCount * 2)) {
             log.warn("We encountered the maximum of {} iterations when loading modmail history - aborting.", messagesToLoad.size());
             return CompletableFuture.completedFuture(null);
         }
@@ -171,7 +172,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                 privateHistoryAction = CompletableFuture.completedFuture(null);
             }
             return CompletableFuture.allOf(threadHistoryAction, privateHistoryAction)
-                    .thenCompose(lists -> loadMoreMessages(messagesToLoad, threadHistoryAction.join(), thread, privateHistoryAction.join(), dmChannel, loadedMessages, counter + 1));
+                    .thenCompose(lists -> loadMoreMessages(totalMessageCount, messagesToLoad, threadHistoryAction.join(), thread, privateHistoryAction.join(), dmChannel, loadedMessages, counter + 1));
         }
     }
 
