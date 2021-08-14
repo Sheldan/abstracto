@@ -166,6 +166,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             FutureUtils.toSingleFutureGeneric(memberFutures).whenComplete((unused, throwable) -> {
                 self.updateFoundMembers(memberFutures, serverExp.getServerId(), resultFutures, futures);
                 experienceFuture.complete(null);
+            }).exceptionally(throwable -> {
+                experienceFuture.completeExceptionally(throwable);
+                return null;
             });
         });
         return experienceFuture

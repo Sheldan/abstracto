@@ -48,12 +48,11 @@ public class WarnEntryConverter {
             allFutures.add(warnedMemberFuture);
         });
         CompletableFuture<List<WarnEntry>> future = new CompletableFuture<>();
-        FutureUtils.toSingleFutureGeneric(allFutures).whenComplete((unused, throwable) -> {
-            try {
-                future.complete(self.loadFullWarnEntries(loadedWarnings));
-            } catch (Exception exception) {
-                future.completeExceptionally(exception);
-            }
+        FutureUtils.toSingleFutureGeneric(allFutures)
+                .whenComplete((unused, throwable) -> future.complete(self.loadFullWarnEntries(loadedWarnings)))
+        .exceptionally(throwable -> {
+            future.completeExceptionally(throwable);
+            return null;
         });
         return future;
     }

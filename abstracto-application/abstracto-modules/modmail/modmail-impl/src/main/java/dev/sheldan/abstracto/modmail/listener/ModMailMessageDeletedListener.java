@@ -57,7 +57,10 @@ public class ModMailMessageDeletedListener implements AsyncMessageDeletedListene
                 }
                 CompletableFuture.allOf(dmDeletePromise, channelDeletePromise).whenComplete((unused, throwable) ->
                         self.removeMessageFromThread(message.getMessageId())
-                );
+                ).exceptionally(throwable -> {
+                    log.error("Failed to delete message.", throwable);
+                    return null;
+                });
             });
         });
         return DefaultListenerResult.PROCESSED;

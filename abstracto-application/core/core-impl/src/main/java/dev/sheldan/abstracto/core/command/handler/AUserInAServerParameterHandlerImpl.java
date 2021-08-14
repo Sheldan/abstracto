@@ -36,21 +36,18 @@ public class AUserInAServerParameterHandlerImpl implements AUserInAServerParamet
         Parameter cloned = commandService.cloneParameter(param);
         cloned.setType(Member.class);
         memberParameterHandler.handleAsync(input, iterators, cloned, context, command).whenComplete((o, throwable) -> {
-            try {
-                AUserInAServer actualInstance;
-                if (throwable == null) {
-                    Member member = (Member) o;
-                    actualInstance = userInServerManagementService.loadOrCreateUser(member);
-                } else {
-                    Long userId = Long.parseLong(((String) input.getValue()).trim());
-                    actualInstance = userInServerManagementService.loadAUserInAServerOptional(context.getGuild().getIdLong(), userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
-                }
-                future.complete(AUserInAServer.builder().userInServerId(actualInstance.getUserInServerId()).build());
-            } catch (Exception e) {
-                // we need to do it like this, because when complete only returns the exception it got in case two exceptions happen
-                // so if the first exception happens in handleAsync, and we also throw one, it will _not_ get reported, because the other exception overshadows it
-                future.completeExceptionally(e);
+            AUserInAServer actualInstance;
+            if (throwable == null) {
+                Member member = (Member) o;
+                actualInstance = userInServerManagementService.loadOrCreateUser(member);
+            } else {
+                Long userId = Long.parseLong(((String) input.getValue()).trim());
+                actualInstance = userInServerManagementService.loadAUserInAServerOptional(context.getGuild().getIdLong(), userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
             }
+            future.complete(AUserInAServer.builder().userInServerId(actualInstance.getUserInServerId()).build());
+        }).exceptionally(throwable -> {
+            future.completeExceptionally(throwable);
+            return null;
         });
         return future;
     }

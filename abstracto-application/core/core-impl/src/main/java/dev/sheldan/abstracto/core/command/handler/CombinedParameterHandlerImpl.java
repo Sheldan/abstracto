@@ -70,6 +70,9 @@ public class CombinedParameterHandlerImpl implements CombinedParametersHandler {
                 }
             }
             returningFuture.completeExceptionally(new IncorrectParameterException(command, param.getName()));
+        }).exceptionally(throwable -> {
+            returningFuture.completeExceptionally(throwable);
+            return null;
         });
         return returningFuture;
     }

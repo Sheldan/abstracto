@@ -195,9 +195,13 @@ public class WarnServiceBean implements WarnService {
                 log.warn("Could not find user {} in server {}. Not notifying about decayed warning {}.", userId, serverId, warningId);
             }
         });
-        CompletableFuture<Void> future = new CompletableFuture();
+        CompletableFuture<Void> future = new CompletableFuture<>();
         FutureUtils.toSingleFutureGeneric(notificationFutures)
-                .whenComplete((unused, throwable) -> future.complete(null));
+                .whenComplete((unused, throwable) -> future.complete(null))
+        .exceptionally(throwable -> {
+            future.completeExceptionally(throwable);
+            return null;
+        });
         return future;
     }
 

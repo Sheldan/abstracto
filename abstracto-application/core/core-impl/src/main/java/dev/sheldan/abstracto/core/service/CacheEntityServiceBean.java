@@ -184,6 +184,9 @@ public class CacheEntityServiceBean implements CacheEntityService {
             builder.self(reaction.isSelf());
             builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
             future.complete(builder.build());
+        }).exceptionally(throwable -> {
+            future.completeExceptionally(throwable);
+            return null;
         });
         return future;
     }

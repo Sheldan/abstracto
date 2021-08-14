@@ -325,6 +325,9 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
                     sendDeletionNotification(deletedInvites, message);
                 }
             }
+        }).exceptionally(throwable -> {
+            log.error("Invite matching failed.", throwable);
+            return null;
         });
     }
 

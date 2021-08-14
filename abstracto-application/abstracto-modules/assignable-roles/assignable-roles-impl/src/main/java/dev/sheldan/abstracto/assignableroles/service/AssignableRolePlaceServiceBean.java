@@ -205,16 +205,15 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             if (throwable != null) {
                 log.warn("Not able to delete old messages of assignable role place {} in server {}.", assignablePlaceId, serverId);
             }
-            try {
-                self.createAssignableRolePlacePost(serverId, assignablePlaceId)
-                        .thenAccept(unused1 -> postingFuture.complete(null))
-                        .exceptionally(innerThrowable -> {
-                            postingFuture.completeExceptionally(innerThrowable);
-                            return null;
-                        });
-            } catch (Exception ex) {
-                postingFuture.completeExceptionally(ex);
-            }
+            self.createAssignableRolePlacePost(serverId, assignablePlaceId)
+                    .thenAccept(unused1 -> postingFuture.complete(null))
+                    .exceptionally(innerThrowable -> {
+                        postingFuture.completeExceptionally(innerThrowable);
+                        return null;
+                    });
+        }).exceptionally(throwable -> {
+            postingFuture.completeExceptionally(throwable);
+            return null;
         });
         return postingFuture;
     }
@@ -361,17 +360,16 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             if (throwable != null) {
                 log.warn("Not able to delete old messages of assignable role place {} in server {}.", assignablePlaceId, serverId);
             }
-            try {
-                self.setupAssignableRolePlaceInChannel(serverId, assignablePlaceId, newChannel)
-                        .thenAccept(unused1 -> self.updateAssignableRolePlaceChannel(name, newChannel))
-                        .thenAccept(unused1 -> returnFuture.complete(null))
-                        .exceptionally(innerThrowable -> {
-                            returnFuture.completeExceptionally(innerThrowable);
-                            return null;
-                        });
-            } catch (Exception ex) {
-                returnFuture.completeExceptionally(ex);
-            }
+            self.setupAssignableRolePlaceInChannel(serverId, assignablePlaceId, newChannel)
+                    .thenAccept(unused1 -> self.updateAssignableRolePlaceChannel(name, newChannel))
+                    .thenAccept(unused1 -> returnFuture.complete(null))
+                    .exceptionally(innerThrowable -> {
+                        returnFuture.completeExceptionally(innerThrowable);
+                        return null;
+                    });
+        }).exceptionally(throwable -> {
+            returnFuture.completeExceptionally(throwable);
+            return null;
         });
 
         return returnFuture;

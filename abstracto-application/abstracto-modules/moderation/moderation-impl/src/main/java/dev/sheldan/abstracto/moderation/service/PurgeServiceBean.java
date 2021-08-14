@@ -155,14 +155,18 @@ public class PurgeServiceBean implements PurgeService {
         return aVoid -> {
             if (amountToDelete >= 1) {
                 log.debug("Still more than 1 message to delete. Continuing.");
-                purgeMessages(amountToDelete, channel, earliestMessage.getIdLong(), purgedMember, totalCount, currentCount, currentStatusMessageId).whenComplete((avoid, throwable) -> {
+                purgeMessages(amountToDelete, channel, earliestMessage.getIdLong(), purgedMember, totalCount, currentCount, currentStatusMessageId)
+                        .whenComplete((avoid, throwable) -> {
                             if (throwable != null) {
                                 deletionFuture.completeExceptionally(throwable);
                             } else {
                                 deletionFuture.complete(null);
                             }
                         }
-                );
+                ).exceptionally(throwable -> {
+                    deletionFuture.completeExceptionally(throwable);
+                    return null;
+                });
             } else {
                 log.debug("Completed purging of {} messages.", totalCount);
                 // Todo Move to message service

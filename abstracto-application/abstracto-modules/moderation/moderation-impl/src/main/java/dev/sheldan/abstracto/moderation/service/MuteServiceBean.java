@@ -163,6 +163,9 @@ public class MuteServiceBean implements MuteService {
             channelService.sendTextToChannel(throwable.getMessage(), feedBackChannel).whenComplete((exceptionMessage, innerThrowable) -> {
                 notificationFuture.complete(null);
                 log.info("Successfully notified user {} in server {} about mute.", memberBeingMuted.getId(), memberBeingMuted.getGuild().getId());
+            }).exceptionally(throwable1 -> {
+                notificationFuture.completeExceptionally(throwable1);
+                return null;
             });
             return null;
         });

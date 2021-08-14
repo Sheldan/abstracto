@@ -90,6 +90,9 @@ public class BanServiceBean implements BanService {
                     returningFuture.completeExceptionally(throwable1);
                     return null;
             });
+        }).exceptionally(throwable -> {
+            returningFuture.completeExceptionally(throwable);
+            return null;
         });
         return returningFuture;
     }

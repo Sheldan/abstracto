@@ -233,10 +233,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         CompletableFuture<Void> headerFuture = sendModMailHeader(channel, member);
         CompletableFuture<Message> userReplyMessage;
         if(initialMessage != null){
-            log.debug("Sending initial message {} of user {} to modmail thread {}.", initialMessage.getId(), member.getId(), channel.getId());
+            log.info("Sending initial message {} of user {} to modmail thread {}.", initialMessage.getId(), member.getId(), channel.getId());
             userReplyMessage = self.sendUserReply(channel, 0L, initialMessage, member, false);
         } else {
-            log.debug("No initial message to send.");
+            log.info("No initial message to send.");
             userReplyMessage = CompletableFuture.completedFuture(null);
         }
         CompletableFuture notificationFuture;
@@ -349,6 +349,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             }
             log.info("There were {} shared servers found which have modmail enabled.", availableGuilds.size());
             // if more than 1 server is available, show a choice dialog
+            ArrayList<UndoActionInstance> undoActions = new ArrayList<>();
             if(availableGuilds.size() > 1) {
                 ModMailServerChooserModel modMailServerChooserModel = ModMailServerChooserModel
                         .builder()
@@ -365,7 +366,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                             log.debug("Executing action for creationg a modmail thread in server {} for user {}.", chosenServerId, userId);
                             memberService.getMemberInServerAsync(chosenServerId, userId).thenCompose(member -> {
                                         try {
-                                            return self.createModMailThreadForUser(member, initialMessage, initialMessage.getChannel(), true, new ArrayList<>());
+                                            return self.createModMailThreadForUser(member, initialMessage, initialMessage.getChannel(), true, undoActions);
                                         } catch (Exception exception) {
                                             log.error("Setting up modmail thread for user {} in server {} failed.", userId, chosenServerId, exception);
                                             CompletableFuture<Void> future = new CompletableFuture<>();
@@ -374,6 +375,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                                         }
                             }).exceptionally(throwable -> {
                                 log.error("Failed to load member {} for modmail in server {}.", userId, chosenServerId, throwable);
+                                undoActionService.performActions(undoActions);
                                 return null;
                             });
                         })
@@ -386,7 +388,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 log.info("Only one server available to modmail. Directly opening modmail thread for user {} in server {}.", initialMessage.getAuthor().getId(), chosenServerId);
                 memberService.getMemberInServerAsync(chosenServerId, initialMessage.getAuthor().getIdLong()).thenCompose(member -> {
                             try {
-                                return self.createModMailThreadForUser(member, initialMessage, initialMessage.getChannel(), true, new ArrayList<>());
+                                return self.createModMailThreadForUser(member, initialMessage, initialMessage.getChannel(), true, undoActions);
                             } catch (Exception exception) {
                                 CompletableFuture<Void> future = new CompletableFuture<>();
                                 future.completeExceptionally(exception);
@@ -394,6 +396,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                             }
                         }).exceptionally(throwable -> {
                             log.error("Failed to setup thread correctly", throwable);
+                            undoActionService.performActions(undoActions);
                             return null;
                         });
             } else {
@@ -479,9 +482,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             if(subscriberList.isEmpty()) {
                 subscriberMemberFutures.add(CompletableFuture.completedFuture(null));
             }
-            log.debug("Mentioning {} subscribers for modmail thread {}.", subscriberList.size(), modMailThreadId);
+            log.info("Mentioning {} subscribers for modmail thread {}.", subscriberList.size(), modMailThreadId);
         } else {
             subscriberMemberFutures.add(CompletableFuture.completedFuture(null));
+            log.info("Initial setup of modmail - not mentioning subscribers.");
         }
         CompletableFuture<Message> messageFuture = new CompletableFuture<>();
         FutureUtils.toSingleFutureGeneric(subscriberMemberFutures).whenComplete((unused, throwable) -> {
@@ -518,6 +522,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                         messageFuture.completeExceptionally(throwable1);
                         return null;
                     });
+        }).exceptionally(throwable -> {
+            messageFuture.completeExceptionally(throwable);
+            return null;
         });
         return messageFuture;
 

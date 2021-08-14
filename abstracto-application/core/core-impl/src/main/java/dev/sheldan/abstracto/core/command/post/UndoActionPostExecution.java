@@ -24,10 +24,13 @@ public class UndoActionPostExecution implements PostCommandExecution {
             log.info("Performing undo cations for command {} in server {}.", command.getConfiguration().getName(), commandContext.getGuild().getIdLong());
             undoActionService.performActionsFuture(commandContext.getUndoActions()).whenComplete((aVoid, undoThrowable) -> {
                 if(undoThrowable != null) {
-                    log.warn("Undo actions failed.", undoThrowable);
+                    log.error("Undo actions failed.", undoThrowable);
                 } else {
                     log.info("Successfully executed undo actions.");
                 }
+            }).exceptionally(throwable -> {
+                log.error("Undo complete failed.", throwable);
+                return null;
             });
         }
     }

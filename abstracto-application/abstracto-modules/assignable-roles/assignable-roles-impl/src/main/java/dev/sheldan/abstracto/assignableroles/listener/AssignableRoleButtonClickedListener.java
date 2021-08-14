@@ -149,6 +149,9 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
                                 self.persistAssignableUser(member, payload, false);
                             });
                         }
+                    }).exceptionally(throwable -> {
+                        log.error("Failed to perform role change in assignable role place.", throwable);
+                        return null;
                     });
                 } else {
                     assignableRoleService.removeAssignableRoleFromUser(roleById, member)
