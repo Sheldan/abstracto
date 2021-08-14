@@ -19,6 +19,7 @@ public class StarboardFeatureConfig implements FeatureConfig {
     public static final String STAR_BADGE_EMOTE_PREFIX = "starboardBadge";
     public static final String STAR_LEVELS_CONFIG_KEY = "starLvls";
     public static final String STAR_EMOTE = "star";
+    public static final String STAR_MAX_DAYS_CONFIG_KEY = "starMaxDays";
 
     @Autowired
     private DefaultConfigManagementService defaultConfigManagementService;
@@ -40,6 +41,7 @@ public class StarboardFeatureConfig implements FeatureConfig {
         for(int i = maxLevels; i > 0; i--) {
             configKeys.add(StarboardFeatureConfig.STAR_LVL_CONFIG_PREFIX + i);
         }
+        configKeys.add(STAR_MAX_DAYS_CONFIG_KEY);
         return configKeys;
     }
 

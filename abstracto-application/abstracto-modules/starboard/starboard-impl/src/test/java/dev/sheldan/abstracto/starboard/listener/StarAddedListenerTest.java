@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.listener.ReactionAddedModel;
+import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -26,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -52,6 +54,9 @@ public class StarAddedListenerTest {
 
     @Mock
     private UserInServerManagementService userInServerManagementService;
+
+    @Mock
+    private ConfigService configService;
 
     @Mock
     private EmoteService emoteService;
@@ -117,6 +122,8 @@ public class StarAddedListenerTest {
         when(member.getUser()).thenReturn(user);
         when(model.getMemberReacting()).thenReturn(member);
         when(user.isBot()).thenReturn(false);
+        when(configService.getLongValueOrConfigDefault(StarboardFeatureConfig.STAR_MAX_DAYS_CONFIG_KEY, SERVER_ID)).thenReturn(1L);
+        when(cachedMessage.getTimeCreated()).thenReturn(Instant.now());
     }
 
     @Test

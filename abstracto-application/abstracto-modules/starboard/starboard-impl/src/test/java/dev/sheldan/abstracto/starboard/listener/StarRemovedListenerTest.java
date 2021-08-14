@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.listener.ReactionRemovedModel;
+import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
@@ -16,13 +17,16 @@ import dev.sheldan.abstracto.starboard.service.StarboardService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorManagementService;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +54,9 @@ public class StarRemovedListenerTest {
 
     @Mock
     private UserInServerManagementService userInServerManagementService;
+
+    @Mock
+    private ConfigService configService;
 
     @Mock
     private EmoteService emoteService;
@@ -103,6 +110,12 @@ public class StarRemovedListenerTest {
     private static final Long SERVER_ID = 6L;
     private static final Long AUTHOR_ID = 4L;
     private static final Long USER_ACTING_ID = 7L;
+
+    @Before
+    public void setup() {
+        when(configService.getLongValueOrConfigDefault(StarboardFeatureConfig.STAR_MAX_DAYS_CONFIG_KEY, SERVER_ID)).thenReturn(1L);
+        when(cachedMessage.getTimeCreated()).thenReturn(Instant.now());
+    }
 
     @Test
     public void testAuthorRemovingReaction() {

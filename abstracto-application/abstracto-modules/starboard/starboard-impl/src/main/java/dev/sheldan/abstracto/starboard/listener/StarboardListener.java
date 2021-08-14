@@ -7,9 +7,11 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.starboard.config.StarboardFeatureConfig;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import dev.sheldan.abstracto.starboard.service.StarboardService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
@@ -19,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +56,9 @@ public abstract class StarboardListener {
     @Autowired
     protected MetricService metricService;
 
+    @Autowired
+    private ConfigService configService;
+
     public static final String STARBOARD_STARS = "starboard.stars";
     public static final String STARBOARD_POSTS = "starboard.posts";
     public static final String STAR_ACTION = "action";
@@ -69,6 +76,11 @@ public abstract class StarboardListener {
             .build();
 
     protected void handleStarboardPostChange(CachedMessage message, CachedReactions reaction, ServerUser userReacting, boolean adding)  {
+        Long starMaxDays = configService.getLongValueOrConfigDefault(StarboardFeatureConfig.STAR_MAX_DAYS_CONFIG_KEY, message.getServerId());
+        if(message.getTimeCreated().isBefore(Instant.now().minus(starMaxDays, ChronoUnit.DAYS))) {
+            log.info("Post {} in channel {} in guild {} is beyond the configured max day amount of {} - ignoring.", message.getMessageId(), message.getChannelId(), message.getServerId(), starMaxDays);
+            return;
+        }
         Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
         boolean starboardPostExists = starboardPostOptional.isPresent();
         if(starboardPostExists && starboardPostOptional.get().isIgnored()) {
