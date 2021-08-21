@@ -37,16 +37,18 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
 
     @Override
     public DefaultListenerResult execute(MemberJoinModel model) {
-        AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(model.getServerId(), model.getJoiningUser().getUserId());
-        Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
-        if(userExperienceOptional.isPresent()) {
-            log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", model.getJoiningUser().getUserId(), model.getServerId());
-            userExperienceService.syncForSingleUser(userExperienceOptional.get()).thenAccept(result ->
-                log.info("Finished re-assigning experience for re-joining user {} in server {}.", model.getJoiningUser().getUserId(), model.getServerId())
-            );
-        } else {
-            log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", model.getJoiningUser().getUserId(), model.getServerId());
-        }
+        Optional<AUserInAServer> userInAServerOptional = userInServerManagementService.loadUserOptional(model.getServerId(), model.getJoiningUser().getUserId());
+        userInAServerOptional.ifPresent(aUserInAServer -> {
+            Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(aUserInAServer.getUserInServerId());
+            if(userExperienceOptional.isPresent()) {
+                log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", model.getJoiningUser().getUserId(), model.getServerId());
+                userExperienceService.syncForSingleUser(userExperienceOptional.get()).thenAccept(result ->
+                        log.info("Finished re-assigning experience for re-joining user {} in server {}.", model.getJoiningUser().getUserId(), model.getServerId())
+                );
+            } else {
+                log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", model.getJoiningUser().getUserId(), model.getServerId());
+            }
+        });
 
         return DefaultListenerResult.PROCESSED;
     }

@@ -188,7 +188,7 @@ public class WarnServiceBean implements WarnService {
                 MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_NOTIFICATION_TEMPLATE_KEY, model, serverId);
                 log.info("Notifying user {} in server {} about decayed warning {}.", userId, serverId, warningId);
                 notificationFutures.add(messageService.sendMessageToSendToUser(memberToSendTo.getUser(), messageToSend).exceptionally(throwable -> {
-                    log.error("Failed to send warn decay message to user {} in server {} to notify about decay warning {}.", userId, server, warningId);
+                    log.error("Failed to send warn decay message to user {} in server {} to notify about decay warning {}.", userId, server.getId(), warningId, throwable);
                     return null;
                 }));
             } else {
