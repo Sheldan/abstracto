@@ -57,7 +57,7 @@ public class JoiningUserRoleListenerTest {
         when(model.getJoiningUser()).thenReturn(serverUser);
         when(model.getServerId()).thenReturn(SERVER_ID);
         when(aUserInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
-        when(userInServerManagementService.loadOrCreateUser(SERVER_ID, USER_ID)).thenReturn(aUserInAServer);
+        when(userInServerManagementService.loadUserOptional(SERVER_ID, USER_ID)).thenReturn(Optional.of(aUserInAServer));
     }
 
     @Test
