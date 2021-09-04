@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.commands.help;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -21,6 +22,7 @@ import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleDetail
 import dev.sheldan.abstracto.core.models.template.commands.help.HelpModuleOverviewModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -114,14 +116,25 @@ public class Help implements Command {
                 ModuleDefinition moduleDefinition = moduleService.getModuleByName(parameter);
                 log.debug("Displaying help for module {}.", moduleDefinition.getInfo().getName());
                 SingleLevelPackedModule module = moduleService.getPackedModule(moduleDefinition);
-                List<Command> commands = module.getCommands();
-                List<Command> filteredCommands = new ArrayList<>();
-                commands.forEach(command -> {
-                    if(commandService.isCommandExecutable(command, commandContext).isResult()) {
-                        filteredCommands.add(command);
-                    }
+                List<Command> filteredCommand = new ArrayList<>();
+                List<CompletableFuture<ConditionResult>> conditionFutures = new ArrayList<>();
+                Map<CompletableFuture<ConditionResult>, Command> futureCommandMap = new HashMap<>();
+                module.getCommands().forEach(command -> {
+                    // TODO dont provide the parameters, else the condition uses the wrong parameters, as we are not actually executing the command
+                    CompletableFuture<ConditionResult> future = commandService.isCommandExecutable(command, commandContext);
+                    conditionFutures.add(future);
+                    futureCommandMap.put(future, command);
                 });
-                module.setCommands(filteredCommands);
+                CompletableFutureList<ConditionResult> conditionFuturesList = new CompletableFutureList<>(conditionFutures);
+                conditionFuturesList.getMainFuture().thenAccept(unused -> conditionFutures.forEach(conditionResultCompletableFuture -> {
+                    if(!conditionResultCompletableFuture.isCompletedExceptionally()) {
+                        ConditionResult result = conditionResultCompletableFuture.join();
+                        if(result.isResult()) {
+                            filteredCommand.add(futureCommandMap.get(conditionResultCompletableFuture));
+                        }
+                    }
+                }));
+                module.setCommands(filteredCommand);
                 List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
                 HelpModuleDetailsModel model = (HelpModuleDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpModuleDetailsModel.class);
                 model.setModule(module);

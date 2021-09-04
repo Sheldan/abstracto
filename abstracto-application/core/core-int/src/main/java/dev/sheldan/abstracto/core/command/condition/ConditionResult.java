@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.concurrent.CompletableFuture;
+
 @Getter
 @Setter
 @Builder
@@ -12,8 +14,14 @@ public class ConditionResult {
     private String reason;
     private ConditionDetail conditionDetail;
 
+    public static final ConditionResult SUCCESS = ConditionResult.builder().result(true).build();
+
     public static ConditionResult fromSuccess() {
         return ConditionResult.builder().result(true).build();
+    }
+
+    public static CompletableFuture<ConditionResult> fromAsyncSuccess() {
+        return CompletableFuture.completedFuture(fromSuccess());
     }
 
     public static ConditionResult fromFailure(ConditionDetail detail) {

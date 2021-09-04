@@ -24,7 +24,7 @@ public interface CommandService {
     void unRestrictCommand(ACommand aCommand, AServer server);
     void disAllowCommandForRole(ACommand aCommand, ARole role);
     void disAllowFeatureForRole(FeatureDefinition featureDefinition, ARole role);
-    ConditionResult isCommandExecutable(Command command, CommandContext commandContext);
+    CompletableFuture<ConditionResult> isCommandExecutable(Command command, CommandContext commandContext);
     UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message);
     CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent);
     Parameter cloneParameter(Parameter parameter);

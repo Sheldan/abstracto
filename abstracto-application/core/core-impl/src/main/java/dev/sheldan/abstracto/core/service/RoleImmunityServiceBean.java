@@ -62,7 +62,7 @@ public class RoleImmunityServiceBean implements RoleImmunityService {
         if(immuneRoles.isEmpty()) {
             return Optional.empty();
         }
-        return  immuneRoles
+        return immuneRoles
                 .stream()
                 .filter(role -> member
                         .getRoles()

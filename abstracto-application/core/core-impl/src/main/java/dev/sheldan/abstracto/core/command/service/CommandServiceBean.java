@@ -22,12 +22,14 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -142,12 +144,12 @@ public class CommandServiceBean implements CommandService {
         log.info("Disallowing feature {} for role {} in server {}.", feature.getKey(), role.getId(), role.getServer().getId());
     }
 
-    public ConditionResult isCommandExecutable(Command command, CommandContext commandContext) {
+    public CompletableFuture<ConditionResult> isCommandExecutable(Command command, CommandContext commandContext) {
         if(command instanceof ConditionalCommand) {
             ConditionalCommand castedCommand = (ConditionalCommand) command;
             return checkConditions(commandContext, command, castedCommand.getConditions());
         } else {
-            return ConditionResult.builder().result(true).build();
+            return ConditionResult.fromAsyncSuccess();
         }
     }
 
@@ -179,16 +181,39 @@ public class CommandServiceBean implements CommandService {
                 .build();
     }
 
-    private ConditionResult checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
-        if(conditions != null) {
+    private CompletableFuture<ConditionResult> checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {
+        if(conditions != null && !conditions.isEmpty()) {
+            List<CompletableFuture<ConditionResult>> futures = new ArrayList<>();
             for (CommandCondition condition : conditions) {
-                ConditionResult conditionResult = condition.shouldExecute(commandContext, command);
-                if(!conditionResult.isResult()) {
-                    return conditionResult;
+                if(condition.isAsync()) {
+                    futures.add(condition.shouldExecuteAsync(commandContext, command));
+                } else {
+                    futures.add(CompletableFuture.completedFuture(condition.shouldExecute(commandContext, command)));
                 }
             }
+            CompletableFuture<ConditionResult> resultFuture = new CompletableFuture<>();
+            CompletableFutureList<ConditionResult> futureList = new CompletableFutureList<>(futures);
+            futureList.getMainFuture().whenComplete((unused, throwable) -> {
+                List<ConditionResult> results = futureList.getObjects();
+                boolean foundResult = false;
+                for (ConditionResult conditionResult : results) {
+                    if (!conditionResult.isResult()) {
+                        foundResult = true;
+                        resultFuture.complete(conditionResult);
+                        break;
+                    }
+                }
+                if(!foundResult) {
+                    resultFuture.complete(ConditionResult.fromSuccess());
+                }
+            }).exceptionally(throwable -> {
+                resultFuture.completeExceptionally(throwable);
+                return null;
+            });
+            return resultFuture;
+        } else {
+            return ConditionResult.fromAsyncSuccess();
         }
-        return ConditionResult.builder().result(true).build();
     }
 
 

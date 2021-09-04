@@ -149,38 +149,44 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .userInitiatedContext(userInitiatedContext);
         validateCommandParameters(parsedParameters, foundCommand);
         CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
-        ConditionResult conditionResult = commandService.isCommandExecutable(foundCommand, commandContext);
-        CommandResult commandResult = null;
-        if(conditionResult.isResult()) {
-            if(foundCommand.getConfiguration().isAsync()) {
-                log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
-                        foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
+        CompletableFuture<ConditionResult> conditionResultFuture = commandService.isCommandExecutable(foundCommand, commandContext);
+        conditionResultFuture.thenAccept(conditionResult -> {
+            CommandResult commandResult = null;
+            if(conditionResult.isResult()) {
+                if(foundCommand.getConfiguration().isAsync()) {
+                    log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
+                            foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
-                self.executeAsyncCommand(foundCommand, commandContext).exceptionally(throwable -> {
-                    log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
-                    UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
-                    CommandContext rebuildContext = CommandContext.builder()
-                            .author(event.getMember())
-                            .guild(event.getGuild())
-                            .channel(event.getTextChannel())
-                            .message(event.getMessage())
-                            .jda(event.getJDA())
-                            .undoActions(commandContext.getUndoActions()) // TODO really do this? it would need to guarantee that its available and usable
-                            .userInitiatedContext(rebuildUserContext)
-                            .parameters(parsedParameters).build();
-                    CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
-                    self.executePostCommandListener(foundCommand, rebuildContext, failedResult);
-                    return null;
-                });
+                    self.executeAsyncCommand(foundCommand, commandContext)
+                            .exceptionally(throwable -> failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
+                } else {
+                    commandResult = self.executeCommand(foundCommand, commandContext);
+                }
             } else {
-                commandResult = self.executeCommand(foundCommand, commandContext);
+                commandResult = CommandResult.fromCondition(conditionResult);
             }
-        } else {
-            commandResult = CommandResult.fromCondition(conditionResult);
-        }
-        if(commandResult != null) {
-            self.executePostCommandListener(foundCommand, commandContext, commandResult);
-        }
+            if(commandResult != null) {
+                self.executePostCommandListener(foundCommand, commandContext, commandResult);
+            }
+        }).exceptionally(throwable -> failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
+
+    }
+
+    private Void failedCommandHandling(MessageReceivedEvent event, Command foundCommand, Parameters parsedParameters, CommandContext commandContext, Throwable throwable) {
+        log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
+        UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
+        CommandContext rebuildContext = CommandContext.builder()
+                .author(event.getMember())
+                .guild(event.getGuild())
+                .channel(event.getTextChannel())
+                .message(event.getMessage())
+                .jda(event.getJDA())
+                .undoActions(commandContext.getUndoActions()) // TODO really do this? it would need to guarantee that its available and usable
+                .userInitiatedContext(rebuildUserContext)
+                .parameters(parsedParameters).build();
+        CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
+        self.executePostCommandListener(foundCommand, rebuildContext, failedResult);
+        return null;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
