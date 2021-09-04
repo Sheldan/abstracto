@@ -70,6 +70,7 @@ public class MessageEmbedListener implements MessageReceivedListener {
             log.debug("We found {} links to embed in message {} in channel {} in guild {}.", links.size(), message.getId(), message.getChannel().getId(), message.getGuild().getId());
             Long userEmbeddingUserInServerId = userInServerManagementService.loadOrCreateUser(message.getMember()).getUserInServerId();
             for (MessageEmbedLink messageEmbedLink : links) {
+                // potentially support foreign linked servers
                 if(!messageEmbedLink.getServerId().equals(message.getGuild().getIdLong())) {
                     log.info("Link for message {} was from a foreign server {}. Do not embed.", messageEmbedLink.getMessageId(), messageEmbedLink.getServerId());
                     continue;

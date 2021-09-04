@@ -19,5 +19,7 @@ public class MessageEmbeddedModel extends UserInitiatedServerContext {
     private TextChannel sourceChannel;
     private Member embeddingUser;
     private ButtonConfigModel buttonConfigModel;
+    private Long referencedMessageId;
+    private Boolean mentionsReferencedMessage;
     private Boolean useButton;
 }

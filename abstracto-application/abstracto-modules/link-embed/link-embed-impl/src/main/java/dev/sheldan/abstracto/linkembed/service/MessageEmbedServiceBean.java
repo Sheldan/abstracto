@@ -316,6 +316,9 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .builder()
                 .buttonId(deletionButtonEnabled ? componentServiceBean.generateComponentId() : null)
                 .build();
+
+        Long referencedMessageId = message.getReferencedMessage() != null ? message.getReferencedMessage().getIdLong() : null;
+        Boolean shouldMentionReferencedAuthor = shouldMentionReferencedAuthor(message);
         return MessageEmbeddedModel
                 .builder()
                 .member(message.getMember())
@@ -326,7 +329,16 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
                 .guild(message.getGuild())
                 .useButton(deletionButtonEnabled)
                 .embeddedMessage(embeddedMessage)
+                .referencedMessageId(referencedMessageId)
+                .mentionsReferencedMessage(shouldMentionReferencedAuthor)
                 .buttonConfigModel(buttonConfigModel)
                 .build();
+    }
+
+    private Boolean shouldMentionReferencedAuthor(Message message) {
+        if(message.getReferencedMessage() != null) {
+            return message.getMentionedUsers().contains(message.getReferencedMessage().getAuthor());
+        }
+        return false;
     }
 }
