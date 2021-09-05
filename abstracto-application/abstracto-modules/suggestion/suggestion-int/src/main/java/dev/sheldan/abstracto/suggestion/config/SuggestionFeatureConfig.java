@@ -13,6 +13,9 @@ import java.util.List;
 @Component
 public class SuggestionFeatureConfig implements FeatureConfig {
 
+    public static final String SUGGESTION_AGREE_EMOTE = "suggestionYes";
+    public static final String SUGGESTION_DISAGREE_EMOTE = "suggestionNo";
+
     @Override
     public FeatureDefinition getFeature() {
         return SuggestionFeatureDefinition.SUGGEST;
@@ -25,12 +28,12 @@ public class SuggestionFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredEmotes() {
-        return Arrays.asList("suggestionYes", "suggestionNo");
+        return Arrays.asList(SUGGESTION_AGREE_EMOTE, SUGGESTION_DISAGREE_EMOTE);
     }
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(SuggestionFeatureMode.SUGGESTION_REMINDER);
+        return Arrays.asList(SuggestionFeatureMode.SUGGESTION_REMINDER, SuggestionFeatureMode.SUGGESTION_BUTTONS);
     }
 
     @Override

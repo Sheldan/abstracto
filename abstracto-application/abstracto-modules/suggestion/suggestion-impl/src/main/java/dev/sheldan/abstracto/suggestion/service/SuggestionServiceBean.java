@@ -5,7 +5,9 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.service.*;
+import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -18,10 +20,11 @@ import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureMode;
 import dev.sheldan.abstracto.suggestion.config.SuggestionPostTarget;
 import dev.sheldan.abstracto.suggestion.exception.UnSuggestNotPossibleException;
 import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
+import dev.sheldan.abstracto.suggestion.model.database.SuggestionDecision;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
-import dev.sheldan.abstracto.suggestion.model.template.SuggestionLog;
-import dev.sheldan.abstracto.suggestion.model.template.SuggestionReminderModel;
+import dev.sheldan.abstracto.suggestion.model.template.*;
 import dev.sheldan.abstracto.suggestion.service.management.SuggestionManagementService;
+import dev.sheldan.abstracto.suggestion.service.management.SuggestionVoteManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +50,7 @@ public class SuggestionServiceBean implements SuggestionService {
     public static final String SUGGESTION_NO_EMOTE = "suggestionNo";
     public static final String SUGGESTION_COUNTER_KEY = "suggestion";
     public static final String SUGGESTION_REMINDER_TEMPLATE_KEY = "suggest_suggestion_reminder";
+    public static final String SUGGESTION_VOTE_ORIGIN = "suggestionVote";
 
     @Autowired
     private SuggestionManagementService suggestionManagementService;
@@ -93,6 +97,15 @@ public class SuggestionServiceBean implements SuggestionService {
     @Autowired
     private ConfigService configService;
 
+    @Autowired
+    private ComponentService componentService;
+
+    @Autowired
+    private ComponentPayloadManagementService componentPayloadManagementService;
+
+    @Autowired
+    private SuggestionVoteManagementService suggestionVoteManagementService;
+
     @Value("${abstracto.feature.suggestion.removalMaxAge}")
     private Long removalMaxAgeSeconds;
 
@@ -106,6 +119,7 @@ public class SuggestionServiceBean implements SuggestionService {
         AServer server = serverManagementService.loadServer(serverId);
         AUserInAServer userSuggester = userInServerManagementService.loadOrCreateUser(suggester);
         Long newSuggestionId = counterService.getNextCounterValue(server, SUGGESTION_COUNTER_KEY);
+        Boolean useButtons = featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_BUTTONS);
         SuggestionLog model = SuggestionLog
                 .builder()
                 .suggestionId(newSuggestionId)
@@ -114,14 +128,35 @@ public class SuggestionServiceBean implements SuggestionService {
                 .message(commandMessage)
                 .member(commandMessage.getMember())
                 .suggesterUser(userSuggester)
+                .useButtons(useButtons)
                 .suggester(suggester.getUser())
                 .text(text)
                 .build();
+        if(useButtons) {
+            setupButtonIds(model);
+        }
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_CREATION_TEMPLATE, model, serverId);
         log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, serverId, suggester.getIdLong());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
-        return FutureUtils.toSingleFutureGeneric(completableFutures).thenCompose(aVoid -> {
-            Message message = completableFutures.get(0).join();
+        return FutureUtils.toSingleFutureGeneric(completableFutures)
+                .thenCompose(aVoid -> self.addDeletionPossibility(commandMessage, text, suggester, serverId, newSuggestionId, completableFutures, model));
+    }
+
+    @Transactional
+    public CompletableFuture<Void> addDeletionPossibility(Message commandMessage, String text, Member suggester, Long serverId,
+                                                          Long newSuggestionId, List<CompletableFuture<Message>> completableFutures, SuggestionLog model) {
+        Message message = completableFutures.get(0).join();
+        if(model.getUseButtons()) {
+            configureDecisionButtonPayload(serverId, newSuggestionId, model.getAgreeButtonModel(), SuggestionDecision.AGREE);
+            configureDecisionButtonPayload(serverId, newSuggestionId, model.getDisAgreeButtonModel(), SuggestionDecision.DISAGREE);
+            configureDecisionButtonPayload(serverId, newSuggestionId, model.getRemoveVoteButtonModel(), SuggestionDecision.REMOVE_VOTE);
+            AServer server = serverManagementService.loadServer(serverId);
+            componentPayloadManagementService.createPayload(model.getAgreeButtonModel(), server);
+            componentPayloadManagementService.createPayload(model.getDisAgreeButtonModel(), server);
+            componentPayloadManagementService.createPayload(model.getRemoveVoteButtonModel(), server);
+            self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, commandMessage);
+            return CompletableFuture.completedFuture(null);
+        } else {
             log.debug("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
             CompletableFuture<Void> firstReaction = reactionService.addReactionToMessageAsync(SUGGESTION_YES_EMOTE, serverId, message);
             CompletableFuture<Void> secondReaction = reactionService.addReactionToMessageAsync(SUGGESTION_NO_EMOTE, serverId, message);
@@ -129,7 +164,25 @@ public class SuggestionServiceBean implements SuggestionService {
                 log.debug("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
                 self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, commandMessage);
             });
-        });
+        }
+    }
+
+    private void configureDecisionButtonPayload(Long serverId, Long newSuggestionId, ButtonConfigModel model, SuggestionDecision decision) {
+        SuggestionButtonPayload agreePayload = SuggestionButtonPayload
+                .builder()
+                .suggestionId(newSuggestionId)
+                .serverId(serverId)
+                .decision(decision)
+                .build();
+        model.setButtonPayload(agreePayload);
+        model.setOrigin(SUGGESTION_VOTE_ORIGIN);
+        model.setPayloadType(SuggestionButtonPayload.class);
+    }
+
+    private void setupButtonIds(SuggestionLog suggestionLog) {
+        suggestionLog.setAgreeButtonModel(componentService.createButtonConfigModel());
+        suggestionLog.setDisAgreeButtonModel(componentService.createButtonConfigModel());
+        suggestionLog.setRemoveVoteButtonModel(componentService.createButtonConfigModel());
     }
 
     @Transactional
@@ -179,26 +232,32 @@ public class SuggestionServiceBean implements SuggestionService {
         Long serverId = suggestion.getServer().getId();
         Long channelId = suggestion.getChannel().getId();
         Long originalMessageId = suggestion.getMessageId();
-        SuggestionLog model = SuggestionLog
+        Long agreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.AGREE);
+        Long disagreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.DISAGREE);
+        Long suggestionId = suggestion.getSuggestionId().getId();
+        SuggestionUpdateModel model = SuggestionUpdateModel
                 .builder()
-                .suggestionId(suggestion.getSuggestionId().getId())
+                .suggestionId(suggestionId)
                 .state(suggestion.getState())
-                .suggesterUser(suggestion.getSuggester())
                 .serverId(serverId)
                 .member(memberExecutingCommand)
+                .agreeVotes(agreements)
+                .disAgreeVotes(disagreements)
                 .originalMessageId(originalMessageId)
                 .text(suggestion.getSuggestionText())
                 .originalChannelId(channelId)
                 .reason(reason)
                 .build();
-        log.info("Updated posted suggestion {} in server {}.", suggestion.getSuggestionId().getId(), suggestion.getServer().getId());
+        log.info("Updated posted suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         CompletableFuture<User> memberById = userService.retrieveUserForId(suggestion.getSuggester().getUserReference().getId());
         CompletableFuture<Void> finalFuture = new CompletableFuture<>();
         memberById.whenComplete((user, throwable) -> {
             if(throwable == null) {
                 model.setSuggester(user);
             }
-            self.updateSuggestionMessageText(reason, model).thenAccept(unused -> finalFuture.complete(null)).exceptionally(throwable1 -> {
+            self.updateSuggestionMessageText(reason, model).thenAccept(unused -> finalFuture.complete(null))
+            .thenAccept(unused -> self.removeSuggestionButtons(serverId, channelId, originalMessageId, suggestionId))
+            .exceptionally(throwable1 -> {
                 finalFuture.completeExceptionally(throwable1);
                 return null;
             });
@@ -208,11 +267,23 @@ public class SuggestionServiceBean implements SuggestionService {
         });
 
         return finalFuture;
-
     }
 
     @Transactional
-    public CompletableFuture<Void> updateSuggestionMessageText(String text, SuggestionLog suggestionLog)  {
+    public CompletableFuture<Void> removeSuggestionButtons(Long serverId, Long channelId, Long messageId, Long suggestionId) {
+        Boolean useButtons = featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_BUTTONS);
+        if(useButtons) {
+            return messageService.loadMessage(serverId, channelId, messageId).thenCompose(message -> {
+                log.info("Clearing buttons from suggestion {} in with message {} in channel {} in server {}.", suggestionId, message, channelId, serverId);
+                return componentService.clearButtons(message);
+            });
+        } else {
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    @Transactional
+    public CompletableFuture<Void> updateSuggestionMessageText(String text, SuggestionUpdateModel suggestionLog)  {
         suggestionLog.setReason(text);
         Long serverId = suggestionLog.getServerId();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_UPDATE_TEMPLATE, suggestionLog, serverId);
@@ -253,8 +324,11 @@ public class SuggestionServiceBean implements SuggestionService {
         Instant pointInTime = Instant.now().minus(Duration.ofDays(autoRemovalMaxDays)).truncatedTo(ChronoUnit.DAYS);
         List<Suggestion> suggestionsToRemove = suggestionManagementService.getSuggestionsUpdatedBeforeNotNew(pointInTime);
         log.info("Removing {} suggestions older than {}.", suggestionsToRemove.size(), pointInTime);
-        suggestionsToRemove.forEach(suggestion -> log.info("Deleting suggestion {} in server {}.",
-                suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId()));
+        suggestionsToRemove.forEach(suggestion -> {
+            suggestionVoteManagementService.deleteSuggestionVotes(suggestion);
+            log.info("Deleting suggestion {} in server {}.",
+                    suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId());
+        });
         suggestionManagementService.deleteSuggestion(suggestionsToRemove);
     }
 
@@ -296,6 +370,18 @@ public class SuggestionServiceBean implements SuggestionService {
             log.info("Cancelling reminder for suggestion {} in server {}.", suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId());
             schedulerService.stopTrigger(suggestion.getSuggestionReminderJobTriggerKey());
         }
+    }
+
+    @Override
+    public SuggestionInfoModel getSuggestionInfo(Long serverId, Long suggestionId) {
+        Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
+        Long agreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.AGREE);
+        Long disagreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.DISAGREE);
+        return SuggestionInfoModel
+                .builder()
+                .agreements(agreements)
+                .disagreements(disagreements)
+                .build();
     }
 
     @Transactional

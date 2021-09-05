@@ -101,4 +101,9 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     public List<Suggestion> getSuggestionsUpdatedBeforeNotNew(Instant date) {
         return suggestionRepository.findByUpdatedLessThanAndStateNot(date, SuggestionState.NEW);
     }
+
+    @Override
+    public Optional<Suggestion> findSuggestionByMessageId(Long messageId) {
+        return suggestionRepository.findByMessageId(messageId);
+    }
 }

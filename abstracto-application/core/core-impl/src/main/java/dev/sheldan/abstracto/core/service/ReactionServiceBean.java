@@ -304,7 +304,7 @@ public class ReactionServiceBean implements ReactionService {
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Long userId) {
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, Long serverId, Long channelId, Long messageId, Long userId) {
         Guild guild = guildService.getGuildById(serverId);
         Integer emoteId = emote.getId();
         CompletableFuture<Member> memberFuture = guild.retrieveMemberById(userId).submit();
@@ -312,13 +312,18 @@ public class ReactionServiceBean implements ReactionService {
 
         return CompletableFuture.allOf(memberFuture, messageFuture).thenCompose(aVoid ->
                 memberFuture.thenCompose(member ->
-                        self.removeReactionOfUserFromMessageWithFuture(emoteId, messageFuture.join(), memberFuture.join())
+                        self.removeReactionOfUserFromMessageAsync(emoteId, messageFuture.join(), memberFuture.join())
                 )
         );
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId) {
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, CachedMessage cachedMessage, Member member) {
+        return removeReactionOfUserFromMessageAsync(emote, cachedMessage.getServerId(), cachedMessage.getChannelId(), cachedMessage.getMessageId(), member);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, Long serverId, Long channelId, Long messageId) {
         Integer emoteId = emote.getId();
         CompletableFuture<Message> messageFuture = channelService.retrieveMessageInChannel(serverId, channelId, messageId);
         return messageFuture.thenCompose(message ->
@@ -327,14 +332,19 @@ public class ReactionServiceBean implements ReactionService {
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Long serverId, Long channelId, Long messageId, Member member) {
-        Integer emoteId = emote.getId();
-        return channelService.retrieveMessageInChannel(serverId, channelId, messageId)
-                .thenCompose(message -> self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member));
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, Long serverId, Long channelId, Long messageId, Member member) {
+        if(emote.getId() == null) {
+            return channelService.retrieveMessageInChannel(serverId, channelId, messageId)
+                    .thenCompose(message -> self.removeReaction(message, emote.getEmoteKey(), member.getUser()));
+        } else {
+            Integer emoteId = emote.getId();
+            return channelService.retrieveMessageInChannel(serverId, channelId, messageId)
+                    .thenCompose(message -> self.removeReactionOfUserFromMessageAsync(emoteId, message, member));
+        }
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Message message, Member member) {
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, Message message, Member member) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
             Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
             if(emoteById == null) {
@@ -350,23 +360,23 @@ public class ReactionServiceBean implements ReactionService {
 
     @Override
     @Transactional
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Member member) {
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(Integer emoteId, Message message, Member member) {
         AEmote emote = emoteManagementService.loadEmote(emoteId);
-        return removeReactionOfUserFromMessageWithFuture(emote, message, member);
+        return removeReactionOfUserFromMessageAsync(emote, message, member);
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(AEmote emote, Message message, Long userId) {
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, Message message, Long userId) {
         Integer emoteId = emote.getId();
         return message.getGuild().retrieveMemberById(userId).submit().thenCompose(member ->
-                self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member)
+                self.removeReactionOfUserFromMessageAsync(emoteId, message, member)
         );
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionOfUserFromMessageWithFuture(Integer emoteId, Message message, Long userId) {
+    public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(Integer emoteId, Message message, Long userId) {
         return message.getGuild().retrieveMemberById(userId).submit().thenCompose(member ->
-                self.removeReactionOfUserFromMessageWithFuture(emoteId, message, member)
+                self.removeReactionOfUserFromMessageAsync(emoteId, message, member)
         );
     }
 

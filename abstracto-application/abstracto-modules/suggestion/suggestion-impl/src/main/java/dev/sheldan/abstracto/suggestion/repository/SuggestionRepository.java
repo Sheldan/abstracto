@@ -8,9 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
 public interface SuggestionRepository extends JpaRepository<Suggestion, ServerSpecificId> {
     List<Suggestion> findByUpdatedLessThanAndStateNot(Instant start, SuggestionState state);
+
+    Optional<Suggestion> findByMessageId(Long messageId);
 }

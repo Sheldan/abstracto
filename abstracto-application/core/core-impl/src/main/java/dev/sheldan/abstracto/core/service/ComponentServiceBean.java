@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class ComponentServiceBean implements ComponentService {
-
 
     @Autowired
     private MessageService messageService;
@@ -108,6 +108,11 @@ public class ComponentServiceBean implements ComponentService {
     public List<ActionRow> splitIntoActionRowsMax(List<net.dv8tion.jda.api.interactions.components.Component> allComponents) {
         List<List<net.dv8tion.jda.api.interactions.components.Component>> actionRows = ListUtils.partition(allComponents, MAX_BUTTONS_PER_ROW);
         return actionRows.stream().map(ActionRow::of).collect(Collectors.toList());
+    }
+
+    @Override
+    public ButtonConfigModel createButtonConfigModel() {
+        return ButtonConfigModel.builder().buttonId(generateComponentId()).build();
     }
 
     private CompletableFuture<Void> setAllButtonStatesTo(Message message, Boolean disabled) {

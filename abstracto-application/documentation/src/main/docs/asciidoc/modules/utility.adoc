@@ -66,6 +66,7 @@ Feature key: `suggestion`
 
 ==== Feature modes
 `suggestionReminder`:: If this is enabled, a message will be sent to the post target `suggestionReminder`, after the amount of days configured in `suggestionReminderDays`. Disabled by default.
+`suggestionButton` :: Use buttons instead of reactions for suggestions. Enabled by default.
 
 ==== Post targets
 `suggestions`:: the target of the messages containing the suggestions

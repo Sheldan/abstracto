@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.suggestion.service;
 
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
+import dev.sheldan.abstracto.suggestion.model.template.SuggestionInfoModel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -17,4 +18,5 @@ public interface SuggestionService {
     void cleanUpSuggestions();
     CompletableFuture<Void> remindAboutSuggestion(ServerSpecificId suggestionId);
     void cancelSuggestionReminder(Suggestion suggestion);
+    SuggestionInfoModel getSuggestionInfo(Long serverId, Long suggestionId);
 }

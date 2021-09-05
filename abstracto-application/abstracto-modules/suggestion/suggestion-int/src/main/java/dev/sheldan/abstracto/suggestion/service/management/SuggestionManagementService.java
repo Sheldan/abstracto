@@ -20,4 +20,5 @@ public interface SuggestionManagementService {
     void deleteSuggestion(List<Suggestion> suggestions);
     void deleteSuggestion(Suggestion suggestion);
     List<Suggestion> getSuggestionsUpdatedBeforeNotNew(Instant date);
+    Optional<Suggestion> findSuggestionByMessageId(Long messageId);
 }

@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.suggestion.exception.SuggestionNotFoundException;
 import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
 import dev.sheldan.abstracto.suggestion.model.template.SuggestionLog;
+import dev.sheldan.abstracto.suggestion.model.template.SuggestionUpdateModel;
 import dev.sheldan.abstracto.suggestion.service.management.SuggestionManagementService;
 import net.dv8tion.jda.api.entities.*;
 import org.junit.Test;
@@ -123,8 +124,6 @@ public class SuggestionServiceBeanTest {
         when(member.getGuild()).thenReturn(guild);
         when(member.getIdLong()).thenReturn(SUGGESTER_ID);
         testUnit.createSuggestionMessage(message, suggestionText);
-        verify(reactionService, times(1)).addReactionToMessageAsync(SuggestionServiceBean.SUGGESTION_YES_EMOTE, SERVER_ID, suggestionMessage);
-        verify(reactionService, times(1)).addReactionToMessageAsync(SuggestionServiceBean.SUGGESTION_NO_EMOTE, SERVER_ID, suggestionMessage);
     }
 
     @Test
@@ -139,10 +138,6 @@ public class SuggestionServiceBeanTest {
         verify(suggestionManagementService, times(1)).createSuggestion(member, text, message, SUGGESTION_ID, commandMessage);
     }
 
-    @Test
-    public void testAcceptExistingSuggestion() {
-        executeAcceptWithMember();
-    }
 
     @Test(expected = SuggestionNotFoundException.class)
     public void testAcceptNotExistingSuggestion() {
@@ -150,21 +145,6 @@ public class SuggestionServiceBeanTest {
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(message.getGuild()).thenReturn(guild);
         testUnit.acceptSuggestion(SUGGESTION_ID, message, CLOSING_TEXT);
-    }
-
-    @Test
-    public void testUpdateSuggestionMessage() {
-        SuggestionLog log = Mockito.mock(SuggestionLog.class);
-        when(log.getServerId()).thenReturn(SERVER_ID);
-        MessageToSend updatedMessage = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_UPDATE_TEMPLATE), any(SuggestionLog.class), eq(SERVER_ID))).thenReturn(updatedMessage);
-        testUnit.updateSuggestionMessageText(CLOSING_TEXT, log);
-        verify(postTargetService, times(1)).sendEmbedInPostTarget(updatedMessage, SuggestionPostTarget.SUGGESTION, SERVER_ID);
-    }
-
-    @Test
-    public void testRejectExistingSuggestion() {
-        executeRejectWithMember();
     }
 
     @Test(expected = SuggestionNotFoundException.class)
@@ -175,42 +155,4 @@ public class SuggestionServiceBeanTest {
         testUnit.rejectSuggestion(SUGGESTION_ID, message, CLOSING_TEXT);
     }
 
-    private void executeAcceptWithMember() {
-        Long messageId = 7L;
-        when(guild.getIdLong()).thenReturn(SERVER_ID);
-        Suggestion suggestionToAccept = setupClosing(messageId);
-        when(message.getGuild()).thenReturn(guild);
-        when(message.getMember()).thenReturn(member);
-        testUnit.acceptSuggestion(SUGGESTION_ID, message, CLOSING_TEXT);
-        verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.ACCEPTED);
-    }
-
-    private void executeRejectWithMember() {
-        Long messageId = 7L;
-        when(guild.getIdLong()).thenReturn(SERVER_ID);
-        Suggestion suggestionToAccept = setupClosing(messageId);
-        when(message.getGuild()).thenReturn(guild);
-        when(message.getMember()).thenReturn(member);
-        testUnit.rejectSuggestion(SUGGESTION_ID, message, CLOSING_TEXT);
-        verify(suggestionManagementService, times(1)).setSuggestionState(suggestionToAccept, SuggestionState.REJECTED);
-    }
-
-    private Suggestion setupClosing(Long messageId) {
-        Suggestion suggestionToAccept = Mockito.mock(Suggestion.class);
-        when(suggestionToAccept.getChannel()).thenReturn(channel);
-        when(suggestionToAccept.getServer()).thenReturn(server);
-        when(suggestionToAccept.getSuggester()).thenReturn(suggester);
-        AUser aUser = Mockito.mock(AUser.class);
-        when(aUser.getId()).thenReturn(USER_ID);
-        when(suggester.getUserReference()).thenReturn(aUser);
-        ServerSpecificId suggestionId = Mockito.mock(ServerSpecificId.class);
-        when(suggestionId.getId()).thenReturn(SUGGESTION_ID);
-        when(suggestionToAccept.getSuggestionId()).thenReturn(suggestionId);
-        when(suggestionToAccept.getMessageId()).thenReturn(messageId);
-        when(server.getId()).thenReturn(SERVER_ID);
-        when(channel.getId()).thenReturn(CHANNEL_ID);
-        when(userService.retrieveUserForId(USER_ID)).thenReturn(CompletableFuture.completedFuture(suggesterUser));
-        when(suggestionManagementService.getSuggestion(SERVER_ID, SUGGESTION_ID)).thenReturn(suggestionToAccept);
-        return suggestionToAccept;
-    }
 }

@@ -28,7 +28,7 @@ public class TrackedEmote implements Serializable, Fakeable {
     @EmbeddedId
     private ServerSpecificId trackedEmoteId;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @MapsId("serverId")
     @JoinColumn(name = "server_id",  referencedColumnName = "id", nullable = false)
     private AServer server;

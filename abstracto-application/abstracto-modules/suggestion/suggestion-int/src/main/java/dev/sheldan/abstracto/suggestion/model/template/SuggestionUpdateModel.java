@@ -1,7 +1,5 @@
 package dev.sheldan.abstracto.suggestion.model.template;
 
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
 import lombok.Getter;
@@ -14,22 +12,19 @@ import net.dv8tion.jda.api.entities.User;
 @Getter
 @Setter
 @SuperBuilder
-public class SuggestionLog {
+public class SuggestionUpdateModel {
     private Long suggestionId;
     private SuggestionState state;
     private User suggester;
     private Member member;
-    private AUserInAServer suggesterUser;
     private String text;
     private Message message;
     private String reason;
     private Long serverId;
     private Long originalChannelId;
     private Long originalMessageId;
-    private Boolean useButtons;
-    private ButtonConfigModel agreeButtonModel;
-    private ButtonConfigModel disAgreeButtonModel;
-    private ButtonConfigModel removeVoteButtonModel;
+    private Long agreeVotes;
+    private Long disAgreeVotes;
 
     public String getOriginalMessageUrl() {
         return MessageUtils.buildMessageUrl(serverId, originalChannelId , originalMessageId);

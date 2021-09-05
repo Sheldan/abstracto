@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.service;
 
+import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -21,5 +22,5 @@ public interface ComponentService {
     CompletableFuture<Void> removeComponentWithId(Message message, String componentId);
     CompletableFuture<Void> removeComponentWithId(Message message, String componentId, Boolean rearrange);
     List<ActionRow> splitIntoActionRowsMax(List<Component> components);
-
+    ButtonConfigModel createButtonConfigModel();
 }
