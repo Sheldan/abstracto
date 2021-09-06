@@ -302,7 +302,7 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
             }
             List<String> unResolvedInvites = new ArrayList<>();
             foundInvites.forEach(possibleUnresolvedInvite -> {
-                if(invites.stream().noneMatch(invite -> invite.getCode().equals(possibleUnresolvedInvite))) {
+                if(invites.stream().noneMatch(invite -> invite.getCode().equalsIgnoreCase(possibleUnresolvedInvite))) {
                     unResolvedInvites.add(possibleUnresolvedInvite);
                 }
             });

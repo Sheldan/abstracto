@@ -13,5 +13,5 @@ public interface AllowedInviteLinkRepository extends JpaRepository<AllowedInvite
     Optional<AllowedInviteLink> findByTargetServerIdAndServer(Long targetServerId, AServer server);
 
     Optional<AllowedInviteLink> findByTargetServerIdAndServer_Id(Long targetServerId, Long serverId);
-    Optional<AllowedInviteLink> findByCodeAndServer_Id(String code, Long serverId);
+    Optional<AllowedInviteLink> findByCodeIgnoreCaseAndServer_Id(String code, Long serverId);
 }

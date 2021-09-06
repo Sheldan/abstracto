@@ -16,7 +16,12 @@ public class AllowedInviteLinkManagementBean implements AllowedInviteLinkManagem
 
     @Override
     public AllowedInviteLink createAllowedInviteLink(AServer server, Long targetServerId, String code) {
-        AllowedInviteLink inviteLink = AllowedInviteLink.builder().targetServerId(targetServerId).code(code).server(server).build();
+        AllowedInviteLink inviteLink = AllowedInviteLink
+                .builder()
+                .targetServerId(targetServerId)
+                .code(code)
+                .server(server)
+                .build();
         return repository.save(inviteLink);
     }
 
@@ -48,6 +53,6 @@ public class AllowedInviteLinkManagementBean implements AllowedInviteLinkManagem
 
     @Override
     public boolean allowedInviteLinkExists(ServerUser serverUser, String code) {
-        return repository.findByCodeAndServer_Id(code, serverUser.getServerId()).isPresent();
+        return repository.findByCodeIgnoreCaseAndServer_Id(code, serverUser.getServerId()).isPresent();
     }
 }
