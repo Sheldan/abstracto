@@ -21,6 +21,9 @@ import dev.sheldan.abstracto.invitefilter.model.template.listener.DeletedInvite;
 import dev.sheldan.abstracto.invitefilter.model.template.listener.DeletedInvitesNotificationModel;
 import dev.sheldan.abstracto.invitefilter.service.management.AllowedInviteLinkManagement;
 import dev.sheldan.abstracto.invitefilter.service.management.FilteredInviteLinkManagement;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Invite;
@@ -34,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -222,11 +224,11 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
         return Invite.resolve(jda, extractCode(code)).submit();
     }
 
-    private void sendDeletionNotification(List<String> codes, Message message) {
+    private CompletableFuture<Void> sendDeletionNotification(List<InviteToDelete> codes, Message message) {
         Long serverId = message.getGuild().getIdLong();
         if(!postTargetService.postTargetDefinedInServer(InviteFilterPostTarget.INVITE_DELETE_LOG, serverId)) {
             log.info("Post target {} not defined for server {} - not sending invite link deletion notification.", InviteFilterPostTarget.INVITE_DELETE_LOG.getKey(), serverId);
-            return;
+            return CompletableFuture.completedFuture(null);
         }
         DeletedInvitesNotificationModel model = DeletedInvitesNotificationModel
                 .builder()
@@ -240,21 +242,30 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
                 codes.size(), serverId, message.getAuthor().getIdLong(), message.getChannel().getIdLong(), message.getIdLong());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(INVITE_LINK_DELETED_NOTIFICATION_EMBED_TEMPLATE_KEY, model, message.getGuild().getIdLong());
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, InviteFilterPostTarget.INVITE_DELETE_LOG, serverId);
-        FutureUtils.toSingleFutureGeneric(messageFutures).thenAccept(unused ->
+        return FutureUtils.toSingleFutureGeneric(messageFutures).thenAccept(unused ->
                 log.debug("Successfully send notification about deleted invite link in message {}.", message.getIdLong())
-        ).exceptionally(throwable -> {
-            log.error("Failed to send notification about deleted invite link in message {}.", message.getIdLong());
-            return null;
-        });
+        );
     }
 
-    private List<DeletedInvite> groupInvites(List<String> codes) {
+    private List<DeletedInvite> groupInvites(List<InviteToDelete> codes) {
+
+        Map<String, String> codeToGuildName = new HashMap<>();
+        for (InviteToDelete invite: codes) {
+            if(!codeToGuildName.containsKey(invite.getInviteCode())) {
+                codeToGuildName.put(invite.getInviteCode(), invite.getGuildName());
+            }
+        }
         return codes
                 .stream()
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .collect(Collectors.groupingBy(InviteToDelete::getInviteCode, Collectors.counting()))
                 .entrySet()
                 .stream()
-                .map(functionLongEntry -> new DeletedInvite(functionLongEntry.getKey(), functionLongEntry.getValue()))
+                .map(functionLongEntry -> DeletedInvite
+                        .builder()
+                        .code(functionLongEntry.getKey())
+                        .guildName(codeToGuildName.get(functionLongEntry.getKey()))
+                        .count(functionLongEntry.getValue())
+                        .build())
                 .collect(Collectors.toList());
     }
 
@@ -291,12 +302,17 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
             ServerUser author = ServerUser.builder().userId(message.getAuthor().getIdLong()).serverId(message.getGuild().getIdLong()).build();
             boolean toDelete = false;
             Map<Long, String> targetServers = new HashMap<>();
-            List<String> deletedInvites = new ArrayList<>();
+            List<InviteToDelete> deletedInvites = new ArrayList<>();
             for (Invite invite : invites) {
                 if (invite.getType().equals(Invite.InviteType.GUILD)
                         && isCodeFiltered(invite.getGuild().getIdLong(), author)) {
                     toDelete = true;
-                    deletedInvites.add(invite.getCode());
+                    InviteToDelete inviteToDelete = InviteToDelete
+                            .builder()
+                            .inviteCode(invite.getCode())
+                            .guildName(invite.getGuild().getName())
+                            .build();
+                    deletedInvites.add(inviteToDelete);
                     targetServers.put(invite.getGuild().getIdLong(), invite.getGuild().getName());
                 }
             }
@@ -310,7 +326,11 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
             for(String unresolvedInvite : unResolvedInvites) {
                 if(isCodeFiltered(unresolvedInvite, author)) {
                     toDelete = true;
-                    deletedInvites.add(unresolvedInvite);
+                    InviteToDelete inviteToDelete = InviteToDelete
+                            .builder()
+                            .inviteCode(unresolvedInvite)
+                            .build();
+                    deletedInvites.add(inviteToDelete);
                 }
             }
             if(toDelete) {
@@ -322,7 +342,11 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
                 }
                 boolean sendNotification = featureModeService.featureModeActive(InviteFilterFeatureDefinition.INVITE_FILTER, serverId, InviteFilterMode.FILTER_NOTIFICATIONS);
                 if(sendNotification) {
-                    sendDeletionNotification(deletedInvites, message);
+                    sendDeletionNotification(deletedInvites, message)
+                    .thenAccept(unused1 -> log.info("Sent invite deletion notification.")).exceptionally(throwable1 -> {
+                        log.error("Failed to send invite deletion notification.");
+                        return null;
+                    });
                 }
             }
         }).exceptionally(throwable -> {
@@ -334,6 +358,14 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
     @PostConstruct
     public void postConstruct() {
         metricService.registerCounter(MESSAGE_INVITE_FILTERED, "Amount of messages containing an invite filtered");
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    private static class InviteToDelete {
+        private String guildName;
+        private String inviteCode;
     }
 
 }
