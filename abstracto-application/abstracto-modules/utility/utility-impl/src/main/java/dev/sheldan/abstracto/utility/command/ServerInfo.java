@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.models.template.display.EmoteDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
@@ -30,11 +31,29 @@ public class ServerInfo extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
+        log.info("Displaying serverinfo for server {}", commandContext.getGuild().getId());
+        ServerInfoModel model = buildModel(commandContext);
+        return FutureUtils.toSingleFutureGeneric(
+                channelService.sendEmbedTemplateInTextChannelList("serverinfo_response", model, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromIgnored());
+    }
+
+    private ServerInfoModel buildModel(CommandContext commandContext) {
         ServerInfoModel model = (ServerInfoModel) ContextConverter.fromCommandContext(commandContext, ServerInfoModel.class);
         model.setGuild(commandContext.getGuild());
-        log.info("Displaying serverinfo for server {}", commandContext.getGuild().getId());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList("serverinfo_response", model, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromIgnored());
+        List<EmoteDisplay> staticEmotes = new ArrayList<>();
+        List<EmoteDisplay> animatedEmotes = new ArrayList<>();
+        commandContext.getGuild().getEmotes().forEach(emote -> {
+            EmoteDisplay emoteDisplay = EmoteDisplay.fromEmote(emote);
+            if(emote.isAnimated()) {
+                animatedEmotes.add(emoteDisplay);
+            } else {
+                staticEmotes.add(emoteDisplay);
+            }
+        });
+        model.setAnimatedEmotes(animatedEmotes);
+        model.setStaticEmotes(staticEmotes);
+        return model;
     }
 
     @Override
