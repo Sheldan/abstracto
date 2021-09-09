@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -45,6 +46,8 @@ public class FeatureModeServiceBean implements FeatureModeService {
 
     @Autowired
     private ServerManagementService serverManagementService;
+
+    private HashMap<String, List<String>> featureModes = new HashMap<>();
 
     @Override
     public void enableFeatureModeForFeature(FeatureDefinition featureDefinition, AServer server, FeatureMode mode) {
@@ -107,19 +110,23 @@ public class FeatureModeServiceBean implements FeatureModeService {
     }
 
     @Override
-    public FeatureMode getFeatureModeForKey(String key) {
-        return getAllAvailableFeatureModes().stream().filter(mode -> mode.getKey().equalsIgnoreCase(key)).findAny().orElseThrow(() -> new FeatureModeNotFoundException(key, getFeatureModesAsStrings()));
+    public FeatureMode getFeatureModeForKey(String featureKey, String featureModeKey) {
+        return getAllAvailableFeatureModes()
+                .stream()
+                .filter(mode -> mode.getKey().equalsIgnoreCase(featureModeKey))
+                .findAny()
+                .orElseThrow(() -> new FeatureModeNotFoundException(featureModeKey, getFeatureModesAsStrings(featureKey)));
     }
 
     @Override
     public List<FeatureMode> getAllAvailableFeatureModes() {
-        List<FeatureMode> featureModes = new ArrayList<>();
-        featureConfigService.getAllFeatureConfigs().forEach(featureConfig -> featureModes.addAll(featureConfig.getAvailableModes()));
-        return featureModes;
+        List<FeatureMode> fullFeatureModes = new ArrayList<>();
+        featureConfigService.getAllFeatureConfigs().forEach(featureConfig -> fullFeatureModes.addAll(featureConfig.getAvailableModes()));
+        return fullFeatureModes;
     }
 
-    private List<String> getFeatureModesAsStrings() {
-        return getAllAvailableFeatureModes().stream().map(FeatureMode::getKey).collect(Collectors.toList());
+    private List<String> getFeatureModesAsStrings(String featureKey) {
+        return featureModes.get(featureKey);
     }
 
     @Override
@@ -198,5 +205,14 @@ public class FeatureModeServiceBean implements FeatureModeService {
         return necessaryFeatureModesMet(featureAware.getFeature(), featureAware.getFeatureModeLimitations(), serverId);
     }
 
+
+    @PostConstruct
+    public void postConstruct() {
+        featureConfigService.getAllFeatureConfigs().forEach(featureConfig -> {
+            List<String> modes = new ArrayList<>();
+            featureConfig.getAvailableModes().forEach(featureMode -> modes.add(featureMode.getKey()));
+            featureModes.put(featureConfig.getFeature().getKey(), modes);
+        });
+    }
 
 }

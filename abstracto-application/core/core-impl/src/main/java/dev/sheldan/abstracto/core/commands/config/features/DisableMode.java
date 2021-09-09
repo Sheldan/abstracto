@@ -45,7 +45,7 @@ public class DisableMode extends AbstractConditionableCommand {
         String featureName = (String) commandContext.getParameters().getParameters().get(0);
         String modeName = (String) commandContext.getParameters().getParameters().get(1);
         FeatureDefinition featureDefinition = featureConfigService.getFeatureEnum(featureName);
-        FeatureMode featureMode = featureModeService.getFeatureModeForKey(modeName);
+        FeatureMode featureMode = featureModeService.getFeatureModeForKey(featureName, modeName);
         AServer server = serverManagementService.loadServer(commandContext.getGuild());
         featureModeService.disableFeatureModeForFeature(featureDefinition, server, featureMode);
         return CommandResult.fromSuccess();

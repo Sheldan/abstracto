@@ -158,7 +158,7 @@ public class FeatureModeServiceBeanTest {
         FeatureMode featureMode2 = Mockito.mock(FeatureMode.class);
         when(featureConfig1.getAvailableModes()).thenReturn(Arrays.asList(featureMode, featureMode2));
         when(featureConfigService.getAllFeatureConfigs()).thenReturn(Arrays.asList(featureConfig1));
-        FeatureMode featureModeForKey = testUnit.getFeatureModeForKey(FEATURE_MODE);
+        FeatureMode featureModeForKey = testUnit.getFeatureModeForKey(FEATURE_NAME, FEATURE_MODE);
         Assert.assertEquals(featureMode, featureModeForKey);
     }
 

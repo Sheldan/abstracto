@@ -19,7 +19,7 @@ public interface FeatureModeService {
     boolean featureModeActive(FeatureDefinition featureDefinition, Long serverId, FeatureMode mode);
     boolean featureModeActive(FeatureDefinition featureDefinition, Guild guild, FeatureMode mode);
     void validateActiveFeatureMode(Long serverId, FeatureDefinition featureDefinition, FeatureMode mode);
-    FeatureMode getFeatureModeForKey(String key);
+    FeatureMode getFeatureModeForKey(String feature, String modeKey);
     List<FeatureMode> getAllAvailableFeatureModes();
     List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server);
     List<FeatureModeDisplay> getEffectiveFeatureModes(AServer server, AFeature feature);

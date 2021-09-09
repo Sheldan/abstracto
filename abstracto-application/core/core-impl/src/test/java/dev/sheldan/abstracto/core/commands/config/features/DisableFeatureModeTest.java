@@ -46,7 +46,7 @@ public class DisableFeatureModeTest {
         FeatureDefinition featureDefinition = Mockito.mock(FeatureDefinition.class);
         when(featureConfigService.getFeatureEnum(featureName)).thenReturn(featureDefinition);
         FeatureMode featureMode = Mockito.mock(FeatureMode.class);
-        when(featureModeService.getFeatureModeForKey(modeName)).thenReturn(featureMode);
+        when(featureModeService.getFeatureModeForKey(featureName, modeName)).thenReturn(featureMode);
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
@@ -70,7 +70,7 @@ public class DisableFeatureModeTest {
         String modeName = "mode";
         FeatureDefinition featureDefinition = Mockito.mock(FeatureDefinition.class);
         when(featureConfigService.getFeatureEnum(featureName)).thenReturn(featureDefinition);
-        when(featureModeService.getFeatureModeForKey(modeName)).thenThrow(new FeatureModeNotFoundException(modeName, new ArrayList<>()));
+        when(featureModeService.getFeatureModeForKey(featureName, modeName)).thenThrow(new FeatureModeNotFoundException(modeName, new ArrayList<>()));
         CommandContext context = CommandTestUtilities.getWithParameters(Arrays.asList(featureName, modeName));
         testUnit.execute(context);
     }
