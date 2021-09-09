@@ -1,66 +1,66 @@
 === Assignable roles
 
-This feature enables creating and maintaining so-called 'assignable role places'. These places are messages at which buttons are added, and when a member clicks such a button, a configured role, is assigned to the user.
-A place can be disabled, which causes the buttons to become disabled. Such places can be made 'unique', which means that users can only have one role available in the place.
+This feature enables creating and maintaining so-called 'assignable role places' (ARP). These places are messages at which buttons are added, and when a member clicks such a button, a configured role is assigned to the user.
+A place can be disabled, which causes the buttons to become disabled. Such places can be made 'unique', which means that users can only have one role assigned at one point in time.
 
-An assignable role place can have a type. This type can either be `DEFAULT`, or `BOOSTER´. The `BOOSTER` type comes with special functionalities: if a member clicked a button, it will evaluate whether the member has boosted the server and reject if not. There is also functionality to automatically remove the assigned roles for members who stopped boosting.
+There exist different types of ARPs: `DEFAULT`, or `BOOSTER´. The `BOOSTER` type comes with special functionalities: if a member clicked a button, the bot will evaluate whether the member has boosted the server and reject if not. These 'booster assigned roles' will be removed once the member stopped boosting.
 
-Deleting the actual role behind an assignable role causes the assignable role place to become non-functional: the button will remain and can still be clicked, but users will receive an error message.
+Deleting the actual role behind an assignable role causes the assignable role place to become non-functional: the button will remain and can still be clicked, but users will receive an error message. In this case you can remove such a role via the command `removeRoleFromAssignableRolePlace`.
 
 Feature key: `assignableRole`
 
 
 ==== Commands
-Create a new assignable role place::
+Create a new ARP::
 * Usage: `createAssignableRolePlace <name> <channel> <text> [type]`
 * Description: Creates a new assignable role place with the key `name`. The `text` will be shown in the description of the first message.
-When the place is setup, it will be posted in the `channel`. If `type` is not provided, it will be `DEFAULT`. Possible values for are `booster` and `default`.
+When the messages are created it will be posted towards the channel `channel`. If `type` is not provided, it will default to `DEFAULT`. Possible values for are `booster` and `default`.
 
-Add a role to an assignable role place::
+Add a role to an ARP::
 * Usage: `addRoleToAssignableRolePlace <name> <role> <text> [emote]`
-* Description: Adds to the assignable role place identified by `name` an additional assignable role. The `role` will be assigned when a member adds the reaction. The `text` will be the text of the button, and the optional `emote` will be used in the button.
-It is required that `emote` is usable by Abstracto.
+* Description: Adds one role to the ARP identified by `name`. The `role` will be assigned when a member clicks the button. The `text` will be the text of the button, and the optional `emote` will be used as an emote in the button.
+It is required that `emote` is usable by the bot.
 
-Create the assignable role place in discord::
+Create the ARP in Discord::
 * Usage: `setupAssignableRolePlace <name>`
-* Description: Posts the message of the assignable role place identified by `name` to the configured channel in discord. This will delete the old message connected to this assignable role place, if there is any.
+* Description: Posts the message of the ARP identified by `name` to the configured channel in discord. This will delete past message of this ARP (if any)
 
-Remove a role from an assignable role place::
+Remove a role from an ARP::
 * Usage: `removeRoleFromAssignableRolePlace <name> <role>`
-* Description: Removes from the assignable role place identified by `name`, the button associated with the role `role`. If the role was deleted in the meantime, providing the role ID works as well.
+* Description: Removes from the ARP identified by `name` the button associated with the role `role`. If the role was deleted in the meantime, providing the role ID works as well.
 
 Show the current configuration for an assignable role place::
 * Usage: `showAssignableRolePlaceConfig <name>`
-* Description: This command displays the current configuration of assignable role place identified by `name`.
+* Description: This command displays the current configuration of ARP identified by `name`.
 
-Move an assignable role place to another channel::
+Move an ARP to another channel::
 * Usage: `moveAssignableRolePlace <name> <newChannel>`
-* Description: Moves the assignable role place identified by `name` to be in `newChannel`. If the place is currently shown, this will immediately delete the message and create the place in the given `newChannel`.
+* Description: Moves the ARP identified by `name` to be in `newChannel`. If the ARP has a message currently, this will immediately delete the message and create it in the given `newChannel`.
 
-Deactivate the assignable role place::
+Deactivate the ARP::
 * Usage: `deactivateAssignableRolePlace <name>`
-* Description: Deactivates the buttons of the assignable role place identified by `name`.
+* Description: Deactivates the buttons of the ARP identified by `name`.
 
-Activate the assignable role place::
+Activate the ARP::
 * Usage: `activateAssignableRolePlace <name>`
-* Description: Activates the buttons of the assignable role place identified by `name` and enables the assignment of roles.
+* Description: Activates the buttons of the ARP identified by `name`.
 
-Change configuration of assignable role place::
+Change configuration of ARP::
 * Usage: `changeAssignableRolePlaceConfig <name> <key> <newValue>`
 * Description: Changes the config attribute indicated by `key` of the place identified by `name` to `newValue`. The possible key is `unique` and it can take `true`/`false` as `newValue`.
 
-Delete an assignable role place::
+Delete an ARP::
 * Usage: `deleteAssignableRolePlace <name>`
-* Description: Completely deletes the assignable role place identified by `name`. This includes any trace in the database and the current message, if any.
+* Description: Completely deletes the ARP identified by `name`. This includes any trace in the database and the current message, if any.
 
-Change description text of assignable role place::
+Change description text of ARP::
 * Usage `editAssignableRolePlaceText <name> <newText>`
-* Description: Changes the text which is shown in the message of the assignable role place identified by `name` to `newText`. This changes the message immediately.
+* Description: Changes the text which is shown in the message of the ARP identified by `name` to `newText`. This changes the message immediately.
 
 Create an assignable role condition::
 * Usage: `addAssignableRoleCondition <name> <role> <conditionKey> <conditionValue>`
-* Description: Creates a condition for the given assignable role identified by `role` for the assignable role place identified by `name`. There only exist one `conditionKey` right now, which is `min_level`. The given `conditionValue` for this condition must be a number between 1 and 150.
+* Description: Creates a condition for the given assignable role identified by `role` for the ARP identified by `name`. There only exist one `conditionKey` right now, which is `min_level`. The given `conditionValue` for this condition must be a number between 1 and 150.
 
 Delete an assignable role condition::
 * Usage: `removeAssignableRoleCondition <name> <role> <conditionKey>`
-* Description: Removes the assignable role condition `conditionKey` for `role` in the assignable role place identified by `name`. There only exist one `conditionKey` right now, which is `min_level`.
+* Description: Removes the assignable role condition `conditionKey` for `role` in the ARP identified by `name`. There only exist one `conditionKey` right now, which is `min_level`.

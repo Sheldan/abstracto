@@ -2,7 +2,7 @@
 
 This feature contains the ability to track experience of users on the server and award roles based on the level they reach.
 The experience is awarded once per minute and is calculated by asciimath:[`\text{rand}(\text{minExp}, \text{maxExp}) * \text{expScale}`].
-Only one role is awarded at a time and the past unlocked roles are not given to the members.
+Currently members only have their highest earned role assigned.
 
 ==== Necessary bot permissions
 `MANAGE_ROLES` in order to award members with roles
@@ -19,26 +19,25 @@ Changing the experience scale of the server::
 * Usage: `expScale <value>`
 * Description: Changes the value of `expScale` on this server to `value`.
 
-Showing the leader board of the server::
+Showing the leaderboard of the server::
 * Usage: `leaderboard [page]`
-* Description: Shows the leader board of the server in a paginated format. This does not use the interactive pagination.
-If no parameter is provided, it will show the top 10 members and their message count, level, experience and rank.
-Additionally, the same information for the user executing is shown, regardless whether or not the user is already shown on the given leader board page.
-If a `page` is provided, it will display the leader board of the ranks `page * 10` until  `(page + 1) * 10` instead. If `page` is beyond the member count, the last members are shown.
+* Description: Shows the leaderboard of the server in a paginated format.
+If no parameter is provided, it will show message count, level, experience and rank of the top 10 members.
+Additionally, the same information for the executing user is shown, regardless whether or not the user is already shown on the given leader board page.
+If a `page` is provided, it will display the leaderboard of the ranks `page * 10` until  `(page + 1) * 10` instead. If `page` is beyond the member count, the last members are shown.
 
 
 Setting a role to be awarded at a certain level::
 * Usage: `setExpRole <level> <role>`
 * Description: Sets `role` to be awarded at the given `level`. If the role was previously assigned,
 this will cause to remove this assignment and recalculate the roles for all users previously having this role.
-This command will provide a status message indicating this process.
-This will not award this role to users which qualify for this, a `syncRoles` is necessary for this.
+A status image indicating the progress will be shown. It will not award this role to users which qualify for this, a `syncRoles` is necessary for this.
 * Example: `setExpRole 50 @HighLevel` in order to award the role `HighLevel` at level `50` (the @HighLevel is a role mention)
 
 Syncing the roles of the members with the configuration::
 * Usage: `syncRoles`
 * Description: Recalculates the appropriate levels for all users on the server and awards the roles appropriate for the level.
-There will be a message indicating the current status of the progress and it is highly advised to not execute this command while another instance is still processing.
+There will be a message indicating the current status of the progress, and it is highly advised to not execute this command while another instance is still processing.
 This command can run for a longer period of time, depending on the amount of members in the guild.
 
 Remove a role from being awarded at a certain level::
@@ -53,20 +52,20 @@ If a member has *any* role of the ones for which experience is disabled, the mem
 
 Enable experience gain for a certain role::
 * Usage: `enableExpForRole <role>`
-* Description: Enables experience gain for members with this role again.
+* Description: Enables experience gain for `role`.
 
 List roles for which experience gain is disabled::
 * Usage: `listDisabledExperienceRoles`
-* Description: Lists the roles for which experience gain is disabled on this server.
+* Description: Lists the roles for which experience gain is disabled in this server.
 * Aliases: `lsDisEpRoles`
 
-Disable experience gain for specific member::
+Disable experience gain for a specific member::
 * Usage: `disableExpGain <member>`
-* Description: Disables the ability to gain experience for this certain member.
+* Description: Disables experience gain fpr `member`.
 
-Enable experience gain for specific member::
+Enable experience gain for a specific member::
 * Usage: `enableExpGain <member>`
-* Description: Enables the ability to gain experience for this certain member.
+* Description: Enables experience gain for `member`.
 
 Show the currently configured experience roles in the server::
 * Usage: `levelRoles`

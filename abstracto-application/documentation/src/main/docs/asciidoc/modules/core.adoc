@@ -9,28 +9,28 @@ The core feature contains necessary commands in order for Abstracto to function 
 ==== Commands
 Help::
 * Usage: `help [module/command]`
-* Description: If no parameter is provided, this will list the currently available modules. If the provided parameter matches the name of a module, information about that module is displayed.
-This information includes a description and the available commands of this module. If the provided parameter matches a command name, information about this command is displayed.
+* Description: If no parameter is provided, this will list the currently available modules and a short description. If the provided parameter matches the name of a module, information about that module is displayed.
+This information includes a description and the executable commands of this module. If the provided parameter matches a command name, information about this command is displayed.
 The module matching takes precedence over command matching.
-This information includes the a short description, a more detailed description, aliases (if any), parameters (if any), which roles are allowed to execute the command,
-or if it is not restricted and which effects a command has.
+This information includes a short description, a more detailed description, aliases (if any), parameters (if any), which roles are allowed to execute the command,
+and which effects a command has
 Changing the system configuration::
 * Usage `setConfig <key> <value>`
-* Description: Changes the value of this configuration identified by `key` to `value`. Some of these configurations have separate commands, but this works in general.
+* Description: Changes the value of this configuration identified by `key` to `value`. Some of these configurations have separate specific commands, but this works in general.
 * Example: `setConfig expMin 15` to set the minimum experience to 15
 Resetting the configuration to default values::
 * Usage `resetConfig [key/feature]`
 * Description: Resets the configuration of the given `key` or for the complete feature identified by `feature`. If this is not provided, it will reset the entire server to the default configuration.
-Changing emotes Abstracto uses::
+Changing emotes the bot uses::
 * Usage: `setEmote <key> <emote>`
-* Description: Sets the emote identified by `key` used by Abstracto on this server to `emote`.
-This allows both built in emotes and custom emotes, but Abstracto must be in the server of the custom emote in order to use them.
+* Description: Sets the emote identified by `key` used by the bot on this server to `emote`.
+This allows both built in emotes and custom emotes, but the bot must be in the server of the custom emote in order to use them.
 Clearing the cache::
 * Usage: `clearCache`
-* Description: Clears the internal cache used by Abstracto. This mostly affects template changes directly done in the database.
+* Description: Clears the internal cache used by the bot. This is mostly useful to update tempaltes when they were changed in the database.
 Ping::
 * Usage: `ping`
-* Description: Prints the latency of Abstracto to the Discord servers.
+* Description: Prints the gateway ping of the bot to the Discord servers.
 Echo::
 * Usage: `echo <text>`
 * Description: Echos `text` in the same channel this command as executed in.
@@ -39,7 +39,7 @@ Changing the prefix::
 * Description: Changes the prefix of the bot in this guild to `prefix`. This can be one or multiple characters.
 Changing a post target::
 * Usage: `posttarget <key> <channel>`
-* Description: Changes the given post target identified by `key` to the given channel. All messages using this post target will be send to this channel from now on.
+* Description: Changes the given post target identified by `key` to `channel`. All messages using this post target will be sent to this channel from now on.
 If neither `key` nor `channel` is given, this will print the currently available post targets and the channels they point to, if set.
 * Example: `posttarget banLog #general` to log the bans in the #general channel.
 Changing admin mode::
@@ -47,10 +47,10 @@ Changing admin mode::
 * Description: Changes the admin modes on this server to the given value. Admin mode means, that **all** commands in the current server, can only be executed by members who have the ADMINISTRATOR permission.
 Listing the features::
 * Usage: `features`
-* Description: Lists the available features and whether or not they are enabled in this server.
+* Description: Lists the available features and whether they are enabled in this server.
 Enabling a feature::
 * Usage: `enableFeature <key>`
-* Description: Enables the feature identified by `key` in this server. If the feature dependents on other features, they will be enabled as well.
+* Description: Enables the feature identified by `key` in this server. If the feature dependents on other features, they will be enabled as well. Any configuration which requires setup will be listed. In order to start a configuration wizard execute the command `setupFeature`.
 * Example: `enableFeature moderation` to enable the moderation feature
 Disabling a feature::
 * Usage: `disableFeature <key>`
@@ -58,8 +58,9 @@ Disabling a feature::
 * Example: `disableFeature moderation` to disable the moderation feature
 Creating a channel group::
 * Usage: `createChannelGroup <key>`
-* Description: Creates a new channel group identified by `key`.
+* Description: Creates a new channel group identified by `key`. There are different types of channel groups, depending on the features available. Per default `command` and `commandCoolDown` are available.
 * Aliases: `+ChGroup`
+
 Adding a channel to a channel group::
 * Usage: `addToChannelGroup <groupName> <channel>`
 * Description: Adds the `channel` to the channel group identified by the `groupName`. It is not possible for a channel to be in a group twice.
@@ -76,70 +77,70 @@ Deleting a channel group::
 * Aliases: `-ChGroup`
 Disabling a command in a group::
 * Usage: `disableCommand <commandName> <groupName>`
-* Description: Disables the command identified by `commandName` in the channel group `groupName`. A command is considered disabled in a specified channel, if the command is disabled in *all* the groups the channel is in.
+* Description: Disables the command identified by `commandName` in the channel group `groupName`. A command is considered disabled in a specified channel, if the command is disabled in *all* the groups the channel is in. This requires the command to be added to this channel group first.
 * Example: `disableCommand warn group1` to disable the command `warn` in the group `group1`
 Enabling a command in a group::
 * Usage: `enableCommand <commandName> <groupName>`
 * Description: Enables the command identified by `commandName` in the channel group `groupName`. A command is considered enabled in a specified channel, if the command is enabled in *any* the groups the channel is in.
 * Example: `enableCommand warn group1` to enable the command `warn` in the group `group1`
-Showing all available channel groups and the respective channels::
+Showing all available channel groups::
 * Usage: `listChannelGroups`
-* Description: Provides an overview of the currently available channel groups and which channels are in this channel group.
+* Description: Provides an overview of the currently available channel groups, which channels are in the group, whether the group has been disabled and the type of the channel group.
 * Aliases: `lsChGrp`
-Removing role restrictions from a command::
-* Usage: `allow <featureName|commandName>`
-* Description: Allows everyone to execute all commands in this `feature`/the `command`. Which means, any restrictions concerning which role is able to execute a certain command is ignored even if it still shows in the help output.
 Allowing a role to execute a command::
-* Usage: `allowRole  <featureName|commandName> <role>`
-* Description: Allows the provided `role` to execute all commands in the `feature`/the `command`. This command automatically restricts the commands, which means, if it was unrestricted before, after executing this command only the provided role can execute the command.
+* Usage: `allowRole <featureName|commandName> <role>`
+* Description: Allows the provided `role` to execute all commands in the `feature`/the `command`. This command automatically restricts the commands (does the same as the command `restrict`), which means, if it was unrestricted before, after executing this command only the provided role can execute the command.
 * Example: `allowRole moderation @Staff` to allow the role `Staff` to execute all commands in the `moderation` feature (where @Staff is a role mention)
-Forbidding a role to execute a command::
+Removing permission of a role to execute a command::
 * Usage: `disAllowRole <featureName|commandName> <role>`
 * Description: Removes the `role` from the list of allowed roles for all commands in the `feature`/the `command`.
 * Example: `disAllowRole moderation @Staff` to forbid the role `Staff` to execute all commands in the `moderation` feature (where @Staff is a role mention)
+Enforce the role restrictions of commands::
+* Usage: `restrict <featureName|commandName>`
+* Description: Causes the role restrictions for all commands in the `feature`/the `command` to be in effect again.
+Removing role restrictions from a command::
+* Usage: `allow <featureName|commandName>`
+* Description: Allows everyone to execute all commands in this `feature`/the `command`. Which means, any restrictions concerning which role is able to execute a certain command is ignored even if it still configured.
 Make a role affected by a command::
 * Usage: `makeAffected <effect> <role>`
 * Description: Makes the `role` affected by the `effect`.
-* Example: `makeAffected ban @Staff` in order so the role `Staff` can be banned (where @Staff is a role mention)
+* Example: `makeAffected ban @Staff` in order to the role `Staff` can be banned (where @Staff is a role mention)
 Make a role immune against a command::
 * Usage: `makeImmune <effect> <role>`
 * Description: Makes the `role` immune to `effect`.
-* Example: `makeImmune ban @Staff` in order so the role `Staff` cannot be banned (where @Staff is a role mention)
+* Example: `makeImmune ban @Staff` in order to the role `Staff` cannot be banned (where @Staff is a role mention)
 Show all effects::
 * Usage: `showEffects`
 * Description: Shows the currently possible effects and a short description of them.
-Enforce the role restrictions of commands::
-* Usage: `restrict <featureName|commandName>`
-* Description: Causes the role restrictions for a all commands in the `feature`/the `command` to be in effect again.
 Enabling a feature mode::
 * Usage: `enableMode <featureName> <mode>`
-* Description: Enables the mode `mode` in feature `featureName`. If the enabled state of the feature `featureName` is part of the default config, it will no longer be default config that after executing `enableMode`.
+* Description: Enables the mode `mode` in feature `featureName`. If the mode followed default configuration previously, it will not anymore after executing this command.
 Disabling a feature mode::
 * Usage: `disableMode <featureName> <mode>`
-* Description: Disables the mode `mode` in feature `featureName`. If the enabled state of the feature `featureName` is part of the default config, it will no longer be default config after executing `disableMode`.
+* Description: Disables the mode `mode` in feature `featureName`. If the mode followed default configuration previously, it will not anymore after executing this command.
 Listing all feature modes::
-* usage `featureModes [feature]`
-* Description: Lists all of the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether or not the current mode is enabled and if this value comes from the default configuration.
+* Usage `featureModes [feature]`
+* Description: Lists all of the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether it is enabled and if this value comes from the default configuration.
 Setting up a feature with an interactive wizard::
 * Usage: `setupFeature <featureName>`
-* Description: Starts an interactive wizard to configure the necessary properties and post targets of a feature. Also includes custom steps. Closes with a summary page to see all changes.
+* Description: Starts an interactive wizard to configure the necessary configuration of a feature. Closes with a summary page to see all changes.
 Allow the bot to use certain mentions::
 * Usage: `allowMention <mentionType>`
 * Description: Allows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is enabled, this also enables @here mentions.
-This change takes immediate effect and is only for the current server. Per default user and role mentions are enabled.
+This change takes immediate effect and is only for the current server. Per default user and role mentions are enabled. This configuration can be overwritten on a template base.
 Disallow the bot to use certain mentions::
 * Usage: `disallowMention <mentionType>`
 * Description: Disallows the bot to use certain mentions. ´mentionType` can either be `everyone`, `role` or `user`. If @everyone is disabled, this also disables @here mentions.
-This change takes immediate effect and is only for the current server. Per default everyone/here mentions are disabled.
+This change takes immediate effect and is only for the current server. Per default everyone/here mentions are disabled. This configuration can be overwritten on a template base.
 Setting a custom template for this server::
 * Usage: `setTemplate <templateKey>`
 * Description: Adds or updates the given template identified by `templateKey` only for the current server. The content of the template needs to be attached to the message as a file and is required to be a plaintext file. The file can be named anything. The template needs to be in https://freemarker.apache.org/[Freemarker] format. This change is only in effect for this server and is called a 'customized template'. This will take effect immediately.
 Retrieving the current default template::
 * Usage: `getTemplate <templateKey>`
-* Description: Loads the current global template identified by `templateKey` and returns the content as an attached file to the response of the command.
+* Description: Loads the current global template identified by `templateKey` and returns the content as an attached file..
 Retrieving the current customized template for this server::
 * Usage: `getCustomTemplate <templateKey>`
-* Description: Loads the current customized tempalte identified by `templateKey` and returns the content as an attached file to the response of the command. Shows an error message, if there exists no customized template for this server for the provided `templateKey`.
+* Description: Loads the current customized template identified by `templateKey` and returns the content as an attached file.
 Resetting a customized template to the default template::
 * Usage `resetTemplate <templateKey>`
 * Description: Resets the template identified by `templateKey` to the default content.
@@ -148,22 +149,22 @@ Show a link to documentation::
 * Description: Shows links to access the documentation.
 Create a server specific alias::
 * Usage `createAlias <commandName> <alias>`
-* Description: Creates the server specific alias for command `commandName` identified by `alias`. This means that from now on, users can use the command identified by `commandName` by using `alias` in its place, when executing the command or when using the help command. This alias is only available in this server, and it is not allowed to use the names of existing commands or pre-defined aliases. In case such an alias is used as `alias`, an error message is shown.
+* Description: Creates the server specific alias for command `commandName` identified by `alias`. This means that from now on, users can use the command identified by `commandName` by using `alias` in its place, when executing the command or when using the help command. This alias is only available in this server, and it is not allowed to use the names of existing commands or built-in aliases.
 Delete a server specific alias::
 * Usage: `deleteAlias <alias>`
-* Description: Deletes the server specific alias identified by `alias`. It is not possible to delete pre-defined aliases. If `alias` does not exist, an error message is shown.
+* Description: Deletes the server specific alias identified by `alias`. It is not possible to delete built-in aliases.
 Creating a profanity group::
 * Usage: `createProfanityGroup <profanityGroupName>`
 * Description: Creates a profanity group with the given `profanityGroupName`. This name must be unique within the server.
 Adding a profanity regex to a profanity group::
 * Usage: `addProfanityRegex <profanityGroupName> <profanityName> <regex> [replacement]`
-* Description: Adds a profanity regex identified by `profanityName` to the profanity group identified by `profanityGroupName`. The regex to be used is in `regex`. Depending on how the regex is used, you can define a `replacement`, with which a found text will be replaced. The `profanityName` must be unique within the profanity group.
+* Description: Adds a profanity regex `profanityName` to the profanity group `profanityGroupName`. The regex to be used is in `regex`. Depending on how the regex is used, you can define a `replacement`, with which a found text can be replaced. The `profanityName` must be unique within the profanity group.
 Show the current profanity configuration::
 * Usage: `showProfanityConfig`
 * Description: Shows the current profanity configuration for the current server, including all profanity groups and profanity regex.
 Removing a profanity regex from a profanity group::
 * Usage: `removeProfanityRegex <profanityGroupName> <profanityName>`
-* Description: Removes the profanity regex identified by `profanityName` from the profanity group identified by `profanityGroupName`.
+* Description: Removes the profanity regex `profanityName` from the profanity group `profanityGroupName`.
 Deleting a profanity group::
 * Usage: `deleteProfanityGroup <profanityGroupName>`
 * Description: Deletes the profanity group identified by `profanityGroupName` and all profanity regexes within.
@@ -172,7 +173,7 @@ Showing the uptime of the bot::
 * Shows the uptime and start time of the bot instance.
 Adding a command to a channel group::
 * Usage: `addCommandToChannelGroup <channelGroupName> <commandName>`
-* Description: Adds the command `commandName` to the channel group `channelGroupName`. This can be used to add the command to a channel group which can disable the command or set a cooldown on the command.
+* Description: Adds the command `commandName` to the channel group `channelGroupName`. This can be used in various channel group types to customize how these commands behave in the respective channels. For example per default there are channel group types to define whether a command is disabled or the cooldown thereof.
 Disabling a channel group::
 * Usage: `disableChannelGroup <channelGroupName>`
 * Description: Disables the effect the channel group `channelGroupName` has.
@@ -181,14 +182,13 @@ Enabling a channel group::
 * Description: Enables the effect the channel group `channelGroupName` has.
 Removing a command from a channel group::
 * Usage: `removeCommandFromChannelGroup <channelGroupName> <commandName>`
-* Description: Removes the command `commandName` from the channel group `channelGroupName`. This can be used to remove the command from a channel group which can enable the command or remove a cooldown on the command.
+* Description: Removes the command `commandName` from the channel group `channelGroupName`.
 Clearing cooldowns::
 * Usage: `clearCommandCoolDowns`
 * Description: Resets all currently active cooldowns of the current server, so every command can be used again.
 Setting channel and member cooldowns in a channel group::
 * Usage: `commandCoolDownChannelGroup <channelGroupName> <channelDuration> <memberDuration>`
-* Description: Sets the cooldown of the commands of the channel group `channelGroupName` to `channelDuration` for the channel group
-and `memberDuration` for each member.
+* Description: Sets the cooldown of the commands in the channel group `channelGroupName` to `channelDuration` and `memberDuration` for each member.
 Setting the global cooldown for a command::
 * Usage: `commandCoolDownServer <command> <duration>`
 * Description: Sets the cooldown for command `command` to `duration` for the whole server.
@@ -197,14 +197,14 @@ Setting the global cooldown for a command::
 A feature mode is a very specific way in which a feature behaves for a certain decision. These feature modes can be defined for each server and are directly bound to a feature.
 These feature modes influence the availability of commands or general behavior of features.
 
-An example of a feature mode is mod mail logging: If the feature mode `log` of mod mail is disabled, no thread will be logged and the separate command `closeNoLog` will not be available in the first place, because it will behave the same as the normal `close` command.
+An example of a feature mode is mod mail logging: If the feature mode `log` of mod mail is disabled, no thread will be logged and the separate command `closeNoLog` will not be available at all, because it will behave the same as the normal `close` command.
 If the feature mode is enabled, the messages from the thread are logged in the respective post target and the command will be available.
 
 .What is a profanity group?
 A profanity group is just a container for various regexes. They are grouped together in order to be identified together and kept organized.
-Each profanity regex within that group has another identified. For example a regex group handles the word 'test'. Then a profanity regex is for all lower cases, this regex can be named 'lower', and the regex group is then named 'test'.
+Each profanity regex within that group has an additional identifier. For example a profanity group can be used to detect a particular word, but there are different profanities which would detect various possibilities for that one word. This helps reduce the complexity of individual regexes.
 
 .How do multiple cooldowns interact
-If there are multiple cooldowns on a command active, the longest cooldown will decide the cool down.
-A channel cannot be in multiple cool down channel groups and this is actively enforced by the command.
+If there are multiple cooldowns on a command active, the longest cooldown will decide the cooldown.
+A channel cannot be in multiple cooldown channel groups at once and this is actively enforced by the command.
 If a cooldown is active, an error message is shown with the duration after which the command can be used again.

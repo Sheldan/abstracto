@@ -11,13 +11,13 @@ Create a reminder::
 * Example: `remind 1h2m3s text` in order to be reminded in 1 hour 2 minutes and 3 seconds with the reason `text`
 Cancelling a reminder::
 * Usage `unRemind <reminderId>`
-* Description: Cancels this reminder and will cause this reminder to not be executed. Only possible for reminders started by you.
+* Description: Cancels this reminder and will cause this reminder to not be executed. Only possible for reminders started by the user executing the command.
 Listing all active reminders::
 * Usage: `reminders`
 * Description: Lists all the currently not yet executed reminders and information about each of them.
 Re-schedule a past reminder::
 * Usage: `snooze <reminderId> <duration>`
-* Description: Schedules the reminder identified by `reminderId` to be triggered after `duration` again. It is only possible to do this for reminders which have already been executed. Only possible for reminders started by you.
+* Description: Schedules the reminder identified by `reminderId` to be triggered after `duration` again. It is only possible to do this for reminders which have already been executed. Only possible for reminders started by the user executing the command.
 
 
 === Starboard
@@ -50,6 +50,8 @@ Feature key: `starboard`
 
 `starLvl4` The amount of stars necessary in order for the level 4 emote to be used in the starboard post. Default: 17
 
+`starMaxDays` The amount of days after which reactions will be ignored: Default: 7
+
 ==== Post targets
 `starboard`:: The target used for the messages containing the starboard posts with the current star amount
 
@@ -61,12 +63,13 @@ Showing starboard statistics::
 === Suggestions
 
 This feature provides the ability for members to post suggestions containing text to the post target `suggestions`. These suggestions can then be accepted or denied by the moderators.
+An acceppted/vetoed/rejected suggestion will be deleted after two days (default configuration) from the database
 
 Feature key: `suggestion`
 
 ==== Feature modes
-`suggestionReminder`:: If this is enabled, a message will be sent to the post target `suggestionReminder`, after the amount of days configured in `suggestionReminderDays`. Disabled by default.
-`suggestionButton` :: Use buttons instead of reactions for suggestions. Enabled by default.
+`suggestionReminder`:: if enabled, a message will be sent to the post target `suggestionReminder`, after the amount of days configured in `suggestionReminderDays`. Disabled by default.
+`suggestionButton` :: if enabled, use buttons instead of reactions for suggestions. Enabled by default.
 
 ==== Post targets
 `suggestions`:: the target of the messages containing the suggestions
@@ -82,21 +85,21 @@ Feature key: `suggestion`
 ==== Commands
 Creating a suggestion::
 * Usage: `suggest <text>`
-* Description: Posts the text to the `suggest` post target and places the emotes for up and down voting. If `suggestionReminder` is enabled, this will create a suggestion reminder.
+* Description: Posts the text to the `suggest` post target and either adds emotes or buttons for voting. If `suggestionReminder` is enabled, this will create a suggestion reminder.
 Accepting a suggestion::
 * Usage: `accept <suggestionId> [reason]`
-* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `reason` will be used in this re-post, if provided. This will cancel the suggestion reminder (if it exists)
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as accepted. The optional `reason` will be used in this re-post, if provided. This will cancel the suggestion reminder (if it exists). This will also show the amount of votes received, but these are only counted when feature mode `suggestionButton` is enabled.
 * Example: `accept 1 okay` in order to accept the suggestion `1` with the reason `okay`
 Rejecting a suggestion::
 * Usage: `reject <suggestionId> [reason]`
-* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `reason` will be used in this re-post, if provided. This will cancel the suggestion reminder (if it exists)
+* Description: Re-posts the suggestion identified by `suggestionId` and marks the suggestion as denied. The optional `reason` will be used in this re-post, if provided. This will cancel the suggestion reminder (if it exists). This will also show the amount of votes received, but these are only counted when feature mode `suggestionButton` is enabled.
 * Example: `deny 1 not okay` in order to reject the suggestion `1` with the reason `not okay`
 Removing a suggestion you created::
 * Usage: `unSuggest <suggestionId>`
-* Description: This will delete the suggestion identified by `suggestionId` from the channel and the database, but this is only possible within a specified time range. This will cancel the suggestion reminder (if it exists)
+* Description: This will delete the suggestion identified by `suggestionId` from the channel and the database, but this is only possible within a specified time range (1h by default). This will cancel the suggestion reminder (if it exists)
 Vetoing a suggestion::
 * Usage : `veto <suggestion> [reason]`
-* Description: This command will veto the suggestion, this means, it should be indicated that the suggestion was not rejected by votes, but because it was not acceptable on a fundamental level. This is basically just a different state of the suggestion. This will cancel the suggestion reminder (if it exists)
+* Description: This command will veto the suggestion, this means, it should be indicated that the suggestion was not rejected by votes, but because it was not acceptable on a fundamental level. This is basically just a different state of the suggestion. This will cancel the suggestion reminder (if it exists). This will also show the amount of votes received, but these are only counted when feature mode `suggestionButton` is enabled.
 
 === Miscellaneous
 
@@ -107,7 +110,7 @@ Feature key: `utility`
 ==== Commands
 Retrieving the URL of an emote::
 * Usage: `showEmote <emote>`
-* Description: Posts the name of the emote accompanied with the URL where the image of the emote is stored.
+* Description: Posts the name of the emote accompanied with the URL where the image of the emote is available at.
 
 Displaying the avatar or a member::
 * Usage: `showAvatar [member]`
@@ -127,14 +130,18 @@ Choose one of multiple options::
 
 === Link embeds
 
+This feature enables the automatic embedding of messages containing a message link.
+If a message contains a link to a discord message this will create an embed containing the the message content. This supports image attachments, but not videos or files.
+A reaction/button is placed on the embedded message which can be used to delete this embed. Only the original author and the person creating the embed can delete the embed this way.
+
+Feature key: `linkEmbeds`
+
+==== Feature modes
+`messageEmbedDeleteButton`:: if enabled, uses a button for removal instead of a reaction
+
 ==== Emotes
 * `removeEmbed` to remove the embed of a link
 
-This feature enables the automatic embedding of messages containing a message link.
-If a message contains a link to a discord message this will create an embed containing the the message content. This supports image attachments, but not videos or files.
-A reaction is placed on the embedded message which can be used to delete this embed. Only the original author and the person creating the embed can delete the embed this way.
-
-Feature key: `linkEmbeds`
 
 === Repost detection and tracking
 
@@ -181,7 +188,6 @@ Show the channels for which repost check has been enabled::
 * Description: Shows the channel groups with their respective channels for which the repost check has been enabled. These can only be channel groups of type `repostCheck`. It can still be enabled if there are now channels in the channel group.
 
 
-
 === Entertainment commands
 
 This feature basically contains a few commands which can be used for entertainment purposes directly
@@ -210,7 +216,7 @@ Roll a virtual die::
 
 Mock the message of another user::
 * Usage: `mock <text/message>`
-* Description: Takes the `text` and prints the text with the characters with alternating upper and lower case. If no text is provided, this command requires that the command has been executed in a message which replies to another message. In this case the text to be mocked will be the content of the message which has been replied to.
+* Description: Takes the `text` and prints the text with the characters with alternating upper and lower case. If no text is provided, this command requires that the command has been executed in a message which replies to another message. In this case the text to be mocked will be the content of the message which has been replied to. If both is provided, a replied message takes precedence.
 
 Add text as reactions to another message::
 * Usage: `react <message> <text>`

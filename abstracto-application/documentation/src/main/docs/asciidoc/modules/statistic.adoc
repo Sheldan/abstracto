@@ -4,19 +4,19 @@ This component will contain multiple features, currently only emote tracking is 
 
 === Emote tracking
 This feature is about tracking the usage of emotes from the server and external servers.
-The intention of this feature is to see what emotes are doing better than others and which emotes might be interesting to add to the server.
+The intention of this feature is to see what emotes are doing better than others and which emotes might be interesting to add to the server or removed.
 
 Feature key: `emoteTracking`
 
 ==== Feature modes
-`emoteAutoTrack`:: If this is enabled, emotes which are created within the server, are automatically stored and tracked. If they are renamed/deleted this will also be reflected automatically. Enabled by default.
-`externalEmotes`:: If this is enabled, every external tracked emote will be counted. It is also possible to track additional external emotes via the `trackEmote` command. Disabled by default.
-`autoTrackExternal`:: If this is enabled, every external emote which is used in a message by a server member will be automatically stored and tracked. `externalEmotes` needs to be enabled in order for this to function properly. Disabled by default.
+`emoteAutoTrack`:: if enabled, emotes which are created within the server, are automatically stored and tracked. If they are renamed/deleted this will also be reflected automatically. Enabled by default.
+`externalEmotes`:: if enabled, every external tracked emote will be counted. It is also possible to track additional external emotes via the `trackEmote` command. Disabled by default.
+`autoTrackExternal`:: if enabled, every external emote which is used in a message by a server member will be automatically stored and tracked. `externalEmotes` needs to be enabled in order for this to function properly. Disabled by default.
 
 ==== Commands
 Creating a newly tracked emote::
 * Usage: `trackEmote <emote>`
-* Description: The `enoteName` needs to be a valid usage of an emote. If this emote is part of the server, it will now be automatically tracked.
+* Description: The `emote` needs to be a valid usage of an emote. If the emote is part of the server, it will be tracked from now on.
 If the emote was tracked previously, it will be enabled again. For external emotes to be tracked this way, the feature mode `externalEmotes` needs to be enabled. The `emote` can either be a valid usage or the ID of an emote (it can only be an ID if it was previously tracked).
 Disable tracking for an emote::
 * Usage: `disableEmoteTracking [emote]`
@@ -29,7 +29,7 @@ If there are no emotes of a group, there will be no message.
 Show emote statistics of emotes in the server::
 * Usage: `emoteStats [period]`
 * Description: This command shows the amount each tracked emote from the server has been used overall. If a `period` is supplied, it will only show the amount of usages in that time period. If it is not provided, it will show the whole timeline.
-Beware that the amount of emotes is only tracked per day. For example, if it is 3PM UTC and you use `18h` as a timeperiod, it will also show the emote statistics for the day before.
+Beware that the amount of emotes is only tracked per day. For example, if it is 3PM UTC and you use `18h` as a time period, it will also show the emote statistics for the complete previous day.
 Show emote statistics of emotes previously in the server::
 * Usage: `deletedEmoteStats [period]`
 * Description: This command behaves the same way as `emoteStats` with the difference that it shows the emotes which were previously in the server. This means that the output will only show the name and the ID of the emote.
