@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.EffectConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.RoleImmunity;
 import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import dev.sheldan.abstracto.core.service.RoleService;
@@ -113,7 +112,6 @@ public class ImmuneUserCondition implements CommandCondition {
                         return;
                     }
                 } else {
-                    resultFuture.completeExceptionally(new AbstractoRunTimeException("No member found for given member in condition."));
                     return;
                 }
             } else {

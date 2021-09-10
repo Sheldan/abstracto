@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.command.service;
+package dev.sheldan.abstracto.core.command.model;
 
 import com.google.common.collect.Iterables;
 import dev.sheldan.abstracto.core.command.Command;
@@ -10,20 +10,29 @@ import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.execution.DriedCommandContext;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.model.database.AModule;
+import dev.sheldan.abstracto.core.command.service.CommandRegistry;
+import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.command.service.management.ModuleManagementService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.MemberService;
+import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -58,6 +67,12 @@ public class CommandServiceBean implements CommandService {
 
     @Autowired
     private CommandReceivedHandler commandReceivedHandler;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Override
     public ACommand createCommand(String name, String moduleName, FeatureDefinition featureDefinition) {
@@ -216,5 +231,46 @@ public class CommandServiceBean implements CommandService {
         }
     }
 
+    public CompletableFuture<RebuiltCommandContext> fillCommandContext(DriedCommandContext commandContext) {
+        CompletableFuture<Member> memberFuture = memberService.getMemberInServerAsync(commandContext.getServerId(), commandContext.getUserId());
+        CompletableFuture<Message> messageFuture = messageService.loadMessage(commandContext.getServerId(), commandContext.getChannelId(), commandContext.getMessageId());
+        return CompletableFuture.allOf(memberFuture, messageFuture).thenCompose(unused -> {
+            Message message = messageFuture.join();
+            CommandReceivedHandler.UnParsedCommandResult unparsedResult = commandReceivedHandler.getUnparsedCommandResult(message);
+            CompletableFuture<CommandReceivedHandler.CommandParseResult> getParseResult = commandReceivedHandler.getParametersFromMessage(message, unparsedResult);
+            return getParseResult.thenApply(commandParseResult -> {
+                Member author = memberFuture.join();
+                UserInitiatedServerContext userInitiatedServerContext = UserInitiatedServerContext
+                        .builder()
+                        .messageChannel(message.getChannel())
+                        .message(message)
+                        .guild(message.getGuild())
+                        .build();
+                CommandContext context = CommandContext
+                        .builder()
+                        .channel(message.getTextChannel())
+                        .author(author)
+                        .guild(message.getGuild())
+                        .jda(message.getJDA())
+                        .parameters(commandParseResult.getParameters())
+                        .userInitiatedContext(userInitiatedServerContext)
+                        .message(message)
+                        .build();
+                return RebuiltCommandContext
+                        .builder()
+                        .context(context)
+                        .command(unparsedResult.getCommand())
+                        .build();
+            });
+        });
+    }
+
+
+    @Builder
+    @Getter
+    public static class RebuiltCommandContext {
+        private CommandContext context;
+        private Command command;
+    }
 
 }

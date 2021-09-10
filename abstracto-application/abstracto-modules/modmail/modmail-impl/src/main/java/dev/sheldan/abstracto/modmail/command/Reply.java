@@ -52,7 +52,7 @@ public class Reply extends AbstractConditionableCommand {
         ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
         Long threadId = thread.getId();
         return memberService.getMemberInServerAsync(thread.getUser()).thenCompose(member ->
-            modMailThreadService.relayMessageToDm(threadId, text, commandContext.getMessage(), false, commandContext.getChannel(), commandContext.getUndoActions(), member)
+            modMailThreadService.loadExecutingMemberAndRelay(threadId, text, commandContext.getMessage(), false, member)
         ).thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

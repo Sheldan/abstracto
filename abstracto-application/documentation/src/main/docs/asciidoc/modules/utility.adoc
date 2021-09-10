@@ -164,11 +164,11 @@ Feature key: `repostDetection`
 ==== Commands
 Remove stored image posts and reposts of whole server or specific member::
 * Usage: `purgeImagePosts [member]`
-* Description: If `member` is provided, this will delete all stored image hashes (and their reposts) from the database. If `member` is not provided, this will delete all stored image hashes (and their reposts) from the whole server.
+* Description: If `member` is provided, this will delete all stored image hashes (and their reposts) from the database. If `member` is not provided, this will delete all stored image hashes (and their reposts) from the whole server. Requires you to confirm the command.
 
 Remove reposts of whole server or specific member::
 * Usage: `purgeReposts [member]`
-* Description: If `member` is provided, this will delete all reposts of the given member. If `member` is not provided, this will delete all reposts in the whole server.
+* Description: If `member` is provided, this will delete all reposts of the given member. If `member` is not provided, this will delete all reposts in the whole server. Requires you to confirm the command.
 
 Show the leaderboard of reposts::
 * Usage: `repostLeaderboard [page]`

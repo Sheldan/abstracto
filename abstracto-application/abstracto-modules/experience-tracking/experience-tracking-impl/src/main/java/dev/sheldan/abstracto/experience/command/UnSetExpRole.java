@@ -67,6 +67,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .causesReaction(true)
+                .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

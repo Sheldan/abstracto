@@ -58,7 +58,7 @@ public class ShowSuggestion extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .supportsEmbedException(true)
-                .causesReaction(true)
+                .causesReaction(false)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

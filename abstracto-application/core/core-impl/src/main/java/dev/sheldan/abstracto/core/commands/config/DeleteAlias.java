@@ -39,6 +39,7 @@ public class DeleteAlias extends AbstractConditionableCommand {
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
+                .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

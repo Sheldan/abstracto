@@ -50,6 +50,7 @@ public class DeleteAssignableRolePlace extends AbstractConditionableCommand {
                 .templated(true)
                 .causesReaction(true)
                 .async(true)
+                .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -65,7 +65,10 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
         CachedMessage message = model.getCachedMessage();
         memberService.getMemberInServerAsync(model.getServerId(), message.getAuthor().getAuthorId()).thenAccept(member ->
             self.executeListener(message, member)
-        );
+        ).exceptionally(throwable -> {
+            log.warn("Could not retrieve member {} for message deleted event in guild {}.", message.getAuthor().getAuthorId(), model.getServerId(), throwable);
+            return null;
+        });
         return DefaultListenerResult.PROCESSED;
     }
 

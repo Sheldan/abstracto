@@ -41,6 +41,7 @@ public class ResetEmoteStats extends AbstractConditionableCommand {
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)
+                .requiresConfirmation(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

@@ -114,7 +114,13 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public CompletableFuture<Void> createSuggestionMessage(Message commandMessage, String text)  {
-        Member suggester = commandMessage.getMember();
+        // it is done that way, because we cannot always be sure, that the message containsn the member
+        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
+                .thenCompose(suggester -> self.createMessageWithSuggester(commandMessage, text, suggester));
+    }
+
+    @Transactional
+    public CompletableFuture<Void> createMessageWithSuggester(Message commandMessage, String text, Member suggester) {
         Long serverId = suggester.getGuild().getIdLong();
         AServer server = serverManagementService.loadServer(serverId);
         AUserInAServer userSuggester = userInServerManagementService.loadOrCreateUser(suggester);
@@ -126,7 +132,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .state(SuggestionState.NEW)
                 .serverId(serverId)
                 .message(commandMessage)
-                .member(commandMessage.getMember())
+                .member(suggester)
                 .suggesterUser(userSuggester)
                 .useButtons(useButtons)
                 .suggester(suggester.getUser())
@@ -210,22 +216,24 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public CompletableFuture<Void> acceptSuggestion(Long suggestionId, Message commandMessage, String text) {
+        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
+                .thenCompose(member -> self.setSuggestionToFinalState(member, suggestionId, commandMessage, text, SuggestionState.ACCEPTED));
+    }
+
+    @Transactional
+    public CompletableFuture<Void> setSuggestionToFinalState(Member executingMember, Long suggestionId, Message commandMessage, String text, SuggestionState state) {
         Long serverId = commandMessage.getGuild().getIdLong();
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
-        suggestionManagementService.setSuggestionState(suggestion, SuggestionState.ACCEPTED);
+        suggestionManagementService.setSuggestionState(suggestion, state);
         cancelSuggestionReminder(suggestion);
-        log.info("Accepting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
-        return updateSuggestion(commandMessage.getMember(), text, suggestion);
+        log.info("Setting suggestion {} in server {} to state {}", suggestionId, suggestion.getServer().getId(), state);
+        return updateSuggestion(executingMember, text, suggestion);
     }
 
     @Override
     public CompletableFuture<Void> vetoSuggestion(Long suggestionId, Message commandMessage, String text) {
-        Long serverId = commandMessage.getGuild().getIdLong();
-        Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
-        suggestionManagementService.setSuggestionState(suggestion, SuggestionState.VETOED);
-        cancelSuggestionReminder(suggestion);
-        log.info("Vetoing suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
-        return updateSuggestion(commandMessage.getMember(), text, suggestion);
+        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
+                .thenCompose(member -> self.setSuggestionToFinalState(member, suggestionId, commandMessage, text, SuggestionState.VETOED));
     }
 
     private CompletableFuture<Void> updateSuggestion(Member memberExecutingCommand, String reason, Suggestion suggestion) {
@@ -293,12 +301,8 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public CompletableFuture<Void> rejectSuggestion(Long suggestionId, Message commandMessage, String text) {
-        Long serverId = commandMessage.getGuild().getIdLong();
-        Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
-        suggestionManagementService.setSuggestionState(suggestion, SuggestionState.REJECTED);
-        cancelSuggestionReminder(suggestion);
-        log.info("Rejecting suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
-        return updateSuggestion(commandMessage.getMember(), text, suggestion);
+        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
+                .thenCompose(member -> self.setSuggestionToFinalState(member, suggestionId, commandMessage, text, SuggestionState.REJECTED));
     }
 
     @Override

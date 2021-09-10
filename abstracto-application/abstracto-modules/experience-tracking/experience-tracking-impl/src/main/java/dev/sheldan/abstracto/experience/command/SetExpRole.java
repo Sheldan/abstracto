@@ -66,6 +66,7 @@ public class SetExpRole extends AbstractConditionableCommand {
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .requiresConfirmation(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

@@ -43,13 +43,13 @@ Synchronize the server emotes with the database::
 A message containing the amount of emotes deleted and created is shown. If the feature mode `emoteAutoTrack` is enabled, this should only be necessary in case the bot had an outage.
 Delete emote usages::
 * Usage: `purgeEmoteStats <emote> [period]`
-* Description: This command removes any stored usages of `emote`. The `emote` can either be a valid usage or the ID of an emote. If `period` is given, only usages within this time period will be deleted, if it is not provided, the complete timeline will be deleted.
+* Description: This command removes any stored usages of `emote`. The `emote` can either be a valid usage or the ID of an emote. If `period` is given, only usages within this time period will be deleted, if it is not provided, the complete timeline will be deleted. Requires you to confirm the command.
 Deleting an individual tracked emote::
 * Usage: `deleteTrackedEmote <emote>`
-* Description: Deletes the tracked emote from the database including the usages. The `emote` can either be a valid usage or the ID of an emote.
+* Description: Deletes the tracked emote from the database including the usages. The `emote` can either be a valid usage or the ID of an emote. Requires you to confirm the command.
 Reset emote statistics::
 * Usage: `resetEmoteStats`
-* Description: This will delete all emote usages and tracked emotes in the database.
+* Description: This will delete all emote usages and tracked emotes in the database. Requires you to confirm the command.
 Show the image of external tracked emotes::
 * Usage: `showExternalTrackedEmote <emote>`
 * Description: Shows the ID, name, link to the image and the image directly for `emote` in an embed.

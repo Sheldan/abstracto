@@ -31,18 +31,18 @@ Setting a role to be awarded at a certain level::
 * Usage: `setExpRole <level> <role>`
 * Description: Sets `role` to be awarded at the given `level`. If the role was previously assigned,
 this will cause to remove this assignment and recalculate the roles for all users previously having this role.
-A status image indicating the progress will be shown. It will not award this role to users which qualify for this, a `syncRoles` is necessary for this.
+A status image indicating the progress will be shown. It will not award this role to users which qualify for this, a `syncRoles` is necessary for this.  Requires you to confirm the command.
 * Example: `setExpRole 50 @HighLevel` in order to award the role `HighLevel` at level `50` (the @HighLevel is a role mention)
 
 Syncing the roles of the members with the configuration::
 * Usage: `syncRoles`
 * Description: Recalculates the appropriate levels for all users on the server and awards the roles appropriate for the level.
-There will be a message indicating the current status of the progress, and it is highly advised to not execute this command while another instance is still processing.
+There will be a message indicating the current status of the progress, and it is highly advised to not execute this command while another instance is still processing. Requires you to confirm the command.
 This command can run for a longer period of time, depending on the amount of members in the guild.
 
 Remove a role from being awarded at a certain level::
 * Usage: `unSetExpRole <role>`
-* Description: Removes this role from the experience tracking, removes the role from all members previously owning it and recalculates their new role according to the configuration.
+* Description: Removes this role from the experience tracking, removes the role from all members previously owning it and recalculates their new role according to the configuration. Requires you to confirm the command.
 This will provide a status update message displaying the process.
 
 Disable experience gain for a certain role::

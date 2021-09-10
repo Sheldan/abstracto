@@ -20,6 +20,9 @@ public class CommandConfiguration {
     private boolean supportsEmbedException = false;
 
     @Builder.Default
+    private boolean requiresConfirmation = false;
+
+    @Builder.Default
     private List<Parameter> parameters = new ArrayList<>();
 
     @Builder.Default

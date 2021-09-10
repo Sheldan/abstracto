@@ -67,12 +67,10 @@ public interface ModMailThreadService {
      * @param text The parsed text of the reply
      * @param message  The pure {@link Message} containing the command which caused the reply
      * @param anonymous Whether or nor the message should be send anonymous
-     * @param feedBack The {@link MessageChannel} in which feedback about possible exceptions should be sent to
-     * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @param targetMember The {@link Member} the {@link ModMailThread} is about.
      * @return A {@link CompletableFuture future} which completes when the message has been relayed to the DM
      */
-    CompletableFuture<Void> relayMessageToDm(Long threadId, String text, Message message, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions, Member targetMember);
+    CompletableFuture<Void> loadExecutingMemberAndRelay(Long threadId, String text, Message message, boolean anonymous, Member targetMember);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,

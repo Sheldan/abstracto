@@ -51,6 +51,7 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .requiresConfirmation(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

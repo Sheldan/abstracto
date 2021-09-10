@@ -123,6 +123,9 @@ public class CommandReceivedHandlerTest {
     private List<Member> members;
 
     @Mock
+    private Member member;
+
+    @Mock
     private Bag<Role> roles;
 
     private static final String COMMAND_NAME = "command";
@@ -161,6 +164,8 @@ public class CommandReceivedHandlerTest {
         when(commandManager.isCommand(message)).thenReturn(true);
         when(event.getGuild()).thenReturn(guild);
         when(event.getChannel()).thenReturn(channel);
+        when(event.getMember()).thenReturn(member);
+        when(message.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(message.getContentRaw()).thenReturn(MESSAGE_CONTENT_COMMAND_ONLY);
         when(commandManager.getCommandName(anyString(), eq(SERVER_ID))).thenReturn(COMMAND_NAME);
@@ -286,9 +291,9 @@ public class CommandReceivedHandlerTest {
         parameterHandlers.add(parameterHandler);
         parameterHandlers.add(secondParameterHandler);
         when(event.isFromGuild()).thenReturn(true);
+        when(message.getGuild()).thenReturn(guild);
         when(event.getMessage()).thenReturn(message);
         when(commandManager.isCommand(message)).thenReturn(true);
-        when(event.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(message.getContentRaw()).thenReturn(messageContentTwoParameter);
         when(commandManager.getCommandName(anyString(), eq(SERVER_ID))).thenReturn(COMMAND_NAME);

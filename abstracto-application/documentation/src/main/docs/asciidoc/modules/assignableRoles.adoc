@@ -51,7 +51,7 @@ Change configuration of ARP::
 
 Delete an ARP::
 * Usage: `deleteAssignableRolePlace <name>`
-* Description: Completely deletes the ARP identified by `name`. This includes any trace in the database and the current message, if any.
+* Description: Completely deletes the ARP identified by `name`. This includes any trace in the database and the current message, if any. Requires you to confirm the command.
 
 Change description text of ARP::
 * Usage `editAssignableRolePlaceText <name> <newText>`

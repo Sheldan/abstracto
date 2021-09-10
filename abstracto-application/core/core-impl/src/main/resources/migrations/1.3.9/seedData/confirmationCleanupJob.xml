@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="confirmation-cleanup-job-insert">
+        <insert tableName="scheduler_job">
+            <column name="name" value="confirmationCleanupJob"/>
+            <column name="group_name" value="core"/>
+            <column name="clazz" value="dev.sheldan.abstracto.core.job.ConfirmationCleanupJob"/>
+            <column name="active" value="true"/>
+            <column name="recovery" value="false"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

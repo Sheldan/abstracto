@@ -2,6 +2,13 @@
 
 The core feature contains necessary commands in order for Abstracto to function and be configured.
 
+==== Relevant system configuration
+`noCommandFoundReporting` Whether not found commands should be reported back to the user. Default: true.
+
+`maxMessages` The upper limit of messages created by the template mechanism. Default: 3.
+
+`confirmationTimeout` The duration in seconds after which the confirmation is deleted. Default: 120.
+
 ==== Emotes
 * `successReaction` reaction emote in case the command completed successfully
 * `warnReaction` reaction emote in case the command did not complete successfully
@@ -152,7 +159,7 @@ Create a server specific alias::
 * Description: Creates the server specific alias for command `commandName` identified by `alias`. This means that from now on, users can use the command identified by `commandName` by using `alias` in its place, when executing the command or when using the help command. This alias is only available in this server, and it is not allowed to use the names of existing commands or built-in aliases.
 Delete a server specific alias::
 * Usage: `deleteAlias <alias>`
-* Description: Deletes the server specific alias identified by `alias`. It is not possible to delete built-in aliases.
+* Description: Deletes the server specific alias identified by `alias`. It is not possible to delete built-in aliases.  Requires you to confirm the command.
 Creating a profanity group::
 * Usage: `createProfanityGroup <profanityGroupName>`
 * Description: Creates a profanity group with the given `profanityGroupName`. This name must be unique within the server.

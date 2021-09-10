@@ -14,6 +14,7 @@ public class CoreFeatureConfig implements FeatureConfig {
     public static final String SUCCESS_REACTION_KEY = "successReaction";
     public static final String WARN_REACTION_KEY = "warnReaction";
     public static final String MAX_MESSAGES_KEY = "maxMessages";
+    public static final String CONFIRMATION_TIMEOUT = "confirmationTimeout";
 
     @Override
     public FeatureDefinition getFeature() {
@@ -27,6 +28,6 @@ public class CoreFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(NO_COMMAND_REPORTING_CONFIG_KEY, MAX_MESSAGES_KEY);
+        return Arrays.asList(NO_COMMAND_REPORTING_CONFIG_KEY, MAX_MESSAGES_KEY, CONFIRMATION_TIMEOUT);
     }
 }

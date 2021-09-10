@@ -2,15 +2,15 @@ package dev.sheldan.abstracto.core.command;
 
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.*;
+import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.command.exception.CommandParameterValidationException;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.exception.InsufficientParametersException;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
-import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
+import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
+import dev.sheldan.abstracto.core.command.model.CommandConfirmationModel;
+import dev.sheldan.abstracto.core.command.model.CommandConfirmationPayload;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
@@ -20,10 +20,16 @@ import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.service.EmoteService;
-import dev.sheldan.abstracto.core.service.RoleService;
+import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.*;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
+import dev.sheldan.abstracto.scheduling.service.SchedulerService;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -35,6 +41,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -88,6 +96,32 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private MetricService metricService;
 
+    @Autowired
+    private ComponentService componentService;
+
+    @Autowired
+    private ComponentPayloadManagementService componentPayloadManagementService;
+
+    @Autowired
+    private ComponentPayloadService componentPayloadService;
+
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private ChannelService channelService;
+
+    @Autowired
+    private SchedulerService schedulerService;
+
+    @Autowired
+    private ConfigService configService;
+
+    @Autowired
+    private MessageService messageService;
+
+    public static final String COMMAND_CONFIRMATION_ORIGIN = "commandConfirmation";
+    public static final String COMMAND_CONFIRMATION_MESSAGE_TEMPLATE_KEY = "command_confirmation_message";
     public static final String COMMAND_PROCESSED = "command.processed";
     public static final String STATUS_TAG = "status";
     public static final CounterMetric COMMANDS_PROCESSED_COUNTER = CounterMetric
@@ -107,38 +141,105 @@ public class CommandReceivedHandler extends ListenerAdapter {
         if(!event.isFromGuild()) {
             return;
         }
-        if(!commandManager.isCommand(event.getMessage())) {
+        Message message = event.getMessage();
+        if(!commandManager.isCommand(message)) {
             return;
         }
         metricService.incrementCounter(COMMANDS_PROCESSED_COUNTER);
-        final Command foundCommand;
         try {
-            String contentStripped = event.getMessage().getContentRaw();
-            List<String> parameters = Arrays.asList(contentStripped.split(" "));
-            UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped, event.getMessage());
-            String commandName = commandManager.getCommandName(parameters.get(0), event.getGuild().getIdLong());
-            foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter, event.getGuild().getIdLong());
-            tryToExecuteFoundCommand(event, foundCommand, unParsedParameter);
-
+            UnParsedCommandResult result = getUnparsedCommandResult(message);
+            CompletableFuture<CommandParseResult> parsingFuture = getParametersFromMessage(message, result);
+            parsingFuture.thenAccept(parsedParameters ->
+                self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters())
+            ).exceptionally(throwable -> {
+                self.reportException(event, result.getCommand(), throwable, "Exception when executing or parsing command.");
+                return null;
+            });
         } catch (Exception e) {
             reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
-            ,event.getMessage().getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+            , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
         }
     }
 
-    private void tryToExecuteFoundCommand(MessageReceivedEvent event, Command foundCommand, UnParsedCommandParameter unParsedParameter) {
-        CompletableFuture<Parameters> parsingFuture = getParsedParameters(unParsedParameter, foundCommand, event.getMessage());
-        parsingFuture.thenAccept(parsedParameters ->
-            self.executeCommand(event, foundCommand, parsedParameters)
-        ).exceptionally(throwable -> {
-            self.reportException(event, foundCommand, throwable, "Exception when executing or parsing command.");
-            return null;
-        });
+    public UnParsedCommandResult getUnparsedCommandResult(Message message) {
+        String contentStripped = message.getContentRaw();
+        List<String> parameters = Arrays.asList(contentStripped.split(" "));
+        UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped, message);
+        String commandName = commandManager.getCommandName(parameters.get(0), message.getGuild().getIdLong());
+        Command foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter, message.getGuild().getIdLong());
+        return UnParsedCommandResult
+                .builder()
+                .command(foundCommand)
+                .parameter(unParsedParameter)
+                .build();
+    }
+
+    public CompletableFuture<CommandParseResult> getParametersFromMessage(Message message) {
+        UnParsedCommandResult result = getUnparsedCommandResult(message);
+        return getParsedParameters(result.getParameter(), result.getCommand(), message).thenApply(foundParameters -> CommandParseResult
+                .builder()
+                .command(result.getCommand())
+                .parameters(foundParameters)
+                .build());
+    }
+
+    public CompletableFuture<CommandParseResult> getParametersFromMessage(Message message, UnParsedCommandResult result) {
+        return getParsedParameters(result.getParameter(), result.getCommand(), message).thenApply(foundParameters -> CommandParseResult
+                .builder()
+                .command(result.getCommand())
+                .parameters(foundParameters)
+                .build());
+    }
+
+    @Transactional
+    public CompletableFuture<Void> cleanupConfirmationMessage(Long server, Long channelId, Long messageId, String confirmationPayloadId, String abortPayloadId) {
+        componentPayloadManagementService.deletePayloads(Arrays.asList(confirmationPayloadId, abortPayloadId));
+        return messageService.deleteMessageInChannelInServer(server, channelId, messageId);
+    }
+
+    @Transactional
+    public void persistConfirmationCallbacks(CommandConfirmationModel model, Message createdMessage) {
+        AServer server = serverManagementService.loadServer(model.getDriedCommandContext().getServerId());
+        CommandConfirmationPayload confirmPayload = CommandConfirmationPayload
+                .builder()
+                .commandContext(model.getDriedCommandContext())
+                .otherButtonComponentId(model.getAbortButtonId())
+                .action(CommandConfirmationPayload.CommandConfirmationAction.CONFIRM)
+                .build();
+
+        componentPayloadService.createButtonPayload(model.getConfirmButtonId(), confirmPayload, COMMAND_CONFIRMATION_ORIGIN, server);
+        CommandConfirmationPayload abortPayload = CommandConfirmationPayload
+                .builder()
+                .commandContext(model.getDriedCommandContext())
+                .otherButtonComponentId(model.getConfirmButtonId())
+                .action(CommandConfirmationPayload.CommandConfirmationAction.ABORT)
+                .build();
+        componentPayloadService.createButtonPayload(model.getAbortButtonId(), abortPayload, COMMAND_CONFIRMATION_ORIGIN, server);
+        scheduleConfirmationDeletion(createdMessage, model.getConfirmButtonId(), model.getAbortButtonId());
+    }
+
+    private void scheduleConfirmationDeletion(Message createdMessage, String confirmationPayloadId, String abortPayloadId) {
+        HashMap<Object, Object> parameters = new HashMap<>();
+        Long serverId = createdMessage.getGuild().getIdLong();
+        parameters.put("serverId", serverId.toString());
+        parameters.put("channelId", createdMessage.getChannel().getId());
+        parameters.put("messageId", createdMessage.getId());
+        parameters.put("confirmationPayloadId", confirmationPayloadId);
+        parameters.put("abortPayloadId", abortPayloadId);
+        JobParameters jobParameters = JobParameters
+                .builder()
+                .parameters(parameters)
+                .build();
+        Long confirmationTimeout = configService.getLongValueOrConfigDefault(CoreFeatureConfig.CONFIRMATION_TIMEOUT, serverId);
+        Instant targetDate = Instant.now().plus(confirmationTimeout, ChronoUnit.SECONDS);
+        long channelId = createdMessage.getChannel().getIdLong();
+        log.info("Scheduling job to delete confirmation message {} in channel {} in server {} at {}.", createdMessage.getIdLong(), channelId, serverId, targetDate);
+        schedulerService.executeJobWithParametersOnce("confirmationCleanupJob", "core", jobParameters, Date.from(targetDate));
     }
 
     @Transactional
     public void executeCommand(MessageReceivedEvent event, Command foundCommand, Parameters parsedParameters) {
-        UserInitiatedServerContext userInitiatedContext = buildTemplateParameter(event);
+        UserInitiatedServerContext userInitiatedContext = buildUserInitiatedServerContext(event);
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
                 .author(event.getMember())
                 .guild(event.getGuild())
@@ -153,9 +254,27 @@ public class CommandReceivedHandler extends ListenerAdapter {
         conditionResultFuture.thenAccept(conditionResult -> {
             CommandResult commandResult = null;
             if(conditionResult.isResult()) {
-                if(foundCommand.getConfiguration().isAsync()) {
+                CommandConfiguration commandConfiguration = foundCommand.getConfiguration();
+                if(commandConfiguration.isRequiresConfirmation()) {
+                    DriedCommandContext driedCommandContext = DriedCommandContext.buildFromCommandContext(commandContext);
+                    driedCommandContext.setCommandName(commandConfiguration.getName());
+                    String confirmId = componentService.generateComponentId();
+                    String abortId = componentService.generateComponentId();
+                    CommandConfirmationModel model = CommandConfirmationModel
+                            .builder()
+                            .abortButtonId(abortId)
+                            .confirmButtonId(confirmId)
+                            .driedCommandContext(driedCommandContext)
+                            .commandName(commandConfiguration.getName())
+                            .build();
+                    MessageToSend message = templateService.renderEmbedTemplate(COMMAND_CONFIRMATION_MESSAGE_TEMPLATE_KEY, model, event.getGuild().getIdLong());
+                    List<CompletableFuture<Message>> confirmationMessageFutures = channelService.sendMessageToSendToChannel(message, event.getChannel());
+                    FutureUtils.toSingleFutureGeneric(confirmationMessageFutures)
+                            .thenAccept(unused -> self.persistConfirmationCallbacks(model, confirmationMessageFutures.get(0).join()))
+                            .exceptionally(throwable -> self.failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
+                } else if(commandConfiguration.isAsync()) {
                     log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
-                            foundCommand.getConfiguration().getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
+                            commandConfiguration.getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
                     self.executeAsyncCommand(foundCommand, commandContext)
                             .exceptionally(throwable -> failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
@@ -174,7 +293,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     private Void failedCommandHandling(MessageReceivedEvent event, Command foundCommand, Parameters parsedParameters, CommandContext commandContext, Throwable throwable) {
         log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
-        UserInitiatedServerContext rebuildUserContext = buildTemplateParameter(event);
+        UserInitiatedServerContext rebuildUserContext = buildUserInitiatedServerContext(commandContext);
         CommandContext rebuildContext = CommandContext.builder()
                 .author(event.getMember())
                 .guild(event.getGuild())
@@ -197,20 +316,30 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     @Transactional
-    public void reportException(MessageReceivedEvent event, Command foundCommand, Throwable throwable, String s) {
-        UserInitiatedServerContext userInitiatedContext = buildTemplateParameter(event);
+    public void reportException(CommandContext context, Command foundCommand, Throwable throwable, String s) {
+        reportException(context.getMessage(), context.getChannel(), context.getAuthor(), foundCommand, throwable, s);
+    }
+
+    @Transactional
+    public void reportException(Message message, TextChannel textChannel, Member member, Command foundCommand, Throwable throwable, String s) {
+        UserInitiatedServerContext userInitiatedContext = buildUserInitiatedServerContext(member, textChannel, member.getGuild());
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
-                .author(event.getMember())
-                .guild(event.getGuild())
+                .author(member)
+                .guild(message.getGuild())
                 .undoActions(new ArrayList<>())
-                .channel(event.getTextChannel())
-                .message(event.getMessage())
-                .jda(event.getJDA())
+                .channel(message.getTextChannel())
+                .message(message)
+                .jda(message.getJDA())
                 .userInitiatedContext(userInitiatedContext);
         log.error(s, throwable);
         CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
         CommandContext commandContext = commandContextBuilder.build();
         self.executePostCommandListener(foundCommand, commandContext, commandResult);
+    }
+
+    @Transactional
+    public void reportException(MessageReceivedEvent event, Command foundCommand, Throwable throwable, String s) {
+        reportException(event.getMessage(), event.getTextChannel(), event.getMember(), foundCommand, throwable, s);
     }
 
     private void validateCommandParameters(Parameters parameters, Command foundCommand) {
@@ -249,13 +378,21 @@ public class CommandReceivedHandler extends ListenerAdapter {
         return foundCommand.execute(commandContext);
     }
 
-    private UserInitiatedServerContext buildTemplateParameter(MessageReceivedEvent event) {
+    private UserInitiatedServerContext buildUserInitiatedServerContext(Member member, TextChannel textChannel, Guild guild) {
         return UserInitiatedServerContext
                 .builder()
-                .member(event.getMember())
-                .messageChannel(event.getTextChannel())
-                .guild(event.getGuild())
+                .member(member)
+                .messageChannel(textChannel)
+                .guild(guild)
                 .build();
+    }
+
+    private UserInitiatedServerContext buildUserInitiatedServerContext(MessageReceivedEvent event) {
+        return buildUserInitiatedServerContext(event.getMember(), event.getTextChannel(), event.getGuild());
+    }
+
+    private UserInitiatedServerContext buildUserInitiatedServerContext(CommandContext context) {
+        return buildUserInitiatedServerContext(context.getAuthor(), context.getChannel(), context.getGuild());
     }
 
     public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
@@ -404,5 +541,19 @@ public class CommandReceivedHandler extends ListenerAdapter {
         metricService.registerCounter(COMMANDS_PROCESSED_COUNTER, "Commands processed");
         metricService.registerCounter(COMMANDS_WRONG_PARAMETER_COUNTER, "Commands with incorrect parameter");
         this.parameterHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
+    }
+
+    @Getter
+    @Builder
+    public static class CommandParseResult {
+        private Parameters parameters;
+        private Command command;
+    }
+
+    @Getter
+    @Builder
+    public static class UnParsedCommandResult {
+        private UnParsedCommandParameter parameter;
+        private Command command;
     }
 }

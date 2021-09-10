@@ -50,6 +50,7 @@ public class PurgeImagePosts extends AbstractConditionableCommand {
                 .module(RepostDetectionModuleDefinition.REPOST_DETECTION)
                 .templated(true)
                 .async(false)
+                .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

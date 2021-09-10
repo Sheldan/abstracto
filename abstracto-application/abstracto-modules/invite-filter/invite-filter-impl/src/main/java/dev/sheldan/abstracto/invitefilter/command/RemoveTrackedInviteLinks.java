@@ -51,6 +51,7 @@ public class RemoveTrackedInviteLinks extends AbstractConditionableCommand {
                 .module(InviteFilterModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)
+                .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

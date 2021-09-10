@@ -553,8 +553,14 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     @Transactional
-    public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, MessageChannel feedBack, List<UndoActionInstance> undoActions, Member targetMember) {
+    public CompletableFuture<Void> loadExecutingMemberAndRelay(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, Member targetMember) {
         log.info("Relaying message {} to user {} in modmail thread {} on server {}.", replyCommandMessage.getId(), targetMember.getId(), modmailThreadId, targetMember.getGuild().getId());
+        return memberService.getMemberInServerAsync(replyCommandMessage.getGuild().getIdLong(), replyCommandMessage.getAuthor().getIdLong())
+                .thenCompose(executingMember -> self.relayMessageToDm(modmailThreadId, text, replyCommandMessage, anonymous, targetMember, executingMember));
+    }
+
+    @Transactional
+    public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, Member targetMember, Member executingMember) {
         metricService.incrementCounter(MDOMAIL_THREAD_MESSAGE_SENT);
         ModMailThread modMailThread = modMailThreadManagementService.getById(modmailThreadId);
         FullUserInServer fullThreadUser = FullUserInServer
@@ -573,7 +579,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             log.debug("Message is sent anonymous.");
             modMailModeratorReplyModelBuilder.moderator(memberService.getBotInGuild(modMailThread.getServer()));
         } else {
-            modMailModeratorReplyModelBuilder.moderator(replyCommandMessage.getMember());
+            modMailModeratorReplyModelBuilder.moderator(executingMember);
         }
         ModMailModeratorReplyModel modMailUserReplyModel = modMailModeratorReplyModelBuilder.build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel, modMailThread.getServer().getId());

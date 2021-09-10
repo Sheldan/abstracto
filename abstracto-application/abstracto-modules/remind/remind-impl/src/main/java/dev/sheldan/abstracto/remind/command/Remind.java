@@ -70,7 +70,7 @@ public class Remind extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .supportsEmbedException(true)
-                .causesReaction(true)
+                .causesReaction(false)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

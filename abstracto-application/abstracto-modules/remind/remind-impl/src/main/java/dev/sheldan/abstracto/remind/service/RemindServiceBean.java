@@ -109,7 +109,10 @@ public class RemindServiceBean implements ReminderService {
         } else {
             HashMap<Object, Object> parameters = new HashMap<>();
             parameters.put("reminderId", reminder.getId().toString());
-            JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
+            JobParameters jobParameters = JobParameters
+                    .builder()
+                    .parameters(parameters)
+                    .build();
             String triggerKey = schedulerService.executeJobWithParametersOnce("reminderJob", "utility", jobParameters, Date.from(reminder.getTargetDate()));
             log.info("Starting scheduled job  with trigger {} to execute reminder {}.", triggerKey, reminder.getId());
             reminder.setJobTriggerKey(triggerKey);

@@ -1,11 +1,7 @@
 package dev.sheldan.abstracto.suggestion.service;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
-import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -16,10 +12,8 @@ import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureDefinition;
 import dev.sheldan.abstracto.suggestion.config.SuggestionFeatureMode;
 import dev.sheldan.abstracto.suggestion.config.SuggestionPostTarget;
 import dev.sheldan.abstracto.suggestion.exception.SuggestionNotFoundException;
-import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
 import dev.sheldan.abstracto.suggestion.model.template.SuggestionLog;
-import dev.sheldan.abstracto.suggestion.model.template.SuggestionUpdateModel;
 import dev.sheldan.abstracto.suggestion.service.management.SuggestionManagementService;
 import net.dv8tion.jda.api.entities.*;
 import org.junit.Test;
@@ -113,17 +107,12 @@ public class SuggestionServiceBeanTest {
     public void testCreateSuggestionMessage() {
         String suggestionText = "text";
         when(guild.getIdLong()).thenReturn(SERVER_ID);
-        when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
-        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(SuggestionServiceBean.SUGGESTION_CREATION_TEMPLATE), any(SuggestionLog.class), eq(SERVER_ID))).thenReturn(messageToSend);
-        Message suggestionMessage = Mockito.mock(Message.class);
-        when(counterService.getNextCounterValue(server, SuggestionServiceBean.SUGGESTION_COUNTER_KEY)).thenReturn(SUGGESTION_ID);
-        List<CompletableFuture<Message>> postingFutures = Arrays.asList(CompletableFuture.completedFuture(suggestionMessage));
-        when(postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, SERVER_ID)).thenReturn(postingFutures);
-        when(message.getMember()).thenReturn(member);
-        when(member.getGuild()).thenReturn(guild);
-        when(member.getIdLong()).thenReturn(SUGGESTER_ID);
+        when(message.getAuthor()).thenReturn(suggesterUser);
+        when(message.getGuild()).thenReturn(guild);
+        when(suggesterUser.getIdLong()).thenReturn(SUGGESTER_ID);
+        when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(member));
         testUnit.createSuggestionMessage(message, suggestionText);
+        verify(self).createMessageWithSuggester(message, suggestionText, member);
     }
 
     @Test
@@ -139,20 +128,26 @@ public class SuggestionServiceBeanTest {
     }
 
 
-    @Test(expected = SuggestionNotFoundException.class)
+    @Test
     public void testAcceptNotExistingSuggestion() {
-        when(suggestionManagementService.getSuggestion(SERVER_ID, SUGGESTION_ID)).thenThrow(new SuggestionNotFoundException(SUGGESTION_ID));
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(message.getGuild()).thenReturn(guild);
+        when(message.getAuthor()).thenReturn(suggesterUser);
+        when(suggesterUser.getIdLong()).thenReturn(SUGGESTER_ID);
+        when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(member));
         testUnit.acceptSuggestion(SUGGESTION_ID, message, CLOSING_TEXT);
+        verify(self).setSuggestionToFinalState(member, SUGGESTION_ID, message, CLOSING_TEXT, SuggestionState.ACCEPTED);
     }
 
-    @Test(expected = SuggestionNotFoundException.class)
+    @Test
     public void testRejectNotExistingSuggestion() {
-        when(suggestionManagementService.getSuggestion(SERVER_ID, SUGGESTION_ID)).thenThrow(new SuggestionNotFoundException(SUGGESTION_ID));
         when(guild.getIdLong()).thenReturn(SERVER_ID);
         when(message.getGuild()).thenReturn(guild);
+        when(message.getAuthor()).thenReturn(suggesterUser);
+        when(suggesterUser.getIdLong()).thenReturn(SUGGESTER_ID);
+        when(memberService.getMemberInServerAsync(SERVER_ID, SUGGESTER_ID)).thenReturn(CompletableFuture.completedFuture(member));
         testUnit.rejectSuggestion(SUGGESTION_ID, message, CLOSING_TEXT);
+        verify(self).setSuggestionToFinalState(member, SUGGESTION_ID, message, CLOSING_TEXT, SuggestionState.REJECTED);
     }
 
 }

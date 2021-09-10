@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.service.CommandService;
-import dev.sheldan.abstracto.core.command.service.CommandServiceBean;
+import dev.sheldan.abstracto.core.command.model.CommandServiceBean;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
