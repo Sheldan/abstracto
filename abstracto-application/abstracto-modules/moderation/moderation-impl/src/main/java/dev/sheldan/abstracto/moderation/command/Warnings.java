@@ -12,9 +12,13 @@ import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.PaginatorService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.converter.WarnEntryConverter;
@@ -35,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
 public class Warnings extends AbstractConditionableCommand {
 
     public static final String WARNINGS_RESPONSE_TEMPLATE = "warnings_response";
+    public static final String NO_WARNINGS_TEMPLATE_KEY = "warnings_no_warnings_found";
     @Autowired
     private WarnManagementService warnManagementService;
 
@@ -56,6 +61,12 @@ public class Warnings extends AbstractConditionableCommand {
     @Autowired
     private Warnings self;
 
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Warning> warnsToDisplay;
@@ -69,10 +80,17 @@ public class Warnings extends AbstractConditionableCommand {
             AServer server = serverManagementService.loadServer(commandContext.getGuild());
             warnsToDisplay = warnManagementService.getAllWarningsOfServer(server);
         }
-        return warnEntryConverter.fromWarnings(warnsToDisplay).thenApply(warnEntries -> {
-            self.renderWarnings(commandContext, warnEntries);
-            return CommandResult.fromIgnored();
-        });
+        if(warnsToDisplay.isEmpty()) {
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_WARNINGS_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
+            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                    .thenApply(unused -> CommandResult.fromSuccess());
+
+        } else {
+            return warnEntryConverter.fromWarnings(warnsToDisplay).thenApply(warnEntries -> {
+                self.renderWarnings(commandContext, warnEntries);
+                return CommandResult.fromSuccess();
+            });
+        }
 
 
     }
@@ -96,7 +114,7 @@ public class Warnings extends AbstractConditionableCommand {
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)
-                .causesReaction(true)
+                .causesReaction(false)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
