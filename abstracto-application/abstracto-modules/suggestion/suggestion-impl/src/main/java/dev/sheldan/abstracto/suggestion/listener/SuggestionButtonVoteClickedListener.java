@@ -28,7 +28,8 @@ public class SuggestionButtonVoteClickedListener implements ButtonClickedListene
     private InteractionService interactionService;
 
     public static final String VOTE_REMOVED_TEMPLATE_KEY = "suggestion_vote_removed_notification";
-    public static final String VOTE_CAST_TEMPLATE_KEY = "suggestion_vote_cast_notification";
+    public static final String VOTE_AGREEMENT_TEMPLATE_KEY = "suggestion_vote_agreement_notification";
+    public static final String VOTE_DISAGREEMENT_TEMPLATE_KEY = "suggestion_vote_disagreement_notification";
 
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
@@ -39,8 +40,10 @@ public class SuggestionButtonVoteClickedListener implements ButtonClickedListene
         String templateToUse;
         switch (payload.getDecision()) {
             case AGREE:
+                templateToUse = VOTE_AGREEMENT_TEMPLATE_KEY;
+                break;
             case DISAGREE:
-                templateToUse = VOTE_CAST_TEMPLATE_KEY;
+                templateToUse = VOTE_DISAGREEMENT_TEMPLATE_KEY;
                 break;
             default:
             case REMOVE_VOTE:
