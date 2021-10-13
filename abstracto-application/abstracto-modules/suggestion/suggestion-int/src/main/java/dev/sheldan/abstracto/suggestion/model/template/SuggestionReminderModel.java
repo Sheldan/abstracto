@@ -18,4 +18,5 @@ public class SuggestionReminderModel {
     private ServerChannelMessage suggestionMessage;
     private ServerChannelMessage suggestionCommandMessage;
     private ServerUser serverUser;
+    private SuggestionInfoModel suggestionInfo;
 }

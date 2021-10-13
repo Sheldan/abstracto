@@ -353,6 +353,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .channelId(suggestion.getCommandChannel().getId())
                 .messageId(suggestion.getCommandMessageId())
                 .build();
+        SuggestionInfoModel suggestionInfoModel = getSuggestionInfo(suggestionId);
         SuggestionReminderModel model = SuggestionReminderModel
                 .builder()
                 .serverId(serverId)
@@ -361,6 +362,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .suggestionId(suggestionId.getId())
                 .suggestionMessage(suggestionServerChannelMessage)
                 .suggestionCommandMessage(commandServerChannelMessage)
+                .suggestionInfo(suggestionInfoModel)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_REMINDER_TEMPLATE_KEY, model, serverId);
         log.info("Reminding about suggestion {} in server {}.", suggestionId.getId(), serverId);
@@ -386,6 +388,11 @@ public class SuggestionServiceBean implements SuggestionService {
                 .agreements(agreements)
                 .disagreements(disagreements)
                 .build();
+    }
+
+    @Override
+    public SuggestionInfoModel getSuggestionInfo(ServerSpecificId suggestionId) {
+        return getSuggestionInfo(suggestionId.getServerId(), suggestionId.getId());
     }
 
     @Transactional

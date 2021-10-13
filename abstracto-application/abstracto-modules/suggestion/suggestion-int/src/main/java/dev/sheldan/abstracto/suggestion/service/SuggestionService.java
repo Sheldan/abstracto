@@ -19,4 +19,5 @@ public interface SuggestionService {
     CompletableFuture<Void> remindAboutSuggestion(ServerSpecificId suggestionId);
     void cancelSuggestionReminder(Suggestion suggestion);
     SuggestionInfoModel getSuggestionInfo(Long serverId, Long suggestionId);
+    SuggestionInfoModel getSuggestionInfo(ServerSpecificId suggestionId);
 }
