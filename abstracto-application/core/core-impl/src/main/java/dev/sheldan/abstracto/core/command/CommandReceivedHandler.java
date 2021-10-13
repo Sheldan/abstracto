@@ -271,13 +271,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     List<CompletableFuture<Message>> confirmationMessageFutures = channelService.sendMessageToSendToChannel(message, event.getChannel());
                     FutureUtils.toSingleFutureGeneric(confirmationMessageFutures)
                             .thenAccept(unused -> self.persistConfirmationCallbacks(model, confirmationMessageFutures.get(0).join()))
-                            .exceptionally(throwable -> self.failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
+                            .exceptionally(throwable -> self.handleFailedCommand(foundCommand, commandContext, throwable));
                 } else if(commandConfiguration.isAsync()) {
                     log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
                             commandConfiguration.getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
                     self.executeAsyncCommand(foundCommand, commandContext)
-                            .exceptionally(throwable -> failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
+                            .exceptionally(throwable -> handleFailedCommand(foundCommand, commandContext, throwable));
                 } else {
                     commandResult = self.executeCommand(foundCommand, commandContext);
                 }
@@ -287,32 +287,25 @@ public class CommandReceivedHandler extends ListenerAdapter {
             if(commandResult != null) {
                 self.executePostCommandListener(foundCommand, commandContext, commandResult);
             }
-        }).exceptionally(throwable -> failedCommandHandling(event, foundCommand, parsedParameters, commandContext, throwable));
+        }).exceptionally(throwable -> handleFailedCommand(foundCommand, commandContext, throwable));
 
     }
 
-    private Void failedCommandHandling(MessageReceivedEvent event, Command foundCommand, Parameters parsedParameters, CommandContext commandContext, Throwable throwable) {
+    private Void handleFailedCommand(Command foundCommand, CommandContext commandContext, Throwable throwable) {
         log.error("Asynchronous command {} failed.", foundCommand.getConfiguration().getName(), throwable);
-        UserInitiatedServerContext rebuildUserContext = buildUserInitiatedServerContext(commandContext);
-        CommandContext rebuildContext = CommandContext.builder()
-                .author(event.getMember())
-                .guild(event.getGuild())
-                .channel(event.getTextChannel())
-                .message(event.getMessage())
-                .jda(event.getJDA())
-                .undoActions(commandContext.getUndoActions()) // TODO really do this? it would need to guarantee that its available and usable
-                .userInitiatedContext(rebuildUserContext)
-                .parameters(parsedParameters).build();
         CommandResult failedResult = CommandResult.fromError(throwable.getMessage(), throwable);
-        self.executePostCommandListener(foundCommand, rebuildContext, failedResult);
+        self.executePostCommandListener(foundCommand, commandContext, failedResult);
         return null;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public CompletableFuture<Void> executeAsyncCommand(Command foundCommand, CommandContext commandContext) {
         return foundCommand.executeAsync(commandContext).thenAccept(result ->
-                executePostCommandListener(foundCommand, commandContext, result)
-        );
+            executePostCommandListener(foundCommand, commandContext, result)
+        ).exceptionally(throwable -> {
+            handleFailedCommand(foundCommand, commandContext, throwable);
+            return null;
+        });
     }
 
     @Transactional
@@ -389,10 +382,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     private UserInitiatedServerContext buildUserInitiatedServerContext(MessageReceivedEvent event) {
         return buildUserInitiatedServerContext(event.getMember(), event.getTextChannel(), event.getGuild());
-    }
-
-    private UserInitiatedServerContext buildUserInitiatedServerContext(CommandContext context) {
-        return buildUserInitiatedServerContext(context.getAuthor(), context.getChannel(), context.getGuild());
     }
 
     public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){

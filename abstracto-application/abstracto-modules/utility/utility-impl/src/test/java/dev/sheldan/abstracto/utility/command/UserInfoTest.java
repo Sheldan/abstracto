@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,6 +45,8 @@ public class UserInfoTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         when(noParameters.getAuthor().getGuild()).thenReturn(noParameters.getGuild());
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(true);
+        when(noParameters.getAuthor().getTimeJoined()).thenReturn(OffsetDateTime.now());
+        when(noParameters.getAuthor().getTimeCreated()).thenReturn(OffsetDateTime.now());
         when(self.sendResponse(eq(noParameters),any(UserInfoModel.class))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(noParameters);
         verify(self, times(1)).sendResponse(eq(noParameters), modelArgumentCaptor.capture());
@@ -56,6 +60,8 @@ public class UserInfoTest {
         CommandContext noParameters = CommandTestUtilities.getNoParameters();
         when(noParameters.getAuthor().hasTimeJoined()).thenReturn(false);
         Member loadedAuthor = Mockito.mock(Member.class);
+        when(loadedAuthor.getTimeJoined()).thenReturn(OffsetDateTime.now());
+        when(loadedAuthor.getTimeCreated()).thenReturn(OffsetDateTime.now());
         when(noParameters.getAuthor().getGuild()).thenReturn(noParameters.getGuild());
         when(memberService.forceReloadMember(noParameters.getAuthor())).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(noParameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
@@ -69,6 +75,8 @@ public class UserInfoTest {
     public void executeTestWithParameterLoadedMember() {
         Member member = Mockito.mock(Member.class);
         when(member.hasTimeJoined()).thenReturn(true);
+        when(member.getTimeJoined()).thenReturn(OffsetDateTime.now());
+        when(member.getTimeCreated()).thenReturn(OffsetDateTime.now());
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
         when(member.getGuild()).thenReturn(parameters.getGuild());
         when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
@@ -85,6 +93,8 @@ public class UserInfoTest {
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(member));
         when(member.getGuild()).thenReturn(parameters.getGuild());
         Member loadedAuthor = Mockito.mock(Member.class);
+        when(loadedAuthor.getTimeJoined()).thenReturn(OffsetDateTime.now());
+        when(loadedAuthor.getTimeCreated()).thenReturn(OffsetDateTime.now());
         when(memberService.forceReloadMember(member)).thenReturn(CompletableFuture.completedFuture(loadedAuthor));
         when(self.sendResponse(eq(parameters), modelArgumentCaptor.capture())).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);

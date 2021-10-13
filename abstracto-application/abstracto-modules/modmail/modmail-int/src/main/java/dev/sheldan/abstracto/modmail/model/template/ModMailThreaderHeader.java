@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Member;
 
+import java.time.Instant;
+
 /**
  * This is the model used when a new mod mail thread is opened and a message containing some information about the user
  * is displayed for the user handling the mod mail thread.
@@ -23,6 +25,7 @@ public class ModMailThreaderHeader {
      * for the user
      */
     private ModMailThread latestModMailThread;
+    private Instant memberJoinDate;
     /**
      * The amount of previous mod mail thread the user has.
      */

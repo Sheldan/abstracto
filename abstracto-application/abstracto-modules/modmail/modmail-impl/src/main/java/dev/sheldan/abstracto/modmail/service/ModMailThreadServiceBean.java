@@ -425,6 +425,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .builder()
                 .member(member)
                 .latestModMailThread(latestThread)
+                .memberJoinDate(member.getTimeJoined().toInstant())
                 .pastModMailThreadCount((long)oldThreads.size())
                 .build();
         List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInTextChannelList("modmail_thread_header", header, channel);

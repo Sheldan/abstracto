@@ -50,11 +50,15 @@ public class UserInfo extends AbstractConditionableCommand {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
             return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
                 model.setMemberInfo(member);
+                model.setCreationDate(member.getTimeCreated().toInstant());
+                model.setJoinDate(member.getTimeJoined().toInstant());
                 return self.sendResponse(commandContext, model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             });
         } else {
             model.setMemberInfo(memberToShow);
+            model.setCreationDate(memberToShow.getTimeCreated().toInstant());
+            model.setJoinDate(memberToShow.getTimeJoined().toInstant());
             return self.sendResponse(commandContext, model)
                 .thenApply(aVoid -> CommandResult.fromIgnored());
         }

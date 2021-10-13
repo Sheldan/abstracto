@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -71,7 +72,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
         if(!parameters.isEmpty()) {
             // if a duration is given, subtract this duration from the current point in time
             Duration duration = (Duration) parameters.get(0);
-            statsSince = Instant.now().minus(duration);
+            statsSince = Instant.now().minus(duration).truncatedTo(ChronoUnit.DAYS);
         }
         AServer actualServer = serverManagementService.loadServer(commandContext.getGuild().getIdLong());
         List<UsedEmote> usedEmotes = usedEmoteManagementService.loadEmoteUsagesForServerSince(actualServer, statsSince);

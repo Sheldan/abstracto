@@ -63,7 +63,12 @@ public class ConfirmationButtonClickedListener implements ButtonClickedListener 
             log.info("Denying command {} in server {} from message {} in channel {} with event {}.",
                     commandCtx.getCommandName(), commandCtx.getServerId(), commandCtx.getMessageId(),
                     commandCtx.getChannelId(), model.getEvent().getInteraction().getId());
-            cleanup(model, payload);
+        cleanup(model, payload)
+            .thenAccept(unused -> self.sendAbortNotification(model))
+            .exceptionally(throwable -> {
+                log.warn("Failed to clean up confirmation message {}.", model.getEvent().getMessageId());
+                return null;
+            });
         }
         return ButtonClickedListenerResult.ACKNOWLEDGED;
     }
@@ -84,16 +89,11 @@ public class ConfirmationButtonClickedListener implements ButtonClickedListener 
         }
     }
 
-    private void cleanup(ButtonClickedListenerModel model, CommandConfirmationPayload payload) {
+    private CompletableFuture<Void> cleanup(ButtonClickedListenerModel model, CommandConfirmationPayload payload) {
         log.debug("Cleaning up component {} and {}.", payload.getOtherButtonComponentId(), model.getEvent().getComponentId());
         componentPayloadManagementService.deletePayloads(Arrays.asList(payload.getOtherButtonComponentId(), model.getEvent().getComponentId()));
         log.debug("Deleting confirmation message {}.", model.getEvent().getMessageId());
-        messageService.deleteMessage(model.getEvent().getMessage())
-        .thenAccept(unused -> self.sendAbortNotification(model))
-        .exceptionally(throwable -> {
-            log.warn("Failed to clean up confirmation message {}.", model.getEvent().getMessageId());
-            return null;
-        });
+        return messageService.deleteMessage(model.getEvent().getMessage());
     }
 
     public CompletableFuture<Void> sendAbortNotification(ButtonClickedListenerModel model) {

@@ -269,6 +269,9 @@ public class WarnServiceBean implements WarnService {
                 return null;
             });
             return null;
+        }).exceptionally(throwable -> {
+            sendingFuture.completeExceptionally(throwable);
+            return null;
         });
 
         return sendingFuture;

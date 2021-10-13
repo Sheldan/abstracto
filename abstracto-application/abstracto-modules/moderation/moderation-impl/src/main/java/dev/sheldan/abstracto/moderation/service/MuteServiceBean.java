@@ -313,12 +313,15 @@ public class MuteServiceBean implements MuteService {
                         finalFuture.complete(null)
                 ).exceptionally(throwable1 -> {
                     log.error("Unmute log failed to send for mute {} in server {}.", muteId, serverId, throwable1);
-                    finalFuture.complete(null);
+                    finalFuture.completeExceptionally(null);
                     return null;
                 });
             } else {
                 finalFuture.complete(null);
             }
+            return null;
+        }).exceptionally(throwable -> {
+            finalFuture.completeExceptionally(throwable);
             return null;
         });
 
