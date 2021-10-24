@@ -50,7 +50,7 @@ public class BanServiceBean implements BanService {
     private ChannelService channelService;
 
     @Override
-    public CompletableFuture<Void> banMember(Member member, String reason, Member banningMember, Message message) {
+    public CompletableFuture<Void> banMemberWithNotification(Member member, String reason, Member banningMember, Integer deletionDays, Message message) {
         BanLog banLog = BanLog
                 .builder()
                 .bannedUser(member.getUser())
@@ -58,18 +58,19 @@ public class BanServiceBean implements BanService {
                 .commandMessage(message)
                 .reason(reason)
                 .build();
-        CompletableFuture<Void> banFuture = banUser(member.getGuild(), member.getUser(), 0, reason);
+        CompletableFuture<Void> banFuture = banUser(member.getGuild(), member.getUser(), deletionDays, reason);
         CompletableFuture<Void> messageFuture = sendBanLogMessage(banLog, member.getGuild().getIdLong(), BAN_LOG_TEMPLATE);
         return CompletableFuture.allOf(banFuture, messageFuture);
     }
 
     @Override
-    public CompletableFuture<Void> banUser(User user, String reason, Member banningMember, Message message) {
+    public CompletableFuture<Void> banUserWithNotification(User user, String reason, Member banningMember, Integer deletionDays, Message message) {
         BanLog banLog = BanLog
                 .builder()
                 .bannedUser(user)
                 .banningMember(banningMember)
                 .commandMessage(message)
+                .deletionDays(deletionDays)
                 .reason(reason)
                 .build();
         Guild guild = banningMember.getGuild();
@@ -81,7 +82,7 @@ public class BanServiceBean implements BanService {
                         .thenAccept(message1 -> log.info("Notified about not being able to send ban notification in server {} and channel {} based on message {} from user {}."
                 , message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong(), message.getAuthor().getIdLong()));
             }
-            CompletableFuture<Void> banFuture = banUser(guild, user, 0, reason);
+            CompletableFuture<Void> banFuture = banUser(guild, user, deletionDays, reason);
             CompletableFuture<Void> messageFuture = sendBanLogMessage(banLog, guild.getIdLong(), BAN_LOG_TEMPLATE);
             CompletableFuture.allOf(banFuture, messageFuture)
                 .thenAccept(unused1 -> returningFuture.complete(null))
@@ -107,7 +108,7 @@ public class BanServiceBean implements BanService {
     }
 
     @Override
-    public CompletableFuture<Void> unBanUser(User user, Member unBanningMember) {
+    public CompletableFuture<Void> unBanUserWithNotification(User user, Member unBanningMember) {
         Guild guild = unBanningMember.getGuild();
         UnBanLog banLog = UnBanLog
                 .builder()

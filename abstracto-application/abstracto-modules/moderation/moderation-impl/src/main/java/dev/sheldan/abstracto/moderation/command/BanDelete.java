@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +26,7 @@ import static dev.sheldan.abstracto.moderation.service.BanService.BAN_EFFECT_KEY
 
 @Component
 @Slf4j
-public class SoftBan extends AbstractConditionableCommand {
+public class BanDelete extends AbstractConditionableCommand {
 
     @Autowired
     private BanService banService;
@@ -36,11 +35,9 @@ public class SoftBan extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         User user = (User) parameters.get(0);
-        Duration delDays = Duration.ofDays(7);
-        if(parameters.size() >  1) {
-            delDays = (Duration) parameters.get(1);
-        }
-        return banService.softBanUser(commandContext.getGuild(), user, delDays)
+        Integer delDays = (Integer) parameters.get(1);
+        String reason = (String) parameters.get(2);
+        return banService.banUserWithNotification(user, reason, commandContext.getAuthor(), delDays, commandContext.getMessage())
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 
@@ -48,11 +45,12 @@ public class SoftBan extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("user").templated(true).type(User.class).build());
-        parameters.add(Parameter.builder().name("delDays").templated(true).type(Duration.class).optional(true).build());
+        parameters.add(Parameter.builder().name("delDays").templated(true).type(Integer.class).build());
+        parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).remainder(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<EffectConfig> effectConfig = Arrays.asList(EffectConfig.builder().position(0).effectKey(BAN_EFFECT_KEY).build());
         return CommandConfiguration.builder()
-                .name("softBan")
+                .name("banDelete")
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)

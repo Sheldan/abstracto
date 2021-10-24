@@ -52,7 +52,7 @@ public class BanServiceBeanTest {
         when(mockedGuild.ban(user, 0, REASON)).thenReturn(mockedAction);
         MessageToSend mockedMessage = Mockito.mock(MessageToSend.class);
         when(templateService.renderEmbedTemplate(eq(BanServiceBean.BAN_LOG_TEMPLATE), any(), eq(SERVER_ID))).thenReturn(mockedMessage);
-        testUnit.banMember(memberToBan, REASON, banningMember, message);
+        testUnit.banMemberWithNotification(memberToBan, REASON, banningMember, 0, message);
         verify(mockedGuild, times(1)).ban(user, 0, REASON);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(mockedMessage, ModerationPostTarget.BAN_LOG, SERVER_ID);
     }

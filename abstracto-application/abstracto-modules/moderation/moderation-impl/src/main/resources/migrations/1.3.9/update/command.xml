@@ -6,7 +6,10 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="seedData/data.xml" relativeToChangelogFile="true"/>
-    <include file="tables/tables.xml" relativeToChangelogFile="true"/>
-    <include file="update/update.xml" relativeToChangelogFile="true"/>
+    <changeSet  author="Sheldan" id="command-rename_soft_ban">
+        <update tableName="command">
+            <column name="name" value="banDelete"/>
+            <where>name='softBan'</where>
+        </update>
+    </changeSet>
 </databaseChangeLog>

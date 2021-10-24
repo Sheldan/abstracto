@@ -42,7 +42,7 @@ public class Ban extends AbstractConditionableCommand {
         User user = (User) parameters.get(0);
         String reason = (String) parameters.get(1);
 
-        return banService.banUser(user, reason, commandContext.getAuthor(), commandContext.getMessage())
+        return banService.banUserWithNotification(user, reason, commandContext.getAuthor(), 0, commandContext.getMessage())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

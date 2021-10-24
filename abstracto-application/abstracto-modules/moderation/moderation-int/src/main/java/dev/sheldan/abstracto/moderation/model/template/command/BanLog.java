@@ -28,4 +28,5 @@ public class BanLog {
      */
     private User bannedUser;
     private Message commandMessage;
+    private Integer deletionDays;
 }

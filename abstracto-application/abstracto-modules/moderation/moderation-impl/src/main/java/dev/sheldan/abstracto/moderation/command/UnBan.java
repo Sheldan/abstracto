@@ -34,7 +34,7 @@ public class UnBan extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         User user = (User) parameters.get(0);
-        return banService.unBanUser(user, commandContext.getAuthor())
+        return banService.unBanUserWithNotification(user, commandContext.getAuthor())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
