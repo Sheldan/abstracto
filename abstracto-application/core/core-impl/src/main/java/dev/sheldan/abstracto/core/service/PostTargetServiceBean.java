@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
+import dev.sheldan.abstracto.core.exception.PostTargetNotUsableException;
 import dev.sheldan.abstracto.core.exception.PostTargetNotValidException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.PostTarget;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -52,15 +54,25 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message> sendTextInPostTarget(String text, PostTarget target)  {
-        log.debug("Sending text to post target {}.", target.getName());
-        return channelService.sendTextToAChannel(text, target.getChannelReference());
+        if(target.getDisabled()) {
+            log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
+            return CompletableFuture.completedFuture(null);
+        } else {
+            log.debug("Sending text to post target {}.", target.getName());
+            return channelService.sendTextToAChannel(text, target.getChannelReference());
+        }
     }
 
     @Override
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTarget target)  {
-        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        log.debug("Sending message embed to post target {}.", target.getName());
-        return channelService.sendEmbedToChannel(embed, textChannelForPostTarget);
+        if(target.getDisabled()) {
+            log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
+            return CompletableFuture.completedFuture(null);
+        } else {
+            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            log.debug("Sending message embed to post target {}.", target.getName());
+            return channelService.sendEmbedToChannel(embed, textChannelForPostTarget);
+        }
     }
 
     private TextChannel getTextChannelForPostTarget(PostTarget target)  {
@@ -81,110 +93,145 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public CompletableFuture<Message>  sendTextInPostTarget(String text, PostTargetEnum postTargetEnum, Long serverId)  {
-        PostTarget postTarget = getPostTarget(postTargetEnum, serverId);
-        return this.sendTextInPostTarget(text, postTarget);
+        Optional<PostTarget> postTargetOptional = getPostTarget(postTargetEnum, serverId);
+        if(!postTargetOptional.isPresent()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return this.sendTextInPostTarget(text, postTargetOptional.get());
     }
 
     @Override
     public CompletableFuture<Message>  sendEmbedInPostTarget(MessageEmbed embed, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = getPostTarget(postTargetName, serverId);
-        return this.sendEmbedInPostTarget(embed, postTarget);
+        Optional<PostTarget> postTargetOptional = getPostTarget(postTargetName, serverId);
+        if(!postTargetOptional.isPresent()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return this.sendEmbedInPostTarget(embed, postTargetOptional.get());
     }
 
     @Override
     public CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTargetEnum postTargetName, Long serverId) {
-        PostTarget postTarget = getPostTarget(postTargetName, serverId);
-        return sendMessageInPostTarget(message, postTarget);
+        Optional<PostTarget> postTargetOptional = getPostTarget(postTargetName, serverId);
+        if(!postTargetOptional.isPresent()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return sendMessageInPostTarget(message, postTargetOptional.get());
     }
 
     @Override
     public CompletableFuture<Message> sendMessageInPostTarget(Message message, PostTarget target) {
-        log.debug("Send message {} towards post target {}.", message.getId(), target.getName());
-        return channelService.sendMessageToAChannel(message, target.getChannelReference());
+        if(target.getDisabled()) {
+            log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
+            return CompletableFuture.completedFuture(null);
+        } else {
+            log.debug("Send message {} towards post target {}.", message.getId(), target.getName());
+            return channelService.sendMessageToAChannel(message, target.getChannelReference());
+        }
     }
 
     @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = getPostTarget(postTargetName, serverId);
-        return this.sendEmbedInPostTarget(message, postTarget);
+        Optional<PostTarget> postTargetOptional = getPostTarget(postTargetName, serverId);
+        if(!postTargetOptional.isPresent()) {
+            return Arrays.asList(CompletableFuture.completedFuture(null));
+        }
+        return this.sendEmbedInPostTarget(message, postTargetOptional.get());
     }
 
     @Override
     public List<CompletableFuture<Message>> sendEmbedInPostTarget(MessageToSend message, PostTarget target)  {
-        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        log.debug("Send messageToSend towards post target {}.", target.getName());
-        return channelService.sendMessageToSendToChannel(message, textChannelForPostTarget);
+        if(target.getDisabled()) {
+            log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
+            return Arrays.asList(CompletableFuture.completedFuture(null));
+        } else {
+            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            log.debug("Send messageToSend towards post target {}.", target.getName());
+            return channelService.sendMessageToSendToChannel(message, textChannelForPostTarget);
+        }
     }
 
     @Override
     public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTarget target)  {
-        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        // always takes the first one, only applicable for this scenario
-        String messageText = message.getMessages().get(0);
-        if(StringUtils.isBlank(messageText)) {
-            log.debug("Editing embeds of message {} in post target {}.", messageId, target.getName());
-            return Arrays.asList(channelService.editEmbedMessageInAChannel(message.getEmbeds().get(0), textChannelForPostTarget, messageId));
+        if(target.getDisabled()) {
+            log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
+            return Arrays.asList(CompletableFuture.completedFuture(null));
         } else {
-            log.debug("Editing message text and potentially text for message {} in post target {}.", messageId, target.getName());
-            return Arrays.asList(channelService.editTextMessageInAChannel(messageText, message.getEmbeds().get(0), textChannelForPostTarget, messageId));
+            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            // always takes the first one, only applicable for this scenario
+            String messageText = message.getMessages().get(0);
+            if(StringUtils.isBlank(messageText)) {
+                log.debug("Editing embeds of message {} in post target {}.", messageId, target.getName());
+                return Arrays.asList(channelService.editEmbedMessageInAChannel(message.getEmbeds().get(0), textChannelForPostTarget, messageId));
+            } else {
+                log.debug("Editing message text and potentially text for message {} in post target {}.", messageId, target.getName());
+                return Arrays.asList(channelService.editTextMessageInAChannel(messageText, message.getEmbeds().get(0), textChannelForPostTarget, messageId));
+            }
         }
     }
 
     @Override
     public List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target)  {
-        List<CompletableFuture<Message>> futures = new ArrayList<>();
-        TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
-        CompletableFuture<Message> messageEditFuture = new CompletableFuture<>();
-        futures.add(messageEditFuture);
-        if(StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
-            channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
-                log.debug("Editing existing message {} when upserting message embeds in channel {} in server {}.",
-                        messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
-                messageService.editMessage(message, messageToSend.getEmbeds().get(0))
-                        .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
-            }).exceptionally(throwable -> {
-                log.debug("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
-                        messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
-                sendEmbedInPostTarget(messageToSend, target).get(0)
-                        .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
-                    log.error("Failed to send message to create a message.", innerThrowable);
-                    messageEditFuture.completeExceptionally(innerThrowable);
+        if(target.getDisabled()) {
+            log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
+            return Arrays.asList(CompletableFuture.completedFuture(null));
+        } else {
+            List<CompletableFuture<Message>> futures = new ArrayList<>();
+            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            CompletableFuture<Message> messageEditFuture = new CompletableFuture<>();
+            futures.add(messageEditFuture);
+            if (StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
+                channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
+                    log.debug("Editing existing message {} when upserting message embeds in channel {} in server {}.",
+                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                    messageService.editMessage(message, messageToSend.getEmbeds().get(0))
+                            .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
+                }).exceptionally(throwable -> {
+                    log.debug("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
+                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                    sendEmbedInPostTarget(messageToSend, target).get(0)
+                            .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
+                        log.error("Failed to send message to create a message.", innerThrowable);
+                        messageEditFuture.completeExceptionally(innerThrowable);
+                        return null;
+                    });
                     return null;
                 });
-                return null;
-            });
-        } else {
-            channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
+            } else {
+                channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
                     log.debug("Editing existing message {} when upserting message in channel {} in server {}.",
                             messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
                     messageService.editMessage(message, messageToSend.getMessages().get(0), messageToSend.getEmbeds().get(0))
                             .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
-            }).exceptionally(throwable -> {
-                log.debug("Creating new message when trying to upsert a message {} in channel {} in server {}.",
-                        messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
-                sendEmbedInPostTarget(messageToSend, target).get(0)
-                        .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
-                    log.error("Failed to send message to create a message.", innerThrowable);
-                    messageEditFuture.completeExceptionally(innerThrowable);
+                }).exceptionally(throwable -> {
+                    log.debug("Creating new message when trying to upsert a message {} in channel {} in server {}.",
+                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                    sendEmbedInPostTarget(messageToSend, target).get(0)
+                            .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
+                        log.error("Failed to send message to create a message.", innerThrowable);
+                        messageEditFuture.completeExceptionally(innerThrowable);
+                        return null;
+                    });
                     return null;
                 });
-                return null;
-            });
-        }
+            }
 
-        return futures;
+            return futures;
+        }
     }
 
     @Override
     public List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = getPostTarget(postTargetName, serverId);
-        return this.editOrCreatedInPostTarget(messageId, messageToSend, postTarget);
+        Optional<PostTarget> postTargetOptional = getPostTarget(postTargetName, serverId);
+        if(!postTargetOptional.isPresent()) {
+            return Arrays.asList(CompletableFuture.completedFuture(null));
+        }
+        return this.editOrCreatedInPostTarget(messageId, messageToSend, postTargetOptional.get());
     }
 
     @Override
     public void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId) {
-        PostTarget postTarget = getPostTarget(name, serverId);
-        if(postTarget == null) {
+        Optional<PostTarget> postTargetOptional = getPostTarget(name, serverId);
+        if(!postTargetOptional.isPresent()) {
             throw new PostTargetNotValidException(name.getKey(), defaultPostTargetManagementService.getDefaultPostTargetKeys());
         }
     }
@@ -196,18 +243,34 @@ public class PostTargetServiceBean implements PostTargetService {
 
     @Override
     public List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId)  {
-        PostTarget postTarget = getPostTarget(postTargetName, serverId);
-        return editEmbedInPostTarget(messageId, message, postTarget);
+        Optional<PostTarget> postTargetOptional = getPostTarget(postTargetName, serverId);
+        if(!postTargetOptional.isPresent()) {
+            return Arrays.asList(CompletableFuture.completedFuture(null));
+        }
+        return editEmbedInPostTarget(messageId, message, postTargetOptional.get());
     }
 
-    private PostTarget getPostTarget(PostTargetEnum postTargetEnum, Long serverId) {
-        return postTargetManagement.getPostTarget(postTargetEnum.getKey(), serverId);
+    private Optional<PostTarget> getPostTarget(PostTargetEnum postTargetEnum, Long serverId) {
+        return postTargetManagement.getPostTargetOptional(postTargetEnum.getKey(), serverId);
     }
 
     @Override
     public boolean validPostTarget(String name) {
         List<String> possiblePostTargets = defaultPostTargetManagementService.getDefaultPostTargetKeys();
         return possiblePostTargets.contains(name);
+    }
+
+    @Override
+    public void validatePostTarget(PostTargetEnum name, Long serverId) {
+        if(!postTargetUsableInServer(name, serverId)) {
+            throw new PostTargetNotUsableException(name.getKey());
+        }
+    }
+
+    @Override
+    public boolean postTargetUsableInServer(PostTargetEnum name, Long serverId) {
+        Optional<PostTarget> postTargetOptional = getPostTarget(name, serverId);
+        return postTargetOptional.isPresent() && !postTargetOptional.get().getDisabled();
     }
 
     @Override
@@ -230,5 +293,17 @@ public class PostTargetServiceBean implements PostTargetService {
             }
         });
         return postTargets;
+    }
+
+    @Override
+    public void disablePostTarget(String name, Long serverId) {
+        PostTarget postTarget = postTargetManagement.getPostTarget(name, serverId);
+        postTarget.setDisabled(true);
+    }
+
+    @Override
+    public void enablePostTarget(String name, Long serverId) {
+        PostTarget postTarget = postTargetManagement.getPostTarget(name, serverId);
+        postTarget.setDisabled(false);
     }
 }

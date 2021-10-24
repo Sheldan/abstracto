@@ -26,7 +26,11 @@ public interface PostTargetService {
     void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId);
     boolean postTargetDefinedInServer(PostTargetEnum name, Long serverId);
     boolean validPostTarget(String name);
+    void validatePostTarget(PostTargetEnum name, Long serverId);
+    boolean postTargetUsableInServer(PostTargetEnum name, Long serverId);
     List<PostTarget> getPostTargets(AServer server);
     List<String> getAvailablePostTargets();
     List<String> getPostTargetsOfEnabledFeatures(AServer server);
+    void disablePostTarget(String name, Long serverId);
+    void enablePostTarget(String name, Long serverId);
 }

@@ -286,8 +286,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .channel(channel)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_notification_message", modMailNotificationModel, channel.getGuild().getIdLong());
-        List<CompletableFuture<Message>> modmailping = postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId);
-        return CompletableFuture.allOf(modmailping.toArray(new CompletableFuture[0]));
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId));
     }
 
     /**
@@ -660,7 +659,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .thenCompose(list -> list.getMainFuture().thenCompose(unused -> {
                     list.getFutures().forEach(messageCompletableFuture -> {
                         Message message = messageCompletableFuture.join();
-                        undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong()));
+                        if(message != null) {
+                            undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong()));
+                        }
                     });
                     return memberService.getMemberInServerAsync(serverId, userId).thenCompose(member ->
                             self.afterSuccessfulLog(modMailThreadId, closingContext.getNotifyUser(), member, undoActions)

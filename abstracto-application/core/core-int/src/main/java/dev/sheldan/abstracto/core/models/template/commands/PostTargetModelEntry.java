@@ -12,4 +12,5 @@ import net.dv8tion.jda.api.entities.TextChannel;
 public class PostTargetModelEntry {
     private PostTarget postTarget;
     private TextChannel channel;
+    private Boolean disabled;
 }

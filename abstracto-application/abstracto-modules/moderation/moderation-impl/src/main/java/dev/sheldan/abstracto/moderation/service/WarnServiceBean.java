@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -12,16 +13,20 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeatureConfig;
+import dev.sheldan.abstracto.moderation.config.feature.WarningFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.feature.mode.WarnDecayMode;
 import dev.sheldan.abstracto.moderation.config.feature.mode.WarningMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.WarnDecayPostTarget;
 import dev.sheldan.abstracto.moderation.config.posttarget.WarningPostTarget;
+import dev.sheldan.abstracto.moderation.listener.manager.WarningCreatedListenerManager;
+import dev.sheldan.abstracto.moderation.model.database.Infraction;
 import dev.sheldan.abstracto.moderation.model.database.Warning;
 import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
 import dev.sheldan.abstracto.moderation.model.template.command.WarnNotification;
 import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayLogModel;
 import dev.sheldan.abstracto.moderation.model.template.job.WarnDecayWarning;
 import dev.sheldan.abstracto.moderation.model.template.listener.WarnDecayMemberNotificationModel;
+import dev.sheldan.abstracto.moderation.service.management.InfractionManagementService;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -85,6 +90,18 @@ public class WarnServiceBean implements WarnService {
     @Autowired
     private WarnServiceBean self;
 
+    @Autowired
+    private InfractionService infractionService;
+
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private InfractionManagementService infractionManagementService;
+
+    @Autowired
+    private WarningCreatedListenerManager warningCreatedListenerManager;
+
     public static final String WARN_LOG_TEMPLATE = "warn_log";
     public static final String WARN_NOTIFICATION_TEMPLATE = "warn_notification";
     public static final String WARNINGS_COUNTER_KEY = "WARNINGS";
@@ -100,22 +117,34 @@ public class WarnServiceBean implements WarnService {
         Member warningMember = context.getMember();
         Guild guild = warnedMember.getGuild();
         log.info("User {} is warning {} in server {}", warnedMember.getId(), warningMember.getId(), guild.getIdLong());
-        WarnNotification warnNotification = WarnNotification.builder().reason(context.getReason()).warnId(warningId).serverName(guild.getName()).build();
+        WarnNotification warnNotification = WarnNotification
+                .builder()
+                .reason(context.getReason())
+                .warnId(warningId)
+                .serverName(guild.getName())
+                .build();
+        Long serverId = server.getId();
         String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification, server.getId());
-        List<CompletableFuture<Message>> futures = new ArrayList<>();
+        List<CompletableFuture> futures = new ArrayList<>();
         futures.add(messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage));
         log.debug("Logging warning for server {}.", server.getId());
+        if(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, serverId)) {
+            Long infractionPoints = configService.getLongValueOrConfigDefault(WarningFeatureConfig.WARN_INFRACTION_POINTS, serverId);
+            AUserInAServer warnedUser = userInServerManagementService.loadOrCreateUser(warnedMember);
+            warnedUser.setServerReference(server);
+            futures.add(infractionService.createInfractionWithNotification(warnedUser, infractionPoints)
+                    .thenAccept(infraction -> context.setInfractionId(infraction.getId())));
+        }
         MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context, server.getId());
         futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
 
-        return FutureUtils.toSingleFutureGeneric(futures);
+        return FutureUtils.toSingleFuture(futures);
     }
 
     @Override
     public CompletableFuture<Void> warnUserWithLog(WarnContext context) {
-        return notifyAndLogFullUserWarning(context).thenAccept(aVoid ->
-            self.persistWarning(context)
-        );
+        return notifyAndLogFullUserWarning(context)
+                .thenAccept(aVoid -> self.persistWarning(context));
     }
 
     @Transactional
@@ -124,8 +153,15 @@ public class WarnServiceBean implements WarnService {
                 context.getWarnId(), context.getGuild().getId(), context.getWarnedMember().getId(), context.getMember().getId());
         AUserInAServer warnedUser = userInServerManagementService.loadOrCreateUser(context.getWarnedMember());
         AUserInAServer warningUser = userInServerManagementService.loadOrCreateUser(context.getMember());
-        warnManagementService.createWarning(warnedUser, warningUser, context.getReason(), context.getWarnId());
-
+        Warning createdWarning = warnManagementService.createWarning(warnedUser, warningUser, context.getReason(), context.getWarnId());
+        if(context.getInfractionId() != null) {
+            Infraction infraction = infractionManagementService.loadInfraction(context.getInfractionId());
+            createdWarning.setInfraction(infraction);
+        }
+        ServerUser warnedServerUser = ServerUser.fromAUserInAServer(warnedUser);
+        ServerUser warningServerUser = ServerUser.fromAUserInAServer(warnedUser);
+        ServerChannelMessage commandMessage = ServerChannelMessage.fromMessage(context.getMessage());
+        warningCreatedListenerManager.sendWarningCreatedEvent(createdWarning.getWarnId(), warnedServerUser, warningServerUser, context.getReason(), commandMessage);
     }
 
     @Override
@@ -235,10 +271,13 @@ public class WarnServiceBean implements WarnService {
     }
 
     @Override
-    public void decayWarning(Warning warning, Instant now) {
-        log.debug("Decaying warning {} in server {} with date {}.", warning.getWarnId().getId(), warning.getWarnId().getServerId(), now);
-        warning.setDecayDate(now);
+    public void decayWarning(Warning warning, Instant decayDate) {
+        log.debug("Decaying warning {} in server {} with date {}.", warning.getWarnId().getId(), warning.getWarnId().getServerId(), decayDate);
+        warning.setDecayDate(decayDate);
         warning.setDecayed(true);
+        if(warning.getInfraction() != null) {
+            infractionService.decayInfraction(warning.getInfraction());
+        }
     }
 
     private CompletableFuture<Void> logDecayedWarnings(AServer server, List<Warning> warningsToDecay) {
@@ -307,8 +346,7 @@ public class WarnServiceBean implements WarnService {
                 .warnings(warnDecayWarnings)
                 .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(WARN_DECAY_LOG_TEMPLATE_KEY, warnDecayLogModel, serverId);
-        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId());
-        return FutureUtils.toSingleFutureGeneric(messageFutures);
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, WarnDecayPostTarget.DECAY_LOG, server.getId()));
     }
 
     @Override

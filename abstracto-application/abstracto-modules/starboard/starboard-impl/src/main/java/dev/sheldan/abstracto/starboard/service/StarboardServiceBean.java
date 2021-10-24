@@ -18,6 +18,8 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.starboard.config.StarboardFeatureConfig;
 import dev.sheldan.abstracto.starboard.config.StarboardPostTarget;
+import dev.sheldan.abstracto.starboard.listener.manager.StarboardPostCreatedListenerManager;
+import dev.sheldan.abstracto.starboard.listener.manager.StarboardPostDeletedListenerManager;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
 import dev.sheldan.abstracto.starboard.model.template.*;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
@@ -102,6 +104,7 @@ public class StarboardServiceBean implements StarboardService {
 
     @Override
     public CompletableFuture<Void> createStarboardPost(CachedMessage message, List<AUserInAServer> userExceptAuthor, AUserInAServer userReacting, AUserInAServer starredUser)  {
+        postTargetService.validatePostTarget(StarboardPostTarget.STARBOARD, message.getServerId());
         Long starredUserId = starredUser.getUserInServerId();
         List<Long> userExceptAuthorIds = userExceptAuthor.stream().map(AUserInAServer::getUserInServerId).collect(Collectors.toList());
         Long userReactingId = userReacting.getUserReference().getId();

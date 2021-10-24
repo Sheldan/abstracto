@@ -49,7 +49,7 @@ public class MyWarningsTest {
         Long activeWarnCount = 8L;
         AUserInAServer aUserInAServer = Mockito.mock(AUserInAServer.class);
         when(userInServerManagementService.loadOrCreateUser(noParameter.getAuthor())).thenReturn(aUserInAServer);
-        when(warnManagementService.getActiveWarnsForUser(aUserInAServer)).thenReturn(activeWarnCount);
+        when(warnManagementService.getActiveWarnCountForUser(aUserInAServer)).thenReturn(activeWarnCount);
         Long totalWarnCount = 10L;
         when(warnManagementService.getTotalWarnsForUser(aUserInAServer)).thenReturn(totalWarnCount);
         CommandResult result = testUnit.execute(noParameter);

@@ -36,6 +36,11 @@ public class PostTarget implements Serializable {
     @Setter
     private AServer serverReference;
 
+    @Column(name = "disabled")
+    @Getter
+    @Setter
+    private Boolean disabled;
+
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 

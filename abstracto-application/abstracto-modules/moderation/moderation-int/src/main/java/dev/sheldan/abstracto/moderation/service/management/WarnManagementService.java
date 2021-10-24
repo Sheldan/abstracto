@@ -16,7 +16,8 @@ public interface WarnManagementService {
     Long getTotalWarnsForUser(AUserInAServer aUserInAServer);
     List<Warning> getAllWarnsForUser(AUserInAServer aUserInAServer);
     List<Warning> getAllWarningsOfServer(AServer server);
-    Long getActiveWarnsForUser(AUserInAServer aUserInAServer);
+    Long getActiveWarnCountForUser(AUserInAServer aUserInAServer);
+    List<Warning> getActiveWarnsForUser(AUserInAServer aUserInAServer);
     Optional<Warning> findByIdOptional(Long id, Long serverId);
     Warning findById(Long id, Long serverId);
     List<Warning> getWarningsViaId(List<Long> warnIds, Long serverId);

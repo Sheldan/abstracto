@@ -114,13 +114,14 @@ public class SuggestionServiceBean implements SuggestionService {
 
     @Override
     public CompletableFuture<Void> createSuggestionMessage(Message commandMessage, String text)  {
-        // it is done that way, because we cannot always be sure, that the message containsn the member
+        // it is done that way, because we cannot always be sure, that the message contains the member
         return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
                 .thenCompose(suggester -> self.createMessageWithSuggester(commandMessage, text, suggester));
     }
 
     @Transactional
     public CompletableFuture<Void> createMessageWithSuggester(Message commandMessage, String text, Member suggester) {
+        postTargetService.validatePostTarget(SuggestionPostTarget.SUGGESTION, suggester.getGuild().getIdLong());
         Long serverId = suggester.getGuild().getIdLong();
         AServer server = serverManagementService.loadServer(serverId);
         AUserInAServer userSuggester = userInServerManagementService.loadOrCreateUser(suggester);
@@ -223,6 +224,7 @@ public class SuggestionServiceBean implements SuggestionService {
     @Transactional
     public CompletableFuture<Void> setSuggestionToFinalState(Member executingMember, Long suggestionId, Message commandMessage, String text, SuggestionState state) {
         Long serverId = commandMessage.getGuild().getIdLong();
+        postTargetService.validatePostTarget(SuggestionPostTarget.SUGGESTION, serverId);
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, state);
         cancelSuggestionReminder(suggestion);
@@ -340,6 +342,7 @@ public class SuggestionServiceBean implements SuggestionService {
     @Transactional
     public CompletableFuture<Void> remindAboutSuggestion(ServerSpecificId suggestionId) {
         Long serverId = suggestionId.getServerId();
+        postTargetService.validatePostTarget(SuggestionPostTarget.SUGGESTION_REMINDER, serverId);
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId.getId());
         ServerChannelMessage suggestionServerChannelMessage = ServerChannelMessage
                 .builder()

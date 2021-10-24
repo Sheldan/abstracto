@@ -62,14 +62,25 @@ public class PostTargetCommand extends AbstractConditionableCommand {
             List<PostTargetModelEntry> postTargetEntries = posttargetDisplayModel.getPostTargets();
             postTargets.forEach(target -> {
                 Optional<TextChannel> channelFromAChannel = channelService.getChannelFromAChannel(target.getChannelReference());
-                PostTargetModelEntry targetEntry = PostTargetModelEntry.builder().channel(channelFromAChannel.orElse(null)).postTarget(target).build();
+                PostTargetModelEntry targetEntry = PostTargetModelEntry
+                        .builder()
+                        .channel(channelFromAChannel.orElse(null))
+                        .disabled(target.getDisabled())
+                        .postTarget(target).build();
                 postTargetEntries.add(targetEntry);
             });
             List<String> postTargetConfigs = postTargetService.getPostTargetsOfEnabledFeatures(server);
             postTargetConfigs.forEach(postTargetName -> {
                 if(postTargetEntries.stream().noneMatch(postTargetModelEntry -> postTargetModelEntry.getPostTarget().getName().equalsIgnoreCase(postTargetName))) {
-                    PostTarget fakeEntry = PostTarget.builder().name(postTargetName).build();
-                    PostTargetModelEntry postTargetEntry = PostTargetModelEntry.builder().postTarget(fakeEntry).build();
+                    PostTarget fakeEntry = PostTarget
+                            .builder()
+                            .name(postTargetName)
+                            .build();
+                    PostTargetModelEntry postTargetEntry = PostTargetModelEntry
+                            .builder()
+                            .postTarget(fakeEntry)
+                            .disabled(false)
+                            .build();
                     postTargetEntries.add(postTargetEntry);
                 }
             });

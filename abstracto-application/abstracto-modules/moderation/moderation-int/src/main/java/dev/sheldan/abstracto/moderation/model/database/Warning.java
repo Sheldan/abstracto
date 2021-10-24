@@ -28,7 +28,7 @@ public class Warning implements Serializable {
     @Setter
     private ServerSpecificId warnId;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @MapsId("serverId")
     @JoinColumn(name = "server_id", referencedColumnName = "id", nullable = false)
     private AServer server;
@@ -89,5 +89,11 @@ public class Warning implements Serializable {
 
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
+
+    @Getter
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "infraction_id")
+    private Infraction infraction;
 
 }

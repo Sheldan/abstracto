@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.logging.config.LoggingFeatureDefinition;
 import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedAttachmentLog;
@@ -65,7 +66,11 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
                 .member(messageAfter.getMember())
                 .build();
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_EDITED_TEMPLATE, lodModel, model.getServerId());
-        postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, model.getServerId());
+        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.EDIT_LOG, model.getServerId()))
+        .exceptionally(throwable -> {
+            log.error("Failed to send message edited log.", throwable);
+            return null;
+        });
 
         if(attachmentWasRemoved) {
             log.info("Attachment count changed. Old {}, new {}.", attachmentCountBefore, attachmentCountAfter);
@@ -75,7 +80,7 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
             ).collect(Collectors.toList());
             log.debug("Logging deletion of {} attachments.", removedAttachments.size());
             for (int i = 0; i < removedAttachments.size(); i++) {
-                MessageDeletedAttachmentLog log = MessageDeletedAttachmentLog
+                MessageDeletedAttachmentLog attachmentModel = MessageDeletedAttachmentLog
                         .builder()
                         .imageUrl(removedAttachments.get(i).getProxyUrl())
                         .counter(i + 1)
@@ -84,8 +89,12 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
                         .member(messageAfter.getMember())
                         .build();
                 MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_EDITED_ATTACHMENT_REMOVED_TEMPLATE,
-                        log, messageBefore.getServerId());
-                postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageBefore.getServerId());
+                        attachmentModel, messageBefore.getServerId());
+                FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageBefore.getServerId()))
+                .exceptionally(throwable -> {
+                    log.error("Failed to send message edited attachment log.", throwable);
+                    return null;
+                });
             }
         }
         return DefaultListenerResult.PROCESSED;

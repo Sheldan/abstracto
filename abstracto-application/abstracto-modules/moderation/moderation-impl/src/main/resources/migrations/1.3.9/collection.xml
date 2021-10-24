@@ -6,10 +6,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <changeSet  author="Sheldan"  id="warn-decay-job-update_schedule">
-        <update tableName="scheduler_job">
-            <column name="cron_expression" value="0 0 0 * * ?"/>
-            <where>name='warnDecayJob'</where>
-        </update>
-    </changeSet>
+    <include file="seedData/data.xml" relativeToChangelogFile="true"/>
+    <include file="tables/tables.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

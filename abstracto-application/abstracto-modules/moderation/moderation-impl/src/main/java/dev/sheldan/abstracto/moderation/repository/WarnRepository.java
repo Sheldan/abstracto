@@ -23,6 +23,7 @@ public interface WarnRepository extends JpaRepository<Warning, ServerSpecificId>
     Long countByWarnedUser(AUserInAServer aUserInAServer);
 
     Long countByWarnedUserAndDecayedFalse(AUserInAServer aUserInAServer);
+    List<Warning> findByWarnedUserAndDecayedFalse(AUserInAServer aUserInAServer);
 
     List<Warning> findByWarnedUser(AUserInAServer aUserInAServer);
 

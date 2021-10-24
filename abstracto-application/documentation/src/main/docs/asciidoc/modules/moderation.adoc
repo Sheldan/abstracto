@@ -252,3 +252,16 @@ This functionality will automatically mute a member who mentions more than a con
 
 ==== Relevant system configuration
 `massPingMinLevel`:: The level at which members are allowed to mass ping and not get muted.
+
+=== Tracking general infractions
+
+Feature key `infractions`
+
+This functionality just behaves to track general infractions of users, be it through the means of warnings or mutes. Currently, its very limited and only can be used to configure levels of infractions and certain points for various infractions, which will be tracked and stored.
+
+==== Post targets
+`infractionNotification`:: target for notifications of infraction level changes
+
+==== Relevant system configuration
+`infractionLevels`:: The amount of infraction levels which should be possible to configure
+`infractionLevel`:: This system config key acts as a prefix up until the amount of infraction levels. With this you can configure the amount of points necessary to reach the given level: For example `infractionLevel2` would be the amount of points necessary to reach level 2. These levels are not enforced to be ordered nor if all levels have a value assigned to it. Any level evaluation will stop at the first level not defined.

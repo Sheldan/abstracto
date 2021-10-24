@@ -39,7 +39,7 @@ public class MyWarnings extends AbstractConditionableCommand {
     public CommandResult execute(CommandContext commandContext) {
         MyWarningsModel model = (MyWarningsModel) ContextConverter.fromCommandContext(commandContext, MyWarningsModel.class);
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
-        Long currentWarnCount = warnManagementService.getActiveWarnsForUser(userInAServer);
+        Long currentWarnCount = warnManagementService.getActiveWarnCountForUser(userInAServer);
         model.setCurrentWarnCount(currentWarnCount);
         Long totalWarnCount = warnManagementService.getTotalWarnsForUser(userInAServer);
         model.setTotalWarnCount(totalWarnCount);

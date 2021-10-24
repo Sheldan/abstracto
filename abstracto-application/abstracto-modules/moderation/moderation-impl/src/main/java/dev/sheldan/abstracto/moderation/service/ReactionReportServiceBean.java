@@ -100,9 +100,13 @@ public class ReactionReportServiceBean implements ReactionReportService {
 
     @Transactional
     public void createReactionReportInDb(CachedMessage cachedMessage, Message reportMessage, ServerUser reporter) {
-        log.info("Creation reaction report in message {} about message {} in database.", reportMessage.getIdLong(), cachedMessage.getMessageId());
-        reactionReportManagementService.createReactionReport(cachedMessage, reportMessage);
-        updateModerationUserReportCooldown(reporter);
+        if(reportMessage == null) {
+            log.info("Creation reaction report about message {} was not sent - post target might be disabled in server {}.", cachedMessage.getMessageId(), cachedMessage.getServerId());
+        } else {
+            log.info("Creation reaction report in message {} about message {} in database.", reportMessage.getIdLong(), cachedMessage.getMessageId());
+            reactionReportManagementService.createReactionReport(cachedMessage, reportMessage);
+            updateModerationUserReportCooldown(reporter);
+        }
     }
 
     @Transactional

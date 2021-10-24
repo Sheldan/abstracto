@@ -115,7 +115,12 @@ public class ProfanityFilterServiceBean implements ProfanityFilterService {
         Long profanityRegexId = foundProfanityRegex.getId();
         return FutureUtils.toSingleFutureGeneric(messageFutures).thenCompose(aVoid -> {
             Message createdMessage = messageFutures.get(0).join();
-            return self.afterReportCreation(message, serverId, profanityRegexId, createdMessage);
+            if(createdMessage != null) {
+                return self.afterReportCreation(message, serverId, profanityRegexId, createdMessage);
+            } else {
+                log.warn("No profanity report message created about message {} in server {} - possibly post target disabled.", message.getIdLong(), message.getGuild().getIdLong());
+                return CompletableFuture.completedFuture(null);
+            }
         });
     }
 

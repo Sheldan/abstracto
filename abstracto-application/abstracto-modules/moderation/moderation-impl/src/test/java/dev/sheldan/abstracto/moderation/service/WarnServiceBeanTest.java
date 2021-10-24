@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -134,6 +135,9 @@ public class WarnServiceBeanTest {
     @Mock
     private DefaultConfigManagementService defaultConfigManagementService;
 
+    @Mock
+    private FeatureFlagService featureFlagService;
+
     private static final String NOTIFICATION_TEXT = "text";
     private static final String GUILD_NAME = "guild";
     private static final Long SERVER_ID = 4L;
@@ -204,6 +208,7 @@ public class WarnServiceBeanTest {
     public void testWarnFullUser() {
         setupWarnContext();
         setupMocksForWarning();
+        when(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, SERVER_ID)).thenReturn(false);
         CompletableFuture<Void> future = testUnit.notifyAndLogFullUserWarning(context);
         future.join();
         Assert.assertFalse(future.isCompletedExceptionally());

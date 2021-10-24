@@ -15,6 +15,8 @@ import java.util.List;
 @Component
 public class WarningFeatureConfig implements FeatureConfig {
 
+    public static final String WARN_INFRACTION_POINTS = "warnInfractionPoints";
+
     @Autowired
     private WarningDecayFeatureConfig warningDecayFeatureConfig;
 

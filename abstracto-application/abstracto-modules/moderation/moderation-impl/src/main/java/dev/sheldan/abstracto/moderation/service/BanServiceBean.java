@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -139,20 +138,14 @@ public class BanServiceBean implements BanService {
     }
 
     public CompletableFuture<Void> sendBanLogMessage(BanLog banLog, Long guildId, String template) {
-        CompletableFuture<Void> completableFuture;
         MessageToSend banLogMessage = templateService.renderEmbedTemplate(template, banLog, guildId);
         log.debug("Sending ban log message in guild {}.", guildId);
-        List<CompletableFuture<Message>> notificationFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId);
-        completableFuture = FutureUtils.toSingleFutureGeneric(notificationFutures);
-        return completableFuture;
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId));
     }
 
     public CompletableFuture<Void> sendUnBanLogMessage(UnBanLog banLog, Long guildId, String template) {
-        CompletableFuture<Void> completableFuture;
         MessageToSend banLogMessage = templateService.renderEmbedTemplate(template, banLog, guildId);
         log.debug("Sending unban log message in guild {}.", guildId);
-        List<CompletableFuture<Message>> notificationFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.UN_BAN_LOG, guildId);
-        completableFuture = FutureUtils.toSingleFutureGeneric(notificationFutures);
-        return completableFuture;
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.UN_BAN_LOG, guildId));
     }
 }

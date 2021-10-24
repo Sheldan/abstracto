@@ -70,8 +70,13 @@ public class WarnManagementServiceBean implements WarnManagementService {
     }
 
     @Override
-    public Long getActiveWarnsForUser(AUserInAServer aUserInAServer) {
+    public Long getActiveWarnCountForUser(AUserInAServer aUserInAServer) {
         return warnRepository.countByWarnedUserAndDecayedFalse(aUserInAServer);
+    }
+
+    @Override
+    public List<Warning> getActiveWarnsForUser(AUserInAServer aUserInAServer) {
+        return warnRepository.findByWarnedUserAndDecayedFalse(aUserInAServer);
     }
 
     @Override

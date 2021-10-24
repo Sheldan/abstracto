@@ -26,4 +26,5 @@ public class WarnContext extends SlimUserInitiatedServerContext {
      * The persisted {@link Warning} object from the database containing the information about the warning
      */
     private Long warnId;
+    private Long infractionId;
 }

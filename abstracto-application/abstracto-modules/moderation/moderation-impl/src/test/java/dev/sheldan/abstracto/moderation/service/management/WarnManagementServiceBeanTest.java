@@ -97,7 +97,7 @@ public class WarnManagementServiceBeanTest {
     public void testActiveWarnCountOfUser() {
         Long count = 5L;
         when(warnRepository.countByWarnedUserAndDecayedFalse(warnedUser)).thenReturn(count);
-        Long activeWarnsForUserCount = testUnit.getActiveWarnsForUser(warnedUser);
+        Long activeWarnsForUserCount = testUnit.getActiveWarnCountForUser(warnedUser);
         Assert.assertEquals(count, activeWarnsForUserCount);
     }
 

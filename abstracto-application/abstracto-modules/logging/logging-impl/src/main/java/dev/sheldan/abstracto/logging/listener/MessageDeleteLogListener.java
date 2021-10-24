@@ -85,7 +85,8 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
                 .member(authorMember)
                 .build();
         MessageToSend message = templateService.renderEmbedTemplate(MESSAGE_DELETED_TEMPLATE, logModel, messageFromCache.getServerId());
-        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId())).exceptionally(throwable -> {
+        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId()))
+        .exceptionally(throwable -> {
             log.error("Failed to send message deleted log.", throwable);
             return null;
         });
@@ -102,7 +103,7 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
                         .build();
                 MessageToSend attachmentEmbed = templateService.renderEmbedTemplate(MESSAGE_DELETED_ATTACHMENT_TEMPLATE, attachmentLogModel, messageFromCache.getServerId());
                 FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(attachmentEmbed, LoggingPostTarget.DELETE_LOG, messageFromCache.getServerId()))
-                        .exceptionally(throwable -> {
+                .exceptionally(throwable -> {
                     log.error("Failed to send message deleted log.", throwable);
                     return null;
                 });

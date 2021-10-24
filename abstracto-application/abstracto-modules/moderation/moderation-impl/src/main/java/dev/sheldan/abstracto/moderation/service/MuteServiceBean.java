@@ -244,21 +244,15 @@ public class MuteServiceBean implements MuteService {
     }
 
     private CompletableFuture<Void> sendMuteLog(MuteContext muteLogModel, AServer server)  {
-        CompletableFuture<Void> completableFuture;
         log.debug("Sending mute log to the mute post target.");
         MessageToSend message = templateService.renderEmbedTemplate(MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId());
-        completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
-        return completableFuture;
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, muteLogModel.getContext().getServerId()));
     }
 
     private CompletableFuture<Void> sendUnMuteLogMessage(UnMuteLog muteLogModel, AServer server)  {
-        CompletableFuture<Void> completableFuture;
         log.debug("Sending unMute log for mute {} to the mute posttarget in server {}", muteLogModel.getMute().getMuteId().getId(), server.getId());
         MessageToSend message = templateService.renderEmbedTemplate(UN_MUTE_LOG_TEMPLATE, muteLogModel, server.getId());
-        List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId());
-        completableFuture = FutureUtils.toSingleFutureGeneric(completableFutures);
-        return completableFuture;
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, server.getId()));
     }
 
     @Override

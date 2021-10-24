@@ -40,10 +40,8 @@ public class KickServiceBean implements KickService {
     }
 
     private CompletableFuture<Void> sendKickLog(KickLogModel kickLogModel)  {
-        CompletableFuture<Void> completableFuture;
         MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, kickLogModel.getGuild().getIdLong());
         log.debug("Sending kick log message in guild {}.", kickLogModel.getGuild().getIdLong());
-        completableFuture = FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
-        return completableFuture;
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, kickLogModel.getGuild().getIdLong()));
     }
 }

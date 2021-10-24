@@ -1,10 +1,8 @@
-package dev.sheldan.abstracto.starboard.service;
+package dev.sheldan.abstracto.starboard.listener.manager;
 
 import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.service.FeatureConfigService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.starboard.listener.StarboardPostDeletedListener;
 import dev.sheldan.abstracto.starboard.model.StarboardPostDeletedModel;
 import dev.sheldan.abstracto.starboard.model.database.StarboardPost;
@@ -27,15 +25,6 @@ public class StarboardPostDeletedListenerManager {
     @Autowired
     @Qualifier("starboardDeletedListenerExecutor")
     private TaskExecutor starboardDeletedExecutor;
-
-    @Autowired
-    private StarboardPostDeletedListenerManager self;
-
-    @Autowired
-    private FeatureConfigService featureConfigService;
-
-    @Autowired
-    private FeatureFlagService featureFlagService;
 
     @Autowired
     private ListenerService listenerService;

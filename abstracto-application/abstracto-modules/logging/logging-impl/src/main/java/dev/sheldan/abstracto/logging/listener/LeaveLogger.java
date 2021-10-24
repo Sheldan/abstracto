@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.logging.config.LoggingFeatureDefinition;
 import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,11 @@ public class LeaveLogger implements AsyncLeaveListener {
                 .build();
         log.debug("Logging leave event for user {} in server {}.", listenerModel.getUser().getIdLong(), listenerModel.getServerId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_LEAVE_TEMPLATE, model, listenerModel.getServerId());
-        postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.LEAVE_LOG, listenerModel.getServerId());
+        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, LoggingPostTarget.LEAVE_LOG, listenerModel.getServerId()))
+        .exceptionally(throwable -> {
+            log.error("Failed to send member leaving log.", throwable);
+            return null;
+        });
         return DefaultListenerResult.PROCESSED;
     }
 }
