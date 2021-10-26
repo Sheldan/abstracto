@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -14,6 +15,7 @@ import java.util.List;
 @SuperBuilder
 public class ServerInfoModel extends UserInitiatedServerContext {
     private Guild guild;
+    private Instant timeCreated;
     private List<EmoteDisplay> staticEmotes;
     private List<EmoteDisplay> animatedEmotes;
 }

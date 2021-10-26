@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class ServerInfo extends AbstractConditionableCommand {
 
+    public static final String SERVERINFO_RESPONSE_TEMPLATE_KEY = "serverinfo_response";
     @Autowired
     private ChannelService channelService;
 
@@ -34,13 +35,14 @@ public class ServerInfo extends AbstractConditionableCommand {
         log.info("Displaying serverinfo for server {}", commandContext.getGuild().getId());
         ServerInfoModel model = buildModel(commandContext);
         return FutureUtils.toSingleFutureGeneric(
-                channelService.sendEmbedTemplateInTextChannelList("serverinfo_response", model, commandContext.getChannel()))
+                channelService.sendEmbedTemplateInTextChannelList(SERVERINFO_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     private ServerInfoModel buildModel(CommandContext commandContext) {
         ServerInfoModel model = (ServerInfoModel) ContextConverter.fromCommandContext(commandContext, ServerInfoModel.class);
         model.setGuild(commandContext.getGuild());
+        model.setTimeCreated(commandContext.getGuild().getTimeCreated().toInstant());
         List<EmoteDisplay> staticEmotes = new ArrayList<>();
         List<EmoteDisplay> animatedEmotes = new ArrayList<>();
         commandContext.getGuild().getEmotes().forEach(emote -> {
