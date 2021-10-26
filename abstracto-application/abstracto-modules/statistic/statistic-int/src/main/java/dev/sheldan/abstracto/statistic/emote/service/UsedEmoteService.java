@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.statistic.emote.service;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
+import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResultDisplay;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 
 import java.time.Instant;
@@ -46,6 +47,7 @@ public interface UsedEmoteService {
      * @return An {@link EmoteStatsModel} containing the statistics split by animated and static {@link net.dv8tion.jda.api.entities.Emote}
      */
     EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since);
+    EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since);
 
     /**
      * Removes all {@link dev.sheldan.abstracto.statistic.emote.model.database.UsedEmote} for the given {@link TrackedEmote} which are younger

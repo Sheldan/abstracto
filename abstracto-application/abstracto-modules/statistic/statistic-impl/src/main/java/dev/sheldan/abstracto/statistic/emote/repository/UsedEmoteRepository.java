@@ -63,6 +63,13 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
             "order by amount desc", nativeQuery = true)
     List<EmoteStatsResult> getCurrentlyExistingEmoteStatsForServerSince(@Param("server_id") Long serverId, @Param("start_date") Instant since);
 
+    @Query(value = "select :tracked_emote_id as emoteId, :server_id as serverId, sum(us.amount) as amount " +
+            "from used_emote us " +
+            "where us.use_date >= date_trunc('day', cast(:start_date AS timestamp)) " +
+            "and us.server_id = :server_id " +
+            "and us.emote_id = :tracked_emote_id", nativeQuery = true)
+    EmoteStatsResult getEmoteStatForTrackedEmote(@Param("tracked_emote_id") Long trackedEmoteId, @Param("server_id") Long serverId, @Param("start_date") Instant since);
+
     void deleteByEmoteId_EmoteIdAndEmoteId_ServerIdAndEmoteId_UseDateGreaterThan(Long emoteId, Long serverId, Instant timestamp);
 
     List<UsedEmote> getByEmoteId_ServerIdAndEmoteId_UseDateGreaterThan(Long emoteId, Instant timestamp);

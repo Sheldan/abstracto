@@ -40,13 +40,13 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
     @Autowired
     private FeatureModeService featureModeService;
 
-    public static final String EMOTE_STATS_STATIC_RESPONSE = "showTrackedEmotes_static_response";
-    public static final String EMOTE_STATS_ANIMATED_RESPONSE = "showTrackedEmotes_animated_response";
-    public static final String EMOTE_STATS_EXTERNAL_ANIMATED_RESPONSE = "showTrackedEmotes_external_animated_response";
-    public static final String EMOTE_STATS_EXTERNAL_STATIC_RESPONSE = "showTrackedEmotes_external_static_response";
-    public static final String EMOTE_STATS_DELETED_STATIC_RESPONSE = "showTrackedEmotes_deleted_static_response";
-    public static final String EMOTE_STATS_DELETED_ANIMATED_RESPONSE = "showTrackedEmotes_deleted_animated_response";
-    public static final String EMOTE_STATS_NO_STATS_AVAILABLE = "showTrackedEmotes_no_emotes_available";
+    public static final String SHOW_TRACKED_EMOTES_STATIC_RESPONSE = "showTrackedEmotes_static_response";
+    public static final String SHOW_TRACKED_EMOTES_ANIMATED_RESPONSE = "showTrackedEmotes_animated_response";
+    public static final String SHOW_TRACKED_EMOTES_EXTERNAL_ANIMATED_RESPONSE = "showTrackedEmotes_external_animated_response";
+    public static final String SHOW_TRACKED_EMOTES_EXTERNAL_STATIC_RESPONSE = "showTrackedEmotes_external_static_response";
+    public static final String SHOW_TRACKED_EMOTES_DELETED_STATIC_RESPONSE = "showTrackedEmotes_deleted_static_response";
+    public static final String SHOW_TRACKED_EMOTES_DELETED_ANIMATED_RESPONSE = "showTrackedEmotes_deleted_animated_response";
+    public static final String SHOW_TRACKED_EMOTES_NO_STATS_AVAILABLE = "showTrackedEmotes_no_emotes_available";
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -63,25 +63,25 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
         // only show the embed, if there are static tracked emotes
         if(!trackedEmoteOverview.getStaticEmotes().isEmpty()) {
             noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
         }
 
         // only show the embed if there are animated tracked emotes
         if(!trackedEmoteOverview.getAnimatedEmotes().isEmpty()) {
             noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
         }
 
         // only show the embed, if there are deleted static emotes
         if(!trackedEmoteOverview.getDeletedStaticEmotes().isEmpty()) {
             noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_DELETED_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_DELETED_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
         }
 
         // only show the embed, if there are deleted animated emotes
         if(!trackedEmoteOverview.getDeletedAnimatedEmotes().isEmpty()) {
             noTrackedEmotesAvailable = false;
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_DELETED_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_DELETED_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
         }
 
         boolean externalTrackingEnabled = featureModeService.featureModeActive(StatisticFeatureDefinition.EMOTE_TRACKING, commandContext.getGuild().getIdLong(), EmoteTrackingMode.EXTERNAL_EMOTES);
@@ -92,19 +92,19 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
             // only show the embed if there are external static emotes
             if(!trackedEmoteOverview.getExternalStaticEmotes().isEmpty()) {
                 noTrackedEmotesAvailable = false;
-                messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_EXTERNAL_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
+                messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_EXTERNAL_STATIC_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
             }
 
             // only show the embed if there are external animated emotes
             if(!trackedEmoteOverview.getExternalAnimatedEmotes().isEmpty()) {
                 noTrackedEmotesAvailable = false;
-                messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_EXTERNAL_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
+                messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_EXTERNAL_ANIMATED_RESPONSE, trackedEmoteOverview, commandContext.getChannel()));
             }
         }
 
         // if there are no tracked emotes available, show an embed indicating so
         if(noTrackedEmotesAvailable) {
-            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(EMOTE_STATS_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
+            messagePromises.addAll(channelService.sendEmbedTemplateInTextChannelList(SHOW_TRACKED_EMOTES_NO_STATS_AVAILABLE, new Object(), commandContext.getChannel()));
         }
         return FutureUtils.toSingleFutureGeneric(messagePromises)
                 .thenApply(unused -> CommandResult.fromIgnored());

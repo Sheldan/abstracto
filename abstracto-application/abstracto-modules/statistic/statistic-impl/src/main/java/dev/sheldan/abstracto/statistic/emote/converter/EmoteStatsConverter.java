@@ -36,18 +36,7 @@ public class EmoteStatsConverter {
         Guild relevantGuild = guildService.getGuildById(resultList.get(0).getServerId());
         EmoteStatsModel resultingModel = EmoteStatsModel.builder().build();
         resultList.forEach(emoteStatsResult -> {
-            TrackedEmote trackedEmote = trackedEmoteManagementService.loadByEmoteId(emoteStatsResult.getEmoteId(), emoteStatsResult.getServerId());
-            Emote loadedEmote = null;
-            // if the emote should still exist, we try to load it
-            if(!trackedEmote.getExternal() && !trackedEmote.getDeleted()) {
-                loadedEmote = relevantGuild.getEmoteById(trackedEmote.getTrackedEmoteId().getId());
-            }
-            EmoteStatsResultDisplay display = EmoteStatsResultDisplay
-                    .builder()
-                    .emote(loadedEmote)
-                    .result(emoteStatsResult)
-                    .trackedEmote(trackedEmote)
-                    .build();
+            EmoteStatsResultDisplay display = convertEmoteStatsResult(relevantGuild, emoteStatsResult);
             if(display.getTrackedEmote().getAnimated()) {
                 resultingModel.getAnimatedEmotes().add(display);
             } else {
@@ -55,5 +44,25 @@ public class EmoteStatsConverter {
             }
         });
         return resultingModel;
+    }
+
+    public EmoteStatsResultDisplay convertEmoteStatsResultToDisplay(EmoteStatsResult emoteStatsResult) {
+        Guild relevantGuild = guildService.getGuildById(emoteStatsResult.getServerId());
+        return convertEmoteStatsResult(relevantGuild, emoteStatsResult);
+    }
+
+    private EmoteStatsResultDisplay convertEmoteStatsResult(Guild relevantGuild, EmoteStatsResult emoteStatsResult) {
+        TrackedEmote trackedEmote = trackedEmoteManagementService.loadByEmoteId(emoteStatsResult.getEmoteId(), emoteStatsResult.getServerId());
+        Emote loadedEmote = null;
+        // if the emote should still exist, we try to load it
+        if(!trackedEmote.getExternal() && !trackedEmote.getDeleted()) {
+            loadedEmote = relevantGuild.getEmoteById(trackedEmote.getTrackedEmoteId().getId());
+        }
+        return EmoteStatsResultDisplay
+                .builder()
+                .emote(loadedEmote)
+                .result(emoteStatsResult)
+                .trackedEmote(trackedEmote)
+                .build();
     }
 }

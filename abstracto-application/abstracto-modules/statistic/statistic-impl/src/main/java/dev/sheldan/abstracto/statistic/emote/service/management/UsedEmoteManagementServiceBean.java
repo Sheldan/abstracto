@@ -68,6 +68,11 @@ public class UsedEmoteManagementServiceBean implements UsedEmoteManagementServic
     }
 
     @Override
+    public EmoteStatsResult loadEmoteStatForEmote(TrackedEmote trackedEmote, Instant since) {
+        return usedEmoteRepository.getEmoteStatForTrackedEmote(trackedEmote.getTrackedEmoteId().getId(), trackedEmote.getTrackedEmoteId().getServerId(), since);
+    }
+
+    @Override
     public void purgeEmoteUsagesSince(TrackedEmote emote, Instant since) {
         usedEmoteRepository.deleteByEmoteId_EmoteIdAndEmoteId_ServerIdAndEmoteId_UseDateGreaterThan(emote.getTrackedEmoteId().getId(), emote.getTrackedEmoteId().getServerId(), since);
     }

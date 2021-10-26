@@ -77,6 +77,7 @@ public interface UsedEmoteManagementService {
      * @return A list of {@link EmoteStatsResult} from the {@link AServer} newer than the given {@link Instant} for all active {@link TrackedEmote}
      */
     List<EmoteStatsResult> loadActiveEmoteStatsForServerSince(AServer server, Instant since);
+    EmoteStatsResult loadEmoteStatForEmote(TrackedEmote trackedEmote, Instant since);
 
     /**
      * Deletes all emote usages for the {@link TrackedEmote} which are younger than the given {@link Instant}

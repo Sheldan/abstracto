@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emote.converter.EmoteStatsConverter;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResult;
+import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResultDisplay;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.UsedEmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,12 @@ public class UsedEmoteServiceBean implements UsedEmoteService {
     public EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since) {
         List<EmoteStatsResult> emoteStatsResults = usedEmoteManagementService.loadActiveEmoteStatsForServerSince(server, since);
         return converter.fromEmoteStatsResults(emoteStatsResults);
+    }
+
+    @Override
+    public EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since) {
+        EmoteStatsResult emoteStatsResult = usedEmoteManagementService.loadEmoteStatForEmote(trackedEmote, since);
+        return converter.convertEmoteStatsResultToDisplay(emoteStatsResult);
     }
 
     @Override
