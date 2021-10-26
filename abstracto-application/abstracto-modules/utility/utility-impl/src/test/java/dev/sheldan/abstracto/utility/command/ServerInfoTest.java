@@ -12,6 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
@@ -28,6 +31,7 @@ public class ServerInfoTest {
     @Test
     public void executeCommand() {
         CommandContext context = CommandTestUtilities.getNoParameters();
+        when(context.getGuild().getTimeCreated()).thenReturn(OffsetDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq("serverinfo_response"), any(ServerInfoModel.class), eq(context.getChannel()));
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
