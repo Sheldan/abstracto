@@ -402,6 +402,7 @@ public class SuggestionServiceBean implements SuggestionService {
     public void deleteSuggestion(Long suggestionId, Long serverId) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         cancelSuggestionReminder(suggestion);
+        suggestionVoteManagementService.deleteSuggestionVotes(suggestion);
         suggestionManagementService.deleteSuggestion(suggestion);
     }
 }
