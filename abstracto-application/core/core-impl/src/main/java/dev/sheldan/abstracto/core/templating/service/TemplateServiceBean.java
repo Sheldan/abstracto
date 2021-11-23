@@ -124,17 +124,14 @@ public class TemplateServiceBean implements TemplateService {
                     throw new AbstractoRunTimeException("Referenced class in button config could not be found: " + buttonConfig.getPayloadType(), e);
                 }
                 componentPayloads.put(id, componentConfig);
-                Button createdButton = Button.primary(id, buttonConfig.getLabel());
-                if (buttonConfig.getUrl() != null) {
-                    createdButton = createdButton.withUrl(buttonConfig.getUrl());
-                }
+                String idOrUl = buttonConfig.getUrl() == null ? buttonConfig.getId() : buttonConfig.getUrl();
+                Button createdButton = Button.of(ButtonStyleConfig.getStyle(buttonConfig.getButtonStyle()), idOrUl, buttonConfig.getLabel());
                 if (buttonConfig.getDisabled() != null) {
                     createdButton = createdButton.withDisabled(buttonConfig.getDisabled());
                 }
                 if (buttonConfig.getEmoteMarkdown() != null) {
                     createdButton = createdButton.withEmoji(Emoji.fromMarkdown(buttonConfig.getEmoteMarkdown()));
                 }
-                createdButton = createdButton.withStyle(ButtonStyleConfig.getStyle(buttonConfig.getButtonStyle()));
                 if(currentRow == null) {
                     currentRow = ActionRow.of(createdButton);
                 } else if (
