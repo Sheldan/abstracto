@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.models.ConditionContextInstance;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.service.ConditionService;
+import dev.sheldan.abstracto.core.service.SystemCondition;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class AssignableRoleMinimumLevelConditionImpl implements AssignableRoleCo
     private final String conditionName = "HAS_LEVEL";
     private final String userIdParameter = "userId";
     private final String levelParameter = "level";
+    private final String serverParameter = "serverId";
 
     @Autowired
     private ConditionService conditionService;
@@ -34,13 +36,15 @@ public class AssignableRoleMinimumLevelConditionImpl implements AssignableRoleCo
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(userIdParameter, aUserInAServer.getUserInServerId());
         parameters.put(levelParameter, level);
+        parameters.put(serverParameter, aUserInAServer.getServerReference().getId());
 
         ConditionContextInstance contextInstance = ConditionContextInstance
                 .builder()
                 .conditionName(conditionName)
                 .parameters(parameters)
                 .build();
-        return conditionService.checkConditions(contextInstance);
+        SystemCondition.Result result = conditionService.checkConditions(contextInstance);
+        return SystemCondition.Result.consideredSuccessful(result);
     }
 
     @Override

@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.ConditionService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.SystemCondition;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -34,6 +35,7 @@ public class MassPingServiceBean implements MassPingService {
     private static final String LEVEL_CONDITION_NAME = "HAS_LEVEL";
     private static final String LEVEL_CONDITION_USER_ID_PARAMETER = "userId";
     private static final String LEVEL_CONDITION_LEVEL_PARAMETER = "level";
+    private static final String LEVEL_CONDITION_SERVER_PARAMETER = "serverId";
 
     @Autowired
     private ConfigService configService;
@@ -85,12 +87,14 @@ public class MassPingServiceBean implements MassPingService {
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(message.getMember());
         parameters.put(LEVEL_CONDITION_USER_ID_PARAMETER, userInAServer.getUserInServerId());
         parameters.put(LEVEL_CONDITION_LEVEL_PARAMETER, level);
+        parameters.put(LEVEL_CONDITION_SERVER_PARAMETER, message.getGuild().getIdLong());
         ConditionContextInstance contextInstance = ConditionContextInstance
                 .builder()
                 .conditionName(LEVEL_CONDITION_NAME)
                 .parameters(parameters)
                 .build();
-        return conditionService.checkConditions(contextInstance);
+        SystemCondition.Result result = conditionService.checkConditions(contextInstance);
+        return SystemCondition.Result.consideredSuccessful(result);
     }
 
     @Transactional

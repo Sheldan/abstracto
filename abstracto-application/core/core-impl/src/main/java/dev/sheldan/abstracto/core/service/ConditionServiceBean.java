@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -19,32 +18,31 @@ public class ConditionServiceBean implements ConditionService {
     private List<SystemCondition> conditionList;
 
     @Override
-    public boolean checkConditions(ConditionContextInstance context) {
-        if(conditionList == null ||  conditionList.isEmpty()) {
-            return true;
+    public SystemCondition.Result checkConditions(ConditionContextInstance context) {
+        if (conditionList == null || conditionList.isEmpty()) {
+            return SystemCondition.Result.SUCCESSFUL;
         }
-        Optional<SystemCondition> matchingCondition = conditionList
+        log.debug("Checking condition {}.", context.getConditionName());
+        return conditionList
                 .stream()
                 .filter(systemCondition -> systemCondition.getConditionName().equalsIgnoreCase(context.getConditionName()))
-                .findAny();
-        log.debug("Checking condition {}.", context.getConditionName());
-        return matchingCondition.map(systemCondition -> {
-            verifyConditionContext(context, systemCondition);
-            boolean result = systemCondition.checkCondition(context);
-            log.debug("Condition resulted in {}.", result);
-            return result;
-        }).orElse(true);
+                .findAny().map(systemCondition -> {
+                    verifyConditionContext(context, systemCondition);
+                    SystemCondition.Result result = systemCondition.checkCondition(context);
+                    log.debug("Condition resulted in {}.", result);
+                    return result;
+                }).orElse(SystemCondition.Result.SUCCESSFUL);
     }
 
     private void verifyConditionContext(ConditionContextInstance contextInstance, SystemCondition condition) {
         for (ConditionContextVariable conditionContextVariable : condition.getExpectedContext().getRequiredVariables()) {
             Map<String, Object> providedParameters = contextInstance.getParameters();
-            if(!providedParameters.containsKey(conditionContextVariable.getName())) {
+            if (!providedParameters.containsKey(conditionContextVariable.getName())) {
                 throw new InvalidConditionParametersException(String.format("Variable %s was not present", conditionContextVariable.getName()));
             }
             Class expectedType = conditionContextVariable.getType();
             Object providedParameter = providedParameters.get(conditionContextVariable.getName());
-            if(!expectedType.isInstance(providedParameter)) {
+            if (!expectedType.isInstance(providedParameter)) {
                 throw new InvalidConditionParametersException(String.format("Variable %s was of type %s instead of %s.",
                         conditionContextVariable.getName(), providedParameter.getClass(), expectedType));
             }
