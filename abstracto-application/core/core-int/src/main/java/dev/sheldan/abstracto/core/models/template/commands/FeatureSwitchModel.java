@@ -10,6 +10,6 @@ import java.util.List;
 @Getter
 @Setter
 @SuperBuilder
-public class EnableModel extends UserInitiatedServerContext {
+public class FeatureSwitchModel extends UserInitiatedServerContext {
     private List<String> features;
 }

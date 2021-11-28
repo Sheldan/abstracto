@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
+import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.interactive.*;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
@@ -14,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -61,8 +60,13 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
         log.info("Performing setup of feature {} for user {} in channel {} in server {}.",
                 featureConfig.getFeature().getKey(), user.getUserId(), user.getChannelId(), user.getGuildId());
         Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(user.getGuildId(), user.getChannelId());
-        if(textChannelInGuild.isPresent()) {
-            List<String> requiredSystemConfigKeys = featureConfig.getRequiredSystemConfigKeys();
+        if (textChannelInGuild.isPresent()) {
+            Set<String> requiredSystemConfigKeys = new HashSet<>();
+            Set<PostTargetEnum> requiredPostTargets = new HashSet<>();
+            Set<SetupStep> customSetupSteps = new HashSet<>();
+
+            collectRequiredFeatureSteps(featureConfig, requiredSystemConfigKeys, requiredPostTargets, customSetupSteps, new HashSet<>());
+
             List<SetupExecution> steps = new ArrayList<>();
             requiredSystemConfigKeys.forEach(s -> {
                 log.debug("Feature requires system config key {}.", s);
@@ -73,7 +77,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                         .build();
                 steps.add(execution);
             });
-            featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> {
+            requiredPostTargets.forEach(postTargetEnum -> {
                 log.debug("Feature requires post target {}.", postTargetEnum.getKey());
                 SetupExecution execution = SetupExecution
                         .builder()
@@ -82,7 +86,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                         .build();
                 steps.add(execution);
             });
-            featureConfig.getCustomSetupSteps().forEach(setupStep -> {
+            customSetupSteps.forEach(setupStep -> {
                 log.debug("Feature requires custom setup step {}.", setupStep.getClass().getName());
                 SetupExecution execution = SetupExecution
                         .builder()
@@ -94,7 +98,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
             for (int i = 0; i < steps.size(); i++) {
                 SetupExecution setupExecution = steps.get(i);
                 setupExecution.getParameter().setPreviousMessageId(initialMessageId);
-                if(i < steps.size() - 1) {
+                if (i < steps.size() - 1) {
                     setupExecution.setNextStep(steps.get(i + 1));
                 }
             }
@@ -117,7 +121,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
 
     @Override
     public CompletableFuture<Void> executeFeatureSetup(FeatureConfig featureConfig, List<SetupExecution> steps, AServerChannelUserId user, List<DelayedActionConfig> delayedActionConfigs) {
-        if(!steps.isEmpty()) {
+        if (!steps.isEmpty()) {
             SetupExecution nextStep = steps.get(0);
             return executeStep(user, nextStep, delayedActionConfigs, featureConfig);
         } else {
@@ -130,10 +134,10 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
     private CompletableFuture<Void> executeStep(AServerChannelUserId aUserInAServer, SetupExecution execution, List<DelayedActionConfig> delayedActionConfigs, FeatureConfig featureConfig) {
         log.debug("Executing step {} in server {} in channel {} for user {}.", execution.getStep().getClass(), aUserInAServer.getGuildId(), aUserInAServer.getChannelId(), aUserInAServer.getUserId());
         return execution.getStep().execute(aUserInAServer, execution.getParameter()).thenAccept(setpResult -> {
-            if(setpResult.getResult().equals(SetupStepResultType.SUCCESS)) {
+            if (setpResult.getResult().equals(SetupStepResultType.SUCCESS)) {
                 log.info("Step {} in server {} has been executed successfully. Proceeding.", execution.getStep().getClass(), aUserInAServer.getGuildId());
                 delayedActionConfigs.addAll(setpResult.getDelayedActionConfigList());
-                if(execution.getNextStep() != null) {
+                if (execution.getNextStep() != null) {
                     log.debug("Executing next step {}.", execution.getNextStep().getStep().getClass());
                     executeStep(aUserInAServer, execution.getNextStep(), delayedActionConfigs, featureConfig);
                 } else {
@@ -156,7 +160,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
     public void showExceptionMessage(Throwable throwable, AServerChannelUserId aServerChannelUserId) {
         Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(aServerChannelUserId.getGuildId(), aServerChannelUserId.getChannelId());
         memberService.getMemberInServerAsync(aServerChannelUserId.getGuildId(), aServerChannelUserId.getUserId()).thenAccept(member ->
-            channelOptional.ifPresent(textChannel -> exceptionService.reportExceptionToChannel(throwable, textChannel, member))
+                channelOptional.ifPresent(textChannel -> exceptionService.reportExceptionToChannel(throwable, textChannel, member))
         ).exceptionally(innserThrowable -> {
             log.error("Failed to report exception message for exception {} for user {} in channel {} in server {}.", throwable, aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), innserThrowable);
             return null;
@@ -178,7 +182,7 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
         log.debug("Notifying user {} in channel {} in server {} about completion of setup for feature {}.",
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
         String templateKey;
-        if(result.getResult().equals(SetupStepResultType.CANCELLED)) {
+        if (result.getResult().equals(SetupStepResultType.CANCELLED)) {
             templateKey = FEATURE_SETUP_CANCELLATION_NOTIFICATION_TEMPLATE;
         } else {
             templateKey = FEATURE_SETUP_COMPLETION_NOTIFICATION_TEMPLATE;
@@ -202,4 +206,19 @@ public class FeatureSetupServiceBean implements FeatureSetupService {
                 aServerChannelUserId.getUserId(), aServerChannelUserId.getChannelId(), aServerChannelUserId.getGuildId(), featureConfig.getFeature().getKey());
         notifyUserWithTemplate(aServerChannelUserId, featureConfig, FEATURE_SETUP_CANCELLATION_NOTIFICATION_TEMPLATE);
     }
+
+    private void collectRequiredFeatureSteps(FeatureConfig featureConfig, Set<String> requiredSystemConfigKeys,
+                                             Set<PostTargetEnum> requiredPostTargets, Set<SetupStep> customSetupSteps,
+                                             Set<String> coveredFeatures) {
+        if (coveredFeatures.contains(featureConfig.getFeature().getKey())) {
+            return;
+        }
+        coveredFeatures.add(featureConfig.getFeature().getKey());
+        requiredSystemConfigKeys.addAll(featureConfig.getRequiredSystemConfigKeys());
+        requiredPostTargets.addAll(featureConfig.getRequiredPostTargets());
+        customSetupSteps.addAll(featureConfig.getCustomSetupSteps());
+        featureConfig.getRequiredFeatures()
+                .forEach(requiredFeature -> collectRequiredFeatureSteps(requiredFeature, requiredSystemConfigKeys, requiredPostTargets, customSetupSteps, coveredFeatures));
+    }
+
 }
