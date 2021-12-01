@@ -82,6 +82,10 @@ public class TemplateServiceBean implements TemplateService {
     public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
         EmbedConfiguration embedConfiguration = gson.fromJson(embedConfig, EmbedConfiguration.class);
+        return convertEmbedConfigurationToMessageToSend(embedConfiguration);
+    }
+
+    public MessageToSend convertEmbedConfigurationToMessageToSend(EmbedConfiguration embedConfiguration) {
         List<EmbedBuilder> embedBuilders = new ArrayList<>();
         embedBuilders.add(new EmbedBuilder());
         if(embedConfiguration.getMetaConfig() != null &&

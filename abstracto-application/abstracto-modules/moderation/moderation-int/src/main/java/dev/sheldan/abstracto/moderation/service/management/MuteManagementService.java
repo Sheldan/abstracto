@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.moderation.model.database.Mute;
 import net.dv8tion.jda.api.entities.Member;
@@ -75,5 +76,18 @@ public interface MuteManagementService {
      * @param aUserInAServer The {@link AUserInAServer} to search the active mutes for
      * @return A collection of {@link Mute} objects of the user which are active
      */
+    List<Mute> getAllActiveMutesOf(AUserInAServer aUserInAServer);
+
+    /**
+     * Retrieves all mutes of the given {@link AUserInAServer} in a collection
+     * @param aUserInAServer The {@link AUserInAServer} to search the mutes for
+     * @return A collection of {@link Mute} objects of the user
+     */
     List<Mute> getAllMutesOf(AUserInAServer aUserInAServer);
+
+    /**
+     * Retrieves all {@link Mute} from the given {@link AServer}
+     * @return All found mutes of this server
+     */
+    List<Mute> getAllMutes(AServer server);
 }

@@ -126,7 +126,7 @@ public class MuteManagementServiceBeanTest {
         Mute mute = Mockito.mock(Mute.class);
         Mute mute2 = Mockito.mock(Mute.class);
         when(muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(userInAServer)).thenReturn(Arrays.asList(mute, mute2));
-        List<Mute> allMutesOf = testUnit.getAllMutesOf(userInAServer);
+        List<Mute> allMutesOf = testUnit.getAllActiveMutesOf(userInAServer);
         Assert.assertEquals(2, allMutesOf.size());
         Assert.assertEquals(mute, allMutesOf.get(0));
         Assert.assertEquals(mute2, allMutesOf.get(1));

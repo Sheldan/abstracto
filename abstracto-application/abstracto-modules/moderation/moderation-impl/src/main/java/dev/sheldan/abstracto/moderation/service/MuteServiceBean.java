@@ -365,7 +365,7 @@ public class MuteServiceBean implements MuteService {
     @Override
     public void completelyUnMuteUser(AUserInAServer aUserInAServer) {
         log.info("Completely unmuting user {} in server {}.", aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId());
-        List<Mute> allMutesOfUser = muteManagementService.getAllMutesOf(aUserInAServer);
+        List<Mute> allMutesOfUser = muteManagementService.getAllActiveMutesOf(aUserInAServer);
         allMutesOfUser.forEach(mute -> {
             mute.setMuteEnded(true);
             cancelUnMuteJob(mute);

@@ -307,6 +307,7 @@ public class ChannelServiceBean implements ChannelService {
         if(messageToSend.getReferencedMessageId() != null) {
             messageAction = messageAction.referenceById(messageToSend.getReferencedMessageId());
         }
+        messageAction = messageAction.setActionRows(messageToSend.getActionRows());
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return messageAction.submit();
     }

@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface ComponentPayloadManagementService {
     ComponentPayload createPayload(String id, String payload, Class payloadType, String buttonOrigin, AServer server, ComponentType type);
     ComponentPayload createPayload(ButtonConfigModel buttonConfigModel, AServer server);
+    ComponentPayload createPayload(ButtonConfigModel buttonConfigModel, Long serverId);
     Optional<ComponentPayload> findPayload(String id);
     List<ComponentPayload> findPayloadsOfOriginInServer(String buttonOrigin, AServer server);
     void deletePayload(String id);

@@ -219,7 +219,7 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return model.getOrigin().equals(AssignableRolePlaceServiceBean.ASSIGNABLE_ROLE_COMPONENT_ORIGIN);
+        return AssignableRolePlaceServiceBean.ASSIGNABLE_ROLE_COMPONENT_ORIGIN.equals(model.getOrigin());
     }
 
     @Override

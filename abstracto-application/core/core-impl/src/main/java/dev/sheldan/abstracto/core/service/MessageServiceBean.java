@@ -192,6 +192,11 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
+    public CompletableFuture<Void> editMessageInChannel(MessageChannel channel, MessageToSend messageToSend, Long messageId) {
+        return channelService.editMessageInAChannelFuture(messageToSend, channel, messageId).thenApply(message -> null);
+    }
+
+    @Override
     public CompletableFuture<Message> loadMessageFromCachedMessage(CachedMessage cachedMessage) {
         return loadMessage(cachedMessage.getServerId(), cachedMessage.getChannelId(), cachedMessage.getMessageId());
     }

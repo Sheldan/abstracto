@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.moderation.service.management;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.AServerAChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.model.database.Mute;
@@ -84,8 +85,18 @@ public class MuteManagementServiceBean implements MuteManagementService {
     }
 
     @Override
-    public List<Mute> getAllMutesOf(AUserInAServer aUserInAServer) {
+    public List<Mute> getAllActiveMutesOf(AUserInAServer aUserInAServer) {
         return muteRepository.findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(aUserInAServer);
+    }
+
+    @Override
+    public List<Mute> getAllMutesOf(AUserInAServer aUserInAServer) {
+        return muteRepository.findAllByMutedUserOrderByMuteId_IdAsc(aUserInAServer);
+    }
+
+    @Override
+    public List<Mute> getAllMutes(AServer server) {
+        return muteRepository.findAllByServerOrderByMuteId_IdAsc(server);
     }
 
 

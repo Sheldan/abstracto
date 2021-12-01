@@ -23,6 +23,9 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     @Autowired
     private Gson gson;
 
+    @Autowired
+    private ServerManagementService serverManagementService;
+
     @Override
     public ComponentPayload createPayload(String id, String payload, Class payloadType, String buttonOrigin, AServer server, ComponentType componentType) {
         ComponentPayload componentPayload = ComponentPayload
@@ -41,6 +44,12 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     public ComponentPayload createPayload(ButtonConfigModel buttonConfigModel, AServer server) {
         String payload = gson.toJson(buttonConfigModel.getButtonPayload());
         return createPayload(buttonConfigModel.getButtonId(), payload, buttonConfigModel.getPayloadType(), buttonConfigModel.getOrigin(), server, ComponentType.BUTTON);
+    }
+
+    @Override
+    public ComponentPayload createPayload(ButtonConfigModel buttonConfigModel, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return createPayload(buttonConfigModel, server);
     }
 
     @Override

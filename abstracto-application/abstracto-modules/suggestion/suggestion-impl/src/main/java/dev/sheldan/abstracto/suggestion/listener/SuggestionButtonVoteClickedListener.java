@@ -58,7 +58,7 @@ public class SuggestionButtonVoteClickedListener implements ButtonClickedListene
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return model.getOrigin().equals(SuggestionServiceBean.SUGGESTION_VOTE_ORIGIN);
+        return SuggestionServiceBean.SUGGESTION_VOTE_ORIGIN.equals(model.getOrigin());
     }
 
     @Override

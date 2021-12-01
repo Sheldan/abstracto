@@ -103,7 +103,7 @@ public class ConfirmationButtonClickedListener implements ButtonClickedListener 
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return model.getOrigin().equals(CommandReceivedHandler.COMMAND_CONFIRMATION_ORIGIN);
+        return CommandReceivedHandler.COMMAND_CONFIRMATION_ORIGIN.equals(model.getOrigin());
     }
 
     @Override

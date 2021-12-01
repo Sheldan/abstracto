@@ -1,9 +1,10 @@
 package dev.sheldan.abstracto.core.service;
 
 
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import com.jagrosh.jdautilities.menu.Paginator;
+import net.dv8tion.jda.api.entities.TextChannel;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface PaginatorService {
-    Paginator createPaginatorFromTemplate(String templateKey, Object model, EventWaiter waiter, Long serverId);
+    CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, TextChannel textChannel, Long userId);
 }

@@ -1,19 +1,39 @@
 package dev.sheldan.abstracto.core.service;
 
 import com.google.gson.Gson;
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import com.jagrosh.jdautilities.menu.Paginator;
+import dev.sheldan.abstracto.core.model.PaginatorButtonPayload;
 import dev.sheldan.abstracto.core.model.PaginatorConfiguration;
+import dev.sheldan.abstracto.core.model.PaginatorFooterModel;
+import dev.sheldan.abstracto.core.model.PaginatorModel;
+import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
+import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.templating.model.EmbedConfiguration;
+import dev.sheldan.abstracto.core.templating.model.EmbedFooter;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import org.apache.commons.lang3.ObjectUtils;
+import dev.sheldan.abstracto.core.templating.service.TemplateServiceBean;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
+import dev.sheldan.abstracto.scheduling.service.SchedulerService;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component
+@Slf4j
 public class PaginatorServiceBean implements PaginatorService {
 
     @Autowired
@@ -28,42 +48,224 @@ public class PaginatorServiceBean implements PaginatorService {
     @Autowired
     private MessageService messageService;
 
-    @Override
-    public Paginator createPaginatorFromTemplate(String templateKey, Object model, EventWaiter waiter, Long server) {
-        String embedConfig = templateService.renderTemplate(templateKey + "_paginator", model);
-        PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
-        List<String> items = configuration.getItems();
-        int itemsPerPage = findAppropriateCountPerPage(items);
+    @Autowired
+    private ComponentService componentService;
 
-        return new Paginator.Builder()
-                .setItemsPerPage(itemsPerPage)
-                .setText(configuration.getHeaderText())
-                .showPageNumbers(ObjectUtils.defaultIfNull(configuration.getShowPageNumbers(), false))
-                .setItems(configuration.getItems().toArray(new String[0]))
-                .useNumberedItems(ObjectUtils.defaultIfNull(configuration.getUseNumberedItems(), false))
-                .setEventWaiter(waiter)
-                .waitOnSinglePage(true)
-                .setTimeout(ObjectUtils.defaultIfNull(configuration.getTimeoutSeconds(), 120L), TimeUnit.SECONDS)
-                .setFinalAction(message -> messageService.deleteMessage(message))
+    @Autowired
+    private ComponentPayloadManagementService componentPayloadManagementService;
+
+    @Autowired
+    private ChannelService channelService;
+
+    @Autowired
+    private PaginatorServiceBean self;
+
+    @Autowired
+    private TemplateServiceBean templateServiceBean;
+
+    @Autowired
+    private SchedulerService schedulerService;
+
+    private static final Map<String, PaginatorInfo> PAGINATORS = new ConcurrentHashMap<>();
+    public static final String PAGINATOR_BUTTON = "PAGINATOR_BUTTON";
+    public static final String PAGINATOR_FOOTER_TEMPLATE_KEY = "paginator_footer";
+    private static final ReentrantLock lock = new ReentrantLock();
+
+    @Override
+    public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, TextChannel textChannel, Long userId) {
+        Long serverId = textChannel.getGuild().getIdLong();
+        String exitButtonId = componentService.generateComponentId(serverId);
+        String startButtonId = componentService.generateComponentId(serverId);
+        String previousButtonId = componentService.generateComponentId(serverId);
+        String nextButtonId = componentService.generateComponentId(serverId);
+        String lastButtonId = componentService.generateComponentId(serverId);
+        PaginatorModel wrapperModel = PaginatorModel
+                .builder()
+                .exitButtonId(exitButtonId)
+                .startButtonId(startButtonId)
+                .previousButtonId(previousButtonId)
+                .nextButtonId(nextButtonId)
+                .lastButtonId(lastButtonId)
+                .innerModel(model)
+                .build();
+        String embedConfig = templateService.renderTemplate(templateKey + "_paginator", wrapperModel, serverId);
+        PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
+        log.info("Setting up paginator in channel {} in server {} with {} pages.", textChannel.getIdLong(),
+                textChannel.getGuild().getIdLong(), configuration.getEmbedConfigs().size());
+        setupFooters(configuration);
+
+        configuration.setPaginatorId(componentService.generateComponentId());
+        configuration.setSinglePage(configuration.getEmbedConfigs().size() < 2);
+        PaginatorButtonPayload buttonPayload = getButtonPayload(configuration, exitButtonId, startButtonId, previousButtonId, nextButtonId, lastButtonId);
+        if(configuration.getRestrictUser() != null && configuration.getRestrictUser()) {
+            buttonPayload.setAllowedUser(userId);
+        }
+        configuration.setExitButton(initializeButton(exitButtonId, buttonPayload));
+        if(!configuration.getSinglePage()) {
+            log.debug("Adding additional buttons for pagination to paginator {}.", configuration.getPaginatorId());
+            configuration.setStartButton(initializeButton(startButtonId, buttonPayload));
+            configuration.setPreviousButton(initializeButton(previousButtonId, buttonPayload));
+            configuration.setNextButton(initializeButton(nextButtonId, buttonPayload));
+            configuration.setLastButton(initializeButton(lastButtonId, buttonPayload));
+        }
+
+        EmbedConfiguration embedConfiguration = configuration.getEmbedConfigs().get(0);
+        MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(embedConfiguration);
+        List<CompletableFuture<Message>> paginatorFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
+        return FutureUtils.toSingleFutureGeneric(paginatorFutures)
+                .thenAccept(unused -> self.setupButtonPayloads(paginatorFutures.get(0).join(), configuration, serverId, buttonPayload));
+    }
+
+    private void setupFooters(PaginatorConfiguration configuration) {
+        for (int i = 0; i < configuration.getEmbedConfigs().size(); i++) {
+            PaginatorFooterModel paginatorModel = PaginatorFooterModel
+                    .builder()
+                    .page(i + 1)
+                    .pageCount(configuration.getEmbedConfigs().size())
+                    .build();
+            String footerText = templateService.renderTemplate(PAGINATOR_FOOTER_TEMPLATE_KEY, paginatorModel);
+            EmbedConfiguration embedConfiguration = configuration.getEmbedConfigs().get(i);
+            if(embedConfiguration.getFooter() == null) {
+                embedConfiguration.setFooter(EmbedFooter.builder().text(footerText).build());
+            } else {
+                embedConfiguration.getFooter().setText(footerText);
+            }
+        }
+    }
+
+    public void cleanupPaginatorPayloads(PaginatorButtonPayload configuration) {
+        List<String> payloadIds = getAllPayloadIdsFromPayload(configuration);
+        componentPayloadManagementService.deletePayloads(payloadIds);
+    }
+
+    private List<String> getAllPayloadIdsFromPayload(PaginatorButtonPayload configuration) {
+        List<String> payloadIds = new ArrayList<>(Arrays.asList(configuration.getExitButtonId()));
+        if(!configuration.getSinglePage()) {
+            payloadIds.add(configuration.getStartButtonId());
+            payloadIds.add(configuration.getPreviousButtonId());
+            payloadIds.add(configuration.getNextButtonId());
+            payloadIds.add(configuration.getLastButtonId());
+        }
+        return payloadIds;
+    }
+
+
+    private ButtonConfigModel initializeButton(String buttonId, PaginatorButtonPayload paginatorButtonPayload) {
+        return ButtonConfigModel
+                .builder()
+                .buttonId(buttonId)
+                .buttonPayload(paginatorButtonPayload)
+                .payloadType(PaginatorButtonPayload.class)
+                .origin(PAGINATOR_BUTTON)
                 .build();
     }
 
-    private int findAppropriateCountPerPage(List<String> items) {
-        int currentMin = Integer.MAX_VALUE;
-        // to be sure, because the paginator adds some characters here and there
-        int carefulMax = MessageEmbed.TEXT_MAX_LENGTH - 50;
-        for (int i = 0; i < items.size(); i++) {
-            int count = 0;
-            int length = 0;
-            for (String innerItem : items) {
-                length += innerItem.length();
-                if (length > carefulMax) {
-                    currentMin = Math.min(currentMin, count);
-                    break;
-                }
-                count++;
-            }
-        }
-        return currentMin;
+    private PaginatorButtonPayload getButtonPayload(PaginatorConfiguration configuration, String exitButtonId,
+                                                    String startButtonId, String previousButtonId,
+                                                    String nextButtonId, String lastButtonId) {
+        return PaginatorButtonPayload
+                .builder()
+                .paginatorId(configuration.getPaginatorId())
+                .exitButtonId(exitButtonId)
+                .startButtonId(startButtonId)
+                .previousButtonId(previousButtonId)
+                .nextButtonId(nextButtonId)
+                .lastButtonId(lastButtonId)
+                .embedConfigs(configuration.getEmbedConfigs())
+                .singlePage(configuration.getSinglePage())
+                .build();
     }
+
+    public Integer getCurrentPage(String paginatorId) {
+        return PAGINATORS.get(paginatorId).currentPage;
+    }
+
+    public PaginatorInfo getPaginatorInfo(String paginatorId) {
+        return PAGINATORS.get(paginatorId);
+    }
+
+    public void updateCurrentPage(String paginatorId, Integer newPage, String newAccessorId) {
+        try {
+            lock.lock();
+            PaginatorInfo paginatorInfo = PAGINATORS.get(paginatorId);
+            if(paginatorInfo != null) {
+                paginatorInfo.setCurrentPage(newPage);
+                paginatorInfo.setLastAccessor(newAccessorId);
+            }
+        } catch (Exception exception) {
+            lock.unlock();
+            log.error("Failed to update current page for paginator {} to page {}", paginatorId, newPage, exception);
+        }
+    }
+
+    public void schedulePaginationDeletion(String paginatorId, String accessorId) {
+        PaginatorServiceBean.PaginatorInfo paginatorInfo = PAGINATORS.get(paginatorId);
+        HashMap<Object, Object> parameters = new HashMap<>();
+        parameters.put("paginatorId", paginatorId);
+        parameters.put("accessorId", accessorId);
+        JobParameters jobParameters = JobParameters
+                .builder()
+                .parameters(parameters)
+                .build();
+        Instant targetDate = Instant.now().plus(paginatorInfo.getTimeoutSeconds(), ChronoUnit.SECONDS);
+        schedulerService.executeJobWithParametersOnce("paginatorCleanupJob", "core", jobParameters, Date.from(targetDate));
+        log.debug("Scheduled job to delete the paginator {} in {} seconds.", paginatorId, paginatorInfo.getTimeoutSeconds());
+    }
+
+    @Transactional
+    public void setupButtonPayloads(Message paginatorMessage, PaginatorConfiguration configuration, Long serverId, PaginatorButtonPayload payload) {
+        savePayload(configuration.getExitButton(), serverId);
+        if(!configuration.getSinglePage()) {
+            savePayload(configuration.getStartButton(), serverId);
+            savePayload(configuration.getPreviousButton(), serverId);
+            savePayload(configuration.getNextButton(), serverId);
+            savePayload(configuration.getLastButton(), serverId);
+        }
+
+        String accessorId = UUID.randomUUID().toString();
+
+        PaginatorInfo info = PaginatorInfo
+                .builder()
+                .currentPage(0)
+                .serverId(serverId)
+                .channelId(paginatorMessage.getChannel().getIdLong())
+                .messageId(paginatorMessage.getIdLong())
+                .timeoutSeconds(configuration.getTimeoutSeconds())
+                .paginatorId(configuration.getPaginatorId())
+                .payloadIds(getAllPayloadIdsFromPayload(payload))
+                .lastAccessor(accessorId)
+                .build();
+        log.debug("We are using the accessor id {} for paginator {} initially.", accessorId, configuration.getPaginatorId());
+        PAGINATORS.put(configuration.getPaginatorId(), info);
+
+        schedulePaginationDeletion(configuration.getPaginatorId(), accessorId);
+    }
+
+    private void savePayload(ButtonConfigModel model, Long serverId) {
+        componentPayloadManagementService.createPayload(model, serverId);
+    }
+
+    @Transactional
+    public void cleanupPaginator(PaginatorInfo paginatorInfo) {
+        log.info("Cleaning up paginator {} in server {} channel {} message {}.", paginatorInfo.getPaginatorId(),
+                paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
+        messageService.deleteMessageInChannelInServer(paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
+        componentPayloadManagementService.deletePayloads(paginatorInfo.getPayloadIds());
+    }
+
+    @Getter
+    @Builder
+    public static class PaginatorInfo {
+        @Setter
+        private Integer currentPage;
+        private Long serverId;
+        private Long channelId;
+        private Long messageId;
+        private String paginatorId;
+        @Setter
+        private String lastAccessor;
+        private Long timeoutSeconds;
+        private List<String> payloadIds;
+    }
+
 }

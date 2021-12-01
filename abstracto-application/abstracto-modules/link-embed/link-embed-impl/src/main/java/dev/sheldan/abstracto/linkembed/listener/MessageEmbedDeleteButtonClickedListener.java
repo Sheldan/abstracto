@@ -77,7 +77,7 @@ public class MessageEmbedDeleteButtonClickedListener implements ButtonClickedLis
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return model.getOrigin().equals(MessageEmbedServiceBean.MESSAGE_EMBED_DELETE_ORIGIN);
+        return MessageEmbedServiceBean.MESSAGE_EMBED_DELETE_ORIGIN.equals(model.getOrigin());
     }
 
     @Override

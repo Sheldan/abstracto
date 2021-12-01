@@ -361,7 +361,7 @@ public class MuteServiceBeanTest {
     public void testCompletelyUnMuteNotMutedUser() {
         when(userBeingMuted.getUserReference()).thenReturn(user);
         when(userBeingMuted.getServerReference()).thenReturn(server);
-        when(muteManagementService.getAllMutesOf(userBeingMuted)).thenReturn(Arrays.asList());
+        when(muteManagementService.getAllActiveMutesOf(userBeingMuted)).thenReturn(Arrays.asList());
         testUnit.completelyUnMuteUser(userBeingMuted);
         verify(muteManagementService, times(0)).saveMute(any(Mute.class));
     }
@@ -370,7 +370,7 @@ public class MuteServiceBeanTest {
     public void testCompletelyUnMuteNotScheduledMuteUser() {
         when(userBeingMuted.getUserReference()).thenReturn(user);
         when(userBeingMuted.getServerReference()).thenReturn(server);
-        when(muteManagementService.getAllMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
+        when(muteManagementService.getAllActiveMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
         testUnit.completelyUnMuteUser(userBeingMuted);
         verify(muteManagementService, times(1)).saveMute(any(Mute.class));
         verify(schedulerService, times(0)).stopTrigger(anyString());
@@ -381,7 +381,7 @@ public class MuteServiceBeanTest {
         when(mute.getTriggerKey()).thenReturn(TRIGGER);
         when(userBeingMuted.getUserReference()).thenReturn(user);
         when(userBeingMuted.getServerReference()).thenReturn(server);
-        when(muteManagementService.getAllMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
+        when(muteManagementService.getAllActiveMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
         testUnit.completelyUnMuteUser(userBeingMuted);
         verify(muteManagementService, times(1)).saveMute(any(Mute.class));
         verify(schedulerService, times(1)).stopTrigger(TRIGGER);
@@ -392,7 +392,7 @@ public class MuteServiceBeanTest {
         when(userBeingMuted.getUserReference()).thenReturn(user);
         when(userBeingMuted.getServerReference()).thenReturn(server);
         when(mute.getTriggerKey()).thenReturn(TRIGGER);
-        when(muteManagementService.getAllMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
+        when(muteManagementService.getAllActiveMutesOf(userBeingMuted)).thenReturn(Arrays.asList(mute));
         when(userInServerManagementService.loadOrCreateUser(memberBeingMuted)).thenReturn(userBeingMuted);
         testUnit.completelyUnMuteMember(memberBeingMuted);
         verify(muteManagementService, times(1)).saveMute(any(Mute.class));

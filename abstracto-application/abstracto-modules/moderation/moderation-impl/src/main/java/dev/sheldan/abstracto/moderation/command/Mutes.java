@@ -19,11 +19,10 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.converter.WarnEntryConverter;
-import dev.sheldan.abstracto.moderation.model.database.Warning;
-import dev.sheldan.abstracto.moderation.model.template.command.WarnEntry;
-import dev.sheldan.abstracto.moderation.model.template.command.WarningsModel;
-import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
+import dev.sheldan.abstracto.moderation.converter.MuteEntryConverter;
+import dev.sheldan.abstracto.moderation.model.template.command.MuteEntry;
+import dev.sheldan.abstracto.moderation.model.template.command.MutesModel;
+import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,27 +33,18 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-public class Warnings extends AbstractConditionableCommand {
+public class Mutes extends AbstractConditionableCommand {
 
-    public static final String WARNINGS_RESPONSE_TEMPLATE = "warnings_display_response";
-    public static final String NO_WARNINGS_TEMPLATE_KEY = "warnings_no_warnings_found";
+    private static final String NO_MUTES_TEMPLATE_KEY = "mutes_no_mutes_found";
+    private static final String MUTES_DISPLAY_TEMPLATE_KEY = "mutes_display_response";
     @Autowired
-    private WarnManagementService warnManagementService;
-
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
-
-    @Autowired
-    private WarnEntryConverter warnEntryConverter;
-
-    @Autowired
-    private PaginatorService paginatorService;
+    private MuteManagementService muteManagementService;
 
     @Autowired
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private Warnings self;
+    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private TemplateService templateService;
@@ -62,53 +52,58 @@ public class Warnings extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private MuteEntryConverter muteEntryConverter;
+
+    @Autowired
+    private Mutes self;
+
+    @Autowired
+    private PaginatorService paginatorService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Warning> warnsToDisplay;
-        if(!commandContext.getParameters().getParameters().isEmpty()) {
+        List<dev.sheldan.abstracto.moderation.model.database.Mute> mutesToDisplay;
+        if(commandContext.getParameters().getParameters().isEmpty()) {
+            AServer server = serverManagementService.loadServer(commandContext.getGuild().getIdLong());
+            mutesToDisplay = muteManagementService.getAllMutes(server);
+        } else {
             Member member = (Member) commandContext.getParameters().getParameters().get(0);
             if(!member.getGuild().equals(commandContext.getGuild())) {
                 throw new EntityGuildMismatchException();
             }
-            warnsToDisplay = warnManagementService.getAllWarnsForUser(userInServerManagementService.loadOrCreateUser(member));
-        } else {
-            AServer server = serverManagementService.loadServer(commandContext.getGuild());
-            warnsToDisplay = warnManagementService.getAllWarningsOfServer(server);
+            mutesToDisplay = muteManagementService.getAllMutesOf(userInServerManagementService.loadOrCreateUser(member));
         }
-        if(warnsToDisplay.isEmpty()) {
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_WARNINGS_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
+        if(mutesToDisplay.isEmpty()) {
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(NO_MUTES_TEMPLATE_KEY, new Object(), commandContext.getGuild().getIdLong());
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromSuccess());
-
         } else {
-            return warnEntryConverter.fromWarnings(warnsToDisplay)
-                    .thenCompose(warnEntries -> self.renderWarnings(commandContext, warnEntries))
-                    .thenApply(unused -> CommandResult.fromIgnored());
+            return muteEntryConverter.fromMutes(mutesToDisplay)
+                    .thenCompose(muteEntries -> self.renderMutes(commandContext, muteEntries)
+                    .thenApply(unused -> CommandResult.fromIgnored()));
         }
-
-
     }
 
     @Transactional
-    public CompletableFuture<Void> renderWarnings(CommandContext commandContext, List<WarnEntry> warnEntries) {
-        WarningsModel model = (WarningsModel) ContextConverter.slimFromCommandContext(commandContext, WarningsModel.class);
-        model.setWarnings(warnEntries);
-
-        return paginatorService.createPaginatorFromTemplate(WARNINGS_RESPONSE_TEMPLATE, model, commandContext.getChannel(), commandContext.getAuthor().getIdLong());
+    public CompletableFuture<Void> renderMutes(CommandContext commandContext, List<MuteEntry> mutes) {
+        MutesModel model = (MutesModel) ContextConverter.slimFromCommandContext(commandContext, MutesModel.class);
+        model.setMutes(mutes);
+        return paginatorService.createPaginatorFromTemplate(MUTES_DISPLAY_TEMPLATE_KEY, model, commandContext.getChannel(), commandContext.getAuthor().getIdLong());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("user").type(Member.class).templated(true).optional(true).build());
+        parameters.add(Parameter.builder().name("member").templated(true).type(Member.class).optional(true).build());
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
-                .name("warnings")
+                .name("mutes")
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
-                .async(true)
-                .causesReaction(false)
                 .supportsEmbedException(true)
+                .async(true)
+                .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
@@ -116,6 +111,6 @@ public class Warnings extends AbstractConditionableCommand {
 
     @Override
     public FeatureDefinition getFeature() {
-        return ModerationFeatureDefinition.WARNING;
+        return ModerationFeatureDefinition.MUTING;
     }
 }

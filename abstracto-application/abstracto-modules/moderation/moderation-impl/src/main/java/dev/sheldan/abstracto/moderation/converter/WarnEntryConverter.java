@@ -14,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -38,7 +35,6 @@ public class WarnEntryConverter {
     public CompletableFuture<List<WarnEntry>> fromWarnings(List<Warning> warnings) {
         Map<ServerSpecificId, FutureMemberPair> loadedWarnings = new HashMap<>();
         List<CompletableFuture<Member>> allFutures = new ArrayList<>();
-        // TODO maybe optimize to not need to look into the cache twice
         warnings.forEach(warning -> {
             CompletableFuture<Member> warningMemberFuture = memberService.getMemberInServerAsync(warning.getWarningUser());
             CompletableFuture<Member> warnedMemberFuture = memberService.getMemberInServerAsync(warning.getWarnedUser());
@@ -59,8 +55,10 @@ public class WarnEntryConverter {
 
     @Transactional
     public List<WarnEntry> loadFullWarnEntries(Map<ServerSpecificId, FutureMemberPair> loadedWarnInfo) {
+        List<ServerSpecificId> warnIds = new ArrayList<>(loadedWarnInfo.keySet());
+        warnIds.sort(Comparator.comparing(ServerSpecificId::getId));
         List<WarnEntry> entries = new ArrayList<>();
-        loadedWarnInfo.keySet().forEach(warning -> {
+        warnIds.forEach(warning -> {
             Warning warn = warnManagementService.findById(warning.getId(), warning.getServerId());
             FutureMemberPair memberPair = loadedWarnInfo.get(warning);
             Member warnedMember = !memberPair.getSecondMember().isCompletedExceptionally() ? memberPair.getSecondMember().join() : null;

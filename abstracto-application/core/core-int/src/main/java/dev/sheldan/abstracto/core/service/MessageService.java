@@ -33,6 +33,7 @@ public interface MessageService {
     CompletableFuture<Message> sendMessageToUser(User user, String text);
     CompletableFuture<Void> deleteMessageInChannelWithUser(User user, Long messageId);
     CompletableFuture<Void> editMessageInDMChannel(User user, MessageToSend messageToSend, Long messageId);
+    CompletableFuture<Void> editMessageInChannel(MessageChannel channel, MessageToSend messageToSend, Long messageId);
     CompletableFuture<Message> loadMessageFromCachedMessage(CachedMessage cachedMessage);
     CompletableFuture<Message> loadMessage(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Message> loadMessage(Message message);

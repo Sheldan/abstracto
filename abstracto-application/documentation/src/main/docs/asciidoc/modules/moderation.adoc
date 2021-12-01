@@ -123,6 +123,9 @@ Configuring which role to use for muting::
 * Usage: `setMuteRole <role>`
 * Description: Sets the  `role` to be used as the role when applying a mute. This role needs to be muting, which means, if you want it to be effective, this role needs to deny `MESSAGE_WRITE`. The bot does not validate nor require the role to actually mute.
 Only *one* role can be used as a mute role.
+Showing all mutes::
+* Usage: `mutes [member]`
+* Description: Shows all the mutes in a paginated matter with buttons to navigate the pages. If `member` is provided, it will only show mutes for this member.
 
 === Logging
 
