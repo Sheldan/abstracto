@@ -24,7 +24,7 @@ public class EmbedField {
      * This means, if multiple fields can be put on the same height in the {@link net.dv8tion.jda.api.entities.MessageEmbed} this will be done by discord.
      */
     private Boolean inline;
-    private Boolean forceNewMessage;
+    private Boolean forceNewEmbed;
     /**
      * this will actively limit the length, not create another field
       */

@@ -205,26 +205,42 @@ public class ChannelServiceBean implements ChannelService {
         }
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         List<MessageAction> allMessageActions = new ArrayList<>();
-        int iterations = Math.min(messageToSend.getMessages().size(), messageToSend.getEmbeds().size());
-        for (int i = 0; i < iterations; i++) {
+        Iterator<MessageEmbed> embedIterator = messageToSend.getEmbeds().iterator();
+        for (int i = 0; i < messageToSend.getMessages().size(); i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             String text = messageToSend.getMessages().get(i);
-            MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            MessageAction messageAction = textChannel.sendMessage(text).setEmbeds(embed);
-            allMessageActions.add(messageAction);
-        }
-        // one of these loops will get additional iterations, if the number is different, not both
-        for (int i = iterations; i < messageToSend.getMessages().size(); i++) {
-            metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            String text = messageToSend.getMessages().get(i);
+            List<MessageEmbed> messageEmbeds = new ArrayList<>();
+            while(embedIterator.hasNext()) {
+                MessageEmbed embedToAdd = embedIterator.next();
+                if((currentEmbedLength(messageEmbeds) + embedToAdd.getLength()) >= MessageEmbed.EMBED_MAX_LENGTH_BOT) {
+                    break;
+                }
+                messageEmbeds.add(embedToAdd);
+                embedIterator.remove();
+            }
             MessageAction messageAction = textChannel.sendMessage(text);
+            if(!messageEmbeds.isEmpty()) {
+                messageAction.setEmbeds(messageEmbeds);
+            }
             allMessageActions.add(messageAction);
         }
-        for (int i = iterations; i < messageToSend.getEmbeds().size(); i++) {
+        List<MessageEmbed> messageEmbeds = new ArrayList<>();
+        // reset the iterator, because if the if in the above while iterator loop applied, we already took it out from the iterator
+        // but we didnt add it yet, so it would be lost
+        embedIterator = messageToSend.getEmbeds().iterator();
+        while(embedIterator.hasNext()) {
+            MessageEmbed embedToAdd = embedIterator.next();
+            if((currentEmbedLength(messageEmbeds) + embedToAdd.getLength()) >= MessageEmbed.EMBED_MAX_LENGTH_BOT && !messageEmbeds.isEmpty()) {
+                allMessageActions.add(textChannel.sendMessageEmbeds(messageEmbeds));
+                metricService.incrementCounter(MESSAGE_SEND_METRIC);
+                messageEmbeds = new ArrayList<>();
+            }
+            messageEmbeds.add(embedToAdd);
+        }
+
+        if(!messageEmbeds.isEmpty()) {
+            allMessageActions.add(textChannel.sendMessageEmbeds(messageEmbeds));
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
-            MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            MessageAction messageAction = textChannel.sendMessageEmbeds(embed);
-            allMessageActions.add(messageAction);
         }
 
         List<ActionRow> actionRows = messageToSend.getActionRows();
@@ -268,6 +284,10 @@ public class ChannelServiceBean implements ChannelService {
             futures.add(messageAction.allowedMentions(allowedMentions).submit());
         });
         return futures;
+    }
+
+    private Integer currentEmbedLength(List<MessageEmbed> messageEmbeds) {
+        return messageEmbeds.stream().mapToInt(MessageEmbed::getLength).sum();
     }
 
     @Override

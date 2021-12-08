@@ -7,10 +7,6 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-/**
- * The whole container object used to deserialize the whole embed configuration
- * https://raw.githubusercontent.com/DV8FromTheWorld/JDA/assets/assets/docs/embeds/07-addField.png
- */
 @Getter
 @Setter
 @Builder
@@ -51,11 +47,6 @@ public class EmbedConfiguration {
      * The {@link OffsetDateTime} object used as the time stamp in the {@link net.dv8tion.jda.api.entities.MessageEmbed}
      */
     private OffsetDateTime timeStamp;
-    private Long referencedMessageId;
-    /**
-     * The message which is posted along the {@link net.dv8tion.jda.api.entities.MessageEmbed} as a normal message.
-     */
-    private String additionalMessage;
+
     private MetaEmbedConfiguration metaConfig;
-    private List<ButtonConfig> buttons;
 }

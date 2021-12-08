@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.model.PaginatorModel;
 import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.templating.model.EmbedConfiguration;
+import dev.sheldan.abstracto.core.templating.model.MessageConfiguration;
 import dev.sheldan.abstracto.core.templating.model.EmbedFooter;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -109,8 +110,8 @@ public class PaginatorServiceBean implements PaginatorService {
             configuration.setLastButton(initializeButton(lastButtonId, buttonPayload));
         }
 
-        EmbedConfiguration embedConfiguration = configuration.getEmbedConfigs().get(0);
-        MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(embedConfiguration);
+        MessageConfiguration messageConfiguration = configuration.getEmbedConfigs().get(0);
+        MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(messageConfiguration);
         List<CompletableFuture<Message>> paginatorFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
         return FutureUtils.toSingleFutureGeneric(paginatorFutures)
                 .thenAccept(unused -> self.setupButtonPayloads(paginatorFutures.get(0).join(), configuration, serverId, buttonPayload));
@@ -124,11 +125,15 @@ public class PaginatorServiceBean implements PaginatorService {
                     .pageCount(configuration.getEmbedConfigs().size())
                     .build();
             String footerText = templateService.renderTemplate(PAGINATOR_FOOTER_TEMPLATE_KEY, paginatorModel);
-            EmbedConfiguration embedConfiguration = configuration.getEmbedConfigs().get(i);
-            if(embedConfiguration.getFooter() == null) {
-                embedConfiguration.setFooter(EmbedFooter.builder().text(footerText).build());
+            MessageConfiguration messageConfig = configuration.getEmbedConfigs().get(i);
+            if(messageConfig.getEmbeds() == null || messageConfig.getEmbeds().isEmpty()) {
+                messageConfig.setEmbeds(new ArrayList<>(Arrays.asList(EmbedConfiguration.builder().build())));
+            }
+            EmbedConfiguration messageConfiguration = messageConfig.getEmbeds().get(0);
+            if(messageConfiguration.getFooter() == null) {
+                messageConfiguration.setFooter(EmbedFooter.builder().text(footerText).build());
             } else {
-                embedConfiguration.getFooter().setText(footerText);
+                messageConfiguration.getFooter().setText(footerText);
             }
         }
     }

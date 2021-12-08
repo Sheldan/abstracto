@@ -1,28 +1,32 @@
 {
-  "author": {
-    "name": "name",
-    "avatar": "https://example.com",
-    "url": "https://example.com"
-  },
-  "color" : {
-  "r": 255,
-  "g": 255,
-  "b": 255
-  },
-  "description": "description",
-  "thumbnail": "https://example.com",
-  "imageURL": "https://example.com",
-  "fields": [
+  "embeds": [
     {
-      "name": "name",
-      "value": "value",
-      "inline": "true"
+      "author": {
+        "name": "name",
+        "avatar": "https://example.com",
+        "url": "https://example.com"
+      },
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "description": "description",
+      "thumbnail": "https://example.com",
+      "imageURL": "https://example.com",
+      "fields": [
+        {
+          "name": "name",
+          "value": "value",
+          "inline": "true"
+        }
+      ],
+      "footer": {
+        "text": "text",
+        "icon": "https://example.com"
+      },
+      "timeStamp": "timestamp"
     }
   ],
-  "footer": {
-    "text": "text",
-    "icon": "https://example.com"
-  },
-  "timeStamp": "timestamp",
   "additionalMessage": "additionalMessage"
 }

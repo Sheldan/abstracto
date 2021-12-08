@@ -67,9 +67,9 @@ public class TemplateServiceBean implements TemplateService {
 
     /**
      * Retrieves the key which gets suffixed with '_embed' and this retrieves the embed configuration. This configuration is then rendered
-     * and de-serialized with GSON into a {@link EmbedConfiguration} object. This object is then rendered into a {@link MessageToSend} and returned.
+     * and de-serialized with GSON into a {@link MessageConfiguration} object. This object is then rendered into a {@link MessageToSend} and returned.
      * If the individual element do not fit in an embed, for example, if the field count is to high, another embed will be created in the {@link MessageToSend} object.
-     * If multiple embeds are necessary to provide what the {@link EmbedConfiguration} wanted, this method will automatically set the footer of the additional {@link MessageEmbed}
+     * If multiple embeds are necessary to provide what the {@link MessageConfiguration} wanted, this method will automatically set the footer of the additional {@link MessageEmbed}
      * with a formatted page count.
      * This method will to try its best to provided a message which can be handled by discord without rejecting it. Besides that, the content from the rendered template, will be passed
      * into the {@link EmbedBuilder} directly.
@@ -81,35 +81,21 @@ public class TemplateServiceBean implements TemplateService {
     @Override
     public MessageToSend renderEmbedTemplate(String key, Object model) {
         String embedConfig = this.renderTemplate(key + "_embed", model);
-        EmbedConfiguration embedConfiguration = gson.fromJson(embedConfig, EmbedConfiguration.class);
-        return convertEmbedConfigurationToMessageToSend(embedConfiguration);
+        MessageConfiguration messageConfiguration = gson.fromJson(embedConfig, MessageConfiguration.class);
+        return convertEmbedConfigurationToMessageToSend(messageConfiguration);
     }
 
-    public MessageToSend convertEmbedConfigurationToMessageToSend(EmbedConfiguration embedConfiguration) {
+    public MessageToSend convertEmbedConfigurationToMessageToSend(MessageConfiguration messageConfiguration) {
         List<EmbedBuilder> embedBuilders = new ArrayList<>();
-        embedBuilders.add(new EmbedBuilder());
-        if(embedConfiguration.getMetaConfig() != null &&
-           embedConfiguration.getDescription() != null &&
-           embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit() != null &&
-           embedConfiguration.getDescription().length() >  embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit())
-        {
-            embedConfiguration.setDescription(embedConfiguration.getDescription().substring(0,
-                    embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit()));
+        if(messageConfiguration.getEmbeds() != null && !messageConfiguration.getEmbeds().isEmpty())  {
+            convertEmbeds(messageConfiguration, embedBuilders);
         }
-        String description = embedConfiguration.getDescription();
-        if (description != null) {
-            handleEmbedDescription(embedBuilders, description);
-        }
-        EmbedAuthor author = embedConfiguration.getAuthor();
-        EmbedBuilder firstBuilder = embedBuilders.get(0);
-        if (author != null) {
-            firstBuilder.setAuthor(author.getName(), author.getUrl(), author.getAvatar());
-        }
+
         List<ActionRow> buttons = new ArrayList<>();
         Map<String, MessageToSend.ComponentConfig> componentPayloads = new HashMap<>();
-        if(embedConfiguration.getButtons() != null) {
+        if(messageConfiguration.getButtons() != null) {
             ActionRow currentRow = null;
-            for (ButtonConfig buttonConfig : embedConfiguration.getButtons()) {
+            for (ButtonConfig buttonConfig : messageConfiguration.getButtons()) {
                 ButtonMetaConfig metaConfig = buttonConfig.getMetaConfig() != null ? buttonConfig.getMetaConfig() : null;
                 String id = metaConfig != null && Boolean.TRUE.equals(metaConfig.getGenerateRandomUUID()) ?
                         UUID.randomUUID().toString() : buttonConfig.getId();
@@ -155,57 +141,36 @@ public class TemplateServiceBean implements TemplateService {
             }
         }
 
-        String thumbnail = embedConfiguration.getThumbnail();
-        if (thumbnail != null) {
-            firstBuilder.setThumbnail(thumbnail);
-        }
-        EmbedTitle title = embedConfiguration.getTitle();
-        if (title != null) {
-            firstBuilder.setTitle(title.getTitle(), title.getUrl());
-        }
-        EmbedFooter footer = embedConfiguration.getFooter();
-        if (footer != null) {
-            firstBuilder.setFooter(footer.getText(), footer.getIcon());
-        }
-        if (embedConfiguration.getFields() != null) {
-            createFieldsForEmbed(embedBuilders, embedConfiguration);
-        }
-        firstBuilder.setTimestamp(embedConfiguration.getTimeStamp());
-
-        firstBuilder.setImage(embedConfiguration.getImageUrl());
-
-        EmbedColor color = embedConfiguration.getColor();
-        if (color != null) {
-            int colorToSet = new Color(color.getR(), color.getG(), color.getB()).getRGB();
-            embedBuilders.forEach(embedBuilder -> embedBuilder.setColor(colorToSet));
-        }
-
         setPagingFooters(embedBuilders);
 
         List<MessageEmbed> embeds = new ArrayList<>();
-        if ((embedBuilders.size() > 1 || !embedBuilders.get(0).isEmpty()) && !isEmptyEmbed(embedConfiguration)) {
-            embeds = embedBuilders.stream().map(EmbedBuilder::build).collect(Collectors.toList());
+        if (!embedBuilders.isEmpty()) {
+            embeds = embedBuilders
+                    .stream()
+                    .filter(embedBuilder -> !embedBuilder.isEmpty())
+                    .map(EmbedBuilder::build)
+                    .collect(Collectors.toList());
         }
 
         List<String> messages = new ArrayList<>();
         if(
-                embedConfiguration.getMetaConfig() != null &&
-                embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit() != null &&
-                embedConfiguration.getAdditionalMessage().length() > embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit()
+                messageConfiguration.getMessageConfig() != null &&
+                messageConfiguration.getMessageConfig().getAdditionalMessageLengthLimit() != null &&
+                messageConfiguration.getAdditionalMessage().length() > messageConfiguration.getMessageConfig().getAdditionalMessageLengthLimit()
         ) {
-            embedConfiguration.setAdditionalMessage(embedConfiguration.getAdditionalMessage().substring(0, embedConfiguration.getMetaConfig().getAdditionalMessageLengthLimit()));
+            messageConfiguration.setAdditionalMessage(messageConfiguration.getAdditionalMessage().substring(0, messageConfiguration.getMessageConfig().getAdditionalMessageLengthLimit()));
         }
 
         boolean isEphemeral = false;
-        if(embedConfiguration.getMetaConfig() != null) {
-            isEphemeral = Boolean.TRUE.equals(embedConfiguration.getMetaConfig().isEphemeral());
+        if(messageConfiguration.getMessageConfig() != null) {
+            isEphemeral = Boolean.TRUE.equals(messageConfiguration.getMessageConfig().isEphemeral());
         }
 
-        String additionalMessage = embedConfiguration.getAdditionalMessage();
+        String additionalMessage = messageConfiguration.getAdditionalMessage();
         if(additionalMessage != null) {
-            Long segmentLimit = embedConfiguration.getMetaConfig() != null
-                    && embedConfiguration.getMetaConfig().getAdditionalMessageSplitLength() != null ?
-                    embedConfiguration.getMetaConfig().getAdditionalMessageSplitLength() :
+            Long segmentLimit = messageConfiguration.getMessageConfig() != null
+                    && messageConfiguration.getMessageConfig().getAdditionalMessageSplitLength() != null ?
+                    messageConfiguration.getMessageConfig().getAdditionalMessageSplitLength() :
                     Long.valueOf(Message.MAX_CONTENT_LENGTH);
             if(additionalMessage.length() > segmentLimit) {
                 int segmentStart = 0;
@@ -233,8 +198,8 @@ public class TemplateServiceBean implements TemplateService {
         if(serverContext.getServerId() != null) {
             messageLimit = Math.min(messageLimit, configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, serverContext.getServerId()));
         }
-        if(embedConfiguration.getMetaConfig() != null && embedConfiguration.getMetaConfig().getMessageLimit() != null) {
-            messageLimit = Math.min(messageLimit, embedConfiguration.getMetaConfig().getMessageLimit());
+        if(messageConfiguration.getMessageConfig() != null && messageConfiguration.getMessageConfig().getMessageLimit() != null) {
+            messageLimit = Math.min(messageLimit, messageConfiguration.getMessageConfig().getMessageLimit());
         }
         if(embeds.size() > messageLimit) {
             log.info("Limiting size of embeds. Max allowed: {}, currently: {}.", messageLimit, embeds.size());
@@ -244,11 +209,11 @@ public class TemplateServiceBean implements TemplateService {
             log.info("Limiting size of messages. Max allowed: {}, currently: {}.", messageLimit, messages.size());
             messages.subList(messageLimit.intValue(), messages.size()).clear();
         }
-        Long referencedMessageId = embedConfiguration.getReferencedMessageId();
+        Long referencedMessageId = messageConfiguration.getReferencedMessageId();
 
         return MessageToSend.builder()
                 .embeds(embeds)
-                .messageConfig(createMessageConfig(embedConfiguration.getMetaConfig()))
+                .messageConfig(createMessageConfig(messageConfiguration.getMessageConfig()))
                 .messages(messages)
                 .ephemeral(isEphemeral)
                 .actionRows(buttons)
@@ -257,16 +222,75 @@ public class TemplateServiceBean implements TemplateService {
                 .build();
     }
 
-    private MessageConfig createMessageConfig(MetaEmbedConfiguration metaEmbedConfiguration) {
-        if(metaEmbedConfiguration == null) {
+    private void convertEmbeds(MessageConfiguration messageConfiguration, List<EmbedBuilder> embedBuilders) {
+        int currentEffectiveEmbed;
+        for (int embedIndex = 0; embedIndex < messageConfiguration.getEmbeds().size(); embedIndex++) {
+            currentEffectiveEmbed = embedBuilders.size();
+            EmbedConfiguration embedConfiguration = messageConfiguration.getEmbeds().get(embedIndex);
+            if(isEmptyEmbed(embedConfiguration)) {
+                continue;
+            }
+            EmbedBuilder mainEmbedBuilder = new EmbedBuilder();
+            if(embedConfiguration.getMetaConfig() != null &&
+                    embedConfiguration.getDescription() != null &&
+                    embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit() != null &&
+                    embedConfiguration.getDescription().length() > embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit())
+            {
+                embedConfiguration.setDescription(embedConfiguration.getDescription().substring(0,
+                        embedConfiguration.getMetaConfig().getDescriptionMessageLengthLimit()));
+            }
+            EmbedAuthor author = embedConfiguration.getAuthor();
+
+            if (author != null) {
+                mainEmbedBuilder.setAuthor(author.getName(), author.getUrl(), author.getAvatar());
+            }
+            String thumbnail = embedConfiguration.getThumbnail();
+            if (thumbnail != null) {
+                mainEmbedBuilder.setThumbnail(thumbnail);
+            }
+            EmbedTitle title = embedConfiguration.getTitle();
+            if (title != null) {
+                mainEmbedBuilder.setTitle(title.getTitle(), title.getUrl());
+            }
+            EmbedFooter footer = embedConfiguration.getFooter();
+            if (footer != null) {
+                mainEmbedBuilder.setFooter(footer.getText(), footer.getIcon());
+            }
+            mainEmbedBuilder.setTimestamp(embedConfiguration.getTimeStamp());
+
+            mainEmbedBuilder.setImage(embedConfiguration.getImageUrl());
+
+            embedBuilders.add(mainEmbedBuilder);
+
+            String description = embedConfiguration.getDescription();
+            if (description != null) {
+                handleEmbedDescription(embedBuilders, description);
+            }
+            if (embedConfiguration.getFields() != null) {
+                createFieldsForEmbed(embedBuilders, embedConfiguration);
+            }
+
+            EmbedColor color = embedConfiguration.getColor();
+            if (color != null) {
+                int colorToSet = new Color(color.getR(), color.getG(), color.getB()).getRGB();
+                for (int i = currentEffectiveEmbed; i < embedBuilders.size(); i++) {
+                    EmbedBuilder embedBuilder = embedBuilders.get(i);
+                    embedBuilder.setColor(colorToSet);
+                }
+            }
+        }
+    }
+
+    private MessageConfig createMessageConfig(MetaMessageConfiguration messageconfiguration) {
+        if(messageconfiguration == null) {
             return null;
         }
         return MessageConfig
                 .builder()
-                .allowsEveryoneMention(metaEmbedConfiguration.isAllowsEveryoneMention())
-                .allowsUserMention(metaEmbedConfiguration.isAllowsUserMention())
-                .allowsRoleMention(metaEmbedConfiguration.isAllowsRoleMention())
-                .mentionsReferencedMessage(metaEmbedConfiguration.isMentionsReferencedMessage())
+                .allowsEveryoneMention(messageconfiguration.isAllowsEveryoneMention())
+                .allowsUserMention(messageconfiguration.isAllowsUserMention())
+                .allowsRoleMention(messageconfiguration.isAllowsRoleMention())
+                .mentionsReferencedMessage(messageconfiguration.isMentionsReferencedMessage())
                 .build();
     }
 
@@ -278,7 +302,8 @@ public class TemplateServiceBean implements TemplateService {
     }
 
     private void handleEmbedDescription(List<EmbedBuilder> embedBuilders, String description) {
-        int segmentCounter = 0;
+        // we need to start with the "current" one, and can then extend onto it
+        int segmentCounter = Math.max(embedBuilders.size() - 1, 0);
         int segmentStart = 0;
         int segmentEnd = MessageEmbed.TEXT_MAX_LENGTH;
         int handledIndex = 0;
@@ -334,6 +359,10 @@ public class TemplateServiceBean implements TemplateService {
         }
     }
 
+    /**
+     * This method limits the fields: if there are limits configured.
+     * It also splits the fields into multiple fields, if the length is over the limit. The newly created fields, get a title with a suffixed 2.
+     */
     private void splitFieldsIntoAppropriateLengths(EmbedConfiguration configuration) {
         Comparator<AdditionalEmbedField> comparator = Comparator.comparing(o -> o.fieldIndex);
         // we need to reverse this, because the insertion need to be done from the back to the front, because we only insert according to field index
@@ -358,19 +387,27 @@ public class TemplateServiceBean implements TemplateService {
                 int handledIndex = 0;
                 String fullFieldValue = field.getValue();
                 while(handledIndex < fullFieldValue.length()) {
+                    // lets determine how much text we can handle, if we iterated multiple times over this, the segement
+                    // start has a value, so some things are cut off
                     int segmentLength = fullFieldValue.length() - segmentStart;
+                    // if its over the hard limit for a field
                     if(segmentLength > MessageEmbed.VALUE_MAX_LENGTH) {
+                        // find the last space in the text, as a natural "splitting point"
                         int lastSpace = fullFieldValue.substring(segmentStart, segmentEnd).lastIndexOf(" ");
                         if(lastSpace != -1) {
+                            // and use this as the new end
                             segmentEnd = segmentStart + lastSpace;
                         }
                     } else {
+                        // just use the full length
                         segmentEnd = fullFieldValue.length();
                     }
+                    // cut the field value to be appropriate
                     String fieldValue = fullFieldValue.substring(segmentStart, segmentEnd);
                     if(segmentCounter == 0) {
                         field.setValue(fieldValue);
                     } else {
+                        // if we are in an additional segment, we have to create a new embed field, to hold our values
                         EmbedField newField = EmbedField
                                 .builder()
                                 .inline(field.getInline())
@@ -386,6 +423,7 @@ public class TemplateServiceBean implements TemplateService {
                 }
             }
         }
+        // insert additional fields
         for (AdditionalEmbedField field : toInsert) {
             configuration.getFields().add(field.getFieldIndex() + 1, field.getField());
         }
@@ -393,24 +431,30 @@ public class TemplateServiceBean implements TemplateService {
 
     private void createFieldsForEmbed(List<EmbedBuilder> embedBuilders, EmbedConfiguration configuration) {
         splitFieldsIntoAppropriateLengths(configuration);
-        int actualCurrentIndex = 0;
-        int neededMessages = 0;
+        int embedLocalFieldIndex = 0;
+        int neededEmbeds = embedBuilders.size() - 1;
         for (int i = 0; i < configuration.getFields().size(); i++) {
             EmbedField field = configuration.getFields().get(i);
-            boolean lastMessageInEmbed = ((actualCurrentIndex + 1) % MAX_FIELD_COUNT) == 0;
-            boolean isStartOfNewMessage = (actualCurrentIndex % MAX_FIELD_COUNT) == 0;
-            boolean newMessageForcedWithinEmbeds = Boolean.TRUE.equals(field.getForceNewMessage()) && !lastMessageInEmbed;
-            boolean startOfNewMessage = actualCurrentIndex != 0 && isStartOfNewMessage;
-            if (newMessageForcedWithinEmbeds || startOfNewMessage) {
-                actualCurrentIndex = 0;
-                neededMessages++;
+            // determine if we are the last field allowed in this embed
+            boolean lastMessageInEmbed = ((embedLocalFieldIndex + 1) % MAX_FIELD_COUNT) == 0;
+            // determine if we are at the beginning of a new message, that means we have the embed index 0
+            boolean isStartOfNewEmbed = (embedLocalFieldIndex % MAX_FIELD_COUNT) == 0;
+            // whether or not we have to force a new embed, but only if we are not the last message, then its fine anyway
+            boolean newMessageForcedWithinEmbeds = Boolean.TRUE.equals(field.getForceNewEmbed()) && !lastMessageInEmbed;
+            // if we are at the start of an _additional_ embed, this is false at the first embed
+            boolean startOfNewMessage = embedLocalFieldIndex != 0 && isStartOfNewEmbed;
+            int fieldLength = field.getName().length() + field.getValue().length();
+            boolean currentEmbedOverTotalLimit = (embedBuilders.get(neededEmbeds).length() + fieldLength) > MessageEmbed.EMBED_MAX_LENGTH_BOT;
+            if (newMessageForcedWithinEmbeds || startOfNewMessage || currentEmbedOverTotalLimit) {
+                embedLocalFieldIndex = 0;
+                neededEmbeds++;
             } else {
-                actualCurrentIndex++;
+                embedLocalFieldIndex++;
             }
-            extendIfNecessary(embedBuilders, neededMessages);
+            extendIfNecessary(embedBuilders, neededEmbeds);
             EmbedField embedField = configuration.getFields().get(i);
             boolean inline = embedField.getInline() != null ? embedField.getInline() : Boolean.FALSE;
-            embedBuilders.get(neededMessages).addField(embedField.getName(), embedField.getValue(), inline);
+            embedBuilders.get(neededEmbeds).addField(embedField.getName(), embedField.getValue(), inline);
         }
         Comparator<AdditionalEmbed> comparator = Comparator.comparing(o -> o.embedIndex);
         // we need to reverse this, because the insertion need to be done from the back to the front, because we only insert according to field index

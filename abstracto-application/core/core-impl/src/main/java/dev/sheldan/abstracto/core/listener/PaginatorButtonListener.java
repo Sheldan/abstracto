@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.model.PaginatorButtonPayload;
 import dev.sheldan.abstracto.core.models.listener.ButtonClickedListenerModel;
 import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PaginatorServiceBean;
-import dev.sheldan.abstracto.core.templating.model.EmbedConfiguration;
+import dev.sheldan.abstracto.core.templating.model.MessageConfiguration;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.TemplateServiceBean;
@@ -70,8 +70,8 @@ public class PaginatorButtonListener implements ButtonClickedListener {
             return ButtonClickedListenerResult.IGNORED;
         }
         log.debug("Moving to page {} in paginator {}.", targetPage, payload.getPaginatorId());
-        EmbedConfiguration embedConfiguration = payload.getEmbedConfigs().get(targetPage);
-        MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(embedConfiguration);
+        MessageConfiguration messageConfiguration = payload.getEmbedConfigs().get(targetPage);
+        MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(messageConfiguration);
         messageService.editMessageInChannel(model.getEvent().getMessageChannel(), messageToSend, originalMessage.getIdLong())
                 .thenAccept(unused -> log.info("Updated paginator {} to switch to page {}.", payload.getPaginatorId(), targetPage));
         String accessorId = UUID.randomUUID().toString();

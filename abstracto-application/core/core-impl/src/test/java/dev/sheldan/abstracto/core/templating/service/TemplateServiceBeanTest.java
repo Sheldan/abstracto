@@ -98,14 +98,14 @@ public class TemplateServiceBeanTest {
         String additionalMessage = RandomStringUtils.randomAlphabetic(3500);
         when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         String templateContent = String.format("{ \"additionalMessage\": \"%s\"}", additionalMessage);
-        EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
-        MetaEmbedConfiguration metaConfig = Mockito.mock(MetaEmbedConfiguration.class);
-        when(config.getMetaConfig()).thenReturn(metaConfig);
+        MessageConfiguration config = Mockito.mock(MessageConfiguration.class);
+        MetaMessageConfiguration metaConfig = Mockito.mock(MetaMessageConfiguration.class);
+        when(config.getMessageConfig()).thenReturn(metaConfig);
         when(metaConfig.getAdditionalMessageSplitLength()).thenReturn(2000);
         when(config.getAdditionalMessage()).thenReturn(additionalMessage);
         when(metaConfig.getMessageLimit()).thenReturn(5);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(new Template(getEmbedTemplateKey(), templateContent, getNonMockedConfiguration()));
-        when(gson.fromJson(templateContent, EmbedConfiguration.class)).thenReturn(config);
+        when(gson.fromJson(templateContent, MessageConfiguration.class)).thenReturn(config);
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new Object());
         Assert.assertEquals(2, messageToSend.getMessages().size());
         Assert.assertEquals(additionalMessage.substring(0, 2000), messageToSend.getMessages().get(0));
@@ -118,14 +118,14 @@ public class TemplateServiceBeanTest {
         String additionalMessage = RandomStringUtils.randomAlphabetic(3500);
         when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         String templateContent = String.format("{ \"additionalMessage\": \"%s\", \"messageLimit\": 1}", additionalMessage);
-        EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
-        MetaEmbedConfiguration metaConfig = Mockito.mock(MetaEmbedConfiguration.class);
-        when(config.getMetaConfig()).thenReturn(metaConfig);
+        MessageConfiguration config = Mockito.mock(MessageConfiguration.class);
+        MetaMessageConfiguration metaConfig = Mockito.mock(MetaMessageConfiguration.class);
+        when(config.getMessageConfig()).thenReturn(metaConfig);
         when(metaConfig.getAdditionalMessageSplitLength()).thenReturn(2000);
         when(config.getAdditionalMessage()).thenReturn(additionalMessage);
         when(metaConfig.getMessageLimit()).thenReturn(1);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(new Template(getEmbedTemplateKey(), templateContent, getNonMockedConfiguration()));
-        when(gson.fromJson(templateContent, EmbedConfiguration.class)).thenReturn(config);
+        when(gson.fromJson(templateContent, MessageConfiguration.class)).thenReturn(config);
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new Object());
         Assert.assertEquals(1, messageToSend.getMessages().size());
         Assert.assertEquals(additionalMessage.substring(0, 2000), messageToSend.getMessages().get(0));
@@ -137,14 +137,14 @@ public class TemplateServiceBeanTest {
         String additionalMessage = RandomStringUtils.randomAlphabetic(3500);
         when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         String templateContent = String.format("{ \"additionalMessage\": \"%s\"}", additionalMessage);
-        EmbedConfiguration config = Mockito.mock(EmbedConfiguration.class);
-        MetaEmbedConfiguration metaConfig = Mockito.mock(MetaEmbedConfiguration.class);
-        when(config.getMetaConfig()).thenReturn(metaConfig);
+        MessageConfiguration config = Mockito.mock(MessageConfiguration.class);
+        MetaMessageConfiguration metaConfig = Mockito.mock(MetaMessageConfiguration.class);
+        when(config.getMessageConfig()).thenReturn(metaConfig);
         when(metaConfig.getAdditionalMessageSplitLength()).thenReturn(500);
         when(metaConfig.getMessageLimit()).thenReturn(5);
         when(config.getAdditionalMessage()).thenReturn(additionalMessage);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(new Template(getEmbedTemplateKey(), templateContent, getNonMockedConfiguration()));
-        when(gson.fromJson(templateContent, EmbedConfiguration.class)).thenReturn(config);
+        when(gson.fromJson(templateContent, MessageConfiguration.class)).thenReturn(config);
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new Object());
         Assert.assertEquals(5, messageToSend.getMessages().size());
         Assert.assertEquals(additionalMessage.substring(0, 500), messageToSend.getMessages().get(0));
@@ -168,7 +168,7 @@ public class TemplateServiceBeanTest {
         String descriptionText = "test";
         String fullEmbedTemplateKey = getEmbedTemplateKey();
         when(configuration.getTemplate(fullEmbedTemplateKey, null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
-        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), MessageConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         Assert.assertEquals(descriptionText, messageToSend.getEmbeds().get(0).getDescription());
     }
@@ -177,7 +177,7 @@ public class TemplateServiceBeanTest {
     public void testEmbedWithAllUsableAttributes() throws IOException, TemplateException {
         setupServerAware();
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithFallFieldsUsedOnce());
-        when(gson.fromJson(getFullEmbedConfigString(), EmbedConfiguration.class)).thenReturn(getFullEmbedConfiguration());
+        when(gson.fromJson(getFullEmbedConfigString(), MessageConfiguration.class)).thenReturn(getFullEmbedConfiguration());
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         Assert.assertEquals("additionalMessage", messageToSend.getMessages().get(0));
         MessageEmbed onlyEmbed = messageToSend.getEmbeds().get(0);
@@ -207,7 +207,7 @@ public class TemplateServiceBeanTest {
         String descriptionText = RandomStringUtils.randomAlphabetic(MessageEmbed.TEXT_MAX_LENGTH + tooMuchCharacterCount);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
         when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
-        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), MessageConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
         Assert.assertEquals(MessageEmbed.TEXT_MAX_LENGTH, firstEmbed.getDescription().length());
@@ -223,7 +223,7 @@ public class TemplateServiceBeanTest {
         int totalFieldCount = 30;
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithFieldCount(totalFieldCount));
         when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
-        when(gson.fromJson(getFieldsEmbedConfigAsString(totalFieldCount), EmbedConfiguration.class)).thenReturn(getTooManyFieldsEmbedConfiguration());
+        when(gson.fromJson(getFieldsEmbedConfigAsString(totalFieldCount), MessageConfiguration.class)).thenReturn(getTooManyFieldsEmbedConfiguration());
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
         Assert.assertEquals(25, firstEmbed.getFields().size());
@@ -237,7 +237,7 @@ public class TemplateServiceBeanTest {
         String fieldValue = RandomStringUtils.randomAlphabetic(1500);
         when(configService.getLongValueOrConfigDefault(CoreFeatureConfig.MAX_MESSAGES_KEY, SERVER_ID)).thenReturn(5L);
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithTooLongField(fieldValue));
-        when(gson.fromJson(getSingleFieldWithValue(fieldValue), EmbedConfiguration.class)).thenReturn(getEmbedWithSingleFieldOfValue(fieldValue));
+        when(gson.fromJson(getSingleFieldWithValue(fieldValue), MessageConfiguration.class)).thenReturn(getEmbedWithSingleFieldOfValue(fieldValue));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
         Assert.assertEquals(2, firstEmbed.getFields().size());
@@ -253,7 +253,7 @@ public class TemplateServiceBeanTest {
         String secondPart = RandomStringUtils.randomAlphabetic(partsLength);
         String fieldValue = firstPart + " " + secondPart;
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithTooLongField(fieldValue));
-        when(gson.fromJson(getSingleFieldWithValue(fieldValue), EmbedConfiguration.class)).thenReturn(getEmbedWithSingleFieldOfValue(fieldValue));
+        when(gson.fromJson(getSingleFieldWithValue(fieldValue), MessageConfiguration.class)).thenReturn(getEmbedWithSingleFieldOfValue(fieldValue));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
         Assert.assertEquals(2, firstEmbed.getFields().size());
@@ -270,7 +270,7 @@ public class TemplateServiceBeanTest {
         String descriptionText = firstPart + " " + secondPart;
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
         when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
-        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), MessageConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         Assert.assertEquals(2, messageToSend.getEmbeds().size());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
@@ -291,7 +291,7 @@ public class TemplateServiceBeanTest {
         String descriptionText = firstPart + " " + secondPart + " " + thirdPart;
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
         when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
-        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), MessageConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         Assert.assertEquals(3, messageToSend.getEmbeds().size());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
@@ -315,7 +315,7 @@ public class TemplateServiceBeanTest {
         String descriptionText = firstPart + " " + secondPart + " " + thirdPart;
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithDescription(descriptionText));
         when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
-        when(gson.fromJson(embedTemplateWithDescription(descriptionText), EmbedConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
+        when(gson.fromJson(embedTemplateWithDescription(descriptionText), MessageConfiguration.class)).thenReturn(embedConfigWithDescription(descriptionText));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         Assert.assertEquals(2, messageToSend.getEmbeds().size());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
@@ -341,7 +341,7 @@ public class TemplateServiceBeanTest {
 
         when(configuration.getTemplate(getEmbedTemplateKey(), null, SERVER_ID, null, true, false)).thenReturn(getEmbedTemplateWithFieldValues(fieldValues));
         when(configuration.getTemplate(EMBED_PAGE_COUNT_TEMPLATE, null, SERVER_ID, null, true, false)).thenReturn(getPageCountTemplate(1));
-        when(gson.fromJson(getFields(fieldValues), EmbedConfiguration.class)).thenReturn(getEmbedWithFields(fieldValues));
+        when(gson.fromJson(getFields(fieldValues), MessageConfiguration.class)).thenReturn(getEmbedWithFields(fieldValues));
         MessageToSend messageToSend = templateServiceBean.renderEmbedTemplate(TEMPLATE_KEY, new HashMap<>());
         Assert.assertEquals(2, messageToSend.getEmbeds().size());
         MessageEmbed firstEmbed = messageToSend.getEmbeds().get(0);
@@ -379,29 +379,47 @@ public class TemplateServiceBeanTest {
         templateServiceBean.renderTemplateWithMap(TEMPLATE_KEY, new HashMap<>());
     }
 
-    private EmbedConfiguration embedConfigWithDescription(String descriptionText) {
-        return EmbedConfiguration.builder().description(descriptionText).build();
+    private MessageConfiguration embedConfigWithDescription(String descriptionText) {
+        return MessageConfiguration
+                .builder()
+                .embeds(Arrays.asList(EmbedConfiguration
+                        .builder()
+                        .description(descriptionText)
+                        .build()))
+                .build();
     }
 
-    private EmbedConfiguration getEmbedWithSingleFieldOfValue(String value) {
+    private MessageConfiguration getEmbedWithSingleFieldOfValue(String value) {
         List<EmbedField> fields = new ArrayList<>();
         fields.add(EmbedField.builder().name("name").value(value).build());
-        return EmbedConfiguration.builder().fields(fields).build();
+        return MessageConfiguration
+                .builder()
+                .embeds(Arrays.asList(EmbedConfiguration
+                        .builder()
+                        .fields(fields)
+                        .build()))
+                .build();
     }
 
     private String getEmbedTemplateKey() {
         return TEMPLATE_KEY + "_embed";
     }
 
-    private EmbedConfiguration getEmbedWithFields(List<String> fieldValues) {
+    private MessageConfiguration getEmbedWithFields(List<String> fieldValues) {
         List<EmbedField> fields = new ArrayList<>();
         fieldValues.forEach(s -> {
             fields.add(EmbedField.builder().name("name").value(s).build());
         });
-        return EmbedConfiguration.builder().fields(fields).build();
+        return MessageConfiguration
+                .builder()
+                .embeds(Arrays.asList(EmbedConfiguration
+                        .builder()
+                        .fields(fields)
+                        .build()))
+                .build();
     }
 
-    private EmbedConfiguration getTooManyFieldsEmbedConfiguration() {
+    private MessageConfiguration getTooManyFieldsEmbedConfiguration() {
         List<EmbedField> fields = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
             EmbedField field = EmbedField
@@ -412,7 +430,13 @@ public class TemplateServiceBeanTest {
                     .build();
             fields.add(field);
         }
-        return EmbedConfiguration.builder().fields(fields).build();
+        return MessageConfiguration
+                .builder()
+                .embeds(Arrays.asList(EmbedConfiguration
+                        .builder()
+                        .fields(fields)
+                        .build()))
+                .build();
     }
 
     private Templatable getTemplatableWithSimpleTemplate() {
@@ -429,7 +453,7 @@ public class TemplateServiceBeanTest {
         };
     }
 
-    private EmbedConfiguration getFullEmbedConfiguration() {
+    private MessageConfiguration getFullEmbedConfiguration() {
 
         EmbedAuthor author = EmbedAuthor
                 .builder()
@@ -463,17 +487,20 @@ public class TemplateServiceBeanTest {
                 .title("title")
                 .url(EXAMPLE_URL)
                 .build();
-        return EmbedConfiguration
+        return MessageConfiguration
                 .builder()
-                .fields(Arrays.asList(field))
-                .footer(footer)
-                .author(author)
-                .title(title)
-                .color(color)
-                .description("description")
+                .embeds(Arrays.asList(EmbedConfiguration
+                    .builder()
+                    .fields(Arrays.asList(field))
+                    .footer(footer)
+                    .author(author)
+                    .title(title)
+                    .color(color)
+                    .description("description")
+                    .imageUrl(EXAMPLE_URL)
+                    .thumbnail(EXAMPLE_URL)
+                    .build()))
                 .additionalMessage("additionalMessage")
-                .imageUrl(EXAMPLE_URL)
-                .thumbnail(EXAMPLE_URL)
                 .build();
     }
 
@@ -511,33 +538,33 @@ public class TemplateServiceBeanTest {
 
     private String getFieldsEmbedConfigAsString(Integer count) {
         StringBuilder sb = new StringBuilder();
-        sb.append("{\"fields\": [");
+        sb.append("{\"embeds\": [{\"fields\": [");
         for (int i = 0; i < count - 1; i++) {
             sb.append(FIELD_TEMPLATE + ",");
         }
         sb.append(FIELD_TEMPLATE +
-                "]\n" +
+                "]}]\n" +
                 "}");
         return sb.toString();
     }
 
     private String getFields(List<String> fieldValues) {
         StringBuilder sb = new StringBuilder();
-        sb.append("{\"fields\": [");
+        sb.append("{\"embeds\": [ {\"fields\": [");
         for (String fieldValue: fieldValues) {
             sb.append(getSingleFieldWithValue(fieldValue));
         }
-        sb.append("]\n" +
+        sb.append("]}]\n" +
                 "}");
         return sb.toString();
     }
 
     private String getSingleFieldWithValue(String value) {
-        return String.format("{\"fields\": [" + FIELD_TEMPLATE_WITH_VALUE + "]\n}",value);
+        return String.format("{\"embeds\": [{\"fields\": [" + FIELD_TEMPLATE_WITH_VALUE + "]}]\n}",value);
     }
 
     private String embedTemplateWithDescription(String description) {
-        return String.format("{ \"description\": \"%s\"}", description);
+        return String.format("{\"embeds\": [{ \"description\": \"%s\"}]}", description);
     }
 
     private String getEmbedPageCount(Integer page) {

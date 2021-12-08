@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.model;
 
 import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
-import dev.sheldan.abstracto.core.templating.model.EmbedConfiguration;
+import dev.sheldan.abstracto.core.templating.model.MessageConfiguration;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @Builder
 public class PaginatorConfiguration {
-    private List<EmbedConfiguration> embedConfigs;
+    private List<MessageConfiguration> embedConfigs;
     private String paginatorId;
     private Long timeoutSeconds;
     private Boolean restrictUser;
