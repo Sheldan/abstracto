@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -287,6 +288,11 @@ public class RoleServiceBean implements RoleService {
     @Override
     public ARole getFakeRoleFromId(Long roleId) {
         return ARole.builder().id(roleId).fake(true).build();
+    }
+
+    @Override
+    public CompletableFuture<Void> setRoleColorTo(Role role, Color color) {
+        return role.getManager().setColor(color).submit();
     }
 
     @PostConstruct
