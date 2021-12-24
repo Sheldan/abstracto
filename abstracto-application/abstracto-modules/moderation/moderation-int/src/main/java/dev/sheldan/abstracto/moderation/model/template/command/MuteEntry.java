@@ -1,28 +1,23 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
-import dev.sheldan.abstracto.core.models.MemberDisplayModel;
-import dev.sheldan.abstracto.moderation.model.database.Mute;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Duration;
+import java.time.Instant;
 
 @Getter
 @Setter
 @Builder
 public class MuteEntry {
-    /**
-     * The {@link Mute} of this entry
-     */
-    private Mute mute;
-    /**
-     * The {@link MemberDisplayModel} containing information about the user being muted. The member property is null if the user left the server
-     */
-    private MemberDisplayModel mutedUser;
-    /**
-     * The {@link MemberDisplayModel} containing information about the user muting. The member property is null if the user left the server
-     */
-    private MemberDisplayModel mutingUser;
+    private Long muteId;
+    private Long serverId;
+    private String reason;
+    private Instant muteDate;
+    private Boolean muteEnded;
+    private MemberDisplay mutedUser;
+    private MemberDisplay mutingUser;
     private Duration muteDuration;
 }

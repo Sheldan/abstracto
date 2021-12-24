@@ -1,8 +1,9 @@
 package dev.sheldan.abstracto.moderation.converter;
 
 import dev.sheldan.abstracto.core.models.FutureMemberPair;
-import dev.sheldan.abstracto.core.models.MemberDisplayModel;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -36,17 +37,32 @@ public class MuteEntryConverter {
     public CompletableFuture<List<MuteEntry>> fromMutes(List<Mute> mutes) {
         Map<ServerSpecificId, FutureMemberPair> loadedMutes = new HashMap<>();
         List<CompletableFuture<Member>> allFutures = new ArrayList<>();
+        Map<Long, CompletableFuture<Member>> memberCaching = new HashMap<>();
         mutes.forEach(mute -> {
-            CompletableFuture<Member> mutingMemberFuture = memberService.getMemberInServerAsync(mute.getMutingUser());
-            CompletableFuture<Member> mutedMemberFuture = memberService.getMemberInServerAsync(mute.getMutedUser());
+            AUserInAServer mutingUser = mute.getMutingUser();
+            AUserInAServer mutedUser = mute.getMutedUser();
+            CompletableFuture<Member> mutedFuture;
+            if(memberCaching.containsKey(mutedUser.getUserInServerId())) {
+                mutedFuture = memberCaching.get(mutedUser.getUserInServerId());
+            } else {
+                mutedFuture = memberService.getMemberInServerAsync(mutedUser);
+                memberCaching.put(mutedUser.getUserInServerId(), mutedFuture);
+            }
+            CompletableFuture<Member> mutingFuture;
+            if(memberCaching.containsKey(mutingUser.getUserInServerId())) {
+                mutingFuture = memberCaching.get(mutingUser.getUserInServerId());
+            } else {
+                mutingFuture = memberService.getMemberInServerAsync(mutingUser);
+                memberCaching.put(mutingUser.getUserInServerId(), mutingFuture);
+            }
             FutureMemberPair futurePair = FutureMemberPair
                     .builder()
-                    .firstMember(mutingMemberFuture)
-                    .secondMember(mutedMemberFuture)
+                    .firstMember(mutingFuture)
+                    .secondMember(mutedFuture)
                     .build();
             loadedMutes.put(mute.getMuteId(), futurePair);
-            allFutures.add(mutingMemberFuture);
-            allFutures.add(mutedMemberFuture);
+            allFutures.add(mutingFuture);
+            allFutures.add(mutedFuture);
         });
         CompletableFuture<List<MuteEntry>> future = new CompletableFuture<>();
         FutureUtils.toSingleFutureGeneric(allFutures)
@@ -67,23 +83,28 @@ public class MuteEntryConverter {
             FutureMemberPair memberPair = loadedMuteInfo.get(muteInfo);
             Mute mute = muteManagementService.findMute(muteInfo.getId(), muteInfo.getServerId());
             Member mutedMember = !memberPair.getSecondMember().isCompletedExceptionally() ? memberPair.getSecondMember().join() : null;
-            MemberDisplayModel mutedUser = MemberDisplayModel
+            MemberDisplay mutedUser = MemberDisplay
                     .builder()
-                    .member(mutedMember)
+                    .memberMention(mutedMember != null ? mutedMember.getAsMention() : null)
                     .userId(mute.getMutedUser().getUserReference().getId())
+                    .serverId(mute.getServer().getId())
                     .build();
 
             Member mutingMember = !memberPair.getFirstMember().isCompletedExceptionally() ? memberPair.getFirstMember().join() : null;
-            MemberDisplayModel mutingUser = MemberDisplayModel
+            MemberDisplay mutingUser = MemberDisplay
                     .builder()
-                    .member(mutingMember)
+                    .memberMention(mutingMember != null ? mutingMember.getAsMention() : null)
                     .userId(mute.getMutingUser().getUserReference().getId())
                     .build();
             MuteEntry entry = MuteEntry
                     .builder()
                     .mutedUser(mutedUser)
                     .mutingUser(mutingUser)
-                    .mute(mute)
+                    .muteId(mute.getMuteId().getId())
+                    .serverId(mute.getMuteId().getServerId())
+                    .reason(mute.getReason())
+                    .muteDate(mute.getMuteDate())
+                    .muteEnded(mute.getMuteEnded())
                     .muteDuration(Duration.between(mute.getMuteDate(), mute.getMuteTargetDate()))
                     .build();
             entries.add(entry);

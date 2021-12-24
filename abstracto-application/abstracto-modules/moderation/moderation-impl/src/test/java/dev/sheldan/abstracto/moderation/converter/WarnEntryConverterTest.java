@@ -111,18 +111,14 @@ public class WarnEntryConverterTest {
         List<WarnEntry> models = testUnit.loadFullWarnEntries(map);
         Assert.assertEquals(2, models.size());
         WarnEntry firstEntry = models.get(0);
-        Assert.assertEquals(warningMember, firstEntry.getWarningUser().getMember());
-        Assert.assertEquals(warnedMember, firstEntry.getWarnedUser().getMember());
         Assert.assertEquals(USER_ID_1, firstEntry.getWarnedUser().getUserId());
         Assert.assertEquals(USER_ID_2, firstEntry.getWarningUser().getUserId());
-        Assert.assertEquals(WARN_ID_1, firstEntry.getWarning().getWarnId().getId());
-        Assert.assertEquals(SERVER_ID, firstEntry.getWarning().getWarnId().getServerId());
+        Assert.assertEquals(WARN_ID_1, firstEntry.getWarnId());
+        Assert.assertEquals(SERVER_ID, firstEntry.getServerId());
         WarnEntry secondEntry = models.get(1);
-        Assert.assertEquals(warningMember, secondEntry.getWarningUser().getMember());
-        Assert.assertEquals(warnedMember, secondEntry.getWarnedUser().getMember());
         Assert.assertEquals(USER_ID_1, secondEntry.getWarnedUser().getUserId());
         Assert.assertEquals(USER_ID_2, secondEntry.getWarningUser().getUserId());
-        Assert.assertEquals(WARN_ID_2, secondEntry.getWarning().getWarnId().getId());
-        Assert.assertEquals(SERVER_ID, secondEntry.getWarning().getWarnId().getServerId());
+        Assert.assertEquals(WARN_ID_2, secondEntry.getWarnId());
+        Assert.assertEquals(SERVER_ID, secondEntry.getServerId());
     }
 }

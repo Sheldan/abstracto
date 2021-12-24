@@ -82,11 +82,9 @@ public class UserNotesConverterTest {
         List<NoteEntryModel> models = testUnit.loadFullNotes(map);
         Assert.assertEquals(2, models.size());
         NoteEntryModel firstEntry = models.get(0);
-        Assert.assertEquals(member, firstEntry.getFullUser().getMember());
-        Assert.assertEquals(userInAServer, firstEntry.getFullUser().getAUserInAServer());
+        Assert.assertEquals(member, firstEntry.getMember());
         NoteEntryModel secondEntry = models.get(1);
-        Assert.assertEquals(member, secondEntry.getFullUser().getMember());
-        Assert.assertEquals(userInAServer, secondEntry.getFullUser().getAUserInAServer());
+        Assert.assertEquals(member, secondEntry.getMember());
     }
 
 }
