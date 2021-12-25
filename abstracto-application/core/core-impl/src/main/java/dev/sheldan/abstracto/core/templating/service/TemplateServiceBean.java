@@ -201,10 +201,6 @@ public class TemplateServiceBean implements TemplateService {
         if(messageConfiguration.getMessageConfig() != null && messageConfiguration.getMessageConfig().getMessageLimit() != null) {
             messageLimit = Math.min(messageLimit, messageConfiguration.getMessageConfig().getMessageLimit());
         }
-        if(embeds.size() > messageLimit) {
-            log.info("Limiting size of embeds. Max allowed: {}, currently: {}.", messageLimit, embeds.size());
-            embeds.subList(messageLimit.intValue(), embeds.size()).clear();
-        }
         if(messages.size() > messageLimit) {
             log.info("Limiting size of messages. Max allowed: {}, currently: {}.", messageLimit, messages.size());
             messages.subList(messageLimit.intValue(), messages.size()).clear();

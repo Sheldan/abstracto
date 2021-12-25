@@ -498,10 +498,23 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .map(CompletableFuture::join)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+            List<String> imageUrls = messageFromUser
+                    .getAttachments()
+                    .stream()
+                    .filter(Message.Attachment::isImage)
+                    .map(Message.Attachment::getProxyUrl)
+                    .collect(Collectors.toList());
+            Map<String, String> otherAttachments = messageFromUser
+                    .getAttachments()
+                    .stream()
+                    .filter(attachment -> !attachment.isImage())
+                    .collect(Collectors.toMap(Message.Attachment::getFileName, Message.Attachment::getUrl));
             ModMailUserReplyModel modMailUserReplyModel = ModMailUserReplyModel
                     .builder()
                     .postedMessage(messageFromUser)
                     .member(member)
+                    .attachedImageUrls(imageUrls)
+                    .remainingAttachments(otherAttachments)
                     .subscribers(subscribers)
                     .build();
             MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel, textChannel.getGuild().getIdLong());
@@ -568,11 +581,24 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .aUserInAServer(modMailThread.getUser())
                 .member(targetMember)
                 .build();
+        List<String> imageUrls = replyCommandMessage
+                .getAttachments()
+                .stream()
+                .filter(Message.Attachment::isImage)
+                .map(Message.Attachment::getProxyUrl)
+                .collect(Collectors.toList());
+        Map<String, String> otherAttachments = replyCommandMessage
+                .getAttachments()
+                .stream()
+                .filter(attachment -> !attachment.isImage())
+                .collect(Collectors.toMap(Message.Attachment::getFileName, Message.Attachment::getUrl));
         ModMailModeratorReplyModel.ModMailModeratorReplyModelBuilder modMailModeratorReplyModelBuilder = ModMailModeratorReplyModel
                 .builder()
                 .text(text)
                 .modMailThread(modMailThread)
                 .postedMessage(replyCommandMessage)
+                .remainingAttachments(otherAttachments)
+                .attachedImageUrls(imageUrls)
                 .anonymous(anonymous)
                 .threadUser(fullThreadUser);
         if(anonymous) {
@@ -798,7 +824,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                                 return modMailMessage.getCreatedMessageInChannel().equals(message.getIdLong());
                             }
                         })
-                        .findFirst().orElseThrow(() -> new AbstractoRunTimeException("Could not find desired message in list of messages in thread. This should not happen, as we just retrieved them from the same place."));
+                        .findFirst()
+                        .orElseThrow(() -> new AbstractoRunTimeException("Could not find desired message in list of messages in thread. This should not happen, as we just retrieved them from the same place."));
                 User author = authors.getOrDefault(modmailMessage.getAuthor().getUserReference().getId(), message.getJDA().getSelfUser());
                 ModMailLoggedMessageModel modMailLoggedMessageModel =
                         ModMailLoggedMessageModel

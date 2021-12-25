@@ -28,8 +28,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -106,11 +109,24 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
                     .aUserInAServer(modMailMessage.getThreadReference().getUser())
                     .member(targetMember)
                     .build();
+            List<String> imageUrls = loadedMessage
+                    .getAttachments()
+                    .stream()
+                    .filter(Message.Attachment::isImage)
+                    .map(Message.Attachment::getProxyUrl)
+                    .collect(Collectors.toList());
+            Map<String, String> otherAttachments = loadedMessage
+                    .getAttachments()
+                    .stream()
+                    .filter(attachment -> !attachment.isImage())
+                    .collect(Collectors.toMap(Message.Attachment::getFileName, Message.Attachment::getUrl));
             ModMailModeratorReplyModel.ModMailModeratorReplyModelBuilder modMailModeratorReplyModelBuilder = ModMailModeratorReplyModel
                     .builder()
                     .text(newText)
                     .modMailThread(modMailMessage.getThreadReference())
                     .postedMessage(loadedMessage)
+                    .attachedImageUrls(imageUrls)
+                    .remainingAttachments(otherAttachments)
                     .anonymous(modMailMessage.getAnonymous())
                     .threadUser(fullThreadUser);
             if(modMailMessage.getAnonymous()) {

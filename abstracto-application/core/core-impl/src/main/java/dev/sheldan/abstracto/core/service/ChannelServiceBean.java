@@ -314,12 +314,12 @@ public class ChannelServiceBean implements ChannelService {
             messageAction = channel.editMessageById(messageId, messageToSend.getMessages().get(0));
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
                 log.debug("Also editing the embed for message {}.", messageId);
-                messageAction = messageAction.setEmbeds(messageToSend.getEmbeds().get(0));
+                messageAction = messageAction.setEmbeds(messageToSend.getEmbeds());
             }
         } else {
             log.debug("Editing message {} with new embeds.", messageId);
             if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
-                messageAction = channel.editMessageEmbedsById(messageId, messageToSend.getEmbeds().get(0));
+                messageAction = channel.editMessageEmbedsById(messageId, messageToSend.getEmbeds());
             } else {
                 throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }

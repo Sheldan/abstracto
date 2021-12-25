@@ -8,6 +8,9 @@ import lombok.Setter;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Model used to render the response by staff members to the DM channel with the user
  */
@@ -36,6 +39,8 @@ public class ModMailModeratorReplyModel {
      * Whether or not the reply should be shown anonymous
      */
     private Boolean anonymous;
+    private List<String> attachedImageUrls;
+    private Map<String, String> remainingAttachments;
     /**
      * The {@link ModMailThread} to reply to
      */
