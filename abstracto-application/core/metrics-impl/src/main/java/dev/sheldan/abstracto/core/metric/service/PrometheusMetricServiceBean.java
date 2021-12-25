@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -15,26 +16,28 @@ import java.util.function.ToDoubleFunction;
 @Slf4j
 public class PrometheusMetricServiceBean implements MetricService {
 
-    private final List<Counter> counters = new ArrayList<>();
-    private final List<Gauge> gauges = new ArrayList<>();
+    private final List<Counter> counters = Collections.synchronizedList(new ArrayList<>());
+    private final List<Gauge> gauges = Collections.synchronizedList(new ArrayList<>());
 
     @Autowired
     private MeterRegistry registry;
 
     @Override
     public void registerCounter(CounterMetric metric, String description) {
-        if(doesCounterExist(metric)) {
-            throw new IllegalArgumentException("Counter metric already exists.");
+        synchronized (counters) {
+            if(doesCounterExist(metric)) {
+                throw new IllegalArgumentException("Counter metric already exists.");
+            }
+            List<Tag> micrometerTags = new ArrayList<>();
+            metric.getTagList().forEach(metricTag ->
+                    micrometerTags.add(Tag.of(metricTag.getKey(), metricTag.getValue()))
+            );
+            Counter counter = Counter.builder(metric.getName())
+                    .tags(micrometerTags)
+                    .description(description)
+                    .register(registry);
+            counters.add(counter);
         }
-        List<Tag> micrometerTags = new ArrayList<>();
-        metric.getTagList().forEach(metricTag ->
-                micrometerTags.add(Tag.of(metricTag.getKey(), metricTag.getValue()))
-        );
-        Counter counter = Counter.builder(metric.getName())
-                .tags(micrometerTags)
-                .description(description)
-                .register(registry);
-        counters.add(counter);
     }
 
     @Override
@@ -44,18 +47,20 @@ public class PrometheusMetricServiceBean implements MetricService {
 
     @Override
     public void registerGauge(CounterMetric counterMetric, Supplier<Number> f, String help, String baseUnit) {
-        List<Tag> micrometerTags = new ArrayList<>();
-        counterMetric.getTagList().forEach(metricTag ->
-                micrometerTags.add(Tag.of(metricTag.getKey(), metricTag.getValue()))
-        );
+        synchronized (gauges) {
+            List<Tag> micrometerTags = new ArrayList<>();
+            counterMetric.getTagList().forEach(metricTag ->
+                    micrometerTags.add(Tag.of(metricTag.getKey(), metricTag.getValue()))
+            );
+            Gauge gauge = Gauge
+                    .builder(counterMetric.getName(), f)
+                    .tags(micrometerTags)
+                    .baseUnit(baseUnit)
+                    .description(help)
+                    .register(registry);
+            gauges.add(gauge);
+        }
 
-        Gauge gauge = Gauge
-                .builder(counterMetric.getName(), f)
-                .tags(micrometerTags)
-                .baseUnit(baseUnit)
-                .description(help)
-                .register(registry);
-        gauges.add(gauge);
     }
 
     @Override
@@ -65,18 +70,19 @@ public class PrometheusMetricServiceBean implements MetricService {
 
     @Override
     public <T> void registerGauge(CounterMetric counterMetric, T obj, ToDoubleFunction<T> f, String help, String baseUnit) {
-        List<Tag> micrometerTags = new ArrayList<>();
-        counterMetric.getTagList().forEach(metricTag ->
-                micrometerTags.add(Tag.of(metricTag.getKey(), metricTag.getValue()))
-        );
-
-        Gauge gauge = Gauge
-                .builder(counterMetric.getName(), obj, f)
-                .tags(micrometerTags)
-                .baseUnit(baseUnit)
-                .description(help)
-                .register(registry);
-        gauges.add(gauge);
+        synchronized (gauges) {
+            List<Tag> micrometerTags = new ArrayList<>();
+            counterMetric.getTagList().forEach(metricTag ->
+                    micrometerTags.add(Tag.of(metricTag.getKey(), metricTag.getValue()))
+            );
+            Gauge gauge = Gauge
+                    .builder(counterMetric.getName(), obj, f)
+                    .tags(micrometerTags)
+                    .baseUnit(baseUnit)
+                    .description(help)
+                    .register(registry);
+            gauges.add(gauge);
+        }
     }
 
     @Override
@@ -86,10 +92,12 @@ public class PrometheusMetricServiceBean implements MetricService {
 
     @Override
     public void incrementCounter(CounterMetric counterMetric, Long amount) {
-        Optional<Counter> counterOptional = counters.stream().filter(counter -> compareCounterIdAndCounterMetric(counter.getId(), counterMetric)).findFirst();
-        counterOptional.ifPresent(counter -> counter.increment(amount));
-        if(!counterOptional.isPresent()) {
-            log.warn("Trying to increment counter {} with tags {}, which was not available (yet).", counterMetric.getName(), String.join(counterMetric.getTagList().toString()));
+        synchronized (counters) {
+            Optional<Counter> counterOptional = counters.stream().filter(counter -> compareCounterIdAndCounterMetric(counter.getId(), counterMetric)).findFirst();
+            counterOptional.ifPresent(counter -> counter.increment(amount));
+            if(!counterOptional.isPresent()) {
+                log.warn("Trying to increment counter {} with tags {}, which was not available (yet).", counterMetric.getName(), String.join(counterMetric.getTagList().toString()));
+            }
         }
     }
 

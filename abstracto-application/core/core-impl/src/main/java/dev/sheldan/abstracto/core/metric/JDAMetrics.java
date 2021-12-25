@@ -33,9 +33,9 @@ public class JDAMetrics extends ListenerAdapter {
                             .tagList(Arrays.asList(MetricTag.getTag(EVENT_CLASS, eventName)))
                             .name(JDA_EVENT_METRIC)
                             .build();
-            log.info("Registering new metric for event {}. There are now {} metrics.", eventName, coveredEvents.size());
             metricService.registerCounter(metric, "Events of type " + eventName);
             coveredEvents.put(event.getClass(), metric);
+            log.info("Registering new metric for event {}. There are now {} metrics.", eventName, coveredEvents.size());
         }
         metricService.incrementCounter(coveredEvents.get(event.getClass()));
     }
