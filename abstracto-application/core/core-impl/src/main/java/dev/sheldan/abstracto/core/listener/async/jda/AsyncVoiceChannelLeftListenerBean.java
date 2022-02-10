@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 public class AsyncVoiceChannelLeftListenerBean extends ListenerAdapter {
 
-    @Autowired
+    @Autowired(required = false)
     private List<AsyncVoiceChannelLeftListener> listenerList;
 
     @Autowired

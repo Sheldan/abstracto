@@ -37,6 +37,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,10 +150,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
         try {
             UnParsedCommandResult result = getUnparsedCommandResult(message);
             CompletableFuture<CommandParseResult> parsingFuture = getParametersFromMessage(message, result);
-            parsingFuture.thenAccept(parsedParameters ->
-                self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters())
-            ).exceptionally(throwable -> {
-                self.reportException(event, result.getCommand(), throwable, "Exception when executing or parsing command.");
+            parsingFuture.thenAccept(parsedParameters -> self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters()));
+            parsingFuture.exceptionally(throwable -> {
+                self.reportException(event, result.getCommand(), throwable, "Exception when parsing command.");
                 return null;
             });
         } catch (Exception e) {
