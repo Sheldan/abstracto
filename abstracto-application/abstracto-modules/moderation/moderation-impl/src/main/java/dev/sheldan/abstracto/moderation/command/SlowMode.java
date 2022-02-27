@@ -43,7 +43,11 @@ public class SlowMode extends AbstractConditionableCommand {
                 throw new EntityGuildMismatchException();
             }
         } else {
-            channel = commandContext.getChannel();
+            if(commandContext.getChannel() instanceof TextChannel) {
+                channel = (TextChannel) commandContext.getChannel();
+            } else {
+                throw new IllegalArgumentException("Not a text channel.");
+            }
         }
         return slowModeService.setSlowMode(channel, duration)
                 .thenApply(aVoid -> CommandResult.fromSuccess());

@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public interface ChannelService {
     void sendTextToChannelNotAsync(String text, MessageChannel channel);
     CompletableFuture<Message> sendTextToAChannel(String text, AChannel channel);
     CompletableFuture<Message> sendMessageToAChannel(Message message, AChannel channel);
-    CompletableFuture<Message> sendMessageToChannel(Message message, MessageChannel channel);
+    CompletableFuture<Message> sendMessageToChannel(Message message, GuildMessageChannel channel);
     CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel);
     CompletableFuture<Message> sendEmbedToAChannel(MessageEmbed embed, AChannel channel);
     CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel);
@@ -34,7 +33,7 @@ public interface ChannelService {
      * @param textChannel The {@link MessageChannel} to send the messages to
      * @return A list of {@link CompletableFuture} representing each potential message sent
      */
-    List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel);
+    List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel messageChannel);
     void editMessageInAChannel(MessageToSend messageToSend, AChannel channel, Long messageId);
     void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId);
     CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId);
@@ -47,23 +46,32 @@ public interface ChannelService {
     CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index, Integer embedIndex);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
-    List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, TextChannel channel);
+    List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, MessageChannel channel);
     List<CompletableFuture<Message>> sendEmbedTemplateInMessageChannelList(String templateKey, Object model, MessageChannel channel);
-    CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, TextChannel channel);
+    CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, MessageChannel channel);
     CompletableFuture<Message> sendTextTemplateInMessageChannel(String templateKey, Object model, MessageChannel channel);
-    RestAction<Void> deleteMessagesInChannel(TextChannel textChannel, List<Message> messages);
+    CompletableFuture<Void> deleteMessagesInChannel(MessageChannel messageChannel, List<Message> messages);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
-    Optional<TextChannel> getChannelFromAChannel(AChannel channel);
-    AChannel getFakeChannelFromTextChannel(TextChannel textChannel);
+    Optional<GuildChannel> getChannelFromAChannel(AChannel channel);
+    Optional<GuildMessageChannel> getGuildMessageChannelFromAChannelOptional(AChannel channel);
+    GuildMessageChannel getGuildMessageChannelFromAChannel(AChannel channel);
+    AChannel getFakeChannelFromTextChannel(MessageChannel messageChannel);
     CompletableFuture<Message> sendSimpleTemplateToChannel(Long serverId, Long channelId, String template);
-    CompletableFuture<MessageHistory> getHistoryOfChannel(TextChannel channel, Long startMessageId, Integer amount);
-    Optional<TextChannel> getTextChannelFromServerOptional(Guild serverId, Long textChannelId);
-    TextChannel getTextChannelFromServer(Guild guild, Long textChannelId);
-    TextChannel getTextChannelFromServerNullable(Guild guild, Long textChannelId);
+    CompletableFuture<MessageHistory> getHistoryOfChannel(MessageChannel channel, Long startMessageId, Integer amount);
+    Optional<GuildChannel> getGuildChannelFromServerOptional(Guild serverId, Long textChannelId);
+    GuildMessageChannel getMessageChannelFromServer(Guild guild, Long textChannelId);
+
+    GuildMessageChannel getMessageChannelFromServer(Long serverId, Long textChannelId);
+    Optional<GuildMessageChannel> getMessageChannelFromServerOptional(Long serverId, Long textChannelId);
+
+    GuildMessageChannel getMessageChannelFromServerNullable(Guild guild, Long textChannelId);
+    Optional<GuildChannel> getGuildChannelFromServerOptional(Long serverId, Long textChannelId);
+
+    GuildChannel getGuildChannelFromServer(Long serverId, Long channelId);
+
     Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId);
-    TextChannel getTextChannelFromServer(Long serverId, Long textChannelId);
     CompletableFuture<Void> setSlowModeInChannel(TextChannel textChannel, Integer seconds);
-    List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, TextChannel channel);
-    List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, TextChannel channel);
+    List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, MessageChannel channel);
+    List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, MessageChannel channel);
 }

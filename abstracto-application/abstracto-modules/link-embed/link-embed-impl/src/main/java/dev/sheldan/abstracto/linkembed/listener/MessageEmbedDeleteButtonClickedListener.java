@@ -16,7 +16,7 @@ import dev.sheldan.abstracto.linkembed.service.MessageEmbedMetricService;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedServiceBean;
 import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +51,7 @@ public class MessageEmbedDeleteButtonClickedListener implements ButtonClickedLis
 
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
-        ButtonClickEvent event = model.getEvent();
+        ButtonInteractionEvent event = model.getEvent();
         MessageEmbedDeleteButtonPayload payload = (MessageEmbedDeleteButtonPayload) model.getDeserializedPayload();
         Long clickingUserId = event.getInteraction().getUser().getIdLong();
         boolean embeddedUserRemoves = clickingUserId.equals(payload.getEmbeddedUserId());
@@ -77,7 +77,7 @@ public class MessageEmbedDeleteButtonClickedListener implements ButtonClickedLis
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return MessageEmbedServiceBean.MESSAGE_EMBED_DELETE_ORIGIN.equals(model.getOrigin());
+        return MessageEmbedServiceBean.MESSAGE_EMBED_DELETE_ORIGIN.equals(model.getOrigin()) && model.getEvent().isFromGuild();
     }
 
     @Override

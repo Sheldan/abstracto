@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
+import dev.sheldan.abstracto.core.utils.ChannelUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Category;
 
 /**
  * Model which is used when setting up the mod mail feature. The category property will be used when there is already a category
@@ -13,5 +13,10 @@ import net.dv8tion.jda.api.entities.Category;
 @Setter
 @Builder
 public class SetupModMailCategoryMessageModel {
-    private Category category;
+    private Long serverId;
+    private Long categoryId;
+
+    public String getCategoryAsMention() {
+        return ChannelUtils.getAsMention(this.getCategoryId());
+    }
 }

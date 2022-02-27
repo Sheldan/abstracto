@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class PaginatorServiceBean implements PaginatorService {
     private static final ReentrantLock lock = new ReentrantLock();
 
     @Override
-    public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, TextChannel textChannel, Long userId) {
+    public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, GuildMessageChannel textChannel, Long userId) {
         Long serverId = textChannel.getGuild().getIdLong();
         String exitButtonId = componentService.generateComponentId(serverId);
         String startButtonId = componentService.generateComponentId(serverId);

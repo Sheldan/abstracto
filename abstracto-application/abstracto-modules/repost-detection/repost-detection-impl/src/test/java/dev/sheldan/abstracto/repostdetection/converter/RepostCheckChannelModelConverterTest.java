@@ -62,11 +62,11 @@ public class RepostCheckChannelModelConverterTest {
         AChannel channel1 = Mockito.mock(AChannel.class);
         when(channel1.getId()).thenReturn(channelId1);
         TextChannel textChannel = Mockito.mock(TextChannel.class);
-        when(channelService.getTextChannelFromServerNullable(guild, channelId1)).thenReturn(textChannel);
+        when(channelService.getMessageChannelFromServerNullable(guild, channelId1)).thenReturn(textChannel);
         Long channelId2 = 2L;
         AChannel channel2 = Mockito.mock(AChannel.class);
         when(channel2.getId()).thenReturn(channelId2);
-        when(channelService.getTextChannelFromServerNullable(guild, channelId2)).thenReturn(null);
+        when(channelService.getMessageChannelFromServerNullable(guild, channelId2)).thenReturn(null);
         when(group.getChannels()).thenReturn(Arrays.asList(channel1, channel2));
         RepostCheckChannelsModel model = testUnit.fromRepostCheckChannelGroups(Arrays.asList(element), guild);
         Assert.assertEquals(1, model.getRepostCheckChannelGroups().size());

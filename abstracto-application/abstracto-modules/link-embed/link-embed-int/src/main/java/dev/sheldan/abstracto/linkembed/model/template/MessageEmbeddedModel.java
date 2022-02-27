@@ -6,8 +6,8 @@ import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 
 @Getter
@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.entities.User;
 public class MessageEmbeddedModel extends UserInitiatedServerContext {
     private CachedMessage embeddedMessage;
     private User author;
-    private TextChannel sourceChannel;
+    private GuildMessageChannel sourceChannel;
     private Member embeddingUser;
     private ButtonConfigModel buttonConfigModel;
     private Long referencedMessageId;

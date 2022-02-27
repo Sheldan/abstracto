@@ -15,7 +15,7 @@ import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,21 +66,17 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     private Gson gson;
 
     @Override
-    public void onButtonClick(@NotNull ButtonClickEvent event) {
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         if(listenerList == null) return;
-        if(event.getGuild() != null) {
-            event.deferEdit().queue();
-            CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), buttonClickedExecutor).exceptionally(throwable -> {
-                log.error("Failed to execute listener logic in async button event.", throwable);
-                return null;
-            });
-        } else {
-            log.warn("Received button clicked event outside of guild with id {}.", event.getComponentId());
-        }
+        event.deferEdit().queue();
+        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), buttonClickedExecutor).exceptionally(throwable -> {
+            log.error("Failed to execute listener logic in async button event.", throwable);
+            return null;
+        });
     }
 
     @Transactional
-    public void executeListenerLogic(@NotNull ButtonClickEvent event) {
+    public void executeListenerLogic(@NotNull ButtonInteractionEvent event) {
         ButtonClickedListenerModel model = null;
         ButtonClickedListener listener = null;
         try {
@@ -104,8 +100,12 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
                 log.warn("No callback found for id {}.", event.getComponentId());
             }
         } catch (Exception exception) {
-            log.error("Button clicked listener failed with exception in server {} and channel {}.", event.getGuild().getIdLong(),
-                    event.getGuildChannel().getIdLong(), exception);
+            if(event.isFromGuild()) {
+                log.error("Button clicked listener failed with exception in server {} and channel {}.", event.getGuild().getIdLong(),
+                        event.getGuildChannel().getIdLong(), exception);
+            } else {
+                log.error("Button clicked listener failed with exception outside of a guild.", exception);
+            }
             if(model != null && listener != null) {
                 InteractionResult result = InteractionResult.fromError("Failed to execute interaction.", exception);
                 if(postInteractionExecutions != null) {
@@ -125,6 +125,9 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     private List<ButtonClickedListener> filterFeatureAwareListener(List<ButtonClickedListener> featureAwareListeners, ButtonClickedListenerModel model) {
         return featureAwareListeners.stream().filter(trFeatureAwareListener -> {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(trFeatureAwareListener.getFeature());
+            if(!model.getEvent().isFromGuild()) {
+                return true;
+            }
             if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {
                 return false;
             }
@@ -132,7 +135,7 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
         }).collect(Collectors.toList());
     }
 
-    private ButtonClickedListenerModel getModel(ButtonClickEvent event, ComponentPayload componentPayload) throws ClassNotFoundException {
+    private ButtonClickedListenerModel getModel(ButtonInteractionEvent event, ComponentPayload componentPayload) throws ClassNotFoundException {
         ButtonPayload payload = null;
         if(componentPayload.getPayloadType() != null && componentPayload.getPayload() != null) {
             payload = (ButtonPayload) gson.fromJson(componentPayload.getPayload(), Class.forName(componentPayload.getPayloadType()));

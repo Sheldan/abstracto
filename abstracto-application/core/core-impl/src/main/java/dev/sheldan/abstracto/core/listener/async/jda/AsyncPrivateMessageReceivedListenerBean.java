@@ -5,7 +5,8 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.CacheEntityService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,7 +45,8 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onPrivateMessageReceived(@Nonnull PrivateMessageReceivedEvent event) {
+    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+        if(!event.isFromType(ChannelType.PRIVATE)) return;
         if(privateMessageReceivedListeners == null) return;
         if(event.getAuthor().getId().equals(botService.getInstance().getSelfUser().getId())) {
             return;
@@ -61,7 +63,7 @@ public class AsyncPrivateMessageReceivedListenerBean extends ListenerAdapter {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeIndividualPrivateMessageReceivedListener(CachedMessage cachedMessage, AsyncPrivateMessageReceivedListener messageReceivedListener, PrivateMessageReceivedEvent event) {
+    public void executeIndividualPrivateMessageReceivedListener(CachedMessage cachedMessage, AsyncPrivateMessageReceivedListener messageReceivedListener, MessageReceivedEvent event) {
         try {
             log.debug("Executing private message listener {} for member {}.", messageReceivedListener.getClass().getName(), cachedMessage.getAuthor().getAuthorId());
             messageReceivedListener.execute(cachedMessage);

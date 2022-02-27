@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.modmail.model.template.ModMailCategoryActionModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Category;
 
 /**
  * This represents both an instance of a {@link DelayedActionConfig} used to be executed in the
@@ -19,7 +18,6 @@ import net.dv8tion.jda.api.entities.Category;
 public class ModMailCategoryDelayedActionConfig implements DelayedActionConfig {
     private Long serverId;
     private Long categoryId;
-    private Category category;
 
     @Override
     public String getTemplateName() {
@@ -30,7 +28,7 @@ public class ModMailCategoryDelayedActionConfig implements DelayedActionConfig {
     public Object getTemplateModel() {
         return ModMailCategoryActionModel
                 .builder()
-                .category(this.category)
+                .serverId(serverId)
                 .categoryId(categoryId)
                 .build();
     }

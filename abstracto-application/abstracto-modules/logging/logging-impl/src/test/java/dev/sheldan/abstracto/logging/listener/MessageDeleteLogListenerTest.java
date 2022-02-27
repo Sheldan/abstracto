@@ -108,7 +108,7 @@ public class MessageDeleteLogListenerTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(member.getGuild()).thenReturn(guild);
         when(templateService.renderEmbedTemplate(eq(MessageDeleteLogListener.MESSAGE_DELETED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getMessageChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         testUnit.executeListener(deletedMessage, member);
         verify(postTargetService, times(1)).sendEmbedInPostTarget(messageToSend, LoggingPostTarget.DELETE_LOG, SERVER_ID);
         MessageDeletedLog messageDeletedLog = captor.getValue();
@@ -123,7 +123,7 @@ public class MessageDeleteLogListenerTest {
         String attachmentUrl = "url";
         when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
-        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getMessageChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         CachedAttachment cachedAttachment = Mockito.mock(CachedAttachment.class);
         when(cachedAttachment.getProxyUrl()).thenReturn(attachmentUrl);
         List<CachedAttachment> attachmentList = Arrays.asList(cachedAttachment);
@@ -147,7 +147,7 @@ public class MessageDeleteLogListenerTest {
     public void testExecuteListenerWithTwoAttachment() {
         when(deletedMessage.getServerId()).thenReturn(SERVER_ID);
         when(deletedMessage.getChannelId()).thenReturn(CHANNEL_ID);
-        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
+        when(channelService.getMessageChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(textChannel);
         String attachmentUrl = "url";
         String secondAttachmentUrl = "url2";
         CachedAttachment cachedAttachment = Mockito.mock(CachedAttachment.class);

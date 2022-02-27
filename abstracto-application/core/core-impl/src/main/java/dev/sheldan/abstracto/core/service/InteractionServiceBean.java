@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageAction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,10 +87,12 @@ public class InteractionServiceBean implements InteractionService {
             AServer server = serverManagementService.loadServer(interactionHook.getInteraction().getGuild());
             allMessageActions.set(0, allMessageActions.get(0).addActionRows(actionRows));
             actionRows.forEach(components -> components.forEach(component -> {
-                String id = component.getId();
-                MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                if(payload.getPersistCallback()) {
-                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                if(component instanceof ActionComponent) {
+                    String id = ((ActionComponent)component).getId();
+                    MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                    if(payload.getPersistCallback()) {
+                        componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                    }
                 }
             }));
         }

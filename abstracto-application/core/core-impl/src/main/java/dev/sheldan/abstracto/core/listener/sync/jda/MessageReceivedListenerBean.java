@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,7 +61,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         metricService.incrementCounter(MESSAGE_RECEIVED_COUNTER);
         messageCache.putMessageInCache(event.getMessage());
         if(listenerList == null) return;
@@ -70,7 +70,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
 
     }
 
-    private MessageReceivedModel getModel(GuildMessageReceivedEvent event) {
+    private MessageReceivedModel getModel(MessageReceivedEvent event) {
         return MessageReceivedModel
                 .builder()
                 .message(event.getMessage())

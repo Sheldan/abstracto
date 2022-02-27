@@ -12,8 +12,8 @@ import dev.sheldan.abstracto.suggestion.model.template.SuggestionButtonPayload;
 import dev.sheldan.abstracto.suggestion.service.SuggestionServiceBean;
 import dev.sheldan.abstracto.suggestion.service.SuggestionVoteService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.interactions.components.ButtonInteraction;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +33,7 @@ public class SuggestionButtonVoteClickedListener implements ButtonClickedListene
 
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
-        ButtonClickEvent event = model.getEvent();
+        ButtonInteractionEvent event = model.getEvent();
         SuggestionButtonPayload payload = (SuggestionButtonPayload) model.getDeserializedPayload();
         suggestionVoteService.upsertSuggestionVote(event.getMember(), payload.getDecision(), payload.getSuggestionId());
         ButtonInteraction buttonInteraction = model.getEvent().getInteraction();
@@ -58,7 +58,7 @@ public class SuggestionButtonVoteClickedListener implements ButtonClickedListene
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return SuggestionServiceBean.SUGGESTION_VOTE_ORIGIN.equals(model.getOrigin());
+        return SuggestionServiceBean.SUGGESTION_VOTE_ORIGIN.equals(model.getOrigin()) && model.getEvent().isFromGuild();
     }
 
     @Override

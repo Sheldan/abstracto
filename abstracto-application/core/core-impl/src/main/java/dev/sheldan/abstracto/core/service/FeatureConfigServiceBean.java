@@ -7,6 +7,9 @@ import dev.sheldan.abstracto.core.config.PostTargetEnum;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
+import dev.sheldan.abstracto.core.listener.ListenerExecutionResult;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -28,6 +31,12 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
 
     @Autowired
     private FeatureValidatorService featureValidatorService;
+
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private FeatureModeService featureModeService;
 
     @Override
     public List<String> getAllFeatures() {
@@ -147,5 +156,17 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
                         .stream()
                         .anyMatch(featureMode -> featureMode.getKey().equalsIgnoreCase(modeName))
                 );
+    }
+
+    @Override
+    public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult>  boolean isFeatureAwareEnabled(FeatureAwareListener<T, R> listener, Long serverId) {
+        FeatureConfig feature = getFeatureDisplayForFeature(listener.getFeature());
+        if(serverId == null) {
+            return true;
+        }
+        if (!featureFlagService.isFeatureEnabled(feature, serverId)) {
+            return false;
+        }
+        return featureModeService.necessaryFeatureModesMet(listener, serverId);
     }
 }

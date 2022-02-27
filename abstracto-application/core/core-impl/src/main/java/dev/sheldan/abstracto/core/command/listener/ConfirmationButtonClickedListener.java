@@ -49,6 +49,9 @@ public class ConfirmationButtonClickedListener implements ButtonClickedListener 
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
         CommandConfirmationPayload payload = (CommandConfirmationPayload) model.getDeserializedPayload();
         DriedCommandContext commandCtx = payload.getCommandContext();
+        if(commandCtx.getUserId() != model.getEvent().getUser().getIdLong()) {
+            return ButtonClickedListenerResult.IGNORED;
+        }
         if(payload.getAction().equals(CommandConfirmationPayload.CommandConfirmationAction.CONFIRM)) {
             log.info("Confirming command {} in server {} from message {} in channel {} with event {}.",
                     commandCtx.getCommandName(), commandCtx.getServerId(), commandCtx.getMessageId(),
@@ -103,7 +106,7 @@ public class ConfirmationButtonClickedListener implements ButtonClickedListener 
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return CommandReceivedHandler.COMMAND_CONFIRMATION_ORIGIN.equals(model.getOrigin());
+        return CommandReceivedHandler.COMMAND_CONFIRMATION_ORIGIN.equals(model.getOrigin()) && model.getEvent().isFromGuild();
     }
 
     @Override

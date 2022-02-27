@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementServi
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -189,7 +190,7 @@ public class ChannelGroupServiceBean implements ChannelGroupService {
         channelGroups.forEach(group -> {
             List<ChannelGroupChannelModel> convertedChannels = new ArrayList<>();
             group.getChannels().forEach(channel -> {
-                Optional<TextChannel> textChannelInGuild = channelService.getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
+                Optional<GuildMessageChannel> textChannelInGuild = channelService.getGuildMessageChannelFromAChannelOptional(channel);
                 ChannelGroupChannelModel convertedChannel = ChannelGroupChannelModel
                         .builder()
                         .channel(channel)

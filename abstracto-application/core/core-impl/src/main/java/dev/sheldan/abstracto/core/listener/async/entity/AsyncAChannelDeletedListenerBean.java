@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.AChannelDeletedListenerModel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
+import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,12 +37,12 @@ public class AsyncAChannelDeletedListenerBean extends ListenerAdapter {
     private AsyncAChannelDeletedListenerBean self;
 
     @Override
-    public void onTextChannelDelete(@Nonnull TextChannelDeleteEvent event) {
+    public void onChannelDelete(@Nonnull ChannelDeleteEvent event) {
         self.deleteChannelInDb(event);
     }
 
     @Transactional
-    public void deleteChannelInDb(TextChannelDeleteEvent event) {
+    public void deleteChannelInDb(ChannelDeleteEvent event) {
         channelManagementService.markAsDeleted(event.getChannel().getIdLong());
     }
 

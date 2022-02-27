@@ -21,7 +21,7 @@ public class ComponentPayload {
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @Setter
-    @JoinColumn(name = "server_id", nullable = false)
+    @JoinColumn(name = "server_id")
     private AServer server;
 
     @Lob

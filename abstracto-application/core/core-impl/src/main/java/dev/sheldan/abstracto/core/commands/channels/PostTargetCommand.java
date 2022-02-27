@@ -21,9 +21,7 @@ import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +59,7 @@ public class PostTargetCommand extends AbstractConditionableCommand {
             posttargetDisplayModel.setPostTargets(new ArrayList<>());
             List<PostTargetModelEntry> postTargetEntries = posttargetDisplayModel.getPostTargets();
             postTargets.forEach(target -> {
-                Optional<TextChannel> channelFromAChannel = channelService.getChannelFromAChannel(target.getChannelReference());
+                Optional<GuildMessageChannel> channelFromAChannel = channelService.getGuildMessageChannelFromAChannelOptional(target.getChannelReference());
                 PostTargetModelEntry targetEntry = PostTargetModelEntry
                         .builder()
                         .channel(channelFromAChannel.orElse(null))

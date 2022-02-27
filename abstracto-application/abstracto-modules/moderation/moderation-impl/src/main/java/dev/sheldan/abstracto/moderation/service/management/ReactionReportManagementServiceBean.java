@@ -35,7 +35,7 @@ public class ReactionReportManagementServiceBean implements ReactionReportManage
 
     @Override
     public ReactionReport createReactionReport(CachedMessage reportedMessage, Message reportMessage) {
-        AChannel reportChannel = channelManagementService.loadChannel(reportMessage.getTextChannel());
+        AChannel reportChannel = channelManagementService.loadChannel(reportMessage.getChannel());
         AChannel reportedChannel = channelManagementService.loadChannel(reportedMessage.getChannelId());
         AUserInAServer reportedUser = userInServerManagementService.loadOrCreateUser(reportedMessage.getAuthorAsServerUser());
         ReactionReport report = ReactionReport

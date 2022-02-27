@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.listener.sync.jda.MessageReceivedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.models.GuildMemberMessageChannel;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
@@ -97,9 +98,16 @@ public class MessageEmbedListener implements MessageReceivedListener {
 
     @Transactional
     public void embedSingleLink(Message message, Long cause, CachedMessage cachedMessage) {
+        GuildMemberMessageChannel context = GuildMemberMessageChannel
+                .builder()
+                .guildChannel(message.getGuildChannel())
+                .member(message.getMember())
+                .guild(message.getGuild())
+                .message(message)
+                .build();
         log.info("Embedding link to message {} in channel {} in server {} to channel {} and server {}.",
                 cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(), message.getChannel().getId(), message.getGuild().getId());
-        messageEmbedService.embedLink(cachedMessage, message.getTextChannel(), cause , message).thenAccept(unused ->
+        messageEmbedService.embedLink(cachedMessage, message.getGuildChannel(), cause , context).thenAccept(unused ->
             metricService.incrementCounter(MESSAGE_EMBED_CREATED)
         ).exceptionally(throwable -> {
             log.error("Failed to embed link towards message {} in channel {} in sever {} linked from message {} in channel {} in server {}.", cachedMessage.getMessageId(), cachedMessage.getChannelId(), cachedMessage.getServerId(),

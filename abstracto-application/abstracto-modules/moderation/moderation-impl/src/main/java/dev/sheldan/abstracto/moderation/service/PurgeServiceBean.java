@@ -9,10 +9,7 @@ import dev.sheldan.abstracto.moderation.model.template.command.PurgeStatusUpdate
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,11 +48,11 @@ public class PurgeServiceBean implements PurgeService {
                     .build();
 
     @Override
-    public CompletableFuture<Void> purgeMessagesInChannel(Integer amountToDelete, TextChannel channel, Long startId, Member purgedMember) {
+    public CompletableFuture<Void> purgeMessagesInChannel(Integer amountToDelete, GuildMessageChannel channel, Long startId, Member purgedMember) {
         return purgeMessages(amountToDelete, channel, startId, purgedMember, amountToDelete, 0, 0L);
     }
 
-    private CompletableFuture<Void> purgeMessages(Integer amountToDelete, TextChannel channel, Long startId, Member purgedMember, Integer totalCount, Integer currentCount, Long statusMessageId) {
+    private CompletableFuture<Void> purgeMessages(Integer amountToDelete, GuildMessageChannel channel, Long startId, Member purgedMember, Integer totalCount, Integer currentCount, Long statusMessageId) {
 
         int toDeleteInThisIteration;
         if(amountToDelete >= PURGE_MAX_MESSAGES){
@@ -106,9 +103,12 @@ public class PurgeServiceBean implements PurgeService {
         return CompletableFuture.allOf(retrievalFuture, deletionFuture);
     }
 
-    private void bulkDeleteMessages(TextChannel channel, CompletableFuture<Void> deletionFuture, List<Message> messagesToDeleteNow, Consumer<Void> consumer) {
+    private void bulkDeleteMessages(GuildMessageChannel channel, CompletableFuture<Void> deletionFuture, List<Message> messagesToDeleteNow, Consumer<Void> consumer) {
         try {
-            channelService.deleteMessagesInChannel(channel, messagesToDeleteNow).queue(consumer, deletionFuture::completeExceptionally);
+            channelService.deleteMessagesInChannel(channel, messagesToDeleteNow).thenAccept(consumer).exceptionally(throwable -> {
+                deletionFuture.completeExceptionally(throwable);
+                return null;
+            });
         } catch (IllegalArgumentException e) {
             channelService.sendTextToChannel(e.getMessage(), channel);
             log.warn("Failed to bulk delete, message was most likely too old to delete by bulk.", e);
@@ -116,7 +116,7 @@ public class PurgeServiceBean implements PurgeService {
         }
     }
 
-    private CompletableFuture<Long> getOrCreatedStatusMessage(TextChannel channel, Integer totalCount, Long statusMessageId) {
+    private CompletableFuture<Long> getOrCreatedStatusMessage(GuildMessageChannel channel, Integer totalCount, Long statusMessageId) {
         CompletableFuture<Long> statusMessageFuture;
         if(statusMessageId == 0) {
             log.debug("Creating new status message in channel {} in server {} because of puring.", channel.getIdLong(), channel.getGuild().getId());
@@ -151,7 +151,7 @@ public class PurgeServiceBean implements PurgeService {
         return messagesToDeleteNow;
     }
 
-    private Consumer<Void> deletionConsumer(Integer amountToDelete, TextChannel channel, Member purgedMember, Integer totalCount, Integer currentCount, CompletableFuture<Void> deletionFuture, Long currentStatusMessageId, Message earliestMessage) {
+    private Consumer<Void> deletionConsumer(Integer amountToDelete, GuildMessageChannel channel, Member purgedMember, Integer totalCount, Integer currentCount, CompletableFuture<Void> deletionFuture, Long currentStatusMessageId, Message earliestMessage) {
         return aVoid -> {
             if (amountToDelete >= 1) {
                 log.debug("Still more than 1 message to delete. Continuing.");
@@ -181,7 +181,7 @@ public class PurgeServiceBean implements PurgeService {
     }
 
     @Override
-    public CompletableFuture<Void> purgeMessagesInChannel(Integer count, TextChannel channel, Message origin, Member purgingRestriction) {
+    public CompletableFuture<Void> purgeMessagesInChannel(Integer count, GuildMessageChannel channel, Message origin, Member purgingRestriction) {
         return purgeMessagesInChannel(count, channel, origin.getIdLong(), purgingRestriction);
     }
 

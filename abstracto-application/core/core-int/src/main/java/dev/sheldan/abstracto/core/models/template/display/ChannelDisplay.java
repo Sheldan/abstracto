@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.models.template.display;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 @Getter
@@ -22,4 +23,14 @@ public class ChannelDisplay {
                 .channelMention(channel.getAsMention())
                 .build();
     }
-}
+
+    public static ChannelDisplay fromChannel(GuildMessageChannel channel) {
+        if(channel == null) {
+            return null;
+        }
+        return ChannelDisplay
+                .builder()
+                .name(channel.getName())
+                .channelMention(channel.getAsMention())
+                .build();
+    }}

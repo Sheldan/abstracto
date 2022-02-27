@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -65,7 +65,7 @@ public class ReactionRemovedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageReactionRemove(@Nonnull GuildMessageReactionRemoveEvent event) {
+    public void onMessageReactionRemove(@Nonnull MessageReactionRemoveEvent event) {
         if(reactionRemovedListeners == null) return;
         if(event.getUserIdLong() == botService.getInstance().getSelfUser().getIdLong()) {
             return;
@@ -86,14 +86,14 @@ public class ReactionRemovedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void callRemoveListeners(@Nonnull GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
+    public void callRemoveListeners(@Nonnull MessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
         ServerUser serverUser = ServerUser.builder().serverId(event.getGuild().getIdLong()).userId(event.getUserIdLong()).build();
         removeReactionIfThere(cachedMessage, reaction, serverUser);
         ReactionRemovedModel model = getModel(event, cachedMessage, serverUser);
         reactionRemovedListeners.forEach(reactionRemovedListener -> listenerService.executeFeatureAwareListener(reactionRemovedListener, model));
     }
 
-    private ReactionRemovedModel getModel(GuildMessageReactionRemoveEvent event, CachedMessage cachedMessage, ServerUser userRemoving) {
+    private ReactionRemovedModel getModel(MessageReactionRemoveEvent event, CachedMessage cachedMessage, ServerUser userRemoving) {
         return ReactionRemovedModel
                 .builder()
                 .memberRemoving(event.getMember())

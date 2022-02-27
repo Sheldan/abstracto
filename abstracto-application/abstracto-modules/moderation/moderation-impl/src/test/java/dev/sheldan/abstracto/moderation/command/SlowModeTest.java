@@ -32,7 +32,7 @@ public class SlowModeTest {
     public void testExecuteSlowModeWithDurationCurrentChannel() {
         String duration = "1m";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration));
-        when(slowModeService.setSlowMode(parameters.getChannel(), Duration.ofMinutes(1))).thenReturn(CompletableFuture.completedFuture(null));
+        when(slowModeService.setSlowMode((TextChannel) parameters.getChannel(), Duration.ofMinutes(1))).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }
@@ -41,7 +41,7 @@ public class SlowModeTest {
     public void testDisableSlowModeCurrentChannel() {
         String duration = "off";
         CommandContext parameters = CommandTestUtilities.getWithParameters(Arrays.asList(duration));
-        when(slowModeService.setSlowMode(parameters.getChannel(), Duration.ZERO)).thenReturn(CompletableFuture.completedFuture(null));
+        when(slowModeService.setSlowMode((TextChannel) parameters.getChannel(), Duration.ZERO)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(parameters);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }

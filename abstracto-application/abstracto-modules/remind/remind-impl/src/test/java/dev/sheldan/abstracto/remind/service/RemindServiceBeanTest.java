@@ -16,10 +16,7 @@ import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +70,7 @@ public class RemindServiceBeanTest {
     private Message message;
 
     @Mock
-    private TextChannel channel;
+    private GuildMessageChannel channel;
 
     @Mock
     private ScheduledExecutorService instantReminderScheduler;
@@ -155,7 +152,7 @@ public class RemindServiceBeanTest {
         when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
         Guild guildMock = Mockito.mock(Guild.class);
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guildMock));
-        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(channel));
+        when(channelService.getMessageChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(channel));
         Member mockedMember = Mockito.mock(Member.class);
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(mockedMember));
         testUnit.executeReminder(REMINDER_ID);
@@ -174,7 +171,7 @@ public class RemindServiceBeanTest {
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guildMock));
         when(aUserInAServer.getUserReference()).thenReturn(user);
         when(remindedReminder.getRemindedUser()).thenReturn(aUserInAServer);
-        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.empty());
+        when(channelService.getMessageChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.empty());
         testUnit.executeReminder(REMINDER_ID);
         verify(reminderManagementService, times(1)).setReminded(remindedReminder);
         verify(self, times(0)).sendReminderText(anyLong(), any(), any(Member.class));

@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveAllEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,7 +49,7 @@ public class ReactionClearedListenerBean extends ListenerAdapter {
     @Autowired
     private ListenerService listenerService;
 
-    public void callClearListeners(@Nonnull GuildMessageReactionRemoveAllEvent event, CachedMessage cachedMessage) {
+    public void callClearListeners(@Nonnull MessageReactionRemoveAllEvent event, CachedMessage cachedMessage) {
         if(clearedListenerList == null) return;
         ReactionClearedModel model = getModel(event, cachedMessage);
         clearedListenerList.forEach(reactionRemovedListener ->
@@ -57,7 +57,7 @@ public class ReactionClearedListenerBean extends ListenerAdapter {
         );
     }
 
-    private ReactionClearedModel getModel(GuildMessageReactionRemoveAllEvent event, CachedMessage message) {
+    private ReactionClearedModel getModel(MessageReactionRemoveAllEvent event, CachedMessage message) {
         return ReactionClearedModel
                 .builder()
                 .message(message)
@@ -67,7 +67,7 @@ public class ReactionClearedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageReactionRemoveAll(@Nonnull GuildMessageReactionRemoveAllEvent event) {
+    public void onMessageReactionRemoveAll(@Nonnull MessageReactionRemoveAllEvent event) {
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             cachedMessage.getReactions().clear();

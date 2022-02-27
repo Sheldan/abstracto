@@ -10,6 +10,8 @@ import dev.sheldan.abstracto.core.models.listener.AChannelDeletedListenerModel;
 import dev.sheldan.abstracto.core.repository.ChannelRepository;
 import dev.sheldan.abstracto.core.service.LockService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,8 +43,8 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
     }
 
     @Override
-    public AChannel loadChannel(TextChannel textChannel) {
-        return loadChannel(textChannel.getIdLong());
+    public AChannel loadChannel(Channel guildChannel) {
+        return loadChannel(guildChannel.getIdLong());
     }
 
     @Override
@@ -54,6 +56,29 @@ public class ChannelManagementServiceBean implements ChannelManagementService {
                     .builder()
                     .id(id)
                     .type(type)
+                    .server(server)
+                    .deleted(false)
+                    .build();
+            AChannel createdChannel = repository.save(build);
+            AChannelCreatedListenerModel model = getCreationModel(createdChannel);
+            eventPublisher.publishEvent(model);
+            return createdChannel;
+        } else {
+            Optional<AChannel> channelOptional = loadChannelOptional(id);
+            return channelOptional.orElse(null);
+        }
+    }
+
+    @Override
+    public AChannel createThread(Long id, AChannelType type, AServer server, AChannel parentChannel) {
+        lockService.lockTable(TableLocks.CHANNELS);
+        if(!channelExists(id)) {
+            log.info("Creating channel {} with type {}", id, type);
+            AChannel build = AChannel
+                    .builder()
+                    .id(id)
+                    .type(type)
+                    .relatedChannel(parentChannel)
                     .server(server)
                     .deleted(false)
                     .build();

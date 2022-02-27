@@ -21,8 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -96,7 +95,7 @@ public class ExceptionServiceBean implements ExceptionService {
     }
 
     @Override
-    public void reportExceptionToGuildMessageReceivedContext(Throwable exception, GuildMessageReceivedEvent event) {
+    public void reportExceptionToGuildMessageReceivedContext(Throwable exception, MessageReceivedEvent event) {
         if(exception instanceof Templatable){
             GenericExceptionModel model = buildMemberContext(exception, event.getMember());
             String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model);
@@ -107,7 +106,7 @@ public class ExceptionServiceBean implements ExceptionService {
     }
 
     @Override
-    public void reportExceptionToPrivateMessageReceivedContext(Throwable exception, PrivateMessageReceivedEvent event) {
+    public void reportExceptionToPrivateMessageReceivedContext(Throwable exception, MessageReceivedEvent event) {
         if(exception instanceof Templatable){
             GenericExceptionModel model = buildPrivateMessageReceivedModel(exception, event.getAuthor());
             String text = templateService.renderTemplate(MODEL_WRAPPER_TEMPLATE_KEY, model);

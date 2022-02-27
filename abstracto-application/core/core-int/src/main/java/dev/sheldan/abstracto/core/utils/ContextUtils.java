@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +37,7 @@ public class ContextUtils {
             return builder
                     .member(guildChannelMember.getMember())
                     .guild(guildChannelMember.getGuild())
-                    .messageChannel(guildChannelMember.getTextChannel())
+                    .messageChannel((GuildMessageChannel) guildChannelMember.getTextChannel())
                     .build();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("Failed to execute builder method", e);

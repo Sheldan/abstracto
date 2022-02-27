@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.utils.BeanUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,7 +57,7 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
+    public void onMessageReactionAdd(@Nonnull MessageReactionAddEvent event) {
         if(addedListenerList == null) return;
         if(event.getUserIdLong() == botService.getInstance().getSelfUser().getIdLong()) {
             return;
@@ -93,14 +93,14 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void callAddedListeners(@Nonnull GuildMessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction, Member member) {
+    public void callAddedListeners(@Nonnull MessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction, Member member) {
         ServerUser serverUser = ServerUser.builder().serverId(cachedMessage.getServerId()).userId(event.getUserIdLong()).build();
         addReactionIfNotThere(cachedMessage, reaction, serverUser);
         ReactionAddedModel model = getModel(event, cachedMessage, serverUser, member);
         addedListenerList.forEach(reactedAddedListener -> listenerService.executeFeatureAwareListener(reactedAddedListener, model));
     }
 
-    private ReactionAddedModel getModel(GuildMessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser userReacting, Member member) {
+    private ReactionAddedModel getModel(MessageReactionAddEvent event, CachedMessage cachedMessage, ServerUser userReacting, Member member) {
         return ReactionAddedModel
                 .builder()
                 .reaction(event.getReaction())

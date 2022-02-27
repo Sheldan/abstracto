@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.listener.ReactionClearedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveAllEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,7 +36,7 @@ public class AsyncReactionClearedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageReactionRemoveAll(@Nonnull GuildMessageReactionRemoveAllEvent event) {
+    public void onMessageReactionRemoveAll(@Nonnull MessageReactionRemoveAllEvent event) {
         CompletableFuture<CachedMessage> asyncMessageFromCache = messageCache.getMessageFromCache(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong());
         asyncMessageFromCache.thenAccept(cachedMessage -> {
             cachedMessage.getReactions().clear();
@@ -52,7 +52,7 @@ public class AsyncReactionClearedListenerBean extends ListenerAdapter {
         });
     }
 
-    private ReactionClearedModel getModel(GuildMessageReactionRemoveAllEvent event, CachedMessage message) {
+    private ReactionClearedModel getModel(MessageReactionRemoveAllEvent event, CachedMessage message) {
         return ReactionClearedModel
                 .builder()
                 .message(message)

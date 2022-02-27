@@ -248,7 +248,7 @@ public class CommandServiceBean implements CommandService {
                         .build();
                 CommandContext context = CommandContext
                         .builder()
-                        .channel(message.getTextChannel())
+                        .channel(message.getGuildChannel())
                         .author(author)
                         .guild(message.getGuild())
                         .jda(message.getJDA())

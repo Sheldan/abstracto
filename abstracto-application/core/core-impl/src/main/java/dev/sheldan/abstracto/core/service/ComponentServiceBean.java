@@ -2,16 +2,18 @@ package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
 import net.dv8tion.jda.api.entities.Emoji;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.Button;
-import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -35,7 +37,7 @@ public class ComponentServiceBean implements ComponentService {
     }
 
     @Override
-    public CompletableFuture<Message> addButtonToMessage(Long messageId, TextChannel textChannel, String buttonId, String description, String emoteMarkdown, ButtonStyle style) {
+    public CompletableFuture<Message> addButtonToMessage(Long messageId, GuildMessageChannel textChannel, String buttonId, String description, String emoteMarkdown, ButtonStyle style) {
         return channelService.retrieveMessageInChannel(textChannel, messageId).thenCompose(message -> {
             Button button = Button.of(style, buttonId, description);
             if(emoteMarkdown != null) {
@@ -83,11 +85,13 @@ public class ComponentServiceBean implements ComponentService {
     public CompletableFuture<Void> removeComponentWithId(Message message, String componentId, Boolean rearrange) {
         List<ActionRow> actionRows = new ArrayList<>();
         if(Boolean.TRUE.equals(rearrange)) {
-            List<net.dv8tion.jda.api.interactions.components.Component> components = new ArrayList<>();
+            List<net.dv8tion.jda.api.interactions.components.ActionComponent> components = new ArrayList<>();
             message.getActionRows().forEach(row ->
                             row
                                 .getComponents()
                                 .stream()
+                                .filter(ActionComponent.class::isInstance)
+                                .map(ActionComponent.class::cast)
                                 .filter(component -> component.getId() == null || !component.getId().equals(componentId))
                                 .forEach(components::add));
             actionRows = splitIntoActionRowsMax(components);
@@ -97,6 +101,8 @@ public class ComponentServiceBean implements ComponentService {
                         row
                                 .getComponents()
                                 .stream()
+                                .filter(ActionComponent.class::isInstance)
+                                .map(ActionComponent.class::cast)
                                 .filter(component -> component.getId() == null || !component.getId().equals(componentId))
                                 .collect(Collectors.toList())));
             }
@@ -105,8 +111,8 @@ public class ComponentServiceBean implements ComponentService {
     }
 
     @Override
-    public List<ActionRow> splitIntoActionRowsMax(List<net.dv8tion.jda.api.interactions.components.Component> allComponents) {
-        List<List<net.dv8tion.jda.api.interactions.components.Component>> actionRows = ListUtils.partition(allComponents, MAX_BUTTONS_PER_ROW);
+    public List<ActionRow> splitIntoActionRowsMax(List<net.dv8tion.jda.api.interactions.components.ActionComponent> allComponents) {
+        List<List<net.dv8tion.jda.api.interactions.components.ActionComponent>> actionRows = ListUtils.partition(allComponents, MAX_BUTTONS_PER_ROW);
         return actionRows.stream().map(ActionRow::of).collect(Collectors.toList());
     }
 
@@ -118,18 +124,7 @@ public class ComponentServiceBean implements ComponentService {
     private CompletableFuture<Void> setAllButtonStatesTo(Message message, Boolean disabled) {
         List<ActionRow> actionRows = new ArrayList<>();
 
-        message.getActionRows().forEach(row -> {
-            List<net.dv8tion.jda.api.interactions.components.Component> newComponents = new ArrayList<>();
-            row.getComponents().forEach(component -> {
-                if(component.getType().equals(net.dv8tion.jda.api.interactions.components.Component.Type.BUTTON)) {
-                    Button button = ((Button) component).withDisabled(disabled);
-                    newComponents.add(button);
-                } else {
-                    newComponents.add(component);
-                }
-            });
-            actionRows.add(ActionRow.of(newComponents));
-        });
+        message.getActionRows().forEach(row -> actionRows.add(row.withDisabled(disabled)));
         return messageService.editMessageWithActionRows(message, actionRows);
     }
 

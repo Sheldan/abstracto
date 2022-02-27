@@ -14,9 +14,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.SetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.LoginException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -138,26 +137,66 @@ public class StartupServiceBean implements Startup {
         Set<Long> existingRoleIds = SnowflakeUtils.getOwnItemsIds(existingRoles);
         Set<Long> guildRoleIds = SnowflakeUtils.getSnowflakeIds(guildRoles);
         Set<Long> newRoles = SetUtils.difference(guildRoleIds, existingRoleIds);
-        newRoles.forEach(aLong -> roleManagementService.createRole(aLong, existingAServer));
+        newRoles.forEach(roleId -> roleManagementService.createRole(roleId, existingAServer));
         Set<Long> deletedRoles = SetUtils.difference(existingRoleIds, guildRoleIds);
-        deletedRoles.forEach(aLong -> roleManagementService.markDeleted(aLong));
+        deletedRoles.forEach(roleId -> roleManagementService.markDeleted(roleId));
     }
 
     private void synchronizeChannelsOf(Guild guild, AServer existingServer){
         List<GuildChannel> available = guild.getChannels();
-        List<AChannel> knownChannels = existingServer.getChannels().stream().filter(aChannel -> !aChannel.getDeleted()).collect(Collectors.toList());
+        List<AChannel> knownChannels = existingServer
+                .getChannels()
+                .stream()
+                .filter(aChannel -> !aChannel.getDeleted())
+                .filter(aChannel -> !aChannel.getType().isThread())
+                .collect(Collectors.toList());
         Set<Long> knownChannelsIds = SnowflakeUtils.getOwnItemsIds(knownChannels);
         Set<Long> existingChannelsIds = SnowflakeUtils.getSnowflakeIds(available);
         Set<Long> newChannels = SetUtils.difference(existingChannelsIds, knownChannelsIds);
-        newChannels.forEach(aLong -> {
-            GuildChannel channel1 = available.stream().filter(channel -> channel.getIdLong() == aLong).findFirst().get();
-            AChannelType type = AChannelType.getAChannelType(channel1.getType());
-            channelManagementService.createChannel(channel1.getIdLong(), type, existingServer);
+        newChannels.forEach(channelId -> {
+            GuildChannel existingChannel = available
+                    .stream()
+                    .filter(channel -> channel.getIdLong() == channelId)
+                    .findFirst()
+                    .get();
+            AChannelType type = AChannelType.getAChannelType(existingChannel.getType());
+            channelManagementService.createChannel(existingChannel.getIdLong(), type, existingServer);
         });
-
         Set<Long> noLongAvailable = SetUtils.difference(knownChannelsIds, existingChannelsIds);
-        noLongAvailable.forEach(aLong ->
-            channelManagementService.markAsDeleted(aLong)
+        noLongAvailable.forEach(channelId ->
+                channelManagementService.markAsDeleted(channelId)
+        );
+        List<ThreadChannel> availableThreads = new ArrayList<>();
+        List<AChannel> knownThreads = existingServer
+                .getChannels()
+                .stream()
+                .filter(aChannel -> !aChannel.getDeleted())
+                .filter(aChannel -> aChannel.getType().isThread())
+                .collect(Collectors.toList());
+        available.stream().forEach(guildChannel -> {
+            if(guildChannel instanceof IThreadContainer) {
+                IThreadContainer threadContainer = (IThreadContainer) guildChannel;
+                availableThreads.addAll(threadContainer.getThreadChannels());
+            }
+        });
+        Set<Long> knownThreadIds = SnowflakeUtils.getOwnItemsIds(knownThreads);
+        Set<Long> existingThreadsIds = SnowflakeUtils.getSnowflakeIds(availableThreads);
+        Set<Long> newThreads = SetUtils.difference(existingThreadsIds, knownThreadIds);
+
+        newThreads.forEach(threadId -> {
+            ThreadChannel existingThread = availableThreads
+                    .stream()
+                    .filter(channel -> channel.getIdLong() == threadId)
+                    .findFirst()
+                    .get();
+            IThreadContainer parentChannel = existingThread.getParentChannel();
+            AChannel parentChannelObj = channelManagementService.loadChannel(parentChannel);
+            AChannelType type = AChannelType.getAChannelType(existingThread.getType());
+            channelManagementService.createThread(existingThread.getIdLong(), type, existingServer, parentChannelObj);
+        });
+        Set<Long> noLongAvailableThreads = SetUtils.difference(knownThreadIds, existingThreadsIds);
+        noLongAvailableThreads.forEach(channelId ->
+                channelManagementService.markAsDeleted(channelId)
         );
     }
 }

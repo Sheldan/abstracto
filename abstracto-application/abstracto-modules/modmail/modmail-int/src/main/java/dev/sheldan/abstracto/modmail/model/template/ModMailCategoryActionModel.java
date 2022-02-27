@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
+import dev.sheldan.abstracto.core.utils.ChannelUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,10 @@ import net.dv8tion.jda.api.entities.Category;
 @Setter
 @Builder
 public class ModMailCategoryActionModel {
-    private Category category;
+    private Long serverId;
     private Long categoryId;
+
+    public String getCategoryAsMention() {
+        return ChannelUtils.getAsMention(this.getCategoryId());
+    }
 }

@@ -24,7 +24,7 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -118,9 +118,9 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 throw new EmoteNotUsableException(fakeEmote.getEmote());
             }
         }
-        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(server.getId(), assignableRolePlace.getChannel().getId());
+        Optional<GuildMessageChannel> channelOptional = channelService.getMessageChannelFromServerOptional(server.getId(), assignableRolePlace.getChannel().getId());
         if (channelOptional.isPresent()) {
-            TextChannel textChannel = channelOptional.get();
+            GuildMessageChannel textChannel = channelOptional.get();
             String buttonId = componentService.generateComponentId();
             String emoteMarkdown = fakeEmote != null ? fakeEmote.getEmoteRepr() : null;
             if (assignableRolePlace.getMessageId() != null) {
@@ -223,7 +223,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
         AssignablePostMessage model = prepareAssignablePostMessageModel(place);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model, place.getServer().getId());
         Long channelId = place.getChannel().getId();
-        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(place.getServer().getId(), channelId);
+        Optional<GuildMessageChannel> channelOptional = channelService.getMessageChannelFromServerOptional(place.getServer().getId(), channelId);
         if (channelOptional.isPresent()) {
             log.info("Refreshing text for assignable role place {} in channel {} in post {}.", place.getId(), channelId, place.getMessageId());
             return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), channelOptional.get(), place.getMessageId()).thenCompose(message -> CompletableFuture.completedFuture(null));
@@ -435,7 +435,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
                 .build();
     }
 
-    private CompletableFuture<Void> sendAssignablePostMessage(AssignableRolePlace place, TextChannel channel) {
+    private CompletableFuture<Void> sendAssignablePostMessage(AssignableRolePlace place, GuildMessageChannel channel) {
         AssignablePostMessage model = prepareAssignablePostMessageModel(place);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(ASSIGNABLE_ROLES_POST_TEMPLATE_KEY, model, place.getServer().getId());
         log.info("Sending message for assignable role place {}.", place.getId());
@@ -501,9 +501,9 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
     @Transactional
     public CompletableFuture<Void> createAssignableRolePlacePost(Long serverId, Long assignablePlaceId) {
         AssignableRolePlace assignableRolePlace = rolePlaceManagementService.findByPlaceId(assignablePlaceId);
-        Optional<TextChannel> channelOptional = channelService.getTextChannelFromServerOptional(serverId, assignableRolePlace.getChannel().getId());
+        Optional<GuildMessageChannel> channelOptional = channelService.getMessageChannelFromServerOptional(serverId, assignableRolePlace.getChannel().getId());
         if (channelOptional.isPresent()) {
-            TextChannel channel = channelOptional.get();
+            GuildMessageChannel channel = channelOptional.get();
             log.info("Sending assignable role place posts for place {} in channel {} in server {}.", assignableRolePlace.getId(), channel.getId(), serverId);
             return sendAssignablePostMessage(assignableRolePlace, channel);
         } else {

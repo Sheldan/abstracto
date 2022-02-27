@@ -28,10 +28,7 @@ import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -159,7 +156,7 @@ public class MuteServiceBean implements MuteService {
         String muteNotificationMessage = templateService.renderTemplate(MUTE_NOTIFICATION_TEMPLATE, muteNotification, message.getServerId());
         CompletableFuture<Message> messageCompletableFuture = messageService.sendMessageToUser(memberBeingMuted.getUser(), muteNotificationMessage);
         messageCompletableFuture.exceptionally(throwable -> {
-            TextChannel feedBackChannel = channelService.getTextChannelFromServer(message.getServerId(), message.getChannelId());
+            GuildMessageChannel feedBackChannel = channelService.getMessageChannelFromServer(message.getServerId(), message.getChannelId());
             channelService.sendTextToChannel(throwable.getMessage(), feedBackChannel).whenComplete((exceptionMessage, innerThrowable) -> {
                 notificationFuture.complete(null);
                 log.info("Successfully notified user {} in server {} about mute.", memberBeingMuted.getId(), memberBeingMuted.getGuild().getId());

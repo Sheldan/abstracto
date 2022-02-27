@@ -10,10 +10,14 @@ import java.util.List;
 @Setter
 @Builder
 public class SetupStepResult {
-    private List<DelayedActionConfig> delayedActionConfigList;
+    private List<DelayedActionConfigContainer> delayedActionConfigList;
     private SetupStepResultType result;
 
     public static SetupStepResult fromCancelled() {
         return SetupStepResult.builder().result(SetupStepResultType.CANCELLED).build();
+    }
+
+    public static SetupStepResult fromSuccess() {
+        return SetupStepResult.builder().result(SetupStepResultType.SUCCESS).build();
     }
 }

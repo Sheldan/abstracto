@@ -7,8 +7,9 @@ import dev.sheldan.abstracto.core.models.listener.AChannelCreatedListenerModel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
+import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,17 +46,21 @@ public class AsyncAChannelCreatedListenerBean extends ListenerAdapter {
     private AsyncAChannelCreatedListenerBean self;
 
     @Override
-    public void onTextChannelCreate(@Nonnull TextChannelCreateEvent event) {
+    public void onChannelCreate(@Nonnull ChannelCreateEvent event) {
         self.createChannelInDatabase(event);
     }
 
     @Transactional
-    public void createChannelInDatabase(@NotNull TextChannelCreateEvent event) {
+    public void createChannelInDatabase(@NotNull ChannelCreateEvent event) {
         log.info("Creating text channel with ID {}.", event.getChannel().getIdLong());
-        AServer serverObject = serverManagementService.loadOrCreate(event.getChannel().getGuild().getIdLong());
-        TextChannel createdChannel = event.getChannel();
-        AChannelType type = AChannelType.getAChannelType(createdChannel.getType());
-        channelManagementService.createChannel(createdChannel.getIdLong(), type, serverObject);
+        if(event.getChannel() instanceof GuildChannel) {
+            AServer serverObject = serverManagementService.loadOrCreate(((GuildChannel)event.getChannel()).getGuild().getIdLong());
+            Channel createdChannel = event.getChannel();
+            AChannelType type = AChannelType.getAChannelType(createdChannel.getType());
+            channelManagementService.createChannel(createdChannel.getIdLong(), type, serverObject);
+        } else {
+            log.info("Guild independent channel created - doing nothing.");
+        }
     }
 
     @TransactionalEventListener

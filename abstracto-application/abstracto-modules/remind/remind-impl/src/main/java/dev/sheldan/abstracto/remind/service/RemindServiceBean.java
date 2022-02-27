@@ -19,10 +19,7 @@ import dev.sheldan.abstracto.remind.service.management.ReminderManagementService
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -133,7 +130,7 @@ public class RemindServiceBean implements ReminderService {
                 reminderId, channel.getId(), server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId());
         Optional<Guild> guildToAnswerIn = guildService.getGuildByIdOptional(server.getId());
         if(guildToAnswerIn.isPresent()) {
-            Optional<TextChannel> channelToAnswerIn = channelService.getTextChannelFromServerOptional(server.getId(), channel.getId());
+            Optional<GuildMessageChannel> channelToAnswerIn = channelService.getMessageChannelFromServerOptional(server.getId(), channel.getId());
             // only send the message if the channel still exists, if not, only set the reminder to reminded.
             if(channelToAnswerIn.isPresent()) {
                 memberService.getMemberInServerAsync(server.getId(), reminderToRemindFor.getRemindedUser().getUserReference().getId()).thenAccept(member ->
@@ -150,7 +147,7 @@ public class RemindServiceBean implements ReminderService {
     }
 
     @Transactional
-    public CompletableFuture<Void> sendReminderText(Long reminderId, TextChannel channelToAnswerIn, Member member) {
+    public CompletableFuture<Void> sendReminderText(Long reminderId, GuildMessageChannel channelToAnswerIn, Member member) {
         Reminder reminder = reminderManagementService.loadReminder(reminderId);
         log.debug("Sending remind message for reminder {} to user user {} in server {}.", reminderId, member.getIdLong(), member.getGuild().getIdLong());
         ExecutedReminderModel build = ExecutedReminderModel

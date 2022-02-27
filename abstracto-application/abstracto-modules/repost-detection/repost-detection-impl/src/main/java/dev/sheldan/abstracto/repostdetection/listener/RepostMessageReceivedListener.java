@@ -39,7 +39,7 @@ public class RepostMessageReceivedListener implements AsyncMessageReceivedListen
         if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
             return DefaultListenerResult.IGNORED;
         }
-        AChannel channel = channelManagementService.loadChannel(message.getTextChannel().getIdLong());
+        AChannel channel = channelManagementService.loadChannel(message.getChannel().getIdLong());
         if(repostCheckChannelService.duplicateCheckEnabledForChannel(channel)) {
             repostService.processMessageAttachmentRepostCheck(message);
             List<MessageEmbed> imageEmbeds = message.getEmbeds().stream().filter(messageEmbed -> messageEmbed.getType().equals(EmbedType.IMAGE)).collect(Collectors.toList());

@@ -25,10 +25,7 @@ import dev.sheldan.abstracto.starboard.model.template.*;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -159,7 +156,7 @@ public class StarboardServiceBean implements StarboardService {
     }
 
     private StarboardPostModel createStarboardModel(CachedMessage message, Integer starCount, net.dv8tion.jda.api.entities.User user) {
-        Optional<TextChannel> channel = channelService.getTextChannelFromServerOptional(message.getServerId(), message.getChannelId());
+        Optional<GuildMessageChannel> channel = channelService.getMessageChannelFromServerOptional(message.getServerId(), message.getChannelId());
         Optional<Guild> guild = guildService.getGuildByIdOptional(message.getServerId());
         String starLevelEmote = getAppropriateEmote(message.getServerId(), starCount);
         return StarboardPostModel

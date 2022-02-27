@@ -42,7 +42,7 @@ public class RepostMessageReceivedListenerTest {
     private MessageReceivedModel model;
 
     @Mock
-    private TextChannel textChannel;
+    private GuildMessageChannel textChannel;
 
     @Captor
     private ArgumentCaptor<List<MessageEmbed>> embedListCaptor;
@@ -89,7 +89,7 @@ public class RepostMessageReceivedListenerTest {
     }
 
     private void setupRepostCheckEnabled(boolean b) {
-        when(message.getTextChannel()).thenReturn(textChannel);
+        when(message.getChannel()).thenReturn(textChannel);
         when(message.isFromGuild()).thenReturn(true);
         when(message.isWebhookMessage()).thenReturn(false);
         MessageType type = MessageType.DEFAULT;

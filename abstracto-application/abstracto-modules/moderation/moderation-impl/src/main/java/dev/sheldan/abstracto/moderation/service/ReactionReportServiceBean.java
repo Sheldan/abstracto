@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.moderation.model.template.listener.ReportReactionNo
 import dev.sheldan.abstracto.moderation.service.management.ModerationUserManagementService;
 import dev.sheldan.abstracto.moderation.service.management.ReactionReportManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +93,7 @@ public class ReactionReportServiceBean implements ReactionReportService {
             ReactionReport report = recentReportOptional.get();
             log.info("Report is already present in channel {} with message {}. Updating field.", report.getReportChannel().getId(), report.getReportMessageId());
             report.setReportCount(report.getReportCount() + 1);
-            TextChannel reportTextChannel = channelService.getTextChannelFromServer(serverId, report.getReportChannel().getId());
+            GuildMessageChannel reportTextChannel = channelService.getMessageChannelFromServer(serverId, report.getReportChannel().getId());
             return channelService.editFieldValueInMessage(reportTextChannel, report.getReportMessageId(), 0, report.getReportCount().toString())
                     .thenAccept(message -> self.updateModerationUserReportCooldown(reporter));
         }

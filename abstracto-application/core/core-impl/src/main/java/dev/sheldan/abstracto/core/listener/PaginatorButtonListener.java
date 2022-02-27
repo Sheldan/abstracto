@@ -87,7 +87,7 @@ public class PaginatorButtonListener implements ButtonClickedListener {
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return PaginatorServiceBean.PAGINATOR_BUTTON.equals(model.getOrigin());
+        return PaginatorServiceBean.PAGINATOR_BUTTON.equals(model.getOrigin()) && model.getEvent().isFromGuild();
     }
 
     @Override

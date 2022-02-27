@@ -139,25 +139,32 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Override
     @Transactional
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(!event.isFromGuild()) {
+        if (!event.isFromGuild()) {
             return;
         }
         Message message = event.getMessage();
-        if(!commandManager.isCommand(message)) {
+        if (!commandManager.isCommand(message)) {
             return;
         }
         metricService.incrementCounter(COMMANDS_PROCESSED_COUNTER);
         try {
             UnParsedCommandResult result = getUnparsedCommandResult(message);
             CompletableFuture<CommandParseResult> parsingFuture = getParametersFromMessage(message, result);
-            parsingFuture.thenAccept(parsedParameters -> self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters()));
+            parsingFuture.thenAccept(parsedParameters -> {
+                try {
+                    self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters());
+                } catch (Exception e) {
+                    reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
+                            , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+                }
+            });
             parsingFuture.exceptionally(throwable -> {
                 self.reportException(event, result.getCommand(), throwable, "Exception when parsing command.");
                 return null;
             });
         } catch (Exception e) {
             reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
-            , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+                    , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
         }
     }
 
@@ -244,7 +251,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .author(event.getMember())
                 .guild(event.getGuild())
                 .undoActions(new ArrayList<>())
-                .channel(event.getTextChannel())
+                .channel(event.getGuildChannel())
                 .message(event.getMessage())
                 .jda(event.getJDA())
                 .userInitiatedContext(userInitiatedContext);
@@ -253,9 +260,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
         CompletableFuture<ConditionResult> conditionResultFuture = commandService.isCommandExecutable(foundCommand, commandContext);
         conditionResultFuture.thenAccept(conditionResult -> {
             CommandResult commandResult = null;
-            if(conditionResult.isResult()) {
+            if (conditionResult.isResult()) {
                 CommandConfiguration commandConfiguration = foundCommand.getConfiguration();
-                if(commandConfiguration.isRequiresConfirmation()) {
+                if (commandConfiguration.isRequiresConfirmation()) {
                     DriedCommandContext driedCommandContext = DriedCommandContext.buildFromCommandContext(commandContext);
                     driedCommandContext.setCommandName(commandConfiguration.getName());
                     String confirmId = componentService.generateComponentId();
@@ -272,7 +279,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     FutureUtils.toSingleFutureGeneric(confirmationMessageFutures)
                             .thenAccept(unused -> self.persistConfirmationCallbacks(model, confirmationMessageFutures.get(0).join()))
                             .exceptionally(throwable -> self.handleFailedCommand(foundCommand, commandContext, throwable));
-                } else if(commandConfiguration.isAsync()) {
+                } else if (commandConfiguration.isAsync()) {
                     log.info("Executing async command {} for server {} in channel {} based on message {} by user {}.",
                             commandConfiguration.getName(), commandContext.getGuild().getId(), commandContext.getChannel().getId(), commandContext.getMessage().getId(), commandContext.getAuthor().getId());
 
@@ -284,7 +291,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
             } else {
                 commandResult = CommandResult.fromCondition(conditionResult);
             }
-            if(commandResult != null) {
+            if (commandResult != null) {
                 self.executePostCommandListener(foundCommand, commandContext, commandResult);
             }
         }).exceptionally(throwable -> handleFailedCommand(foundCommand, commandContext, throwable));
@@ -301,7 +308,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public CompletableFuture<Void> executeAsyncCommand(Command foundCommand, CommandContext commandContext) {
         return foundCommand.executeAsync(commandContext).thenAccept(result ->
-            executePostCommandListener(foundCommand, commandContext, result)
+                executePostCommandListener(foundCommand, commandContext, result)
         ).exceptionally(throwable -> {
             handleFailedCommand(foundCommand, commandContext, throwable);
             return null;
@@ -314,13 +321,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
     }
 
     @Transactional
-    public void reportException(Message message, TextChannel textChannel, Member member, Command foundCommand, Throwable throwable, String s) {
-        UserInitiatedServerContext userInitiatedContext = buildUserInitiatedServerContext(member, textChannel, member.getGuild());
+    public void reportException(Message message, MessageChannel channel, Member member, Command foundCommand, Throwable throwable, String s) {
+        UserInitiatedServerContext userInitiatedContext = buildUserInitiatedServerContext(member, channel, member.getGuild());
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
                 .author(member)
                 .guild(message.getGuild())
                 .undoActions(new ArrayList<>())
-                .channel(message.getTextChannel())
+                .channel(message.getGuildChannel())
                 .message(message)
                 .jda(message.getJDA())
                 .userInitiatedContext(userInitiatedContext);
@@ -332,7 +339,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Transactional
     public void reportException(MessageReceivedEvent event, Command foundCommand, Throwable throwable, String s) {
-        reportException(event.getMessage(), event.getTextChannel(), event.getMember(), foundCommand, throwable, s);
+        reportException(event.getMessage(), event.getChannel(), event.getMember(), foundCommand, throwable, s);
     }
 
     private void validateCommandParameters(Parameters parameters, Command foundCommand) {
@@ -344,13 +351,13 @@ public class CommandReceivedHandler extends ListenerAdapter {
             Parameter parameter = parameterList.get(Math.min(i, parameterList.size() - 1));
             for (ParameterValidator parameterValidator : parameter.getValidators()) {
                 boolean validate = parameterValidator.validate(parameters.getParameters().get(i));
-                if(!validate) {
+                if (!validate) {
                     log.debug("Parameter {} in command {} failed to validate.", parameter.getName(), commandConfiguration.getName());
                     throw new CommandParameterValidationException(parameterValidator.getParameters(), parameterValidator.getExceptionTemplateName(), parameter);
                 }
             }
         }
-        if(commandConfiguration.getNecessaryParameterCount() > parameters.getParameters().size()) {
+        if (commandConfiguration.getNecessaryParameterCount() > parameters.getParameters().size()) {
             String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
             throw new InsufficientParametersException(foundCommand, nextParameterName);
         }
@@ -371,23 +378,23 @@ public class CommandReceivedHandler extends ListenerAdapter {
         return foundCommand.execute(commandContext);
     }
 
-    private UserInitiatedServerContext buildUserInitiatedServerContext(Member member, TextChannel textChannel, Guild guild) {
+    private UserInitiatedServerContext buildUserInitiatedServerContext(Member member, MessageChannel channel, Guild guild) {
         return UserInitiatedServerContext
                 .builder()
                 .member(member)
-                .messageChannel(textChannel)
+                .messageChannel(channel)
                 .guild(guild)
                 .build();
     }
 
     private UserInitiatedServerContext buildUserInitiatedServerContext(MessageReceivedEvent event) {
-        return buildUserInitiatedServerContext(event.getMember(), event.getTextChannel(), event.getGuild());
+        return buildUserInitiatedServerContext(event.getMember(), event.getChannel(), event.getGuild());
     }
 
-    public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message){
+    public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message) {
         List<ParseResult> parsedParameters = new ArrayList<>();
         List<Parameter> parameters = command.getConfiguration().getParameters();
-        if(parameters == null || parameters.isEmpty()) {
+        if (parameters == null || parameters.isEmpty()) {
             return CompletableFuture.completedFuture(Parameters.builder().parameters(new ArrayList<>()).build());
         }
         log.debug("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
@@ -403,9 +410,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
         // because we might ignore some parameters (for example referenced messages) in case the command does not use this as a parameter
         int parsedParameter = 0;
         for (int i = 0; i < unParsedCommandParameter.getParameters().size(); i++) {
-            if(parsedParameter < parameters.size() && !param.isRemainder()) {
+            if (parsedParameter < parameters.size() && !param.isRemainder()) {
                 param = parameters.get(parsedParameter);
-            } else if(param.isRemainder()) {
+            } else if (param.isRemainder()) {
                 param = parameters.get(parameters.size() - 1);
             } else {
                 break;
@@ -421,7 +428,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                             parsedParameters.add(ParseResult.builder().parameter(param).result(future).build());
                         } else {
                             Object result = handler.handle(value, iterators, param, message, command);
-                            if(result != null) {
+                            if (result != null) {
                                 parsedParameters.add(ParseResult.builder().parameter(param).result(result).build());
                             }
                         }
@@ -438,12 +445,12 @@ public class CommandReceivedHandler extends ListenerAdapter {
             }
         }
 
-        if(!futures.isEmpty()) {
+        if (!futures.isEmpty()) {
             CompletableFuture<Parameters> multipleFuturesFuture = new CompletableFuture<>();
             CompletableFuture<Void> combinedFuture = FutureUtils.toSingleFuture(futures);
             combinedFuture.thenAccept(aVoid -> {
                 List<Object> allParamResults = parsedParameters.stream().map(o -> {
-                    if(o.getResult() instanceof CompletableFuture) {
+                    if (o.getResult() instanceof CompletableFuture) {
                         return ((CompletableFuture) o.getResult()).join();
                     } else {
                         return o.getResult();
@@ -451,7 +458,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 }).collect(Collectors.toList());
                 List<ParseResult> parseResults = new ArrayList<>();
                 for (int i = 0; i < allParamResults.size(); i++) {
-                    if(allParamResults.get(i) != null) {
+                    if (allParamResults.get(i) != null) {
                         ParseResult parseResult = ParseResult
                                 .builder()
                                 .result(allParamResults.get(i))
@@ -501,28 +508,27 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private List<Object> extractParametersFromParsed(List<ParseResult> results) {
         List<Object> usableParameters = new ArrayList<>();
         results.forEach(parseResult -> {
-            if(parseResult.getParameter().isRemainder() && !parseResult.getParameter().isListParam() && parseResult.getResult() instanceof String) {
-                if(usableParameters.isEmpty() || !(usableParameters.get(usableParameters.size() -1) instanceof String)) {
+            if (parseResult.getParameter().isRemainder() && !parseResult.getParameter().isListParam() && parseResult.getResult() instanceof String) {
+                if (usableParameters.isEmpty() || !(usableParameters.get(usableParameters.size() - 1) instanceof String)) {
                     usableParameters.add(parseResult.getResult());
                 } else {
                     int lastIndex = usableParameters.size() - 1;
                     usableParameters.set(lastIndex, usableParameters.get(lastIndex).toString() + " " + parseResult.getResult().toString());
                 }
-            } else if(parseResult.getParameter().isListParam()) {
-                if(usableParameters.isEmpty()) {
+            } else if (parseResult.getParameter().isListParam()) {
+                if (usableParameters.isEmpty()) {
                     ArrayList<Object> list = new ArrayList<>();
                     list.add(parseResult.getResult().toString());
                     usableParameters.add(list);
                 } else {
                     int lastIndex = usableParameters.size() - 1;
-                    ((List)usableParameters.get(lastIndex)).add(parseResult.getResult());
+                    ((List) usableParameters.get(lastIndex)).add(parseResult.getResult());
                 }
-            }
-            else {
+            } else {
                 usableParameters.add(parseResult.getResult());
             }
         });
-       return usableParameters;
+        return usableParameters;
     }
 
     @PostConstruct

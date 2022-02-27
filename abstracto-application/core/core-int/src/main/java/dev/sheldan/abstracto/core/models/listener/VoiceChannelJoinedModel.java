@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 
 @Getter
 @Setter
@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 public class VoiceChannelJoinedModel implements FeatureAwareListenerModel {
 
     private Member member;
-    private VoiceChannel channel;
+    private AudioChannel channel;
 
     @Override
     public Long getServerId() {

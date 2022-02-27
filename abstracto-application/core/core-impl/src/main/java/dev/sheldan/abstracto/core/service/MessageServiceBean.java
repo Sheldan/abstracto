@@ -76,7 +76,7 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
         metricService.incrementCounter(MESSAGE_DELETE_METRIC);
-        return channelService.getTextChannelFromServer(serverId, channelId).deleteMessageById(messageId).submit();
+        return channelService.getMessageChannelFromServer(serverId, channelId).deleteMessageById(messageId).submit();
     }
 
     @Override

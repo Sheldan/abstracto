@@ -1,5 +1,8 @@
-package dev.sheldan.abstracto.core.interactive;
+package dev.sheldan.abstracto.core.interactive.setup.action;
 
+import dev.sheldan.abstracto.core.interactive.DelayedAction;
+import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
+import dev.sheldan.abstracto.core.interactive.setup.action.config.SystemConfigDelayedActionConfig;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class SystemConfigDelayedAction implements DelayedAction {
-
 
     @Autowired
     private ConfigService configService;

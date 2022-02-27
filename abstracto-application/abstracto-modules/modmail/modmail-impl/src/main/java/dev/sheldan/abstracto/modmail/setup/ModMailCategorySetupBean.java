@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
@@ -82,7 +83,10 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
             Long categoryId = configService.getLongValue(ModMailThreadServiceBean.MODMAIL_CATEGORY, user.getGuildId());
             log.debug("Previous modmail category exists for server {}. Loading value {}.", guild.getId(), categoryId);
             Category category = guild.getCategoryById(categoryId);
-            model.setCategory(category);
+            if(category != null) {
+                model.setCategoryId(category.getIdLong());
+            }
+            model.setServerId(user.getGuildId());
         }
         log.info("Executing mod mail category setup for server {}.", user.getGuildId());
         String messageText = templateService.renderTemplate(messageTemplateKey, model);
@@ -90,8 +94,8 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
         CompletableFuture<SetupStepResult> future = new CompletableFuture<>();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(user.getGuildId(), user.getUserId());
 
-        Runnable finalAction = getTimeoutRunnable(user.getGuildId(), user.getChannelId());
-        Consumer<MessageReceivedEvent> configAction = (MessageReceivedEvent event) -> {
+        Consumer<MessageReceivedModel> finalAction = getTimeoutConsumer(user.getGuildId(), user.getChannelId());
+        Consumer<MessageReceivedModel> configAction = (MessageReceivedModel event) -> {
             try {
 
                 SetupStepResult result;
@@ -113,10 +117,14 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                         ModMailCategoryDelayedActionConfig build = ModMailCategoryDelayedActionConfig
                                 .builder()
                                 .serverId(user.getGuildId())
-                                .category(guild.getCategoryById(categoryId))
                                 .categoryId(categoryId)
                                 .build();
-                        List<DelayedActionConfig> delayedSteps = Arrays.asList(build);
+                        DelayedActionConfigContainer container = DelayedActionConfigContainer
+                                .builder()
+                                .type(build.getClass())
+                                .object(build)
+                                .build();
+                        List<DelayedActionConfigContainer> delayedSteps = Arrays.asList(container);
                         result = SetupStepResult
                                 .builder()
                                 .result(SetupStepResultType.SUCCESS)
@@ -135,12 +143,12 @@ public class ModMailCategorySetupBean implements ModMailCategorySetup {
                 future.completeExceptionally(new SetupStepException(e));
             }
         };
-        interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel, parameter.getPreviousMessageId(), configAction, finalAction);
+        interactiveService.createMessageWithResponse(messageText, aUserInAServer, channel, configAction, finalAction);
         return future;
     }
 
-    protected Runnable getTimeoutRunnable(Long serverId, Long channelId) {
-        return () -> interactiveUtils.sendTimeoutMessage(serverId, channelId);
+    protected Consumer<MessageReceivedModel> getTimeoutConsumer(Long serverId, Long channelId) {
+        return (MessageReceivedModel) -> interactiveUtils.sendTimeoutMessage(serverId, channelId);
     }
 
     protected boolean checkForExit(Message message) {

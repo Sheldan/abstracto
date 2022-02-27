@@ -26,7 +26,7 @@ public class RepostCheckChannelModelConverter {
                 FullChannel
                         .builder()
                         .channel(channel)
-                        .serverChannel(channelService.getTextChannelFromServerNullable(guild, channel.getId()))
+                        .serverChannel(channelService.getMessageChannelFromServerNullable(guild, channel.getId()))
                         .build()
             ).collect(Collectors.toList());
             repostCheckChannelGroups.add(

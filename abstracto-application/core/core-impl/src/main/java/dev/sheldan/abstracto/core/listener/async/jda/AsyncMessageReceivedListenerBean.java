@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,14 +49,15 @@ public class AsyncMessageReceivedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if(listenerList == null) return;
+        if(!event.isFromGuild()) return;
         messageCache.putMessageInCache(event.getMessage());
         MessageReceivedModel model = getModel(event);
         listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, messageReceivedExecutor));
     }
 
-    private MessageReceivedModel getModel(GuildMessageReceivedEvent event) {
+    private MessageReceivedModel getModel(MessageReceivedEvent event) {
         return MessageReceivedModel
                 .builder()
                 .message(event.getMessage())

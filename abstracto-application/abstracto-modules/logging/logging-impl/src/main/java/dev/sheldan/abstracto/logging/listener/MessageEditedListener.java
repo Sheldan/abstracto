@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.logging.model.template.MessageEditedLog;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class MessageEditedListener implements AsyncMessageUpdatedListener {
             return DefaultListenerResult.IGNORED;
         }
         log.debug("Message {} in channel {} in guild {} was edited.", messageBefore.getMessageId(), messageBefore.getChannelId(), model.getServerId());
-        TextChannel textChannel = channelService.getTextChannelFromServer(model.getServerId(), messageBefore.getChannelId());
+        GuildMessageChannel textChannel = channelService.getMessageChannelFromServer(model.getServerId(), messageBefore.getChannelId());
         MessageEditedLog lodModel = MessageEditedLog
                 .builder()
                 .messageAfter(messageAfter)

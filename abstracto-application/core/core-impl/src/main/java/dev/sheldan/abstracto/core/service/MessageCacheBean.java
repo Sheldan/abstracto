@@ -5,8 +5,9 @@ import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -75,10 +76,10 @@ public class MessageCacheBean implements MessageCache {
         CompletableFuture<CachedMessage> future = new CompletableFuture<>();
         Optional<Guild> guildOptional = guildService.getGuildByIdOptional(guildId);
         if(guildOptional.isPresent()) {
-            Optional<TextChannel> textChannelByIdOptional = channelService.getTextChannelFromServerOptional(guildOptional.get(), textChannelId);
+            Optional<GuildMessageChannel> textChannelByIdOptional = channelService.getMessageChannelFromServerOptional(guildId, textChannelId);
             if(textChannelByIdOptional.isPresent()) {
-                TextChannel textChannel = textChannelByIdOptional.get();
-                channelService.retrieveMessageInChannel(textChannel, messageId)
+                MessageChannel messageChannel = textChannelByIdOptional.get();
+                channelService.retrieveMessageInChannel(messageChannel, messageId)
                         .thenAccept(message ->
                             cacheEntityService.buildCachedMessageFromMessage(message)
                                     .thenAccept(future::complete)

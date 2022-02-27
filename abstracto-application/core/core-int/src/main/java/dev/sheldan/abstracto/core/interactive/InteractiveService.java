@@ -2,13 +2,12 @@ package dev.sheldan.abstracto.core.interactive;
 
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.function.Consumer;
 
 public interface InteractiveService {
-    void createMessageWithResponse(String templateKey, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction);
-    void createMessageWithResponse(MessageToSend messageToSend, AUserInAServer responder, AChannel channel, Long messageId, Consumer<MessageReceivedEvent> action, Runnable finalAction);
-    void createMessageWithConfirmation(String text, AUserInAServer responder, AChannel channel, Long messageId, Consumer<Void> confirmation, Consumer<Void> denial, Runnable finalAction);
+    void createMessageWithResponse(String templateKey, AUserInAServer responder, AChannel channel, Consumer<MessageReceivedModel> action, Consumer<MessageReceivedModel> finalAction);
+    void createMessageWithResponse(MessageToSend messageToSend, AUserInAServer responder, AChannel channel, Consumer<MessageReceivedModel> action, Consumer<MessageReceivedModel> finalAction);
 }

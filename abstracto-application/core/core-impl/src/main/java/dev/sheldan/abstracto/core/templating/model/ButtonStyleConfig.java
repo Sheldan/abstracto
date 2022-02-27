@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.templating.model;
 
 import com.google.gson.annotations.SerializedName;
-import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 
 public enum ButtonStyleConfig {
     @SerializedName("primary")

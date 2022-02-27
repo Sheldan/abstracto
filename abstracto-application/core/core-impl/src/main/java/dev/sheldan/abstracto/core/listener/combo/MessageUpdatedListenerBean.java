@@ -14,7 +14,7 @@ import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +58,6 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     @Autowired
     private MetricService metricService;
 
-    @Autowired
-    private CacheEntityService cacheEntityService;
-
     private static final CounterMetric MESSAGE_UPDATED_COUNTER = CounterMetric
             .builder()
             .name(MESSAGE_METRIC)
@@ -69,10 +66,10 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
+    public void onMessageUpdate(@Nonnull MessageUpdateEvent event) {
         metricService.incrementCounter(MESSAGE_UPDATED_COUNTER);
         Message message = event.getMessage();
-        messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getTextChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {
+        messageCache.getMessageFromCache(message.getGuild().getIdLong(), message.getChannel().getIdLong(), event.getMessageIdLong()).thenAccept(cachedMessage -> {
             try {
                 // we need to provide a copy of the object, so modifications here dont influence the async execution
                 // because we do modify it, as we are the one responsible for caching it
@@ -94,13 +91,13 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void executeListener(CachedMessage cachedMessage, GuildMessageUpdateEvent event) {
+    public void executeListener(CachedMessage cachedMessage, MessageUpdateEvent event) {
         if(listenerList == null) return;
         MessageUpdatedModel model = getModel(event, cachedMessage);
         listenerList.forEach(messageUpdatedListener -> listenerService.executeFeatureAwareListener(messageUpdatedListener, model));
     }
 
-    private MessageUpdatedModel getModel(GuildMessageUpdateEvent event, CachedMessage oldMessage) {
+    private MessageUpdatedModel getModel(MessageUpdateEvent event, CachedMessage oldMessage) {
         return MessageUpdatedModel
                 .builder()
                 .after(event.getMessage())
@@ -108,7 +105,7 @@ public class MessageUpdatedListenerBean extends ListenerAdapter {
                 .build();
     }
 
-    private void executeAsyncListeners(GuildMessageUpdateEvent event, CachedMessage oldMessage) {
+    private void executeAsyncListeners(MessageUpdateEvent event, CachedMessage oldMessage) {
         if(asyncListenerList == null) return;
         MessageUpdatedModel model = getModel(event, oldMessage);
         asyncListenerList.forEach(messageTextUpdatedListener ->

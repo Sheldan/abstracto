@@ -31,6 +31,12 @@ public class AChannel implements SnowFlake, Serializable {
     @JoinColumn(name = "server_id", nullable = false)
     private AServer server;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Getter
+    @Setter
+    @JoinColumn(name = "related_channel_id")
+    private AChannel relatedChannel;
+
     @Getter
     @Enumerated(EnumType.STRING)
     private AChannelType type;

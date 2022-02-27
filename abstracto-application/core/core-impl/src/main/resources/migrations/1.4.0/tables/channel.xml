@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="add-related-channel-column">
+            <addColumn tableName="channel" >
+                <column name="related_channel_id" type="BIGINT">
+                    <constraints nullable="true" />
+                </column>
+            </addColumn>
+        <addForeignKeyConstraint baseColumnNames="related_channel_id" baseTableName="channel" constraintName="fk_channel_related_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+        <sql>
+            ALTER TABLE channel DROP CONSTRAINT check_channel_type;
+            ALTER TABLE channel ADD CONSTRAINT check_channel_type CHECK (type IN ('TEXT', 'DM', 'VOICE', 'NEWS', 'CATEGORY', 'NEWS_THREAD', 'PUBLIC_THREAD', 'PRIVATE_THREAD', 'STAGE', 'NEWS', 'UNKNOWN'));
+        </sql>
+    </changeSet>
+</databaseChangeLog>

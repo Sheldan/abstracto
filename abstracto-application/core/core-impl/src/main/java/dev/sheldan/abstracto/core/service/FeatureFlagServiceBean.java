@@ -7,11 +7,14 @@ import dev.sheldan.abstracto.core.exception.FeatureNotFoundException;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.listener.FeatureActivationListenerModel;
+import dev.sheldan.abstracto.core.models.listener.FeatureDeactivationListenerModel;
 import dev.sheldan.abstracto.core.models.property.FeatureFlagProperty;
 import dev.sheldan.abstracto.core.service.management.DefaultFeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -33,6 +36,9 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Autowired
     private DefaultFeatureFlagManagementService defaultFeatureFlagManagementService;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public boolean isFeatureEnabled(FeatureConfig name, Long serverId) {
@@ -56,6 +62,12 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
         if(!featureConfigService.doesFeatureExist(name)) {
             throw new FeatureNotFoundException(feature.getKey(), featureConfigService.getFeaturesAsList());
         }
+        FeatureActivationListenerModel model = FeatureActivationListenerModel
+                .builder()
+                .featureName(feature.getKey())
+                .serverId(server.getId())
+                .build();
+        applicationEventPublisher.publishEvent(model);
         updateFeatureFlag(feature, server, true);
     }
 
@@ -71,6 +83,12 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
         if(!featureConfigService.doesFeatureExist(name)) {
             throw new FeatureNotFoundException(feature.getKey(), featureConfigService.getFeaturesAsList());
         }
+        FeatureDeactivationListenerModel model = FeatureDeactivationListenerModel
+                .builder()
+                .featureName(feature.getKey())
+                .serverId(server.getId())
+                .build();
+        applicationEventPublisher.publishEvent(model);
         updateFeatureFlag(feature, server, false);
     }
 

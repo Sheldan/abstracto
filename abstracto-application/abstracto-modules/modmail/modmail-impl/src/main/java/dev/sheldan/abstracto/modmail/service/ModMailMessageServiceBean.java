@@ -72,9 +72,9 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
                 .stream()
                 .map(ServerChannelMessageUser::getMessageId)
                 .collect(Collectors.toList());
-        Optional<TextChannel> textChannelFromServer = channelService.getTextChannelFromServerOptional(thread.getServer().getId(), thread.getChannel().getId());
+        Optional<GuildMessageChannel> textChannelFromServer = channelService.getMessageChannelFromServerOptional(thread.getServer().getId(), thread.getChannel().getId());
         if(textChannelFromServer.isPresent()) {
-            TextChannel modMailThread = textChannelFromServer.get();
+            GuildMessageChannel modMailThread = textChannelFromServer.get();
             Long userId = thread.getUser().getUserReference().getId();
             botService.getInstance().openPrivateChannelById(userId).queue(privateChannel -> {
                 Optional<ServerChannelMessageUser> latestThreadMessageOptional = messageIds
@@ -125,7 +125,7 @@ public class ModMailMessageServiceBean implements ModMailMessageService {
     }
 
     public CompletableFuture<Void> loadMoreMessages(Integer totalMessageCount, List<Long> messagesToLoad,
-                                                    MessageHistory privateMessageHistory, TextChannel thread,
+                                                    MessageHistory privateMessageHistory, GuildMessageChannel thread,
                                                     MessageHistory threadMessageHistory, PrivateChannel dmChannel, List<Message> loadedMessages, Integer counter) {
         // TODO maybe find a better mechanism for this...  one which does not lead to infinite loops, but also doesnt miss out on history
         if(counter.equals(totalMessageCount * 2)) {

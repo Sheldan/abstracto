@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.linkembed.service;
 
+import dev.sheldan.abstracto.core.models.GuildMemberMessageChannel;
 import dev.sheldan.abstracto.core.models.cache.CachedAuthor;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AUser;
@@ -73,10 +74,13 @@ public class MessageEmbedServiceBeanTest {
     private FeatureModeService featureModeService;
 
     @Mock
-    private TextChannel textChannel;
+    private GuildMessageChannel textChannel;
 
     @Mock
-    private Message embeddingMessage;
+    private GuildMemberMessageChannel embeddingMessage;
+
+    @Mock
+    private Message message;
 
     @Mock
     private Guild guild;
@@ -176,7 +180,7 @@ public class MessageEmbedServiceBeanTest {
         when(messageCache.getMessageFromCache(SERVER_ID,channelId, firstMessageId)).thenReturn(CompletableFuture.completedFuture(firstCachedMessage));
         Long embeddingUserId = 5L;
         testUnit.embedLinks(linksToEmbed, textChannel, embeddingUserId, embeddingMessage);
-        verify( self, times(1)).embedLink(eq(firstCachedMessage), eq(textChannel), eq(embeddingUserId) , eq(embeddingMessage));
+        verify( self, times(1)).embedLink(firstCachedMessage, textChannel, embeddingUserId, embeddingMessage);
     }
 
     @Test
@@ -258,17 +262,17 @@ public class MessageEmbedServiceBeanTest {
     @Test
     public void testLoadUserAndPersistMessage() {
         when(userInServerManagementService.loadOrCreateUser(EMBEDDING_USER_IN_SERVER_ID)).thenReturn(embeddingUser);
-        testUnit.loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, embeddingMessage, null);
-        verify(messageEmbedPostManagementService, times(1)).createMessageEmbed(cachedMessage, embeddingMessage, embeddingUser, null);
+        testUnit.loadUserAndPersistMessage(cachedMessage, EMBEDDING_USER_IN_SERVER_ID, message, null);
+        verify(messageEmbedPostManagementService, times(1)).createMessageEmbed(cachedMessage, message, embeddingUser, null);
     }
 
     @Test
     public void testLoadMessageEmbedModel() {
         when(cachedMessage.getServerId()).thenReturn(SERVER_ID);
         when(cachedMessage.getChannelId()).thenReturn(CHANNEL_ID);
-        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(textChannel));
+        when(channelService.getMessageChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(textChannel));
         when(embeddingMessage.getGuild()).thenReturn(guild);
-        when(embeddingMessage.getChannel()).thenReturn(textChannel);
+        when(embeddingMessage.getGuildChannel()).thenReturn(textChannel);
         when(embeddingMessage.getMember()).thenReturn(embeddingMember);
         MessageEmbeddedModel createdModel = testUnit.loadMessageEmbedModel(embeddingMessage, cachedMessage, embeddedUser, false);
         Assert.assertEquals(textChannel, createdModel.getSourceChannel());

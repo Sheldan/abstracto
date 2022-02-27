@@ -1,10 +1,10 @@
 package dev.sheldan.abstracto.core.service;
 
 
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 
 import java.util.concurrent.CompletableFuture;
 
 public interface PaginatorService {
-    CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, TextChannel textChannel, Long userId);
+    CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, GuildMessageChannel textChannel, Long userId);
 }

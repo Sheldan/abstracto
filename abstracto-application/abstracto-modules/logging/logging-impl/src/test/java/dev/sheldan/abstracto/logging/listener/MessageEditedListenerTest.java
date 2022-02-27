@@ -79,7 +79,7 @@ public class MessageEditedListenerTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         ArgumentCaptor<MessageEditedLog> captor = ArgumentCaptor.forClass(MessageEditedLog.class);
         when(templateService.renderEmbedTemplate(eq(MessageEditedListener.MESSAGE_EDITED_TEMPLATE), captor.capture(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(channelService.getTextChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(channel);
+        when(channelService.getMessageChannelFromServer(SERVER_ID, CHANNEL_ID)).thenReturn(channel);
         when(model.getAfter()).thenReturn(messageAfter);
         when(model.getBefore()).thenReturn(messageBefore);
         when(messageAfter.getMember()).thenReturn(author);

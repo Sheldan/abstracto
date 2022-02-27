@@ -4,13 +4,13 @@ import dev.sheldan.abstracto.core.models.database.PostTarget;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 @Getter
 @Setter
 @Builder
 public class PostTargetModelEntry {
     private PostTarget postTarget;
-    private TextChannel channel;
+    private MessageChannel channel;
     private Boolean disabled;
 }

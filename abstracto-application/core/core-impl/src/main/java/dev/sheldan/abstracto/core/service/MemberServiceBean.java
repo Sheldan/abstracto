@@ -8,10 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,15 +32,10 @@ public class MemberServiceBean implements MemberService {
     @Override
     public GuildChannelMember getServerChannelUser(Long serverId, Long channelId, Long userId)  {
         log.debug("Trying to retrieve member {}, channel {} in server {} from cache.", userId, channelId, serverId);
+        GuildChannel guildChannel = channelService.getGuildChannelFromServer(serverId, channelId);
         Guild guild = guildService.getGuildById(serverId);
-        Optional<TextChannel> textChannelOptional = channelService.getTextChannelFromServerOptional(guild, channelId);
-        if(textChannelOptional.isPresent()) {
-            TextChannel textChannel = textChannelOptional.get();
-            Member member = guild.getMemberById(userId);
-            return GuildChannelMember.builder().guild(guild).textChannel(textChannel).member(member).build();
-        } else {
-            throw new ChannelNotInGuildException(channelId);
-        }
+        Member member = guild.getMemberById(userId);
+        return GuildChannelMember.builder().guild(guild).textChannel(guildChannel).member(member).build();
     }
 
     @Override
@@ -52,9 +44,9 @@ public class MemberServiceBean implements MemberService {
         CompletableFuture<Member> memberFuture = getMemberInServerAsync(serverId, userId);
 
         Guild guild = guildService.getGuildById(serverId);
-        TextChannel textChannel = channelService.getTextChannelFromServer(guild, channelId);
+        GuildMessageChannel messageChannel = channelService.getMessageChannelFromServer(guild, channelId);
         return memberFuture.thenApply(member ->
-                GuildChannelMember.builder().guild(guild).textChannel(textChannel).member(member).build()
+                GuildChannelMember.builder().guild(guild).textChannel(messageChannel).member(member).build()
         );
     }
 

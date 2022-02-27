@@ -5,20 +5,20 @@ import dev.sheldan.abstracto.core.models.template.button.ButtonPayload;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 @Getter
 @Setter
 @Builder
 public class ButtonClickedListenerModel implements FeatureAwareListenerModel {
 
-    private ButtonClickEvent event;
+    private ButtonInteractionEvent event;
     private String payload;
     private String origin;
     private ButtonPayload deserializedPayload;
 
     @Override
     public Long getServerId() {
-        return event.getGuild().getIdLong();
+        return event.isFromGuild() ? event.getGuild().getIdLong() : null;
     }
 }

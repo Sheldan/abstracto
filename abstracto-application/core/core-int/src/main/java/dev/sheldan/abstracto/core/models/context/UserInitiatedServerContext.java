@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.models.context;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 @Getter
 @NoArgsConstructor
 @Setter
+@AllArgsConstructor
 @SuperBuilder
 public class UserInitiatedServerContext extends ServerContext {
     private MessageChannel messageChannel;

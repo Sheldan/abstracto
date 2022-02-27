@@ -4,6 +4,9 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListener;
+import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
+import dev.sheldan.abstracto.core.listener.ListenerExecutionResult;
 import dev.sheldan.abstracto.core.models.FeatureValidationResult;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -25,4 +28,5 @@ public interface FeatureConfigService {
     FeatureMode getFeatureModeByKey(FeatureConfig featureConfig, String key);
     FeatureConfig getFeatureConfigForFeature(AFeature feature);
     boolean isModeValid(String featureName, String modeName);
+    <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult>  boolean isFeatureAwareEnabled(FeatureAwareListener<T, R> listener, Long serverId);
 }

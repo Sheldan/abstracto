@@ -10,12 +10,14 @@ import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementS
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static dev.sheldan.abstracto.core.config.MetricConstants.DISCORD_API_INTERACTION_METRIC;
 import static dev.sheldan.abstracto.core.config.MetricConstants.INTERACTION_TYPE;
@@ -103,33 +106,18 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<Message> sendTextToAChannel(String text, AChannel channel) {
-        Guild guild = botService.getInstance().getGuildById(channel.getServer().getId());
-        if (guild != null) {
-            TextChannel textChannel = guild.getTextChannelById(channel.getId());
-            if(textChannel != null) {
-                return sendTextToChannel(text, textChannel);
-            } else {
-                log.error("Channel {} to post towards was not found in server {}", channel.getId(), channel.getServer().getId());
-                throw new ChannelNotInGuildException(channel.getId());
-            }
-        } else {
-            log.error("Guild {} was not found when trying to post a message", channel.getServer().getId());
-            throw new GuildNotFoundException(channel.getServer().getId());
-        }
+        GuildMessageChannel guildMessageChannel = getGuildMessageChannelFromAChannel(channel);
+        return sendTextToChannel(text, guildMessageChannel);
     }
 
     @Override
     public CompletableFuture<Message> sendMessageToAChannel(Message message, AChannel channel) {
-        Optional<TextChannel> textChannelOpt = getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
-        if(textChannelOpt.isPresent()) {
-            TextChannel textChannel = textChannelOpt.get();
-            return sendMessageToChannel(message, textChannel);
-        }
-        throw new ChannelNotInGuildException(channel.getId());
+        GuildMessageChannel foundChannel = getMessageChannelFromServer(channel.getServer().getId(), channel.getId());
+        return sendMessageToChannel(message, foundChannel);
     }
 
     @Override
-    public CompletableFuture<Message> sendMessageToChannel(Message message, MessageChannel channel) {
+    public CompletableFuture<Message> sendMessageToChannel(Message message, GuildMessageChannel channel) {
         log.debug("Sending message {} from channel {} and server {} to channel {}.",
                 message.getId(), message.getChannel().getId(), message.getGuild().getId(), channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
@@ -174,11 +162,8 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public List<CompletableFuture<Message>> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel) {
-        Optional<TextChannel> textChannelFromServer = getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
-        if(textChannelFromServer.isPresent()) {
-            return sendMessageToSendToChannel(messageToSend, textChannelFromServer.get());
-        }
-        throw new ChannelNotInGuildException(channel.getId());
+        GuildMessageChannel textChannelFromServer = getMessageChannelFromServer(channel.getServer().getId(), channel.getId());
+        return sendMessageToSendToChannel(messageToSend, textChannelFromServer);
     }
 
     @Override
@@ -188,7 +173,7 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<Message> retrieveMessageInChannel(Long serverId, Long channelId, Long messageId) {
-        TextChannel channel = getTextChannelFromServer(serverId, channelId);
+        MessageChannel channel = getMessageChannelFromServer(serverId, channelId);
         return retrieveMessageInChannel(channel, messageId);
     }
 
@@ -244,8 +229,7 @@ public class ChannelServiceBean implements ChannelService {
         }
 
         List<ActionRow> actionRows = messageToSend.getActionRows();
-        if(!actionRows.isEmpty() && textChannel instanceof GuildChannel) {
-            GuildChannel channel = (GuildChannel) textChannel;
+        if(!actionRows.isEmpty()) {
             List<List<ActionRow>> groupedActionRows = ListUtils.partition(actionRows, ComponentService.MAX_BUTTONS_PER_ROW);
             for (int i = 0; i < allMessageActions.size(); i++) {
                 allMessageActions.set(i, allMessageActions.get(i).setActionRows(groupedActionRows.get(i)));
@@ -254,14 +238,22 @@ public class ChannelServiceBean implements ChannelService {
                 // TODO maybe possible nicer
                 allMessageActions.add(textChannel.sendMessage(".").setActionRows(groupedActionRows.get(i)));
             }
-            AServer server = serverManagementService.loadServer(channel.getGuild());
-            actionRows.forEach(components -> components.forEach(component -> {
-                String id = component.getId();
-                MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                if(payload != null && payload.getPersistCallback()) {
-                    componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+            AServer server = null;
+            if(textChannel instanceof GuildChannel) {
+                GuildChannel channel = (GuildChannel) textChannel;
+                server = serverManagementService.loadServer(channel.getGuild());
+            }
+            for (ActionRow components : actionRows) {
+                for (ItemComponent component : components) {
+                    if (component instanceof ActionComponent) {
+                        String id = ((ActionComponent) component).getId();
+                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                        if (payload != null && payload.getPersistCallback()) {
+                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                        }
+                    }
                 }
-            }));
+            }
         }
 
         if(messageToSend.hasFileToSend()) {
@@ -292,10 +284,10 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public void editMessageInAChannel(MessageToSend messageToSend, AChannel channel, Long messageId) {
-        Optional<TextChannel> textChannelFromServer = getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
-        if(textChannelFromServer.isPresent()) {
-            TextChannel textChannel = textChannelFromServer.get();
-            editMessageInAChannel(messageToSend, textChannel, messageId);
+        Optional<GuildChannel> textChannelFromServer = getGuildChannelFromServerOptional(channel.getServer().getId(), channel.getId());
+        if(textChannelFromServer.isPresent() && textChannelFromServer.get() instanceof GuildMessageChannel) {
+            GuildMessageChannel messageChannel = (GuildMessageChannel) textChannelFromServer.get();
+            editMessageInAChannel(messageToSend, messageChannel, messageId);
         } else {
             throw new ChannelNotInGuildException(channel.getId());
         }
@@ -406,8 +398,13 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     @Transactional
-    public List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, TextChannel channel) {
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model, channel.getGuild().getIdLong());
+    public List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, MessageChannel channel) {
+        MessageToSend messageToSend;
+        if(channel instanceof GuildChannel) {
+            messageToSend = templateService.renderEmbedTemplate(templateKey, model, ((GuildChannel)channel).getGuild().getIdLong());
+        } else {
+            messageToSend = templateService.renderEmbedTemplate(templateKey, model);
+        }
         return sendMessageToSendToChannel(messageToSend, channel);
     }
 
@@ -419,8 +416,14 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, TextChannel channel) {
-        String text = templateService.renderTemplate(templateKey, model, channel.getGuild().getIdLong());
+    public CompletableFuture<Message> sendTextTemplateInTextChannel(String templateKey, Object model, MessageChannel channel) {
+        String text;
+        if(channel instanceof GuildChannel) {
+            text = templateService.renderTemplate(templateKey, model, ((GuildChannel)channel).getGuild().getIdLong());
+        } else {
+            text = templateService.renderTemplate(templateKey, model);
+        }
+
         return sendTextToChannel(text, channel);
     }
 
@@ -432,9 +435,14 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public RestAction<Void> deleteMessagesInChannel(TextChannel textChannel, List<Message> messages) {
+    public CompletableFuture<Void> deleteMessagesInChannel(MessageChannel messageChannel, List<Message> messages) {
         metricService.incrementCounter(CHANNEL_MESSAGE_BULK_DELETE_METRIC);
-        return textChannel.deleteMessages(messages);
+        List<CompletableFuture<Void>> deleteFutures = messages
+                .stream()
+                .map(ISnowflake::getId)
+                .map(messageId -> messageChannel.deleteMessageById(messageId).submit())
+                .collect(Collectors.toList());
+        return new CompletableFutureList<>(deleteFutures).getMainFuture();
     }
 
     @Override
@@ -454,53 +462,115 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public Optional<TextChannel> getChannelFromAChannel(AChannel channel) {
-        return getTextChannelFromServerOptional(channel.getServer().getId(), channel.getId());
+    public Optional<GuildChannel> getChannelFromAChannel(AChannel channel) {
+        return getGuildChannelFromServerOptional(channel.getServer().getId(), channel.getId());
     }
 
     @Override
-    public AChannel getFakeChannelFromTextChannel(TextChannel textChannel) {
-        AServer server = AServer
-                .builder()
-                .id(textChannel.getGuild().getIdLong())
-                .fake(true)
-                .build();
+    public Optional<GuildMessageChannel> getGuildMessageChannelFromAChannelOptional(AChannel channel) {
+        return getMessageChannelFromServerOptional(channel.getServer().getId(), channel.getId());
+    }
+
+    @Override
+    public GuildMessageChannel getGuildMessageChannelFromAChannel(AChannel channel) {
+        return getMessageChannelFromServer(channel.getServer().getId(), channel.getId());
+    }
+
+    @Override
+    public AChannel getFakeChannelFromTextChannel(MessageChannel messageChannel) {
+        AServer server = null;
+        if(messageChannel instanceof GuildChannel) {
+            server = AServer
+                    .builder()
+                    .id(((GuildChannel) messageChannel).getGuild().getIdLong())
+                    .fake(true)
+                    .build();
+        }
         return AChannel
                 .builder()
                 .fake(true)
-                .id(textChannel.getIdLong())
+                .id(messageChannel.getIdLong())
                 .server(server)
                 .build();
     }
 
     @Override
     public CompletableFuture<Message> sendSimpleTemplateToChannel(Long serverId, Long channelId, String template) {
-        TextChannel textChannel = getTextChannelFromServer(serverId, channelId);
-        return sendTextTemplateInTextChannel(template, new Object(), textChannel);
+        GuildMessageChannel foundChannel = getMessageChannelFromServer(serverId, channelId);
+        if(foundChannel != null) {
+            return sendTextTemplateInTextChannel(template, new Object(), foundChannel);
+        } else {
+            log.info("Channel {} in server {} not found.", channelId, serverId);
+            throw new IllegalArgumentException("Incorrect channel type.");
+        }
     }
 
     @Override
-    public CompletableFuture<MessageHistory> getHistoryOfChannel(TextChannel channel, Long startMessageId, Integer amount) {
+    public CompletableFuture<MessageHistory> getHistoryOfChannel(MessageChannel channel, Long startMessageId, Integer amount) {
         return channel.getHistoryBefore(startMessageId, amount).submit();
     }
 
     @Override
-    public Optional<TextChannel> getTextChannelFromServerOptional(Guild guild, Long textChannelId) {
-        return Optional.ofNullable(guild.getTextChannelById(textChannelId));
+    public Optional<GuildChannel> getGuildChannelFromServerOptional(Guild guild, Long textChannelId) {
+        return Optional.ofNullable(guild.getGuildChannelById(textChannelId));
     }
 
     @Override
-    public TextChannel getTextChannelFromServer(Guild guild, Long textChannelId) {
-        return getTextChannelFromServerOptional(guild, textChannelId).orElseThrow(() -> new ChannelNotInGuildException(textChannelId));
+    public GuildMessageChannel getMessageChannelFromServer(Guild guild, Long textChannelId) {
+        GuildChannel foundChannel = getGuildChannelFromServerOptional(guild, textChannelId).orElseThrow(() -> new ChannelNotInGuildException(textChannelId));
+        if(foundChannel instanceof GuildMessageChannel) {
+            return (GuildMessageChannel) foundChannel;
+        }
+        log.info("Incorrect channel type of channel {} in guild {}: {}", textChannelId, guild.getId(), foundChannel.getType());
+        throw new IllegalArgumentException("Incorrect channel type found.");
     }
 
     @Override
-    public TextChannel getTextChannelFromServerNullable(Guild guild, Long textChannelId) {
-        return getTextChannelFromServerOptional(guild, textChannelId).orElse(null);
+    public GuildMessageChannel getMessageChannelFromServer(Long serverId, Long textChannelId) {
+        Optional<Guild> guildOptional = guildService.getGuildByIdOptional(serverId);
+        if(guildOptional.isPresent()) {
+            Guild guild = guildOptional.get();
+            return getMessageChannelFromServer(guild, textChannelId);
+        }
+        throw new GuildNotFoundException(serverId);
     }
 
     @Override
-    public Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId)  {
+    public Optional<GuildMessageChannel> getMessageChannelFromServerOptional(Long serverId, Long textChannelId) {
+        Optional<GuildChannel> guildChannel = getGuildChannelFromServerOptional(serverId, textChannelId);
+        if(guildChannel.isPresent() && guildChannel.get() instanceof GuildMessageChannel) {
+            return Optional.of((GuildMessageChannel)guildChannel.get());
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public GuildMessageChannel getMessageChannelFromServerNullable(Guild guild, Long textChannelId) {
+        return getMessageChannelFromServer(guild, textChannelId);
+    }
+
+    @Override
+    public Optional<GuildChannel> getGuildChannelFromServerOptional(Long serverId, Long channelId)  {
+        Optional<Guild> guildOptional = guildService.getGuildByIdOptional(serverId);
+        if(guildOptional.isPresent()) {
+            Guild guild = guildOptional.get();
+            return Optional.ofNullable(guild.getGuildChannelById(channelId));
+        }
+        throw new GuildNotFoundException(serverId);
+    }
+
+    @Override
+    public GuildChannel getGuildChannelFromServer(Long serverId, Long channelId)  {
+        Optional<Guild> guildOptional = guildService.getGuildByIdOptional(serverId);
+        if(guildOptional.isPresent()) {
+            Guild guild = guildOptional.get();
+            return guild.getGuildChannelById(channelId);
+        }
+        throw new GuildNotFoundException(serverId);
+    }
+
+    @Override
+    public Optional<TextChannel> getTextChannelFromServerOptional(Long serverId, Long textChannelId) {
         Optional<Guild> guildOptional = guildService.getGuildByIdOptional(serverId);
         if(guildOptional.isPresent()) {
             Guild guild = guildOptional.get();
@@ -509,10 +579,6 @@ public class ChannelServiceBean implements ChannelService {
         throw new GuildNotFoundException(serverId);
     }
 
-    @Override
-    public TextChannel getTextChannelFromServer(Long serverId, Long textChannelId) {
-        return getTextChannelFromServerOptional(serverId, textChannelId).orElseThrow(() -> new ChannelNotInGuildException(textChannelId));
-    }
 
     @Override
     public CompletableFuture<Void> setSlowModeInChannel(TextChannel textChannel, Integer seconds) {
@@ -521,17 +587,23 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, TextChannel channel) {
+    public List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, MessageChannel channel) {
         String fileName = templateService.renderTemplate(fileNameTemplate, model);
         File tempFile = fileService.createTempFile(fileName);
         try {
             fileService.writeContentToFile(tempFile, fileContent);
-            long maxFileSize = channel.getGuild().getMaxFileSize();
-            // in this case, we cannot upload the file, so we need to fail
-            if(tempFile.length() > maxFileSize) {
-                throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
+            MessageToSend messageToSend;
+            if(channel instanceof GuildMessageChannel) {
+                GuildMessageChannel guildChannel = (GuildMessageChannel) channel;
+                long maxFileSize = guildChannel.getGuild().getMaxFileSize();
+                // in this case, we cannot upload the file, so we need to fail
+                if(tempFile.length() > maxFileSize) {
+                    throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
+                }
+                messageToSend = templateService.renderEmbedTemplate(messageTemplate, model, guildChannel.getGuild().getIdLong());
+            } else {
+                messageToSend = templateService.renderEmbedTemplate(messageTemplate, model);
             }
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(messageTemplate, model, channel.getGuild().getIdLong());
             messageToSend.setFileToSend(tempFile);
             return sendMessageToSendToChannel(messageToSend, channel);
         } catch (IOException e) {
@@ -547,14 +619,16 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, TextChannel channel) {
+    public List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, MessageChannel channel) {
         File tempFile = fileService.createTempFile(fileName);
         try {
             fileService.writeContentToFile(tempFile, fileContent);
-            long maxFileSize = channel.getGuild().getMaxFileSize();
-            // in this case, we cannot upload the file, so we need to fail
-            if(tempFile.length() > maxFileSize) {
-                throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
+            if(channel instanceof GuildMessageChannel) {
+                long maxFileSize = ((GuildMessageChannel) channel).getGuild().getMaxFileSize();
+                // in this case, we cannot upload the file, so we need to fail
+                if(tempFile.length() > maxFileSize) {
+                    throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
+                }
             }
             MessageToSend messageToSend = MessageToSend
                     .builder()

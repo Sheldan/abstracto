@@ -20,6 +20,7 @@ import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedLog;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
     public void executeListener(CachedMessage messageFromCache, Member authorMember) {
         log.debug("Message {} in channel {} in guild {} was deleted.", messageFromCache.getMessageId(), messageFromCache.getChannelId(), messageFromCache.getServerId());
 
-        TextChannel textChannel = channelService.getTextChannelFromServer(messageFromCache.getServerId(), messageFromCache.getChannelId());
+        GuildMessageChannel textChannel = channelService.getMessageChannelFromServer(messageFromCache.getServerId(), messageFromCache.getChannelId());
         MessageDeletedLog logModel = MessageDeletedLog
                 .builder()
                 .cachedMessage(messageFromCache)

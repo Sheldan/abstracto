@@ -62,6 +62,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("buttonClickedListener");
     }
 
+    @Bean(name = "messageContextCommandExecutor")
+    public TaskExecutor messageContextCommandExecutor() {
+        return executorService.setupExecutorFor("messageContextCommandListener");
+    }
+
     @Bean(name = "emoteDeletedExecutor")
     public TaskExecutor emoteDeletedExecutor() {
         return executorService.setupExecutorFor("emoteDeletedListener");
@@ -115,6 +120,16 @@ public class ListenerExecutorConfig {
     @Bean(name = "channelGroupCreatedExecutor")
     public TaskExecutor channelGroupCreatedExecutor() {
         return executorService.setupExecutorFor("channelGroupCreatedListener");
+    }
+
+    @Bean(name = "featureActivationExecutor")
+    public TaskExecutor featureActivationListener() {
+        return executorService.setupExecutorFor("featureActivationListener");
+    }
+
+    @Bean(name = "featureDeactivationExecutor")
+    public TaskExecutor featureDeactivationListener() {
+        return executorService.setupExecutorFor("featureDeactivationListener");
     }
 
     @Bean(name = "serverJoinExecutor")

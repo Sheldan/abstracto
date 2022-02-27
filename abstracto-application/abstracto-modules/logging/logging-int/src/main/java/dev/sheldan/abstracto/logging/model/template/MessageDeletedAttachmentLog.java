@@ -1,7 +1,9 @@
 package dev.sheldan.abstracto.logging.model.template;
 
 import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
@@ -12,6 +14,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MessageDeletedAttachmentLog extends SlimUserInitiatedServerContext {
     /**
      * The proxy URL to the attachment which was deleted.

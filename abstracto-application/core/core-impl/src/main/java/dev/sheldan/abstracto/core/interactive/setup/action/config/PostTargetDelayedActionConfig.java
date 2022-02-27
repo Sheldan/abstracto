@@ -1,10 +1,10 @@
-package dev.sheldan.abstracto.core.interactive;
+package dev.sheldan.abstracto.core.interactive.setup.action.config;
 
+import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
 import dev.sheldan.abstracto.core.models.template.commands.PostTargetActionModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.TextChannel;
 
 @Getter
 @Setter
@@ -14,7 +14,6 @@ public class PostTargetDelayedActionConfig implements DelayedActionConfig {
     private String postTargetKey;
     private Long serverId;
     private Long channelId;
-    private TextChannel textChannel;
 
     @Override
     public String getTemplateName() {
@@ -26,7 +25,6 @@ public class PostTargetDelayedActionConfig implements DelayedActionConfig {
         return PostTargetActionModel
                 .builder()
                 .channelId(channelId)
-                .channel(textChannel)
                 .postTargetKey(postTargetKey)
                 .build();
     }

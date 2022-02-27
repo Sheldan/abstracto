@@ -20,7 +20,7 @@ import static dev.sheldan.abstracto.core.command.CommandConstants.COMMAND_CHANNE
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ChannelGroupCommandServiceBeanTest {
+public class ChannelGroupApplicationCommandServiceBeanTest {
 
     @InjectMocks
     private ChannelGroupCommandServiceBean testUnit;

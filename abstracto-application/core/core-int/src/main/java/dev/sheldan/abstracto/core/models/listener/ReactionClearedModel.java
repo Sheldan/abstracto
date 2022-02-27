@@ -5,17 +5,18 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.entities.GuildChannel;
 
 @Getter
 @Setter
 @Builder
 public class ReactionClearedModel implements FeatureAwareListenerModel {
     private CachedMessage message;
-    private TextChannel channel;
+    private Channel channel;
 
     @Override
     public Long getServerId() {
-        return channel.getGuild().getIdLong();
+        return channel instanceof GuildChannel ? ((GuildChannel) channel).getGuild().getIdLong() : null;
     }
 }

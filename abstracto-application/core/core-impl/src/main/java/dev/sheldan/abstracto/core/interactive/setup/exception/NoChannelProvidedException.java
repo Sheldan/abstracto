@@ -1,4 +1,4 @@
-package dev.sheldan.abstracto.core.interactive;
+package dev.sheldan.abstracto.core.interactive.setup.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.templating.Templatable;

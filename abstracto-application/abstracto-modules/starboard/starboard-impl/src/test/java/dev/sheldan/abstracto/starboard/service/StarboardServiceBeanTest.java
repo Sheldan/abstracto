@@ -97,7 +97,7 @@ public class StarboardServiceBeanTest {
     private Message sendPost;
 
     @Mock
-    private TextChannel mockedTextChannel;
+    private GuildMessageChannel mockedTextChannel;
 
     @Mock
     private User starredJdaUser;
@@ -156,7 +156,7 @@ public class StarboardServiceBeanTest {
         when(message.getServerId()).thenReturn(SERVER_ID);
         when(message.getChannelId()).thenReturn(CHANNEL_ID);
         when(userService.retrieveUserForId(STARRED_USER_ID)).thenReturn(CompletableFuture.completedFuture(starredJdaUser));
-        when(channelService.getTextChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
+        when(channelService.getMessageChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(mockedTextChannel));
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guild));
         SystemConfigProperty config = Mockito.mock(SystemConfigProperty.class);
         Long defaultValue = 3L;

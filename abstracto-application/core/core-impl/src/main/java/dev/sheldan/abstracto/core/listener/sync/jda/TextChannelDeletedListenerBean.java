@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.TextChannelDeletedModel;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
+import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,13 +24,13 @@ public class TextChannelDeletedListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Override
-    public void onTextChannelDelete(@Nonnull TextChannelDeleteEvent event) {
+    public void onChannelDelete(@Nonnull ChannelDeleteEvent event) {
         if(listenerList == null) return;
         TextChannelDeletedModel model = getModel(event);
         listenerList.forEach(textChannelCreatedListener -> listenerService.executeFeatureAwareListener(textChannelCreatedListener, model));
     }
 
-    private TextChannelDeletedModel getModel(TextChannelDeleteEvent event) {
+    private TextChannelDeletedModel getModel(ChannelDeleteEvent event) {
         return TextChannelDeletedModel
                 .builder()
                 .channel(event.getChannel())

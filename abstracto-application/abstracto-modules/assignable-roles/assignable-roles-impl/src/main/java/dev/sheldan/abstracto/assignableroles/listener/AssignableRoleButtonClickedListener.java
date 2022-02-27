@@ -31,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.interactions.components.ButtonInteraction;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,7 +74,7 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
 
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
-        ButtonClickEvent event = model.getEvent();
+        ButtonInteractionEvent event = model.getEvent();
         Member member = event.getMember();
         if(event.getGuild() != null && member != null) {
             AssignableRolePlacePayload payload = (AssignableRolePlacePayload) model.getDeserializedPayload();
@@ -219,7 +219,7 @@ public class AssignableRoleButtonClickedListener implements ButtonClickedListene
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return AssignableRolePlaceServiceBean.ASSIGNABLE_ROLE_COMPONENT_ORIGIN.equals(model.getOrigin());
+        return AssignableRolePlaceServiceBean.ASSIGNABLE_ROLE_COMPONENT_ORIGIN.equals(model.getOrigin()) && model.getEvent().isFromGuild();
     }
 
     @Override

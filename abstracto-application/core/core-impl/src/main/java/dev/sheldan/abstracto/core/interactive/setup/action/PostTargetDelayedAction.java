@@ -1,5 +1,8 @@
-package dev.sheldan.abstracto.core.interactive;
+package dev.sheldan.abstracto.core.interactive.setup.action;
 
+import dev.sheldan.abstracto.core.interactive.DelayedAction;
+import dev.sheldan.abstracto.core.interactive.DelayedActionConfig;
+import dev.sheldan.abstracto.core.interactive.setup.action.config.PostTargetDelayedActionConfig;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

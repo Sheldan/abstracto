@@ -4,12 +4,12 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 @Getter
 @Setter
 @Builder
 public class ChannelGroupChannelModel {
     private AChannel channel;
-    private TextChannel discordChannel;
+    private MessageChannel discordChannel;
 }

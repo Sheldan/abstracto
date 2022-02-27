@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,7 +47,7 @@ public class MessageDeletedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
+    public void onMessageDelete(@Nonnull MessageDeleteEvent event) {
         metricService.incrementCounter(MESSAGE_DELETED_COUNTER);
         if(listenerList == null) return;
         Consumer<CachedMessage> cachedMessageConsumer =  cachedMessage -> {

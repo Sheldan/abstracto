@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,7 +35,7 @@ public class AsyncMessageDeletedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
+    public void onMessageDelete(@Nonnull MessageDeleteEvent event) {
         if(listenerList == null) return;
         Consumer<CachedMessage> cachedMessageConsumer = cachedMessage -> {
             MessageDeletedModel model = getModel(cachedMessage);
