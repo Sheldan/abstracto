@@ -126,7 +126,14 @@ public class WarnServiceBean implements WarnService {
         Long serverId = server.getId();
         String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification, server.getId());
         List<CompletableFuture> futures = new ArrayList<>();
-        futures.add(messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage));
+        CompletableFuture<Void> notificationFuture = new CompletableFuture<>();
+        messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage).whenComplete((message, throwable) -> {
+            if(throwable != null) {
+                log.warn("Failed to notify user {} of warning {} in guild {}.", warnedMember.getId(), warningId, serverId);
+            }
+            notificationFuture.complete(null);
+        });
+        futures.add(notificationFuture);
         log.debug("Logging warning for server {}.", server.getId());
         if(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, serverId)) {
             Long infractionPoints = configService.getLongValueOrConfigDefault(WarningFeatureConfig.WARN_INFRACTION_POINTS, serverId);
