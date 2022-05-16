@@ -73,6 +73,12 @@ public class MessageServiceBean implements MessageService {
             .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "message.delete")))
             .build();
 
+    public static final CounterMetric MESSAGE_PIN_METRIC = CounterMetric
+            .builder()
+            .name(DISCORD_API_INTERACTION_METRIC)
+            .tagList(Arrays.asList(MetricTag.getTag(INTERACTION_TYPE, "message.pin")))
+            .build();
+
     @Override
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
         metricService.incrementCounter(MESSAGE_DELETE_METRIC);
@@ -251,11 +257,18 @@ public class MessageServiceBean implements MessageService {
         return message.editMessage(message).setActionRows(rows).submit();
     }
 
+    @Override
+    public CompletableFuture<Void> pinMessage(Message message) {
+        metricService.incrementCounter(MESSAGE_PIN_METRIC);
+        return message.pin().submit();
+    }
+
     @PostConstruct
     public void postConstruct() {
         metricService.registerCounter(MESSAGE_SEND_METRIC, "Messages send to discord");
         metricService.registerCounter(MESSAGE_EDIT_METRIC, "Messages edited in discord");
         metricService.registerCounter(MESSAGE_LOAD_METRIC, "Messages loaded from discord");
         metricService.registerCounter(MESSAGE_DELETE_METRIC, "Messages deleted from discord");
+        metricService.registerCounter(MESSAGE_PIN_METRIC, "Messages pinned in discord");
     }
 }

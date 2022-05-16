@@ -27,9 +27,6 @@ public class KickServiceBean implements KickService {
     @Autowired
     private PostTargetService postTargetService;
 
-    @Autowired
-    private FeatureModeService featureModeService;
-
     @Override
     public CompletableFuture<Void> kickMember(Member member, String reason, KickLogModel kickLogModel)  {
         Guild guild = member.getGuild();

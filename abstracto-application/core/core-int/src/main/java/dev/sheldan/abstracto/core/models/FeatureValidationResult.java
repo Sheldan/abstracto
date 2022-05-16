@@ -19,6 +19,7 @@ public class FeatureValidationResult implements Templatable {
     private Boolean validationResult;
     @Builder.Default
     private List<ValidationErrorModel> validationErrorModels = new ArrayList<>();
+    private String validationText;
 
     public static FeatureValidationResult validationSuccessful(FeatureConfig featureConfig) {
         return FeatureValidationResult

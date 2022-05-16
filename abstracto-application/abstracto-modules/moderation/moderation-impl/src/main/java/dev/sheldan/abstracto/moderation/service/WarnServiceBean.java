@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementServ
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.WarningDecayFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.feature.WarningFeatureConfig;
@@ -167,7 +168,17 @@ public class WarnServiceBean implements WarnService {
         }
         ServerUser warnedServerUser = ServerUser.fromAUserInAServer(warnedUser);
         ServerUser warningServerUser = ServerUser.fromAUserInAServer(warnedUser);
-        ServerChannelMessage commandMessage = ServerChannelMessage.fromMessage(context.getMessage());
+        ServerChannelMessage commandMessage;
+        if(context.getMessage() != null) {
+            commandMessage = ServerChannelMessage.fromMessage(context.getMessage());
+        } else {
+            commandMessage = ServerChannelMessage
+                    .builder()
+                    .serverId(context.getGuild().getIdLong())
+                    .channelId(context.getChannel().getIdLong())
+                    .messageId(SnowflakeUtils.createSnowFlake())
+                    .build();
+        }
         warningCreatedListenerManager.sendWarningCreatedEvent(createdWarning.getWarnId(), warnedServerUser, warningServerUser, context.getReason(), commandMessage);
     }
 

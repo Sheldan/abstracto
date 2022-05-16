@@ -34,9 +34,6 @@ public class ModMailInitialButtonListener implements ButtonClickedListener {
     private UndoActionService undoActionService;
 
     @Autowired
-    private MessageService messageService;
-
-    @Autowired
     private ComponentPayloadManagementService componentPayloadService;
 
     @Autowired
@@ -58,7 +55,7 @@ public class ModMailInitialButtonListener implements ButtonClickedListener {
                 .thenCompose(member -> channelService.retrieveMessageInChannel(model.getEvent().getChannel(), choices.getMessageId())
                 .thenCompose(originalMessage -> {
                     try {
-                        return modMailThreadService.createModMailThreadForUser(member, originalMessage, model.getEvent().getChannel(), true, undoActions);
+                        return modMailThreadService.createModMailThreadForUser(member, originalMessage, true, undoActions);
                     } catch (Exception ex) {
                         log.error("Failed to setup thread correctly", ex);
                         undoActionService.performActions(undoActions);

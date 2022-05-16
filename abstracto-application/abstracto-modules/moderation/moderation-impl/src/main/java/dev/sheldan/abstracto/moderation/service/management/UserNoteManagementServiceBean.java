@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.CounterService;
+import dev.sheldan.abstracto.moderation.exception.UserNoteNotFoundException;
 import dev.sheldan.abstracto.moderation.model.database.UserNote;
 import dev.sheldan.abstracto.moderation.repository.UserNoteRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +47,14 @@ public class UserNoteManagementServiceBean implements UserNoteManagementService 
     }
 
     @Override
+    public void deleteNote(UserNote userNote) {
+        log.info("Deleting user note directly with id {} in server {}.", userNote.getUserNoteId().getId(), userNote.getServer().getId());
+        userNoteRepository.delete(userNote);
+    }
+
+    @Override
     public UserNote loadNote(Long serverId, Long userNoteId) {
-        return userNoteRepository.findByUserNoteId_IdAndUserNoteId_ServerId(userNoteId, serverId);
+        return userNoteRepository.findByUserNoteId_IdAndUserNoteId_ServerId(userNoteId, serverId).orElseThrow(UserNoteNotFoundException::new);
     }
 
     @Override

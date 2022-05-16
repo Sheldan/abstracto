@@ -1,61 +1,87 @@
 package dev.sheldan.abstracto.moderation.command;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
-import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
-import dev.sheldan.abstracto.core.command.config.HelpInfo;
-import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.ParameterValidator;
+import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
+import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
+import dev.sheldan.abstracto.moderation.model.database.UserNote;
 import dev.sheldan.abstracto.moderation.service.management.UserNoteManagementService;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class DeleteNote extends AbstractConditionableCommand {
 
-    public static final String NOTE_NOT_FOUND_EXCEPTION_TEMPLATE = "note_not_found_exception";
+    private static final String DELETE_NOTE_COMMAND = "deleteNote";
+    private static final String DELETE_NOTE_RESPONSE = "deleteNote_response";
+    private static final String ID_PARAMETER = "id";
+
     @Autowired
     private UserNoteManagementService userNoteManagementService;
 
     @Autowired
-    private TemplateService templateService;
+    private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
-    private ServerManagementService serverManagementService;
+    private InteractionService interactionService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
         Long id = (Long) commandContext.getParameters().getParameters().get(0);
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        if(userNoteManagementService.noteExists(id, server)) {
-           userNoteManagementService.deleteNote(id, server);
-        } else {
-            // TODO replace with exception
-            return CommandResult.fromError(templateService.renderSimpleTemplate(NOTE_NOT_FOUND_EXCEPTION_TEMPLATE, commandContext.getGuild().getIdLong()));
-        }
+        UserNote existingNote = userNoteManagementService.loadNote(commandContext.getGuild().getIdLong(), id);
+        userNoteManagementService.deleteNote(existingNote);
         return CommandResult.fromSuccess();
+    }
+
+    @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        Long userNoteId = slashCommandParameterService.getCommandOption(ID_PARAMETER, event, Integer.class).longValue();
+        UserNote existingNote = userNoteManagementService.loadNote(event.getGuild().getIdLong(), userNoteId);
+        userNoteManagementService.deleteNote(existingNote);
+        return interactionService.replyEmbed(DELETE_NOTE_RESPONSE, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         List<ParameterValidator> userNoteIdValidator = Arrays.asList(MinIntegerValueValidator.min(1L));
-        parameters.add(Parameter.builder().name("id").validators(userNoteIdValidator).type(Long.class).templated(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        Parameter idParameter = Parameter
+                .builder()
+                .name(ID_PARAMETER)
+                .validators(userNoteIdValidator)
+                .type(Long.class)
+                .templated(true)
+                .build();
+        parameters.add(idParameter);
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(ModerationSlashCommandNames.USER_NOTES)
+                .commandName("delete")
+                .build();
+
         return CommandConfiguration.builder()
-                .name("deleteNote")
+                .name(DELETE_NOTE_COMMAND)
+                .slashCommandConfig(slashCommandConfig)
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .supportsEmbedException(true)

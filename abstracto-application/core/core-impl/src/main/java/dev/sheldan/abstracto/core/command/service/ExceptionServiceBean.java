@@ -21,7 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +33,7 @@ import org.springframework.stereotype.Component;
 public class ExceptionServiceBean implements ExceptionService {
 
     public static final String MODEL_WRAPPER_TEMPLATE_KEY = "model_wrapper";
+    public static final String GENERIC_INTERACTION_EXCEPTION = "generic_interaction_exception";
     @Autowired
     private ChannelService channelService;
 
@@ -68,20 +72,29 @@ public class ExceptionServiceBean implements ExceptionService {
 
     @Override
     public void reportExceptionToInteraction(Throwable exception, ButtonClickedListenerModel interactionContext, ButtonClickedListener executedListener) {
+        ButtonInteractionEvent event = interactionContext.getEvent();
         if(executedListener != null) {
             log.info("Reporting generic exception {} of listener {} towards channel {} in server {}.",
-                    exception.getClass().getSimpleName(), executedListener.getClass().getSimpleName(), interactionContext.getEvent().getChannel().getIdLong(),
-                    interactionContext.getEvent().getGuild().getIdLong());
+                    exception.getClass().getSimpleName(), executedListener.getClass().getSimpleName(), event.getChannel().getIdLong(),
+                    event.getGuild().getIdLong());
         } else {
             log.info("Reporting generic exception {} towards channel {} in server {}.",
-                    exception.getClass().getSimpleName(), interactionContext.getEvent().getChannel().getIdLong(),
-                    interactionContext.getEvent().getGuild().getIdLong());
+                    exception.getClass().getSimpleName(), event.getChannel().getIdLong(),
+                    event.getGuild().getIdLong());
         }
         try {
-            reportGenericInteractionException(exception, interactionContext);
+            reportGenericInteractionException(exception, event.getInteraction());
         } catch (Exception e) {
             log.error("Failed to notify about exception.", e);
         }
+    }
+
+    @Override
+    public void reportSlashException(Throwable exception, SlashCommandInteractionEvent event, Command command) {
+        log.info("Reporting exception of {} command {} in channel {} in guild {} from user {}.",
+                exception.getClass().getSimpleName(), command.getConfiguration().getName(),
+                event.getChannel().getIdLong(), event.getGuild().getIdLong(), event.getMember().getIdLong(), exception);
+        reportGenericInteractionException(exception, event.getInteraction());
     }
 
     private void reportGenericException(Throwable throwable, CommandContext context) {
@@ -89,9 +102,13 @@ public class ExceptionServiceBean implements ExceptionService {
         channelService.sendEmbedTemplateInTextChannelList("generic_command_exception", exceptionModel, context.getChannel());
     }
 
-    private void reportGenericInteractionException(Throwable throwable, ButtonClickedListenerModel interactionContext) {
-        GenericInteractionExceptionModel exceptionModel = buildInteractionExceptionModel(throwable, interactionContext);
-        interactionService.sendMessageToInteraction("generic_interaction_exception", exceptionModel, interactionContext.getEvent().getInteraction().getHook());
+    private void reportGenericInteractionException(Throwable throwable, IReplyCallback replyCallback) {
+        GenericInteractionExceptionModel exceptionModel = buildInteractionExceptionModel(throwable, replyCallback);
+        if(replyCallback.isAcknowledged()) {
+            interactionService.sendMessageToInteraction(GENERIC_INTERACTION_EXCEPTION, exceptionModel, replyCallback.getHook());
+        } else {
+            interactionService.replyEmbed(GENERIC_INTERACTION_EXCEPTION, exceptionModel, replyCallback);
+        }
     }
 
     @Override
@@ -127,16 +144,21 @@ public class ExceptionServiceBean implements ExceptionService {
         }
     }
 
-    private GenericInteractionExceptionModel buildInteractionExceptionModel(Throwable throwable, ButtonClickedListenerModel context) {
+    private GenericInteractionExceptionModel buildInteractionExceptionModel(Throwable throwable, IReplyCallback context) {
         return GenericInteractionExceptionModel
                 .builder()
-                .member(context.getEvent().getMember())
-                .user(context.getEvent().getUser())
+                .member(context.getMember())
+                .user(context.getUser())
                 .throwable(throwable)
                 .build();
     }
     private GenericExceptionModel buildCommandModel(Throwable throwable, CommandContext context) {
-        FullUserInServer fullUser = FullUserInServer.builder().member(context.getAuthor()).aUserInAServer(userInServerManagementService.loadUserOptional(context.getGuild().getIdLong(), context.getAuthor().getIdLong()).orElse(null)).build();
+        FullUserInServer fullUser = FullUserInServer
+                .builder()
+                .member(context.getAuthor())
+                .aUserInAServer(userInServerManagementService.loadUserOptional(context.getGuild().getIdLong(), context.getAuthor().getIdLong())
+                        .orElse(null))
+                .build();
         return GenericExceptionModel
                 .builder()
                 .user(fullUser)

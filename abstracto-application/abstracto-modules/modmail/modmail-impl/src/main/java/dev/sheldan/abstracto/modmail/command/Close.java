@@ -5,22 +5,29 @@ import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.config.ModMailSlashCommandNames;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +41,12 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class Close extends AbstractConditionableCommand {
 
-    public static final String MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY = "modmail_close_default_note";
+    private static final String MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY = "modmail_close_default_note";
+    private static final String CLOSE_COMMAND = "close";
+    private static final String NOTE_PARAMETER = "note";
+    private static final String SILENTLY_PARAMETER = "silently";
+    private static final String LOG_PARAMETER = "log";
+    private static final String CLOSE_RESPONSE = "close_response";
     @Autowired
     private ModMailContextCondition requiresModMailCondition;
 
@@ -50,6 +62,15 @@ public class Close extends AbstractConditionableCommand {
     @Autowired
     private ChannelManagementService channelManagementService;
 
+    @Autowired
+    private InteractionService interactionService;
+
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private Close self;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -61,6 +82,7 @@ public class Close extends AbstractConditionableCommand {
                 .builder()
                 .closingMember(commandContext.getAuthor())
                 .notifyUser(true)
+                .channel(commandContext.getChannel())
                 .log(true)
                 .note(note)
                 .build();
@@ -69,15 +91,95 @@ public class Close extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        String note;
+        if(slashCommandParameterService.hasCommandOption(NOTE_PARAMETER, event)) {
+            note = slashCommandParameterService.getCommandOption(NOTE_PARAMETER, event, String.class);
+        } else {
+            note = templateService.renderTemplate(MODMAIL_CLOSE_DEFAULT_NOTE_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
+        }
+        Boolean silently;
+        if(slashCommandParameterService.hasCommandOption(SILENTLY_PARAMETER, event)) {
+            silently = slashCommandParameterService.getCommandOption(SILENTLY_PARAMETER, event, Boolean.class);
+        } else {
+            silently = false;
+        }
+        Boolean log;
+        if(slashCommandParameterService.hasCommandOption(LOG_PARAMETER, event)) {
+            log = slashCommandParameterService.getCommandOption(LOG_PARAMETER, event, Boolean.class);
+        } else {
+            log = false;
+        }
+        ClosingContext context = ClosingContext
+                .builder()
+                .closingMember(event.getMember())
+                .channel(event.getChannel())
+                .notifyUser(!silently)
+                .log(log)
+                .note(note)
+                .build();
+        return interactionService.replyEmbed(CLOSE_RESPONSE, event)
+                .thenCompose(interactionHook -> self.closeThread(context))
+                .thenApply(aVoid -> CommandResult.fromIgnored());
+    }
+
+    @Transactional
+    public CompletableFuture<Void> closeThread(ClosingContext closingContext) {
+        AChannel channel = channelManagementService.loadChannel(closingContext.getChannel());
+        ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
+        return modMailThreadService.closeModMailThread(thread, closingContext, new ArrayList<>());
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
-        Parameter note = Parameter.builder().name("note").type(String.class).remainder(true).optional(true).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(note);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        Parameter noteParameter = Parameter
+                .builder()
+                .name(NOTE_PARAMETER)
+                .type(String.class)
+                .remainder(true)
+                .optional(true)
+                .templated(true)
+                .build();
+
+        Parameter silentlyParameter = Parameter
+                .builder()
+                .name(SILENTLY_PARAMETER)
+                .type(Boolean.class)
+                .remainder(true)
+                .slashCommandOnly(true)
+                .optional(true)
+                .templated(true)
+                .build();
+
+        Parameter logParameter = Parameter
+                .builder()
+                .name(LOG_PARAMETER)
+                .type(Boolean.class)
+                .remainder(true)
+                .slashCommandOnly(true)
+                .optional(true)
+                .templated(true)
+                .build();
+
+        List<Parameter> parameters = Arrays.asList(noteParameter, silentlyParameter, logParameter);
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(ModMailSlashCommandNames.MODMAIL)
+                .commandName(CLOSE_COMMAND)
+                .build();
+
         return CommandConfiguration.builder()
-                .name("close")
+                .name(CLOSE_COMMAND)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)
+                .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .supportsEmbedException(true)
                 .templated(true)

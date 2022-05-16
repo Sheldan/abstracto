@@ -45,9 +45,6 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     private TaskExecutor buttonClickedExecutor;
 
     @Autowired
-    private ListenerService listenerService;
-
-    @Autowired
     private FeatureConfigService featureConfigService;
 
     @Autowired
@@ -68,6 +65,7 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         if(listenerList == null) return;
+        // TODO remove this and make this configurable
         event.deferEdit().queue();
         CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), buttonClickedExecutor).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in async button event.", throwable);

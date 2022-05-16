@@ -51,9 +51,6 @@ public class MessageEmbedListenerTest {
     private MessageEmbedListener self;
 
     @Mock
-    private GuildMemberMessageChannel context;
-
-    @Mock
     private Message message;
 
     @Mock
@@ -65,6 +62,9 @@ public class MessageEmbedListenerTest {
     @Mock
     private Guild guild;
 
+    @Mock
+    private Member member;
+
     private static final Long FIRST_SERVER_ID = 12L;
     private static final Long SECOND_SERVER_ID = 13L;
     private static final Long FIRST_CHANNEL_ID = 45L;
@@ -75,8 +75,10 @@ public class MessageEmbedListenerTest {
     @Before
     public void setup(){
         when(guild.getIdLong()).thenReturn(FIRST_SERVER_ID);
-        when(context.getGuild()).thenReturn(guild);
-        when(context.getGuildChannel()).thenReturn(textChannel);
+        when(model.getMessage()).thenReturn(message);
+        when(message.getGuild()).thenReturn(guild);
+        when(message.getChannel()).thenReturn(textChannel);
+        when(message.getMember()).thenReturn(member);
     }
 
     @Test
@@ -126,9 +128,7 @@ public class MessageEmbedListenerTest {
         when(foundLink.getMessageId()).thenReturn(FIRST_MESSAGE_ID);
         when(foundLink.getServerId()).thenReturn(SECOND_SERVER_ID);
         List<MessageEmbedLink> foundMessageLinks = Arrays.asList(foundLink);
-        Member author = Mockito.mock(Member.class);
-        when(context.getMember()).thenReturn(author);
-        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);
         when(model.getMessage()).thenReturn(message);
         testUnit.execute(model);
@@ -155,11 +155,8 @@ public class MessageEmbedListenerTest {
         String completeMessage = firstText.concat(secondText);
         when(message.getContentRaw()).thenReturn(completeMessage);
         setupMessageConfig();
-        Member author = Mockito.mock(Member.class);
-        when(context.getMember()).thenReturn(author);
-        when(context.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(FIRST_SERVER_ID);
-        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(embeddingUser);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(embeddingUser);
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, FIRST_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageEmbedService.getLinksInMessage(completeMessage)).thenReturn(foundMessageLinks);
@@ -187,9 +184,7 @@ public class MessageEmbedListenerTest {
         when(userInAServer.getUserInServerId()).thenReturn(USER_IN_SERVER_ID);
         when(message.getContentRaw()).thenReturn(text);
         setupMessageConfig();
-        Member author = Mockito.mock(Member.class);
-        when(context.getMember()).thenReturn(author);
-        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         CachedMessage secondCachedMessage = Mockito.mock(CachedMessage.class);
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, FIRST_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
@@ -206,8 +201,8 @@ public class MessageEmbedListenerTest {
     public void testLoadUserAndEmbed() {
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         long userId = 3L;
-        when(context.getGuildChannel()).thenReturn(textChannel);
-        when(messageEmbedService.embedLink(cachedMessage, textChannel, userId, context)).thenReturn(CompletableFuture.completedFuture(null));
+        when(message.getGuildChannel()).thenReturn(textChannel);
+        when(messageEmbedService.embedLink(eq(cachedMessage), eq(textChannel), eq(userId), any(GuildMemberMessageChannel.class))).thenReturn(CompletableFuture.completedFuture(null));
         testUnit.embedSingleLink(message, userId, cachedMessage);
         verify(metricService, times(1)).incrementCounter(any());
     }
@@ -222,9 +217,7 @@ public class MessageEmbedListenerTest {
         when(foundLink.getServerId()).thenReturn(FIRST_SERVER_ID);
         when(foundLink.getChannelId()).thenReturn(FIRST_CHANNEL_ID);
         List<MessageEmbedLink> foundMessageLinks = Arrays.asList(foundLink);
-        Member author = Mockito.mock(Member.class);
-        when(context.getMember()).thenReturn(author);
-        when(userInServerManagementService.loadOrCreateUser(author)).thenReturn(userInAServer);
+        when(userInServerManagementService.loadOrCreateUser(member)).thenReturn(userInAServer);
         CachedMessage cachedMessage = Mockito.mock(CachedMessage.class);
         when(messageCache.getMessageFromCache(FIRST_SERVER_ID, FIRST_CHANNEL_ID, FIRST_MESSAGE_ID)).thenReturn(CompletableFuture.completedFuture(cachedMessage));
         when(messageEmbedService.getLinksInMessage(text)).thenReturn(foundMessageLinks);

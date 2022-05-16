@@ -36,17 +36,27 @@ public class CommandDisallowedCondition implements CommandCondition {
         ACommand aCommand = commandService.findCommandByName(command.getConfiguration().getName());
         ACommandInAServer commandForServer = commandInServerManagementService.getCommandForServer(aCommand, context.getUserInitiatedContext().getGuild().getIdLong());
         if(Boolean.FALSE.equals(commandForServer.getRestricted())) {
-            return ConditionResult.builder().result(true).build();
+            return ConditionResult
+                    .builder()
+                    .result(true)
+                    .build();
         }
         for (ARole role : commandForServer.getAllowedRoles()) {
             Member author = context.getAuthor();
             if (roleService.memberHasRole(author, role)) {
                 log.debug("Member {} is able to execute restricted command {}, because of role {}.", author.getIdLong(), aCommand.getName(), role.getId());
-                return ConditionResult.builder().result(true).build();
+                return ConditionResult
+                        .builder()
+                        .result(true)
+                        .build();
             }
         }
         List<Role> allowedRoles = roleService.getRolesFromGuild(commandForServer.getAllowedRoles());
         InsufficientPermissionConditionDetail exception = new InsufficientPermissionConditionDetail(allowedRoles);
-        return ConditionResult.builder().result(false).conditionDetail(exception).build();
+        return ConditionResult
+                .builder()
+                .result(false)
+                .conditionDetail(exception)
+                .build();
     }
 }

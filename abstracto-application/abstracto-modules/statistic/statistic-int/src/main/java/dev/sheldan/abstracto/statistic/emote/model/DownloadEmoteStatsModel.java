@@ -37,4 +37,5 @@ public class DownloadEmoteStatsModel {
      * A list of {@link UsedEmote} which are part of the export
      */
     private List<UsedEmote> emotes;
+    private String emoteStatsFileName;
 }

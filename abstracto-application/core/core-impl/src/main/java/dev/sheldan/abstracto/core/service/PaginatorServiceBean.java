@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import com.google.gson.Gson;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.model.PaginatorButtonPayload;
 import dev.sheldan.abstracto.core.model.PaginatorConfiguration;
 import dev.sheldan.abstracto.core.model.PaginatorFooterModel;
@@ -22,7 +23,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,9 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 @Slf4j
 public class PaginatorServiceBean implements PaginatorService {
-
-    @Autowired
-    private BotService botService;
 
     @Autowired
     private TemplateService templateService;
@@ -68,6 +66,9 @@ public class PaginatorServiceBean implements PaginatorService {
     @Autowired
     private SchedulerService schedulerService;
 
+    @Autowired
+    private InteractionService interactionService;
+
     private static final Map<String, PaginatorInfo> PAGINATORS = new ConcurrentHashMap<>();
     public static final String PAGINATOR_BUTTON = "PAGINATOR_BUTTON";
     public static final String PAGINATOR_FOOTER_TEMPLATE_KEY = "paginator_footer";
@@ -76,6 +77,15 @@ public class PaginatorServiceBean implements PaginatorService {
     @Override
     public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, GuildMessageChannel textChannel, Long userId) {
         Long serverId = textChannel.getGuild().getIdLong();
+        PaginatorSetup setup = getPaginatorSetup(templateKey, model, userId, serverId);
+        log.info("Setting up paginator in channel {} in server {} with {} pages.", textChannel.getIdLong(),
+                textChannel.getGuild().getIdLong(), setup.getConfiguration().getEmbedConfigs().size());
+        List<CompletableFuture<Message>> paginatorFutures = channelService.sendMessageToSendToChannel(setup.getMessageToSend(), textChannel);
+        return FutureUtils.toSingleFutureGeneric(paginatorFutures)
+                .thenAccept(unused -> self.setupButtonPayloads(paginatorFutures.get(0).join(), setup, serverId));
+    }
+
+    private PaginatorSetup getPaginatorSetup(String templateKey, Object model, Long userId, Long serverId) {
         String exitButtonId = componentService.generateComponentId(serverId);
         String startButtonId = componentService.generateComponentId(serverId);
         String previousButtonId = componentService.generateComponentId(serverId);
@@ -92,8 +102,6 @@ public class PaginatorServiceBean implements PaginatorService {
                 .build();
         String embedConfig = templateService.renderTemplate(templateKey + "_paginator", wrapperModel, serverId);
         PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
-        log.info("Setting up paginator in channel {} in server {} with {} pages.", textChannel.getIdLong(),
-                textChannel.getGuild().getIdLong(), configuration.getEmbedConfigs().size());
         setupFooters(configuration);
 
         configuration.setPaginatorId(componentService.generateComponentId());
@@ -113,9 +121,21 @@ public class PaginatorServiceBean implements PaginatorService {
 
         MessageConfiguration messageConfiguration = configuration.getEmbedConfigs().get(0);
         MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(messageConfiguration);
-        List<CompletableFuture<Message>> paginatorFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
-        return FutureUtils.toSingleFutureGeneric(paginatorFutures)
-                .thenAccept(unused -> self.setupButtonPayloads(paginatorFutures.get(0).join(), configuration, serverId, buttonPayload));
+        return PaginatorSetup
+                .builder()
+                .messageToSend(messageToSend)
+                .configuration(configuration)
+                .payload(buttonPayload)
+                .build();
+    }
+
+    @Override
+    public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, IReplyCallback callback) {
+        Long serverId = callback.getGuild().getIdLong();
+        PaginatorSetup setup = getPaginatorSetup(templateKey, model, callback.getMember().getIdLong(), serverId);
+        return interactionService.replyMessageToSend(setup.getMessageToSend(), callback)
+                .thenCompose(interactionHook -> interactionHook.retrieveOriginal().submit())
+                .thenAccept(message -> self.setupButtonPayloads(message, setup, serverId));
     }
 
     private void setupFooters(PaginatorConfiguration configuration) {
@@ -219,7 +239,9 @@ public class PaginatorServiceBean implements PaginatorService {
     }
 
     @Transactional
-    public void setupButtonPayloads(Message paginatorMessage, PaginatorConfiguration configuration, Long serverId, PaginatorButtonPayload payload) {
+    public void setupButtonPayloads(Message paginatorMessage, PaginatorSetup setup, Long serverId) {
+        PaginatorConfiguration configuration = setup.getConfiguration();
+        PaginatorButtonPayload payload = setup.getPayload();
         savePayload(configuration.getExitButton(), serverId);
         if(!configuration.getSinglePage()) {
             savePayload(configuration.getStartButton(), serverId);
@@ -272,6 +294,14 @@ public class PaginatorServiceBean implements PaginatorService {
         private String lastAccessor;
         private Long timeoutSeconds;
         private List<String> payloadIds;
+    }
+
+    @Getter
+    @Builder
+    public static class PaginatorSetup {
+        private PaginatorConfiguration configuration;
+        private PaginatorButtonPayload payload;
+        private MessageToSend messageToSend;
     }
 
 }

@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.suggestion.exception.SuggestionNotFoundException;
 import dev.sheldan.abstracto.suggestion.model.database.Suggestion;
@@ -33,20 +32,17 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
-    @Autowired
-    private ServerManagementService serverManagementService;
-
     @Override
-    public Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId, Message commandMessage) {
+    public Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId, Long suggestionChannelId, Long suggestionMessageId) {
         AUserInAServer user = userInServerManagementService.loadOrCreateUser(suggester);
-        return this.createSuggestion(user, text, message, suggestionId, commandMessage);
+        return this.createSuggestion(user, text, message, suggestionId, suggestionChannelId, suggestionMessageId);
     }
 
     @Override
-    public Suggestion createSuggestion(AUserInAServer suggester, String text, Message createdMessage, Long suggestionId, Message commandMessage) {
+    public Suggestion createSuggestion(AUserInAServer suggester, String text, Message createdMessage, Long suggestionId, Long suggestionChannelId, Long suggestionMessageId) {
         long channelId = createdMessage.getChannel().getIdLong();
         AChannel channel = channelManagementService.loadChannel(channelId);
-        AChannel commandChannel = channelManagementService.loadChannel(commandMessage.getChannel().getIdLong());
+        AChannel commandChannel = channelManagementService.loadChannel(suggestionChannelId);
         Suggestion suggestion = Suggestion
                 .builder()
                 .state(SuggestionState.NEW)
@@ -56,7 +52,7 @@ public class SuggestionManagementServiceBean implements SuggestionManagementServ
                 .server(suggester.getServerReference())
                 .channel(channel)
                 .commandChannel(commandChannel)
-                .commandMessageId(commandMessage.getIdLong())
+                .commandMessageId(suggestionMessageId)
                 .messageId(createdMessage.getIdLong())
                 .build();
         log.info("Persisting suggestion {} at message {} in channel {} on server {} from user {}.",

@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Slf4j
 public class CommandInServerManagementServiceBean implements CommandInServerManagementService {
@@ -19,6 +21,11 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
 
     @Override
     public ACommandInAServer createCommandInServer(ACommand command, AServer server) {
+        return createCommandInServer(command, server, null);
+    }
+
+    @Override
+    public ACommandInAServer createCommandInServer(ACommand command, AServer server, Long commandId) {
         ACommandInAServer commandInAServer = ACommandInAServer
                 .builder()
                 .commandReference(command)
@@ -43,5 +50,15 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
     @Override
     public ACommandInAServer getCommandForServer(ACommand command, Long serverId) {
         return repository.findByServerReference_IdAndCommandReference(serverId, command);
+    }
+
+    @Override
+    public ACommandInAServer getCommandForServer(Long commandInServerId) {
+        return repository.getOne(commandInServerId);
+    }
+
+    @Override
+    public List<ACommandInAServer> getCommandsForServer(List<Long> commandInServerId) {
+        return repository.findAllById(commandInServerId);
     }
 }

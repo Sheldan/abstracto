@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -10,6 +11,8 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -38,6 +42,9 @@ public class PurgeServiceBean implements PurgeService {
 
     @Autowired
     private ChannelService channelService;
+
+    @Autowired
+    private InteractionService interactionService;
 
     public static final String MODERATION_PURGE_METRIC = "moderation.purge";
 
@@ -119,15 +126,24 @@ public class PurgeServiceBean implements PurgeService {
     private CompletableFuture<Long> getOrCreatedStatusMessage(GuildMessageChannel channel, Integer totalCount, Long statusMessageId) {
         CompletableFuture<Long> statusMessageFuture;
         if(statusMessageId == 0) {
+            Long serverId = channel.getGuild().getIdLong();
             log.debug("Creating new status message in channel {} in server {} because of puring.", channel.getIdLong(), channel.getGuild().getId());
-            PurgeStatusUpdateModel model = PurgeStatusUpdateModel.builder().currentlyDeleted(0).totalToDelete(totalCount).build();
-            MessageToSend messageToSend = templateService.renderTemplateToMessageToSend("purge_status_update", model, channel.getGuild().getIdLong());
+            MessageToSend messageToSend = getStatusMessageToSend(totalCount, serverId, 0);
             statusMessageFuture = messageService.createStatusMessageId(messageToSend, channel);
         } else {
             log.debug("Using existing status message {}.", statusMessageId);
             statusMessageFuture = CompletableFuture.completedFuture(statusMessageId);
         }
         return statusMessageFuture;
+    }
+
+    private MessageToSend getStatusMessageToSend(Integer totalCount, Long serverId, Integer currentlyDeleted) {
+        PurgeStatusUpdateModel model = PurgeStatusUpdateModel
+                .builder()
+                .currentlyDeleted(currentlyDeleted)
+                .totalToDelete(totalCount)
+                .build();
+        return templateService.renderTemplateToMessageToSend("purge_status_update", model, serverId);
     }
 
     private List<Message> filterMessagesToDelete(List<Message> retrievedHistory, Member purgedMember) {
@@ -174,15 +190,94 @@ public class PurgeServiceBean implements PurgeService {
                 deletionFuture.complete(null);
             }
             log.debug("Setting status for {} out of {}", currentCount, totalCount);
-            PurgeStatusUpdateModel finalUpdateModel = PurgeStatusUpdateModel.builder().currentlyDeleted(currentCount).totalToDelete(totalCount).build();
-            MessageToSend finalUpdateMessage = templateService.renderTemplateToMessageToSend("purge_status_update", finalUpdateModel);
+            MessageToSend finalUpdateMessage = getStatusMessageToSend(totalCount, channel.getGuild().getIdLong(), currentCount);
             messageService.updateStatusMessage(channel, currentStatusMessageId, finalUpdateMessage);
+        };
+    }
+
+    private Consumer<Void> deletionConsumer(Integer amountToDelete, GuildMessageChannel channel, Member purgedMember, Integer totalCount, Integer currentCount, CompletableFuture<Void> deletionFuture, InteractionHook interactionHook, Message earliestMessage) {
+        return aVoid -> {
+            if (amountToDelete >= 1) {
+                log.debug("Still more than 1 message to delete. Continuing.");
+                purgeMessages(amountToDelete, channel, earliestMessage.getIdLong(), purgedMember, totalCount, currentCount, interactionHook)
+                        .whenComplete((avoid, throwable) -> {
+                                    if (throwable != null) {
+                                        deletionFuture.completeExceptionally(throwable);
+                                    } else {
+                                        deletionFuture.complete(null);
+                                    }
+                                }
+                        ).exceptionally(throwable -> {
+                            deletionFuture.completeExceptionally(throwable);
+                            return null;
+                        });
+            } else {
+                log.debug("Completed purging of {} messages.", totalCount);
+                deletionFuture.complete(null);
+            }
+            log.debug("Setting status for {} out of {}", currentCount, totalCount);
+            MessageToSend finalUpdateMessage = getStatusMessageToSend(totalCount, channel.getGuild().getIdLong(), currentCount);
+            interactionService.editOriginal(finalUpdateMessage, interactionHook);
         };
     }
 
     @Override
     public CompletableFuture<Void> purgeMessagesInChannel(Integer count, GuildMessageChannel channel, Message origin, Member purgingRestriction) {
         return purgeMessagesInChannel(count, channel, origin.getIdLong(), purgingRestriction);
+    }
+
+    @Override
+    public CompletionStage<Void> purgeMessagesInChannel(Integer amountOfMessages, GuildMessageChannel guildMessageChannel, Long startId, InteractionHook hook, Member memberToPurgeMessagesOf) {
+        return purgeMessages(amountOfMessages, guildMessageChannel, startId, memberToPurgeMessagesOf, amountOfMessages, 0, hook);
+    }
+
+    private CompletableFuture<Void> purgeMessages(Integer amountToDelete, GuildMessageChannel channel, Long startId, Member purgedMember, Integer totalCount, Integer currentCount, InteractionHook interactionHook) {
+
+        int toDeleteInThisIteration;
+        if(amountToDelete >= PURGE_MAX_MESSAGES){
+            toDeleteInThisIteration = PURGE_MAX_MESSAGES;
+        } else {
+            toDeleteInThisIteration = amountToDelete % PURGE_MAX_MESSAGES;
+        }
+        metricService.incrementCounter(PURGE_MESSAGE_COUNTER_METRIC, (long) toDeleteInThisIteration);
+        log.info("Purging {} this iteration ({}/{}) messages in channel {} in server {}.", toDeleteInThisIteration, currentCount, totalCount, channel.getId(), channel.getGuild().getId());
+
+        CompletableFuture<MessageHistory> historyFuture = channelService.getHistoryOfChannel(channel, startId, toDeleteInThisIteration);
+        MessageToSend statusMessageToSend = getStatusMessageToSend(totalCount, channel.getGuild().getIdLong(), 0);
+        CompletableFuture<Message> statusMessageFuture = interactionService.editOriginal(statusMessageToSend, interactionHook);
+
+        CompletableFuture<Void> deletionFuture = new CompletableFuture<>();
+        CompletableFuture<Void> retrievalFuture = CompletableFuture.allOf(historyFuture, statusMessageFuture);
+        retrievalFuture.thenAccept(voidParam -> {
+            try {
+                List<Message> retrievedHistory = historyFuture.get().getRetrievedHistory();
+                List<Message> messagesToDeleteNow = filterMessagesToDelete(retrievedHistory, purgedMember);
+                if(messagesToDeleteNow.isEmpty()) {
+                    log.warn("No messages found to delete, all were filtered.");
+                    deletionFuture.completeExceptionally(new NoMessageFoundException());
+                    return;
+                }
+                Message latestMessage = messagesToDeleteNow.get(messagesToDeleteNow.size() - 1);
+                log.debug("Deleting {} messages directly", messagesToDeleteNow.size());
+                int newCurrentCount = currentCount + messagesToDeleteNow.size();
+                int newAmountToDelete = amountToDelete - PURGE_MAX_MESSAGES;
+                Consumer<Void> consumer = deletionConsumer(newAmountToDelete, channel, purgedMember, totalCount, newCurrentCount, deletionFuture, interactionHook, latestMessage);
+                if (messagesToDeleteNow.size() > 1) {
+                    bulkDeleteMessages(channel, deletionFuture, messagesToDeleteNow, consumer);
+                } else if (messagesToDeleteNow.size() == 1) {
+                    messageService.deleteMessageWithAction(latestMessage).queue(consumer, deletionFuture::completeExceptionally);
+                }
+
+            } catch (Exception e) {
+                log.warn("Failed to purge messages.", e);
+                deletionFuture.completeExceptionally(e);
+            }
+        }).exceptionally(throwable -> {
+            log.warn("Failed to fetch messages.", throwable);
+            return null;
+        });
+
+        return CompletableFuture.allOf(retrievalFuture, deletionFuture);
     }
 
     @PostConstruct

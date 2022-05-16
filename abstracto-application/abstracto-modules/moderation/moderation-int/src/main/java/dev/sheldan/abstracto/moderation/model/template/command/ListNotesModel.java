@@ -1,17 +1,18 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
 import dev.sheldan.abstracto.core.models.FullUserInServer;
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.util.List;
 
-@SuperBuilder
+@Builder
 @Getter
 @Setter
-public class ListNotesModel extends UserInitiatedServerContext {
+public class ListNotesModel {
     private List<NoteEntryModel> userNotes;
     private FullUserInServer specifiedUser;
+    private Member member;
 }

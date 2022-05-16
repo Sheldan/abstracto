@@ -48,6 +48,9 @@ public class ACommandInAServer implements Serializable {
     @Column(name = "restricted", nullable = false)
     private Boolean restricted = false;
 
+    @Column(name = "slash_command_id")
+    private Long slashCommandId;
+
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 

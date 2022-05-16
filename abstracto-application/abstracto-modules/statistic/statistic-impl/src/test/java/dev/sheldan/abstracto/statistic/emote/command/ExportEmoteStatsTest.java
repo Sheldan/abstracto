@@ -67,52 +67,6 @@ public class ExportEmoteStatsTest {
     private static final String FILE_NAME = "name";
     private static final String FILE_CONTENT = "content";
 
-
-    @Test
-    public void testExportAllEmoteStats() throws IOException {
-        CommandContext commandContext = CommandTestUtilities.getNoParameters();
-        when(commandContext.getGuild().getMaxFileSize()).thenReturn(4L);
-        mockServerAndFileRendering(commandContext);
-        File file = Mockito.mock(File.class);
-        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
-        when(file.length()).thenReturn(3L);
-        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY), any(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
-        CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
-        CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
-        verify(messageToSend, times(1)).setFileToSend(file);
-        verify(fileService, times(1)).safeDelete(file);
-        verifyModel();
-    }
-
-    @Test
-    public void testExportAllEmoteStatsSince() throws IOException {
-        CommandContext commandContext = CommandTestUtilities.getWithParameters(Arrays.asList(Duration.ofHours(3)));
-        when(commandContext.getGuild().getIdLong()).thenReturn(SERVER_ID);
-        AServer server = Mockito.mock(AServer.class);
-        when(server.getId()).thenReturn(SERVER_ID);
-        when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
-        when(commandContext.getGuild().getMaxFileSize()).thenReturn(4L);
-        List<UsedEmote> usedEmotes = Arrays.asList(usedEmote);
-        when(usedEmoteManagementService.loadEmoteUsagesForServerSince(eq(server), any(Instant.class))).thenReturn(usedEmotes);
-        when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY), modelArgumentCaptor.capture())).thenReturn(FILE_NAME);
-        when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY), any())).thenReturn(FILE_CONTENT);
-        File file = Mockito.mock(File.class);
-        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
-        when(file.length()).thenReturn(3L);
-        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(templateService.renderEmbedTemplate(eq(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY), any(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel())).thenReturn(CommandTestUtilities.messageFutureList());
-        CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
-        CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
-        verify(messageToSend, times(1)).setFileToSend(file);
-        verify(fileService, times(1)).safeDelete(file);
-        verifyModel();
-    }
-
     @Test
     public void testExportNoStatsAvailable() {
         CommandContext commandContext = CommandTestUtilities.getNoParameters();
@@ -148,7 +102,6 @@ public class ExportEmoteStatsTest {
         CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
         CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
         verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
-        verify(messageToSend, times(1)).setFileToSend(file);
         verify(fileService, times(1)).safeDelete(file);
         verifyModel();
     }
@@ -167,7 +120,6 @@ public class ExportEmoteStatsTest {
     private void mockServerAndFileRendering(CommandContext commandContext) {
         when(commandContext.getGuild().getIdLong()).thenReturn(SERVER_ID);
         AServer server = Mockito.mock(AServer.class);
-        when(server.getId()).thenReturn(SERVER_ID);
         when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
         List<UsedEmote> usedEmotes = Arrays.asList(usedEmote);
         when(usedEmoteManagementService.loadEmoteUsagesForServerSince(server, Instant.EPOCH)).thenReturn(usedEmotes);

@@ -60,7 +60,7 @@ public class Suggestion implements Serializable {
 
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "command_channel_id")
+    @JoinColumn(name = "command_channel_id", nullable = false)
     private AChannel commandChannel;
 
     @Column(name = "command_message_id")

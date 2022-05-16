@@ -67,6 +67,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("messageContextCommandListener");
     }
 
+    @Bean(name = "slashCommandExecutor")
+    public TaskExecutor slashCommandExecutor() {
+        return executorService.setupExecutorFor("slashCommandListener");
+    }
+
     @Bean(name = "emoteDeletedExecutor")
     public TaskExecutor emoteDeletedExecutor() {
         return executorService.setupExecutorFor("emoteDeletedListener");

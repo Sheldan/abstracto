@@ -13,6 +13,8 @@ public class ConditionResult {
     private boolean result;
     private String reason;
     private ConditionDetail conditionDetail;
+    @Builder.Default
+    private boolean reportResult = true;
 
     public static final ConditionResult SUCCESS = ConditionResult.builder().result(true).build();
 

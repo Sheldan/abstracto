@@ -23,6 +23,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.AttachmentOption;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -166,6 +168,22 @@ public class TemplateServiceBean implements TemplateService {
             isEphemeral = Boolean.TRUE.equals(messageConfiguration.getMessageConfig().isEphemeral());
         }
 
+        List<AttachedFile> files = new ArrayList<>();
+        if(messageConfiguration.getFiles() != null && !messageConfiguration.getFiles().isEmpty()) {
+            messageConfiguration.getFiles().forEach(fileToAttach -> {
+                List<AttachmentOption> options = new ArrayList<>();
+                if(fileToAttach.getSpoiler() != null && fileToAttach.getSpoiler()) {
+                    options.add(AttachmentOption.SPOILER);
+                }
+                AttachedFile attachedFile = AttachedFile
+                        .builder()
+                        .fileName(fileToAttach.getFileName() != null ? fileToAttach.getFileName() : RandomStringUtils.randomAlphabetic(5))
+                        .options(options)
+                        .build();
+                files.add(attachedFile);
+            });
+        }
+
         String additionalMessage = messageConfiguration.getAdditionalMessage();
         if(additionalMessage != null) {
             Long segmentLimit = messageConfiguration.getMessageConfig() != null
@@ -212,6 +230,7 @@ public class TemplateServiceBean implements TemplateService {
                 .messageConfig(createMessageConfig(messageConfiguration.getMessageConfig()))
                 .messages(messages)
                 .ephemeral(isEphemeral)
+                .attachedFiles(!files.isEmpty() ? files : null)
                 .actionRows(buttons)
                 .componentPayloads(componentPayloads)
                 .referencedMessageId(referencedMessageId)

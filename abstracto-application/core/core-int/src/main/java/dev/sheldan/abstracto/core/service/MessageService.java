@@ -44,4 +44,5 @@ public interface MessageService {
     CompletableFuture<Void> deleteMessage(Message message);
     CompletableFuture<Void> editMessageWithActionRows(Message message, List<ActionRow> rows);
     CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows);
+    CompletableFuture<Void> pinMessage(Message message);
 }

@@ -1,14 +1,13 @@
 package dev.sheldan.abstracto.entertainment.model.command;
 
-import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@SuperBuilder
-public class LoveCalcResponseModel extends SlimUserInitiatedServerContext {
+@Builder
+public class LoveCalcResponseModel {
     private String firstPart;
     private String secondPart;
     private Integer rolled;

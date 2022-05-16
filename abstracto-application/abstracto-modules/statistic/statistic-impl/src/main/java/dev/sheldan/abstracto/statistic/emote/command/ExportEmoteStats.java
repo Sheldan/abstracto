@@ -94,6 +94,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
                 .build();
         String fileName = templateService.renderTemplate(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY, model);
         String fileContent = templateService.renderTemplate(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY, model);
+        model.setEmoteStatsFileName(fileName);
         File tempFile = fileService.createTempFile(fileName);
         try {
             fileService.writeContentToFile(tempFile, fileContent);
@@ -103,7 +104,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
                 throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
             }
             MessageToSend messageToSend = templateService.renderEmbedTemplate(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY, model, actualServer.getId());
-            messageToSend.setFileToSend(tempFile);
+            messageToSend.getAttachedFiles().get(0).setFile(tempFile.getAbsoluteFile());
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                     .thenApply(unused -> CommandResult.fromIgnored());
         } catch (IOException e) {

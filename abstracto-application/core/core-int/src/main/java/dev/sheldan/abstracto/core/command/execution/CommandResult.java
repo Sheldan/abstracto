@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.concurrent.CompletableFuture;
+
 @Getter
 @Setter
 @Builder
@@ -41,5 +43,9 @@ public class CommandResult {
 
     public static CommandResult fromCondition(ConditionResult result) {
         return CommandResult.builder().conditionResult(result).result(ResultState.CONDITION).build();
+    }
+
+    public static CompletableFuture<CommandResult> commandResultFutureSuccessful() {
+        return CompletableFuture.completedFuture(fromSuccess());
     }
 }

@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -25,6 +26,7 @@ public interface CommandService {
     void disAllowCommandForRole(ACommand aCommand, ARole role);
     void disAllowFeatureForRole(FeatureDefinition featureDefinition, ARole role);
     CompletableFuture<ConditionResult> isCommandExecutable(Command command, CommandContext commandContext);
+    CompletableFuture<ConditionResult> isCommandExecutable(Command command, SlashCommandInteractionEvent slashCommandInteractionEvent);
     UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message);
     CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent);
     Parameter cloneParameter(Parameter parameter);

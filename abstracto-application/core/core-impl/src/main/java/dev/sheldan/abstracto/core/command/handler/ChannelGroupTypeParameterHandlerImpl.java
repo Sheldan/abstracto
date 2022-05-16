@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import dev.sheldan.abstracto.core.command.handler.provided.ChannelGroupTypeParameterHandler;
 import dev.sheldan.abstracto.core.models.database.ChannelGroupType;
 import dev.sheldan.abstracto.core.service.management.ChannelGroupTypeManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,9 +17,6 @@ public class ChannelGroupTypeParameterHandlerImpl implements ChannelGroupTypePar
 
     @Autowired
     private ChannelGroupTypeManagementService channelGroupTypeManagementService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {

@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.condition.detail.NotInModMailThreadConditionDetail;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,17 +25,42 @@ public class RequiresModMailCondition implements ModMailContextCondition {
     private ModMailThreadManagementService modMailThreadManagementService;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private ChannelManagementService channelManagementService;
 
     @Override
     public ConditionResult shouldExecute(CommandContext commandContext, Command command) {
         Optional<ModMailThread> threadOptional = modMailThreadManagementService.getByChannelOptional(channelManagementService.loadChannel(commandContext.getChannel()));
         if(threadOptional.isPresent()) {
-            return ConditionResult.builder().result(true).build();
+            return ConditionResult
+                    .builder()
+                    .result(true)
+                    .build();
         }
-        return ConditionResult.builder().result(false).conditionDetail(new NotInModMailThreadConditionDetail()).build();
+        return ConditionResult
+                .builder()
+                .result(false)
+                .conditionDetail(new NotInModMailThreadConditionDetail())
+                .build();
+    }
+
+    @Override
+    public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        Optional<ModMailThread> threadOptional = modMailThreadManagementService.getByChannelOptional(channelManagementService.loadChannel(slashCommandInteractionEvent.getChannel()));
+        if(threadOptional.isPresent()) {
+            return ConditionResult
+                    .builder()
+                    .result(true)
+                    .build();
+        }
+        return ConditionResult
+                .builder()
+                .result(false)
+                .conditionDetail(new NotInModMailThreadConditionDetail())
+                .build();
+    }
+
+    @Override
+    public boolean supportsSlashCommands() {
+        return true;
     }
 }

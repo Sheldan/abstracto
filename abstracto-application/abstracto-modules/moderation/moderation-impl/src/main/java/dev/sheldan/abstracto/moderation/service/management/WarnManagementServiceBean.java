@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.moderation.service.management;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.moderation.exception.WarnNotFoundException;
 import dev.sheldan.abstracto.moderation.model.database.Warning;
 import dev.sheldan.abstracto.moderation.repository.WarnRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -86,7 +86,7 @@ public class WarnManagementServiceBean implements WarnManagementService {
 
     @Override
     public Warning findById(Long id, Long serverId) {
-        return findByIdOptional(id, serverId).orElseThrow(() -> new AbstractoRunTimeException("Warning not found."));
+        return findByIdOptional(id, serverId).orElseThrow(WarnNotFoundException::new);
     }
 
     @Override

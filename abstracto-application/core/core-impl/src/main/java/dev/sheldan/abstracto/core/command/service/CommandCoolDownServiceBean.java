@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.core.service.ChannelGroupService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.CoolDownChannelGroupManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +76,12 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
     @Override
     public CoolDownCheckResult allowedToExecuteCommand(Command command, CommandContext context) {
         Long serverId = context.getGuild().getIdLong();
+        Long channelId = context.getChannel().getIdLong();
+        Long memberId = context.getAuthor().getIdLong();
+        return allowedToExecuteCommand(command, serverId, channelId, memberId);
+    }
+
+    private CoolDownCheckResult allowedToExecuteCommand(Command command, Long serverId, Long channelId, Long memberId) {
         Instant now = Instant.now();
         String commandName = command.getConfiguration().getName();
         Duration serverCooldown = null;
@@ -90,7 +97,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         if(storage.getChannelGroupCoolDowns().containsKey(serverId)) {
             Map<Long, CommandReUseMap> serverMap = storage.getChannelGroupCoolDowns().get(serverId);
             if(!serverMap.keySet().isEmpty()) {
-                Long channelId = context.getChannel().getIdLong();
+
                 AChannel channel = channelManagementService.loadChannel(channelId);
                 List<AChannelGroup> channelGroups =
                         channelGroupService.getChannelGroupsOfChannelWithType(channel, COOL_DOWN_CHANNEL_GROUP_TYPE);
@@ -108,7 +115,6 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         if(storage.getMemberCoolDowns().containsKey(serverId)) {
             Map<Long, CommandReUseMap> serverMap = storage.getMemberCoolDowns().get(serverId);
             if(!serverMap.keySet().isEmpty()) {
-                Long memberId = context.getAuthor().getIdLong();
                 if(serverMap.containsKey(memberId)) {
                     CommandReUseMap commandReUseMap = serverMap.get(memberId);
                     Duration durationToExecuteIn = getDurationToExecuteIn(now, commandName, commandReUseMap);
@@ -119,6 +125,14 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
             }
         }
         return createCooldownCheckResult(serverId, commandName, serverCooldown, channelCooldown, memberCooldown);
+    }
+
+    @Override
+    public CoolDownCheckResult allowedToExecuteCommand(Command command, SlashCommandInteractionEvent slashCommandInteractionEvent) {
+        Long serverId = slashCommandInteractionEvent.getGuild().getIdLong();
+        Long channelId = slashCommandInteractionEvent.getChannel().getIdLong();
+        Long memberId = slashCommandInteractionEvent.getMember().getIdLong();
+        return allowedToExecuteCommand(command, serverId, channelId, memberId);
     }
 
     public CoolDownCheckResult createCooldownCheckResult(Long serverId, String commandName, Duration serverCooldown, Duration channelCooldown, Duration memberCooldown) {
@@ -384,6 +398,24 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
                     .channelId(context.getChannel().getIdLong())
                     .userId(context.getAuthor().getIdLong())
                     .guildId(context.getGuild().getIdLong())
+                    .build();
+            addServerCoolDown(command, contextIds.getGuildId(), false);
+            addChannelCoolDown(command, contextIds.toServerChannelId(), false);
+            addMemberCoolDown(command, contextIds, false);
+        } finally {
+            releaseLock();
+        }
+    }
+
+    @Override
+    public void updateCoolDowns(Command command, SlashCommandInteractionEvent event) {
+        takeLock();
+        try {
+            AServerChannelUserId contextIds = AServerChannelUserId
+                    .builder()
+                    .channelId(event.getChannel().getIdLong())
+                    .userId(event.getMember().getIdLong())
+                    .guildId(event.getGuild().getIdLong())
                     .build();
             addServerCoolDown(command, contextIds.getGuildId(), false);
             addChannelCoolDown(command, contextIds.toServerChannelId(), false);

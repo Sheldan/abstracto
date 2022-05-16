@@ -4,17 +4,23 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ContextConverter;
+import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
+import dev.sheldan.abstracto.entertainment.config.EntertainmentSlashCommandNames;
 import dev.sheldan.abstracto.entertainment.model.command.EightBallResponseModel;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +32,8 @@ import java.util.concurrent.CompletableFuture;
 public class EightBall extends AbstractConditionableCommand {
 
     public static final String EIGHT_BALL_RESPONSE_TEMPLATE_KEY = "eight_ball_response";
+    public static final String BALL_COMMAND = "8Ball";
+    public static final String TEXT_PARAMETER = "text";
     @Autowired
     private EntertainmentService entertainmentService;
 
@@ -35,24 +43,65 @@ public class EightBall extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private InteractionService interactionService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         String text = (String) commandContext.getParameters().getParameters().get(0);
-        String chosenKey = entertainmentService.getEightBallValue(text);
-        EightBallResponseModel responseModel = (EightBallResponseModel) ContextConverter.slimFromCommandContext(commandContext, EightBallResponseModel.class);
-        responseModel.setChosenKey(chosenKey);
-        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(EIGHT_BALL_RESPONSE_TEMPLATE_KEY, responseModel, commandContext.getChannel()))
+        MessageToSend messageToSend = getMessageToSend(text, commandContext.getGuild().getIdLong());
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromIgnored());
+    }
+
+
+    @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        String text = slashCommandParameterService.getCommandOption(TEXT_PARAMETER, event, String.class);
+        MessageToSend messageToSend = getMessageToSend(text, event.getGuild().getIdLong());
+        return interactionService.replyMessageToSend(messageToSend, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
+    }
+
+    private MessageToSend getMessageToSend(String text, Long serverId) {
+        String chosenKey = entertainmentService.getEightBallValue(text);
+        EightBallResponseModel responseModel = EightBallResponseModel
+                .builder()
+                .chosenKey(chosenKey)
+                .build();
+        return templateService.renderEmbedTemplate(EIGHT_BALL_RESPONSE_TEMPLATE_KEY, responseModel, serverId);
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("text").type(String.class).templated(true).remainder(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        Parameter textParameter = Parameter
+                .builder()
+                .name(TEXT_PARAMETER)
+                .type(String.class)
+                .templated(true)
+                .remainder(true)
+                .build();
+        parameters.add(textParameter);
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(EntertainmentSlashCommandNames.UTILITY)
+                .commandName(BALL_COMMAND)
+                .build();
+
         return CommandConfiguration.builder()
-                .name("8Ball")
+                .name(BALL_COMMAND)
                 .async(true)
+                .slashCommandConfig(slashCommandConfig)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .supportsEmbedException(true)

@@ -8,4 +8,5 @@
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
     <include file="channel.xml" relativeToChangelogFile="true"/>
     <include file="component_payload.xml" relativeToChangelogFile="true"/>
+    <include file="command_in_server.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

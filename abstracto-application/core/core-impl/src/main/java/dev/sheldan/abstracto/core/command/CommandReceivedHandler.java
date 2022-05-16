@@ -13,7 +13,6 @@ import dev.sheldan.abstracto.core.command.model.CommandConfirmationModel;
 import dev.sheldan.abstracto.core.command.model.CommandConfirmationPayload;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
-import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
@@ -37,7 +36,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,32 +62,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private UserInServerManagementService userInServerManagementService;
-
-    @Autowired
-    private ChannelManagementService channelManagementService;
-
-    @Autowired
     @Lazy
     private CommandReceivedHandler self;
 
     @Autowired
-    private RoleManagementService roleManagementService;
-
-    @Autowired
     private CommandService commandService;
-
-    @Autowired
-    private EmoteService emoteService;
-
-    @Autowired
-    private ExceptionService exceptionService;
-
-    @Autowired
-    private EmoteManagementService emoteManagementService;
-
-    @Autowired
-    private RoleService roleService;
 
     @Autowired
     private List<CommandParameterHandler> parameterHandlers;
@@ -393,7 +370,11 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     public CompletableFuture<Parameters> getParsedParameters(UnParsedCommandParameter unParsedCommandParameter, Command command, Message message) {
         List<ParseResult> parsedParameters = new ArrayList<>();
-        List<Parameter> parameters = command.getConfiguration().getParameters();
+        List<Parameter> parameters = command
+                .getConfiguration()
+                .getParameters()
+                .stream()
+                .filter(parameter -> !parameter.getSlashCommandOnly()).collect(Collectors.toList());
         if (parameters == null || parameters.isEmpty()) {
             return CompletableFuture.completedFuture(Parameters.builder().parameters(new ArrayList<>()).build());
         }
@@ -507,13 +488,16 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     private List<Object> extractParametersFromParsed(List<ParseResult> results) {
         List<Object> usableParameters = new ArrayList<>();
-        results.forEach(parseResult -> {
+        boolean lastWasRemainder = false;
+        for (ParseResult parseResult : results) {
             if (parseResult.getParameter().isRemainder() && !parseResult.getParameter().isListParam() && parseResult.getResult() instanceof String) {
                 if (usableParameters.isEmpty() || !(usableParameters.get(usableParameters.size() - 1) instanceof String)) {
                     usableParameters.add(parseResult.getResult());
-                } else {
+                } else if(lastWasRemainder){
                     int lastIndex = usableParameters.size() - 1;
                     usableParameters.set(lastIndex, usableParameters.get(lastIndex).toString() + " " + parseResult.getResult().toString());
+                } else {
+                    usableParameters.add(parseResult.getResult());
                 }
             } else if (parseResult.getParameter().isListParam()) {
                 if (usableParameters.isEmpty()) {
@@ -527,7 +511,8 @@ public class CommandReceivedHandler extends ListenerAdapter {
             } else {
                 usableParameters.add(parseResult.getResult());
             }
-        });
+            lastWasRemainder = parseResult.getParameter().isRemainder();
+        }
         return usableParameters;
     }
 

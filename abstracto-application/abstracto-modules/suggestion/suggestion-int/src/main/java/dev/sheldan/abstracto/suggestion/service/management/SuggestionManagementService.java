@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SuggestionManagementService {
-    Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId, Message commandMessage);
-    Suggestion createSuggestion(AUserInAServer suggester, String text, Message message, Long suggestionId, Message commandMessage);
+    Suggestion createSuggestion(Member suggester, String text, Message message, Long suggestionId, Long suggestionChannelId, Long suggestionMessageId);
+    Suggestion createSuggestion(AUserInAServer suggester, String text, Message message, Long suggestionId, Long suggestionChannelId, Long suggestionMessageId);
     Optional<Suggestion> getSuggestionOptional(Long serverId, Long suggestionId);
     Suggestion getSuggestion(Long serverId, Long suggestionId);
     void setSuggestionState(Suggestion suggestion, SuggestionState newState);

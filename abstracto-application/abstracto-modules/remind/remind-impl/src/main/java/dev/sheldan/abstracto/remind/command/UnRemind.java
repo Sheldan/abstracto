@@ -2,34 +2,44 @@ package dev.sheldan.abstracto.remind.command;
 
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
-import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
-import dev.sheldan.abstracto.core.command.config.HelpInfo;
-import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.ParameterValidator;
-import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
+import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
+import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
 import dev.sheldan.abstracto.remind.service.ReminderService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
 public class UnRemind extends AbstractConditionableCommand {
+
+    private static final String UN_REMIND_COMMAND = "unRemind";
+    private static final String REMINDER_ID_PARAMETER = "reminderId";
+    private static final String UN_REMIND_RESPONSE = "unRemind_response";
 
     @Autowired
     private ReminderService reminderService;
 
     @Autowired
     private UserInServerManagementService userInServerManagementService;
+
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private InteractionService interactionService;
 
     @Override
     public CommandResult execute(CommandContext commandContext) {
@@ -39,16 +49,40 @@ public class UnRemind extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        Long reminderId = slashCommandParameterService.getCommandOption(REMINDER_ID_PARAMETER, event, Long.class, Integer.class).longValue();
+        reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(event.getMember()));
+        return interactionService.replyEmbed(UN_REMIND_RESPONSE, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
-        List<Parameter> parameters = new ArrayList<>();
-        List<ParameterValidator> reminderIdValidator = Arrays.asList(MinIntegerValueValidator.min(1L));
-        parameters.add(Parameter.builder().name("reminderId").validators(reminderIdValidator).templated(true).type(Long.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        Parameter reminderParameter = Parameter
+                .builder()
+                .name(REMINDER_ID_PARAMETER)
+                .templated(true)
+                .type(Long.class)
+                .build();
+        List<Parameter> parameters = Arrays.asList(reminderParameter);
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(RemindSlashCommandNames.REMIND)
+                .commandName("cancel")
+                .build();
+
         return CommandConfiguration.builder()
-                .name("unRemind")
+                .name(UN_REMIND_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .supportsEmbedException(true)
+                .slashCommandConfig(slashCommandConfig)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

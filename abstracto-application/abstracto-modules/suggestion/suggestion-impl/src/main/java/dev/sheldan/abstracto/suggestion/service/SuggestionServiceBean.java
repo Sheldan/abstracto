@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.suggestion.service;
 
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerChannelMessageUser;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
@@ -62,9 +63,6 @@ public class SuggestionServiceBean implements SuggestionService {
     private TemplateService templateService;
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
     private MemberService memberService;
 
     @Autowired
@@ -113,14 +111,14 @@ public class SuggestionServiceBean implements SuggestionService {
     private Long autoRemovalMaxDays;
 
     @Override
-    public CompletableFuture<Void> createSuggestionMessage(Message commandMessage, String text)  {
+    public CompletableFuture<Void> createSuggestionMessage(ServerChannelMessageUser cause, String text, String attachmentURL)  {
         // it is done that way, because we cannot always be sure, that the message contains the member
-        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
-                .thenCompose(suggester -> self.createMessageWithSuggester(commandMessage, text, suggester));
+        return memberService.getMemberInServerAsync(cause.getServerId(), cause.getUserId())
+                .thenCompose(suggester -> self.createMessageWithSuggester(cause.getChannelId(), cause.getMessageId(), text, suggester, attachmentURL));
     }
 
     @Transactional
-    public CompletableFuture<Void> createMessageWithSuggester(Message commandMessage, String text, Member suggester) {
+    public CompletableFuture<Void> createMessageWithSuggester(Long suggestionChannelId, Long suggestionMessageId, String text, Member suggester, String attachmentURL) {
         postTargetService.validatePostTarget(SuggestionPostTarget.SUGGESTION, suggester.getGuild().getIdLong());
         Long serverId = suggester.getGuild().getIdLong();
         AServer server = serverManagementService.loadServer(serverId);
@@ -132,7 +130,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .suggestionId(newSuggestionId)
                 .state(SuggestionState.NEW)
                 .serverId(serverId)
-                .message(commandMessage)
+                .attachmentURL(attachmentURL)
                 .member(suggester)
                 .suggesterUser(userSuggester)
                 .useButtons(useButtons)
@@ -146,11 +144,11 @@ public class SuggestionServiceBean implements SuggestionService {
         log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, serverId, suggester.getIdLong());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
         return FutureUtils.toSingleFutureGeneric(completableFutures)
-                .thenCompose(aVoid -> self.addDeletionPossibility(commandMessage, text, suggester, serverId, newSuggestionId, completableFutures, model));
+                .thenCompose(aVoid -> self.addDeletionPossibility(suggestionChannelId, suggestionMessageId, text, suggester, serverId, newSuggestionId, completableFutures, model));
     }
 
     @Transactional
-    public CompletableFuture<Void> addDeletionPossibility(Message commandMessage, String text, Member suggester, Long serverId,
+    public CompletableFuture<Void> addDeletionPossibility(Long suggestionChannelId, Long suggestionMessageId, String text, Member suggester, Long serverId,
                                                           Long newSuggestionId, List<CompletableFuture<Message>> completableFutures, SuggestionLog model) {
         Message message = completableFutures.get(0).join();
         if(model.getUseButtons()) {
@@ -161,7 +159,7 @@ public class SuggestionServiceBean implements SuggestionService {
             componentPayloadManagementService.createPayload(model.getAgreeButtonModel(), server);
             componentPayloadManagementService.createPayload(model.getDisAgreeButtonModel(), server);
             componentPayloadManagementService.createPayload(model.getRemoveVoteButtonModel(), server);
-            self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, commandMessage);
+            self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, suggestionChannelId, suggestionMessageId);
             return CompletableFuture.completedFuture(null);
         } else {
             log.debug("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
@@ -169,7 +167,7 @@ public class SuggestionServiceBean implements SuggestionService {
             CompletableFuture<Void> secondReaction = reactionService.addReactionToMessageAsync(SUGGESTION_NO_EMOTE, serverId, message);
             return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 -> {
                 log.debug("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
-                self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, commandMessage);
+                self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, suggestionChannelId, suggestionMessageId);
             });
         }
     }
@@ -193,10 +191,10 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Transactional
-    public void persistSuggestionInDatabase(Member member, String text, Message message, Long suggestionId, Message commandMessage) {
+    public void persistSuggestionInDatabase(Member member, String text, Message message, Long suggestionId, Long suggestionChannelId, Long suggestionMessageId) {
         Long serverId = member.getGuild().getIdLong();
         log.info("Persisting suggestion {} for server {} in database.", suggestionId, serverId);
-        Suggestion suggestion = suggestionManagementService.createSuggestion(member, text, message, suggestionId, commandMessage);
+        Suggestion suggestion = suggestionManagementService.createSuggestion(member, text, message, suggestionId, suggestionChannelId, suggestionMessageId);
         if(featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_REMINDER)) {
             String triggerKey = scheduleSuggestionReminder(serverId, suggestionId);
             suggestion.setSuggestionReminderJobTriggerKey(triggerKey);
@@ -216,14 +214,13 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Override
-    public CompletableFuture<Void> acceptSuggestion(Long suggestionId, Message commandMessage, String text) {
-        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
-                .thenCompose(member -> self.setSuggestionToFinalState(member, suggestionId, commandMessage, text, SuggestionState.ACCEPTED));
+    public CompletableFuture<Void> acceptSuggestion(Long suggestionId, Member actingMember, String text) {
+        return self.setSuggestionToFinalState(actingMember, suggestionId, text, SuggestionState.ACCEPTED);
     }
 
     @Transactional
-    public CompletableFuture<Void> setSuggestionToFinalState(Member executingMember, Long suggestionId, Message commandMessage, String text, SuggestionState state) {
-        Long serverId = commandMessage.getGuild().getIdLong();
+    public CompletableFuture<Void> setSuggestionToFinalState(Member executingMember, Long suggestionId, String text, SuggestionState state) {
+        Long serverId = executingMember.getGuild().getIdLong();
         postTargetService.validatePostTarget(SuggestionPostTarget.SUGGESTION, serverId);
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, state);
@@ -233,9 +230,8 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Override
-    public CompletableFuture<Void> vetoSuggestion(Long suggestionId, Message commandMessage, String text) {
-        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
-                .thenCompose(member -> self.setSuggestionToFinalState(member, suggestionId, commandMessage, text, SuggestionState.VETOED));
+    public CompletableFuture<Void> vetoSuggestion(Long suggestionId, Member actingMember, String text) {
+        return self.setSuggestionToFinalState(actingMember, suggestionId, text, SuggestionState.VETOED);
     }
 
     private CompletableFuture<Void> updateSuggestion(Member memberExecutingCommand, String reason, Suggestion suggestion) {
@@ -302,9 +298,8 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Override
-    public CompletableFuture<Void> rejectSuggestion(Long suggestionId, Message commandMessage, String text) {
-        return memberService.getMemberInServerAsync(commandMessage.getGuild().getIdLong(), commandMessage.getAuthor().getIdLong())
-                .thenCompose(member -> self.setSuggestionToFinalState(member, suggestionId, commandMessage, text, SuggestionState.REJECTED));
+    public CompletableFuture<Void> rejectSuggestion(Long suggestionId, Member actingMember, String text) {
+        return self.setSuggestionToFinalState(actingMember, suggestionId, text, SuggestionState.REJECTED);
     }
 
     @Override

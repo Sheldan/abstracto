@@ -10,7 +10,6 @@ public enum ModerationFeatureDefinition implements FeatureDefinition {
     MUTING("muting"),
     AUTOMATIC_WARN_DECAY("warnDecay"),
     USER_NOTES("userNotes"),
-    INVITE_FILTER("inviteFilter"),
     REPORT_REACTIONS("reportReactions"),
     INFRACTIONS("infractions")
     ;

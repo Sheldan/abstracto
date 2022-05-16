@@ -11,7 +11,7 @@ public class ChannelNotInChannelGroupException extends AbstractoRunTimeException
     private final ChannelNotInChannelGroupExceptionModel model;
 
     public ChannelNotInChannelGroupException(AChannel channel, AChannelGroup group) {
-        super("Channel is already part of channel group");
+        super("Channel is not part of channel group");
         this.model = ChannelNotInChannelGroupExceptionModel.builder().channel(channel).channelGroup(group).build();
     }
 

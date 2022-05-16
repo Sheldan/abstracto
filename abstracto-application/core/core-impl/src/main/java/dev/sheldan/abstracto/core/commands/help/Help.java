@@ -1,12 +1,12 @@
 package dev.sheldan.abstracto.core.commands.help;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.*;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class Help implements Command {
+public class Help extends AbstractConditionableCommand {
 
     @Autowired
     private ModuleRegistry moduleService;
@@ -136,9 +136,11 @@ public class Help implements Command {
                 }));
                 module.setCommands(filteredCommand);
                 List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
-                HelpModuleDetailsModel model = (HelpModuleDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpModuleDetailsModel.class);
-                model.setModule(module);
-                model.setSubModules(subModules);
+                HelpModuleDetailsModel model = HelpModuleDetailsModel
+                        .builder()
+                        .subModules(subModules)
+                        .module(module)
+                        .build();
                 MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_details_response", model, commandContext.getGuild().getIdLong());
                 return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                         .thenApply(aVoid -> CommandResult.fromIgnored());
@@ -157,10 +159,14 @@ public class Help implements Command {
                     ACommand aCommand = commandManagementService.findCommandByName(command.getConfiguration().getName());
                     List<String> aliases = commandInServerAliasService.getAliasesForCommand(commandContext.getGuild().getIdLong(), command.getConfiguration().getName());
                     ACommandInAServer aCommandInAServer = commandInServerManagementService.getCommandForServer(aCommand, commandContext.getGuild().getIdLong());
-                    HelpCommandDetailsModel model = (HelpCommandDetailsModel) ContextConverter.fromCommandContext(commandContext, HelpCommandDetailsModel.class);
-                    model.setServerSpecificAliases(aliases);
                     CommandCoolDownConfig coolDownConfig = getCoolDownConfig(command, contextIds);
-                    model.setCooldowns(coolDownConfig);
+                    HelpCommandDetailsModel model = HelpCommandDetailsModel
+                            .builder()
+                            .serverSpecificAliases(aliases)
+                            .cooldowns(coolDownConfig)
+                            .usage(commandService.generateUsage(command))
+                            .command(command.getConfiguration())
+                            .build();
                     if(Boolean.TRUE.equals(aCommandInAServer.getRestricted())) {
                         model.setAllowedRoles(roleService.getRolesFromGuild(aCommandInAServer.getAllowedRoles()));
                         model.setRestricted(true);
@@ -174,8 +180,6 @@ public class Help implements Command {
                     if(!effects.isEmpty()) {
                         model.setEffects(effects);
                     }
-                    model.setUsage(commandService.generateUsage(command));
-                    model.setCommand(command.getConfiguration());
                     MessageToSend messageToSend = templateService.renderEmbedTemplate("help_command_details_response", model, commandContext.getGuild().getIdLong());
                     return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                             .thenApply(aVoid -> CommandResult.fromIgnored());
@@ -209,8 +213,10 @@ public class Help implements Command {
         log.debug("Displaying help overview response.");
         ModuleDefinition moduleDefinition = moduleService.getDefaultModule();
         List<ModuleDefinition> subModules = moduleService.getSubModules(moduleDefinition);
-        HelpModuleOverviewModel model = (HelpModuleOverviewModel) ContextConverter.fromCommandContext(commandContext, HelpModuleOverviewModel.class);
-        model.setModules(subModules);
+        HelpModuleOverviewModel model = HelpModuleOverviewModel
+                .builder()
+                .modules(subModules)
+                .build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate("help_module_overview_response", model, commandContext.getGuild().getIdLong());
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());

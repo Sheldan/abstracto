@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultEmoteManagementServi
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -164,7 +165,12 @@ public class EmoteServiceBean implements EmoteService {
     public AEmote getFakeEmoteFromEmote(Emote emote) {
         AServer server = null;
         if(emote.getGuild() != null) {
-            server = AServer.builder().id(emote.getGuild().getIdLong()).fake(true).build();
+            server = AServer
+                    .builder()
+                    .id(emote.getGuild()
+                            .getIdLong())
+                    .fake(true)
+                    .build();
         }
         return AEmote
                 .builder()
@@ -174,6 +180,18 @@ public class EmoteServiceBean implements EmoteService {
                 .animated(emote.isAnimated())
                 .emoteId(emote.getIdLong())
                 .serverRef(server)
+                .build();
+    }
+
+    @Override
+    public AEmote getFakeEmoteFromEmoji(Emoji emoji) {
+        return AEmote
+                .builder()
+                .fake(true)
+                .emoteKey(emoji.getName())
+                .custom(emoji.isCustom())
+                .animated(emoji.isAnimated())
+                .emoteId(emoji.getIdLong())
                 .build();
     }
 

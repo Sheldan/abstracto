@@ -1,18 +1,19 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
-import dev.sheldan.abstracto.core.models.context.SlimUserInitiatedServerContext;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Member;
 
 /**
  * Used when rendering the notification when a member was kicked. The template is: "kick_log_embed"
  */
 @Getter
-@SuperBuilder
+@Builder
 @Setter
-public class KickLogModel extends SlimUserInitiatedServerContext {
+public class KickLogModel {
     /**
      * The reason of the kick
      */
@@ -21,4 +22,7 @@ public class KickLogModel extends SlimUserInitiatedServerContext {
      * The member being kicked
      */
     private Member kickedUser;
+    private Member member;
+    private Guild guild;
+    private GuildMessageChannel channel;
 }

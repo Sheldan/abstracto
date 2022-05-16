@@ -1,13 +1,15 @@
 package dev.sheldan.abstracto.core.commands.channels;
 
+import dev.sheldan.abstracto.core.command.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.ListChannelGroupsModel;
@@ -17,15 +19,19 @@ import dev.sheldan.abstracto.core.service.management.ChannelGroupManagementServi
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class ListChannelGroups extends AbstractConditionableCommand {
 
+    public static final String LIST_CHANNEL_GROUPS_COMMAND = "listChannelGroups";
     @Autowired
     private TemplateService templateService;
 
@@ -41,24 +47,52 @@ public class ListChannelGroups extends AbstractConditionableCommand {
     @Autowired
     private ChannelGroupService channelGroupService;
 
+    @Autowired
+    private InteractionService interactionService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
-        List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
-        ListChannelGroupsModel template = (ListChannelGroupsModel) ContextConverter.fromCommandContext(commandContext, ListChannelGroupsModel.class);
-        template.setGroups(channelGroupService.convertAChannelGroupToChannelGroupChannel(channelGroups));
-        MessageToSend response = templateService.renderEmbedTemplate("listChannelGroups_response", template, commandContext.getGuild().getIdLong());
+        MessageToSend response = getMessageToSend(commandContext.getGuild());
         channelService.sendMessageToSendToChannel(response, commandContext.getChannel());
         return CommandResult.fromIgnored();
+    }
+
+    private MessageToSend getMessageToSend(Guild guild) {
+        AServer server = serverManagementService.loadServer(guild);
+        List<AChannelGroup> channelGroups = channelGroupManagementService.findAllInServer(server);
+        ListChannelGroupsModel template = ListChannelGroupsModel
+                .builder()
+                .groups(channelGroupService.convertAChannelGroupToChannelGroupChannel(channelGroups))
+                .build();
+        return templateService.renderEmbedTemplate("listChannelGroups_response", template, guild.getIdLong());
+    }
+
+    @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        MessageToSend response = getMessageToSend(event.getGuild());
+        return interactionService.replyMessageToSend(response, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
         List<String> aliases = Arrays.asList("lsChGrp");
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(CoreSlashCommandNames.CHANNELS)
+                .commandName(LIST_CHANNEL_GROUPS_COMMAND)
+                .build();
+
         return CommandConfiguration.builder()
-                .name("listChannelGroups")
+                .name(LIST_CHANNEL_GROUPS_COMMAND)
                 .module(ChannelsModuleDefinition.CHANNELS)
+                .slashCommandConfig(slashCommandConfig)
                 .aliases(aliases)
                 .templated(true)
                 .help(helpInfo)

@@ -16,7 +16,6 @@ import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +35,6 @@ public class Allow extends AbstractConditionableCommand {
 
     @Autowired
     private CommandService commandService;
-
-    @Autowired
-    private RoleManagementService roleManagementService;
 
     @Autowired
     private TemplateService templateService;

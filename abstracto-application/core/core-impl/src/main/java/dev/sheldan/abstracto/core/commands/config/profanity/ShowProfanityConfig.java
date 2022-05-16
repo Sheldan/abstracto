@@ -1,14 +1,16 @@
 package dev.sheldan.abstracto.core.commands.config.profanity;
 
+import dev.sheldan.abstracto.core.command.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.ProfanityGroup;
 import dev.sheldan.abstracto.core.models.template.commands.ProfanityConfigModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -16,6 +18,7 @@ import dev.sheldan.abstracto.core.service.management.ProfanityGroupManagementSer
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 public class ShowProfanityConfig extends AbstractConditionableCommand {
 
     public static final String SHOW_PROFANITY_CONFIG_RESPONSE_TEMPLATE_KEY = "showProfanityConfig_response";
+    public static final String SHOW_PROFANITY_CONFIG_COMMAND = "showProfanityConfig";
     @Autowired
     private ProfanityGroupManagementService profanityGroupManagementService;
 
@@ -35,25 +39,55 @@ public class ShowProfanityConfig extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private InteractionService interactionService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        ProfanityConfigModel model = (ProfanityConfigModel) ContextConverter.slimFromCommandContext(commandContext, ProfanityConfigModel.class);
         Long serverId = commandContext.getGuild().getIdLong();
-        List<ProfanityGroup> groups = profanityGroupManagementService.getAllForServer(serverId);
-        model.setProfanityGroups(groups);
-        MessageToSend message = templateService.renderEmbedTemplate(SHOW_PROFANITY_CONFIG_RESPONSE_TEMPLATE_KEY, model, serverId);
+        MessageToSend message = getMessageToSend(serverId);
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(message, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        Long serverId = event.getGuild().getIdLong();
+        MessageToSend message = getMessageToSend(serverId);
+        return interactionService.replyMessageToSend(message, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
+    }
+
+    private MessageToSend getMessageToSend(Long serverId) {
+        List<ProfanityGroup> groups = profanityGroupManagementService.getAllForServer(serverId);
+        ProfanityConfigModel model = ProfanityConfigModel
+                .builder()
+                .profanityGroups(groups)
+                .build();
+        return templateService.renderEmbedTemplate(SHOW_PROFANITY_CONFIG_RESPONSE_TEMPLATE_KEY, model, serverId);
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(CoreSlashCommandNames.PROFANITY)
+                .commandName(SHOW_PROFANITY_CONFIG_COMMAND)
+                .build();
+
+
         return CommandConfiguration.builder()
-                .name("showProfanityConfig")
+                .name(SHOW_PROFANITY_CONFIG_COMMAND)
                 .module(ConfigModuleDefinition.CONFIG)
                 .templated(true)
                 .async(true)
+                .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

@@ -1,15 +1,17 @@
 package dev.sheldan.abstracto.core.commands.config.features;
 
+import dev.sheldan.abstracto.core.command.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.converter.FeatureFlagConverter;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AFeatureFlag;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.property.FeatureFlagProperty;
@@ -21,6 +23,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 @Component
 public class Features extends AbstractConditionableCommand {
 
+    private static final String FEATURES_COMMAND = "features";
     @Autowired
     private FeatureFlagManagementService featureFlagManagementService;
 
@@ -50,14 +54,28 @@ public class Features extends AbstractConditionableCommand {
     @Autowired
     private ServerManagementService serverManagementService;
 
+    @Autowired
+    private InteractionService interactionService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        AServer server = serverManagementService.loadServer(commandContext.getGuild());
+        MessageToSend messageToSend = getMessageToSend(commandContext.getGuild().getIdLong());
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                .thenApply(aVoid -> CommandResult.fromIgnored());
+    }
+
+    @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        MessageToSend messageToSend = getMessageToSend(event.getGuild().getIdLong());
+        return interactionService.replyMessageToSend(messageToSend, event)
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
+    }
+
+    private MessageToSend getMessageToSend(Long serverId) {
+        AServer server = serverManagementService.loadServer(serverId);
         List<AFeatureFlag> features = featureFlagManagementService.getFeatureFlagsOfServer(server);
         List<FeatureFlagProperty> defaultFeatureFlagProperties = defaultFeatureFlagManagementService.getAllDefaultFeatureFlags();
-        FeaturesModel featuresModel = (FeaturesModel) ContextConverter.fromCommandContext(commandContext, FeaturesModel.class);
         features.sort(Comparator.comparing(o -> o.getFeature().getKey()));
-        featuresModel.setFeatures(featureFlagConverter.fromFeatureFlags(features));
         defaultFeatureFlagProperties = defaultFeatureFlagProperties
                 .stream()
                 .filter(featureFlagProperty ->
@@ -68,20 +86,34 @@ public class Features extends AbstractConditionableCommand {
                                                 .equals(featureFlagProperty.getFeatureName())))
                 .collect(Collectors.toList());
         defaultFeatureFlagProperties.sort(Comparator.comparing(FeatureFlagProperty::getFeatureName));
-        featuresModel.setDefaultFeatures(featureFlagConverter.fromFeatureFlagProperties(defaultFeatureFlagProperties));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate("features_response", featuresModel, commandContext.getGuild().getIdLong());
-        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                .thenApply(aVoid -> CommandResult.fromIgnored());
+        FeaturesModel featuresModel = FeaturesModel
+                .builder()
+                .features(featureFlagConverter.fromFeatureFlags(features))
+                .defaultFeatures(featureFlagConverter.fromFeatureFlagProperties(defaultFeatureFlagProperties))
+                .build();
+        return templateService.renderEmbedTemplate("features_response", featuresModel, serverId);
     }
 
     @Override
     public CommandConfiguration getConfiguration() {
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(CoreSlashCommandNames.FEATURE)
+                .commandName("list")
+                .build();
+
         return CommandConfiguration.builder()
-                .name("features")
+                .name(FEATURES_COMMAND)
                 .module(ConfigModuleDefinition.CONFIG)
                 .templated(true)
                 .async(true)
+                .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

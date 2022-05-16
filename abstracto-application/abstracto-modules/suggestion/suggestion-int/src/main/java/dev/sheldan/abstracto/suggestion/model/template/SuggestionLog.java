@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 
 @Getter
@@ -21,7 +20,7 @@ public class SuggestionLog {
     private Member member;
     private AUserInAServer suggesterUser;
     private String text;
-    private Message message;
+    private String attachmentURL;
     private String reason;
     private Long serverId;
     private Long originalChannelId;

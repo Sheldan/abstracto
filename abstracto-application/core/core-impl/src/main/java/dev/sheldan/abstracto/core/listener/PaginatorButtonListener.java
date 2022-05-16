@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.PaginatorServiceBean;
 import dev.sheldan.abstracto.core.templating.model.MessageConfiguration;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.TemplateServiceBean;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -33,17 +32,11 @@ public class PaginatorButtonListener implements ButtonClickedListener {
     @Autowired
     private TemplateServiceBean templateServiceBean;
 
-    @Autowired
-    private TemplateService templateService;
-
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
         PaginatorButtonPayload payload = (PaginatorButtonPayload) model.getDeserializedPayload();
 
         Message originalMessage = model.getEvent().getMessage();
-        if(originalMessage == null) {
-            return ButtonClickedListenerResult.IGNORED;
-        }
         if(payload.getAllowedUser() != null && model.getEvent().getUser().getIdLong() != payload.getAllowedUser()) {
             return ButtonClickedListenerResult.IGNORED;
         }

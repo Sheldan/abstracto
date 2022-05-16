@@ -51,6 +51,9 @@ public class FeatureModeConditionTest {
     @Test
     public void testNoLimitations() {
         when(command.getFeatureModeLimitations()).thenReturn(new ArrayList<>());
+        when(userInitiatedServerContext.getGuild()).thenReturn(server);
+        when(server.getIdLong()).thenReturn(SERVER_ID);
+        when(commandContext.getUserInitiatedContext()).thenReturn(userInitiatedServerContext);
         CommandTestUtilities.checkSuccessfulCondition(testUnit.shouldExecute(commandContext, command));
     }
 

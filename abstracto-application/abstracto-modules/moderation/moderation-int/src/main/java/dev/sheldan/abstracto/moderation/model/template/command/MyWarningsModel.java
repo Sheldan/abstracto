@@ -1,17 +1,17 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import net.dv8tion.jda.api.entities.Member;
 
 /**
  * Used to render the response of the myWarnings command. The template is: 'myWarnings_response_embed'
  */
 @Getter
 @Setter
-@SuperBuilder
-public class MyWarningsModel extends UserInitiatedServerContext {
+@Builder
+public class MyWarningsModel {
     /**
      * The total amount of warnings the member has
      */
@@ -20,4 +20,5 @@ public class MyWarningsModel extends UserInitiatedServerContext {
      * The current (only active) amount of warnings the member has
      */
     private Long currentWarnCount;
+    private Member member;
 }

@@ -5,20 +5,24 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
+import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.webservices.config.WebServicesSlashCommandNames;
 import dev.sheldan.abstracto.webservices.config.WebserviceFeatureDefinition;
 import dev.sheldan.abstracto.webservices.youtube.config.YoutubeWebServiceFeatureMode;
 import dev.sheldan.abstracto.webservices.youtube.model.YoutubeVideo;
 import dev.sheldan.abstracto.webservices.youtube.model.command.YoutubeVideoSearchCommandModel;
 import dev.sheldan.abstracto.webservices.youtube.service.YoutubeSearchService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +36,9 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
 
     public static final String YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY = "youtube_search_command_response";
     public static final String YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY = "youtube_search_command_response_link";
+    private static final String SEARCH_QUERY_PARAMETER = "searchQuery";
+    private static final String YOUTUBE_SEARCH_COMMAND = "youtubeSearch";
+
     @Autowired
     private YoutubeSearchService youtubeSearchService;
 
@@ -44,12 +51,20 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
     @Autowired
     private FeatureModeService featureModeService;
 
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private InteractionService interactionService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         String query = (String) commandContext.getParameters().getParameters().get(0);
         YoutubeVideo foundVideo = youtubeSearchService.searchOneVideoForQuery(query);
-        YoutubeVideoSearchCommandModel model = (YoutubeVideoSearchCommandModel) ContextConverter.slimFromCommandContext(commandContext, YoutubeVideoSearchCommandModel.class);
-        model.setVideo(foundVideo);
+        YoutubeVideoSearchCommandModel model = YoutubeVideoSearchCommandModel
+                .builder()
+                .video(foundVideo)
+                .build();
         CompletableFuture<Void> infoEmbedFuture;
         if(featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, commandContext.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS)) {
             MessageToSend message = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
@@ -64,14 +79,55 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        String query = slashCommandParameterService.getCommandOption(SEARCH_QUERY_PARAMETER, event, String.class);
+        YoutubeVideo foundVideo = youtubeSearchService.searchOneVideoForQuery(query);
+        YoutubeVideoSearchCommandModel model = YoutubeVideoSearchCommandModel
+                .builder()
+                .video(foundVideo)
+                .build();
+        boolean sendInfo = featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, event.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS);
+        MessageToSend linkEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY, model, event.getGuild().getIdLong());
+        MessageToSend infoEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY, model, event.getGuild().getIdLong());
+        return interactionService.replyMessageToSend(linkEmbed, event)
+                .thenCompose(interactionHook -> {
+                    if(sendInfo) {
+                        return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(infoEmbed, interactionHook));
+                    } else {
+                        return CompletableFuture.completedFuture(null);
+                    }
+                })
+                .thenApply(o -> CommandResult.fromSuccess());
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("searchQuery").type(String.class).remainder(true).templated(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        Parameter queryParameter = Parameter
+                .builder()
+                .name(SEARCH_QUERY_PARAMETER)
+                .type(String.class)
+                .remainder(true)
+                .templated(true)
+                .build();
+        parameters.add(queryParameter);
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         List<String> aliases = Arrays.asList("yt");
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(WebServicesSlashCommandNames.YOUTUBE)
+                .commandName("search")
+                .build();
+
         return CommandConfiguration.builder()
-                .name("youtubeSearch")
+                .name(YOUTUBE_SEARCH_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
+                .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .async(true)
                 .aliases(aliases)

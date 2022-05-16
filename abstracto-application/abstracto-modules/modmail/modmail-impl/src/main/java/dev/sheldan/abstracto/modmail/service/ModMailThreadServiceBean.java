@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.modmail.service;
 
 import dev.sheldan.abstracto.core.command.exception.AbstractoTemplatedException;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
@@ -39,6 +40,7 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -149,6 +151,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     @Autowired
     private ComponentPayloadService componentPayloadService;
 
+    @Autowired
+    private InteractionService interactionService;
+
     public static final String MODMAIL_THREAD_METRIC = "modmail.threads";
     public static final String MODMAIL_MESSAGE_METRIC = "modmail.messges";
     public static final String ACTION = "action";
@@ -180,7 +185,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     public static final String MODMAIL_INITIAL_ORIGIN = "modmailInitial";
 
     @Override
-    public CompletableFuture<Void> createModMailThreadForUser(Member member, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated, List<UndoActionInstance> undoActions) {
+    public CompletableFuture<MessageChannel> createModMailThreadForUser(Member member, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions) {
         Long serverId = member.getGuild().getIdLong();
         Long categoryId = configService.getLongValue(MODMAIL_CATEGORY, serverId);
         AServer server = serverManagementService.loadServer(member.getGuild().getIdLong());
@@ -199,18 +204,30 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         CompletableFuture<TextChannel> textChannelFuture = channelService.createTextChannel(channelName, server, categoryId);
         return textChannelFuture.thenCompose(channel -> {
             undoActions.add(UndoActionInstance.getChannelDeleteAction(serverId, channel.getIdLong()));
-            return self.performModMailThreadSetup(member, initialMessage, channel, userInitiated, undoActions, feedBackChannel);
+            return self.performModMailThreadSetup(member, initialMessage, channel, userInitiated, undoActions)
+                    .thenCompose(unused -> CompletableFuture.completedFuture(channel));
         });
     }
 
     @Transactional
-    public CompletableFuture<Void> sendContactNotification(Member member, TextChannel textChannel, MessageChannel feedBackChannel) {
+    @Override
+    public CompletableFuture<Void> sendContactNotification(Member member, MessageChannel messageChannel, MessageChannel feedBackChannel) {
         ContactNotificationModel model = ContactNotificationModel
                 .builder()
-                .createdChannel(textChannel)
+                .createdChannel(messageChannel)
                 .targetMember(member)
                 .build();
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, feedBackChannel));
+    }
+
+    @Override
+    public CompletableFuture<Void> sendContactNotification(Member member, MessageChannel createdMessageChannel, InteractionHook interactionHook) {
+        ContactNotificationModel model = ContactNotificationModel
+                .builder()
+                .createdChannel(createdMessageChannel)
+                .targetMember(member)
+                .build();
+        return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, interactionHook));
     }
 
     /**
@@ -224,7 +241,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @return A {@link CompletableFuture future} which completes when the setup is done
      */
     @Transactional
-    public CompletableFuture<Void> performModMailThreadSetup(Member member, Message initialMessage, TextChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions, MessageChannel feedBackChannel) {
+    public CompletableFuture<Void> performModMailThreadSetup(Member member, Message initialMessage, TextChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions) {
         log.info("Performing modmail thread setup for channel {} for user {} in server {}. It was initiated by a user: {}.", channel.getIdLong(), member.getId(), channel.getGuild().getId(), userInitiated);
         CompletableFuture<Void> headerFuture = sendModMailHeader(channel, member);
         CompletableFuture<Message> userReplyMessage;
@@ -244,10 +261,6 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         return CompletableFuture.allOf(headerFuture, notificationFuture, userReplyMessage).thenAccept(aVoid -> {
             undoActions.clear();
             self.setupModMailThreadInDB(initialMessage, channel, member, userReplyMessage.join());
-        }).thenAccept(unused -> {
-            if(!userInitiated) {
-                self.sendContactNotification(member, channel, feedBackChannel);
-            }
         });
     }
 
@@ -368,7 +381,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 log.info("Only one server available to modmail. Directly opening modmail thread for user {} in server {}.", initialMessage.getAuthor().getId(), chosenServerId);
                 memberService.getMemberInServerAsync(chosenServerId, initialMessage.getAuthor().getIdLong()).thenCompose(member -> {
                             try {
-                                return self.createModMailThreadForUser(member, initialMessage, initialMessage.getChannel(), true, undoActions);
+                                return self.createModMailThreadForUser(member, initialMessage, true, undoActions).thenApply(messageChannel -> null);
                             } catch (Exception exception) {
                                 CompletableFuture<Void> future = new CompletableFuture<>();
                                 future.completeExceptionally(exception);

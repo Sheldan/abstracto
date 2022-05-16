@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
@@ -19,6 +20,7 @@ import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.utils.AttachmentOption;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -256,13 +258,28 @@ public class ChannelServiceBean implements ChannelService {
             }
         }
 
-        if(messageToSend.hasFileToSend()) {
+        if(messageToSend.hasFilesToSend()) {
             if(!allMessageActions.isEmpty()) {
                 // in case there has not been a message, we need to increment it
-                allMessageActions.set(0, allMessageActions.get(0).addFile(messageToSend.getFileToSend()));
+                messageToSend.getAttachedFiles().forEach(attachedFile -> {
+                    String fileNameToUse = attachedFile.getFileName() != null ? attachedFile.getFileName() : attachedFile.getFile().getName();
+                    allMessageActions.set(0, allMessageActions.get(0)
+                            .addFile(attachedFile.getFile(), fileNameToUse, attachedFile.getOptions().toArray(new AttachmentOption[0])));
+                });
             } else {
                 metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                allMessageActions.add(textChannel.sendFile(messageToSend.getFileToSend()));
+                messageToSend.getAttachedFiles().forEach(attachedFile -> allMessageActions.set(0, allMessageActions.get(0)
+                        .addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]))));
+
+                AttachedFile firstAttachment = messageToSend.getAttachedFiles().get(0);
+                String fileNameToUse = firstAttachment.getFileName() != null ? firstAttachment.getFileName() : firstAttachment.getFile().getName();
+                allMessageActions.add(textChannel.sendFile(firstAttachment.getFile(), fileNameToUse, firstAttachment.getOptions().toArray(new AttachmentOption[0])));
+                if(messageToSend.getAttachedFiles().size() > 1) {
+                    messageToSend.getAttachedFiles().stream().skip(1).forEach(attachedFile -> {
+                        String innerFileNameToUse = attachedFile.getFileName() != null ? attachedFile.getFileName() : attachedFile.getFile().getName();
+                        allMessageActions.set(0, allMessageActions.get(0).addFile(attachedFile.getFile(), innerFileNameToUse, attachedFile.getOptions().toArray(new AttachmentOption[0])));
+                    });
+                }
             }
         }
         Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(textChannel, messageToSend);
@@ -604,7 +621,12 @@ public class ChannelServiceBean implements ChannelService {
             } else {
                 messageToSend = templateService.renderEmbedTemplate(messageTemplate, model);
             }
-            messageToSend.setFileToSend(tempFile);
+            AttachedFile file = AttachedFile
+                    .builder()
+                    .file(tempFile)
+                    .fileName(fileName)
+                    .build();
+            messageToSend.setAttachedFiles(Arrays.asList(file));
             return sendMessageToSendToChannel(messageToSend, channel);
         } catch (IOException e) {
             log.error("Failed to write local temporary file for template download.", e);
@@ -630,9 +652,14 @@ public class ChannelServiceBean implements ChannelService {
                     throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
                 }
             }
+            AttachedFile attachedFile = AttachedFile
+                    .builder()
+                    .fileName(tempFile.getName())
+                    .file(tempFile)
+                    .build();
             MessageToSend messageToSend = MessageToSend
                     .builder()
-                    .fileToSend(tempFile)
+                    .attachedFiles(Arrays.asList(attachedFile))
                     .build();
             return sendMessageToSendToChannel(messageToSend, channel);
         } catch (IOException e) {

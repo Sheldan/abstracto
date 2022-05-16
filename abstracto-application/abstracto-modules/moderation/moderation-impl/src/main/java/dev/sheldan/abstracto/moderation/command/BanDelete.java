@@ -9,10 +9,15 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static dev.sheldan.abstracto.moderation.command.Ban.BAN_NOTIFICATION_NOT_POSSIBLE;
 import static dev.sheldan.abstracto.moderation.service.BanService.BAN_EFFECT_KEY;
 
 @Component
@@ -31,13 +37,28 @@ public class BanDelete extends AbstractConditionableCommand {
     @Autowired
     private BanService banService;
 
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         User user = (User) parameters.get(0);
         Integer delDays = (Integer) parameters.get(1);
         String reason = (String) parameters.get(2);
-        return banService.banUserWithNotification(user, reason, commandContext.getAuthor(), delDays, commandContext.getMessage())
+        Guild guild = commandContext.getGuild();
+        Message message = commandContext.getMessage();
+        Member banningMember = commandContext.getAuthor();
+        return banService.banUserWithNotification(user, reason, commandContext.getAuthor(), delDays)
+                .thenCompose(banResult -> {
+                    String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, guild.getIdLong());
+                    return channelService.sendTextToChannel(errorNotification, message.getChannel())
+                            .thenAccept(message1 -> log.info("Notified about not being able to send ban notification in server {} and channel {} from user {}."
+                                    , guild, message.getChannel().getIdLong(), banningMember.getIdLong()));
+                })
                 .thenApply(unused -> CommandResult.fromSuccess());
     }
 

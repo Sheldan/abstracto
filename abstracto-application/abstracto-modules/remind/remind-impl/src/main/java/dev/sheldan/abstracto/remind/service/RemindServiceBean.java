@@ -92,6 +92,11 @@ public class RemindServiceBean implements ReminderService {
         return reminder;
     }
 
+    @Override
+    public Reminder createReminderInForUser(AUserInAServer user, String remindText, Duration remindIn, Long channelId) {
+        return createReminderInForUser(user, remindText, remindIn, channelId, null);
+    }
+
     private void scheduleReminder(Duration remindIn, Reminder reminder) {
         if(remindIn.getSeconds() < 60) {
             reminder.setJobTriggerKey(null);

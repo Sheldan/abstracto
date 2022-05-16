@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.models.AServerChannelUserId;
 import dev.sheldan.abstracto.core.models.ServerIdChannelId;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.time.Duration;
 
@@ -21,6 +22,7 @@ public interface CommandCoolDownService {
      */
     void releaseLock();
     CoolDownCheckResult allowedToExecuteCommand(Command command, CommandContext context);
+    CoolDownCheckResult allowedToExecuteCommand(Command command, SlashCommandInteractionEvent slashCommandInteractionEvent);
     Duration getServerCoolDownForCommand(Command command, Long serverId);
     Duration getServerCoolDownForCommand(ACommand aCommand, Command command, Long serverId);
     Duration getChannelGroupCoolDownForCommand(Command command, ServerIdChannelId serverIdChannelId);
@@ -34,6 +36,7 @@ public interface CommandCoolDownService {
     void addMemberCoolDown(Command command, AServerChannelUserId context);
     void addMemberCoolDown(Command command, AServerChannelUserId context, boolean takeLock);
     void updateCoolDowns(Command command, CommandContext context);
+    void updateCoolDowns(Command command, SlashCommandInteractionEvent event);
     void setCoolDownConfigForChannelGroup(AChannelGroup aChannelGroup, Duration groupCoolDown, Duration memberCoolDown);
     void clearCoolDownsForServer(Long serverId);
 }

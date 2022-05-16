@@ -34,6 +34,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -169,6 +170,16 @@ public class CommandServiceBean implements CommandService {
     }
 
     @Override
+    public CompletableFuture<ConditionResult> isCommandExecutable(Command command, SlashCommandInteractionEvent slashCommandInteractionEvent) {
+        if(command instanceof ConditionalCommand) {
+            ConditionalCommand castedCommand = (ConditionalCommand) command;
+            return checkConditions(slashCommandInteractionEvent, command, castedCommand.getConditions());
+        } else {
+            return ConditionResult.fromAsyncSuccess();
+        }
+    }
+
+    @Override
     public UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message) {
         return new UnParsedCommandParameter(messageContent, message);
     }
@@ -194,6 +205,41 @@ public class CommandServiceBean implements CommandService {
                 .validators(parameter.getValidators())
                 .isListParam(parameter.isListParam())
                 .build();
+    }
+
+    private CompletableFuture<ConditionResult> checkConditions(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command, List<CommandCondition> conditions) {
+        if(conditions != null && !conditions.isEmpty()) {
+            List<CompletableFuture<ConditionResult>> futures = new ArrayList<>();
+            for (CommandCondition condition : conditions) {
+                if(condition.isAsync()) {
+                    futures.add(condition.shouldExecuteAsync(slashCommandInteractionEvent, command));
+                } else {
+                    futures.add(CompletableFuture.completedFuture(condition.shouldExecute(slashCommandInteractionEvent, command)));
+                }
+            }
+            CompletableFuture<ConditionResult> resultFuture = new CompletableFuture<>();
+            CompletableFutureList<ConditionResult> futureList = new CompletableFutureList<>(futures);
+            futureList.getMainFuture().whenComplete((unused, throwable) -> {
+                List<ConditionResult> results = futureList.getObjects();
+                boolean foundResult = false;
+                for (ConditionResult conditionResult : results) {
+                    if (!conditionResult.isResult()) {
+                        foundResult = true;
+                        resultFuture.complete(conditionResult);
+                        break;
+                    }
+                }
+                if(!foundResult) {
+                    resultFuture.complete(ConditionResult.fromSuccess());
+                }
+            }).exceptionally(throwable -> {
+                resultFuture.completeExceptionally(throwable);
+                return null;
+            });
+            return resultFuture;
+        } else {
+            return ConditionResult.fromAsyncSuccess();
+        }
     }
 
     private CompletableFuture<ConditionResult> checkConditions(CommandContext commandContext, Command command, List<CommandCondition> conditions) {

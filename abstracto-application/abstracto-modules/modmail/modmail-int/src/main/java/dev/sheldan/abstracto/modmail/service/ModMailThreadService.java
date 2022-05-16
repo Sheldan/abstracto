@@ -7,10 +7,8 @@ import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,12 +23,14 @@ public interface ModMailThreadService {
      * the necessary data in the database, notifying the users and sending messages  related to the creation of the {@link ModMailThread}
      * @param member The {@link AUserInAServer} to create the mod mail thread for
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
-     * @param feedBackChannel The {@link MessageChannel} in which feedback about exceptions should be posted to
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
      * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @return A {@link CompletableFuture future} which completes when the modmail thread is set up
      */
-    CompletableFuture<Void> createModMailThreadForUser(Member member, Message initialMessage, MessageChannel feedBackChannel, boolean userInitiated, List<UndoActionInstance> undoActions);
+    CompletableFuture<MessageChannel> createModMailThreadForUser(Member member, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions);
+
+    CompletableFuture<Void> sendContactNotification(Member member, MessageChannel createdMessageChannel, MessageChannel feedBackChannel);
+    CompletableFuture<Void> sendContactNotification(Member member, MessageChannel createdMessageChannel, InteractionHook interactionHook);
 
     /**
      * Changes the configuration value of the category used to create mod mail threads to the given ID.

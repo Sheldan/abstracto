@@ -7,7 +7,6 @@ import lombok.Setter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ public class MessageToSend {
     /**
      * The file handle to send attached to the message.
      */
-    private File fileToSend;
+    private List<AttachedFile> attachedFiles;
     private MessageConfig messageConfig;
     private Long referencedMessageId;
     @Builder.Default
@@ -44,8 +43,8 @@ public class MessageToSend {
     @Builder.Default
     private Boolean ephemeral = false;
 
-    public boolean hasFileToSend() {
-        return fileToSend != null;
+    public boolean hasFilesToSend() {
+        return attachedFiles != null && !attachedFiles.isEmpty();
     }
 
     @Getter

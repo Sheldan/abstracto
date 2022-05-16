@@ -4,16 +4,19 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
+import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.config.ModMailSlashCommandNames;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.model.template.ModMailThreadExistsModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
@@ -21,9 +24,13 @@ import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementS
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -35,6 +42,11 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @Slf4j
 public class Contact extends AbstractConditionableCommand {
+
+    private static final String CONTACT_PARAMETER = "contact";
+    private static final String USER_PARMETER = "user";
+    private static final String MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE = "modmail_thread_already_exists";
+    private static final String CONTACT_RESPONSE = "contact_response";
 
     @Autowired
     private ModMailThreadService modMailThreadService;
@@ -48,6 +60,12 @@ public class Contact extends AbstractConditionableCommand {
     @Autowired
     private ChannelService channelService;
 
+    @Autowired
+    private InteractionService interactionService;
+
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Member targetUser = (Member) commandContext.getParameters().getParameters().get(0);
@@ -59,26 +77,73 @@ public class Contact extends AbstractConditionableCommand {
         // containing a link to the channel, instead of opening a new one
         if(modMailThreadManagementService.hasOpenModMailThreadForUser(user)) {
             log.info("Modmail thread for user {} in server {} already exists. Notifying user {}.", commandContext.getAuthor().getId(), commandContext.getGuild().getId(), user.getUserReference().getId());
-            ModMailThreadExistsModel model = (ModMailThreadExistsModel) ContextConverter.fromCommandContext(commandContext, ModMailThreadExistsModel.class);
             ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
-            model.setExistingModMailThread(existingThread);
-            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList("modmail_thread_already_exists", model, commandContext.getChannel());
+            ModMailThreadExistsModel model = ModMailThreadExistsModel
+                    .builder()
+                    .existingModMailThread(existingThread)
+                    .build();
+            List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
         } else {
-            return modMailThreadService.createModMailThreadForUser(targetUser, null, commandContext.getChannel(), false, commandContext.getUndoActions())
+            return modMailThreadService.createModMailThreadForUser(targetUser, null,  false, commandContext.getUndoActions())
+                    .thenCompose(unused -> modMailThreadService.sendContactNotification(targetUser, unused, commandContext.getChannel()))
                     .thenApply(aVoid -> CommandResult.fromSuccess());
         }
     }
 
     @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        Member member = slashCommandParameterService.getCommandOption(USER_PARMETER, event, Member.class);
+        if(!member.getGuild().equals(event.getGuild())) {
+            throw new EntityGuildMismatchException();
+        }
+        AUserInAServer user = userManagementService.loadOrCreateUser(member);
+        // if this AUserInAServer already has an open thread, we should instead post a message
+        // containing a link to the channel, instead of opening a new one
+        if(modMailThreadManagementService.hasOpenModMailThreadForUser(user)) {
+            log.info("Modmail thread for user {} in server {} already exists. Notifying user {}.", event.getMember().getId(), event.getGuild().getId(), user.getUserReference().getId());
+            ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
+            ModMailThreadExistsModel model = ModMailThreadExistsModel
+                    .builder()
+                    .existingModMailThread(existingThread)
+                    .build();
+            return interactionService.replyEmbed(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, event)
+                    .thenApply(interactionHook -> CommandResult.fromSuccess());
+        } else {
+            CompletableFuture<InteractionHook> response = interactionService.replyEmbed(CONTACT_RESPONSE, event);
+            CompletableFuture<MessageChannel> threadFuture = modMailThreadService.createModMailThreadForUser(member, null, false, new ArrayList<>());
+            return CompletableFuture.allOf(response, threadFuture)
+                    .thenCompose(unused -> modMailThreadService.sendContactNotification(member, threadFuture.join(), response.join()))
+                    .thenApply(o -> CommandResult.fromSuccess());
+        }
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
-        Parameter responseText = Parameter.builder().name("user").type(Member.class).templated(true).build();
+        Parameter responseText = Parameter
+                .builder()
+                .name(USER_PARMETER)
+                .type(Member.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(responseText);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(ModMailSlashCommandNames.MODMAIL)
+                .commandName(CONTACT_PARAMETER)
+                .build();
+
         return CommandConfiguration.builder()
-                .name("contact")
+                .name(CONTACT_PARAMETER)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .parameters(parameters)
+                .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .help(helpInfo)
                 .supportsEmbedException(true)

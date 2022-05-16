@@ -8,6 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserNoteRepository extends JpaRepository<UserNote, Long> {
@@ -19,6 +20,6 @@ public interface UserNoteRepository extends JpaRepository<UserNote, Long> {
 
     void deleteByUserNoteId_IdAndUserNoteId_ServerId(@NonNull Long aLong, Long serverId);
 
-    UserNote findByUserNoteId_IdAndUserNoteId_ServerId(Long userNoteId, Long serverId);
+    Optional<UserNote> findByUserNoteId_IdAndUserNoteId_ServerId(Long userNoteId, Long serverId);
 
 }

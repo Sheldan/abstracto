@@ -9,6 +9,7 @@ import java.util.List;
 public interface UserNoteManagementService {
     UserNote createUserNote(AUserInAServer aUserInAServer, String note);
     void deleteNote(Long id, AServer server);
+    void deleteNote(UserNote userNote);
     UserNote loadNote(Long serverId, Long userNoteId);
     boolean noteExists(Long id, AServer server);
     List<UserNote> loadNotesForUser(AUserInAServer aUserInAServer);
