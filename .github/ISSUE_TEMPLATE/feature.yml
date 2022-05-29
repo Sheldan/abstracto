@@ -1,0 +1,36 @@
+name: Feature request
+description: Want some functionality added?
+body:
+  - type: checkboxes
+    attributes:
+      label: General Information
+      description: You confirm to have made the following checks first.
+      options:
+        - label: I have checked for similar issues on the Issue-tracker.
+          required: true
+        - label: I have updated to the latest version
+          required: true
+        - label: I have checked the branches or the maintainers' PRs for upcoming features fixes.
+          required: true
+  - type: textarea
+    attributes:
+      label: "Description"
+      description: "General description of the feature"
+      placeholder: "..."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Feature worth and general use"
+      description: "Why should this be in abstracto?"
+      placeholder: "..."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Suggestions for implementation"
+      description: "Any ideas about what the feature should behave/look like? Commands?"
+      placeholder: "It should..."
+    validations:
+      required: false
+

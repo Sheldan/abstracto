@@ -1,0 +1,42 @@
+name: Bug Report
+description: Found a bug that needs fixing?
+body:
+  - type: checkboxes
+    attributes:
+      label: General Troubleshooting
+      description: You confirm to have made the following checks first.
+      options:
+        - label: I have checked for similar issues on the Issue-tracker.
+          required: true
+        - label: I have updated to the latest version
+          required: true
+        - label: I have checked the branches or the maintainers' PRs for upcoming bug fixes.
+          required: true
+  - type: textarea
+    attributes:
+      label: "Description"
+      description: "General information about the bug"
+      placeholder: "..."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Steps to reproduce"
+      description: "What happened when the bug occurred?"
+      placeholder: "1. ..."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Expected behaviour"
+      description: "What should happen?"
+      placeholder: "It should..."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Actual behaviour"
+      description: "What did happen instead?"
+      placeholder: "It actually ..."
+    validations:
+      required: true
