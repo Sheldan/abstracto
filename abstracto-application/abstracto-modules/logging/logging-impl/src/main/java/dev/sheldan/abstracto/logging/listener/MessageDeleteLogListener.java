@@ -8,10 +8,6 @@ import dev.sheldan.abstracto.core.models.listener.MessageDeletedModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
-import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -22,7 +18,6 @@ import dev.sheldan.abstracto.logging.model.template.MessageDeletedLog;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +30,6 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
     public static final String MESSAGE_DELETED_ATTACHMENT_TEMPLATE = "message_deleted_attachment";
 
     @Autowired
-    private ContextUtils contextUtils;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
@@ -48,15 +40,6 @@ public class MessageDeleteLogListener implements AsyncMessageDeletedListener {
 
     @Autowired
     private ChannelService channelService;
-
-    @Autowired
-    private ChannelManagementService channelManagementService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
-
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private MessageDeleteLogListener self;

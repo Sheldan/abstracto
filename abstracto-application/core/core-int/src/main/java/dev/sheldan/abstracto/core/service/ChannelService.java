@@ -26,13 +26,6 @@ public interface ChannelService {
     CompletableFuture<Message> retrieveMessageInChannel(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Message> retrieveMessageInChannel(MessageChannel channel, Long messageId);
 
-    /**
-     * Sends a {@link MessageToSend} to Discord. This can result in multiple messages, because we do support multiple embeds.
-     * @param messageToSend The {@link MessageToSend} to send, this can contain multiple embeds and normal text. The text will be sent
-     *                      in the first message. One optional file can be used as an attachment. This will also be present in the first message.
-     * @param textChannel The {@link MessageChannel} to send the messages to
-     * @return A list of {@link CompletableFuture} representing each potential message sent
-     */
     List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel messageChannel);
     void editMessageInAChannel(MessageToSend messageToSend, AChannel channel, Long messageId);
     void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId);
