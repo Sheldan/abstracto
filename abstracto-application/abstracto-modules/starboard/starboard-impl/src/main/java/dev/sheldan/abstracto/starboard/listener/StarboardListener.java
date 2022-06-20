@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.models.cache.CachedReactions;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.EmoteService;
+import dev.sheldan.abstracto.core.service.LockService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.starboard.config.StarboardFeatureConfig;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 @Component
@@ -63,6 +65,8 @@ public abstract class StarboardListener {
     public static final String STARBOARD_POSTS = "starboard.posts";
     public static final String STAR_ACTION = "action";
 
+    public static final Semaphore STARBOARD_SEMAPHORE = new Semaphore(1, true);
+
     protected static final CounterMetric STARBOARD_STARS_THRESHOLD_REACHED = CounterMetric
             .builder()
             .name(STARBOARD_POSTS)
@@ -75,16 +79,16 @@ public abstract class StarboardListener {
             .tagList(Arrays.asList(MetricTag.getTag(STAR_ACTION, "threshold.below")))
             .build();
 
-    protected void handleStarboardPostChange(CachedMessage message, CachedReactions reaction, ServerUser userReacting, boolean adding)  {
+    protected void handleStarboardPostChange(CachedMessage message, CachedReactions reaction, ServerUser userReacting, boolean adding) throws InterruptedException {
         Long starMaxDays = configService.getLongValueOrConfigDefault(StarboardFeatureConfig.STAR_MAX_DAYS_CONFIG_KEY, message.getServerId());
         if(message.getTimeCreated().isBefore(Instant.now().minus(starMaxDays, ChronoUnit.DAYS))) {
             log.info("Post {} in channel {} in guild {} is beyond the configured max day amount of {} - ignoring.", message.getMessageId(), message.getChannelId(), message.getServerId(), starMaxDays);
             return;
         }
-        Optional<StarboardPost> starboardPostOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
-        boolean starboardPostExists = starboardPostOptional.isPresent();
-        if(starboardPostExists && starboardPostOptional.get().isIgnored()) {
-            log.info("Starboard post {} for message {} in server {} is ignored. Doing nothing.", starboardPostOptional.get().getId(), message.getMessageId(), message.getServerId());
+        Optional<StarboardPost> firstOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
+        boolean starboardPostExists = firstOptional.isPresent();
+        if(starboardPostExists && firstOptional.get().isIgnored()) {
+            log.info("Starboard post {} for message {} in server {} is ignored. Doing nothing.", firstOptional.get().getId(), message.getMessageId(), message.getServerId());
             return;
         }
         if(reaction != null) {
@@ -93,29 +97,42 @@ public abstract class StarboardListener {
             Long starMinimum = getFromConfig(FIRST_LEVEL_THRESHOLD_KEY, message.getServerId());
             AUserInAServer userAddingReaction = userInServerManagementService.loadOrCreateUser(userReacting);
             if (userExceptAuthor.size() >= starMinimum) {
-                log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
-                        message.getMessageId(), message.getChannelId(), message.getServerId());
-                if(starboardPostExists) {
-                    updateStarboardPost(message, userAddingReaction, adding, starboardPostOptional.get(), userExceptAuthor);
-                } else {
-                    metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_REACHED);
-                    log.info("Creating starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
-                    starboardService.createStarboardPost(message, userExceptAuthor, userAddingReaction, author).exceptionally(throwable -> {
-                        log.error("Failed to persist starboard post for message {}.", message.getMessageId(), throwable);
-                        return null;
-                    });
+                try {
+                    STARBOARD_SEMAPHORE.acquire();
+                    Optional<StarboardPost> secondOptional = starboardPostManagementService.findByMessageId(message.getMessageId());
+                    log.info("Post reached starboard minimum. Message {} in channel {} in server {} will be starred/updated.",
+                            message.getMessageId(), message.getChannelId(), message.getServerId());
+                    if(secondOptional.isPresent()) {
+                        updateStarboardPost(message, userAddingReaction, adding, secondOptional.get(), userExceptAuthor);
+                        STARBOARD_SEMAPHORE.release();
+                    } else {
+                        metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_REACHED);
+                        log.info("Creating starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
+                        starboardService.createStarboardPost(message, userExceptAuthor, userAddingReaction, author).exceptionally(throwable -> {
+                            log.error("Failed to persist starboard post for message {}.", message.getMessageId(), throwable);
+                            STARBOARD_SEMAPHORE.release();
+                            return null;
+                        }).thenAccept(unused -> {
+                            log.info("Releasing starboard post lock for message {}.", message.getMessageId());
+                            STARBOARD_SEMAPHORE.release();
+                        });
+                    }
+                } catch (Throwable throwable) {
+                    log.error("Failed to create starboard post for message {}.", message.getMessageId(), throwable);
+                    STARBOARD_SEMAPHORE.release();
+                    throw throwable;
                 }
             } else {
                 if(starboardPostExists) {
                     metricService.incrementCounter(STARBOARD_STARS_THRESHOLD_FELL);
                     log.info("Removing starboard post for message {} in channel {} in server {}. It fell under the threshold {}", message.getMessageId(), message.getChannelId(), message.getServerId(), starMinimum);
-                    starboardPostOptional.ifPresent(starboardPost -> completelyRemoveStarboardPost(starboardPost, userReacting));
+                    firstOptional.ifPresent(starboardPost -> completelyRemoveStarboardPost(starboardPost, userReacting));
                 }
             }
         } else {
             if(starboardPostExists) {
                 log.info("Removing starboard post for message {} in channel {} in server {}", message.getMessageId(), message.getChannelId(), message.getServerId());
-                starboardPostOptional.ifPresent(starboardPost -> completelyRemoveStarboardPost(starboardPost, userReacting));
+                firstOptional.ifPresent(starboardPost -> completelyRemoveStarboardPost(starboardPost, userReacting));
             }
         }
     }

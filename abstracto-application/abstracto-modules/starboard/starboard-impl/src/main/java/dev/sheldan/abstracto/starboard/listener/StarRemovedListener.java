@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.starboard.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionRemovedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
@@ -43,7 +44,12 @@ public class StarRemovedListener extends StarboardListener implements AsyncReact
             log.info("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserId(), model.getServerId(), model.getMessage().getMessageId());
             Optional<CachedReactions> reactionOptional = emoteService.getReactionFromMessageByEmote(model.getMessage(), aEmote);
-            handleStarboardPostChange(model.getMessage(), reactionOptional.orElse(null), userRemoving, false);
+            try {
+                handleStarboardPostChange(model.getMessage(), reactionOptional.orElse(null), userRemoving, false);
+            } catch (InterruptedException e) {
+                log.error("Starboard post change failed in guild {} for message {} in channel {}", guildId, model.getMessage().getChannelId(), model.getMessage().getMessageId(), e);
+                throw new AbstractoRunTimeException(e);
+            }
             return DefaultListenerResult.PROCESSED;
         } else {
             return DefaultListenerResult.IGNORED;

@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.starboard.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncReactionAddedListener;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
@@ -42,7 +43,12 @@ public class StarAddedListener extends StarboardListener implements AsyncReactio
             log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.",
                     model.getUserReacting().getUserId(), model.getServerId(), model.getMessage().getMessageId(), model.getMessage().getChannelId());
             Optional<CachedReactions> reactionOptional = emoteService.getReactionFromMessageByEmote(model.getMessage(), aEmote);
-            handleStarboardPostChange(model.getMessage(), reactionOptional.orElse(null), model.getUserReacting(), true);
+            try {
+                handleStarboardPostChange(model.getMessage(), reactionOptional.orElse(null), model.getUserReacting(), true);
+            } catch (InterruptedException e) {
+                log.error("Starboard post change failed in guild {} for message {} in channel {}", serverId, model.getMessage().getChannelId(), model.getMessage().getMessageId(), e);
+                throw new AbstractoRunTimeException(e);
+            }
             return DefaultListenerResult.PROCESSED;
         } else {
             return DefaultListenerResult.IGNORED;
