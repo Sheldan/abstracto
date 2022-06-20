@@ -94,7 +94,12 @@ public class ReactionAddedListenerBean extends ListenerAdapter {
 
     @Transactional
     public void callAddedListeners(@Nonnull MessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction, Member member) {
-        ServerUser serverUser = ServerUser.builder().serverId(cachedMessage.getServerId()).userId(event.getUserIdLong()).build();
+        ServerUser serverUser = ServerUser
+                .builder()
+                .serverId(cachedMessage.getServerId())
+                .userId(event.getUserIdLong())
+                .isBot(event.getUser() != null ? event.getUser().isBot() : null)
+                .build();
         addReactionIfNotThere(cachedMessage, reaction, serverUser);
         ReactionAddedModel model = getModel(event, cachedMessage, serverUser, member);
         addedListenerList.forEach(reactedAddedListener -> listenerService.executeFeatureAwareListener(reactedAddedListener, model));

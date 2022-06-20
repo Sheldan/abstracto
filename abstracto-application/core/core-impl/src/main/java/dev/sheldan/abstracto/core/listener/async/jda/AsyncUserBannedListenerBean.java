@@ -39,6 +39,7 @@ public class AsyncUserBannedListenerBean extends ListenerAdapter {
                 .builder()
                 .serverId(event.getGuild().getIdLong())
                 .userId(event.getUser().getIdLong())
+                .isBot(event.getUser().isBot())
                 .build();
         return UserBannedModel
                 .builder()

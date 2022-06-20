@@ -299,7 +299,12 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
         list.getMainFuture().whenComplete((unused, throwable) -> {
             List<Invite> invites = list.getObjects();
             Long serverId = message.getGuild().getIdLong();
-            ServerUser author = ServerUser.builder().userId(message.getAuthor().getIdLong()).serverId(message.getGuild().getIdLong()).build();
+            ServerUser author = ServerUser
+                    .builder()
+                    .userId(message.getAuthor().getIdLong())
+                    .serverId(message.getGuild().getIdLong())
+                    .isBot(message.getAuthor().isBot())
+                    .build();
             boolean toDelete = false;
             Map<Long, String> targetServers = new HashMap<>();
             List<InviteToDelete> deletedInvites = new ArrayList<>();

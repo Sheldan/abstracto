@@ -120,7 +120,11 @@ public class EmoteServiceBean implements EmoteService {
 
     @Override
     public Optional<CachedReactions> getReactionFromMessageByEmote(CachedMessage message, AEmote emote) {
-        return message.getReactions().stream().filter(reaction -> compareCachedEmoteWithAEmote(reaction.getEmote(), emote)).findFirst();
+        return message
+                .getReactions()
+                .stream()
+                .filter(reaction -> compareCachedEmoteWithAEmote(reaction.getEmote(), emote))
+                .findFirst();
     }
 
     @Override

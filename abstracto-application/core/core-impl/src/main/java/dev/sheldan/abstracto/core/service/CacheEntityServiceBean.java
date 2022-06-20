@@ -172,7 +172,12 @@ public class CacheEntityServiceBean implements CacheEntityService {
         users.forEachAsync(user -> {
             log.debug("Loading user {} for reaction.", user.getIdLong());
             if(reaction.getGuild() != null) {
-                aUsers.add(ServerUser.builder().userId(user.getIdLong()).serverId(reaction.getGuild().getIdLong()).build());
+                aUsers.add(ServerUser
+                        .builder()
+                        .userId(user.getIdLong())
+                        .isBot(user.isBot())
+                        .serverId(reaction.getGuild().getIdLong())
+                        .build());
             }
             return true;
         }).whenComplete((o, throwable) -> {
@@ -223,7 +228,11 @@ public class CacheEntityServiceBean implements CacheEntityService {
         allFutures.add(referencedMessageFuture);
         FutureUtils.toSingleFuture(allFutures).thenAccept(aVoid ->
                 {
-                    CachedAuthor cachedAuthor = CachedAuthor.builder().authorId(message.getAuthor().getIdLong()).isBot(message.getAuthor().isBot()).build();
+                    CachedAuthor cachedAuthor = CachedAuthor
+                            .builder()
+                            .authorId(message.getAuthor().getIdLong())
+                            .isBot(message.getAuthor().isBot())
+                            .build();
                     CachedMessage.CachedMessageBuilder builder = CachedMessage.builder()
                             .author(cachedAuthor)
                             .messageId(message.getIdLong())
@@ -271,7 +280,10 @@ public class CacheEntityServiceBean implements CacheEntityService {
     }
 
     private List<CachedReactions> convertReactionFuturesToCachedReactions(List<CompletableFuture<CachedReactions>> futures) {
-        return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+        return futures
+                .stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
     }
 
 }

@@ -16,6 +16,7 @@ import java.io.Serializable;
 public class ServerUser implements Serializable {
     private Long serverId;
     private Long userId;
+    private Boolean isBot;
 
     public static ServerUser fromAUserInAServer(AUserInAServer aUserInAServer) {
         return ServerUser
@@ -29,6 +30,7 @@ public class ServerUser implements Serializable {
                 .builder()
                 .serverId(member.getGuild().getIdLong())
                 .userId(member.getIdLong())
+                .isBot(member.getUser().isBot())
                 .build();
     }
 }

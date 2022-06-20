@@ -87,7 +87,12 @@ public class AsyncReactionAddedListenerBean extends ListenerAdapter {
 
     @Transactional
     public void callAddedListeners(MessageReactionAddEvent event, CachedMessage cachedMessage, CachedReactions reaction, Member member) {
-        ServerUser serverUser = ServerUser.builder().serverId(event.getGuild().getIdLong()).userId(event.getUserIdLong()).build();
+        ServerUser serverUser = ServerUser
+                .builder()
+                .serverId(event.getGuild().getIdLong())
+                .userId(event.getUserIdLong())
+                .isBot(event.getUser() != null ? event.getUser().isBot() : null)
+                .build();
         addReactionIfNotThere(cachedMessage, reaction, serverUser);
         ReactionAddedModel model = getModel(event, cachedMessage, serverUser, member);
         messageCache.putMessageInCache(cachedMessage);

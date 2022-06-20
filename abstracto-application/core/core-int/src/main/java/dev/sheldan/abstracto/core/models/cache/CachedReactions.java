@@ -18,7 +18,16 @@ public class CachedReactions implements Serializable {
     private List<ServerUser> users;
 
     public CachedReaction getReactionForSpecificUser(ServerUser serverUser) {
-        ServerUser matchingUser = users.stream().filter(serverUser1 -> serverUser1.equals(serverUser)).findAny().orElseThrow(() -> new AbstractoRunTimeException("Server user not found."));
-        return CachedReaction.builder().self(self).emote(emote).user(matchingUser).build();
+        ServerUser matchingUser = users
+                .stream()
+                .filter(serverUser1 -> serverUser1.equals(serverUser))
+                .findAny()
+                .orElseThrow(() -> new AbstractoRunTimeException("Server user not found."));
+        return CachedReaction
+                .builder()
+                .self(self)
+                .emote(emote)
+                .user(matchingUser)
+                .build();
     }
 }

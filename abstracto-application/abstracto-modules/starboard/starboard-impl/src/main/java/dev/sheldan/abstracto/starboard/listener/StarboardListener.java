@@ -159,10 +159,15 @@ public abstract class StarboardListener {
     }
 
     protected List<AUserInAServer> getUsersExcept(List<ServerUser> users, AUserInAServer author) {
-        return users.stream().filter(user -> !(user.getServerId().equals(author.getServerReference().getId()) && user.getUserId().equals(author.getUserReference().getId()))).map(serverUser -> {
-            Optional<AUserInAServer> aUserInAServer = userInServerManagementService.loadUserOptional(serverUser.getServerId(), serverUser.getUserId());
-            return aUserInAServer.orElse(null);
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+        return users
+                .stream()
+                .filter(serverUser -> !serverUser.getIsBot())
+                .filter(user -> !(user.getServerId().equals(author.getServerReference().getId()) && user.getUserId().equals(author.getUserReference().getId())))
+                .map(serverUser -> {
+                    Optional<AUserInAServer> aUserInAServer = userInServerManagementService.loadUserOptional(serverUser.getServerId(), serverUser.getUserId());
+                    return aUserInAServer.orElse(null);
+                }).filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @PostConstruct

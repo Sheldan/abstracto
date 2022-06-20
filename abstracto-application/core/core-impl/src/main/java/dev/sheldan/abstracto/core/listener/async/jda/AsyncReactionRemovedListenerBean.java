@@ -83,7 +83,12 @@ public class AsyncReactionRemovedListenerBean extends ListenerAdapter {
 
     @Transactional
     public void callRemoveListeners(MessageReactionRemoveEvent event, CachedMessage cachedMessage, CachedReactions reaction) {
-        ServerUser serverUser = ServerUser.builder().serverId(cachedMessage.getServerId()).userId(event.getUserIdLong()).build();
+        ServerUser serverUser = ServerUser
+                .builder()
+                .serverId(cachedMessage.getServerId())
+                .userId(event.getUserIdLong())
+                .isBot(event.getUser() != null ? event.getUser().isBot() : null)
+                .build();
         removeReactionIfThere(cachedMessage, reaction, serverUser);
         ReactionRemovedModel model = getModel(event, cachedMessage, serverUser);
         reactionRemovedListeners.forEach(asyncReactionRemovedListener -> listenerServiceBean.executeFeatureAwareListener(asyncReactionRemovedListener, model, reactionRemovedExecutor));

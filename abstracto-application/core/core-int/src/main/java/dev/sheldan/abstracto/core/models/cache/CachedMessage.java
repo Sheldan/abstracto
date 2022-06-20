@@ -31,6 +31,10 @@ public class CachedMessage implements Serializable {
     }
 
     public ServerUser getAuthorAsServerUser() {
-        return ServerUser.builder().serverId(serverId).userId(author.getAuthorId()).build();
+        return ServerUser
+                .builder()
+                .serverId(serverId)
+                .userId(author.getAuthorId())
+                .build();
     }
 }

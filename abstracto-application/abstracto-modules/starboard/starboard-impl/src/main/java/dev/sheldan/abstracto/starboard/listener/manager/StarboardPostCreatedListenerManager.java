@@ -33,7 +33,11 @@ public class StarboardPostCreatedListenerManager {
         if(listeners == null || listeners.isEmpty()) {
             return;
         }
-        ServerUser userReactingServerUser = ServerUser.builder().serverId(post.getServer().getId()).userId(userReactingId).build();
+        ServerUser userReactingServerUser = ServerUser
+                .builder()
+                .serverId(post.getServer().getId())
+                .userId(userReactingId)
+                .build();
         StarboardPostCreatedModel model = createStarboardStatusModel(post, userReactingServerUser);
         listeners.forEach(listener -> listenerService.executeFeatureAwareListener(listener, model, starboardCreatedExecutor));
     }
