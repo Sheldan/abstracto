@@ -206,7 +206,7 @@ public class StarboardPostManagementServiceBeanTest {
     @Test
     public void testRetrievePostCount() {
         Long expectedCount = 2L;
-        when(repository.countByServer_Id(SERVER_ID)).thenReturn(expectedCount);
+        when(repository.countByServer_IdAndIgnoredIsFalse(SERVER_ID)).thenReturn(expectedCount);
         Long retrievedPostCount = testUnit.getPostCount(SERVER_ID);
         Assert.assertEquals(expectedCount, retrievedPostCount);
     }

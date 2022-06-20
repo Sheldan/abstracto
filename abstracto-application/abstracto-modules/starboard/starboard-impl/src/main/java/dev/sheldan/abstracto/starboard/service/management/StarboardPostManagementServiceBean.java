@@ -85,7 +85,7 @@ public class StarboardPostManagementServiceBean implements StarboardPostManageme
 
     @Override
     public Long getPostCount(Long serverId) {
-        return repository.countByServer_Id(serverId);
+        return repository.countByServer_IdAndIgnoredIsFalse(serverId);
     }
 
     @Override

@@ -30,7 +30,8 @@ public interface StarboardPostReactionRepository extends JpaRepository<Starboard
     @Query(value = "SELECT COUNT(*) \n" +
             "FROM starboard_post_reaction r \n" +
             "INNER JOIN starboard_post p ON p.id = r.post_id\n" +
-            "WHERE p.server_id = :serverId\n"
+            "WHERE p.server_id = :serverId\n" +
+            "AND p.ignored = false"
             , nativeQuery = true)
     Integer getReactionCountByServer(Long serverId);
 

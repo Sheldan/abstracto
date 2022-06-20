@@ -18,7 +18,7 @@ public interface StarboardPostRepository extends JpaRepository<StarboardPost, Lo
 
     List<StarboardPost> findByServer_Id(Long serverId);
 
-    Long countByServer_Id(Long serverId);
+    Long countByServer_IdAndIgnoredIsFalse(Long serverId);
 
     @Query(value = "SELECT p.id, COUNT(*) AS starCount \n" +
             " FROM starboard_post p \n" +

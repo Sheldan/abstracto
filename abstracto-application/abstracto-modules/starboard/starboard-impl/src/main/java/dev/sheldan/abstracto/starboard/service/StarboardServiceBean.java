@@ -218,7 +218,11 @@ public class StarboardServiceBean implements StarboardService {
         allFutures.addAll(topStarReceiverFutures);
         return FutureUtils.toSingleFuture(allFutures).thenApply(aVoid -> {
             List<StarboardPost> starboardPosts = starboardPostManagementService.retrieveTopPosts(serverId, count);
-            List<StarStatsPost> starStatsPosts = starboardPosts.stream().map(this::fromStarboardPost).sorted(Comparator.comparingLong(StarStatsPost::getStarCount).reversed()).collect(Collectors.toList());
+            List<StarStatsPost> starStatsPosts = starboardPosts
+                    .stream()
+                    .map(this::fromStarboardPost)
+                    .sorted(Comparator.comparingLong(StarStatsPost::getStarCount).reversed())
+                    .collect(Collectors.toList());
             Long postCount = starboardPostManagementService.getPostCount(serverId);
             Integer reactionCount = starboardPostReactorManagementService.getStarCount(serverId);
             List<String> emotes = new ArrayList<>();
