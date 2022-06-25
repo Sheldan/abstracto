@@ -106,17 +106,16 @@ public class FeatureFlagServiceBean implements FeatureFlagService {
 
     @Override
     public boolean getFeatureFlagValue(FeatureDefinition key, Long serverId) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        return getFeatureFlagValue(key, server);
+        AFeature feature = featureManagementService.getFeature(key.getKey());
+        Optional<AFeatureFlag> featureFlagOptional = managementService.getFeatureFlag(feature, serverId);
+        return featureFlagOptional
+                .map(AFeatureFlag::isEnabled)
+                .orElseGet(() -> defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(feature).getEnabled());
     }
 
     @Override
     public boolean getFeatureFlagValue(FeatureDefinition key, AServer server) {
-        AFeature feature = featureManagementService.getFeature(key.getKey());
-        Optional<AFeatureFlag> featureFlagOptional = managementService.getFeatureFlag(feature, server);
-        return featureFlagOptional
-                .map(AFeatureFlag::isEnabled)
-                .orElseGet(() -> defaultFeatureFlagManagementService.getDefaultFeatureFlagProperty(feature).getEnabled());
+        return getFeatureFlagValue(key, server.getId());
     }
 
     @Override

@@ -1,11 +1,16 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.*;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureConfig;
+import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.model.BanResult;
+import dev.sheldan.abstracto.moderation.model.database.Infraction;
 import dev.sheldan.abstracto.moderation.model.template.command.BanLog;
 import dev.sheldan.abstracto.moderation.model.template.command.BanNotificationModel;
 import dev.sheldan.abstracto.moderation.model.template.command.UnBanLog;
@@ -13,8 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -37,6 +46,18 @@ public class BanServiceBean implements BanService {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
+    @Autowired
+    private ConfigService configService;
+
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
+    @Autowired
+    private InfractionService infractionService;
+
     @Override
     public CompletableFuture<BanResult> banUserWithNotification(User user, String reason, Member banningMember, Integer deletionDays) {
         BanLog banLog = BanLog
@@ -47,18 +68,31 @@ public class BanServiceBean implements BanService {
                 .reason(reason)
                 .build();
         Guild guild = banningMember.getGuild();
-        CompletableFuture<BanResult> returningFuture = new CompletableFuture<>();
-        sendBanNotification(user, reason, guild)
-                .whenComplete((unused, throwable) -> banUser(guild, user, deletionDays, reason)
-                .thenCompose(unused1 -> sendBanLogMessage(banLog, guild.getIdLong()))
-                .thenAccept(unused1 -> {
-                    if(throwable != null)  {
-                        returningFuture.complete(BanResult.NOTIFICATION_FAILED);
-                    } else {
-                        returningFuture.complete(BanResult.SUCCESSFUL);
-                    }
-                }));
-        return returningFuture;
+        BanResult[] result = {BanResult.SUCCESSFUL};
+        return sendBanNotification(user, reason, guild)
+                .exceptionally(throwable -> {
+                    result[0] = BanResult.NOTIFICATION_FAILED;
+                    return null;
+                })
+                .thenCompose(unused -> banUser(guild, user, deletionDays, reason))
+                .thenCompose(unused -> sendBanLogMessage(banLog, guild.getIdLong()))
+                .thenAccept(banLogMessage -> self.evaluateAndStoreInfraction(user, guild, reason, banningMember, banLogMessage, deletionDays))
+                .thenApply(unused -> result[0]);
+    }
+
+    @Transactional
+    public CompletableFuture<Long> evaluateAndStoreInfraction(User user, Guild guild, String reason, Member banningMember, Message banLogMessage, Integer deletionDays) {
+        if(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, guild.getIdLong())) {
+            Long infractionPoints = configService.getLongValueOrConfigDefault(ModerationFeatureConfig.BAN_INFRACTION_POINTS, guild.getIdLong());
+            AUserInAServer bannedUser = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), user.getIdLong());
+            AUserInAServer banningUser = userInServerManagementService.loadOrCreateUser(banningMember);
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put(INFRACTION_PARAMETER_DELETION_DAYS_KEY, deletionDays.toString());
+            return infractionService.createInfractionWithNotification(bannedUser, infractionPoints, BAN_INFRACTION_TYPE, reason, banningUser, parameters, banLogMessage)
+                    .thenApply(Infraction::getId);
+        } else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     private CompletableFuture<Void> sendBanNotification(User user, String reason, Guild guild) {
@@ -102,10 +136,15 @@ public class BanServiceBean implements BanService {
                 .thenCompose(unused -> unbanUser(guild, user));
     }
 
-    public CompletableFuture<Void> sendBanLogMessage(BanLog banLog, Long guildId) {
-        MessageToSend banLogMessage = templateService.renderEmbedTemplate(BAN_LOG_TEMPLATE, banLog, guildId);
+    public CompletableFuture<Message> sendBanLogMessage(BanLog banLog, Long guildId) {
+        MessageToSend banLogMessage = renderBanMessage(banLog, guildId);
         log.debug("Sending ban log message in guild {}.", guildId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId));
+        List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(banLogMessage, ModerationPostTarget.BAN_LOG, guildId);
+        return FutureUtils.toSingleFutureGeneric(messageFutures).thenApply(unused -> messageFutures.get(0).join());
+    }
+
+    public MessageToSend renderBanMessage(BanLog banLog, Long guildId) {
+        return templateService.renderEmbedTemplate(BAN_LOG_TEMPLATE, banLog, guildId);
     }
 
     public CompletableFuture<Void> sendUnBanLogMessage(UnBanLog banLog, Long guildId, String template) {

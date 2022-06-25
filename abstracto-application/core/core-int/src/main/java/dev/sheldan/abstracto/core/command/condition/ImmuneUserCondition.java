@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.condition.detail.ImmuneUserConditionDe
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.EffectConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
-import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.RoleImmunity;
 import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import dev.sheldan.abstracto.core.service.RoleService;

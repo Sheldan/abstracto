@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.core.service;
 
-import dev.sheldan.abstracto.core.exception.ChannelNotInGuildException;
 import dev.sheldan.abstracto.core.exception.GuildNotFoundException;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.models.ServerUser;
@@ -12,8 +11,9 @@ import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -139,5 +139,39 @@ public class MemberServiceBean implements MemberService {
     @Override
     public CompletableFuture<User> getUserViaId(Long userId) {
         return botService.getInstance().retrieveUserById(userId).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> timeoutUser(Member member, Duration duration) {
+
+        return timeoutUser(member, duration, null);
+    }
+
+    @Override
+    public CompletableFuture<Void> timeoutUser(Member member, Duration duration, String reason) {
+        log.info("Applying timeout for user {} in guild {} for {}", member.getId(), member.getGuild().getIdLong(), duration);
+        return member.timeoutFor(duration).reason(reason).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> timeoutUserMaxDuration(Member member) {
+        return timeoutUser(member, Duration.ofDays(Member.MAX_TIME_OUT_LENGTH));
+    }
+
+    @Override
+    public CompletableFuture<Void> timeoutUser(Member member, Instant target) {
+        return timeoutUser(member, target, null);
+    }
+
+    @Override
+    public CompletableFuture<Void> timeoutUser(Member member, Instant target, String reason) {
+        Duration muteDuration = Duration.between(Instant.now(), target);
+        return timeoutUser(member, muteDuration, reason);
+    }
+
+    @Override
+    public CompletableFuture<Void> removeTimeout(Member member) {
+        log.info("Removing timeout for user {} in guild {}.", member.getId(), member.getGuild().getIdLong());
+        return member.removeTimeout().submit();
     }
 }

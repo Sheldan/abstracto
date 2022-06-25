@@ -62,6 +62,7 @@ public class MessageReceivedListenerBean extends ListenerAdapter {
     @Override
     @Transactional
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+        if(!event.isFromGuild()) return;
         metricService.incrementCounter(MESSAGE_RECEIVED_COUNTER);
         messageCache.putMessageInCache(event.getMessage());
         if(listenerList == null) return;

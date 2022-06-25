@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.templating.service;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 
+import java.time.Duration;
 import java.util.HashMap;
 
 /**
@@ -62,6 +63,7 @@ public interface TemplateService {
      */
     String renderTemplatable(Templatable templatable);
     String renderTemplatable(Templatable templatable, Long serverId);
-
+    String renderDuration(Duration duration, Long serverId);
+    String renderDuration(Duration duration);
     void clearCache();
 }

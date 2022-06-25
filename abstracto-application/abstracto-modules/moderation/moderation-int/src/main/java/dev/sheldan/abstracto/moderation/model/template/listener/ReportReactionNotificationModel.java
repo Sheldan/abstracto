@@ -13,4 +13,6 @@ public class ReportReactionNotificationModel {
     private CachedMessage reportedMessage;
     private ServerUser reporter;
     private Integer reportCount;
+    private String context;
+    private Boolean singularMessage;
 }

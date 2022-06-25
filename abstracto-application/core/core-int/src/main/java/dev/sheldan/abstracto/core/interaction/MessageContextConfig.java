@@ -6,5 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class MessageContextConfig {
+    private String templateKey;
     private String name;
+    private Boolean isTemplated;
 }

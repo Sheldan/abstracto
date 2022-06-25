@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.linkembed.model.template;
 
-import dev.sheldan.abstracto.core.models.template.button.ButtonPayload;
+import dev.sheldan.abstracto.core.interaction.button.ButtonPayload;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

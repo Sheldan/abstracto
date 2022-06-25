@@ -104,5 +104,10 @@ public class WarnManagementServiceBean implements WarnManagementService {
         warnRepository.delete(warning);
     }
 
+    @Override
+    public Optional<Warning> findWarnByInfraction(Long infractionId) {
+        return warnRepository.findByInfraction_Id(infractionId);
+    }
+
 
 }

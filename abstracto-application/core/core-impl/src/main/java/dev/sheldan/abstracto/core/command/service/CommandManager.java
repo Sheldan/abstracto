@@ -12,7 +12,6 @@ import dev.sheldan.abstracto.core.command.model.database.ACommandInServerAlias;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.management.DefaultConfigManagementService;
-import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,9 +39,6 @@ public class CommandManager implements CommandRegistry {
 
     @Autowired
     private CommandInServerAliasService commandInServerAliasService;
-
-    @Autowired
-    private ServerManagementService serverManagementService;
 
     @Override
     public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter, Long serverId) {

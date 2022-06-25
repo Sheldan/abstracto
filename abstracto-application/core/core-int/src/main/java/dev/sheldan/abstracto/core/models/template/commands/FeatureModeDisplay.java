@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class FeatureModeDisplay {
-    private AFeatureMode featureMode;
+    private AFeatureModeDisplay featureMode;
     private FeatureConfig featureConfig;
     private Boolean isDefaultValue;
 }

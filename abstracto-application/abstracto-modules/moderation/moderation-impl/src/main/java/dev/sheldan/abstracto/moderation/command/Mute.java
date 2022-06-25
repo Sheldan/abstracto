@@ -5,11 +5,11 @@ import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
@@ -18,7 +18,6 @@ import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefiniti
 import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,29 +58,19 @@ public class Mute extends AbstractConditionableCommand {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member member = (Member) parameters.get(0);
         Guild guild = commandContext.getGuild();
-        GuildMessageChannel channel = commandContext.getChannel();
         if(!member.getGuild().equals(guild)) {
             throw new EntityGuildMismatchException();
         }
         Duration duration = (Duration) parameters.get(1);
         String defaultReason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, guild.getIdLong());
         String reason = parameters.size() == 3 ? (String) parameters.get(2) : defaultReason;
-        ServerChannelMessage context = ServerChannelMessage
-                .builder()
-                .serverId(guild.getIdLong())
-                .channelId(channel.getIdLong())
-                .messageId(commandContext.getMessage().getIdLong())
-                .build();
         MuteContext muteLogModel = MuteContext
                 .builder()
-                .muteDate(Instant.now())
                 .muteTargetDate(Instant.now().plus(duration))
                 .mutedUser(member)
+                .channelId(commandContext.getChannel().getIdLong())
                 .reason(reason)
-                .contextChannel(channel)
-                .message(commandContext.getMessage())
                 .mutingUser(commandContext.getAuthor())
-                .context(context)
                 .build();
         return muteService.muteMemberWithLog(muteLogModel)
                 .thenApply(aVoid -> CommandResult.fromSuccess());
@@ -90,7 +79,6 @@ public class Mute extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
-        GuildMessageChannel channel = event.getGuildChannel();
         Member targetMember = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, Member.class);
         String durationStr = slashCommandParameterService.getCommandOption(DURATION_PARAMETER, event, Duration.class, String.class);
         Duration duration = ParseUtils.parseDuration(durationStr);
@@ -100,20 +88,13 @@ public class Mute extends AbstractConditionableCommand {
         } else {
             reason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, guild.getIdLong());
         }
-        ServerChannelMessage context = ServerChannelMessage
-                .builder()
-                .serverId(guild.getIdLong())
-                .channelId(channel.getIdLong())
-                .build();
         MuteContext muteLogModel = MuteContext
                 .builder()
-                .muteDate(Instant.now())
                 .muteTargetDate(Instant.now().plus(duration))
                 .mutedUser(targetMember)
                 .reason(reason)
-                .contextChannel(channel)
+                .channelId(event.getChannel().getIdLong())
                 .mutingUser(event.getMember())
-                .context(context)
                 .build();
         return muteService.muteMemberWithLog(muteLogModel)
                 .thenCompose(unused -> interactionService.replyEmbed(MUTE_RESPONSE, event))
@@ -146,7 +127,11 @@ public class Mute extends AbstractConditionableCommand {
                 .build();
 
         List<Parameter> parameters = Arrays.asList(userParameter, durationParameter, reasonParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .hasExample(true)
+                .build();
         EffectConfig muteEffect = EffectConfig
                 .builder()
                 .position(0)

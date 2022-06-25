@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface FeatureFlagRepository extends JpaRepository<AFeatureFlag, Long> {
 
     Optional<AFeatureFlag> findByServerAndFeature(AServer server, AFeature key);
+    Optional<AFeatureFlag> findByServer_IdAndFeature(Long serverId, AFeature key);
 
     boolean existsByServerAndFeature(AServer server, AFeature key);
 

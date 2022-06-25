@@ -40,7 +40,11 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
         if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
             return DefaultListenerResult.IGNORED;
         }
-        Map<Long, List<Emote>> collect = message.getEmotesBag().stream().collect(Collectors.groupingBy(Emote::getIdLong));
+        Map<Long, List<Emote>> collect = message
+                .getMentions()
+                .getEmotesBag()
+                .stream()
+                .collect(Collectors.groupingBy(Emote::getIdLong));
         collect.values().forEach(groupedEmotes ->
             trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size())
         );

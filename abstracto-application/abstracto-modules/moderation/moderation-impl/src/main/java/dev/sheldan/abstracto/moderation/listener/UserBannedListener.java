@@ -4,7 +4,6 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncUserBannedListener;
 import dev.sheldan.abstracto.core.models.listener.UserBannedModel;
-import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -26,9 +25,6 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @Slf4j
 public class UserBannedListener implements AsyncUserBannedListener {
-
-    @Autowired
-    private FeatureModeService featureModeService;
 
     @Autowired
     private TemplateService templateService;

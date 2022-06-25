@@ -1,11 +1,14 @@
 package dev.sheldan.abstracto.moderation.model.database;
 
+import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="infraction")
@@ -38,6 +41,33 @@ public class Infraction {
 
     @Column(name = "decayed_date")
     private Instant decayedDate;
+
+    @Column(name = "type")
+    private String type;
+
+    @Column(name = "description")
+    private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "log_channel_id")
+    private AChannel logChannel;
+
+    @Column(name = "log_message_id")
+    private Long logMessageId;
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true,
+            mappedBy = "infraction")
+    @Builder.Default
+    private List<InfractionParameter> parameters = new ArrayList<>();
+
+    @Getter
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "infraction_creator_user_in_server_id", nullable = false)
+    private AUserInAServer infractionCreator;
 
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;

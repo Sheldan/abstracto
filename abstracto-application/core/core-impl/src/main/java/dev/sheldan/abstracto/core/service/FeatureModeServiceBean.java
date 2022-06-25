@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.property.FeatureModeProperty;
+import dev.sheldan.abstracto.core.models.template.commands.AFeatureModeDisplay;
 import dev.sheldan.abstracto.core.models.template.commands.FeatureModeDisplay;
 import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagement;
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
@@ -146,7 +147,7 @@ public class FeatureModeServiceBean implements FeatureModeService {
             FeatureConfig featureConfig = getFeatureConfig(featureConfigCache, aFeatureMode.getFeatureFlag().getFeature().getKey());
             FeatureModeDisplay featureModeDisplay = FeatureModeDisplay
                     .builder()
-                    .featureMode(aFeatureMode)
+                    .featureMode(AFeatureModeDisplay.fromFeatureMode(aFeatureMode))
                     .isDefaultValue(false)
                     .featureConfig(featureConfig)
                     .build();
@@ -157,12 +158,14 @@ public class FeatureModeServiceBean implements FeatureModeService {
         allDefaultModes.forEach(defaultFeatureMode -> {
             if(!usedModes.contains(defaultFeatureMode.getMode())) {
                 FeatureConfig featureConfig = getFeatureConfig(featureConfigCache, defaultFeatureMode.getFeatureName());
-                AFeatureFlag featureFlag = featureFlagManagementService.getFeatureFlag(defaultFeatureMode.getFeatureName(), server).orElse(null);
-                // TODO refactor this to a separate display model, instead of building the AFeatureMode instance
-                AFeatureMode fakeMode = AFeatureMode.builder().server(server).enabled(defaultFeatureMode.getEnabled()).featureMode(defaultFeatureMode.getMode()).featureFlag(featureFlag).build();
+                AFeatureModeDisplay modeDisplay = AFeatureModeDisplay
+                        .builder()
+                        .enabled(defaultFeatureMode.getEnabled())
+                        .featureMode(defaultFeatureMode.getMode())
+                        .build();
                 FeatureModeDisplay featureModeDisplay = FeatureModeDisplay
                         .builder()
-                        .featureMode(fakeMode)
+                        .featureMode(modeDisplay)
                         .isDefaultValue(true)
                         .featureConfig(featureConfig)
                         .build();

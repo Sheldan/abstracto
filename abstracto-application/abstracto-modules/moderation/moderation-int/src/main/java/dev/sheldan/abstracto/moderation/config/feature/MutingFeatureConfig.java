@@ -2,9 +2,7 @@ package dev.sheldan.abstracto.moderation.config.feature;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
-import dev.sheldan.abstracto.moderation.config.feature.mode.MutingMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.MutingPostTarget;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +11,8 @@ import java.util.List;
 
 @Component
 public class MutingFeatureConfig implements FeatureConfig {
+
+    public static final String MUTE_INFRACTION_POINTS = "muteInfractionPoints";
 
     @Override
     public FeatureDefinition getFeature() {
@@ -25,7 +25,7 @@ public class MutingFeatureConfig implements FeatureConfig {
     }
 
     @Override
-    public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(MutingMode.MANUAL_UN_MUTE_LOGGING);
+    public List<String> getRequiredSystemConfigKeys() {
+        return Arrays.asList(MUTE_INFRACTION_POINTS);
     }
 }

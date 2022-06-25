@@ -1,19 +1,19 @@
 package dev.sheldan.abstracto.linkembed.service;
 
+import dev.sheldan.abstracto.core.interaction.ComponentService;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.GuildMemberMessageChannel;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
-import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureMode;
 import dev.sheldan.abstracto.linkembed.model.template.MessageEmbedDeleteButtonPayload;
 import dev.sheldan.abstracto.linkembed.model.template.MessageEmbeddedModel;
 import dev.sheldan.abstracto.core.service.*;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
@@ -26,7 +26,6 @@ import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManage
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -287,7 +286,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
             buttonConfigModel.setOrigin(MESSAGE_EMBED_DELETE_ORIGIN);
             buttonConfigModel.setPayloadType(MessageEmbedDeleteButtonPayload.class);
             AServer server = serverManagementService.loadServer(serverId);
-            componentPayloadManagementService.createPayload(buttonConfigModel, server);
+            componentPayloadManagementService.createButtonPayload(buttonConfigModel, server);
             self.loadUserAndPersistMessage(cachedMessage, embeddingUserInServerId, createdMessage, messageEmbeddedModel.getButtonConfigModel().getButtonId());
             return CompletableFuture.completedFuture(null);
         } else {
@@ -358,7 +357,7 @@ public class MessageEmbedServiceBean implements MessageEmbedService {
 
     private Boolean shouldMentionReferencedAuthor(Message message) {
         if(message.getReferencedMessage() != null) {
-            return message.getMentionedUsers().contains(message.getReferencedMessage().getAuthor());
+            return message.getMentions().getMentions(Message.MentionType.USER).contains(message.getReferencedMessage().getAuthor());
         }
         return false;
     }

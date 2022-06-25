@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
 import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
+import dev.sheldan.abstracto.core.interaction.InteractionExceptionService;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -24,6 +25,9 @@ public class ExceptionPostExecution implements PostCommandExecution {
 
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private InteractionExceptionService interactionExceptionService;
 
     @Override
     public void execute(CommandContext commandContext, CommandResult commandResult, Command command) {
@@ -56,7 +60,7 @@ public class ExceptionPostExecution implements PostCommandExecution {
                     }
                 }
                 log.info("Exception handling for exception {}.", throwable.getClass().getSimpleName());
-                exceptionService.reportSlashException(throwable, interaction, command);
+                interactionExceptionService.reportSlashException(throwable, interaction, command);
             }
         }
 

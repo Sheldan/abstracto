@@ -1,0 +1,40 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <property name="moderationModule" value="(SELECT id FROM module WHERE name = 'moderation')"/>
+    <property name="infractionsFeature" value="(SELECT id FROM feature WHERE key = 'infractions')"/>
+
+    <changeSet  author="Sheldan" id="moderation_infraction-commands">
+        <insert tableName="command">
+            <column name="name" value="infractions"/>
+            <column name="module_id" valueComputed="${moderationModule}"/>
+            <column name="feature_id" valueComputed="${infractionsFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="editInfraction"/>
+            <column name="module_id" valueComputed="${moderationModule}"/>
+            <column name="feature_id" valueComputed="${infractionsFeature}"/>
+        </insert>
+    </changeSet>
+
+    <changeSet author="Sheldan" id="moderation_setMuteRole-cleanup">
+        <delete tableName="command_in_server_allowed_role">
+            <where>command_in_server_id in (select cs.command_in_server_id from command_in_server cs inner join command c on c.id = cs.command_id and c.name = 'setMuteRole') </where>
+        </delete>
+        <delete tableName="command_in_server_alias">
+            <where>command_in_server_id in (select cs.command_in_server_id from command_in_server cs inner join command c on c.id = cs.command_id and c.name = 'setMuteRole') </where>
+        </delete>
+        <delete tableName="command_in_server">
+            <where>command_id=(select id from command where name = 'setMuteRole')</where>
+        </delete>
+        <delete tableName="command">
+            <where>name='setMuteRole'</where>
+        </delete>
+    </changeSet>
+
+</databaseChangeLog>

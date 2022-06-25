@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command.config;
 
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

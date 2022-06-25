@@ -1,10 +1,12 @@
 package dev.sheldan.abstracto.core.service.management;
 
 import com.google.gson.Gson;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.modal.ModalConfigPayload;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
 import dev.sheldan.abstracto.core.models.database.ComponentType;
-import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
+import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.repository.ComponentPayloadRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +29,10 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     private ServerManagementService serverManagementService;
 
     @Override
-    public ComponentPayload createPayload(String id, String payload, Class payloadType, String buttonOrigin, AServer server, ComponentType componentType) {
+    public ComponentPayload createPayload(String id, String payload, Class payloadType, String origin, AServer server, ComponentType componentType) {
         ComponentPayload componentPayload = ComponentPayload
                 .builder()
-                .origin(buttonOrigin)
+                .origin(origin)
                 .id(id)
                 .payload(payload)
                 .payloadType(payloadType.getTypeName())
@@ -41,15 +43,22 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     }
 
     @Override
-    public ComponentPayload createPayload(ButtonConfigModel buttonConfigModel, AServer server) {
+    public ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, AServer server) {
         String payload = gson.toJson(buttonConfigModel.getButtonPayload());
         return createPayload(buttonConfigModel.getButtonId(), payload, buttonConfigModel.getPayloadType(), buttonConfigModel.getOrigin(), server, ComponentType.BUTTON);
     }
 
     @Override
-    public ComponentPayload createPayload(ButtonConfigModel buttonConfigModel, Long serverId) {
+    public ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
-        return createPayload(buttonConfigModel, server);
+        return createButtonPayload(buttonConfigModel, server);
+    }
+
+    @Override
+    public ComponentPayload createModalPayload(ModalConfigPayload payloadConfig, Long serverId) {
+        String payload = gson.toJson(payloadConfig.getModalPayload());
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return createPayload(payloadConfig.getModalId(), payload, payloadConfig.getPayloadType(), payloadConfig.getOrigin(), server, ComponentType.MODAL);
     }
 
     @Override

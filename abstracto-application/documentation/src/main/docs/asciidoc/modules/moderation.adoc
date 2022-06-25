@@ -107,7 +107,6 @@ Feature key `muting`
 ==== Feature modes
 `muteLogging`:: if enabled, each mute is to be logged to the post target `muteLog`. Enabled by default.
 `unMuteLogging`:: if enabled, each un mute which happens 'naturally' (after the defined time period is over) will be logged to the `muteLog` post target. Enabled by default.
-`manualUnMuteLogging`:: if enabled, each un mute which happens via the command `unmute` will be logged to the `muteLog` post target. Enabled by default.
 
 
 ==== Commands
@@ -119,10 +118,6 @@ This command sends a notification to the user about the mute and kicks the user 
 Un-Muting a user::
 * Usage: `unMute <member>`
 * Description: Removes the mute role from `member`. This does *not* log the un-mute.
-Configuring which role to use for muting::
-* Usage: `setMuteRole <role>`
-* Description: Sets the  `role` to be used as the role when applying a mute. This role needs to be muting, which means, if you want it to be effective, this role needs to deny `MESSAGE_WRITE`. The bot does not validate nor require the role to actually mute.
-Only *one* role can be used as a mute role.
 Showing all mutes::
 * Usage: `mutes [member]`
 * Description: Shows all the mutes in a paginated matter with buttons to navigate the pages. If `member` is provided, it will only show mutes for this member.

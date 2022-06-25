@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -30,7 +31,8 @@ public class ReactionReportManagementServiceBean implements ReactionReportManage
     @Override
     public Optional<ReactionReport> findRecentReactionReportAboutUser(AUserInAServer aUserInAServer, Duration maxAge) {
         Instant maxCreation = Instant.now().minus(maxAge);
-        return repository.findByReportedUserAndCreatedLessThan(aUserInAServer, maxCreation);
+        List<ReactionReport> foundReports = repository.findByReportedUserAndCreatedLessThan(aUserInAServer, maxCreation);
+        return foundReports.isEmpty() ? Optional.empty() : Optional.of(foundReports.get(0));
     }
 
     @Override

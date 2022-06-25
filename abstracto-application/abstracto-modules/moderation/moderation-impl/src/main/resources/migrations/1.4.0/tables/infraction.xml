@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="infraction-type-description">
+        <addColumn tableName="infraction">
+            <column name="type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2048)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="log_message_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="log_channel_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="infraction_creator_user_in_server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addNotNullConstraint columnName="decayed"
+                              tableName="infraction"
+                              validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="infraction_creator_user_in_server_id" baseTableName="infraction" constraintName="fk_infraction_creator_user"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="log_channel_id" baseTableName="infraction" constraintName="fk_infraction_log_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,4 +30,10 @@ public interface MemberService {
     CompletableFuture<Member> forceReloadMember(Member member);
     Member getBotInGuild(AServer server);
     CompletableFuture<User> getUserViaId(Long userId);
+    CompletableFuture<Void> timeoutUser(Member member, Duration duration);
+    CompletableFuture<Void> timeoutUser(Member member, Duration duration, String reason);
+    CompletableFuture<Void> timeoutUserMaxDuration(Member member);
+    CompletableFuture<Void> timeoutUser(Member member, Instant target);
+    CompletableFuture<Void> timeoutUser(Member member, Instant target, String reason);
+    CompletableFuture<Void> removeTimeout(Member member);
 }

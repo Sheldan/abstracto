@@ -2,12 +2,12 @@ package dev.sheldan.abstracto.modmail.listener;
 
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
-import dev.sheldan.abstracto.core.listener.ButtonClickedListenerResult;
-import dev.sheldan.abstracto.core.listener.async.jda.ButtonClickedListener;
+import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerResult;
+import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListener;
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
-import dev.sheldan.abstracto.core.models.listener.ButtonClickedListenerModel;
+import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerModel;
 import dev.sheldan.abstracto.core.service.*;
-import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.model.dto.ServerChoicePayload;
 import dev.sheldan.abstracto.modmail.model.dto.ServiceChoicesPayload;

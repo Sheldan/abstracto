@@ -7,12 +7,10 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.template.commands.SetupSummaryModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
-import dev.sheldan.abstracto.core.service.ComponentPayloadService;
-import dev.sheldan.abstracto.core.service.ComponentService;
-import dev.sheldan.abstracto.core.service.DelayedActionService;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadService;
+import dev.sheldan.abstracto.core.interaction.ComponentService;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -31,20 +29,12 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
 
     public static final String FEATURE_SETUP_CONFIRMATION_TEMPLATE_KEY = "feature_setup_confirmation";
     public static final String SETUP_SUMMARY_ORIGIN = "setupSummary";
-    @Autowired
-    private InteractiveService interactiveService;
 
     @Autowired
     private TemplateService templateService;
 
     @Autowired
     private ChannelManagementService channelManagementService;
-
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
-
-    @Autowired
-    private DelayedActionService delayedActionService;
 
     @Autowired
     private SetupSummaryStep self;
@@ -86,7 +76,7 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
 
         SetupConfirmationPayload confirmPayload = SetupConfirmationPayload
                 .builder()
-                .otherButtonComponentId(model.getConfirmButtonId())
+                .otherButtonComponentId(model.getCancelButtonId())
                 .origin(origin)
                 .actions(model.getActionConfigs())
                 .featureKey(parameter.getFeatureConfig().getFeature().getKey())
@@ -96,7 +86,7 @@ public class SetupSummaryStep extends AbstractConfigSetupStep {
         componentPayloadService.createButtonPayload(model.getConfirmButtonId(), confirmPayload, SETUP_SUMMARY_ORIGIN, server);
         SetupConfirmationPayload cancelPayload = SetupConfirmationPayload
                 .builder()
-                .otherButtonComponentId(model.getCancelButtonId())
+                .otherButtonComponentId(model.getConfirmButtonId())
                 .origin(origin)
                 .actions(model.getActionConfigs())
                 .featureKey(parameter.getFeatureConfig().getFeature().getKey())

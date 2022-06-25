@@ -210,7 +210,10 @@ public class CacheEntityServiceBean implements CacheEntityService {
         log.debug("Caching {} emotes.", message.getEmbeds().size());
         List<CachedEmote> emotes = new ArrayList<>();
         if(message.isFromGuild()) {
-            message.getEmotesBag().forEach(emote -> emotes.add(getCachedEmoteFromEmote(emote, message.getGuild())));
+            message
+                    .getMentions()
+                    .getEmotesBag()
+                    .forEach(emote -> emotes.add(getCachedEmoteFromEmote(emote, message.getGuild())));
         }
 
         CompletableFuture<CachedMessage> referencedMessageFuture;

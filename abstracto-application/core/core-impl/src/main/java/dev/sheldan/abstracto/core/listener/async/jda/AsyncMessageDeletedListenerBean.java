@@ -50,7 +50,10 @@ public class AsyncMessageDeletedListenerBean extends ListenerAdapter {
     }
 
     private MessageDeletedModel getModel(CachedMessage cachedMessage) {
-        return MessageDeletedModel.builder().cachedMessage(cachedMessage).build();
+        return MessageDeletedModel
+                .builder()
+                .cachedMessage(cachedMessage)
+                .build();
     }
 
 }

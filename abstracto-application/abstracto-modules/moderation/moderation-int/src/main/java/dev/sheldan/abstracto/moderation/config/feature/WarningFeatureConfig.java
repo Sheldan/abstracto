@@ -39,4 +39,9 @@ public class WarningFeatureConfig implements FeatureConfig {
     public List<FeatureMode> getAvailableModes() {
         return Arrays.asList(WarningMode.WARN_DECAY_LOG);
     }
+
+    @Override
+    public List<String> getRequiredSystemConfigKeys() {
+        return Arrays.asList(WARN_INFRACTION_POINTS);
+    }
 }

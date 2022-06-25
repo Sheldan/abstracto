@@ -9,12 +9,15 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParametersExcept
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
-import dev.sheldan.abstracto.core.command.model.CommandConfirmationModel;
-import dev.sheldan.abstracto.core.command.model.CommandConfirmationPayload;
+import dev.sheldan.abstracto.core.interaction.button.CommandConfirmationModel;
+import dev.sheldan.abstracto.core.interaction.button.CommandConfirmationPayload;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadService;
+import dev.sheldan.abstracto.core.interaction.ComponentService;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
@@ -379,10 +382,22 @@ public class CommandReceivedHandler extends ListenerAdapter {
             return CompletableFuture.completedFuture(Parameters.builder().parameters(new ArrayList<>()).build());
         }
         log.debug("Parsing parameters for command {} based on message {}.", command.getConfiguration().getName(), message.getId());
-        Iterator<TextChannel> channelIterator = message.getMentionedChannels().iterator();
-        Iterator<Emote> emoteIterator = message.getEmotesBag().iterator();
-        Iterator<Member> memberIterator = message.getMentionedMembers().iterator();
-        Iterator<Role> roleIterator = message.getMentionedRolesBag().iterator();
+        Iterator<TextChannel> channelIterator = message
+                .getMentions()
+                .getChannels()
+                .stream()
+                .filter(TextChannel.class::isInstance)
+                .map(TextChannel.class::cast)
+                .iterator();
+        Iterator<Emote> emoteIterator = message
+                .getMentions()
+                .getEmotesBag()
+                .iterator();
+        Iterator<Member> memberIterator = message
+                .getMentions()
+                .getMembers()
+                .iterator();
+        Iterator<Role> roleIterator = message.getMentions().getRolesBag().iterator();
         Parameter param = parameters.get(0);
         CommandParameterIterators iterators = new CommandParameterIterators(channelIterator, emoteIterator, memberIterator, roleIterator);
         Set<CommandParameterHandler> usedParameterHandler = findNecessaryCommandParameterHandlers(parameters, unParsedCommandParameter);

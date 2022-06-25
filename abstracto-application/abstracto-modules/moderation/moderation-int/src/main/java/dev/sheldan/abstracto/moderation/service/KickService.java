@@ -7,5 +7,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface KickService {
     String KICK_EFFECT_KEY = "kick";
+    String KICK_INFRACTION_TYPE = "kick";
     CompletableFuture<Void> kickMember(Member member, String reason, KickLogModel kickLogModel);
 }

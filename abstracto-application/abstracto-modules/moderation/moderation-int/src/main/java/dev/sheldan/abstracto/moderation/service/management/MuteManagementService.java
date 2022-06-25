@@ -23,9 +23,10 @@ public interface MuteManagementService {
      * @param muteMessage The message containing the command which caused the mute
      * @param triggerKey The key of the trigger in quartz, if any
      * @param muteId The id of the mute to create
+     * @param infractionId The ID of the matching infraction
      * @return The created mute object containing the mute ID
      */
-    Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage, String triggerKey, Long muteId);
+    Mute createMute(AUserInAServer mutedUser, AUserInAServer mutingUser, String reason, Instant unMuteDate, AServerAChannelMessage muteMessage, String triggerKey, Long muteId, Long infractionId);
 
     /**
      * Finds the mute from the database by the given ID.
@@ -63,6 +64,7 @@ public interface MuteManagementService {
      * @return The found {@link Mute}, and null if none was found
      */
     Mute getAMuteOf(AUserInAServer userInAServer);
+    Optional<Mute> getAMuteOfOptional(AUserInAServer userInAServer);
 
     /**
      * Returns any active {@link Mute} of this {@link Member} in the database
@@ -70,6 +72,7 @@ public interface MuteManagementService {
      * @return The found {@link Mute}, and null if none was found
      */
     Mute getAMuteOf(Member member);
+    Optional<Mute> getAMuteOfOptional(Member member);
 
     /**
      * Retrieves all active mutes of the given {@link AUserInAServer} in a collection

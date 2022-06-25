@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -137,13 +138,13 @@ public class RoleServiceBean implements RoleService {
     @Override
     public CompletableFuture<Void> addRoleToMemberAsync(Guild guild, Long userId, Role roleById) {
         metricService.incrementCounter(ROLE_ASSIGNED_METRIC);
-        return guild.addRoleToMember(userId, roleById).submit();
+        return guild.addRoleToMember(UserSnowflake.fromId(userId), roleById).submit();
     }
 
     @Override
     public CompletableFuture<Void> removeRoleFromUserAsync(Guild guild, Long userId, Role roleById) {
         metricService.incrementCounter(ROLE_REMOVED_METRIC);
-        return guild.removeRoleFromMember(userId, roleById).submit();
+        return guild.removeRoleFromMember(UserSnowflake.fromId(userId), roleById).submit();
     }
 
 

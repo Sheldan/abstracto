@@ -22,4 +22,5 @@ public interface WarnManagementService {
     Warning findById(Long id, Long serverId);
     List<Warning> getWarningsViaId(List<Long> warnIds, Long serverId);
     void deleteWarning(Warning warn);
+    Optional<Warning> findWarnByInfraction(Long infractionId);
 }

@@ -2,7 +2,9 @@ package dev.sheldan.abstracto.moderation.config.feature;
 
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.config.PostTargetEnum;
+import dev.sheldan.abstracto.moderation.config.feature.mode.ReportReactionMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.ReactionReportPostTarget;
 import dev.sheldan.abstracto.moderation.service.ReactionReportService;
 import org.springframework.stereotype.Component;
@@ -32,5 +34,10 @@ public class ReportReactionFeatureConfig implements FeatureConfig {
     @Override
     public List<String> getRequiredSystemConfigKeys() {
         return Arrays.asList(ReactionReportService.REACTION_REPORT_COOLDOWN);
+    }
+
+    @Override
+    public List<FeatureMode> getAvailableModes() {
+        return Arrays.asList(ReportReactionMode.SINGULAR_MESSAGE, ReportReactionMode.ANONYMOUS);
     }
 }

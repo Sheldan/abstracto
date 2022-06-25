@@ -5,10 +5,7 @@ import dev.sheldan.abstracto.antiraid.model.MassPingNotificationModel;
 import dev.sheldan.abstracto.core.models.ConditionContextInstance;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
-import dev.sheldan.abstracto.core.service.ConditionService;
-import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.service.SystemCondition;
+import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -61,19 +58,22 @@ public class MassPingServiceBean implements MassPingService {
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private MemberService memberService;
+
     @Override
     public CompletableFuture<Void> processMessage(Message message) {
-        if(message.getMentionedMembers().size() > maxAllowedMentions) {
+        if(message.getMentions().getUsers().size() > maxAllowedMentions) {
             Integer level = configService.getLongValueOrConfigDefault(MassPingService.MAX_AFFECTED_LEVEL_KEY, message.getGuild().getIdLong()).intValue();
             boolean allowed = allowedToMassMention(message, level);
             if(!allowed) {
-                return muteService.muteMemberWithoutContext(message.getMember())
+                return memberService.timeoutUserMaxDuration(message.getMember())
                         .thenAccept(unused -> self.sendMassPingMuteNotification(message))
                         .thenAccept(unused -> log.info("Muted member {} in server {} because of too many member mentions. (> {}).",
-                                message.getMember().getIdLong(), message.getGuild().getIdLong(), maxAllowedMentions));
+                                message.getAuthor().getIdLong(), message.getGuild().getIdLong(), maxAllowedMentions));
             } else {
                 log.info("User {} in server {} is allowed to mass mention, because of level (or lack of level configuration).",
-                        message.getMember().getIdLong(), message.getGuild().getIdLong());
+                        message.getAuthor().getIdLong(), message.getGuild().getIdLong());
                 return CompletableFuture.completedFuture(null);
             }
         } else {
@@ -103,7 +103,7 @@ public class MassPingServiceBean implements MassPingService {
         MassPingNotificationModel model = MassPingNotificationModel
                 .builder()
                 .messageLink(message.getJumpUrl())
-                .mentionCount(message.getMentionedMembers().size())
+                .mentionCount(message.getMentions().getUsers().size())
                 .messageContent(message.getContentRaw())
                 .memberDisplay(MemberDisplay.fromMember(member))
                 .build();

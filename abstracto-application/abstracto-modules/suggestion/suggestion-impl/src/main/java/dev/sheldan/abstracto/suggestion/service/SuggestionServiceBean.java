@@ -1,14 +1,15 @@
 package dev.sheldan.abstracto.suggestion.service;
 
+import dev.sheldan.abstracto.core.interaction.ComponentService;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerChannelMessageUser;
 import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
+import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.service.*;
-import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -156,9 +157,9 @@ public class SuggestionServiceBean implements SuggestionService {
             configureDecisionButtonPayload(serverId, newSuggestionId, model.getDisAgreeButtonModel(), SuggestionDecision.DISAGREE);
             configureDecisionButtonPayload(serverId, newSuggestionId, model.getRemoveVoteButtonModel(), SuggestionDecision.REMOVE_VOTE);
             AServer server = serverManagementService.loadServer(serverId);
-            componentPayloadManagementService.createPayload(model.getAgreeButtonModel(), server);
-            componentPayloadManagementService.createPayload(model.getDisAgreeButtonModel(), server);
-            componentPayloadManagementService.createPayload(model.getRemoveVoteButtonModel(), server);
+            componentPayloadManagementService.createButtonPayload(model.getAgreeButtonModel(), server);
+            componentPayloadManagementService.createButtonPayload(model.getDisAgreeButtonModel(), server);
+            componentPayloadManagementService.createButtonPayload(model.getRemoveVoteButtonModel(), server);
             self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, suggestionChannelId, suggestionMessageId);
             return CompletableFuture.completedFuture(null);
         } else {

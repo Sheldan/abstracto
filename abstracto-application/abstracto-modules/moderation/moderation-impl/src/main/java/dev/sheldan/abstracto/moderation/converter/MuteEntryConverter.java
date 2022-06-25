@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.models.ServerSpecificId;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.MemberService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.model.database.Mute;
 import dev.sheldan.abstracto.moderation.model.template.command.MuteEntry;
@@ -24,9 +23,6 @@ public class MuteEntryConverter {
 
     @Autowired
     private MemberService memberService;
-
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
 
     @Autowired
     private MuteManagementService muteManagementService;

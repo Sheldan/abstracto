@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.suggestion.model.template;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.button.ButtonConfigModel;
+import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import dev.sheldan.abstracto.suggestion.model.database.SuggestionState;
 import lombok.Getter;

@@ -12,6 +12,9 @@ import java.util.List;
 @Component
 public class ModerationFeatureConfig implements FeatureConfig {
 
+    public static final String BAN_INFRACTION_POINTS = "banInfractionPoints";
+    public static final String KICK_INFRACTION_POINTS = "kickInfractionPoints";
+
     @Override
     public FeatureDefinition getFeature() {
         return ModerationFeatureDefinition.MODERATION;
@@ -22,4 +25,8 @@ public class ModerationFeatureConfig implements FeatureConfig {
         return Arrays.asList(ModerationPostTarget.BAN_LOG, ModerationPostTarget.KICK_LOG, ModerationPostTarget.UN_BAN_LOG);
     }
 
+    @Override
+    public List<String> getRequiredSystemConfigKeys() {
+        return Arrays.asList(KICK_INFRACTION_POINTS, BAN_INFRACTION_POINTS);
+    }
 }

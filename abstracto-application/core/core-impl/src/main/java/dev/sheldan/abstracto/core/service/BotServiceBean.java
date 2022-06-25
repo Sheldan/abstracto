@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.models.SystemInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.internal.utils.IOUtil;
@@ -33,7 +34,6 @@ public class BotServiceBean implements BotService {
     @Autowired
     private OkHttpLogger okHttpLogger;
 
-
     @Override
     public void login() throws LoginException {
         JDABuilder builder = JDABuilder.createDefault(System.getenv("TOKEN"));
@@ -44,6 +44,7 @@ public class BotServiceBean implements BotService {
         builder.enableCache(CacheFlag.ACTIVITY);
         builder.enableCache(CacheFlag.ONLINE_STATUS);
         builder.enableCache(CacheFlag.VOICE_STATE);
+        builder.setChunkingFilter(ChunkingFilter.ALL);
 
         builder.setBulkDeleteSplittingEnabled(false);
         builder.setMemberCachePolicy(MemberCachePolicy.ALL);

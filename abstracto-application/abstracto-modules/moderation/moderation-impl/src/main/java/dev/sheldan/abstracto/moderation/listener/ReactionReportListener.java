@@ -48,9 +48,14 @@ public class ReactionReportListener implements AsyncReactionAddedListener {
             memberService.retrieveMemberInServer(model.getUserReacting())
                     .thenCompose(member -> reactionService.removeReactionFromMessage(model.getReaction(), cachedMessage, member.getUser()))
                     .thenAccept(unused -> log.info("Removed report reaction on message {} in server {} in channel {}.", cachedMessage.getMessageId(), serverId, cachedMessage.getChannelId()));
-            log.info("User {} in server {} reacted to report a message {} from channel {}.",
-                    model.getUserReacting().getUserId(), model.getServerId(), cachedMessage.getMessageId(), cachedMessage.getChannelId());
-            reactionReportService.createReactionReport(cachedMessage, model.getUserReacting()).exceptionally(throwable -> {
+
+            if(!reactionReportService.allowedToReport(model.getUserReacting())) {
+                log.info("User {} was reported on message {} in server {} within the cooldown. Ignoring.",
+                        cachedMessage.getAuthor().getAuthorId(), cachedMessage.getMessageId(), cachedMessage.getServerId());
+                return DefaultListenerResult.IGNORED;
+            }
+
+            reactionReportService.createReactionReport(cachedMessage, model.getUserReacting(), null).exceptionally(throwable -> {
                 log.error("Failed to create reaction report in server {} on message {} in channel {}.", serverId, cachedMessage.getMessageId(), cachedMessage.getChannelId(), throwable);
                 return null;
             });

@@ -21,4 +21,9 @@ public class ModerationListenerConfig {
         return executorService.setupExecutorFor("warningCreatedListener");
     }
 
+    @Bean(name = "reportMessageCreatedExecutor")
+    public TaskExecutor reportMessageCreatedExecutor() {
+        return executorService.setupExecutorFor("reportMessageCreatedListener");
+    }
+
 }

@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -43,18 +41,6 @@ public class DurationMethod implements TemplateMethodModelEx {
             throw new TemplateModelException("Passed argument was not a duration object");
         }
         Duration duration = (Duration) wrappedObject;
-        // upgrading to java 9 makes this nicer
-        HashMap<String, Object> parameters = new HashMap<>();
-        long days = duration.toDays();
-        parameters.put("days", days);
-        long hours = duration.toHours() % 24;
-        parameters.put("hours", hours);
-        long minutes = duration.toMinutes() % 60;
-        parameters.put("minutes", minutes);
-
-        long seconds = duration.get(ChronoUnit.SECONDS) % 60;
-        parameters.put("seconds", seconds);
-
-        return service.renderTemplateWithMap("duration_formatting", parameters);
+        return service.renderDuration(duration);
     }
 }

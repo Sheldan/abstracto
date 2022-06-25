@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface UserInServerManagementService {
     AUserInAServer loadOrCreateUser(Long serverId, Long userId);
+    AUserInAServer loadOrCreateUser(AServer server, Long userId);
     AUserInAServer onlyLoadUser(Long serverId, Long userId);
     AUserInAServer loadOrCreateUser(ServerUser serverUser);
     Optional<AUserInAServer> loadUserOptional(Long serverId, Long userId);
@@ -20,6 +21,7 @@ public interface UserInServerManagementService {
     AUserInAServer loadOrCreateUser(Long userInServerId);
     AUserInAServer createUserInServer(Member member);
     AUserInAServer createUserInServer(Long guildId, Long userId);
+    AUserInAServer createUserInServer(AServer server, Long userId);
     List<AUserInAServer> getUserInAllServers(Long userId);
     Optional<AUserInAServer> loadAUserInAServerOptional(Long serverId, Long userId);
 }

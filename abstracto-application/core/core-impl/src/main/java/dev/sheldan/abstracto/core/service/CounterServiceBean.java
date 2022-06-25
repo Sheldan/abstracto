@@ -15,7 +15,12 @@ public class CounterServiceBean implements CounterService {
 
     @Override
     public Long getNextCounterValue(AServer server, String key) {
-        log.debug("Retrieving new counter value for key {} in server {}.", key, server.getId());
-        return counterRepository.getNewCounterForKey(server.getId(), key);
+        return getNextCounterValue(server.getId(), key);
+    }
+
+    @Override
+    public Long getNextCounterValue(Long serverId, String key) {
+        log.debug("Retrieving new counter value for key {} in server {}.", key, serverId);
+        return counterRepository.getNewCounterForKey(serverId, key);
     }
 }

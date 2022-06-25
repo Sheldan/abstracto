@@ -1,30 +1,36 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.Prioritized;
+import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
+import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.ConfigService;
-import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.feature.InfractionFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.posttarget.InfractionPostTarget;
+import dev.sheldan.abstracto.moderation.listener.InfractionUpdatedDescriptionListener;
 import dev.sheldan.abstracto.moderation.listener.manager.InfractionLevelChangedListenerManager;
 import dev.sheldan.abstracto.moderation.model.database.Infraction;
+import dev.sheldan.abstracto.moderation.model.listener.InfractionDescriptionEventModel;
 import dev.sheldan.abstracto.moderation.model.template.InfractionLevelChangeModel;
 import dev.sheldan.abstracto.moderation.service.management.InfractionManagementService;
+import dev.sheldan.abstracto.moderation.service.management.InfractionParameterManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -34,9 +40,6 @@ public class InfractionServiceBean implements InfractionService {
 
     @Autowired
     private InfractionManagementService infractionManagementService;
-
-    @Autowired
-    private FeatureFlagService featureFlagService;
 
     @Autowired
     private ConfigService configService;
@@ -56,6 +59,15 @@ public class InfractionServiceBean implements InfractionService {
     @Autowired
     private InfractionLevelChangedListenerManager infractionLevelChangedListenerManager;
 
+    @Autowired
+    private InfractionParameterManagementService infractionParameterManagementService;
+
+    @Autowired(required = false)
+    private List<InfractionUpdatedDescriptionListener> infractionDescriptionListeners;
+
+    @Autowired
+    private ListenerService listenerService;
+
     private static final String INFRACTION_NOTIFICATION_TEMPLATE_KEY = "infraction_level_notification";
 
     @Override
@@ -74,15 +86,31 @@ public class InfractionServiceBean implements InfractionService {
     }
 
     @Override
-    public CompletableFuture<Infraction> createInfractionWithNotification(AUserInAServer aUserInAServer, Long points) {
-        Infraction createdInfraction = infractionManagementService.createInfraction(aUserInAServer, points);
+    public CompletableFuture<Infraction> createInfractionWithNotification(AUserInAServer target, Long points, String type, String description, AUserInAServer creator, Map<String, String> parameters, Message message) {
+        Infraction createdInfraction = infractionManagementService.createInfraction(target, points, type, description, creator, message);
+        parameters.forEach((key, value) -> infractionParameterManagementService.createInfractionParameter(createdInfraction, key, value));
         Long infractionId = createdInfraction.getId();
-        return createInfractionNotification(aUserInAServer, points)
-            .thenApply(aBoolean -> self.reloadInfraction(infractionId));
+        return createInfractionNotification(target, points, type, description)
+                .thenApply(avoid -> self.reloadInfraction(infractionId));
     }
 
     @Override
-    public CompletableFuture<Void> createInfractionNotification(AUserInAServer aUserInAServer, Long points) {
+    public CompletableFuture<Infraction> createInfractionWithNotification(AUserInAServer target, Long points, String type, String description, AUserInAServer creator, Map<String, String> parameters) {
+        return createInfractionWithNotification(target, points, type, description, creator, new HashMap<>(), null);
+    }
+
+    @Override
+    public CompletableFuture<Infraction> createInfractionWithNotification(AUserInAServer target, Long points, String type, String description, AUserInAServer creator, Message logMessage) {
+        return createInfractionWithNotification(target, points, type, description, creator, new HashMap<>(), logMessage);
+    }
+
+    @Override
+    public CompletableFuture<Infraction> createInfractionWithNotification(AUserInAServer target, Long points, String type, String description, AUserInAServer creator) {
+        return createInfractionWithNotification(target, points, type, description, creator, new HashMap<>(), null);
+    }
+
+    @Override
+    public CompletableFuture<Void> createInfractionNotification(AUserInAServer aUserInAServer, Long points, String type, String description) {
         Long serverId = aUserInAServer.getServerReference().getId();
         Long currentPoints = getActiveInfractionPointsForUser(aUserInAServer);
         Long newPoints = currentPoints + points;
@@ -95,6 +123,8 @@ public class InfractionServiceBean implements InfractionService {
                     .member(MemberDisplay.fromAUserInAServer(aUserInAServer))
                     .newLevel(newLevel)
                     .oldLevel(oldLevel)
+                    .type(type)
+                    .description(description)
                     .oldPoints(currentPoints)
                     .newPoints(newPoints)
                     .build();
@@ -105,6 +135,38 @@ public class InfractionServiceBean implements InfractionService {
             return CompletableFuture.completedFuture(null);
         }
 
+    }
+
+    @Override
+    public CompletableFuture<Void> editInfraction(Long infractionId, String newReason, Long serverId) {
+        Infraction infraction = infractionManagementService.loadInfraction(infractionId);
+        if(!infraction.getServer().getId().equals(serverId)) {
+            throw new EntityGuildMismatchException();
+        }
+        infraction.setDescription(newReason);
+        return notifyInfractionListeners(infraction);
+    }
+
+    private CompletableFuture<Void> notifyInfractionListeners(Infraction infraction) {
+        InfractionDescriptionEventModel model = getInfractionDescriptionModel(infraction);
+        return infractionDescriptionListeners
+                .stream()
+                .filter(listener -> listener.handlesEvent(model))
+                .max(Comparator.comparing(Prioritized::getPriority))
+                .map(listener -> listenerService.executeAsyncFeatureAwareListener(listener, model))
+                .orElse(CompletableFuture.completedFuture(null))
+                .thenApply(defaultListenerResult -> null);
+    }
+
+    private InfractionDescriptionEventModel getInfractionDescriptionModel(Infraction infraction) {
+        return InfractionDescriptionEventModel
+                .builder()
+                .infractionId(infraction.getId())
+                .newDescription(infraction.getDescription())
+                .userId(infraction.getUser().getUserReference().getId())
+                .serverId(infraction.getServer().getId())
+                .type(infraction.getType())
+                .build();
     }
 
     @Transactional

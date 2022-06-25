@@ -111,8 +111,8 @@ public class WarnServiceBean implements WarnService {
 
     @Override
     public CompletableFuture<Void> notifyAndLogFullUserWarning(WarnContext context)  {
-        AServer server = serverManagementService.loadOrCreate(context.getGuild().getIdLong());
-        Long warningId = counterService.getNextCounterValue(server, WARNINGS_COUNTER_KEY);
+        Long serverId = context.getGuild().getIdLong();
+        Long warningId = counterService.getNextCounterValue(serverId, WARNINGS_COUNTER_KEY);
         context.setWarnId(warningId);
         Member warnedMember = context.getWarnedMember();
         Member warningMember = context.getMember();
@@ -124,29 +124,39 @@ public class WarnServiceBean implements WarnService {
                 .warnId(warningId)
                 .serverName(guild.getName())
                 .build();
-        Long serverId = server.getId();
-        String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification, server.getId());
-        List<CompletableFuture> futures = new ArrayList<>();
-        CompletableFuture<Void> notificationFuture = new CompletableFuture<>();
-        messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage).whenComplete((message, throwable) -> {
-            if(throwable != null) {
-                log.warn("Failed to notify user {} of warning {} in guild {}.", warnedMember.getId(), warningId, serverId);
-            }
-            notificationFuture.complete(null);
-        });
-        futures.add(notificationFuture);
-        log.debug("Logging warning for server {}.", server.getId());
+        String warnNotificationMessage = templateService.renderTemplate(WARN_NOTIFICATION_TEMPLATE, warnNotification, serverId);
+        return messageService.sendMessageToUser(warnedMember.getUser(), warnNotificationMessage)
+                .exceptionally(throwable -> {
+                    log.warn("Failed to notify user {} of warning {} in guild {}.", warnedMember.getId(), warningId, serverId);
+                    return null;
+                })
+                .thenCompose(message -> self.sendWarningLog(context))
+                .thenCompose(logMessage -> self.evaluateInfraction(context, logMessage))
+                .thenAccept(context::setInfractionId);
+    }
+
+    @Transactional
+    public CompletableFuture<Message> sendWarningLog(WarnContext context) {
+        MessageToSend message = renderMessageModel(context);
+        List<CompletableFuture<Message>> futures = postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong());
+        return FutureUtils.toSingleFutureGeneric(futures).thenCompose(unused -> futures.get(0));
+    }
+
+    @Transactional
+    public CompletableFuture<Long> evaluateInfraction(WarnContext context, Message logMessage) {
+        Long serverId = context.getGuild().getIdLong();
         if(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, serverId)) {
             Long infractionPoints = configService.getLongValueOrConfigDefault(WarningFeatureConfig.WARN_INFRACTION_POINTS, serverId);
-            AUserInAServer warnedUser = userInServerManagementService.loadOrCreateUser(warnedMember);
-            warnedUser.setServerReference(server);
-            futures.add(infractionService.createInfractionWithNotification(warnedUser, infractionPoints)
-                    .thenAccept(infraction -> context.setInfractionId(infraction.getId())));
+            AServer server = serverManagementService.loadServer(context.getGuild());
+            AUserInAServer warnedUser = userInServerManagementService.loadOrCreateUser(server, context.getWarnedMember().getIdLong());
+            AUserInAServer warningUser = userInServerManagementService.loadOrCreateUser(server, context.getMember().getIdLong());
+            // both user could create the server object, we need to make sure we have the same reference
+            warnedUser.setServerReference(warningUser.getServerReference());
+            return infractionService.createInfractionWithNotification(warnedUser, infractionPoints, WARN_INFRACTION_TYPE, context.getReason(), warningUser, logMessage)
+                    .thenApply(Infraction::getId);
+        } else {
+            return CompletableFuture.completedFuture(null);
         }
-        MessageToSend message = templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, context, server.getId());
-        futures.addAll(postTargetService.sendEmbedInPostTarget(message, WarningPostTarget.WARN_LOG, context.getGuild().getIdLong()));
-
-        return FutureUtils.toSingleFuture(futures);
     }
 
     @Override
@@ -296,6 +306,10 @@ public class WarnServiceBean implements WarnService {
         if(warning.getInfraction() != null) {
             infractionService.decayInfraction(warning.getInfraction());
         }
+    }
+
+    public MessageToSend renderMessageModel(WarnContext warnContext) {
+        return templateService.renderEmbedTemplate(WARN_LOG_TEMPLATE, warnContext, warnContext.getGuild().getIdLong());
     }
 
     private CompletableFuture<Void> logDecayedWarnings(AServer server, List<Warning> warningsToDecay) {

@@ -4,10 +4,10 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.command.config.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -53,7 +53,7 @@ public class UnMute extends AbstractConditionableCommand {
             throw new EntityGuildMismatchException();
         }
         AUserInAServer userToUnMute = userInServerManagementService.loadOrCreateUser(member);
-        return muteService.unMuteUser(userToUnMute).thenApply(aVoid ->
+        return muteService.unMuteUser(userToUnMute, commandContext.getAuthor()).thenApply(aVoid ->
             CommandResult.fromSuccess()
         );
     }
@@ -65,7 +65,7 @@ public class UnMute extends AbstractConditionableCommand {
             throw new EntityGuildMismatchException();
         }
         AUserInAServer userToUnMute = userInServerManagementService.loadOrCreateUser(targetMember);
-        return muteService.unMuteUser(userToUnMute)
+        return muteService.unMuteUser(userToUnMute, event.getMember())
                 .thenCompose(unused -> interactionService.replyEmbed(UN_MUTE_RESPONSE, event))
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }

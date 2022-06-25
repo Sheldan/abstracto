@@ -46,6 +46,26 @@ public class ListenerServiceBean implements ListenerService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> CompletableFuture<R> executeAsyncFeatureAwareListener(AsyncFeatureAwareListener<T, R> listener, T model) {
+        FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
+        if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {
+            return CompletableFuture.completedFuture(null);
+        }
+        if(!featureModeService.necessaryFeatureModesMet(listener, model.getServerId())) {
+            return CompletableFuture.completedFuture(null);
+        }
+        try {
+            return listener.execute(model);
+        } catch (Exception e) {
+            log.error("Async feature aware listener {} failed with exception:", listener.getClass().getName(), e);
+            CompletableFuture<R> future = new CompletableFuture<>();
+            future.completeExceptionally(e);
+            return future;
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> void executeFeatureAwareListener(FeatureAwareListener<T, R> listener, T model, TaskExecutor executor) {
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
         if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {

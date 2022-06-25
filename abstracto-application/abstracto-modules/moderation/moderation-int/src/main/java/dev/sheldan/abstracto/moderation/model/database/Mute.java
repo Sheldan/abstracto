@@ -105,4 +105,10 @@ public class Mute implements Serializable {
     @Column(name = "updated", insertable = false, updatable = false)
     private Instant updated;
 
+    @Getter
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "infraction_id")
+    private Infraction infraction;
+
 }

@@ -48,6 +48,15 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
     }
 
     @Override
+    public AUserInAServer loadOrCreateUser(AServer server, Long userId) {
+        if(userInServerRepository.existsByServerReference_IdAndUserReference_Id(server.getId(), userId)) {
+            return userInServerRepository.findByServerReference_IdAndUserReference_Id(server.getId(), userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
+        } else {
+            return this.createUserInServer(server.getId(), userId);
+        }
+    }
+
+    @Override
     public AUserInAServer onlyLoadUser(Long serverId, Long userId) {
         return userInServerRepository.findByServerReference_IdAndUserReference_Id(serverId, userId).orElseThrow(() -> new UserInServerNotFoundException(0L));
     }
@@ -102,6 +111,26 @@ public class UserInServerManagementServiceBean implements UserInServerManagement
             aUserInAServer = onlyLoadUser(serverId, userId);
         }
         return aUserInAServer;
+    }
+
+    @Override
+    public AUserInAServer createUserInServer(AServer server, Long userId) {
+        log.info("Creating user {} in server {}.", userId, server.getId());
+        AUserInAServer aUserInAServer;
+        try {
+            aUserInAServer = self.tryToCreateAUserInAServer(server, userId);
+        } catch (DataIntegrityViolationException ex) {
+            log.info("Concurrency exception creating user - retrieving.");
+            aUserInAServer = onlyLoadUser(server.getId(), userId);
+        }
+        return aUserInAServer;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public AUserInAServer tryToCreateAUserInAServer(AServer server, Long userId) {
+        lockService.lockTable(TableLocks.USER_IN_SERVER);
+        AUserInAServer aUserInAServer = serverManagementService.addUserToServer(server.getId(), userId);
+        return userInServerRepository.save(aUserInAServer);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

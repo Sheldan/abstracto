@@ -11,5 +11,7 @@ public class InfractionLevelChangeModel {
     private Long oldPoints;
     private Integer newLevel;
     private Integer oldLevel;
+    private String type;
+    private String description;
     private MemberDisplay member;
 }

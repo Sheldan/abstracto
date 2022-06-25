@@ -9,4 +9,5 @@
     <include file="channel.xml" relativeToChangelogFile="true"/>
     <include file="component_payload.xml" relativeToChangelogFile="true"/>
     <include file="command_in_server.xml" relativeToChangelogFile="true"/>
+    <include file="context_command.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

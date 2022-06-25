@@ -3,10 +3,11 @@ package dev.sheldan.abstracto.linkembed.listener.interaction;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.MessageContextConfig;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
-import dev.sheldan.abstracto.core.listener.async.MessageContextCommandListener;
+import dev.sheldan.abstracto.core.interaction.context.message.listener.MessageContextCommandListener;
 import dev.sheldan.abstracto.core.models.GuildMemberMessageChannel;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.listener.interaction.MessageContextInteractionModel;
+import dev.sheldan.abstracto.core.interaction.context.ContextCommandService;
 import dev.sheldan.abstracto.core.service.MessageCache;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.linkembed.config.LinkEmbedFeatureDefinition;
@@ -15,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +35,9 @@ public class MessageEmbedContextCommandListener implements MessageContextCommand
 
     @Autowired
     private MessageEmbedContextCommandListener self;
+
+    @Autowired
+    private ContextCommandService contextCommandService;
 
     @Override
     public DefaultListenerResult execute(MessageContextInteractionModel model) {
@@ -70,14 +73,14 @@ public class MessageEmbedContextCommandListener implements MessageContextCommand
     public MessageContextConfig getConfig() {
         return MessageContextConfig
                 .builder()
-                .name("Embed message")
+                .isTemplated(true)
+                .name("embed_message")
+                .templateKey("message_embed_message_context_menu_label")
                 .build();
     }
 
     @Override
     public Boolean handlesEvent(MessageContextInteractionModel model) {
-        return model.getEvent().getName().equals(getConfig().getName())
-                && model.getEvent().isFromGuild()
-                && model.getEvent().getCommandType().equals(Command.Type.MESSAGE);
+        return contextCommandService.matchesGuildContextName(model, getConfig(), model.getServerId());
     }
 }

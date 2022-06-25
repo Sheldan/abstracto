@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.model.dto;
 
-import dev.sheldan.abstracto.core.models.template.button.ButtonPayload;
+import dev.sheldan.abstracto.core.interaction.button.ButtonPayload;
 import dev.sheldan.abstracto.modmail.model.template.ServerChoices;
 import lombok.Builder;
 import lombok.Getter;

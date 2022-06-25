@@ -45,9 +45,8 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
 
 
     @Override
-    public Optional<AFeatureFlag>  getFeatureFlag(AFeature feature, Long serverId) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
-        return getFeatureFlag(feature, server);
+    public Optional<AFeatureFlag> getFeatureFlag(AFeature feature, Long serverId) {
+        return repository.findByServer_IdAndFeature(serverId, feature);
     }
 
     @Override
@@ -69,7 +68,7 @@ public class FeatureFlagManagementServiceBean implements FeatureFlagManagementSe
 
     @Override
     public Optional<AFeatureFlag> getFeatureFlag(AFeature feature, AServer server) {
-        return repository.findByServerAndFeature(server, feature);
+        return getFeatureFlag(feature, server.getId());
     }
 
     @Override

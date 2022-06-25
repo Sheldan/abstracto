@@ -1,16 +1,15 @@
 package dev.sheldan.abstracto.core.interactive;
 
-import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.interactive.setup.payload.SetupConfirmationPayload;
-import dev.sheldan.abstracto.core.listener.ButtonClickedListenerResult;
-import dev.sheldan.abstracto.core.listener.async.jda.ButtonClickedListener;
-import dev.sheldan.abstracto.core.models.listener.ButtonClickedListenerModel;
+import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerResult;
+import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListener;
+import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerModel;
 import dev.sheldan.abstracto.core.service.DelayedActionService;
 import dev.sheldan.abstracto.core.service.FeatureSetupServiceBean;
-import dev.sheldan.abstracto.core.service.management.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,9 +34,6 @@ public class InteractiveButtonClickedListener implements ButtonClickedListener {
 
     @Autowired
     private FeatureSetupServiceBean featureSetupServiceBean;
-
-    @Autowired
-    private Gson gson;
 
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {

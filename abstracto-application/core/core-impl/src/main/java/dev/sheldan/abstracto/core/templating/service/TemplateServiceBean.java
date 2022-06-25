@@ -5,7 +5,7 @@ import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
 import dev.sheldan.abstracto.core.config.ServerContext;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.ComponentType;
-import dev.sheldan.abstracto.core.service.ComponentServiceBean;
+import dev.sheldan.abstracto.core.interaction.ComponentServiceBean;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.exception.TemplatingException;
@@ -31,6 +31,8 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -661,6 +663,32 @@ public class TemplateServiceBean implements TemplateService {
         } finally {
             serverContext.clear();
         }
+    }
+
+    @Override
+    public String renderDuration(Duration duration, Long serverId) {
+        try {
+            serverContext.setServerId(serverId);
+            return renderDuration(duration);
+        } finally {
+            serverContext.clear();
+        }
+    }
+
+    @Override
+    public String renderDuration(Duration duration) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        long days = duration.toDays();
+        parameters.put("days", days);
+        long hours = duration.toHours() % 24;
+        parameters.put("hours", hours);
+        long minutes = duration.toMinutes() % 60;
+        parameters.put("minutes", minutes);
+
+        long seconds = duration.get(ChronoUnit.SECONDS) % 60;
+        parameters.put("seconds", seconds);
+
+        return renderTemplateWithMap("duration_formatting", parameters);
     }
 
     @Override

@@ -86,11 +86,11 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                     log.info("Setup has been cancelled, because of 'exit' message.");
                     result = SetupStepResult.fromCancelled();
                 } else {
-                    if(message.getMentionedChannels().isEmpty()) {
+                    if(message.getMentions().getMentions(Message.MentionType.CHANNEL).isEmpty()) {
                         log.debug("No mentioned channel was seen in channel, nothing provided.");
                         throw new NoChannelProvidedException();
                     }
-                    TextChannel textChannel = message.getMentionedChannels().get(0);
+                    TextChannel textChannel = (TextChannel) message.getMentions().getMentions(Message.MentionType.CHANNEL).get(0);
                     PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig
                             .builder()
                             .postTargetKey(postTargetStepParameter.getPostTargetKey())

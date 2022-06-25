@@ -12,6 +12,11 @@ public class ListenerExecutorConfig {
     @Autowired
     private ExecutorService executorService;
 
+    @Bean(name = "memberTimeoutUpdatedListenerExecutor")
+    public TaskExecutor memberTimeoutUpdatedListenerExecutor() {
+        return executorService.setupExecutorFor("memberTimeoutListener");
+    }
+
     @Bean(name = "joinListenerExecutor")
     public TaskExecutor joinListenerExecutor() {
         return executorService.setupExecutorFor("joinListener");
@@ -60,6 +65,11 @@ public class ListenerExecutorConfig {
     @Bean(name = "buttonClickedExecutor")
     public TaskExecutor buttonClickedExecutor() {
         return executorService.setupExecutorFor("buttonClickedListener");
+    }
+
+    @Bean(name = "modalInteractionExecutor")
+    public TaskExecutor modalInteractionExecutor() {
+        return executorService.setupExecutorFor("modalInteractionListener");
     }
 
     @Bean(name = "messageContextCommandExecutor")

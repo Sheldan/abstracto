@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface MuteRepository extends JpaRepository<Mute, ServerSpecificId> {
     boolean existsByMutedUserAndMuteEndedFalse(AUserInAServer userInAServer);
 
-    Mute findTopByMutedUserAndMuteEndedFalse(AUserInAServer userInAServer);
+    Optional<Mute> findTopByMutedUserAndMuteEndedFalse(AUserInAServer userInAServer);
 
     List<Mute> findAllByMutedUserAndMuteEndedFalseOrderByMuteId_IdDesc(AUserInAServer aUserInAServer);
 
