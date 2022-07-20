@@ -32,4 +32,13 @@ public class MemberDisplay {
                 .userId(aUserInAServer.getUserReference().getId())
                 .build();
     }
+
+    public static MemberDisplay fromIds(Long serverId, Long userId) {
+        return MemberDisplay
+                .builder()
+                .memberMention(MemberUtils.getUserAsMention(userId))
+                .serverId(serverId)
+                .userId(userId)
+                .build();
+    }
 }

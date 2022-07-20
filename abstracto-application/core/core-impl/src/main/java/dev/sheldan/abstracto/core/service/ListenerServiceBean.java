@@ -30,6 +30,9 @@ public class ListenerServiceBean implements ListenerService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> void executeFeatureAwareListener(FeatureAwareListener<T, R> listener, T model) {
+        if(model.getServerId() == null) {
+            return;
+        }
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
         if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {
             return;
@@ -47,6 +50,9 @@ public class ListenerServiceBean implements ListenerService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> CompletableFuture<R> executeAsyncFeatureAwareListener(AsyncFeatureAwareListener<T, R> listener, T model) {
+        if(model.getServerId() == null) {
+            return CompletableFuture.completedFuture(null);
+        }
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
         if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {
             return CompletableFuture.completedFuture(null);
@@ -67,6 +73,9 @@ public class ListenerServiceBean implements ListenerService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public <T extends FeatureAwareListenerModel, R extends ListenerExecutionResult> void executeFeatureAwareListener(FeatureAwareListener<T, R> listener, T model, TaskExecutor executor) {
+        if(model.getServerId() == null) {
+            return;
+        }
         FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(listener.getFeature());
         if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {
             return;

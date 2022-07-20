@@ -13,6 +13,10 @@ public class MessageReceivedModel implements FeatureAwareListenerModel {
     private Message message;
     @Override
     public Long getServerId() {
-        return message.getGuild().getIdLong();
+        if(message.isFromGuild()) {
+            return message.getGuild().getIdLong();
+        } else {
+            return null;
+        }
     }
 }

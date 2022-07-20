@@ -55,19 +55,6 @@ public class ShowEmote extends AbstractConditionableCommand {
     }
 
     @Override
-    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        String emoteText = slashCommandParameterService.getCommandOption(EMOTE_PARAMETER, event, Emote.class, String.class);
-        Emoji emoji = Emoji.fromMarkdown(emoteText);
-        Emote emote = event.getJDA().getEmoteById(emoji.getId());
-        ShowEmoteLog emoteLog = ShowEmoteLog
-                .builder()
-                .emote(emote)
-                .build();
-        return interactionService.replyEmbed(SHOW_EMOTE_RESPONSE_TEMPLATE, emoteLog, event)
-                .thenApply(interactionHook -> CommandResult.fromSuccess());
-    }
-
-    @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Parameter emoteParameter = Parameter
@@ -82,16 +69,8 @@ public class ShowEmote extends AbstractConditionableCommand {
                 .templated(true)
                 .build();
 
-        SlashCommandConfig slashCommandConfig = SlashCommandConfig
-                .builder()
-                .enabled(true)
-                .rootCommandName(UtilitySlashCommandNames.UTILITY)
-                .commandName(SHOW_EMOTE_COMMAND)
-                .build();
-
         return CommandConfiguration.builder()
                 .name(SHOW_EMOTE_COMMAND)
-                .slashCommandConfig(slashCommandConfig)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)

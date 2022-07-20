@@ -26,6 +26,7 @@ public class UnParsedCommandParameter {
         }
         while (m.find()) {
             if(!skippedCommand) {
+                this.commandName = m.group();
                 skippedCommand = true;
                 continue;
             }
@@ -49,4 +50,5 @@ public class UnParsedCommandParameter {
                         .build()));
     }
     private List<UnparsedCommandParameterPiece> parameters;
+    private String commandName;
 }

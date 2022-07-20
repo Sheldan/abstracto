@@ -44,7 +44,7 @@ import java.util.concurrent.CompletableFuture;
 public class LeaderBoardCommand extends AbstractConditionableCommand {
 
     public static final String LEADER_BOARD_POST_EMBED_TEMPLATE = "leaderboard_post";
-    private static final String LEADERBOARD_PARAMTER = "leaderboard";
+    private static final String LEDERBOARD_COMMAND_NAME = "leaderboard";
     private static final String PAGE_PARAMETER = "page";
     @Autowired
     private AUserExperienceService userExperienceService;
@@ -137,12 +137,12 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ExperienceSlashCommandNames.EXPERIENCE)
-                .commandName(LEADERBOARD_PARAMTER)
+                .commandName(LEDERBOARD_COMMAND_NAME)
                 .build();
 
 
         return CommandConfiguration.builder()
-                .name(LEADERBOARD_PARAMTER)
+                .name(LEDERBOARD_COMMAND_NAME)
                 .module(ExperienceModuleDefinition.EXPERIENCE)
                 .templated(true)
                 .async(true)

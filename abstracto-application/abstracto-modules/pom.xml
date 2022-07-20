@@ -30,6 +30,7 @@
         <module>voice-channel-context</module>
         <module>dynamic-activity</module>
         <module>anti-raid</module>
+        <module>custom-command</module>
     </modules>
 
 </project>

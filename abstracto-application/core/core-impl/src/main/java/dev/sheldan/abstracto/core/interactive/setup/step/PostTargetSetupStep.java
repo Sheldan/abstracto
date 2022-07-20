@@ -16,9 +16,7 @@ import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -90,7 +88,11 @@ public class PostTargetSetupStep extends AbstractConfigSetupStep {
                         log.debug("No mentioned channel was seen in channel, nothing provided.");
                         throw new NoChannelProvidedException();
                     }
-                    TextChannel textChannel = (TextChannel) message.getMentions().getMentions(Message.MentionType.CHANNEL).get(0);
+                    IMentionable mentionableChannel = message.getMentions().getMentions(Message.MentionType.CHANNEL).get(0);
+                    if(!(mentionableChannel instanceof GuildMessageChannel)) {
+                        throw new NoChannelProvidedException();
+                    }
+                    GuildChannel textChannel = (GuildChannel) mentionableChannel;
                     PostTargetDelayedActionConfig build = PostTargetDelayedActionConfig
                             .builder()
                             .postTargetKey(postTargetStepParameter.getPostTargetKey())

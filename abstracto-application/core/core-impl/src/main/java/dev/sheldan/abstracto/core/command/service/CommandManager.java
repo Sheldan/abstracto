@@ -41,15 +41,12 @@ public class CommandManager implements CommandRegistry {
     private CommandInServerAliasService commandInServerAliasService;
 
     @Override
-    public Command findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter, Long serverId) {
+    public Optional<Command> findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter, Long serverId) {
         Optional<Command> commandOptional = commands.stream().filter(getCommandByNameAndParameterPredicate(name, unParsedCommandParameter)).findFirst();
         if(!commandOptional.isPresent()) {
             commandOptional = getCommandViaAliasAndParameter(name, unParsedCommandParameter, serverId);
         }
-        if(commandOptional.isPresent()){
-            return commandOptional.get();
-        }
-        throw new CommandNotFoundException();
+        return commandOptional;
     }
 
     private Optional<Command> getCommandViaAliasAndParameter(String name, UnParsedCommandParameter unParsedCommandParameter, Long serverId) {

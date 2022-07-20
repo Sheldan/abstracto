@@ -12,10 +12,7 @@ import dev.sheldan.abstracto.core.service.management.DefaultPostTargetManagement
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -69,20 +66,20 @@ public class PostTargetServiceBean implements PostTargetService {
             log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
             return CompletableFuture.completedFuture(null);
         } else {
-            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            GuildMessageChannel messageChannelForPostTarget = getMessageChannelForPostTarget(target);
             log.debug("Sending message embed to post target {}.", target.getName());
-            return channelService.sendEmbedToChannel(embed, textChannelForPostTarget);
+            return channelService.sendEmbedToChannel(embed, messageChannelForPostTarget);
         }
     }
 
-    private TextChannel getTextChannelForPostTarget(PostTarget target)  {
+    private GuildMessageChannel getMessageChannelForPostTarget(PostTarget target)  {
         Guild guild = botService.getInstance().getGuildById(target.getServerReference().getId());
         if(guild != null) {
-            TextChannel textChannelById = guild.getTextChannelById(target.getChannelReference().getId());
-            if(textChannelById != null) {
-                return textChannelById;
+            GuildChannel guildChannelById = guild.getGuildChannelById(target.getChannelReference().getId());
+            if(guildChannelById instanceof GuildMessageChannel) {
+                return (GuildMessageChannel) guildChannelById;
             } else {
-                log.error("Incorrect post target configuration: {} points to {} on server {}", target.getName(),
+                log.error("Incorrect post target configuration (it is not a message channel): {} points to {} on server {}", target.getName(),
                         target.getChannelReference().getId(), target.getServerReference().getId());
                 throw new ChannelNotInGuildException(target.getChannelReference().getId());
             }
@@ -144,9 +141,9 @@ public class PostTargetServiceBean implements PostTargetService {
             log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
             return Arrays.asList(CompletableFuture.completedFuture(null));
         } else {
-            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            GuildMessageChannel guildMessageChannel = getMessageChannelForPostTarget(target);
             log.debug("Send messageToSend towards post target {}.", target.getName());
-            return channelService.sendMessageToSendToChannel(message, textChannelForPostTarget);
+            return channelService.sendMessageToSendToChannel(message, guildMessageChannel);
         }
     }
 
@@ -156,15 +153,15 @@ public class PostTargetServiceBean implements PostTargetService {
             log.info("Post target {} has been disabled in server {} - not sending message.", target.getName(), target.getServerReference().getId());
             return Arrays.asList(CompletableFuture.completedFuture(null));
         } else {
-            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            GuildMessageChannel guildMessageChannel = getMessageChannelForPostTarget(target);
             // always takes the first one, only applicable for this scenario
             String messageText = message.getMessages().get(0);
             if(StringUtils.isBlank(messageText)) {
                 log.debug("Editing embeds of message {} in post target {}.", messageId, target.getName());
-                return Arrays.asList(channelService.editEmbedMessageInAChannel(message.getEmbeds().get(0), textChannelForPostTarget, messageId));
+                return Arrays.asList(channelService.editEmbedMessageInAChannel(message.getEmbeds().get(0), guildMessageChannel, messageId));
             } else {
                 log.debug("Editing message text and potentially text for message {} in post target {}.", messageId, target.getName());
-                return Arrays.asList(channelService.editTextMessageInAChannel(messageText, message.getEmbeds().get(0), textChannelForPostTarget, messageId));
+                return Arrays.asList(channelService.editTextMessageInAChannel(messageText, message.getEmbeds().get(0), guildMessageChannel, messageId));
             }
         }
     }
@@ -176,18 +173,18 @@ public class PostTargetServiceBean implements PostTargetService {
             return Arrays.asList(CompletableFuture.completedFuture(null));
         } else {
             List<CompletableFuture<Message>> futures = new ArrayList<>();
-            TextChannel textChannelForPostTarget = getTextChannelForPostTarget(target);
+            GuildMessageChannel guildMessageChannel = getMessageChannelForPostTarget(target);
             CompletableFuture<Message> messageEditFuture = new CompletableFuture<>();
             futures.add(messageEditFuture);
             if (StringUtils.isBlank(messageToSend.getMessages().get(0).trim())) {
-                channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
+                channelService.retrieveMessageInChannel(guildMessageChannel, messageId).thenAccept(message -> {
                     log.debug("Editing existing message {} when upserting message embeds in channel {} in server {}.",
-                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                            messageId, guildMessageChannel.getIdLong(), guildMessageChannel.getGuild().getId());
                     messageService.editMessage(message, messageToSend.getEmbeds().get(0))
                             .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
                 }).exceptionally(throwable -> {
                     log.debug("Creating new message when upserting message embeds for message {} in channel {} in server {}.",
-                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                            messageId, guildMessageChannel.getIdLong(), guildMessageChannel.getGuild().getId());
                     sendEmbedInPostTarget(messageToSend, target).get(0)
                             .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
                         log.error("Failed to send message to create a message.", innerThrowable);
@@ -197,14 +194,14 @@ public class PostTargetServiceBean implements PostTargetService {
                     return null;
                 });
             } else {
-                channelService.retrieveMessageInChannel(textChannelForPostTarget, messageId).thenAccept(message -> {
+                channelService.retrieveMessageInChannel(guildMessageChannel, messageId).thenAccept(message -> {
                     log.debug("Editing existing message {} when upserting message in channel {} in server {}.",
-                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                            messageId, guildMessageChannel.getIdLong(), guildMessageChannel.getGuild().getId());
                     messageService.editMessage(message, messageToSend.getMessages().get(0), messageToSend.getEmbeds().get(0))
                             .queue(messageEditFuture::complete, messageEditFuture::completeExceptionally);
                 }).exceptionally(throwable -> {
                     log.debug("Creating new message when trying to upsert a message {} in channel {} in server {}.",
-                            messageId, textChannelForPostTarget.getIdLong(), textChannelForPostTarget.getGuild().getId());
+                            messageId, guildMessageChannel.getIdLong(), guildMessageChannel.getGuild().getId());
                     sendEmbedInPostTarget(messageToSend, target).get(0)
                             .thenAccept(messageEditFuture::complete).exceptionally(innerThrowable -> {
                         log.error("Failed to send message to create a message.", innerThrowable);

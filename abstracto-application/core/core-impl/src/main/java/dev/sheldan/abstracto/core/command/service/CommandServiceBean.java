@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.condition.ConditionalCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.config.Parameters;
+import dev.sheldan.abstracto.core.command.exception.CommandNotFoundException;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.DriedCommandContext;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
@@ -188,7 +189,8 @@ public class CommandServiceBean implements CommandService {
     public CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent) {
         String contentStripped = messageContainingContent.getContentRaw();
         UnParsedCommandParameter unParsedParameter = getUnParsedCommandParameter(contentStripped, messageContainingContent);
-        Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter, messageContainingContent.getGuild().getIdLong());
+        Command command = commandRegistry.findCommandByParameters(commandName, unParsedParameter, messageContainingContent.getGuild().getIdLong())
+                .orElseThrow(CommandNotFoundException::new);
         return commandReceivedHandler.getParsedParameters(unParsedParameter, command, messageContainingContent);
     }
 

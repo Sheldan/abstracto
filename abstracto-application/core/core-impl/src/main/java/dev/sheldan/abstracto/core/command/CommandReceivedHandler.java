@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.command;
 
+import dev.sheldan.abstracto.core.Prioritized;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureConfig;
@@ -75,6 +76,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
     private List<CommandParameterHandler> parameterHandlers;
 
     @Autowired
+    private List<CommandAlternative> commandAlternatives;
+
+    @Autowired
     private MetricService metricService;
 
     @Autowired
@@ -129,19 +133,31 @@ public class CommandReceivedHandler extends ListenerAdapter {
         metricService.incrementCounter(COMMANDS_PROCESSED_COUNTER);
         try {
             UnParsedCommandResult result = getUnparsedCommandResult(message);
-            CompletableFuture<CommandParseResult> parsingFuture = getParametersFromMessage(message, result);
-            parsingFuture.thenAccept(parsedParameters -> {
-                try {
-                    self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters());
-                } catch (Exception e) {
-                    reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
-                            , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+            if(result.getCommand() != null) {
+                CompletableFuture<CommandParseResult> parsingFuture = getParametersFromMessage(message, result);
+                parsingFuture.thenAccept(parsedParameters -> {
+                    try {
+                        self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters());
+                    } catch (Exception e) {
+                        reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
+                                , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+                    }
+                });
+                parsingFuture.exceptionally(throwable -> {
+                    self.reportException(event, result.getCommand(), throwable, "Exception when parsing command.");
+                    return null;
+                });
+            } else {
+                Optional<CommandAlternative> foundAlternativeOptional = commandAlternatives
+                        .stream()
+                        .filter(commandAlternative -> commandAlternative.matches(result.getParameter()))
+                        .findFirst();
+                if(foundAlternativeOptional.isPresent()) {
+                    CommandAlternative foundAlternative = foundAlternativeOptional.get();
+                    log.info("Found alternative {} to execute for command.", foundAlternative.getClass());
+                    foundAlternative.execute(result.getParameter(), message);
                 }
-            });
-            parsingFuture.exceptionally(throwable -> {
-                self.reportException(event, result.getCommand(), throwable, "Exception when parsing command.");
-                return null;
-            });
+            }
         } catch (Exception e) {
             reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
                     , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
@@ -153,7 +169,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         List<String> parameters = Arrays.asList(contentStripped.split(" "));
         UnParsedCommandParameter unParsedParameter = new UnParsedCommandParameter(contentStripped, message);
         String commandName = commandManager.getCommandName(parameters.get(0), message.getGuild().getIdLong());
-        Command foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter, message.getGuild().getIdLong());
+        Command foundCommand = commandManager.findCommandByParameters(commandName, unParsedParameter, message.getGuild().getIdLong()).orElse(null);
         return UnParsedCommandResult
                 .builder()
                 .command(foundCommand)
@@ -224,7 +240,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         schedulerService.executeJobWithParametersOnce("confirmationCleanupJob", "core", jobParameters, Date.from(targetDate));
     }
 
-    @Transactional
+    @Transactional(rollbackFor = AbstractoRunTimeException.class)
     public void executeCommand(MessageReceivedEvent event, Command foundCommand, Parameters parsedParameters) {
         UserInitiatedServerContext userInitiatedContext = buildUserInitiatedServerContext(event);
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
@@ -285,7 +301,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         return null;
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = AbstractoRunTimeException.class)
     public CompletableFuture<Void> executeAsyncCommand(Command foundCommand, CommandContext commandContext) {
         return foundCommand.executeAsync(commandContext).thenAccept(result ->
                 executePostCommandListener(foundCommand, commandContext, result)
@@ -536,6 +552,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         metricService.registerCounter(COMMANDS_PROCESSED_COUNTER, "Commands processed");
         metricService.registerCounter(COMMANDS_WRONG_PARAMETER_COUNTER, "Commands with incorrect parameter");
         this.parameterHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
+        this.commandAlternatives = commandAlternatives.stream().sorted(comparing(Prioritized::getPriority)).collect(Collectors.toList());
     }
 
     @Getter

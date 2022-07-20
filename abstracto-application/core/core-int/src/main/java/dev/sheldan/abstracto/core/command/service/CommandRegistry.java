@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CommandRegistry {
-    Command findCommandByParameters(String name, UnParsedCommandParameter context, Long serverId);
+    Optional<Command> findCommandByParameters(String name, UnParsedCommandParameter context, Long serverId);
     Command findCommandViaName(String message);
     List<Command> getAllCommands();
     List<Command> getAllCommandsFromModule(ModuleDefinition module);

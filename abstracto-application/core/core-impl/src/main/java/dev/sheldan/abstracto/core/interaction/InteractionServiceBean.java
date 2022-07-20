@@ -179,7 +179,7 @@ public class InteractionServiceBean implements InteractionService {
 
         if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
             if(action != null) {
-                action = action.setEmbeds(messageToSend.getEmbeds().subList(0, 10));
+                action = action.setEmbeds(messageToSend.getEmbeds().subList(0, Math.min(10, messageToSend.getEmbeds().size())));
             } else {
                 action = interactionHook.editOriginalEmbeds(messageToSend.getEmbeds());
             }
@@ -250,7 +250,7 @@ public class InteractionServiceBean implements InteractionService {
 
         if(messageToSend.getEmbeds() != null && !messageToSend.getEmbeds().isEmpty()) {
             if(action != null) {
-                action = action.addEmbeds(messageToSend.getEmbeds().subList(0, 10));
+                action = action.addEmbeds(messageToSend.getEmbeds().subList(0, Math.min(10, messageToSend.getEmbeds().size())));
             } else {
                 action = callback.replyEmbeds(messageToSend.getEmbeds());
             }

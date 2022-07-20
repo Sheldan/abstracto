@@ -1,9 +1,11 @@
 package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -68,23 +70,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
         potentialCommand.ifPresent(command -> {
             try {
                 commandService.isCommandExecutable(command, event).thenAccept(conditionResult -> {
-                    CompletableFuture<CommandResult> commandOutput;
-                    if(conditionResult.isResult()) {
-                        commandOutput = command.executeSlash(event).thenApply(commandResult -> {
-                            log.info("Command {} in server {} was executed.", command.getConfiguration().getName(), event.getGuild().getIdLong());
-                            return commandResult;
-                        });
-                    } else {
-                        commandOutput = CompletableFuture.completedFuture(CommandResult.fromCondition(conditionResult));
-                    }
-                    commandOutput.thenAccept(commandResult -> {
-                        self.executePostCommandListener(command, event, commandResult);
-                    }).exceptionally(throwable -> {
-                        log.error("Error while handling post execution of command {}", command.getConfiguration().getName(), throwable);
-                        CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
-                        self.executePostCommandListener(command, event, commandResult);
-                        return null;
-                    });
+                    self.executeCommand(event, command, conditionResult);
                 }).exceptionally(throwable -> {
                     log.error("Error while executing command {}", command.getConfiguration().getName(), throwable);
                     CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
@@ -96,6 +82,27 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 CommandResult commandResult = CommandResult.fromError(exception.getMessage(), exception);
                 self.executePostCommandListener(command, event, commandResult);
             }
+        });
+    }
+
+    @Transactional(rollbackFor = AbstractoRunTimeException.class)
+    public void executeCommand(SlashCommandInteractionEvent event, Command command, ConditionResult conditionResult) {
+        CompletableFuture<CommandResult> commandOutput;
+        if(conditionResult.isResult()) {
+            commandOutput = command.executeSlash(event).thenApply(commandResult -> {
+                log.info("Command {} in server {} was executed.", command.getConfiguration().getName(), event.getGuild().getIdLong());
+                return commandResult;
+            });
+        } else {
+            commandOutput = CompletableFuture.completedFuture(CommandResult.fromCondition(conditionResult));
+        }
+        commandOutput.thenAccept(commandResult -> {
+            self.executePostCommandListener(command, event, commandResult);
+        }).exceptionally(throwable -> {
+            log.error("Error while handling post execution of command {}", command.getConfiguration().getName(), throwable);
+            CommandResult commandResult = CommandResult.fromError(throwable.getMessage(), throwable);
+            self.executePostCommandListener(command, event, commandResult);
+            return null;
         });
     }
 

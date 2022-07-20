@@ -90,11 +90,11 @@ public class StartupServiceBean implements Startup {
                     log.info("Executing startup listener {}.", asyncStartupListener);
                     self.executeStartupListener(asyncStartupListener);
                 } catch (Exception e) {
-                    log.error("Startup listener {} failed.", asyncStartupListener);
+                    log.error("Startup listener {} failed.", asyncStartupListener, e);
                 }
             }).thenAccept(unused -> log.info("Startup listener {} finished.", asyncStartupListener))
             .exceptionally(throwable -> {
-                log.error("Startup listener {} failed.", asyncStartupListener);
+                log.error("Startup listener {} failed.", asyncStartupListener, throwable);
                 return null;
             })
         );

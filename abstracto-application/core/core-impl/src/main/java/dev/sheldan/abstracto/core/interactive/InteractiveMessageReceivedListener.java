@@ -24,6 +24,9 @@ public class InteractiveMessageReceivedListener implements AsyncMessageReceivedL
 
     @Override
     public DefaultListenerResult execute(MessageReceivedModel model) {
+        if(model.getServerId() == null) {
+            return DefaultListenerResult.IGNORED;
+        }
         if(executeCallback(model)) {
             return DefaultListenerResult.PROCESSED;
         }

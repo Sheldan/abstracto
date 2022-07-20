@@ -9,4 +9,5 @@
     <include file="1.0-entertainment/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.8-entertainment/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.9-entertainment/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

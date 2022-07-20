@@ -89,10 +89,10 @@ public class CommandManagerTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test(expected = CommandNotFoundException.class)
+    @Test
     public void testFindByParametersNoCommands(){
         when(commandInServerAliasService.getCommandInServerAlias(SERVER_ID, COMMAND_NAME)).thenReturn(Optional.empty());
-        testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
+        Assert.assertFalse(testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID).isPresent());
     }
 
     @Test
@@ -102,8 +102,8 @@ public class CommandManagerTest {
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
         when(commandConfiguration.getNecessaryParameterCount()).thenReturn(0);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
-        Command foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
-        Assert.assertEquals(firstCommand, foundCommand);
+        Optional<Command> foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
+        Assert.assertEquals(firstCommand, foundCommand.get());
     }
 
     @Test
@@ -112,8 +112,8 @@ public class CommandManagerTest {
         when(commandConfiguration.getName()).thenReturn(COMMAND_NAME);
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
         when(commandConfiguration.getParameters()).thenReturn(null);
-        Command foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
-        Assert.assertEquals(firstCommand, foundCommand);
+        Optional<Command> foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
+        Assert.assertEquals(firstCommand, foundCommand.get());
     }
 
     @Test
@@ -122,8 +122,8 @@ public class CommandManagerTest {
         when(commandConfiguration.getName()).thenReturn(COMMAND_NAME);
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
         when(commandConfiguration.getParameters()).thenReturn(null);
-        Command foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
-        Assert.assertEquals(firstCommand, foundCommand);
+        Optional<Command> foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
+        Assert.assertEquals(firstCommand, foundCommand.get());
     }
 
     @Test
@@ -134,8 +134,8 @@ public class CommandManagerTest {
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
         when(commandConfiguration.getNecessaryParameterCount()).thenReturn(0);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
-        Command foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
-        Assert.assertEquals(firstCommand, foundCommand);
+        Optional<Command> foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
+        Assert.assertEquals(firstCommand, foundCommand.get());
     }
 
     @Test(expected = InsufficientParametersException.class)
@@ -157,8 +157,8 @@ public class CommandManagerTest {
         when(commandConfiguration.getNecessaryParameterCount()).thenReturn(0);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
         setupAliasTest();
-        Command foundCommand = testUnit.findCommandByParameters(ALIAS_NAME, parsedCommandParameter, SERVER_ID);
-        Assert.assertEquals(firstCommand, foundCommand);
+        Optional<Command> foundCommand = testUnit.findCommandByParameters(ALIAS_NAME, parsedCommandParameter, SERVER_ID);
+        Assert.assertEquals(firstCommand, foundCommand.get());
     }
 
     @Test
