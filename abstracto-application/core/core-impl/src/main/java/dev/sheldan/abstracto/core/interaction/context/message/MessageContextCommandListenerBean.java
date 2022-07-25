@@ -1,8 +1,12 @@
 package dev.sheldan.abstracto.core.interaction.context.message;
 
+import dev.sheldan.abstracto.core.command.CommandReceivedHandler;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interaction.InteractionResult;
 import dev.sheldan.abstracto.core.interaction.context.message.listener.MessageContextCommandListener;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.listener.interaction.MessageContextInteractionModel;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
@@ -17,6 +21,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -48,11 +54,20 @@ public class MessageContextCommandListenerBean extends ListenerAdapter {
     @Autowired
     private FeatureModeService featureModeService;
 
+    @Autowired
+    private MetricService metricService;
+
+    public static final CounterMetric MESSAGE_CONTEXT_COMMANDS_PROCESSED_COUNTER = CounterMetric
+            .builder()
+            .name(CommandReceivedHandler.COMMAND_PROCESSED)
+            .tagList(Arrays.asList(MetricTag.getTag(CommandReceivedHandler.STATUS_TAG, "processed"), MetricTag.getTag(CommandReceivedHandler.TYPE_TAG, "context.message")))
+            .build();
+
     @Override
     public void onMessageContextInteraction(@NotNull MessageContextInteractionEvent event) {
         if(listenerList == null) return;
         CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), messageContextCommandExecutor).exceptionally(throwable -> {
-            log.error("Failed to execute listener logic in async button event.", throwable);
+            log.error("Failed to execute listener logic in async message context event.", throwable);
             return null;
         });
     }
@@ -68,6 +83,7 @@ public class MessageContextCommandListenerBean extends ListenerAdapter {
             List<MessageContextCommandListener> validListener = filterFeatureAwareListener(listenerList, model);
             Optional<MessageContextCommandListener> listenerOptional = findListener(validListener, model);
             if(listenerOptional.isPresent()) {
+                metricService.incrementCounter(MESSAGE_CONTEXT_COMMANDS_PROCESSED_COUNTER);
                 listener = listenerOptional.get();
                 listener.execute(model);
                 InteractionResult result = InteractionResult.fromSuccess();
@@ -114,6 +130,11 @@ public class MessageContextCommandListenerBean extends ListenerAdapter {
 
     public List<MessageContextCommandListener> getListenerList() {
         return listenerList;
+    }
+
+    @PostConstruct
+    public void filterPostProcessors() {
+        metricService.registerCounter(MESSAGE_CONTEXT_COMMANDS_PROCESSED_COUNTER, "Message context commands processed");
     }
 
 }

@@ -1,11 +1,15 @@
 package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.CommandReceivedHandler;
 import dev.sheldan.abstracto.core.command.condition.ConditionResult;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.metric.service.CounterMetric;
+import dev.sheldan.abstracto.core.metric.service.MetricService;
+import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -19,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -45,6 +50,15 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     @Autowired
     private List<PostCommandExecution> executions;
 
+    @Autowired
+    private MetricService metricService;
+
+    public static final CounterMetric SLASH_COMMANDS_PROCESSED_COUNTER = CounterMetric
+            .builder()
+            .name(CommandReceivedHandler.COMMAND_PROCESSED)
+            .tagList(Arrays.asList(MetricTag.getTag(CommandReceivedHandler.STATUS_TAG, "processed"), MetricTag.getTag(CommandReceivedHandler.TYPE_TAG, "slash")))
+            .build();
+
     public List<Command> getSlashCommands() {
         if(commands == null || commands.isEmpty()) {
             return new ArrayList<>();
@@ -59,7 +73,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(commands == null || commands.isEmpty()) return;
         CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), slashCommandExecutor).exceptionally(throwable -> {
-            log.error("Failed to execute listener logic in async button event.", throwable);
+            log.error("Failed to execute listener logic in async slash command event.", throwable);
             return null;
         });
     }
@@ -68,6 +82,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     public void executeListenerLogic(SlashCommandInteractionEvent event) {
         Optional<Command> potentialCommand = findCommand(event);
         potentialCommand.ifPresent(command -> {
+            metricService.incrementCounter(SLASH_COMMANDS_PROCESSED_COUNTER);
             try {
                 commandService.isCommandExecutable(command, event).thenAccept(conditionResult -> {
                     self.executeCommand(event, command, conditionResult);
@@ -123,6 +138,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
 
     @PostConstruct
     public void filterPostProcessors() {
+        metricService.registerCounter(SLASH_COMMANDS_PROCESSED_COUNTER, "Slash Commands processed");
         executions = executions
                 .stream()
                 .filter(PostCommandExecution::supportsSlash)
