@@ -20,6 +20,9 @@ public class ServerChannelMessage {
     }
 
     public static ServerChannelMessage fromMessage(Message message) {
+        if(message == null) {
+            return null;
+        }
         return ServerChannelMessage
                 .builder()
                 .serverId(message.getGuild().getIdLong())
@@ -29,6 +32,9 @@ public class ServerChannelMessage {
     }
 
     public static ServerChannelMessage fromCachedMessage(CachedMessage cachedMessage) {
+        if(cachedMessage == null) {
+            return null;
+        }
         return ServerChannelMessage
                 .builder()
                 .serverId(cachedMessage.getServerId())
