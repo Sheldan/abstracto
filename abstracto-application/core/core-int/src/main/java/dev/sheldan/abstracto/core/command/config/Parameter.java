@@ -29,6 +29,8 @@ public class Parameter implements Serializable {
     @Builder.Default
     private Integer listSize = 0;
     @Builder.Default
+    private Boolean supportsAutoComplete = false;
+    @Builder.Default
     private List<ParameterValidator> validators = new ArrayList<>();
     @Builder.Default
     private Map<String, Object> additionalInfo = new HashMap<>();

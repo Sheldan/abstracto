@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +41,10 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     @Autowired
     @Qualifier("slashCommandExecutor")
     private TaskExecutor slashCommandExecutor;
+
+    @Autowired
+    @Qualifier("slashCommandAutoCompleteExecutor")
+    private TaskExecutor slashCommandAutoCompleteExecutor;
 
     @Autowired
     private SlashCommandListenerBean self;
@@ -100,6 +105,29 @@ public class SlashCommandListenerBean extends ListenerAdapter {
         });
     }
 
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        if(commands == null || commands.isEmpty()) return;
+        CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), slashCommandAutoCompleteExecutor).exceptionally(throwable -> {
+            log.error("Failed to execute listener logic in async auto complete interaction event.", throwable);
+            return null;
+        });
+    }
+
+    @Transactional
+    public void executeAutCompleteListenerLogic(CommandAutoCompleteInteractionEvent event) {
+        Optional<Command> potentialCommand = findCommand(event);
+        potentialCommand.ifPresent(command -> {
+            try {
+                List<String> replies = command.performAutoComplete(event);
+                event.replyChoiceStrings(replies).queue(unused -> {},
+                        throwable -> log.error("Failed to response to complete of command {} in guild {}.", command.getConfiguration().getName(), event.getGuild().getIdLong()));
+            } catch (Exception exception) {
+                log.error("Error while executing autocomplete of command {}.", command.getConfiguration().getName(), exception);
+            }
+        });
+    }
+
     @Transactional(rollbackFor = AbstractoRunTimeException.class)
     public void executeCommand(SlashCommandInteractionEvent event, Command command, ConditionResult conditionResult) {
         CompletableFuture<CommandResult> commandOutput;
@@ -129,6 +157,14 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     private Optional<Command> findCommand(SlashCommandInteractionEvent event) {
+        return commands
+                .stream()
+                .filter(command -> command.getConfiguration().getSlashCommandConfig().isEnabled())
+                .filter(command -> command.getConfiguration().getSlashCommandConfig().matchesInteraction(event.getInteraction()))
+                .findAny();
+    }
+
+    private Optional<Command> findCommand(CommandAutoCompleteInteractionEvent event) {
         return commands
                 .stream()
                 .filter(command -> command.getConfiguration().getSlashCommandConfig().isEnabled())

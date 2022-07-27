@@ -31,7 +31,10 @@ public class UrbanServiceBean implements UrbanService {
 
     @Override
     public UrbanDefinition getUrbanDefinition(String query) throws IOException {
-        Request request = new Request.Builder().url(String.format(requestUrl, query)).get().build();
+        Request request = new Request.Builder()
+                .url(String.format(requestUrl, query))
+                .get()
+                .build();
         Response response = okHttpClient.newCall(request).execute();
         if(!response.isSuccessful()) {
             if(log.isDebugEnabled()) {

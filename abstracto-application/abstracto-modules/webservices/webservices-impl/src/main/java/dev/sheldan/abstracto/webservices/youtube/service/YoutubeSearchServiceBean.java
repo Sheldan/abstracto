@@ -6,6 +6,7 @@ import com.google.api.services.youtube.model.SearchResult;
 import dev.sheldan.abstracto.webservices.youtube.exception.YoutubeAPIException;
 import dev.sheldan.abstracto.webservices.youtube.exception.YoutubeVideoNotFoundException;
 import dev.sheldan.abstracto.webservices.youtube.model.YoutubeVideo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@Slf4j
 public class YoutubeSearchServiceBean implements YoutubeSearchService {
 
     @Autowired

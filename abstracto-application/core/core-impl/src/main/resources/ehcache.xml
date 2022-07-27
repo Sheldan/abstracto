@@ -15,6 +15,16 @@
             <heap unit="entries">2000</heap>
         </resources>
     </cache>
+    <!-- TODO no nice way yet to have this configuration split up -->
+    <cache uses-template="default" alias="general-use-cache">
+        <expiry>
+            <ttl unit="seconds">7200</ttl>
+        </expiry>
+
+        <resources>
+            <heap unit="entries">2000</heap>
+        </resources>
+    </cache>
     <cache-template name="default">
         <expiry>
             <ttl unit="seconds">600</ttl>

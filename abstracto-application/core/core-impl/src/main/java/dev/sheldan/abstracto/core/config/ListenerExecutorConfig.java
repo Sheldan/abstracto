@@ -82,6 +82,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("slashCommandListener");
     }
 
+    @Bean(name = "slashCommandAutoCompleteExecutor")
+    public TaskExecutor slashCommandAutoCompleteExecutor() {
+        return executorService.setupExecutorFor("slashCommandAutoCompleteListener");
+    }
+
     @Bean(name = "emoteDeletedExecutor")
     public TaskExecutor emoteDeletedExecutor() {
         return executorService.setupExecutorFor("emoteDeletedListener");

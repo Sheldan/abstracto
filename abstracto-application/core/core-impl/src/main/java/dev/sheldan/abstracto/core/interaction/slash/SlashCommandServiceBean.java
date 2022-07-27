@@ -124,11 +124,7 @@ public class SlashCommandServiceBean implements SlashCommandService {
                         optionalParameters.add(new OptionData(type, parameter.getSlashCompatibleName() + "_" + i, parameterDescription, false));
                     }
                 } else {
-                    if(!parameter.isOptional()) {
-                        requiredParameters.add(new OptionData(type, parameter.getSlashCompatibleName(), parameterDescription, true));
-                    } else {
-                        optionalParameters.add(new OptionData(type, parameter.getSlashCompatibleName(), parameterDescription, false));
-                    }
+                    requiredParameters.add(new OptionData(type, parameter.getSlashCompatibleName(), parameterDescription, !parameter.isOptional(), parameter.getSupportsAutoComplete()));
                 }
             }
         });

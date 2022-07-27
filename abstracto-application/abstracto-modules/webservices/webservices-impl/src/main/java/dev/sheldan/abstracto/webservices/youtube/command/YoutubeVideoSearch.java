@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -16,12 +17,14 @@ import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.webservices.common.service.SuggestQueriesService;
 import dev.sheldan.abstracto.webservices.config.WebServicesSlashCommandNames;
 import dev.sheldan.abstracto.webservices.config.WebserviceFeatureDefinition;
 import dev.sheldan.abstracto.webservices.youtube.config.YoutubeWebServiceFeatureMode;
 import dev.sheldan.abstracto.webservices.youtube.model.YoutubeVideo;
 import dev.sheldan.abstracto.webservices.youtube.model.command.YoutubeVideoSearchCommandModel;
 import dev.sheldan.abstracto.webservices.youtube.service.YoutubeSearchService;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,6 +59,12 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
+
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
+    @Autowired
+    private SuggestQueriesService suggestQueriesService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -101,6 +110,15 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), SEARCH_QUERY_PARAMETER)) {
+            return suggestQueriesService.getYoutubeSuggestionsForQuery(event.getFocusedOption().getValue());
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Parameter queryParameter = Parameter
@@ -108,6 +126,7 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
                 .name(SEARCH_QUERY_PARAMETER)
                 .type(String.class)
                 .remainder(true)
+                .supportsAutoComplete(true)
                 .templated(true)
                 .build();
         parameters.add(queryParameter);
