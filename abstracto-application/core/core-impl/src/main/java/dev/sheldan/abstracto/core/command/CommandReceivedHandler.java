@@ -75,7 +75,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
     @Autowired
     private List<CommandParameterHandler> parameterHandlers;
 
-    @Autowired
+    @Autowired(required = false)
     private List<CommandAlternative> commandAlternatives;
 
     @Autowired
@@ -149,14 +149,16 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     return null;
                 });
             } else {
-                Optional<CommandAlternative> foundAlternativeOptional = commandAlternatives
-                        .stream()
-                        .filter(commandAlternative -> commandAlternative.matches(result.getParameter()))
-                        .findFirst();
-                if(foundAlternativeOptional.isPresent()) {
-                    CommandAlternative foundAlternative = foundAlternativeOptional.get();
-                    log.info("Found alternative {} to execute for command.", foundAlternative.getClass());
-                    foundAlternative.execute(result.getParameter(), message);
+                if(commandAlternatives != null) {
+                    Optional<CommandAlternative> foundAlternativeOptional = commandAlternatives
+                            .stream()
+                            .filter(commandAlternative -> commandAlternative.matches(result.getParameter()))
+                            .findFirst();
+                    if(foundAlternativeOptional.isPresent()) {
+                        CommandAlternative foundAlternative = foundAlternativeOptional.get();
+                        log.info("Found alternative {} to execute for command.", foundAlternative.getClass());
+                        foundAlternative.execute(result.getParameter(), message);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -553,7 +555,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
         metricService.registerCounter(COMMANDS_PROCESSED_COUNTER, "Commands processed");
         metricService.registerCounter(COMMANDS_WRONG_PARAMETER_COUNTER, "Commands with incorrect parameter");
         this.parameterHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
-        this.commandAlternatives = commandAlternatives.stream().sorted(comparing(Prioritized::getPriority)).collect(Collectors.toList());
+        if(commandAlternatives != null) {
+            this.commandAlternatives = commandAlternatives.stream().sorted(comparing(Prioritized::getPriority)).collect(Collectors.toList());
+        }
     }
 
     @Getter

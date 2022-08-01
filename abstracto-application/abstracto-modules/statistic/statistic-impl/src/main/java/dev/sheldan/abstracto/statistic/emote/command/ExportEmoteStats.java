@@ -89,6 +89,7 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
                 .emotes(usedEmotes)
                 .guild(commandContext.getGuild())
                 .downloadDate(Instant.now())
+                .serverId(commandContext.getGuild().getIdLong())
                 .requester(commandContext.getAuthor())
                 .statsSince(toUseForModel)
                 .build();

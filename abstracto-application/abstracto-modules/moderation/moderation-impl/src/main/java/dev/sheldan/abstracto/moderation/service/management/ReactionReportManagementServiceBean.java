@@ -31,7 +31,7 @@ public class ReactionReportManagementServiceBean implements ReactionReportManage
     @Override
     public Optional<ReactionReport> findRecentReactionReportAboutUser(AUserInAServer aUserInAServer, Duration maxAge) {
         Instant maxCreation = Instant.now().minus(maxAge);
-        List<ReactionReport> foundReports = repository.findByReportedUserAndCreatedLessThan(aUserInAServer, maxCreation);
+        List<ReactionReport> foundReports = repository.findByReportedUserAndCreatedGreaterThan(aUserInAServer, maxCreation);
         return foundReports.isEmpty() ? Optional.empty() : Optional.of(foundReports.get(0));
     }
 

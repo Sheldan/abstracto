@@ -7,10 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ReactionReportRepository extends JpaRepository<ReactionReport, Long> {
 
-    List<ReactionReport> findByReportedUserAndCreatedLessThan(AUserInAServer aUserInAServer, Instant maxCreated);
+    List<ReactionReport> findByReportedUserAndCreatedGreaterThan(AUserInAServer aUserInAServer, Instant maxCreated);
 }

@@ -33,6 +33,7 @@ public class DownloadEmoteStatsModel {
      * The {@link Member} who requested the export
      */
     private Member requester;
+    private Long serverId;
     /**
      * A list of {@link UsedEmote} which are part of the export
      */
