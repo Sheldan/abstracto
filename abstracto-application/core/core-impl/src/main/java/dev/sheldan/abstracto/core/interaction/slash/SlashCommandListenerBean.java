@@ -76,11 +76,16 @@ public class SlashCommandListenerBean extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if(commands == null || commands.isEmpty()) return;
-        CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), slashCommandExecutor).exceptionally(throwable -> {
-            log.error("Failed to execute listener logic in async slash command event.", throwable);
-            return null;
-        });
+        try {
+            if(commands == null || commands.isEmpty()) return;
+            log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
+            CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), slashCommandExecutor).exceptionally(throwable -> {
+                log.error("Failed to execute listener logic in async slash command event.", throwable);
+                return null;
+            });
+        } catch (Exception exception) {
+            log.error("Failed to process slash command interaction event.", exception);
+        }
     }
 
     @Transactional
@@ -107,11 +112,15 @@ public class SlashCommandListenerBean extends ListenerAdapter {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if(commands == null || commands.isEmpty()) return;
-        CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), slashCommandAutoCompleteExecutor).exceptionally(throwable -> {
-            log.error("Failed to execute listener logic in async auto complete interaction event.", throwable);
-            return null;
-        });
+        try {
+            if(commands == null || commands.isEmpty()) return;
+            CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), slashCommandAutoCompleteExecutor).exceptionally(throwable -> {
+                log.error("Failed to execute listener logic in async auto complete interaction event.", throwable);
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to process slash command auto complete interaction.", e);
+        }
     }
 
     @Transactional
