@@ -6,9 +6,5 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.8-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.9-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.3/collection.xml" relativeToChangelogFile="true"/>
+    <include file="context_command.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

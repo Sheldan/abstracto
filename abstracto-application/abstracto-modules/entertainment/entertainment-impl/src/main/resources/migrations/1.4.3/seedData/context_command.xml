@@ -6,9 +6,14 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.8-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.9-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.3/collection.xml" relativeToChangelogFile="true"/>
+    <property name="entertainmentFeature" value="(SELECT id FROM feature WHERE key = 'entertainment')"/>
+
+    <changeSet author="Sheldan" id="mock_context_command">
+        <insert tableName="context_command">
+            <column name="name" value="mock"/>
+            <column name="type" value="MESSAGE"/>
+            <column name="feature_id" valueComputed="${entertainmentFeature}"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

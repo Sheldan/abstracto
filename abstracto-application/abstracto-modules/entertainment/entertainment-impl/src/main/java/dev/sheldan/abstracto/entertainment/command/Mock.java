@@ -6,17 +6,21 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.command.execution.ContextConverter;
 import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
+import dev.sheldan.abstracto.entertainment.config.EntertainmentSlashCommandNames;
 import dev.sheldan.abstracto.entertainment.model.command.MockResponseModel;
 import dev.sheldan.abstracto.entertainment.service.EntertainmentService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,11 +33,19 @@ import static dev.sheldan.abstracto.core.command.config.Parameter.ADDITIONAL_TYP
 public class Mock extends AbstractConditionableCommand {
 
     public static final String MOCK_RESPONSE_TEMPLATE_KEY = "mock_response";
+    public static final String MOCK_COMMAND = "mock";
+    public static final String MESSAGE_PARAMETER = "message";
     @Autowired
     private EntertainmentService entertainmentService;
 
     @Autowired
     private ChannelService channelService;
+
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
+    @Autowired
+    private InteractionService interactionService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -48,11 +60,26 @@ public class Mock extends AbstractConditionableCommand {
             messageText = givenParameter.toString();
         }
         String mockingText = entertainmentService.createMockText(messageText, commandContext.getAuthor(), mockedMember);
-        MockResponseModel model = (MockResponseModel) ContextConverter.slimFromCommandContext(commandContext, MockResponseModel.class);
-        model.setOriginalText(messageText);
-        model.setMockingText(mockingText);
+        MockResponseModel model = MockResponseModel
+                .builder()
+                .originalText(messageText)
+                .mockingText(mockingText)
+                .build();
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(MOCK_RESPONSE_TEMPLATE_KEY, model, commandContext.getChannel()))
                 .thenApply(unused -> CommandResult.fromSuccess());
+    }
+
+    @Override
+    public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+        String text = slashCommandParameterService.getCommandOption(MESSAGE_PARAMETER, event, String.class);
+        String mockingText = entertainmentService.createMockText(text, event.getMember(), null);
+        MockResponseModel model = MockResponseModel
+                .builder()
+                .originalText(text)
+                .mockingText(mockingText)
+                .build();
+        return interactionService.replyEmbed(MOCK_RESPONSE_TEMPLATE_KEY, model, event.getInteraction())
+                .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -60,14 +87,36 @@ public class Mock extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         Map<String, Object> parameterAlternatives = new HashMap<>();
         parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(Message.class, String.class));
-        parameters.add(Parameter.builder().name("message").type(CombinedParameter.class).remainder(true)
-                .additionalInfo(parameterAlternatives).templated(true).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+
+        Parameter messageParameter = Parameter
+                .builder()
+                .name(MESSAGE_PARAMETER)
+                .type(CombinedParameter.class)
+                .remainder(true)
+                .additionalInfo(parameterAlternatives)
+                .templated(true)
+                .build();
+
+        parameters.add(messageParameter);
+
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
+
+        SlashCommandConfig slashCommandConfig = SlashCommandConfig
+                .builder()
+                .enabled(true)
+                .rootCommandName(EntertainmentSlashCommandNames.ENTERTAINMENT)
+                .commandName(MOCK_COMMAND)
+                .build();
+
         return CommandConfiguration.builder()
-                .name("mock")
+                .name(MOCK_COMMAND)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .async(true)
+                .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
