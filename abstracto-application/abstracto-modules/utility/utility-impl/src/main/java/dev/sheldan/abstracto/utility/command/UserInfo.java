@@ -12,6 +12,8 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParame
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
+import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -19,6 +21,7 @@ import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
 import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
 import dev.sheldan.abstracto.utility.model.UserInfoModel;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -30,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -67,16 +71,12 @@ public class UserInfo extends AbstractConditionableCommand {
         if(!memberToShow.hasTimeJoined()) {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
             return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
-                model.setMemberInfo(member);
-                model.setCreationDate(member.getTimeCreated().toInstant());
-                model.setJoinDate(member.getTimeJoined().toInstant());
+                fillUserInfoModel(model,  member);
                 return self.sendResponse(commandContext.getChannel(), model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             });
         } else {
-            model.setMemberInfo(memberToShow);
-            model.setCreationDate(memberToShow.getTimeCreated().toInstant());
-            model.setJoinDate(memberToShow.getTimeJoined().toInstant());
+            fillUserInfoModel(model, memberToShow);
             return self.sendResponse(commandContext.getChannel(), model)
                 .thenApply(aVoid -> CommandResult.fromIgnored());
         }
@@ -109,19 +109,30 @@ public class UserInfo extends AbstractConditionableCommand {
         if(!memberToShow.hasTimeJoined()) {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
             return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
-                model.setMemberInfo(member);
-                model.setCreationDate(member.getTimeCreated().toInstant());
-                model.setJoinDate(member.getTimeJoined().toInstant());
+                fillUserInfoModel(model, member);
                 return self.sendResponse(event, model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             });
         } else {
-            model.setMemberInfo(memberToShow);
-            model.setCreationDate(memberToShow.getTimeCreated().toInstant());
-            model.setJoinDate(memberToShow.getTimeJoined().toInstant());
+            fillUserInfoModel(model, memberToShow);
             return self.sendResponse(event, model)
                     .thenApply(aVoid -> CommandResult.fromIgnored());
         }
+    }
+
+    private void fillUserInfoModel(UserInfoModel model, Member member) {
+        model.setCreationDate(member.getTimeCreated().toInstant());
+        model.setJoinDate(member.getTimeJoined().toInstant());
+        model.setId(member.getIdLong());
+        model.setMemberDisplay(MemberNameDisplay.fromMember(member));
+        model.setOnlineStatus(member.getOnlineStatus().getKey());
+        member.getRoles().forEach(role -> model.getRoles().add(RoleDisplay.fromRole(role)));
+        member.getActivities().forEach(activity -> model.getActivities().add(activity.getType().name()));
+        Optional<Activity> customStatusOptional = member.getActivities().stream().filter(activity -> activity.getType().equals(Activity.ActivityType.CUSTOM_STATUS)).findFirst();
+        customStatusOptional.ifPresent(activity -> {
+            model.setCustomStatus(activity.getName());
+            model.setCustomEmoji(activity.getEmoji() != null ? activity.getEmoji().getAsMention() : null);
+        });
     }
 
     @Override
