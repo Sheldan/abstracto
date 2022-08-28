@@ -21,6 +21,6 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
     @Override
     public Optional<CustomCommand> getCustomCommandByName(String name, Long serverId) {
         AServer server = serverManagementService.loadServer(serverId);
-        return repository.getByNameAndServer(name, server);
+        return repository.getByNameIgnoreCaseAndServer(name, server);
     }
 }

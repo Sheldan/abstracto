@@ -152,7 +152,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 if(commandAlternatives != null) {
                     Optional<CommandAlternative> foundAlternativeOptional = commandAlternatives
                             .stream()
-                            .filter(commandAlternative -> commandAlternative.matches(result.getParameter()))
+                            .filter(commandAlternative -> commandAlternative.shouldExecute(result.getParameter(), event.getGuild()))
                             .findFirst();
                     if(foundAlternativeOptional.isPresent()) {
                         CommandAlternative foundAlternative = foundAlternativeOptional.get();

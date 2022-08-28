@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface CustomCommandRepository extends JpaRepository<CustomCommand, Long> {
-    Optional<CustomCommand> getByNameAndServer(String name, AServer server);
+    Optional<CustomCommand> getByNameIgnoreCaseAndServer(String name, AServer server);
 }
