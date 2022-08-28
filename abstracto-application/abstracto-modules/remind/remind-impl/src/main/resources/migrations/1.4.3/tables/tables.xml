@@ -6,8 +6,5 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-remind/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.10-remind/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.12/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.3/collection.xml" relativeToChangelogFile="true"/>
+    <include file="reminder_participant.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

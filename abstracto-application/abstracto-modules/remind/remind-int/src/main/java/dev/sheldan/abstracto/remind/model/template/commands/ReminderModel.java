@@ -1,16 +1,20 @@
 package dev.sheldan.abstracto.remind.model.template.commands;
 
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
 
 @Getter
 @Setter
 @Builder
 public class ReminderModel {
     private String remindText;
-    private Member member;
+    private MemberNameDisplay memberDisplay;
     private Reminder reminder;
+    private ServerChannelMessage message;
+    private String joinButtonId;
+
 }

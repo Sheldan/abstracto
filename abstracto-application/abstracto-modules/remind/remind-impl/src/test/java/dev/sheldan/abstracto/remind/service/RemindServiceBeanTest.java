@@ -12,11 +12,13 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.remind.exception.ReminderNotFoundException;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
 import dev.sheldan.abstracto.remind.service.management.ReminderManagementService;
+import dev.sheldan.abstracto.remind.service.management.ReminderParticipantManagementService;
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.utils.ImageProxy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,6 +78,9 @@ public class RemindServiceBeanTest {
     private ScheduledExecutorService instantReminderScheduler;
 
     @Mock
+    private ReminderParticipantManagementService reminderParticipantManagementService;
+
+    @Mock
     private AServer server;
 
     @Mock
@@ -83,6 +88,9 @@ public class RemindServiceBeanTest {
 
     @Mock
     private AUser user;
+
+    @Mock
+    private User jdaUser;
 
     @Mock
     private AChannel aChannel;
@@ -238,6 +246,8 @@ public class RemindServiceBeanTest {
         when(remindedMember.getGuild()).thenReturn(guild);
         when(guild.getIdLong()).thenReturn(8L);
         when(remindedMember.getIdLong()).thenReturn(9L);
+        when(remindedMember.getUser()).thenReturn(jdaUser);
+        when(jdaUser.getDefaultAvatar()).thenReturn(Mockito.mock(ImageProxy.class));
         Reminder remindedReminder = Mockito.mock(Reminder.class);
         when(remindedReminder.getTargetDate()).thenReturn(Instant.now());
         when(remindedReminder.getReminderDate()).thenReturn(Instant.now());

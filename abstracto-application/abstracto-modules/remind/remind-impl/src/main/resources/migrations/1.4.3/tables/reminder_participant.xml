@@ -1,0 +1,45 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan"  id="reminder_participant-table">
+        <createTable tableName="reminder_participant">
+            <column name="reminder_id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="reminder_participant_user_in_server_id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+        </createTable>
+        <addPrimaryKey columnNames="reminder_id, reminder_participant_user_in_server_id" tableName="reminder_participant" constraintName="pk_reminder_participant" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="reminder_id" baseTableName="reminder_participant" constraintName="fk_reminder_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="reminder" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="reminder_participant_user_in_server_id"
+                                 baseTableName="reminder_participant" constraintName="fk_reminder_participant_user_in_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_in_server_id" referencedTableName="user_in_server" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="reminder" constraintName="fk_reminder_participant_server"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server" validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS reminder_participant_update_trigger ON reminder_participant;
+            CREATE TRIGGER reminder_participant_update_trigger BEFORE UPDATE ON reminder_participant FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS reminder_participant_insert_trigger ON reminder_participant;
+            CREATE TRIGGER reminder_participant_insert_trigger BEFORE INSERT ON reminder_participant FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+</databaseChangeLog>

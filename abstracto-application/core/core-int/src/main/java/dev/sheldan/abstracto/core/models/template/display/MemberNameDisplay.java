@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 
 @Getter
 @Setter
@@ -14,15 +15,19 @@ public class MemberNameDisplay {
     private String discriminator;
     private String userAvatarUrl;
     private String memberAvatarUrl;
+    private String memberMention;
 
     public static MemberNameDisplay fromMember(Member member) {
+        User user = member.getUser();
+        String userAvatar = user.getAvatarUrl() != null ? user.getAvatarUrl() : user.getDefaultAvatar().getUrl(4096);
         return MemberNameDisplay
                 .builder()
                 .memberAvatarUrl(member.getAvatarUrl())
                 .nickname(member.getNickname())
-                .userName(member.getUser().getName())
-                .userAvatarUrl(member.getUser().getAvatarUrl())
-                .discriminator(member.getUser().getDiscriminator())
+                .userName(user.getName())
+                .memberMention(member.getAsMention())
+                .userAvatarUrl(userAvatar)
+                .discriminator(user.getDiscriminator())
                 .build();
     }
 }

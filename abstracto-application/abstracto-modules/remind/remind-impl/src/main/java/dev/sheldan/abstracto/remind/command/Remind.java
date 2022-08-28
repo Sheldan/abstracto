@@ -5,13 +5,17 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadService;
+import dev.sheldan.abstracto.core.interaction.ComponentService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
@@ -23,6 +27,7 @@ import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
 import dev.sheldan.abstracto.remind.model.template.commands.ReminderModel;
+import dev.sheldan.abstracto.remind.payload.JoinReminderPayload;
 import dev.sheldan.abstracto.remind.service.ReminderService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -41,6 +46,7 @@ public class Remind extends AbstractConditionableCommand {
     public static final String REMINDER_EMBED_KEY = "remind_response";
     public static final String DURATION_PARAMETER = "duration";
     public static final String REMIND_TEXT_PARAMETER = "remindText";
+    public static final String REMINDER_JOIN_BUTTON_ORIGIN = "REMINDER_JOIN_BUTTON";
 
     @Autowired
     private ReminderService remindService;
@@ -60,6 +66,12 @@ public class Remind extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private ComponentService componentService;
+
+    @Autowired
+    private ComponentPayloadService componentPayloadService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -68,13 +80,24 @@ public class Remind extends AbstractConditionableCommand {
         Long serverId = commandContext.getGuild().getIdLong();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, text, remindTime, commandContext.getMessage());
+        String joinButtonId = componentService.generateComponentId();
         ReminderModel remindModel = ReminderModel
                 .builder()
                 .remindText(text)
-                .member(commandContext.getAuthor())
+                .memberDisplay(MemberNameDisplay.fromMember(commandContext.getAuthor()))
+                .joinButtonId(joinButtonId)
                 .reminder(createdReminder)
+                .message(ServerChannelMessage.fromMessage(commandContext.getMessage()))
                 .build();
-        remindModel.setReminder(createdReminder);
+
+        JoinReminderPayload payload = JoinReminderPayload
+                .builder()
+                .remindedUserId(commandContext.getAuthor().getIdLong())
+                .reminderId(createdReminder.getId())
+                .serverId(serverId)
+                .build();
+
+        componentPayloadService.createButtonPayload(joinButtonId, payload, REMINDER_JOIN_BUTTON_ORIGIN, aUserInAServer.getServerReference());
 
         log.info("Notifying user {} about reminder being scheduled.", commandContext.getAuthor().getId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, remindModel, serverId);
@@ -90,14 +113,25 @@ public class Remind extends AbstractConditionableCommand {
         Long serverId = event.getGuild().getIdLong();
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
         Long snowFlake = SnowflakeUtils.createSnowFlake();
+        String joinButtonId = componentService.generateComponentId();
         Reminder createdReminder = remindService.createReminderInForUser(aUserInAServer, reminderText, duration, event.getChannel().getIdLong(), snowFlake);
         ReminderModel remindModel = ReminderModel
                 .builder()
                 .remindText(reminderText)
-                .member(event.getMember())
+                .joinButtonId(joinButtonId)
+                .memberDisplay(MemberNameDisplay.fromMember(event.getMember()))
                 .reminder(createdReminder)
                 .build();
         remindModel.setReminder(createdReminder);
+
+        JoinReminderPayload payload = JoinReminderPayload
+                .builder()
+                .remindedUserId(event.getMember().getIdLong())
+                .reminderId(createdReminder.getId())
+                .serverId(serverId)
+                .build();
+
+        componentPayloadService.createButtonPayload(joinButtonId, payload, REMINDER_JOIN_BUTTON_ORIGIN, aUserInAServer.getServerReference());
 
         log.info("Notifying user {} about reminder being scheduled.", event.getMember().getId());
         MessageToSend messageToSend = templateService.renderEmbedTemplate(REMINDER_EMBED_KEY, remindModel, serverId);
