@@ -83,7 +83,7 @@ public class ReactionReportServiceBean implements ReactionReportService {
         Duration maxAge = Duration.of(cooldownSeconds, ChronoUnit.SECONDS);
         Optional<ReactionReport> recentReportOptional = reactionReportManagementService.findRecentReactionReportAboutUser(reportedUser, maxAge);
         boolean singularMessage = featureModeService.featureModeActive(ModerationFeatureDefinition.REPORT_REACTIONS, serverId, ReportReactionMode.SINGULAR_MESSAGE);
-        boolean anonym = featureModeService.featureModeActive(ModerationFeatureDefinition.REPORT_REACTIONS, reporter.getServerId(), ReportReactionMode.ANONYMOUS);
+        boolean anonymous = featureModeService.featureModeActive(ModerationFeatureDefinition.REPORT_REACTIONS, reporter.getServerId(), ReportReactionMode.ANONYMOUS);
         if(recentReportOptional.isPresent() && singularMessage) {
             ReactionReport report = recentReportOptional.get();
             log.info("Report is already present in channel {} with message {}. Updating field.", report.getReportChannel().getId(), report.getReportMessageId());
@@ -102,8 +102,12 @@ public class ReactionReportServiceBean implements ReactionReportService {
             MessageToSend messageToSend = templateService.renderEmbedTemplate(REACTION_REPORT_TEMPLATE_KEY, model, serverId);
             List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, ReactionReportPostTarget.REACTION_REPORTS, serverId);
             return FutureUtils.toSingleFutureGeneric(messageFutures)
-                    .thenAccept(unused -> reportMessageCreatedListenerManager.sendReportMessageCreatedEvent(reportedMessage, messageFutures.get(0).join(), anonym ? null : reporter))
-                    .thenAccept(unused -> self.createReactionReportInDb(reportedMessage, messageFutures.get(0).join(), reporter));
+                    .thenAccept(unused -> reportMessageCreatedListenerManager.sendReportMessageCreatedEvent(reportedMessage, messageFutures.get(0).join(), anonymous ? null : reporter))
+                    .thenAccept(unused -> {
+                        if(!anonymous) {
+                            self.createReactionReportInDb(reportedMessage, messageFutures.get(0).join(), reporter);
+                        }
+                    });
         }
     }
 
@@ -120,23 +124,21 @@ public class ReactionReportServiceBean implements ReactionReportService {
         } else {
             log.info("Creation reaction report in message {} about message {} in database.", reportMessage.getIdLong(), cachedMessage.getMessageId());
             reactionReportManagementService.createReactionReport(cachedMessage, reportMessage);
-            updateModerationUserReportCooldown(reporter);
         }
+        updateModerationUserReportCooldown(reporter);
     }
 
     @Transactional
     public void updateModerationUserReportCooldown(ServerUser reporter) {
-        if(!featureModeService.featureModeActive(ModerationFeatureDefinition.REPORT_REACTIONS, reporter.getServerId(), ReportReactionMode.ANONYMOUS)) {
-            AUserInAServer reporterAUserInServer = userInServerManagementService.loadOrCreateUser(reporter);
-            Optional<ModerationUser> optionalModerationUser = moderationUserManagementService.findModerationUser(reporterAUserInServer);
-            Instant reportTimeStamp = Instant.now();
-            if(optionalModerationUser.isPresent()) {
-                log.info("Updating last report time of user {}.", reporter.getUserId());
-                optionalModerationUser.get().setLastReportTimeStamp(reportTimeStamp);
-            } else {
-                log.info("Creating new moderation user instance for user {} to track report cooldowns.", reporter.getUserId());
-                moderationUserManagementService.createModerationUserWithReportTimeStamp(reporterAUserInServer, reportTimeStamp);
-            }
+        AUserInAServer reporterAUserInServer = userInServerManagementService.loadOrCreateUser(reporter);
+        Optional<ModerationUser> optionalModerationUser = moderationUserManagementService.findModerationUser(reporterAUserInServer);
+        Instant reportTimeStamp = Instant.now();
+        if(optionalModerationUser.isPresent()) {
+            log.info("Updating last report time of user {}.", reporter.getUserId());
+            optionalModerationUser.get().setLastReportTimeStamp(reportTimeStamp);
+        } else {
+            log.info("Creating new moderation user instance for user {} to track report cooldowns.", reporter.getUserId());
+            moderationUserManagementService.createModerationUserWithReportTimeStamp(reporterAUserInServer, reportTimeStamp);
         }
     }
 
