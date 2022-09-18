@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.repository.EmoteRepository;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -127,7 +127,7 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
     }
 
     @Override
-    public AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId)  {
+    public AEmote setEmoteToCustomEmote(String name, CustomEmoji emote, Long serverId)  {
         return setEmoteToCustomEmote(name, emote.getName(), emote.getIdLong(), emote.isAnimated(), serverId);
     }
 

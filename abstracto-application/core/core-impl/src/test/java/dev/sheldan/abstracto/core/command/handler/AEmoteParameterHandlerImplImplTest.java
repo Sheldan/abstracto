@@ -7,8 +7,8 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +38,7 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
     private CommandParameterIterators iterators;
 
     @Mock
-    private Emote emote;
+    private RichCustomEmoji emote;
 
     @Mock
     private Message message;

@@ -1,6 +1,5 @@
 package dev.sheldan.abstracto.remind.listener;
 
-import dev.sheldan.abstracto.core.command.execution.DriedCommandContext;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.interaction.InteractionService;

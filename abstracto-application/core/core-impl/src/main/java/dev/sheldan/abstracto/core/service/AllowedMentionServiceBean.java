@@ -7,9 +7,9 @@ import dev.sheldan.abstracto.core.service.management.AllowedMentionManagementSer
 import dev.sheldan.abstracto.core.templating.model.MessageConfig;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AEmote;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 
 import java.io.Serializable;
 
@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Builder
 public class FullEmote implements Serializable {
     private AEmote fakeEmote;
-    private transient Emote emote;
+    private transient CustomEmoji emote;
 
     public String getEmoteRepr() {
         if(!fakeEmote.getCustom()) {

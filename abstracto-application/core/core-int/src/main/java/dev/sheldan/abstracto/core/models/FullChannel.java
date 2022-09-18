@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.entities.channel.Channel;
 
 import java.io.Serializable;
 

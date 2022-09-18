@@ -17,9 +17,8 @@ import dev.sheldan.abstracto.logging.config.LoggingPostTarget;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.logging.model.template.MessageEditedLog;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -10,9 +10,9 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.statistic.emote.command.parameter.handler.TrackedEmoteParameterHandler;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,7 +78,7 @@ public class TrackedEmoteParameterHandlerTest {
     @Test
     public void testHandleWithEmote() {
         when(contextMessage.getGuild()).thenReturn(guild);
-        Emote emote = Mockito.mock(Emote.class);
+        RichCustomEmoji emote = Mockito.mock(RichCustomEmoji.class);
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(emote);
@@ -97,7 +97,7 @@ public class TrackedEmoteParameterHandlerTest {
         when(trackedEmoteService.getFakeTrackedEmote(emoteId, guild)).thenReturn(trackedEmote);
         when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(null);
         TrackedEmote parsedEmote = (TrackedEmote) testUnit.handle(input, iterators, parameter, contextMessage, command);
-        verify(trackedEmoteService, times(0)).getFakeTrackedEmote(any(Emote.class), eq(guild));
+        verify(trackedEmoteService, times(0)).getFakeTrackedEmote(any(RichCustomEmoji.class), eq(guild));
         Assert.assertEquals(trackedEmote, parsedEmote);
     }
 

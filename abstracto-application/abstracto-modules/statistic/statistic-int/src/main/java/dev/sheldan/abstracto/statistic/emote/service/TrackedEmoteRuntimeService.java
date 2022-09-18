@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.statistic.emote.service;
 
 import dev.sheldan.abstracto.core.models.cache.CachedEmote;
 import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.List;
@@ -20,19 +19,19 @@ public interface TrackedEmoteRuntimeService {
     Map<Long, Map<Long, List<PersistingEmote>>> getRuntimeConfig();
 
     /**
-     * Adds the given {@link Emote} used in the {@link Guild} to the runtime storage.
+     * Adds the given {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} used in the {@link Guild} to the runtime storage.
      * The necessary lock will be acquired by this method.
-     * @param emote The {@link Emote} to add to the runtime storage
-     * @param guild The {@link Guild} in which the {@link Emote} is used
+     * @param emote The {@link CachedEmote} to add to the runtime storage
+     * @param guild The {@link Guild} in which the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} is used
      * @param external Whether or not the emote is external
      */
     void addEmoteForServer(CachedEmote emote, Guild guild, boolean external);
 
     /**
-     * Adds the given {@link Emote} used in the {@link Guild} to the runtime storage.
+     * Adds the given {@link CachedEmote} used in the {@link Guild} to the runtime storage.
      * The necessary lock will be acquired by this method.
      * @param emote The {@link CachedEmote} to add to the runtime storage
-     * @param guild The {@link Guild} in which the {@link Emote} is used
+     * @param guild The {@link Guild} in which the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} is used
      * @param count The amount of usages which should be added
      * @param external Whether or not the emote is external
      */
@@ -46,20 +45,20 @@ public interface TrackedEmoteRuntimeService {
 
     /**
      * Creates a {@link PersistingEmote} from the given parameters.
-     * @param guild The {@link Guild} in which the {@link Emote} is used
+     * @param guild The {@link Guild} in which the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} is used
      * @param emote The {@link CachedEmote} to create a {@link PersistingEmote} from
-     * @param external Whether or not the {@link Emote} is external
-     * @return A created {@link PersistingEmote} instance from the {@link Emote}
+     * @param external Whether or not the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} is external
+     * @return A created {@link PersistingEmote} instance from the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji}
      */
     PersistingEmote createFromEmote(Guild guild, CachedEmote emote, boolean external);
 
     /**
      * Creates a {@link PersistingEmote} from the given parameters.
-     * @param guild The {@link Guild} in which the {@link Emote} is used
+     * @param guild The {@link Guild} in which the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} is used
      * @param emote The {@link CachedEmote} to create a {@link PersistingEmote} from
-     * @param count The amount of usages the {@link Emote} has been used
-     * @param external Whether or not the {@link Emote} is external
-     * @return A created {@link PersistingEmote} instance from the {@link Emote}
+     * @param count The amount of usages the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} has been used
+     * @param external Whether or not the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} is external
+     * @return A created {@link PersistingEmote} instance from the {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji}
      */
     PersistingEmote createFromEmote(Guild guild, CachedEmote emote, Long count, boolean external);
 

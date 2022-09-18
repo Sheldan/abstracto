@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.listener.async.jda;
 import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.EmoteNameUpdatedModel;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.emote.update.EmoteUpdateNameEvent;
+import net.dv8tion.jda.api.events.emoji.update.EmojiUpdateNameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +30,14 @@ public class AsyncEmoteUpdatedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onEmoteUpdateName(@NotNull EmoteUpdateNameEvent event) {
+    public void onEmojiUpdateName(@NotNull EmojiUpdateNameEvent event) {
         if(listenerList == null) return;
         EmoteNameUpdatedModel model = getModel(event);
         listenerList.forEach(deletedListener -> listenerService.executeFeatureAwareListener(deletedListener, model, emoteDeletedListenerExecutor));
     }
 
-    private EmoteNameUpdatedModel getModel(EmoteUpdateNameEvent event) {
-        return EmoteNameUpdatedModel.builder().emote(event.getEmote()).newValue(event.getNewValue()).oldValue(event.getOldValue()).build();
+    private EmoteNameUpdatedModel getModel(EmojiUpdateNameEvent event) {
+        return EmoteNameUpdatedModel.builder().emote(event.getEmoji()).newValue(event.getNewValue()).oldValue(event.getOldValue()).build();
     }
 
 }

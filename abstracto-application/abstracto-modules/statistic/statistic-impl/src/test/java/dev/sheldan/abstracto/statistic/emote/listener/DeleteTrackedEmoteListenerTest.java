@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.statistic.emote.listener;
 import dev.sheldan.abstracto.core.models.listener.EmoteDeletedModel;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +28,7 @@ public class DeleteTrackedEmoteListenerTest {
 
     @Test
     public void testEmoteDeleted() {
-        Emote emote = Mockito.mock(Emote.class);
+        RichCustomEmoji emote = Mockito.mock(RichCustomEmoji.class);
         when(model.getEmote()).thenReturn(emote);
         testUnit.execute(model);
         verify(trackedEmoteManagementService, times(1)).markAsDeleted(emote);

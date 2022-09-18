@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.experience.listener;
 
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
-import dev.sheldan.abstracto.core.listener.ListenerExecutionResult;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;

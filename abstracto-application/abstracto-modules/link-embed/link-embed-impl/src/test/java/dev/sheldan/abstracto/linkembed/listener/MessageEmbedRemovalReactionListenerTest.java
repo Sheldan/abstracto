@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.linkembed.model.database.EmbeddedMessage;
 import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -46,7 +47,7 @@ public class MessageEmbedRemovalReactionListenerTest {
     private MessageReaction messageReaction;
 
     @Mock
-    private MessageReaction.ReactionEmote reactionEmote;
+    private EmojiUnion reactionEmote;
 
     @Mock
     private AUserInAServer embeddingUser;
@@ -119,7 +120,7 @@ public class MessageEmbedRemovalReactionListenerTest {
         when(cachedMessage.getMessageId()).thenReturn(MESSAGE_ID);
         AEmote reactedEmote = Mockito.mock(AEmote.class);
         when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, SERVER_ID)).thenReturn(reactedEmote);
-        when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(messageReaction.getEmoji()).thenReturn(reactionEmote);
         when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote)).thenReturn(true);
         EmbeddedMessage message = Mockito.mock(EmbeddedMessage.class);
         when(message.getEmbeddingUser()).thenReturn(embeddingUser);
@@ -143,7 +144,7 @@ public class MessageEmbedRemovalReactionListenerTest {
         when(cachedMessage.getMessageId()).thenReturn(MESSAGE_ID);
         AEmote reactedEmote = Mockito.mock(AEmote.class);
         when(emoteService.getEmoteOrDefaultEmote(MessageEmbedRemovalReactionListener.REMOVAL_EMOTE, SERVER_ID)).thenReturn(reactedEmote);
-        when(messageReaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(messageReaction.getEmoji()).thenReturn(reactionEmote);
         when(emoteService.isReactionEmoteAEmote(reactionEmote, reactedEmote)).thenReturn(wasCorrectEmote);
         when(model.getMessage()).thenReturn(cachedMessage);
         when(model.getReaction()).thenReturn(messageReaction);

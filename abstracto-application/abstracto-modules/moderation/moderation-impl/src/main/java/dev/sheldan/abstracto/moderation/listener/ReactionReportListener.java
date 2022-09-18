@@ -44,7 +44,7 @@ public class ReactionReportListener implements AsyncReactionAddedListener {
 
         Long serverId = model.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(ReactionReportService.REACTION_REPORT_EMOTE_KEY, serverId);
-        if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
+        if(emoteService.isReactionEmoteAEmote(model.getReaction().getEmoji(), aEmote)) {
             memberService.retrieveMemberInServer(model.getUserReacting())
                     .thenCompose(member -> reactionService.removeReactionFromMessage(model.getReaction(), cachedMessage, member.getUser()))
                     .thenAccept(unused -> log.info("Removed report reaction on message {} in server {} in channel {}.", cachedMessage.getMessageId(), serverId, cachedMessage.getChannelId()));

@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 
 import java.util.List;
@@ -18,8 +19,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface ModMailThreadService {
     /**
-     * Creates a new mod mail thread for the given user. including: the {@link net.dv8tion.jda.api.entities.TextChannel}
-     * in the appropriate {@link net.dv8tion.jda.api.entities.Category} and calls the methods responsible for storing
+     * Creates a new mod mail thread for the given user. including: the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel}
+     * in the appropriate {@link net.dv8tion.jda.api.entities.channel.concrete.Category} and calls the methods responsible for storing
      * the necessary data in the database, notifying the users and sending messages  related to the creation of the {@link ModMailThread}
      * @param member The {@link AUserInAServer} to create the mod mail thread for
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
@@ -73,7 +74,7 @@ public interface ModMailThreadService {
     CompletableFuture<Void> loadExecutingMemberAndRelay(Long threadId, String text, Message message, boolean anonymous, Member targetMember);
 
     /**
-     * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,
+     * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel} associated with the mod mail thread,
      * and depending on the {@link dev.sheldan.abstracto.core.config.FeatureMode} of mod mail logs the content of the thread into the appropriate
      * post target. This also takes an optional note, which will be displayed in the first message of the logging. This method changes the state of the
      * {@link ModMailThread} to CLOSED and notifies the user about closing.
@@ -84,7 +85,7 @@ public interface ModMailThreadService {
     CompletableFuture<Void> closeModMailThreadEvaluateLogging(ModMailThread modMailThread, ClosingContext closingConfig, List<UndoActionInstance> undoActions);
 
     /**
-     * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.TextChannel} associated with the mod mail thread,
+     * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel} associated with the mod mail thread,
      * and logs the content of the thread into the appropriate post target. This also takes an optional note, which will
      * be displayed in the first message of the logging. This method changes the state of the {@link ModMailThread} to
      * CLOSED and notifies the user about closing.

@@ -35,6 +35,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -408,9 +411,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .filter(TextChannel.class::isInstance)
                 .map(TextChannel.class::cast)
                 .iterator();
-        Iterator<Emote> emoteIterator = message
+        Iterator<CustomEmoji> emoteIterator = message
                 .getMentions()
-                .getEmotesBag()
+                .getCustomEmojisBag()
                 .iterator();
         Iterator<Member> memberIterator = message
                 .getMentions()

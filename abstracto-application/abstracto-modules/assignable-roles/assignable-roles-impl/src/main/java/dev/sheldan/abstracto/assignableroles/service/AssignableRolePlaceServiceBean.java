@@ -27,6 +27,8 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +119,7 @@ public class AssignableRolePlaceServiceBean implements AssignableRolePlaceServic
             // it only may be unusable if its a custom emote
             log.debug("Using custom emote {} to create assignable role {} for  assignable role place {} in server {}.",
                     fakeEmote.getEmote().getId(), role.getId(), placeId, serverId);
-            if (!emoteService.isEmoteUsableByBot(fakeEmote.getEmote()) && fakeEmote.getEmote().isAvailable()) {
+            if (!emoteService.isEmoteUsableByBot(fakeEmote.getEmote())) {
                 throw new EmoteNotUsableException(fakeEmote.getEmote());
             }
         }

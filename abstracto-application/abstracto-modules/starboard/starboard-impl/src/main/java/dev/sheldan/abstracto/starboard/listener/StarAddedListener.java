@@ -38,7 +38,7 @@ public class StarAddedListener extends StarboardListener implements AsyncReactio
         }
         Long serverId = model.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, serverId);
-        if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
+        if(emoteService.isReactionEmoteAEmote(model.getReaction().getEmoji(), aEmote)) {
             metricService.incrementCounter(STARBOARD_STARS_ADDED);
             log.info("User {} in server {} reacted with star to put a message {} from channel {} on starboard.",
                     model.getUserReacting().getUserId(), model.getServerId(), model.getMessage().getMessageId(), model.getMessage().getChannelId());

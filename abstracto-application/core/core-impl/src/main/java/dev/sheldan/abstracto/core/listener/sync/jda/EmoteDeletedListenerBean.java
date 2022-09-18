@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
+import net.dv8tion.jda.api.events.emoji.EmojiRemovedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +38,14 @@ public class EmoteDeletedListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Override
-    public void onEmoteRemoved(@NotNull EmoteRemovedEvent event) {
+    public void onEmojiRemoved(@NotNull EmojiRemovedEvent event) {
         if(deletedListeners == null) return;
         EmoteDeletedModel model = getModel(event);
         deletedListeners.forEach(listener -> listenerService.executeFeatureAwareListener(listener, model));
     }
 
-    private EmoteDeletedModel getModel(EmoteRemovedEvent event) {
-        return EmoteDeletedModel.builder().emote(event.getEmote()).build();
+    private EmoteDeletedModel getModel(EmojiRemovedEvent event) {
+        return EmoteDeletedModel.builder().emote(event.getEmoji()).build();
     }
 
     @PostConstruct

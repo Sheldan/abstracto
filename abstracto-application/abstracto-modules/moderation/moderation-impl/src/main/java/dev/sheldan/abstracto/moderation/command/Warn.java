@@ -63,6 +63,7 @@ public class Warn extends AbstractConditionableCommand {
                 .builder()
                 .reason(reason)
                 .warnedMember(member)
+                .channel(commandContext.getChannel())
                 .member(commandContext.getAuthor())
                 .guild(commandContext.getGuild())
                 .message(commandContext.getMessage())

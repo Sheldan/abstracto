@@ -17,11 +17,18 @@ import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import net.dv8tion.jda.api.utils.AttachmentOption;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,14 +131,15 @@ public class ChannelServiceBean implements ChannelService {
         log.debug("Sending message {} from channel {} and server {} to channel {}.",
                 message.getId(), message.getChannel().getId(), message.getGuild().getId(), channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(message).allowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null)).submit();
+        MessageCreateData messageCreateData = MessageCreateData.fromMessage(message);
+        return channel.sendMessage(messageCreateData).setAllowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null)).submit();
     }
 
     @Override
     public CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel) {
         log.debug("Sending text to channel {}.", channel.getId());
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessage(text).allowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null)).submit();
+        return channel.sendMessage(text).setAllowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null)).submit();
     }
 
     @Override
@@ -158,9 +166,9 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
-    public MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
+    public MessageCreateAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel) {
         metricService.incrementCounter(MESSAGE_SEND_METRIC);
-        return channel.sendMessageEmbeds(embed).allowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null));
+        return channel.sendMessageEmbeds(embed).setAllowedMentions(allowedMentionService.getAllowedMentionsFor(channel, null));
     }
 
     @Override
@@ -192,7 +200,7 @@ public class ChannelServiceBean implements ChannelService {
             throw new IllegalArgumentException("Ephemeral messages are only supported in interaction context.");
         }
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        List<MessageAction> allMessageActions = new ArrayList<>();
+        List<MessageCreateAction> allMessageActions = new ArrayList<>();
         Iterator<MessageEmbed> embedIterator = messageToSend.getEmbeds().iterator();
         for (int i = 0; i < messageToSend.getMessages().size(); i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
@@ -206,7 +214,7 @@ public class ChannelServiceBean implements ChannelService {
                 messageEmbeds.add(embedToAdd);
                 embedIterator.remove();
             }
-            MessageAction messageAction = textChannel.sendMessage(text);
+            MessageCreateAction messageAction = textChannel.sendMessage(text);
             if(!messageEmbeds.isEmpty()) {
                 messageAction.setEmbeds(messageEmbeds);
             }
@@ -235,11 +243,11 @@ public class ChannelServiceBean implements ChannelService {
         if(!actionRows.isEmpty()) {
             List<List<ActionRow>> groupedActionRows = ListUtils.partition(actionRows, ComponentService.MAX_BUTTONS_PER_ROW);
             for (int i = 0; i < allMessageActions.size(); i++) {
-                allMessageActions.set(i, allMessageActions.get(i).setActionRows(groupedActionRows.get(i)));
+                allMessageActions.set(i, allMessageActions.get(i).setComponents(groupedActionRows.get(i)));
             }
             for (int i = allMessageActions.size(); i < groupedActionRows.size(); i++) {
                 // TODO maybe possible nicer
-                allMessageActions.add(textChannel.sendMessage(".").setActionRows(groupedActionRows.get(i)));
+                allMessageActions.add(textChannel.sendMessage(".").setComponents(groupedActionRows.get(i)));
             }
             AServer server = null;
             if(textChannel instanceof GuildChannel) {
@@ -260,38 +268,28 @@ public class ChannelServiceBean implements ChannelService {
         }
 
         if(messageToSend.hasFilesToSend()) {
+            List<FileUpload> attachedFiles = messageToSend
+                    .getAttachedFiles()
+                    .stream()
+                    .map(AttachedFile::convertToFileUpload)
+                    .collect(Collectors.toList());
             if(!allMessageActions.isEmpty()) {
                 // in case there has not been a message, we need to increment it
-                messageToSend.getAttachedFiles().forEach(attachedFile -> {
-                    String fileNameToUse = attachedFile.getFileName() != null ? attachedFile.getFileName() : attachedFile.getFile().getName();
-                    allMessageActions.set(0, allMessageActions.get(0)
-                            .addFile(attachedFile.getFile(), fileNameToUse, attachedFile.getOptions().toArray(new AttachmentOption[0])));
-                });
+                allMessageActions.set(0, allMessageActions.get(0).addFiles(attachedFiles));
             } else {
                 metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                messageToSend.getAttachedFiles().forEach(attachedFile -> allMessageActions.set(0, allMessageActions.get(0)
-                        .addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]))));
-
-                AttachedFile firstAttachment = messageToSend.getAttachedFiles().get(0);
-                String fileNameToUse = firstAttachment.getFileName() != null ? firstAttachment.getFileName() : firstAttachment.getFile().getName();
-                allMessageActions.add(textChannel.sendFile(firstAttachment.getFile(), fileNameToUse, firstAttachment.getOptions().toArray(new AttachmentOption[0])));
-                if(messageToSend.getAttachedFiles().size() > 1) {
-                    messageToSend.getAttachedFiles().stream().skip(1).forEach(attachedFile -> {
-                        String innerFileNameToUse = attachedFile.getFileName() != null ? attachedFile.getFileName() : attachedFile.getFile().getName();
-                        allMessageActions.set(0, allMessageActions.get(0).addFile(attachedFile.getFile(), innerFileNameToUse, attachedFile.getOptions().toArray(new AttachmentOption[0])));
-                    });
-                }
+                allMessageActions.add(textChannel.sendFiles(attachedFiles));
             }
         }
         Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(textChannel, messageToSend);
         allMessageActions.forEach(messageAction -> {
             if(messageToSend.getReferencedMessageId() != null) {
-                messageAction = messageAction.referenceById(messageToSend.getReferencedMessageId());
+                messageAction = messageAction.setMessageReference(messageToSend.getReferencedMessageId());
                 if(messageToSend.getMessageConfig() != null && !messageToSend.getMessageConfig().isMentionsReferencedMessage()) {
                     messageAction = messageAction.mentionRepliedUser(false);
                 }
             }
-            futures.add(messageAction.allowedMentions(allowedMentions).submit());
+            futures.add(messageAction.setAllowedMentions(allowedMentions).submit());
         });
         return futures;
     }
@@ -318,7 +316,7 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId) {
-        MessageAction messageAction;
+        MessageEditAction messageAction;
         if(!messageToSend.getMessages().isEmpty() && !StringUtils.isBlank(messageToSend.getMessages().get(0))) {
             log.debug("Editing message {} with new text content.", messageId);
             messageAction = channel.editMessageById(messageId, messageToSend.getMessages().get(0));
@@ -334,10 +332,7 @@ public class ChannelServiceBean implements ChannelService {
                 throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }
         }
-        if(messageToSend.getReferencedMessageId() != null) {
-            messageAction = messageAction.referenceById(messageToSend.getReferencedMessageId());
-        }
-        messageAction = messageAction.setActionRows(messageToSend.getActionRows());
+        messageAction = messageAction.setComponents(messageToSend.getActionRows());
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return messageAction.submit();
     }

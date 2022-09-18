@@ -23,7 +23,7 @@ import dev.sheldan.abstracto.utility.model.UserInfoModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -131,7 +131,7 @@ public class UserInfo extends AbstractConditionableCommand {
         Optional<Activity> customStatusOptional = member.getActivities().stream().filter(activity -> activity.getType().equals(Activity.ActivityType.CUSTOM_STATUS)).findFirst();
         customStatusOptional.ifPresent(activity -> {
             model.setCustomStatus(activity.getName());
-            model.setCustomEmoji(activity.getEmoji() != null ? activity.getEmoji().getAsMention() : null);
+            model.setCustomEmoji(activity.getEmoji() != null ? activity.getEmoji().getFormatted() : null);
         });
     }
 

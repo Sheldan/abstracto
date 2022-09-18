@@ -11,8 +11,8 @@ import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.models.FullEmote;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,8 +36,8 @@ public class FullEmoteParameterHandlerImpl implements FullEmoteParameterHandler 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         Parameter cloned = commandService.cloneParameter(param);
-        cloned.setType(Emote.class);
-        Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, cloned, context, command);
+        cloned.setType(CustomEmoji.class);
+        CustomEmoji emote = (CustomEmoji) emoteParameterHandler.handle(input, iterators, cloned, context, command);
         AEmote aEmote;
         if(emote != null) {
             aEmote = emoteService.getFakeEmoteFromEmote(emote);

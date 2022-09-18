@@ -6,6 +6,8 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.requests.restaction.pagination.ReactionPaginationAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -33,7 +35,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
     private CacheEntityServiceBean concreteSelf;
 
     @Override
-    public CachedEmote getCachedEmoteFromEmote(Emote emote, Guild guild) {
+    public CachedEmote getCachedEmoteFromEmote(CustomEmoji emote, Guild guild) {
          return CachedEmote.builder()
                 .emoteId(emote.getIdLong())
                 .emoteName(emote.getName())
@@ -45,20 +47,21 @@ public class CacheEntityServiceBean implements CacheEntityService {
     }
 
     @Override
-    public CachedEmote getCachedEmoteFromEmote(MessageReaction.ReactionEmote emote, Guild guild) {
-        if(emote.isEmoji()) {
+    public CachedEmote getCachedEmoteFromEmote(Emoji emote, Guild guild) {
+        if(!(emote instanceof CustomEmoji)) {
             return CachedEmote.builder()
                     .emoteName(emote.getName())
                     .custom(false)
                     .build();
         } else {
+            CustomEmoji customEmoji = (CustomEmoji) emote;
             return CachedEmote.builder()
-                    .emoteId(emote.getIdLong())
+                    .emoteId(customEmoji.getIdLong())
                     .emoteName(emote.getName())
-                    .imageURL(emote.getEmote().getImageUrl())
-                    .external(emoteService.emoteIsFromGuild(emote.getEmote(), guild))
+                    .imageURL(customEmoji.getImageUrl())
+                    .external(emoteService.emoteIsFromGuild(customEmoji, guild))
                     .custom(true)
-                    .animated(emote.getEmote().isAnimated())
+                    .animated(customEmoji.isAnimated())
                     .build();
         }
     }
@@ -187,7 +190,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
             }
             builder.users(aUsers);
             builder.self(reaction.isSelf());
-            builder.emote(getCachedEmoteFromEmote(reaction.getReactionEmote(), reaction.getGuild()));
+            builder.emote(getCachedEmoteFromEmote(reaction.getEmoji(), reaction.getGuild()));
             future.complete(builder.build());
         }).exceptionally(throwable -> {
             future.completeExceptionally(throwable);
@@ -212,7 +215,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
         if(message.isFromGuild()) {
             message
                     .getMentions()
-                    .getEmotesBag()
+                    .getCustomEmojisBag()
                     .forEach(emote -> emotes.add(getCachedEmoteFromEmote(emote, message.getGuild())));
         }
 

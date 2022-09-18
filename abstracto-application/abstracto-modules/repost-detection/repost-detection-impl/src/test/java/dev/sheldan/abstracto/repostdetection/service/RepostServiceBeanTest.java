@@ -22,6 +22,7 @@ import dev.sheldan.abstracto.repostdetection.model.database.result.RepostLeaderb
 import dev.sheldan.abstracto.repostdetection.service.management.PostedImageManagement;
 import dev.sheldan.abstracto.repostdetection.service.management.RepostManagementService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,7 +108,7 @@ public class RepostServiceBeanTest {
     private Message message;
 
     @Mock
-    private MessageChannel messageChannel;
+    private MessageChannelUnion messageChannel;
 
     @Mock
     private CachedAuthor author;

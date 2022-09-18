@@ -17,6 +17,7 @@ import dev.sheldan.abstracto.starboard.service.StarboardService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorManagementService;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ public class StarRemovedListenerTest {
     private StarboardPost post;
 
     @Mock
-    private MessageReaction.ReactionEmote reactionEmote;
+    private EmojiUnion reactionEmote;
 
     @Mock
     private AEmote starEmote;
@@ -135,7 +135,7 @@ public class StarRemovedListenerTest {
         when(model.getMessage()).thenReturn(cachedMessage);
         when(model.getUserRemoving()).thenReturn(serverUserActing);
         when(model.getReaction()).thenReturn(reaction);
-        when(reaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(reaction.getEmoji()).thenReturn(reactionEmote);
         when(model.getServerId()).thenReturn(SERVER_ID);
         testUnit.execute(model);
         verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID);
@@ -189,7 +189,7 @@ public class StarRemovedListenerTest {
         when(cachedMessage.getMessageId()).thenReturn(MESSAGE_ID);
         when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(reaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(reaction.getEmoji()).thenReturn(reactionEmote);
         when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote)).thenReturn(true);
         when(emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID)).thenReturn(starEmote);
         when(cachedReactions.getUsers()).thenReturn(remainingUsers);
@@ -217,7 +217,7 @@ public class StarRemovedListenerTest {
     private void setupWrongEmote(Long serverId, Long authorId, AEmote starEmote) {
         when(cachedAuthor.getAuthorId()).thenReturn(authorId);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(reaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(reaction.getEmoji()).thenReturn(reactionEmote);
         when(emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, serverId)).thenReturn(starEmote);
     }
 }

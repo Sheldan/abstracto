@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.repostdetection.exception.RepostCheckChannelGroupNotFoundException;
 import dev.sheldan.abstracto.repostdetection.model.database.RepostCheckChannelGroup;
 import dev.sheldan.abstracto.repostdetection.service.management.RepostCheckChannelGroupManagement;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

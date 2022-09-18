@@ -6,8 +6,9 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.statistic.emote.exception.TrackedEmoteNotFoundException;
 import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,52 +19,52 @@ import java.util.Optional;
 public interface TrackedEmoteManagementService {
     /**
      * Creates and persists a {@link TrackedEmote} for which tracking is enabled with the given individual parameters
-     * @param emoteId The ID of the {@link Emote} to track
-     * @param emoteName The name of the {@link Emote} to track
-     * @param animated Whether or not the {@link Emote} to track is animated
-     * @param server The {@link AServer} for which the {@link Emote} should be tracked
+     * @param emoteId The ID of the {@link CustomEmoji} to track
+     * @param emoteName The name of the {@link CustomEmoji} to track
+     * @param animated Whether or not the {@link CustomEmoji} to track is animated
+     * @param server The {@link AServer} for which the {@link CustomEmoji} should be tracked
      * @return The created {@link TrackedEmote} instance in the database
      */
     TrackedEmote createTrackedEmote(Long emoteId, String emoteName, Boolean animated, AServer server);
 
     /**
-     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote} and {@link Guild}
-     * @param emote The {@link Emote} to be used to create a {@link TrackedEmote}
+     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link CustomEmoji} and {@link Guild}
+     * @param emote The {@link CustomEmoji} to be used to create a {@link TrackedEmote}
      * @param guild The {@link Guild} for which the emote should be tracked for
      * @return The created {@link TrackedEmote} instance in the database
      */
-    TrackedEmote createTrackedEmote(Emote emote, Guild guild);
+    TrackedEmote createTrackedEmote(CustomEmoji emote, Guild guild);
 
     /**
-     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote}.
+     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link CustomEmoji}.
      * The emote used here must contain a {@link Guild guild} instance, emotes created from {@link net.dv8tion.jda.api.entities.Message messages}
      * do not.
-     * @param emote The {@link Emote} to be used to create a {@link TrackedEmote}
+     * @param emote The {@link CustomEmoji} to be used to create a {@link TrackedEmote}
      * @return The created {@link TrackedEmote} instance in the database
      */
-    TrackedEmote createTrackedEmote(Emote emote);
+    TrackedEmote createTrackedEmote(RichCustomEmoji emote);
 
     /**
-     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote} and {@link Guild}
+     * Creates and persists a {@link TrackedEmote} for which tracking is enabled based on the given {@link CustomEmoji} and {@link Guild}
      * @param emote The {@link CachedEmote} to be used to create a {@link TrackedEmote}
      * @return The created {@link TrackedEmote} instance in the database
      */
     TrackedEmote createTrackedEmote(CachedEmote emote);
 
     /**
-     * Creates and persist a {@link TrackedEmote} for which tracking is enabled based on the given {@link Emote} and {@link Guild}
-     * @param emote The {@link Emote} to be used to create a {@link TrackedEmote}
+     * Creates and persist a {@link TrackedEmote} for which tracking is enabled based on the given {@link CustomEmoji} and {@link Guild}
+     * @param emote The {@link CustomEmoji} to be used to create a {@link TrackedEmote}
      * @param guild The {@link Guild} for which the emote should be tracked for
      * @param external Whether or not the emote is external
      * @return The created {@link TrackedEmote} instance in the database
      */
-    TrackedEmote createTrackedEmote(Emote emote, Guild guild, boolean external);
+    TrackedEmote createTrackedEmote(CustomEmoji emote, Guild guild, boolean external);
 
     /**
      * Creates and persis a {@link TrackedEmote} based ont he given parameters
-     * @param emoteId The ID of an {@link Emote}
-     * @param emoteName The name of an {@link Emote}
-     * @param animated Whether or not the {@link Emote} is enabled
+     * @param emoteId The ID of an {@link CustomEmoji}
+     * @param emoteName The name of an {@link CustomEmoji}
+     * @param animated Whether or not the {@link CustomEmoji} is enabled
      * @param tracked Whether or not the {@link TrackedEmote} should have tracking enabled
      * @param server The {@link AServer} for which the {@link TrackedEmote} should be created
      * @return The created {@link TrackedEmote} instance in the database
@@ -72,10 +73,10 @@ public interface TrackedEmoteManagementService {
 
     /**
      * Creates an {@link TrackedEmote} based on the parameters which is external
-     * @param emoteId The ID of an {@link Emote}
-     * @param emoteName the name of an {@link Emote}
-     * @param externalUrl The URL of the {@link Emote} which should be stored
-     * @param animated Whether or not the {@link Emote} is external
+     * @param emoteId The ID of an {@link CustomEmoji}
+     * @param emoteName the name of an {@link CustomEmoji}
+     * @param externalUrl The URL of the {@link CustomEmoji} which should be stored
+     * @param animated Whether or not the {@link CustomEmoji} is external
      * @param server The {@link AServer} for which the {@link TrackedEmote} should be created
      * @param trackingEnabled Whether or not the {@link TrackedEmote} should have tracking enabled
      * @return The created {@link TrackedEmote} instance in the database
@@ -84,9 +85,9 @@ public interface TrackedEmoteManagementService {
 
     /**
      * Creates an {@link TrackedEmote} based on the parameters which is not being tracked
-     * @param emoteId The ID of an {@link Emote}
-     * @param emoteName The name of an {@link Emote}
-     * @param animated Whether or not the {@link Emote} is animated
+     * @param emoteId The ID of an {@link CustomEmoji}
+     * @param emoteName The name of an {@link CustomEmoji}
+     * @param animated Whether or not the {@link CustomEmoji} is animated
      * @param server The {@link AServer} for which the {@link TrackedEmote} should be created
      * @return The created {@link TrackedEmote} instance in the database
      */
@@ -100,28 +101,28 @@ public interface TrackedEmoteManagementService {
     TrackedEmote createExternalTrackedEmote(PersistingEmote persistingEmote);
 
     /**
-     * Creates an external {@link TrackedEmote} based on the {@link Emote} and the {@link Guild}
-     * @param emote The {@link Emote} to be used to create an external {@link TrackedEmote}
+     * Creates an external {@link TrackedEmote} based on the {@link CustomEmoji} and the {@link Guild}
+     * @param emote The {@link CustomEmoji} to be used to create an external {@link TrackedEmote}
      * @param guild The {@link Guild} for which the emote should be tracked for
      * @return The create {@link TrackedEmote} instance in the database
      */
-    TrackedEmote createExternalTrackedEmote(Emote emote, Guild guild);
+    TrackedEmote createExternalTrackedEmote(CustomEmoji emote, Guild guild);
 
     /**
      * Marks the {@link TrackedEmote} identified by serverId and emoteId as deleted
      * @param serverId The ID of the server to mark the {@link TrackedEmote} as deleted
-     * @param emoteId The ID of the {@link Emote} to mark the {@link TrackedEmote} as deleted
+     * @param emoteId The ID of the {@link CustomEmoji} to mark the {@link TrackedEmote} as deleted
      * @throws TrackedEmoteNotFoundException if no {@link TrackedEmote} with the given IDs can be found
      */
     void markAsDeleted(Long serverId, Long emoteId);
 
     /**
-     * Marks the {@link Emote emote} as deleted in the database. This {@link Emote emote} must
+     * Marks the {@link CustomEmoji emote} as deleted in the database. This {@link CustomEmoji emote} must
      * not come from a {@link net.dv8tion.jda.api.entities.Message message}, because then the {@link Guild guild}
      * is null.
      * @throws TrackedEmoteNotFoundException if no {@link TrackedEmote} with the given IDs can be found
      */
-    void markAsDeleted(Emote emote);
+    void markAsDeleted(RichCustomEmoji emote);
 
     /**
      * Marks the given {@link TrackedEmote} as deleted
@@ -132,24 +133,24 @@ public interface TrackedEmoteManagementService {
     /**
      * Retrieves a {@link TrackedEmote} by the given emoteID and serverID
      * @param emoteId The ID of the {@link AServer} so search for
-     * @param serverId The ID Of the {@link Emote} to search for
+     * @param serverId The ID Of the {@link CustomEmoji} to search for
      * @return The found {@link TrackedEmote} instance if, one exists
      * @throws TrackedEmoteNotFoundException if no {@link TrackedEmote} with the given IDs can be found
      */
     TrackedEmote loadByEmoteId(Long emoteId, Long serverId);
 
     /**
-     * Loads a {@link TrackedEmote} by the given {@link Emote}. The ID necessary for the server is the {@link Guild} from the emote.
-     * The {@link Emote} must containing a {@link Guild} object, this is not guaranteed, but this implementation relies on it.
-     * @param emote The {@link Emote} to find a {@link TrackedEmote} for
+     * Loads a {@link TrackedEmote} by the given {@link CustomEmoji}. The ID necessary for the server is the {@link Guild} from the emote.
+     * The {@link CustomEmoji} must containing a {@link Guild} object, this is not guaranteed, but this implementation relies on it.
+     * @param emote The {@link CustomEmoji} to find a {@link TrackedEmote} for
      * @return The {@link TrackedEmote} which was found
      * @throws TrackedEmoteNotFoundException if no {@link TrackedEmote} with the given IDs can be found
      */
-    TrackedEmote loadByEmote(Emote emote);
+    TrackedEmote loadByEmote(RichCustomEmoji emote);
 
     /**
      * Checks whether or not a {@link TrackedEmote} with the given emote ID and server ID exists
-     * @param emoteId The ID of an {@link Emote} to check
+     * @param emoteId The ID of an {@link CustomEmoji} to check
      * @param serverId the ID of an {@link AServer} to check
      * @return Whether or not a {@link TrackedEmote} with the given IDs exists
      */
@@ -165,7 +166,7 @@ public interface TrackedEmoteManagementService {
 
     /**
      * Searches for a {@link TrackedEmote} by the given emoteId and serverId and returns an {@link Optional} containing the value, if any.
-     * @param emoteId The ID of the {@link Emote} to search for
+     * @param emoteId The ID of the {@link CustomEmoji} to search for
      * @param serverId The ID of the {@link AServer} to search for
      * @return An {@link Optional} containing a {@link TrackedEmote} if it exists, empty otherwise
      */

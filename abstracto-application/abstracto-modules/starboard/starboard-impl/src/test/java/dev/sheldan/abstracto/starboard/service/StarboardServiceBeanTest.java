@@ -21,6 +21,7 @@ import dev.sheldan.abstracto.starboard.model.template.*;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostManagementService;
 import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorManagementService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

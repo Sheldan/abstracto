@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.EmoteCreatedModel;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
+import net.dv8tion.jda.api.events.emoji.EmojiAddedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +26,14 @@ public class EmoteCreatedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onEmoteAdded(@NotNull EmoteAddedEvent event) {
+    public void onEmojiAdded(@NotNull EmojiAddedEvent event) {
         if(createdListeners == null) return;
         EmoteCreatedModel model = getModel(event);
         createdListeners.forEach(listener -> listenerService.executeFeatureAwareListener(listener, model));
     }
 
-    private EmoteCreatedModel getModel(EmoteAddedEvent event) {
-        return EmoteCreatedModel.builder().emote(event.getEmote()).build();
+    private EmoteCreatedModel getModel(EmojiAddedEvent event) {
+        return EmoteCreatedModel.builder().emote(event.getEmoji()).build();
     }
 
     @PostConstruct

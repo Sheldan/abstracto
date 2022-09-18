@@ -28,9 +28,7 @@ import dev.sheldan.abstracto.modmail.exception.ModMailThreadChannelNotFound;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadNotFoundException;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.dto.ServiceChoicesPayload;
-import dev.sheldan.abstracto.modmail.model.template.ServerChoices;
 import dev.sheldan.abstracto.modmail.model.database.*;
-import dev.sheldan.abstracto.modmail.model.template.ServerChoice;
 import dev.sheldan.abstracto.modmail.model.template.*;
 import dev.sheldan.abstracto.modmail.service.management.ModMailMessageManagementService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailRoleManagementService;
@@ -41,6 +39,9 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -64,7 +65,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      */
     public static final String MODMAIL_CLOSING_MESSAGE_TEXT = "modMailClosingText";
     /**
-     * The config key to use for the ID of the category to create {@link MessageChannel} in
+     * The config key to use for the ID of the category to create {@link GuildMessageChannel} in
      */
     public static final String MODMAIL_CATEGORY = "modmailCategory";
     public static final String TEXT_CHANNEL_NAME_TEMPLATE_KEY = "modMail_channel_name";
@@ -467,14 +468,14 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * This message takes a received {@link Message} from a user, renders it to a new message to send and sends it to
      * the appropriate {@link ModMailThread} channel, the returned promise only returns if the message was dealt with on the user
      * side.
-     * @param textChannel The {@link GuildMessageChannel} in which the {@link ModMailThread} is being handled
+     * @param messageChannel The {@link GuildMessageChannel} in which the {@link ModMailThread} is being handled
      * @param modMailThreadId The id of the modmail thread to which the received {@link Message} is a reply to, can be null, if it is null, its the initial message
      * @param messageFromUser The received message from the user
      * @param member The {@link Member} instance from the user the thread is about. It is used as author
      * @param modMailThreadExists  Whether or not the modmail thread already exists and is persisted.
      * @return A {@link CompletableFuture} which resolves when the post processing of the message is completed (adding read notification, and storing messageIDs)
      */
-    public CompletableFuture<Message> sendUserReply(GuildMessageChannel textChannel, Long modMailThreadId, Message messageFromUser, Member member, boolean modMailThreadExists) {
+    public CompletableFuture<Message> sendUserReply(GuildMessageChannel messageChannel, Long modMailThreadId, Message messageFromUser, Member member, boolean modMailThreadExists) {
         List<CompletableFuture<Member>> subscriberMemberFutures = new ArrayList<>();
         if(modMailThreadExists) {
             ModMailThread modMailThread = modMailThreadManagementService.getById(modMailThreadId);
@@ -520,17 +521,17 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .remainingAttachments(otherAttachments)
                     .subscribers(subscribers)
                     .build();
-            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel, textChannel.getGuild().getIdLong());
-            List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, textChannel);
+            MessageToSend messageToSend = templateService.renderEmbedTemplate("modmail_user_message", modMailUserReplyModel, messageChannel.getGuild().getIdLong());
+            List<CompletableFuture<Message>> completableFutures = channelService.sendMessageToSendToChannel(messageToSend, messageChannel);
             CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
                     .thenCompose(aVoid -> {
-                        log.debug("Adding read reaction to initial message for mod mail thread in channel {}.", textChannel.getGuild().getId());
-                        return reactionService.addReactionToMessageAsync("readReaction", textChannel.getGuild().getIdLong(), messageFromUser);
+                        log.debug("Adding read reaction to initial message for mod mail thread in channel {}.", messageChannel.getGuild().getId());
+                        return reactionService.addReactionToMessageAsync("readReaction", messageChannel.getGuild().getIdLong(), messageFromUser);
                     })
                     .thenApply(aVoid -> {
                         Message createdMessage = completableFutures.get(0).join();
                         if(modMailThreadExists) {
-                            self.postProcessSendMessages(textChannel, createdMessage, messageFromUser);
+                            self.postProcessSendMessages(messageChannel, createdMessage, messageFromUser);
                         }
                         return messageFuture.complete(createdMessage);
                     }).exceptionally(throwable1 -> {

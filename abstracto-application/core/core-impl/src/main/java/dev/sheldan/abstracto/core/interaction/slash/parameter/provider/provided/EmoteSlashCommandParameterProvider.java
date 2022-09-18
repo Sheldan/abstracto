@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.interaction.slash.parameter.provider.provided
 
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandOptionTypeMapping;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.provider.SlashCommandParameterProvider;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class EmoteSlashCommandParameterProvider implements SlashCommandParameter
     public SlashCommandOptionTypeMapping getOptionMapping() {
         return SlashCommandOptionTypeMapping
                 .builder()
-                .type(Emote.class)
+                .type(CustomEmoji.class)
                 .optionTypes(Arrays.asList(OptionType.STRING))
                 .build();
     }

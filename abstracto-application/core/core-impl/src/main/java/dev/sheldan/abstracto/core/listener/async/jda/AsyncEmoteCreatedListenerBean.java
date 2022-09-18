@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.listener.async.jda;
 import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.listener.EmoteCreatedModel;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.events.emote.EmoteAddedEvent;
+import net.dv8tion.jda.api.events.emoji.EmojiAddedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +30,13 @@ public class AsyncEmoteCreatedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onEmoteAdded(@NotNull EmoteAddedEvent event) {
+    public void onEmojiAdded(@NotNull EmojiAddedEvent event) {
         if(listenerList == null) return;
         EmoteCreatedModel model = getModel(event);
         listenerList.forEach(joinListener -> listenerService.executeFeatureAwareListener(joinListener, model, emoteCreatedListenerExecutor));
     }
 
-    private EmoteCreatedModel getModel(EmoteAddedEvent event) {
-        return EmoteCreatedModel.builder().emote(event.getEmote()).build();
+    private EmoteCreatedModel getModel(EmojiAddedEvent event) {
+        return EmoteCreatedModel.builder().emote(event.getEmoji()).build();
     }
 }

@@ -13,8 +13,8 @@ import dev.sheldan.abstracto.linkembed.model.database.EmbeddedMessage;
 import dev.sheldan.abstracto.linkembed.repository.EmbeddedMessageRepository;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,7 +69,7 @@ public class MessageEmbedPostManagementServiceBeanTest {
         when(cachedAuthor.getAuthorId()).thenReturn(EMBEDDED_USER_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
         Message embeddingMessage = Mockito.mock(Message.class);
-        MessageChannel embeddingChannel = Mockito.mock(MessageChannel.class);
+        MessageChannelUnion embeddingChannel = Mockito.mock(MessageChannelUnion.class);
         when(embeddingChannel.getIdLong()).thenReturn(EMBEDDING_CHANNEL_ID);
         when(embeddingMessage.getChannel()).thenReturn(embeddingChannel);
         User embeddingJdaUser = Mockito.mock(User.class);

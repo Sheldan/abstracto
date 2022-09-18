@@ -7,8 +7,8 @@ import dev.sheldan.abstracto.core.models.listener.MessageReceivedModel;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,11 +40,11 @@ public class EmoteTrackingListener implements AsyncMessageReceivedListener {
         if(!message.isFromGuild() || message.isWebhookMessage() || message.getType().isSystem()) {
             return DefaultListenerResult.IGNORED;
         }
-        Map<Long, List<Emote>> collect = message
+        Map<Long, List<CustomEmoji>> collect = message
                 .getMentions()
-                .getEmotesBag()
+                .getCustomEmojisBag()
                 .stream()
-                .collect(Collectors.groupingBy(Emote::getIdLong));
+                .collect(Collectors.groupingBy(CustomEmoji::getIdLong));
         collect.values().forEach(groupedEmotes ->
             trackedEmoteService.addEmoteToRuntimeStorage(groupedEmotes.get(0), guildService.getGuildById(model.getServerId()), (long) groupedEmotes.size())
         );

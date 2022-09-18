@@ -70,7 +70,7 @@ public class ServerInfo extends AbstractConditionableCommand {
                 .build();
         List<EmoteDisplay> staticEmotes = new ArrayList<>();
         List<EmoteDisplay> animatedEmotes = new ArrayList<>();
-        guild.getEmotes().forEach(emote -> {
+        guild.getEmojis().forEach(emote -> {
             EmoteDisplay emoteDisplay = EmoteDisplay.fromEmote(emote);
             if(emote.isAnimated()) {
                 animatedEmotes.add(emoteDisplay);

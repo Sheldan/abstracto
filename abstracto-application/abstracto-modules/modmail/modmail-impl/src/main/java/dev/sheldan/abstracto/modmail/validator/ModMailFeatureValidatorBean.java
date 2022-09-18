@@ -9,8 +9,8 @@ import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.modmail.model.template.ModMailCategoryValidationErrorModel;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

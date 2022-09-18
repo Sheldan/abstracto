@@ -3,8 +3,8 @@ package dev.sheldan.abstracto.core.models.template.display;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 @Getter
 @Setter

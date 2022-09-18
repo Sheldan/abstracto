@@ -11,6 +11,8 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.service.MessageEmbedService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +56,10 @@ public class MessageEmbedListenerTest {
     private Message message;
 
     @Mock
-    private GuildMessageChannel textChannel;
+    private GuildMessageChannelUnion textChannel;
+
+    @Mock
+    private MessageChannelUnion messageChannelUnion;
 
     @Mock
     private MessageReceivedModel model;
@@ -77,7 +82,7 @@ public class MessageEmbedListenerTest {
         when(guild.getIdLong()).thenReturn(FIRST_SERVER_ID);
         when(model.getMessage()).thenReturn(message);
         when(message.getGuild()).thenReturn(guild);
-        when(message.getChannel()).thenReturn(textChannel);
+        when(message.getChannel()).thenReturn(messageChannelUnion);
         when(message.getMember()).thenReturn(member);
     }
 

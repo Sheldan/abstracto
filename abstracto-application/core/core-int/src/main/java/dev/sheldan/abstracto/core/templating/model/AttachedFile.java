@@ -3,10 +3,9 @@ package dev.sheldan.abstracto.core.templating.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.utils.AttachmentOption;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.File;
-import java.util.List;
 
 @Getter
 @Setter
@@ -14,5 +13,13 @@ import java.util.List;
 public class AttachedFile {
     private File file;
     private String fileName;
-    private List<AttachmentOption> options;
+    private boolean spoiler;
+
+    public FileUpload convertToFileUpload() {
+        FileUpload fileUpload = FileUpload.fromData(file, fileName);
+        if(spoiler) {
+            fileUpload = fileUpload.asSpoiler();
+        }
+        return fileUpload;
+    }
 }

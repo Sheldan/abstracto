@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.moderation.service;
 
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 
 import java.util.concurrent.CompletableFuture;

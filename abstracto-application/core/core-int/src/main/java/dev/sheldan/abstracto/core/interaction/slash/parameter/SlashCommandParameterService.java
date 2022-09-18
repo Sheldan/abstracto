@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.interaction.slash.parameter;
 
 
 import dev.sheldan.abstracto.core.models.database.AEmote;
-import net.dv8tion.jda.api.entities.Emoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 

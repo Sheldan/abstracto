@@ -7,8 +7,8 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.repository.TrackedEmoteRepository;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +40,7 @@ public class TrackedEmoteManagementServiceBeanTest {
     private ServerManagementService serverManagementService;
 
     @Mock
-    private Emote emote;
+    private RichCustomEmoji emote;
 
     @Mock
     private Guild guild;

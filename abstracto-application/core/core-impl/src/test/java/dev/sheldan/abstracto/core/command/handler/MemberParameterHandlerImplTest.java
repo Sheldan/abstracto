@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 import net.dv8tion.jda.internal.utils.concurrent.task.GatewayTask;
 import org.junit.Assert;
 import org.junit.Test;
@@ -126,7 +126,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
 
     private void setupMessage()  {
         when(message.getGuild()).thenReturn(guild);
-        RestAction<Member> restAction = Mockito.mock(RestAction.class);
+        CacheRestAction<Member> restAction = Mockito.mock(CacheRestAction.class);
         when(restAction.submit()).thenReturn(CompletableFuture.completedFuture(member));
         when(guild.retrieveMemberById(USER_ID)).thenReturn(restAction);
     }

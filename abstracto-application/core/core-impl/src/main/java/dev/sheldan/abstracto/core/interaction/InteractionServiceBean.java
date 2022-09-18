@@ -18,10 +18,11 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.requests.restaction.WebhookMessageAction;
-import net.dv8tion.jda.api.requests.restaction.WebhookMessageUpdateAction;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageEditAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
-import net.dv8tion.jda.api.utils.AttachmentOption;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static dev.sheldan.abstracto.core.config.MetricConstants.DISCORD_API_INTERACTION_METRIC;
 import static dev.sheldan.abstracto.core.config.MetricConstants.INTERACTION_TYPE;
@@ -64,33 +66,33 @@ public class InteractionServiceBean implements InteractionService {
     @Override
     public List<CompletableFuture<Message>> sendMessageToInteraction(MessageToSend messageToSend, InteractionHook interactionHook) {
         List<CompletableFuture<Message>> futures = new ArrayList<>();
-        List<WebhookMessageAction<Message>> allMessageActions = new ArrayList<>();
+        List<WebhookMessageCreateAction<Message>> allMessageActions = new ArrayList<>();
         int iterations = Math.min(messageToSend.getMessages().size(), messageToSend.getEmbeds().size());
         for (int i = 0; i < iterations; i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             String text = messageToSend.getMessages().get(i);
             MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            WebhookMessageAction<Message> messageAction = interactionHook.sendMessage(text).addEmbeds(embed);
+            WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessage(text).addEmbeds(embed);
             allMessageActions.add(messageAction);
         }
         // one of these loops will get additional iterations, if the number is different, not both
         for (int i = iterations; i < messageToSend.getMessages().size(); i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             String text = messageToSend.getMessages().get(i);
-            WebhookMessageAction<Message> messageAction = interactionHook.sendMessage(text);
+            WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessage(text);
             allMessageActions.add(messageAction);
         }
         for (int i = iterations; i < messageToSend.getEmbeds().size(); i++) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             MessageEmbed embed = messageToSend.getEmbeds().get(i);
-            WebhookMessageAction<Message> messageAction = interactionHook.sendMessageEmbeds(embed);
+            WebhookMessageCreateAction<Message> messageAction = interactionHook.sendMessageEmbeds(embed);
             allMessageActions.add(messageAction);
         }
 
         List<ActionRow> actionRows = messageToSend.getActionRows();
         if(!actionRows.isEmpty()) {
             AServer server = serverManagementService.loadServer(interactionHook.getInteraction().getGuild());
-            allMessageActions.set(0, allMessageActions.get(0).addActionRows(actionRows));
+            allMessageActions.set(0, allMessageActions.get(0).addComponents(actionRows));
             actionRows.forEach(components -> components.forEach(component -> {
                 if(component instanceof ActionComponent) {
                     String id = ((ActionComponent)component).getId();
@@ -111,24 +113,21 @@ public class InteractionServiceBean implements InteractionService {
         }
 
         if(messageToSend.hasFilesToSend()) {
+            List<FileUpload> attachedFiles = messageToSend
+                    .getAttachedFiles()
+                    .stream()
+                    .map(AttachedFile::convertToFileUpload)
+                    .collect(Collectors.toList());
             if(!allMessageActions.isEmpty()) {
                 // in case there has not been a message, we need to increment it
-                messageToSend.getAttachedFiles().forEach(attachedFile ->
-                        allMessageActions.set(0, allMessageActions.get(0).addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]))));
+                allMessageActions.set(0, allMessageActions.get(0).setFiles(attachedFiles));
             } else {
                 metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                List<AttachedFile> attachedFiles = messageToSend.getAttachedFiles();
-                AttachedFile firstFile = attachedFiles.get(0);
-                allMessageActions.add(interactionHook.sendFile(firstFile.getFile(), firstFile.getFileName(), firstFile.getOptions().toArray(new AttachmentOption[0])));
-                attachedFiles
-                        .stream()
-                        .skip(1)
-                        .forEach(attachedFile -> allMessageActions
-                                .add(interactionHook.sendFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]))));
+                allMessageActions.add(interactionHook.sendFiles(attachedFiles));
             }
         }
         Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(interactionHook.getInteraction().getMessageChannel(), messageToSend);
-        allMessageActions.forEach(messageAction -> futures.add(messageAction.allowedMentions(allowedMentions).setEphemeral(messageToSend.getEphemeral()).submit()));
+        allMessageActions.forEach(messageAction -> futures.add(messageAction.setAllowedMentions(allowedMentions).setEphemeral(messageToSend.getEphemeral()).submit()));
         return futures;
     }
 
@@ -149,7 +148,7 @@ public class InteractionServiceBean implements InteractionService {
     public CompletableFuture<InteractionHook> replyString(String text, IReplyCallback callback) {
         return callback
                 .reply(text)
-                .allowedMentions(allowedMentionService.getAllowedMentionTypesForServer(callback.getGuild().getIdLong()))
+                .setAllowedMentions(allowedMentionService.getAllowedMentionTypesForServer(callback.getGuild().getIdLong()))
                 .submit();
     }
 
@@ -171,7 +170,7 @@ public class InteractionServiceBean implements InteractionService {
             interactionHook.setEphemeral(true);
         }
 
-        WebhookMessageUpdateAction<Message> action = null;
+        WebhookMessageEditAction<Message> action = null;
         if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
             action = interactionHook.editOriginal(messageToSend.getMessages().get(0));
@@ -186,31 +185,17 @@ public class InteractionServiceBean implements InteractionService {
         }
 
         if(messageToSend.hasFilesToSend()) {
+            List<FileUpload> attachedFiles = messageToSend
+                    .getAttachedFiles()
+                    .stream()
+                    .map(AttachedFile::convertToFileUpload)
+                    .collect(Collectors.toList());
             if(action != null) {
-                List<AttachedFile> attachedFiles = messageToSend.getAttachedFiles();
-                AttachedFile firstFile = attachedFiles.get(0);
-                action = action.addFile(firstFile.getFile(), firstFile.getFileName(), firstFile.getOptions().toArray(new AttachmentOption[0]));
-                boolean first = true;
-                for (AttachedFile attachedFile : attachedFiles) {
-                    if (first) {
-                        first = false;
-                        continue;
-                    }
-                    action = action.addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]));
-                }
+                action.setFiles(attachedFiles);
             } else {
                 metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                List<AttachedFile> attachedFiles = messageToSend.getAttachedFiles();
-                AttachedFile firstFile = attachedFiles.get(0);
-                action = interactionHook.editOriginal(firstFile.getFile(), firstFile.getFileName(), firstFile.getOptions().toArray(new AttachmentOption[0]));
-                boolean first = true;
-                for (AttachedFile attachedFile : attachedFiles) {
-                    if (first) {
-                        first = false;
-                        continue;
-                    }
-                    action = action.addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]));
-                }
+                MessageEditData messageEditData = MessageEditData.fromFiles(attachedFiles);
+                action = interactionHook.editOriginal(messageEditData);
             }
         }
 
@@ -221,7 +206,7 @@ public class InteractionServiceBean implements InteractionService {
             if(action == null) {
                 action = interactionHook.editOriginal(".");
             }
-            action = action.setActionRows(actionRows);
+            action = action.setComponents(actionRows);
             AServer server = serverManagementService.loadServer(serverId);
             actionRows.forEach(components -> components.forEach(component -> {
                 if(component instanceof ActionComponent) {
@@ -257,31 +242,16 @@ public class InteractionServiceBean implements InteractionService {
         }
 
         if(messageToSend.hasFilesToSend()) {
+            List<FileUpload> attachedFiles = messageToSend
+                    .getAttachedFiles()
+                    .stream()
+                    .map(AttachedFile::convertToFileUpload)
+                    .collect(Collectors.toList());
             if(action != null) {
-                List<AttachedFile> attachedFiles = messageToSend.getAttachedFiles();
-                AttachedFile firstFile = attachedFiles.get(0);
-                action = action.addFile(firstFile.getFile(), firstFile.getFileName(), firstFile.getOptions().toArray(new AttachmentOption[0]));
-                boolean first = true;
-                for (AttachedFile attachedFile : attachedFiles) {
-                    if (first) {
-                        first = false;
-                        continue;
-                    }
-                    action = action.addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]));
-                }
+                action.setFiles(attachedFiles);
             } else {
                 metricService.incrementCounter(MESSAGE_SEND_METRIC);
-                List<AttachedFile> attachedFiles = messageToSend.getAttachedFiles();
-                AttachedFile firstFile = attachedFiles.get(0);
-                action = callback.replyFile(firstFile.getFile(), firstFile.getFileName(), firstFile.getOptions().toArray(new AttachmentOption[0]));
-                boolean first = true;
-                for (AttachedFile attachedFile : attachedFiles) {
-                    if (first) {
-                        first = false;
-                        continue;
-                    }
-                    action = action.addFile(attachedFile.getFile(), attachedFile.getFileName(), attachedFile.getOptions().toArray(new AttachmentOption[0]));
-                }
+                action = callback.replyFiles(attachedFiles);
             }
         }
 
@@ -292,7 +262,7 @@ public class InteractionServiceBean implements InteractionService {
             if(action == null) {
                 action = callback.reply(".");
             }
-            action = action.addActionRows(actionRows);
+            action = action.setComponents(actionRows);
             AServer server = serverManagementService.loadServer(serverId);
             actionRows.forEach(components -> components.forEach(component -> {
                 if(component instanceof ActionComponent) {

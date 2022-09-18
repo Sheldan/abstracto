@@ -18,8 +18,9 @@ import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
 import dev.sheldan.abstracto.statistic.emote.service.management.UsedEmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,7 +88,7 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     }
 
     @Override
-    public void addEmoteToRuntimeStorage(Emote emote, Guild guild, Long count) {
+    public void addEmoteToRuntimeStorage(CustomEmoji emote, Guild guild, Long count) {
         addEmoteToRuntimeStorage(cacheEntityService.getCachedEmoteFromEmote(emote, guild), guild, count);
     }
 
@@ -141,7 +142,7 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     }
 
     @Override
-    public TrackedEmote getFakeTrackedEmote(Emote emote, Guild guild) {
+    public TrackedEmote getFakeTrackedEmote(CustomEmoji emote, Guild guild) {
         return getFakeTrackedEmote(emote.getIdLong(), guild);
     }
 
@@ -158,10 +159,10 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     public TrackedEmoteSynchronizationResult synchronizeTrackedEmotes(Guild guild) {
         List<TrackedEmote> activeTrackedEmotes = trackedEmoteManagementService.getAllActiveTrackedEmoteForServer(guild.getIdLong());
         Long addedEmotes = 0L;
-        List<Emote> allExistingEmotes = guild.getEmotes();
+        List<RichCustomEmoji> allExistingEmotes = guild.getEmojis();
         log.info("Synchronizing emotes for server {}, currently tracked emotes {}, available emotes for server {}.", guild.getIdLong(), activeTrackedEmotes.size(), allExistingEmotes.size());
         // iterate over all emotes currently available in the guild
-        for (Emote emote : allExistingEmotes) {
+        for (RichCustomEmoji emote : allExistingEmotes) {
             // find the emote in the list of known TrackedEmote
             Optional<TrackedEmote> trackedEmoteOptional = activeTrackedEmotes
                     .stream()
@@ -206,13 +207,13 @@ public class TrackedEmoteServiceBean implements TrackedEmoteService {
     }
 
     @Override
-    public TrackedEmote createTrackedEmote(Emote emote, Guild guild) {
+    public TrackedEmote createTrackedEmote(CustomEmoji emote, Guild guild) {
         boolean external = !emoteService.emoteIsFromGuild(emote, guild);
         return createTrackedEmote(emote, guild, external);
     }
 
     @Override
-    public TrackedEmote createTrackedEmote(Emote emote, Guild guild, boolean external) {
+    public TrackedEmote createTrackedEmote(CustomEmoji emote, Guild guild, boolean external) {
         return trackedEmoteManagementService.createTrackedEmote(emote, guild, external);
     }
 

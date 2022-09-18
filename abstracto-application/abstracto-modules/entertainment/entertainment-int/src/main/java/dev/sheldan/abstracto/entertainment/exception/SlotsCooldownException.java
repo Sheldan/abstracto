@@ -1,7 +1,6 @@
 package dev.sheldan.abstracto.entertainment.exception;
 
 import dev.sheldan.abstracto.core.exception.AbstractoTemplatableException;
-import dev.sheldan.abstracto.entertainment.model.exception.PayDayCooldownExceptionModel;
 import dev.sheldan.abstracto.entertainment.model.exception.SlotsCooldownExceptionModel;
 
 import java.time.Duration;

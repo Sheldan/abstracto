@@ -15,7 +15,7 @@ import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,7 +73,7 @@ public class TrackEmoteTest {
         when(commandContext.getGuild().getIdLong()).thenReturn(SERVER_ID);
         TrackedEmote trackedEmote = Mockito.mock(TrackedEmote.class);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
-        Emote emoteToTrack = Mockito.mock(Emote.class);
+        CustomEmoji emoteToTrack = Mockito.mock(CustomEmoji.class);
         when(trackEmoteParameter.getEmote()).thenReturn(emoteToTrack);
         when(trackEmoteParameter.getTrackedEmote()).thenReturn(trackedEmote);
         when(emoteService.emoteIsFromGuild(emoteToTrack, commandContext.getGuild())).thenReturn(false);
@@ -88,7 +88,7 @@ public class TrackEmoteTest {
         when(commandContext.getGuild().getIdLong()).thenReturn(SERVER_ID);
         TrackedEmote trackedEmote = Mockito.mock(TrackedEmote.class);
         when(trackedEmote.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID));
-        Emote emoteToTrack = Mockito.mock(Emote.class);
+        CustomEmoji emoteToTrack = Mockito.mock(CustomEmoji.class);
         when(trackEmoteParameter.getEmote()).thenReturn(emoteToTrack);
         when(trackEmoteParameter.getTrackedEmote()).thenReturn(trackedEmote);
         when(emoteService.emoteIsFromGuild(emoteToTrack, commandContext.getGuild())).thenReturn(false);

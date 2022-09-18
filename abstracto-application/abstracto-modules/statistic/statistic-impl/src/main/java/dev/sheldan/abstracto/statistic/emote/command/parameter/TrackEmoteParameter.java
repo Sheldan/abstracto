@@ -4,23 +4,23 @@ import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 
 /**
- * Container class for containing both an {@link Emote} and a {@link TrackedEmote} for the purpose of a {@link dev.sheldan.abstracto.core.command.config.Parameter}.
+ * Container class for containing both an {@link CustomEmoji} and a {@link TrackedEmote} for the purpose of a {@link dev.sheldan.abstracto.core.command.config.Parameter}.
  * This is used in {@link dev.sheldan.abstracto.statistic.emote.command.TrackEmote} and is used as a convenience parameter, in which there
- * might both a {@link Emote} and a {@link TrackedEmote} as parameter
+ * might both a {@link CustomEmoji} and a {@link TrackedEmote} as parameter
  */
 @Getter
 @Setter
 @Builder
 public class TrackEmoteParameter {
     /**
-     * If an {@link Emote} has been used as parameter, this will have the appropriate value
+     * If an {@link CustomEmoji} has been used as parameter, this will have the appropriate value
      */
-    private Emote emote;
+    private CustomEmoji emote;
     /**
-     * If a {@link Long} or {@link Emote} has been supplied as the parameter, this will contain a faked instance of the respective values
+     * If a {@link Long} or {@link CustomEmoji} has been supplied as the parameter, this will contain a faked instance of the respective values
      */
     private TrackedEmote trackedEmote;
 }

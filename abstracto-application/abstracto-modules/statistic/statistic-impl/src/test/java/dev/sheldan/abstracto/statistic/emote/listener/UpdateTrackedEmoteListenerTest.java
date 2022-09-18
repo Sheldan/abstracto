@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.listener.EmoteNameUpdatedModel;
 import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ public class UpdateTrackedEmoteListenerTest {
 
     @Test
     public void testEmoteUpdated() {
-        Emote changedEmote = Mockito.mock(Emote.class);
+        RichCustomEmoji changedEmote = Mockito.mock(RichCustomEmoji.class);
         TrackedEmote trackedEmote = Mockito.mock(TrackedEmote.class);
         when(trackedEmoteManagementService.loadByEmote(changedEmote)).thenReturn(trackedEmote);
         String newValue = "AFTER";

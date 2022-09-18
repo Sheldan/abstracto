@@ -4,7 +4,11 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +23,7 @@ public interface ChannelService {
     CompletableFuture<Message> sendTextToChannel(String text, MessageChannel channel);
     CompletableFuture<Message> sendEmbedToAChannel(MessageEmbed embed, AChannel channel);
     CompletableFuture<Message> sendEmbedToChannel(MessageEmbed embed, MessageChannel channel);
-    MessageAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel);
+    MessageCreateAction sendEmbedToChannelInComplete(MessageEmbed embed, MessageChannel channel);
     List<CompletableFuture<Message>> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel);
     CompletableFuture<Message> sendMessageEmbedToSendToAChannel(MessageToSend messageToSend, AChannel channel, Integer embedIndex);
 

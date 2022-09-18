@@ -6,14 +6,13 @@ import dev.sheldan.abstracto.invitefilter.service.InviteLinkFilterService;
 import dev.sheldan.abstracto.invitefilter.service.InviteLinkFilterServiceBean;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageType;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class InviteLinkFilterListenerTest {
     private Member member;
 
     @Mock
-    private MessageChannel messageChannel;
+    private MessageChannelUnion messageChannel;
 
     @Mock
     private InviteLinkFilterServiceBean filterServiceBean;

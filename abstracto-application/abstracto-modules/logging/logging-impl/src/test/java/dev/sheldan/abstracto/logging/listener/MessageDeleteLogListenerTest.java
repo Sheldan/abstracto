@@ -17,7 +17,7 @@ import dev.sheldan.abstracto.logging.model.template.MessageDeletedAttachmentLog;
 import dev.sheldan.abstracto.logging.model.template.MessageDeletedLog;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

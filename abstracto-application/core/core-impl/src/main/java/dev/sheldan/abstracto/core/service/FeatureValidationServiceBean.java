@@ -11,8 +11,8 @@ import dev.sheldan.abstracto.core.service.management.ConfigManagementService;
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.PostTargetManagement;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +72,7 @@ public class FeatureValidationServiceBean implements FeatureValidatorService {
         if(emoteOptional.isPresent()) {
             AEmote emote = emoteOptional.get();
             if(emote.getCustom()) {
-                Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+                RichCustomEmoji emoteById = botService.getInstance().getEmojiById(emote.getEmoteId());
                 if(emoteById == null) {
                     rejectEmote(emoteKey, featureValidationResult);
                 } else {

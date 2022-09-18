@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ public interface EmoteManagementService {
     Optional<AEmote> loadEmoteByName(String name, Long serverId);
     Optional<AEmote> loadEmoteByName(String name, AServer server);
     AEmote setEmoteToCustomEmote(String name, String emoteKey, Long emoteId, Boolean animated, Long serverId);
-    AEmote setEmoteToCustomEmote(String name, Emote emote, Long serverId);
+    AEmote setEmoteToCustomEmote(String name, CustomEmoji emote, Long serverId);
     AEmote setEmoteToDefaultEmote(String name, String emoteKey, Long serverId);
     AEmote setEmoteToAEmote(String name, AEmote emote, Long serverId);
     AEmote createEmote(String name, AEmote emote, Long serverId, boolean validateName);

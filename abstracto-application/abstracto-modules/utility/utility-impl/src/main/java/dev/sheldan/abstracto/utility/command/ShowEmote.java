@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
-import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -14,11 +13,8 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
-import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
 import dev.sheldan.abstracto.utility.model.ShowEmoteLog;
-import net.dv8tion.jda.api.entities.Emoji;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +41,7 @@ public class ShowEmote extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
-        Emote emoteParameter = (Emote) parameters.get(0);
+        CustomEmoji emoteParameter = (CustomEmoji) parameters.get(0);
         ShowEmoteLog emoteLog = ShowEmoteLog
                 .builder()
                 .emote(emoteParameter)
@@ -60,7 +56,7 @@ public class ShowEmote extends AbstractConditionableCommand {
         Parameter emoteParameter = Parameter
                 .builder()
                 .name(EMOTE_PARAMETER)
-                .type(Emote.class)
+                .type(CustomEmoji.class)
                 .templated(true)
                 .build();
         parameters.add(emoteParameter);

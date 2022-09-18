@@ -4,9 +4,10 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +30,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     private CommandParameterIterators iterators;
 
     @Mock
-    private Emote emote;
+    private RichCustomEmoji emote;
 
     @Mock
     private Message message;
@@ -52,7 +53,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(Emote.class, unparsedCommandParameterPiece));
+        Assert.assertTrue(testUnit.handles(CustomEmoji.class, unparsedCommandParameterPiece));
     }
 
     @Test
@@ -64,7 +65,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     public void testProperEmoteMention() {
         oneEmoteInIterator();
         String input = getEmoteMention();
-        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
+        CustomEmoji parsed = (CustomEmoji) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
         Assert.assertEquals(parsed, emote);
     }
 
@@ -72,7 +73,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     public void testEmoteById() {
         setupMessage();
         String input = EMOTE_ID.toString();
-        Emote parsed = (Emote) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        CustomEmoji parsed = (CustomEmoji) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
         Assert.assertEquals(parsed, emote);
     }
 
@@ -86,13 +87,13 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     }
 
     private void oneEmoteInIterator() {
-        List<Emote> emotes = Arrays.asList(emote);
+        List<CustomEmoji> emotes = Arrays.asList(emote);
         when(iterators.getEmoteIterator()).thenReturn(emotes.iterator());
     }
 
     private void setupMessage()  {
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote);
+        when(guild.getEmojiById(EMOTE_ID)).thenReturn(emote);
     }
 
 }

@@ -18,8 +18,8 @@ import dev.sheldan.abstracto.moderation.model.template.listener.ReportReactionNo
 import dev.sheldan.abstracto.moderation.service.management.ModerationUserManagementService;
 import dev.sheldan.abstracto.moderation.service.management.ReactionReportManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

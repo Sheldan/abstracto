@@ -19,6 +19,7 @@ import dev.sheldan.abstracto.starboard.service.management.StarboardPostReactorMa
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -98,7 +99,7 @@ public class StarAddedListenerTest {
     private StarboardPost post;
 
     @Mock
-    private MessageReaction.ReactionEmote reactionEmote;
+    private EmojiUnion reactionEmote;
 
     @Mock
     private AEmote starEmote;
@@ -146,7 +147,7 @@ public class StarAddedListenerTest {
         when(model.getUserReacting()).thenReturn(serverUserActing);
         when(model.getServerId()).thenReturn(SERVER_ID);
         when(model.getReaction()).thenReturn(reaction);
-        when(reaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(reaction.getEmoji()).thenReturn(reactionEmote);
         testUnit.execute(model);
         verify(emoteService, times(1)).getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID);
         verify(emoteService, times(0)).getReactionFromMessageByEmote(any(CachedMessage.class), eq(starEmote));
@@ -214,7 +215,7 @@ public class StarAddedListenerTest {
         when(cachedMessage.getMessageId()).thenReturn(MESSAGE_ID);
         when(cachedAuthor.getAuthorId()).thenReturn(AUTHOR_ID);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(reaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(reaction.getEmoji()).thenReturn(reactionEmote);
         when(emoteService.isReactionEmoteAEmote(reactionEmote, starEmote)).thenReturn(true);
         when(emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, SERVER_ID)).thenReturn(starEmote);
         when(serverUserActing.getUserId()).thenReturn(USER_ACTING_ID);
@@ -240,7 +241,7 @@ public class StarAddedListenerTest {
     private void setupWrongEmote(Long serverId, Long authorId, AEmote starEmote) {
         when(cachedAuthor.getAuthorId()).thenReturn(authorId);
         when(cachedMessage.getAuthor()).thenReturn(cachedAuthor);
-        when(reaction.getReactionEmote()).thenReturn(reactionEmote);
+        when(reaction.getEmoji()).thenReturn(reactionEmote);
         when(emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, serverId)).thenReturn(starEmote);
     }
 }

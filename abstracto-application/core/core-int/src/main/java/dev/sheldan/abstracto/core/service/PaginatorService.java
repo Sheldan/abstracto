@@ -1,7 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 
 import java.util.concurrent.CompletableFuture;

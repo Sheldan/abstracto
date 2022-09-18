@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -20,7 +19,6 @@ import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Reader;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;

@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.provider.SlashComm
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
-import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +58,7 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
         } else if(actualOptionType == OptionType.MENTIONABLE) {
             return slashParameterType.cast(event.getOption(name).getAsMentionable());
         } else if(actualOptionType == OptionType.CHANNEL) {
-            return slashParameterType.cast(event.getOption(name).getAsGuildChannel());
+            return slashParameterType.cast(event.getOption(name).getAsChannel());
         } else if(actualOptionType == OptionType.USER) {
             if(parameterType.equals(User.class) && slashParameterType.equals(User.class)) {
                 return slashParameterType.cast(event.getOption(name).getAsUser());
@@ -104,7 +104,7 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
         } else if(actualOptionType == OptionType.MENTIONABLE) {
             return slashParameterType.isInstance(event.getOption(name).getAsMentionable());
         } else if(actualOptionType == OptionType.CHANNEL) {
-            return slashParameterType.isInstance(event.getOption(name).getAsGuildChannel());
+            return slashParameterType.isInstance(event.getOption(name).getAsChannel());
         } else if(actualOptionType == OptionType.USER) {
             if (parameterType.equals(User.class) && slashParameterType.equals(User.class)) {
                 return slashParameterType.isInstance(event.getOption(name).getAsUser());
@@ -146,9 +146,9 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     public Emoji loadEmoteFromString(String input, SlashCommandInteractionEvent event) {
         if(StringUtils.isNumeric(input)) {
             long emoteId = Long.parseLong(input);
-            return Emoji.fromEmote(event.getGuild().getEmoteById(emoteId));
+            return event.getGuild().getEmojiById(emoteId);
         }
-        return Emoji.fromMarkdown(input);
+        return Emoji.fromFormatted(input);
     }
 
     @Override

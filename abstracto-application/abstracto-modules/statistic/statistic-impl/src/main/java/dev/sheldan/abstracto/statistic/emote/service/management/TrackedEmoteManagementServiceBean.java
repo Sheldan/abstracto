@@ -9,8 +9,9 @@ import dev.sheldan.abstracto.statistic.emote.model.PersistingEmote;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.repository.TrackedEmoteRepository;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,13 +34,13 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote createTrackedEmote(Emote emote, Guild guild) {
+    public TrackedEmote createTrackedEmote(CustomEmoji emote, Guild guild) {
         AServer server = serverManagementService.loadServer(guild.getIdLong());
         return createTrackedEmote(emote.getIdLong(), emote.getName(), emote.isAnimated(), true, server);
     }
 
     @Override
-    public TrackedEmote createTrackedEmote(Emote emote) {
+    public TrackedEmote createTrackedEmote(RichCustomEmoji emote) {
         return createTrackedEmote(emote, emote.getGuild());
     }
 
@@ -50,7 +51,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote createTrackedEmote(Emote emote, Guild guild, boolean external) {
+    public TrackedEmote createTrackedEmote(CustomEmoji emote, Guild guild, boolean external) {
         if(external) {
             return createExternalTrackedEmote(emote, guild);
         } else {
@@ -103,7 +104,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote createExternalTrackedEmote(Emote emote, Guild guild) {
+    public TrackedEmote createExternalTrackedEmote(CustomEmoji emote, Guild guild) {
         AServer server = serverManagementService.loadServer(guild.getIdLong());
         return createExternalEmote(emote.getIdLong(), emote.getName(), emote.getImageUrl(), emote.isAnimated(), server, true);
     }
@@ -115,7 +116,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public void markAsDeleted(Emote emote) {
+    public void markAsDeleted(RichCustomEmoji emote) {
         markAsDeleted(emote.getGuild().getIdLong(), emote.getIdLong());
     }
 
@@ -131,7 +132,7 @@ public class TrackedEmoteManagementServiceBean implements TrackedEmoteManagement
     }
 
     @Override
-    public TrackedEmote loadByEmote(Emote emote) {
+    public TrackedEmote loadByEmote(RichCustomEmoji emote) {
         return loadByEmoteId(emote.getIdLong(), emote.getGuild().getIdLong());
     }
 

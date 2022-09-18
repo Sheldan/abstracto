@@ -2,13 +2,13 @@ package dev.sheldan.abstracto.core.exception;
 
 import dev.sheldan.abstracto.core.models.exception.EmoteNotUsableExceptionModel;
 import dev.sheldan.abstracto.core.templating.Templatable;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 
 public class EmoteNotUsableException extends AbstractoRunTimeException implements Templatable {
 
     private final EmoteNotUsableExceptionModel model;
 
-    public EmoteNotUsableException(Emote emote) {
+    public EmoteNotUsableException(CustomEmoji emote) {
         super(String.format("Emote %s not usable by bot.", emote.getId()));
         this.model = EmoteNotUsableExceptionModel
                 .builder()

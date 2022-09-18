@@ -10,8 +10,8 @@ import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler
 import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +44,7 @@ public class TrackedEmoteParameterHandler implements CommandParameterHandler {
 
     /**
      * This will parse the input for potential {@link TrackedEmote} and return a fake instance of such.
-     * At first it will see if there are any {@link Emote} directly in the message. If there are none at the current position
+     * At first it will see if there are any {@link CustomEmoji} directly in the message. If there are none at the current position
      * it will try to parse the parameter to a {@link Long}. It is *not* guaranteed that a {@link TrackedEmote} with this ID
      * really exists for this server. So, any commands using this are required to do checks on their own.
      * @param input The {@link String} input at the current position
@@ -59,8 +59,8 @@ public class TrackedEmoteParameterHandler implements CommandParameterHandler {
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         Parameter cloned = commandService.cloneParameter(param);
-        cloned.setType(Emote.class);
-        Emote emote = (Emote) emoteParameterHandler.handle(input, iterators, cloned, context, command);
+        cloned.setType(CustomEmoji.class);
+        CustomEmoji emote = (CustomEmoji) emoteParameterHandler.handle(input, iterators, cloned, context, command);
         if(emote != null) {
             return trackedEmoteService.getFakeTrackedEmote(emote, context.getGuild());
         } else {

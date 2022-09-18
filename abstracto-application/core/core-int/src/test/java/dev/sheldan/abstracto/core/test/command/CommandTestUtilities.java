@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.junit.Assert;
 import org.mockito.Mockito;
 

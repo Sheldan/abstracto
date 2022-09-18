@@ -4,13 +4,13 @@ import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 @Getter
 @Setter
 @Builder
 public class EmoteDeletedModel implements FeatureAwareListenerModel {
-    private Emote emote;
+    private RichCustomEmoji emote;
 
     @Override
     public Long getServerId() {

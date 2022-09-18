@@ -11,9 +11,9 @@ import dev.sheldan.abstracto.statistic.emote.command.parameter.TrackEmoteParamet
 import dev.sheldan.abstracto.statistic.emote.command.parameter.handler.TrackedEmoteParameterParameterHandler;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.TrackedEmoteService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,8 +22,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -81,7 +79,7 @@ public class TrackedEmoteParameterParameterHandlerTest {
     @Test
     public void testHandleWithEmote() {
         when(contextMessage.getGuild()).thenReturn(guild);
-        Emote emote = Mockito.mock(Emote.class);
+        RichCustomEmoji emote = Mockito.mock(RichCustomEmoji.class);
         UnparsedCommandParameterPiece input = Mockito.mock(UnparsedCommandParameterPiece.class);
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(emote);
@@ -101,7 +99,7 @@ public class TrackedEmoteParameterParameterHandlerTest {
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(input, iterators, parameter2, contextMessage, command)).thenReturn(null);
         TrackEmoteParameter parsedEmote = (TrackEmoteParameter) testUnit.handle(input, iterators, parameter, contextMessage, command);
-        verify(trackedEmoteService, times(0)).getFakeTrackedEmote(any(Emote.class), eq(guild));
+        verify(trackedEmoteService, times(0)).getFakeTrackedEmote(any(RichCustomEmoji.class), eq(guild));
         Assert.assertEquals(trackedEmote, parsedEmote.getTrackedEmote());
     }
 

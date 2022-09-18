@@ -4,8 +4,8 @@ import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Channel;
-import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 
 @Getter
 @Setter

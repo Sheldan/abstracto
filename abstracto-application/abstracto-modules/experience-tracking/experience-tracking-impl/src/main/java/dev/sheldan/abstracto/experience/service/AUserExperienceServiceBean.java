@@ -20,7 +20,7 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -289,7 +289,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
      * Persists the list of {@link ExperienceGainResult results} in the database. If the creation of {@link AUserExperience userExperience} object was requested,
      * this will happen here, also the correct level is selected
      * @param resultFutures A list of {@link ExperienceGainResult results} which define what should be changed for the given {@link AUserExperience userExperience} object:
-     *                      The level, experience, experienceRole, message account could change, or the object could not even exist ({@link ExperienceGainResult#createUserExperience})
+     *                      The level, experience, experienceRole, message account could change, or the object could not even exist
      */
     @Transactional
     public void persistExperienceChanges(List<ExperienceGainResult> resultFutures) {

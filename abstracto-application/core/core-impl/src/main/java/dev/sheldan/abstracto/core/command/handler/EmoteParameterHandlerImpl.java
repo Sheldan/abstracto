@@ -6,8 +6,8 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.provided.EmoteParameterHandler;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -18,19 +18,19 @@ public class EmoteParameterHandlerImpl implements EmoteParameterHandler {
 
     @Override
     public boolean handles(Class clazz, UnparsedCommandParameterPiece value) {
-        return clazz.equals(Emote.class) && value.getType().equals(ParameterPieceType.STRING);
+        return clazz.equals(CustomEmoji.class) && value.getType().equals(ParameterPieceType.STRING);
     }
 
     @Override
     public Object handle(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         String inputString = ((String) input.getValue()).trim();
-        Matcher matcher = Message.MentionType.EMOTE.getPattern().matcher(inputString);
+        Matcher matcher = Message.MentionType.EMOJI.getPattern().matcher(inputString);
         if(matcher.matches() && iterators.getEmoteIterator().hasNext()) {
             return iterators.getEmoteIterator().next();
         } else {
             if(StringUtils.isNumeric(inputString)) {
                 long emoteId = Long.parseLong(inputString);
-                return context.getGuild().getEmoteById(emoteId);
+                return context.getGuild().getEmojiById(emoteId);
             } else {
                 return null;
             }

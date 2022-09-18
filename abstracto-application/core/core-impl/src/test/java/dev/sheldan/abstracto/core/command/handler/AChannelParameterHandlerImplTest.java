@@ -7,7 +7,7 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

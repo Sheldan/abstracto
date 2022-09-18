@@ -39,7 +39,7 @@ public class StarRemovedListener extends StarboardListener implements AsyncReact
         }
         Long guildId = model.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(StarboardFeatureConfig.STAR_EMOTE, guildId);
-        if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
+        if(emoteService.isReactionEmoteAEmote(model.getReaction().getEmoji(), aEmote)) {
             metricService.incrementCounter(STARBOARD_STARS_REMOVED);
             log.info("User {} in server {} removed star reaction from message {} on starboard.",
                     userRemoving.getUserId(), model.getServerId(), model.getMessage().getMessageId());

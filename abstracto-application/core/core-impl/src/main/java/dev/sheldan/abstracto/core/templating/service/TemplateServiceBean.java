@@ -18,12 +18,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.utils.AttachmentOption;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -124,7 +123,7 @@ public class TemplateServiceBean implements TemplateService {
                     createdButton = createdButton.withDisabled(buttonConfig.getDisabled());
                 }
                 if (buttonConfig.getEmoteMarkdown() != null) {
-                    createdButton = createdButton.withEmoji(Emoji.fromMarkdown(buttonConfig.getEmoteMarkdown()));
+                    createdButton = createdButton.withEmoji(Emoji.fromFormatted(buttonConfig.getEmoteMarkdown()));
                 }
                 if(currentRow == null) {
                     currentRow = ActionRow.of(createdButton);
@@ -173,14 +172,10 @@ public class TemplateServiceBean implements TemplateService {
         List<AttachedFile> files = new ArrayList<>();
         if(messageConfiguration.getFiles() != null && !messageConfiguration.getFiles().isEmpty()) {
             messageConfiguration.getFiles().forEach(fileToAttach -> {
-                List<AttachmentOption> options = new ArrayList<>();
-                if(fileToAttach.getSpoiler() != null && fileToAttach.getSpoiler()) {
-                    options.add(AttachmentOption.SPOILER);
-                }
                 AttachedFile attachedFile = AttachedFile
                         .builder()
                         .fileName(fileToAttach.getFileName() != null ? fileToAttach.getFileName() : RandomStringUtils.randomAlphabetic(5))
-                        .options(options)
+                        .spoiler(fileToAttach.getSpoiler())
                         .build();
                 files.add(attachedFile);
             });

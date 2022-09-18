@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.core.models.database;
 
-import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 
 public enum AChannelType {
     TEXT, DM, VOICE, NEWS, CATEGORY, UNKNOWN, NEWS_THREAD, PUBLIC_THREAD, PRIVATE_THREAD, STAGE;

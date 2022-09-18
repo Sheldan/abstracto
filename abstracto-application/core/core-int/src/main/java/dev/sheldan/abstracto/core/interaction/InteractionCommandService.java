@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.core.interaction;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.data.util.Pair;
 

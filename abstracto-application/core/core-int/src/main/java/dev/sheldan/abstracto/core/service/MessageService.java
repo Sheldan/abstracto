@@ -6,12 +6,12 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -38,8 +38,8 @@ public interface MessageService {
     CompletableFuture<Message> loadMessage(Long serverId, Long channelId, Long messageId);
     CompletableFuture<Message> loadMessage(Message message);
     CompletableFuture<Message> editMessageWithNewTemplate(Message message, String templateKey, Object model);
-    MessageAction editMessage(Message message, MessageEmbed messageEmbed);
-    MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed);
+    MessageEditAction editMessage(Message message, MessageEmbed messageEmbed);
+    MessageEditAction editMessage(Message message, String text, MessageEmbed messageEmbed);
     AuditableRestAction<Void> deleteMessageWithAction(Message message);
     CompletableFuture<Void> deleteMessage(Message message);
     CompletableFuture<Void> editMessageWithActionRows(Message message, List<ActionRow> rows);

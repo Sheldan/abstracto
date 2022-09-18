@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.models.template.display;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 
 @Getter
 @Builder
@@ -16,7 +16,7 @@ public class EmoteDisplay {
     private Boolean animated;
     private String imageUrl;
 
-    public static EmoteDisplay fromEmote(Emote emote) {
+    public static EmoteDisplay fromEmote(CustomEmoji emote) {
         return EmoteDisplay
                 .builder()
                 .emoteId(emote.getIdLong())

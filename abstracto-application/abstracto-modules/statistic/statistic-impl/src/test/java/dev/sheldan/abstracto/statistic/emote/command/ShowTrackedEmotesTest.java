@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.sheldan.abstracto.statistic.emote.command.ShowTrackedEmotes.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)

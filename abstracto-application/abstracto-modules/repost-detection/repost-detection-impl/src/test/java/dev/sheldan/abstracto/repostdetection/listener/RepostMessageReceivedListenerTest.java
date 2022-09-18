@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.repostdetection.service.RepostCheckChannelService;
 import dev.sheldan.abstracto.repostdetection.service.RepostService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +43,7 @@ public class RepostMessageReceivedListenerTest {
     private MessageReceivedModel model;
 
     @Mock
-    private GuildMessageChannel textChannel;
+    private MessageChannelUnion textChannel;
 
     @Captor
     private ArgumentCaptor<List<MessageEmbed>> embedListCaptor;

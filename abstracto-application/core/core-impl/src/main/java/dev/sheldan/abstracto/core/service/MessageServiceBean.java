@@ -12,9 +12,12 @@ import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -224,13 +227,13 @@ public class MessageServiceBean implements MessageService {
     }
 
     @Override
-    public MessageAction editMessage(Message message, MessageEmbed messageEmbed) {
+    public MessageEditAction editMessage(Message message, MessageEmbed messageEmbed) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return message.editMessageEmbeds(messageEmbed);
     }
 
     @Override
-    public MessageAction editMessage(Message message, String text, MessageEmbed messageEmbed) {
+    public MessageEditAction editMessage(Message message, String text, MessageEmbed messageEmbed) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return message.editMessage(text).setEmbeds(messageEmbed);
     }
@@ -254,7 +257,8 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        return message.editMessage(message).setActionRows(rows).submit();
+        MessageEditData messageEditData = MessageEditData.fromMessage(message);
+        return message.editMessage(messageEditData).setComponents(rows).submit();
     }
 
     @Override

@@ -9,7 +9,7 @@ import dev.sheldan.abstracto.vccontext.exception.VoiceChannelContextNotExistsExc
 import dev.sheldan.abstracto.vccontext.model.VoiceChannelContext;
 import dev.sheldan.abstracto.vccontext.service.management.VoiceChannelContextManagementService;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

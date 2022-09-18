@@ -6,8 +6,8 @@ import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,10 +90,10 @@ public class EmoteStatsConverterTest {
         when(trackedEmote2.getDeleted()).thenReturn(false);
         when(trackedEmote2.getTrackedEmoteId()).thenReturn(new ServerSpecificId(SERVER_ID, EMOTE_ID_2));
         when(guildService.getGuildById(SERVER_ID)).thenReturn(guild);
-        Emote emote1 = Mockito.mock(Emote.class);
-        when(guild.getEmoteById(EMOTE_ID)).thenReturn(emote1);
-        Emote emote2 = Mockito.mock(Emote.class);
-        when(guild.getEmoteById(EMOTE_ID_2)).thenReturn(emote2);
+        RichCustomEmoji emote1 = Mockito.mock(RichCustomEmoji.class);
+        when(guild.getEmojiById(EMOTE_ID)).thenReturn(emote1);
+        RichCustomEmoji emote2 = Mockito.mock(RichCustomEmoji.class);
+        when(guild.getEmojiById(EMOTE_ID_2)).thenReturn(emote2);
         EmoteStatsModel result = testUnit.fromEmoteStatsResults(Arrays.asList(emoteStatsResult, emoteStatsResult2));
 
         Assert.assertEquals(1, result.getStaticEmotes().size());

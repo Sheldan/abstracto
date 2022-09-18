@@ -12,7 +12,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,8 +48,18 @@ public class MoveAssignableRolePlace extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).templated(true).build();
+        Parameter rolePostName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter channel = Parameter
+                .builder()
+                .name("channel")
+                .type(TextChannel.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(rolePostName, channel);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()

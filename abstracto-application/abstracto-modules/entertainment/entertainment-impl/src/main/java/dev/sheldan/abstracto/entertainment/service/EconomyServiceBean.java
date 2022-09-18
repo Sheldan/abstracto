@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static dev.sheldan.abstracto.entertainment.config.EconomyFeatureConfig.PAYDAY_COOLDOWN_CONFIG_KEY;
 import static dev.sheldan.abstracto.entertainment.config.EconomyFeatureConfig.SLOTS_COOLDOWN_CONFIG_KEY;

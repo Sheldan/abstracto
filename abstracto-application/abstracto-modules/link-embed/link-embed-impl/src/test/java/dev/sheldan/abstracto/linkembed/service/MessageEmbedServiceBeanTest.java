@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.linkembed.model.MessageEmbedLink;
 import dev.sheldan.abstracto.linkembed.service.management.MessageEmbedPostManagementService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

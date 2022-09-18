@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.config.EmoteTrackingMode;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This listener listens for created {@link Emote} in a {@link net.dv8tion.jda.api.entities.Guild} and creates appropriate
+ * This listener listens for created {@link net.dv8tion.jda.api.entities.emoji.RichCustomEmoji} in a {@link net.dv8tion.jda.api.entities.Guild} and creates appropriate
  * {@link dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote}, if the EMOTE_TRACKING feature is enabled and the AUTO_TRACK
  * feature mode as well.
  */

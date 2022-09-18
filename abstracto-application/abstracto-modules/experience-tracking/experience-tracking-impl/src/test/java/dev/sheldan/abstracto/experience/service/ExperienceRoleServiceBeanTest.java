@@ -1,18 +1,13 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.core.utils.CompletableFutureList;
-import dev.sheldan.abstracto.experience.model.RoleCalculationResult;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
-import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
-import net.dv8tion.jda.api.entities.Role;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 

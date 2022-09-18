@@ -14,7 +14,6 @@ import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.LoginException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.time.Duration;
@@ -35,10 +34,10 @@ public class BotServiceBean implements BotService {
     private OkHttpLogger okHttpLogger;
 
     @Override
-    public void login() throws LoginException {
+    public void login() {
         JDABuilder builder = JDABuilder.createDefault(System.getenv("TOKEN"));
-        builder.enableIntents(GUILD_VOICE_STATES, GUILD_BANS,
-        GUILD_EMOJIS, GUILD_MEMBERS, GUILD_MESSAGES,
+        builder.enableIntents(GUILD_VOICE_STATES, GUILD_BANS, MESSAGE_CONTENT,
+        GUILD_EMOJIS_AND_STICKERS, GUILD_MEMBERS, GUILD_MESSAGES,
         GUILD_MESSAGE_REACTIONS, DIRECT_MESSAGES, GUILD_PRESENCES);
 
         builder.enableCache(CacheFlag.ACTIVITY);

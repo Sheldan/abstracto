@@ -43,7 +43,7 @@ public class ProfanityReportVoteListener implements AsyncReactionAddedListener {
             if(use.getVerified()) {
                 return DefaultListenerResult.PROCESSED;
             }
-            AEmote addedEmote = emoteService.buildAEmoteFromReaction(model.getReaction().getReactionEmote());
+            AEmote addedEmote = emoteService.buildAEmoteFromReaction(model.getReaction().getEmoji());
             AEmote agreeEmote = emoteService.getEmoteOrDefaultEmote(ProfanityFilterService.REPORT_AGREE_EMOTE, model.getServerId());
             boolean isAgreement = emoteService.compareAEmote(addedEmote, agreeEmote);
             boolean reactionWasVote;

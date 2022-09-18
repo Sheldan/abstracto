@@ -3,9 +3,9 @@ package dev.sheldan.abstracto.core.interaction;
 import dev.sheldan.abstracto.core.interaction.button.ButtonConfigModel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MessageService;
-import net.dv8tion.jda.api.entities.Emoji;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,7 @@ public class ComponentServiceBean implements ComponentService {
         return channelService.retrieveMessageInChannel(textChannel, messageId).thenCompose(message -> {
             Button button = Button.of(style, buttonId, description);
             if(emoteMarkdown != null) {
-                button = button.withEmoji(Emoji.fromMarkdown(emoteMarkdown));
+                button = button.withEmoji(Emoji.fromFormatted(emoteMarkdown));
             }
             List<ActionRow> actionRows;
             if(message.getActionRows().isEmpty()) {

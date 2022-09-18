@@ -15,6 +15,9 @@ import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,12 +87,12 @@ public class ReactionServiceBean implements ReactionService {
 
     @Override
     public CompletableFuture<Void> removeReactionFromMessage(MessageReaction reaction, CachedMessage cachedMessage, User user) {
-        return messageService.loadMessageFromCachedMessage(cachedMessage).thenCompose(message -> removeReactionFromMessageWithFuture(reaction.getReactionEmote(), message, user));
+        return messageService.loadMessageFromCachedMessage(cachedMessage).thenCompose(message -> removeReactionFromMessageWithFuture(reaction.getEmoji(), message, user));
     }
 
     @Override
     public CompletableFuture<Void> removeReactionFromMessage(MessageReaction reaction, CachedMessage cachedMessage) {
-        return messageService.loadMessageFromCachedMessage(cachedMessage).thenCompose(message -> removeReactionFromMessageWithFuture(reaction.getReactionEmote(), message));
+        return messageService.loadMessageFromCachedMessage(cachedMessage).thenCompose(message -> removeReactionFromMessageWithFuture(reaction.getEmoji(), message));
     }
 
     @Override
@@ -118,7 +121,7 @@ public class ReactionServiceBean implements ReactionService {
     @Override
     public CompletableFuture<Void> addDefaultReactionToMessageAsync(String unicode, Message message) {
         metricService.incrementCounter(REACTION_ADDED_METRIC);
-        return message.addReaction(unicode).submit();
+        return message.addReaction(Emoji.fromUnicode(unicode)).submit();
     }
 
     @Override
@@ -151,7 +154,7 @@ public class ReactionServiceBean implements ReactionService {
     @Override
     public CompletableFuture<Void> addReactionToMessageAsync(AEmote emote, Guild guild, Message message) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+            CustomEmoji emoteById = botService.getInstance().getEmojiById(emote.getEmoteId());
             if(emoteById != null) {
                 log.debug("Adding custom emote {} as reaction to message {}.", emoteById.getId(), message.getId());
                 return addReactionToMessageAsync(emoteById, message);
@@ -166,14 +169,14 @@ public class ReactionServiceBean implements ReactionService {
     }
 
     @Override
-    public CompletableFuture<Void> addReactionToMessageAsync(Emote emote, Message message) {
+    public CompletableFuture<Void> addReactionToMessageAsync(Emoji emote, Message message) {
         metricService.incrementCounter(REACTION_ADDED_METRIC);
         return message.addReaction(emote).submit();
     }
 
     @Override
     public CompletableFuture<Void> addReactionToMessageAsync(Long emoteId, Long serverId, Message message) {
-        Emote emoteById = botService.getInstance().getEmoteById(emoteId);
+        CustomEmoji emoteById = botService.getInstance().getEmojiById(emoteId);
         if(emoteById == null) {
             throw new EmoteNotInServerException(emoteId);
         }
@@ -189,7 +192,7 @@ public class ReactionServiceBean implements ReactionService {
     @Override
     public CompletableFuture<Void> removeReactionFromMessageWithFuture(AEmote emote, Message message) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+            CustomEmoji emoteById = botService.getInstance().getEmojiById(emote.getEmoteId());
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
@@ -202,43 +205,35 @@ public class ReactionServiceBean implements ReactionService {
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(MessageReaction.ReactionEmote emote, Message message) {
-        if(emote.isEmote()) {
-            return removeReaction(message, emote.getEmote());
-        } else {
-            return removeReaction(message, emote.getEmoji());
-        }
+    public CompletableFuture<Void> removeReactionFromMessageWithFuture(Emoji emote, Message message) {
+        return removeReaction(message, emote);
     }
 
     @Override
-    public CompletableFuture<Void> removeReactionFromMessageWithFuture(MessageReaction.ReactionEmote emote, Message message, User user) {
-        if(emote.isEmote()) {
-            return removeReaction(message, emote.getEmote(), user);
-        } else {
-            return removeReaction(message, emote.getEmoji(), user);
-        }
+    public CompletableFuture<Void> removeReactionFromMessageWithFuture(Emoji emoji, Message message, User user) {
+        return removeReaction(message, emoji, user);
     }
 
     @Override
-    public CompletableFuture<Void> removeReaction(Message message, String key) {
+    public CompletableFuture<Void> removeReaction(Message message, String unicode) {
         metricService.incrementCounter(REACTION_REMOVED_METRIC);
-        return message.removeReaction(key).submit();
+        return message.removeReaction(Emoji.fromUnicode(unicode)).submit();
     }
 
     @Override
-    public CompletableFuture<Void> removeReaction(Message message, String key, User user) {
+    public CompletableFuture<Void> removeReaction(Message message, String unicode, User user) {
         metricService.incrementCounter(REACTION_REMOVED_METRIC);
-        return message.removeReaction(key, user).submit();
+        return message.removeReaction(Emoji.fromUnicode(unicode), user).submit();
     }
 
     @Override
-    public CompletableFuture<Void> removeReaction(Message message, Emote emoteById) {
+    public CompletableFuture<Void> removeReaction(Message message, Emoji emoteById) {
         metricService.incrementCounter(REACTION_REMOVED_METRIC);
         return message.removeReaction(emoteById).submit();
     }
 
     @Override
-    public CompletableFuture<Void> removeReaction(Message message, Emote emoteById, User user) {
+    public CompletableFuture<Void> removeReaction(Message message, Emoji emoteById, User user) {
         metricService.incrementCounter(REACTION_REMOVED_METRIC);
         return message.removeReaction(emoteById, user).submit();
     }
@@ -247,7 +242,7 @@ public class ReactionServiceBean implements ReactionService {
     public CompletableFuture<Void> removeReaction(Message message, CachedEmote cachedEmote, User user) {
         metricService.incrementCounter(REACTION_REMOVED_METRIC);
         String customEmoteAsUnicode = cachedEmote.getEmoteName() + ":" + cachedEmote.getEmoteId();
-        return ((TextChannel) message.getChannel()).removeReactionById(message.getId(), customEmoteAsUnicode, user).submit();
+        return ((TextChannel) message.getChannel()).removeReactionById(message.getId(), Emoji.fromUnicode(customEmoteAsUnicode), user).submit();
     }
 
     @Override
@@ -262,7 +257,7 @@ public class ReactionServiceBean implements ReactionService {
     @Override
     public CompletableFuture<Void> clearReactionFromMessageWithFuture(AEmote emote, Message message) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+            CustomEmoji emoteById = botService.getInstance().getEmojiById(emote.getEmoteId());
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }
@@ -274,12 +269,12 @@ public class ReactionServiceBean implements ReactionService {
         }
     }
 
-    public CompletableFuture<Void> clearReaction(Message message, String key) {
+    public CompletableFuture<Void> clearReaction(Message message, String unicode) {
         metricService.incrementCounter(REACTION_CLEARED_METRIC);
-        return message.clearReactions(key).submit();
+        return message.clearReactions(Emoji.fromUnicode(unicode)).submit();
     }
 
-    public CompletableFuture<Void> clearReaction(Message message, Emote emoteById) {
+    public CompletableFuture<Void> clearReaction(Message message, Emoji emoteById) {
         metricService.incrementCounter(REACTION_CLEARED_METRIC);
         return message.clearReactions(emoteById).submit();
     }
@@ -346,7 +341,7 @@ public class ReactionServiceBean implements ReactionService {
     @Override
     public CompletableFuture<Void> removeReactionOfUserFromMessageAsync(AEmote emote, Message message, Member member) {
         if(Boolean.TRUE.equals(emote.getCustom())) {
-            Emote emoteById = botService.getInstance().getEmoteById(emote.getEmoteId());
+            CustomEmoji emoteById = botService.getInstance().getEmojiById(emote.getEmoteId());
             if(emoteById == null) {
                 throw new EmoteNotInServerException(emote.getEmoteId());
             }

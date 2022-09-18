@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -120,7 +121,7 @@ public class BanServiceBean implements BanService {
     @Override
     public CompletableFuture<Void> banUser(Guild guild, User user, Integer deletionDays, String reason) {
         log.info("Banning user {} in guild {}.", user.getIdLong(), guild.getId());
-        return guild.ban(user, deletionDays, reason).submit();
+        return guild.ban(user, deletionDays, TimeUnit.DAYS).reason(reason).submit();
     }
 
     @Override

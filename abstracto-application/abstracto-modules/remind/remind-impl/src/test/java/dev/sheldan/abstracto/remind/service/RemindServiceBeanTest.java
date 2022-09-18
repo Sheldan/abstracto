@@ -18,6 +18,8 @@ import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.utils.ImageProxy;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,7 +74,10 @@ public class RemindServiceBeanTest {
     private Message message;
 
     @Mock
-    private GuildMessageChannel channel;
+    private GuildMessageChannelUnion guildMessageChannelUnion;
+
+    @Mock
+    private MessageChannelUnion messageChannelUnion;
 
     @Mock
     private ScheduledExecutorService instantReminderScheduler;
@@ -103,8 +108,8 @@ public class RemindServiceBeanTest {
     @Before
     public void setup() {
         when(message.getIdLong()).thenReturn(5L);
-        when(channel.getIdLong()).thenReturn(5L);
-        when(message.getChannel()).thenReturn(channel);
+        when(guildMessageChannelUnion.getIdLong()).thenReturn(5L);
+        when(message.getChannel()).thenReturn(messageChannelUnion);
     }
 
     @Test
@@ -112,8 +117,8 @@ public class RemindServiceBeanTest {
         String remindText = "text";
         String triggerKey = "trigger";
         Duration duration = Duration.ofSeconds(62);
-        when(message.getChannel()).thenReturn(channel);
-        when(channel.getIdLong()).thenReturn(CHANNEL_ID);
+        when(message.getChannel()).thenReturn(messageChannelUnion);
+        when(guildMessageChannelUnion.getIdLong()).thenReturn(CHANNEL_ID);
         when(aUserInAServer.getServerReference()).thenReturn(server);
         when(aUserInAServer.getUserReference()).thenReturn(user);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(aChannel);
@@ -132,8 +137,8 @@ public class RemindServiceBeanTest {
     public void createReminderWithoutScheduler() {
         String remindText = "text";
         Duration duration = Duration.ofSeconds(50);
-        when(message.getChannel()).thenReturn(channel);
-        when(channel.getIdLong()).thenReturn(CHANNEL_ID);
+        when(message.getChannel()).thenReturn(messageChannelUnion);
+        when(messageChannelUnion.getIdLong()).thenReturn(CHANNEL_ID);
         when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(aChannel);
         Reminder createdReminder = Mockito.mock(Reminder.class);
         when(createdReminder.getText()).thenReturn(remindText);
@@ -160,7 +165,7 @@ public class RemindServiceBeanTest {
         when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
         Guild guildMock = Mockito.mock(Guild.class);
         when(guildService.getGuildByIdOptional(SERVER_ID)).thenReturn(Optional.of(guildMock));
-        when(channelService.getMessageChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(channel));
+        when(channelService.getMessageChannelFromServerOptional(SERVER_ID, CHANNEL_ID)).thenReturn(Optional.of(guildMessageChannelUnion));
         Member mockedMember = Mockito.mock(Member.class);
         when(memberService.getMemberInServerAsync(SERVER_ID, USER_ID)).thenReturn(CompletableFuture.completedFuture(mockedMember));
         testUnit.executeReminder(REMINDER_ID);
@@ -253,10 +258,10 @@ public class RemindServiceBeanTest {
         when(remindedReminder.getReminderDate()).thenReturn(Instant.now());
         when(reminderManagementService.loadReminder(REMINDER_ID)).thenReturn(remindedReminder);
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        when(channel.getGuild()).thenReturn(guild);
+        when(guildMessageChannelUnion.getGuild()).thenReturn(guild);
         when(templateService.renderEmbedTemplate(eq(RemindServiceBean.REMINDER_TEMPLATE_TEXT), any(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(channelService.sendMessageToSendToChannel(messageToSend, channel)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
-        CompletableFuture<Void> future = testUnit.sendReminderText(REMINDER_ID, channel, remindedMember);
+        when(channelService.sendMessageToSendToChannel(messageToSend, messageChannelUnion)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
+        CompletableFuture<Void> future = testUnit.sendReminderText(REMINDER_ID, guildMessageChannelUnion, remindedMember);
         future.join();
         Assert.assertFalse(future.isCompletedExceptionally());
     }

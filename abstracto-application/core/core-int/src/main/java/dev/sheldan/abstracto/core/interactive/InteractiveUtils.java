@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.interactive;
 
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import net.dv8tion.jda.api.entities.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

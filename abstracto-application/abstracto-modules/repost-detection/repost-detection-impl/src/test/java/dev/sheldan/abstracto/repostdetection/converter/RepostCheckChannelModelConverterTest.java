@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.repostdetection.model.database.RepostCheckChannelGr
 import dev.sheldan.abstracto.repostdetection.model.template.RepostCheckChannelGroupDisplayModel;
 import dev.sheldan.abstracto.repostdetection.model.template.RepostCheckChannelsModel;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

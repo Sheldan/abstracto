@@ -43,7 +43,7 @@ public class MessageEmbedRemovalReactionListener implements AsyncReactionAddedLi
     public DefaultListenerResult execute(ReactionAddedModel model) {
         Long serverId = model.getServerId();
         AEmote aEmote = emoteService.getEmoteOrDefaultEmote(REMOVAL_EMOTE, serverId);
-        if(emoteService.isReactionEmoteAEmote(model.getReaction().getReactionEmote(), aEmote)) {
+        if(emoteService.isReactionEmoteAEmote(model.getReaction().getEmoji(), aEmote)) {
             Long messageId = model.getMessage().getMessageId();
             Optional<EmbeddedMessage> embeddedMessageOptional = messageEmbedPostManagementService.findEmbeddedPostByMessageId(messageId);
             if(embeddedMessageOptional.isPresent()) {

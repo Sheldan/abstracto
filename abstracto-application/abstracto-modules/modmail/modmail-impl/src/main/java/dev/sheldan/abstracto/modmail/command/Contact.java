@@ -24,7 +24,7 @@ import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementS
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * This command is used to create a thread with a member directly. If a thread already exists, this will post a link to
- * the {@link net.dv8tion.jda.api.entities.MessageChannel}
+ * the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel}
  */
 @Component
 @Slf4j

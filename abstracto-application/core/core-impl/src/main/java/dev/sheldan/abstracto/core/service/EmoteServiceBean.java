@@ -11,10 +11,10 @@ import dev.sheldan.abstracto.core.service.management.DefaultEmoteManagementServi
 import dev.sheldan.abstracto.core.service.management.EmoteManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Emoji;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,9 +41,9 @@ public class EmoteServiceBean implements EmoteService {
     private ServerManagementService serverManagementService;
 
     @Override
-    public boolean isEmoteUsableByBot(Emote emote) {
+    public boolean isEmoteUsableByBot(CustomEmoji emote) {
         for (Guild guild : botService.getInstance().getGuilds()) {
-            Emote emoteById = guild.getEmoteById(emote.getId());
+            CustomEmoji emoteById = guild.getEmojiById(emote.getId());
             if(emoteById != null) {
                 return true;
             }
@@ -52,18 +52,19 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public AEmote buildAEmoteFromReaction(MessageReaction.ReactionEmote reaction) {
-        if(reaction.isEmote()) {
-            return AEmote.builder().emoteKey(reaction.getName()).custom(true).emoteId(reaction.getEmote().getIdLong()).animated(reaction.getEmote().isAnimated()).build();
+    public AEmote buildAEmoteFromReaction(Emoji reaction) {
+        if(reaction.getType().equals(Emoji.Type.CUSTOM)) {
+            CustomEmoji CustomEmoji = (CustomEmoji) reaction;
+            return AEmote.builder().emoteKey(reaction.getName()).custom(true).emoteId(CustomEmoji.getIdLong()).animated(CustomEmoji.isAnimated()).build();
         } else {
-            return AEmote.builder().emoteKey(reaction.getEmoji()).custom(false).build();
+            return AEmote.builder().emoteKey(reaction.getName()).custom(false).build();
         }
     }
 
     @Override
     public String getEmoteAsMention(AEmote emote, Long serverId, String defaultText)  {
         if(emote != null && emote.getCustom()) {
-            Optional<Emote> emoteOptional = getEmote(serverId, emote);
+            Optional<CustomEmoji> emoteOptional = getEmote(serverId, emote);
             if (emoteOptional.isPresent()) {
                 return emoteOptional.get().getAsMention();
             } else {
@@ -109,11 +110,12 @@ public class EmoteServiceBean implements EmoteService {
     }
 
     @Override
-    public boolean isReactionEmoteAEmote(MessageReaction.ReactionEmote reaction, AEmote storedEmote) {
-        if(reaction.isEmote() && storedEmote.getCustom()) {
-            return reaction.getEmote().getIdLong() == storedEmote.getEmoteId();
-        } else if(reaction.isEmoji()){
-            return reaction.getEmoji().equals(storedEmote.getEmoteKey());
+    public boolean isReactionEmoteAEmote(Emoji reaction, AEmote storedEmote) {
+        if(reaction.getType().equals(Emoji.Type.CUSTOM) && storedEmote.getCustom() && reaction instanceof CustomEmoji) {
+            CustomEmoji emoji = (CustomEmoji) reaction;
+            return emoji.getIdLong() == storedEmote.getEmoteId();
+        } else if(reaction.getType().equals(Emoji.Type.UNICODE)){
+            return reaction.getName().equals(storedEmote.getEmoteKey());
         }
         return false;
     }
@@ -155,24 +157,29 @@ public class EmoteServiceBean implements EmoteService {
 
     @Override
     public AEmote getFakeEmote(Object object) {
-        if(object instanceof Emote) {
-            Emote emote = (Emote) object;
+        if(object instanceof CustomEmoji) {
+            CustomEmoji emote = (CustomEmoji) object;
             return getFakeEmoteFromEmote(emote);
         } else if(object instanceof String) {
             String emoteText = (String) object;
-            return AEmote.builder().fake(true).custom(false).emoteKey(emoteText).build();
+            return AEmote
+                    .builder()
+                    .fake(true)
+                    .custom(false)
+                    .emoteKey(emoteText)
+                    .build();
         }
         throw new IllegalArgumentException("Not possible to convert given object to AEmote.");
     }
 
     @Override
-    public AEmote getFakeEmoteFromEmote(Emote emote) {
+    public AEmote getFakeEmoteFromEmote(CustomEmoji emote) {
         AServer server = null;
-        if(emote.getGuild() != null) {
+        if(emote instanceof RichCustomEmoji) {
+            RichCustomEmoji richCustomEmoji = (RichCustomEmoji) emote;
             server = AServer
                     .builder()
-                    .id(emote.getGuild()
-                            .getIdLong())
+                    .id(richCustomEmoji.getGuild().getIdLong())
                     .fake(true)
                     .build();
         }
@@ -189,50 +196,52 @@ public class EmoteServiceBean implements EmoteService {
 
     @Override
     public AEmote getFakeEmoteFromEmoji(Emoji emoji) {
-        return AEmote
-                .builder()
-                .fake(true)
-                .emoteKey(emoji.getName())
-                .custom(emoji.isCustom())
-                .animated(emoji.isAnimated())
-                .emoteId(emoji.getIdLong())
-                .build();
+        if(emoji instanceof CustomEmoji) {
+            return getFakeEmoteFromEmote((CustomEmoji) emoji);
+        } else {
+            return AEmote
+                    .builder()
+                    .fake(true)
+                    .emoteKey(emoji.getName())
+                    .custom(false)
+                    .build();
+        }
     }
 
     @Override
-    public boolean emoteIsFromGuild(Emote emote, Guild guild) {
-        return guild.getEmoteById(emote.getId()) != null;
+    public boolean emoteIsFromGuild(CustomEmoji emote, Guild guild) {
+        return guild.getEmojiById(emote.getId()) != null;
     }
 
     @Override
-    public CompletableFuture<Emote> getEmoteFromCachedEmote(CachedEmote cachedEmote) {
+    public CompletableFuture<CustomEmoji> getEmoteFromCachedEmote(CachedEmote cachedEmote) {
         if(!cachedEmote.getCustom()) {
             throw new IllegalArgumentException("Given Emote was not a custom emote.");
         }
         Guild guild = guildService.getGuildById(cachedEmote.getServerId());
-        return guild.retrieveEmoteById(cachedEmote.getEmoteId()).submit().thenApply(listedEmote -> listedEmote);
+        return guild.retrieveEmojiById(cachedEmote.getEmoteId()).submit().thenApply(listedEmote -> listedEmote);
     }
 
     @Override
-    public Optional<Emote> getEmote(Long serverId, AEmote emote)  {
+    public Optional<CustomEmoji> getEmote(Long serverId, AEmote emote)  {
         if(Boolean.FALSE.equals(emote.getCustom())) {
             return Optional.empty();
         }
         Optional<Guild> guildById = guildService.getGuildByIdOptional(serverId);
         if(guildById.isPresent()) {
             Guild guild = guildById.get();
-            Emote emoteById = guild.getEmoteById(emote.getEmoteId());
+            CustomEmoji emoteById = guild.getEmojiById(emote.getEmoteId());
             return Optional.ofNullable(emoteById);
         }
         throw new GuildNotFoundException(serverId);
     }
 
     @Override
-    public Optional<Emote> getEmote(AEmote emote) {
+    public Optional<Emoji> getEmote(AEmote emote) {
         if(Boolean.FALSE.equals(emote.getCustom())) {
             return Optional.empty();
         }
-        return Optional.ofNullable(botService.getInstance().getEmoteById(emote.getEmoteId()));
+        return Optional.ofNullable(botService.getInstance().getEmojiById(emote.getEmoteId()));
     }
 
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Model used to render the currently tracked emotes of a {@link Guild}. They are split up into
- * the static/animated emotes from the server itself. The {@link net.dv8tion.jda.internal.requests.Route.Emotes}
+ * the static/animated emotes from the server itself. The {@link net.dv8tion.jda.api.entities.emoji.RichCustomEmoji}
  * which were previously on the server and (if enabled) all external {@link TrackedEmote} from the server.
  */
 @Getter
@@ -80,7 +80,7 @@ public class TrackedEmoteOverview {
         } else {
             AvailableTrackedEmote availableEmote = AvailableTrackedEmote
                     .builder()
-                    .emote(guild.getEmoteById(trackedEmote.getTrackedEmoteId().getId()))
+                    .emote(guild.getEmojiById(trackedEmote.getTrackedEmoteId().getId()))
                     .trackedEmote(trackedEmote)
                     .build();
             if(trackedEmote.getAnimated()) {

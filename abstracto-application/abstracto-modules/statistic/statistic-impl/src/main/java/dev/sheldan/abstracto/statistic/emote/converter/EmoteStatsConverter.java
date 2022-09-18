@@ -6,8 +6,8 @@ import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResult;
 import dev.sheldan.abstracto.statistic.emote.model.EmoteStatsResultDisplay;
 import dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.TrackedEmoteManagementService;
-import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Component to convert from a {@link EmoteStatsResult} to a proper instance of {@link EmoteStatsModel}.
- * This for example loads the relevant {@link Emote} to be used within the model and also splits it up
+ * This for example loads the relevant {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji} to be used within the model and also splits it up
  * into static and animated emotes
  */
 @Component
@@ -53,10 +53,10 @@ public class EmoteStatsConverter {
 
     private EmoteStatsResultDisplay convertEmoteStatsResult(Guild relevantGuild, EmoteStatsResult emoteStatsResult) {
         TrackedEmote trackedEmote = trackedEmoteManagementService.loadByEmoteId(emoteStatsResult.getEmoteId(), emoteStatsResult.getServerId());
-        Emote loadedEmote = null;
+        CustomEmoji loadedEmote = null;
         // if the emote should still exist, we try to load it
         if(!trackedEmote.getExternal() && !trackedEmote.getDeleted()) {
-            loadedEmote = relevantGuild.getEmoteById(trackedEmote.getTrackedEmoteId().getId());
+            loadedEmote = relevantGuild.getEmojiById(trackedEmote.getTrackedEmoteId().getId());
         }
         return EmoteStatsResultDisplay
                 .builder()
