@@ -108,7 +108,6 @@ public class RemindServiceBeanTest {
     @Before
     public void setup() {
         when(message.getIdLong()).thenReturn(5L);
-        when(guildMessageChannelUnion.getIdLong()).thenReturn(5L);
         when(message.getChannel()).thenReturn(messageChannelUnion);
     }
 
@@ -118,10 +117,8 @@ public class RemindServiceBeanTest {
         String triggerKey = "trigger";
         Duration duration = Duration.ofSeconds(62);
         when(message.getChannel()).thenReturn(messageChannelUnion);
-        when(guildMessageChannelUnion.getIdLong()).thenReturn(CHANNEL_ID);
         when(aUserInAServer.getServerReference()).thenReturn(server);
         when(aUserInAServer.getUserReference()).thenReturn(user);
-        when(channelManagementService.loadChannel(CHANNEL_ID)).thenReturn(aChannel);
         Instant targetDate = Instant.now().plus(duration);
         Reminder createdReminder = Mockito.mock(Reminder.class);
         when(createdReminder.getTargetDate()).thenReturn(targetDate);
@@ -260,7 +257,7 @@ public class RemindServiceBeanTest {
         MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
         when(guildMessageChannelUnion.getGuild()).thenReturn(guild);
         when(templateService.renderEmbedTemplate(eq(RemindServiceBean.REMINDER_TEMPLATE_TEXT), any(), eq(SERVER_ID))).thenReturn(messageToSend);
-        when(channelService.sendMessageToSendToChannel(messageToSend, messageChannelUnion)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
+        when(channelService.sendMessageToSendToChannel(messageToSend, guildMessageChannelUnion)).thenReturn(Arrays.asList(CompletableFuture.completedFuture(null)));
         CompletableFuture<Void> future = testUnit.sendReminderText(REMINDER_ID, guildMessageChannelUnion, remindedMember);
         future.join();
         Assert.assertFalse(future.isCompletedExceptionally());
