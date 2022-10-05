@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.remind.model.template.commands;
 
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
-import dev.sheldan.abstracto.remind.model.database.Reminder;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,7 @@ import lombok.Setter;
 public class ReminderModel {
     private String remindText;
     private MemberNameDisplay memberDisplay;
-    private Reminder reminder;
+    private ReminderDisplay reminder;
     private ServerChannelMessage message;
     private String joinButtonId;
 

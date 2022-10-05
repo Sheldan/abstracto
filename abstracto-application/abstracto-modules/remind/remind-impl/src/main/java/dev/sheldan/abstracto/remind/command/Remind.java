@@ -26,6 +26,7 @@ import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
+import dev.sheldan.abstracto.remind.model.template.commands.ReminderDisplay;
 import dev.sheldan.abstracto.remind.model.template.commands.ReminderModel;
 import dev.sheldan.abstracto.remind.payload.JoinReminderPayload;
 import dev.sheldan.abstracto.remind.service.ReminderService;
@@ -86,7 +87,7 @@ public class Remind extends AbstractConditionableCommand {
                 .remindText(text)
                 .memberDisplay(MemberNameDisplay.fromMember(commandContext.getAuthor()))
                 .joinButtonId(joinButtonId)
-                .reminder(createdReminder)
+                .reminder(ReminderDisplay.fromReminder(createdReminder))
                 .message(ServerChannelMessage.fromMessage(commandContext.getMessage()))
                 .build();
 
@@ -120,9 +121,8 @@ public class Remind extends AbstractConditionableCommand {
                 .remindText(reminderText)
                 .joinButtonId(joinButtonId)
                 .memberDisplay(MemberNameDisplay.fromMember(event.getMember()))
-                .reminder(createdReminder)
+                .reminder(ReminderDisplay.fromReminder(createdReminder))
                 .build();
-        remindModel.setReminder(createdReminder);
 
         JoinReminderPayload payload = JoinReminderPayload
                 .builder()
