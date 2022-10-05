@@ -73,6 +73,7 @@ public class CacheEntityServiceBean implements CacheEntityService {
                 .id(attachment.getIdLong())
                 .fileName(attachment.getFileName())
                 .height(attachment.getHeight())
+                .spoiler(attachment.isSpoiler())
                 .proxyUrl(attachment.getProxyUrl())
                 .size(attachment.getSize())
                 .url(attachment.getUrl())
