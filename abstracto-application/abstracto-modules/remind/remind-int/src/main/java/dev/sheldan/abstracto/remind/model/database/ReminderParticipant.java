@@ -29,7 +29,7 @@ public class ReminderParticipant {
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @MapsId("participantUserInServerId")
     @JoinColumn(name = "reminder_participant_user_in_server_id", nullable = false)
-    private AUserInAServer participator;
+    private AUserInAServer participant;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

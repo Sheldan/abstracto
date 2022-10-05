@@ -24,7 +24,7 @@ public class ReminderParticipantManagementServiceBean implements ReminderPartici
         ReminderParticipant reminderParticipant = ReminderParticipant
                 .builder()
                 .reminder(reminder)
-                .participator(aUserInAServer)
+                .participant(aUserInAServer)
                 .server(aUserInAServer.getServerReference())
                 .reminderParticipantId(id)
                 .build();
@@ -57,5 +57,15 @@ public class ReminderParticipantManagementServiceBean implements ReminderPartici
     @Override
     public List<ReminderParticipant> getReminderParticipants(Reminder reminder) {
         return reminderParticipantRepository.findAllByReminder(reminder);
+    }
+
+    @Override
+    public List<ReminderParticipant> getReminders(AUserInAServer participant) {
+        return reminderParticipantRepository.findAllByParticipant(participant);
+    }
+
+    @Override
+    public List<ReminderParticipant> getActiveReminders(AUserInAServer participant) {
+        return reminderParticipantRepository.findAllByParticipantAndReminder_RemindedFalse(participant);
     }
 }

@@ -171,7 +171,7 @@ public class RemindServiceBean implements ReminderService {
         List<ReminderParticipant> participants = reminderParticipantManagementService.getReminderParticipants(reminder);
         List<MemberDisplay> participantsDisplays = participants
                 .stream()
-                .map(reminderParticipant -> MemberDisplay.fromAUserInAServer(reminderParticipant.getParticipator()))
+                .map(reminderParticipant -> MemberDisplay.fromAUserInAServer(reminderParticipant.getParticipant()))
                 .collect(Collectors.toList());
         ExecutedReminderModel build = ExecutedReminderModel
                 .builder()

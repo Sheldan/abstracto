@@ -15,4 +15,6 @@ public interface ReminderParticipantManagementService {
     Optional<ReminderParticipant> getReminderParticipant(Reminder reminder, AUserInAServer aUserInAServer);
     boolean isReminderParticipator(Reminder reminder, AUserInAServer aUserInAServer);
     List<ReminderParticipant> getReminderParticipants(Reminder reminder);
+    List<ReminderParticipant> getReminders(AUserInAServer participant);
+    List<ReminderParticipant> getActiveReminders(AUserInAServer participant);
 }

@@ -19,9 +19,11 @@ import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
 import dev.sheldan.abstracto.remind.model.database.Reminder;
+import dev.sheldan.abstracto.remind.model.database.ReminderParticipant;
 import dev.sheldan.abstracto.remind.model.template.commands.ReminderDisplay;
 import dev.sheldan.abstracto.remind.model.template.commands.RemindersModel;
 import dev.sheldan.abstracto.remind.service.management.ReminderManagementService;
+import dev.sheldan.abstracto.remind.service.management.ReminderParticipantManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -52,6 +54,9 @@ public class Reminders extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private ReminderParticipantManagementService reminderParticipantManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Long serverId = commandContext.getGuild().getIdLong();
@@ -64,19 +69,19 @@ public class Reminders extends AbstractConditionableCommand {
     private MessageToSend getMessageToSend(Long serverId, Member member) {
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(aUserInAServer);
-        List<ReminderDisplay> reminders = activeReminders.stream().map(reminder -> {
-            ServerChannelMessage originMessage = ServerChannelMessage
-                    .builder()
-                    .messageId(reminder.getMessageId())
-                    .channelId(reminder.getChannel().getId())
-                    .serverId(serverId)
-                    .build();
-            return ReminderDisplay
-                    .builder()
-                    .reminder(reminder)
-                    .message(originMessage)
-                    .build();
-        }).collect(Collectors.toList());
+        List<Reminder> joinedReminders = reminderParticipantManagementService.getActiveReminders(aUserInAServer)
+                .stream()
+                .map(ReminderParticipant::getReminder)
+                .collect(Collectors.toList());
+        List<ReminderDisplay> reminders = activeReminders
+                .stream()
+                .map(ReminderDisplay::fromReminder)
+                .collect(Collectors.toList());
+        reminders.addAll(joinedReminders
+                .stream()
+                .map(ReminderDisplay::fromReminder)
+                .peek(reminderDisplay -> reminderDisplay.setJoined(true))
+                .collect(Collectors.toList()));
         RemindersModel model = RemindersModel
                 .builder()
                 .reminders(reminders)
