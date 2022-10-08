@@ -108,7 +108,7 @@ public class Close extends AbstractConditionableCommand {
         if(slashCommandParameterService.hasCommandOption(LOG_PARAMETER, event)) {
             log = slashCommandParameterService.getCommandOption(LOG_PARAMETER, event, Boolean.class);
         } else {
-            log = false;
+            log = true;
         }
         ClosingContext context = ClosingContext
                 .builder()
