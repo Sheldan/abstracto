@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.listener.sync.jda;
 import dev.sheldan.abstracto.core.service.BotService;
 import dev.sheldan.abstracto.core.service.StartupServiceBean;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
-import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -14,7 +14,6 @@ import dev.sheldan.abstracto.core.service.FeatureModeService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -64,7 +63,7 @@ public class MessageContextCommandListenerBean extends ListenerAdapter {
             .build();
 
     @Override
-    public void onMessageContextInteraction(@NotNull MessageContextInteractionEvent event) {
+    public void onMessageContextInteraction(MessageContextInteractionEvent event) {
         if(listenerList == null) return;
         CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), messageContextCommandExecutor).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in async message context event.", throwable);

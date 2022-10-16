@@ -14,13 +14,13 @@ import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +60,7 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     private Gson gson;
 
     @Override
-    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+    public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
         if(listenerList == null) return;
         // TODO remove this and make this configurable
         event.deferEdit().queue();
@@ -71,7 +71,7 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void executeListenerLogic(@NotNull ButtonInteractionEvent event) {
+    public void executeListenerLogic(ButtonInteractionEvent event) {
         ButtonClickedListenerModel model = null;
         ButtonClickedListener listener = null;
         try {

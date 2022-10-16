@@ -6,12 +6,12 @@ import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.emoji.update.EmojiUpdateNameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class EmoteUpdatedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onEmojiUpdateName(@NotNull EmojiUpdateNameEvent event) {
+    public void onEmojiUpdateName(@Nonnull EmojiUpdateNameEvent event) {
         if(updatedListeners == null) return;
         EmoteNameUpdatedModel model = getModel(event);
         updatedListeners.forEach(emoteUpdatedListener -> listenerService.executeFeatureAwareListener(emoteUpdatedListener, model));

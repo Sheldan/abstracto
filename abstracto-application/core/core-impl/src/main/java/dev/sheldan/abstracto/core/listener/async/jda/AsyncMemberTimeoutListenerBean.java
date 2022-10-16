@@ -6,12 +6,12 @@ import dev.sheldan.abstracto.core.models.listener.MemberTimeoutUpdatedModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateTimeOutEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 @Component
@@ -28,7 +28,7 @@ public class AsyncMemberTimeoutListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Override
-    public void onGuildMemberUpdateTimeOut(@NotNull GuildMemberUpdateTimeOutEvent event) {
+    public void onGuildMemberUpdateTimeOut(@Nonnull GuildMemberUpdateTimeOutEvent event) {
         if(listenerList == null) return;
         MemberTimeoutUpdatedModel model = getModel(event);
         listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, memberTimeoutExecutor));

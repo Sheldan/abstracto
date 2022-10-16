@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -51,7 +50,7 @@ public class AsyncAChannelCreatedListenerBean extends ListenerAdapter {
     }
 
     @Transactional
-    public void createChannelInDatabase(@NotNull ChannelCreateEvent event) {
+    public void createChannelInDatabase(ChannelCreateEvent event) {
         log.info("Creating text channel with ID {}.", event.getChannel().getIdLong());
         if(event.getChannel() instanceof GuildChannel) {
             AServer serverObject = serverManagementService.loadOrCreate(((GuildChannel)event.getChannel()).getGuild().getIdLong());

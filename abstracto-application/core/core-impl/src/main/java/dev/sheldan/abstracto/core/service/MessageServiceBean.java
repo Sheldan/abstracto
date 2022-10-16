@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -166,7 +165,6 @@ public class MessageServiceBean implements MessageService {
                 FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(template, model, privateChannel)));
     }
 
-    @NotNull
     public CompletableFuture<PrivateChannel> openPrivateChannelForUser(User user) {
         return user.openPrivateChannel().submit();
     }

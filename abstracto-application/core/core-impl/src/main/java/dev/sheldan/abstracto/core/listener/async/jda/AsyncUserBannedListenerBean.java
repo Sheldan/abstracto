@@ -6,12 +6,12 @@ import dev.sheldan.abstracto.core.models.listener.UserBannedModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.GuildBanEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 @Component
@@ -28,7 +28,7 @@ public class AsyncUserBannedListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Override
-    public void onGuildBan(@NotNull GuildBanEvent event) {
+    public void onGuildBan(@Nonnull GuildBanEvent event) {
         if(listenerList == null) return;
         UserBannedModel model = getModel(event);
         listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, leaveListenerExecutor));

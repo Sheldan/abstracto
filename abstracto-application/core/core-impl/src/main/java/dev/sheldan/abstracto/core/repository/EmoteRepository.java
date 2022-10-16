@@ -2,7 +2,6 @@ package dev.sheldan.abstracto.core.repository;
 
 import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -22,7 +21,6 @@ public interface EmoteRepository extends JpaRepository<AEmote, Integer> {
 
     boolean existsByEmoteIdAndServerRef(String emoteId, AServer server);
 
-    @NotNull
     @Override
     Optional<AEmote> findById(@NonNull Integer aLong);
 }

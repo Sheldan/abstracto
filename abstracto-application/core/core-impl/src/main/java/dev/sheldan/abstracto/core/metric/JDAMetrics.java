@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ public class JDAMetrics extends ListenerAdapter {
     private final HashMap<Class, CounterMetric> coveredEvents = new HashMap<>();
 
     @Override
-    public void onGenericEvent(@NotNull GenericEvent event) {
+    public void onGenericEvent(GenericEvent event) {
         if(!coveredEvents.containsKey(event.getClass())) {
             String eventName = event.getClass().getSimpleName();
             CounterMetric metric =

@@ -15,13 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +75,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         try {
             if(commands == null || commands.isEmpty()) return;
             log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
@@ -111,7 +111,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     }
 
     @Override
-    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+    public void onCommandAutoCompleteInteraction(@Nonnull CommandAutoCompleteInteractionEvent event) {
         try {
             if(commands == null || commands.isEmpty()) return;
             CompletableFuture.runAsync(() ->  self.executeAutCompleteListenerLogic(event), slashCommandAutoCompleteExecutor).exceptionally(throwable -> {

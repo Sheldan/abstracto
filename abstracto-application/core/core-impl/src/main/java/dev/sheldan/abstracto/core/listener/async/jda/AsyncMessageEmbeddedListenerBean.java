@@ -5,13 +5,13 @@ import dev.sheldan.abstracto.core.models.listener.GuildMessageEmbedEventModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.message.MessageEmbedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 @Component
@@ -33,7 +33,7 @@ public class AsyncMessageEmbeddedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onMessageEmbed(@NotNull MessageEmbedEvent event) {
+    public void onMessageEmbed(@Nonnull MessageEmbedEvent event) {
         if(listenerList == null) return;
         GuildMessageEmbedEventModel model = getModel(event);
         listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, messageEmbeddedListener));

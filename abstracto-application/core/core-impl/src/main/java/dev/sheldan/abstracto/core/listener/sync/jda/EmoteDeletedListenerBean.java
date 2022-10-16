@@ -9,11 +9,11 @@ import dev.sheldan.abstracto.core.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.emoji.EmojiRemovedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class EmoteDeletedListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Override
-    public void onEmojiRemoved(@NotNull EmojiRemovedEvent event) {
+    public void onEmojiRemoved(@Nonnull EmojiRemovedEvent event) {
         if(deletedListeners == null) return;
         EmoteDeletedModel model = getModel(event);
         deletedListeners.forEach(listener -> listenerService.executeFeatureAwareListener(listener, model));

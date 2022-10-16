@@ -5,12 +5,12 @@ import dev.sheldan.abstracto.core.models.listener.BoostTimeUpdatedModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateBoostTimeEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 @Component
@@ -27,7 +27,7 @@ public class AsyncMemberBoostTimeUpdateListenerBean extends ListenerAdapter {
     private ListenerService listenerService;
 
     @Override
-    public void onGuildMemberUpdateBoostTime(@NotNull GuildMemberUpdateBoostTimeEvent event) {
+    public void onGuildMemberUpdateBoostTime(@Nonnull GuildMemberUpdateBoostTimeEvent event) {
         if(listenerList == null) return;
         BoostTimeUpdatedModel model = getModel(event);
         listenerList.forEach(boostListener -> listenerService.executeFeatureAwareListener(boostListener, model, boostTimeUpdateListener));

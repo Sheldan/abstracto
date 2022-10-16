@@ -5,13 +5,13 @@ import dev.sheldan.abstracto.core.models.listener.EmoteDeletedModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.emoji.EmojiRemovedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 @Service
@@ -30,7 +30,7 @@ public class AsyncEmoteDeletedListenerBean extends ListenerAdapter {
 
     @Override
     @Transactional
-    public void onEmojiRemoved(@NotNull EmojiRemovedEvent event) {
+    public void onEmojiRemoved(@Nonnull EmojiRemovedEvent event) {
         if(listenerList == null) return;
         EmoteDeletedModel model = getModel(event);
         listenerList.forEach(deletedListener -> listenerService.executeFeatureAwareListener(deletedListener, model, emoteDeletedListenerExecutor));

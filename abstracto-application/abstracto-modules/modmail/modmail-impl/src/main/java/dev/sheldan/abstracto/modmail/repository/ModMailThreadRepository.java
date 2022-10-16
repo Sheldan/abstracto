@@ -6,7 +6,6 @@ import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThreadState;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -38,7 +37,6 @@ public interface ModMailThreadRepository extends JpaRepository<ModMailThread, Lo
 
     List<ModMailThread> findByUserAndState(AUserInAServer userInAServer, ModMailThreadState state);
 
-    @NotNull
     @Override
     Optional<ModMailThread> findById(@NonNull Long aLong);
 }
