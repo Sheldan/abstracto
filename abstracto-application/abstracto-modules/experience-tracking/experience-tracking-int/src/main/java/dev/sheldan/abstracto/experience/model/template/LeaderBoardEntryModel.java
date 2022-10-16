@@ -26,7 +26,7 @@ public class LeaderBoardEntryModel implements Serializable {
     @Setter
     private transient Member member;
     /**
-     * The position this {@link dev.sheldan.abstracto.core.models.database.AUserInAServer user} in this server has, ordered by experience {@link AUserExperience#experience}
+     * The position this {@link dev.sheldan.abstracto.core.models.database.AUserInAServer user} in this server has, ordered by experience {@link AUserExperience} experience
      */
     private Integer rank;
 }

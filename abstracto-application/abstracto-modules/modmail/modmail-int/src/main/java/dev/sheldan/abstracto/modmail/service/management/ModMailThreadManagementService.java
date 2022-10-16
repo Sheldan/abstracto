@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface ModMailThreadManagementService {
 
     /**
-     * Retrieves a {@link ModMailThread} found in the {@link net.dv8tion.jda.api.entities.MessageChannel} given by the ID of the channel
+     * Retrieves a {@link ModMailThread} found in the message channel given by the ID of the channel
      * @param channelId The id of the channel to retrieve the {@link ModMailThread} for
      * @throws ChannelNotFoundException if an appropriate {@link AChannel} was not found
      * @return The instance of {@link ModMailThread} if it exists, null if none was found
@@ -39,7 +39,7 @@ public interface ModMailThreadManagementService {
     ModMailThread getById(Long modMailThreadId);
 
     /**
-     * Retrieves a {@link ModMailThread} found in the {@link net.dv8tion.jda.api.entities.MessageChannel} given by the
+     * Retrieves a {@link ModMailThread} found in the message channel given by the
      * {@link AChannel} object
      * @param channel The {@link AChannel} object to search a mod mail thread for
      * @return The found mod mail thread, or null if none was found

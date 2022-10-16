@@ -34,7 +34,7 @@ public class TrackedEmote implements Serializable, Fakeable {
     private AServer server;
 
     /**
-     * The name of the {@link net.dv8tion.jda.api.entities.Emote} which is the same how it is identified within Discord.
+     * The name of the emote which is the same how it is identified within Discord.
      */
     @Column(name = "name", length = 32)
     private String emoteName;

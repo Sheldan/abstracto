@@ -50,11 +50,11 @@ public interface UserExperienceManagementService {
     List<AUserExperience> loadAllUsers(AServer server);
 
     /**
-     * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience#experience} and only returns the positions between {@code start} and @{code end}.
+     * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience} experience and only returns the positions between {@code start} and @{code end}.
      * @param server The {@link AServer} to retrieve the users for
      * @param page The page to retrieve
      * @param size The size of each page
-     * @return A list desc ordered by {@link AUserExperience#experience} only containing the elements between {@code start} and @{code end}
+     * @return A list desc ordered by {@link AUserExperience} experience only containing the elements between {@code start} and @{code end}
      */
     List<AUserExperience> findLeaderBoardUsersPaginated(AServer server, Integer page, Integer size);
 

@@ -21,7 +21,7 @@ public class ModMailCategoryDelayedAction implements DelayedAction {
     /**
      * Sets the config key of MODMAIL_CATEGORY to the given category ID contained in the {@link DelayedActionConfig}
      * @param delayedActionConfig An instance of {@link ModMailCategoryDelayedActionConfig} containing the ID
-     *                            of the {@link net.dv8tion.jda.api.entities.Category} and the ID of the
+     *                            of the category and the ID of the
      *                            {@link net.dv8tion.jda.api.entities.Guild} to change
      */
     @Override

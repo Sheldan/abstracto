@@ -16,7 +16,7 @@ public interface UsedEmoteService {
      * This {@link EmoteStatsModel} will contain all {@link TrackedEmote} from the server
      * @param server The {@link AServer} to retrieve the emote stats for
      * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
-     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static {@link net.dv8tion.jda.api.entities.Emote}
+     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
     EmoteStatsModel getEmoteStatsForServerSince(AServer server, Instant since);
 
@@ -25,7 +25,7 @@ public interface UsedEmoteService {
      * This {@link EmoteStatsModel} will contain only deleted {@link TrackedEmote} from the server
      * @param server The {@link AServer} to retrieve the emote stats for
      * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
-     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static {@link net.dv8tion.jda.api.entities.Emote}
+     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
     EmoteStatsModel getDeletedEmoteStatsForServerSince(AServer server, Instant since);
 
@@ -34,7 +34,7 @@ public interface UsedEmoteService {
      * This {@link EmoteStatsModel} will contain only external {@link TrackedEmote} from the server
      * @param server The {@link AServer} to retrieve the emote stats for
      * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
-     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static {@link net.dv8tion.jda.api.entities.Emote}
+     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
     EmoteStatsModel getExternalEmoteStatsForServerSince(AServer server, Instant since);
 
@@ -44,7 +44,7 @@ public interface UsedEmoteService {
      * the {@link net.dv8tion.jda.api.entities.Guild}
      * @param server The {@link AServer} to retrieve the emote stats for
      * @param since Emote stats should be younger than this {@link Instant}. Only the date portion is considered.
-     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static {@link net.dv8tion.jda.api.entities.Emote}
+     * @return An {@link EmoteStatsModel} containing the statistics split by animated and static emote
      */
     EmoteStatsModel getActiveEmoteStatsForServerSince(AServer server, Instant since);
     EmoteStatsResultDisplay getEmoteStatForEmote(TrackedEmote trackedEmote, Instant since);

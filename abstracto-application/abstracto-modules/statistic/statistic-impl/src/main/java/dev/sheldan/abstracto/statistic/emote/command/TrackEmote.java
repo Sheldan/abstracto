@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * This command can be used to track one individual {@link TrackedEmote} newly, or set the emote to be tracked again.
- * This can either be done via providing the {@link net.dv8tion.jda.api.entities.Emote} or via ID.
+ * This can either be done via providing the emote or via ID.
  */
 @Component
 public class TrackEmote extends AbstractConditionableCommand {

@@ -19,7 +19,7 @@ public class TrackedEmoteRunTimeStorage {
      * map will not contain many keys, because the {@link dev.sheldan.abstracto.statistic.emote.job.EmotePersistingJob}
      * will remove them a minute later. The Map within the current minute will contain every server as a key in which
      * there were emotes used in the particular minute. {@link PersistingEmote} does not contain any JDA related objects
-     * but only the information necessary to identify any {@link net.dv8tion.jda.api.entities.Emote}.
+     * but only the information necessary to identify any emote.
      */
     private HashMap<Long, Map<Long, List<PersistingEmote>>> trackedEmotes = new HashMap<>();
 

@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.entities.Role;
 /**
  * Exception thrown in case the {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRole} has already been
  * defined for an {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace}. This is identified
- * via the {@link net.dv8tion.jda.api.entities.Emote} which is used to react.
+ * via the emote which is used to react.
  */
 public class AssignableRoleAlreadyDefinedException extends AbstractoRunTimeException implements Templatable {
     private final AssignableRoleAlreadyDefinedExceptionModel model;

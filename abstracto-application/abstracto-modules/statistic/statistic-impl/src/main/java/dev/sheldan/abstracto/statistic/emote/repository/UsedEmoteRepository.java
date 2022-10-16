@@ -21,8 +21,8 @@ public interface UsedEmoteRepository extends JpaRepository<UsedEmote, UsedEmoteD
     /**
      * Selects the {@link UsedEmote} for one particular {@link dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote}
      * for the current date.
-     * @param emoteId The ID of the {@link net.dv8tion.jda.api.entities.Emote} which is being tracked
-     * @param server_id The ID of the {@link net.dv8tion.jda.api.entities.Guild} which is the server where the {@link net.dv8tion.jda.api.entities.Emote}
+     * @param emoteId The ID of the emote which is being tracked
+     * @param server_id The ID of the {@link net.dv8tion.jda.api.entities.Guild} which is the server where the emote
      *                  is being tracked
      * @return An {@link Optional} containing a possible {@link UsedEmote}, if it exists for the criteria, an empty Optional otherwise.
      */

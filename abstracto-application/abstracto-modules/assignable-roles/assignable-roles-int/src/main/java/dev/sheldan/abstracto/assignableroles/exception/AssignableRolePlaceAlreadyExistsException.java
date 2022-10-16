@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.templating.Templatable;
 
 /**
  * Exception thrown in case the {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace place}
- * identified by {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace#key}
+ * identified by {@link dev.sheldan.abstracto.assignableroles.model.database.AssignableRolePlace} key
  */
 public class AssignableRolePlaceAlreadyExistsException extends AbstractoRunTimeException implements Templatable {
 

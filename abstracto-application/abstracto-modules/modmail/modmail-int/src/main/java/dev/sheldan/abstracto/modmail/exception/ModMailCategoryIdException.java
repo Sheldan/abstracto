@@ -8,7 +8,7 @@ import lombok.Setter;
 
 /**
  * This exception is thrown when a {@link net.dv8tion.jda.api.entities.Member} tries to set the mod mail category
- * via a command, and the new value does not qualify as a valid {@link net.dv8tion.jda.api.entities.Category}
+ * via a command, and the new value does not qualify as a valid category
  * in the member executes the command in
  */
 @Getter

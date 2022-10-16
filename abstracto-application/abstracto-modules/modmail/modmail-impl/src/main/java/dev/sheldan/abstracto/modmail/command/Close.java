@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Closes the mod mail thread: logs the messages to the log post target, if the feature has the appropriate
- * {@link dev.sheldan.abstracto.core.config.FeatureMode}, deletes the {@link net.dv8tion.jda.api.entities.MessageChannel}.
+ * {@link dev.sheldan.abstracto.core.config.FeatureMode}, deletes the message channel.
  * This command takes an optional parameter, the note, which will be replaced with a default value, if not present
  */
 @Component

@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * This command can be used to synchronize the state of {@link dev.sheldan.abstracto.statistic.emote.model.database.TrackedEmote}
- * in the database, with the state of {@link net.dv8tion.jda.api.entities.Emote} in the {@link net.dv8tion.jda.api.entities.Guild}.
+ * in the database, with the state of emote in the {@link net.dv8tion.jda.api.entities.Guild}.
  * It will mark emotes not in the guild anymore and add emotes which are not yet tracked.
  */
 @Component
