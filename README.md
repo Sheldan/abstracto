@@ -14,7 +14,7 @@ An example implementation of this bot can be seen [here](https://github.com/Shel
 
 
 ## Technologies
-* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 4.3.0_315
+* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 5.0.0-alpha.21
 * [Spring boot](https://github.com/spring-projects/spring-boot) is used as a framework to create standalone application in Java with Java EE methods. (including Dependency injection and more)
 * [Hibernate](https://github.com/hibernate/hibernate-orm) is used as a reference implementation of JPA.
 * [Freemarker](https://github.com/apache/freemarker) is used as a templating engine. This is used to provide internationalization for user facing text and enable dynamic embed configuration.
