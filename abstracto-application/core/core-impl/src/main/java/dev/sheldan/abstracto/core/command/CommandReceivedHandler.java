@@ -43,6 +43,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,8 +144,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
                     try {
                         self.executeCommand(event, parsedParameters.getCommand(), parsedParameters.getParameters());
                     } catch (Exception e) {
-                        reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
-                                , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+                        if(!(e instanceof UnexpectedRollbackException)) {
+                            reportException(event, null, e, String.format("Exception when executing command from message %d in message %d in guild %d."
+                                    , message.getIdLong(), event.getChannel().getIdLong(), event.getGuild().getIdLong()));
+                        }
                     }
                 });
                 parsingFuture.exceptionally(throwable -> {

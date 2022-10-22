@@ -6,6 +6,15 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.2.5-webservices/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.7/collection.xml" relativeToChangelogFile="true"/>
+    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="threadReaderFeature" value="(SELECT id FROM feature WHERE key = 'threadReader')"/>
+
+    <changeSet author="Sheldan" id="threadReader-command">
+        <insert tableName="command">
+            <column name="name" value="threadReader"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${threadReaderFeature}"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

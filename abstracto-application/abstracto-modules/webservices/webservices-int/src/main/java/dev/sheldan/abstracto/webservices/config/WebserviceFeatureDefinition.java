@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum WebserviceFeatureDefinition implements FeatureDefinition {
-    YOUTUBE("youtube"), URBAN_DICTIONARY("urban");
+    YOUTUBE("youtube"), URBAN_DICTIONARY("urban"), THREAD_READER("threadReader");
 
     private String key;
 
