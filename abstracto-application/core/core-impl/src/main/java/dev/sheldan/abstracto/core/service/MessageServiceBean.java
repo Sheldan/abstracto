@@ -255,8 +255,7 @@ public class MessageServiceBean implements MessageService {
     @Override
     public CompletableFuture<Message> editMessageWithActionRowsMessage(Message message, List<ActionRow> rows) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
-        MessageEditData messageEditData = MessageEditData.fromMessage(message);
-        return message.editMessage(messageEditData).setComponents(rows).submit();
+        return message.editMessageComponents(rows).submit();
     }
 
     @Override

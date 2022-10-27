@@ -262,8 +262,9 @@ public class SuggestionServiceBean implements SuggestionService {
             if(throwable == null) {
                 model.setSuggester(user);
             }
-            self.updateSuggestionMessageText(reason, model).thenAccept(unused -> finalFuture.complete(null))
+            self.updateSuggestionMessageText(reason, model)
             .thenAccept(unused -> self.removeSuggestionButtons(serverId, channelId, originalMessageId, suggestionId))
+            .thenAccept(unused -> finalFuture.complete(null))
             .exceptionally(throwable1 -> {
                 finalFuture.completeExceptionally(throwable1);
                 return null;
