@@ -11,10 +11,14 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentSlashCommandNames;
+import dev.sheldan.abstracto.entertainment.model.command.TransferCreditsModel;
 import dev.sheldan.abstracto.entertainment.service.EconomyService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -44,15 +48,25 @@ public class TransferCredits extends AbstractConditionableCommand {
     @Autowired
     private EconomyService economyService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Override
-    public CommandResult execute(CommandContext commandContext) {
+    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Member targetMember = (Member) parameters.get(0);
         Integer amount = (Integer) parameters.get(1);
         AUserInAServer targetUser = userInServerManagementService.loadOrCreateUser(targetMember);
         AUserInAServer sourceUser = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
         economyService.transferCredits(sourceUser, targetUser, amount.longValue());
-        return CommandResult.fromSuccess();
+        TransferCreditsModel responseModel = TransferCreditsModel
+                .builder()
+                .sourceMember(MemberDisplay.fromMember(commandContext.getAuthor()))
+                .targetMember(MemberDisplay.fromMember(targetMember))
+                .credits(amount)
+                .build();
+        return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInTextChannelList(TRANSFER_CREDITS_RESPONSE, responseModel, commandContext.getChannel()))
+                .thenApply(unused -> CommandResult.fromSuccess());
     }
 
     @Override
@@ -61,8 +75,14 @@ public class TransferCredits extends AbstractConditionableCommand {
         Integer amount = slashCommandParameterService.getCommandOption(AMOUNT_PARAMETER, event, Integer.class);
         AUserInAServer targetUser = userInServerManagementService.loadOrCreateUser(targetMember);
         AUserInAServer sourceUser = userInServerManagementService.loadOrCreateUser(event.getMember());
+        TransferCreditsModel responseModel = TransferCreditsModel
+                .builder()
+                .sourceMember(MemberDisplay.fromMember(event.getMember()))
+                .targetMember(MemberDisplay.fromMember(targetMember))
+                .credits(amount)
+                .build();
         economyService.transferCredits(sourceUser, targetUser, amount.longValue());
-        return interactionService.replyEmbed(TRANSFER_CREDITS_RESPONSE, event)
+        return interactionService.replyEmbed(TRANSFER_CREDITS_RESPONSE, responseModel, event)
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
 
@@ -105,7 +125,8 @@ public class TransferCredits extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
-                .causesReaction(true)
+                .causesReaction(false)
+                .async(true)
                 .help(helpInfo)
                 .build();
     }
