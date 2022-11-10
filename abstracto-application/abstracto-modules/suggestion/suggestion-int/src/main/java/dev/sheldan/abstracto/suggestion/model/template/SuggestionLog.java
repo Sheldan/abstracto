@@ -10,6 +10,8 @@ import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -29,6 +31,8 @@ public class SuggestionLog {
     private ButtonConfigModel agreeButtonModel;
     private ButtonConfigModel disAgreeButtonModel;
     private ButtonConfigModel removeVoteButtonModel;
+    private Instant autoEvaluationTargetDate;
+    private Boolean autoEvaluationEnabled;
 
     public String getOriginalMessageUrl() {
         return MessageUtils.buildMessageUrl(serverId, originalChannelId , originalMessageId);

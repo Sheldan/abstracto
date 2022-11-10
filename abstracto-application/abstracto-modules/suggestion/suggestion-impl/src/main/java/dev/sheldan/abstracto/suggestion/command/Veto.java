@@ -46,7 +46,7 @@ public class Veto extends AbstractConditionableCommand {
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
         log.debug("Using default reason for veto: {}.", parameters.size() != 2);
-        return suggestionService.vetoSuggestion(suggestionId, commandContext.getAuthor(), text)
+        return suggestionService.vetoSuggestion(commandContext.getGuild().getIdLong(), suggestionId, commandContext.getAuthor(), text)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
@@ -59,7 +59,7 @@ public class Veto extends AbstractConditionableCommand {
         } else {
             vetoText = "";
         }
-        return suggestionService.vetoSuggestion(suggestionId, event.getMember(), vetoText)
+        return suggestionService.vetoSuggestion(event.getGuild().getIdLong(), suggestionId, event.getMember(), vetoText)
                 .thenCompose(unused -> interactionService.replyEmbed(VETO_RESPONSE, event))
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }

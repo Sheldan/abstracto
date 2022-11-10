@@ -69,4 +69,7 @@ public class Suggestion implements Serializable {
     @Column(name = "job_trigger_key")
     private String suggestionReminderJobTriggerKey;
 
+    @Column(name = "evaluation_job_trigger_key")
+    private String suggestionEvaluationJobTriggerKey;
+
 }

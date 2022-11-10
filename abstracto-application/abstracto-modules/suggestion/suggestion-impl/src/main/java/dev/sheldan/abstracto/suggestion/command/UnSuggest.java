@@ -41,14 +41,14 @@ public class UnSuggest extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         Long suggestionId = (Long) parameters.get(0);
-        return suggestionService.removeSuggestion(suggestionId, commandContext.getAuthor())
+        return suggestionService.removeSuggestion(commandContext.getGuild().getIdLong(), suggestionId, commandContext.getAuthor())
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Long suggestionId = slashCommandParameterService.getCommandOption(SUGGESTION_ID_PARAMETER, event, Long.class, Integer.class).longValue();
-        return suggestionService.removeSuggestion(suggestionId, event.getMember())
+        return suggestionService.removeSuggestion(event.getMember().getIdLong(), suggestionId, event.getMember())
                 .thenCompose(unused -> interactionService.replyEmbed(UN_SUGGEST_RESPONSE, event))
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }

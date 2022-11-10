@@ -46,7 +46,7 @@ public class Accept extends AbstractConditionableCommand {
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
         log.debug("Using default reason for accept: {}.", parameters.size() != 2);
-        return suggestionService.acceptSuggestion(suggestionId, commandContext.getAuthor(), text)
+        return suggestionService.acceptSuggestion(commandContext.getGuild().getIdLong(), suggestionId, commandContext.getAuthor(), text)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
@@ -59,7 +59,7 @@ public class Accept extends AbstractConditionableCommand {
         } else {
             acceptText = "";
         }
-        return suggestionService.acceptSuggestion(suggestionId, event.getMember(), acceptText)
+        return suggestionService.acceptSuggestion(event.getGuild().getIdLong(), suggestionId, event.getMember(), acceptText)
                 .thenCompose(unused -> interactionService.replyEmbed(ACCEPT_RESPONSE, event))
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }

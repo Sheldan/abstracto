@@ -46,7 +46,7 @@ public class Reject extends AbstractConditionableCommand {
         Long suggestionId = (Long) parameters.get(0);
         String text = parameters.size() == 2 ? (String) parameters.get(1) : "";
         log.debug("Using default reason for reject: {}.", parameters.size() != 2);
-        return suggestionService.rejectSuggestion(suggestionId, commandContext.getAuthor(), text)
+        return suggestionService.rejectSuggestion(commandContext.getGuild().getIdLong(), suggestionId, commandContext.getAuthor(), text)
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
 
@@ -59,7 +59,7 @@ public class Reject extends AbstractConditionableCommand {
         } else {
             rejectText = "";
         }
-        return suggestionService.rejectSuggestion(suggestionId, event.getMember(), rejectText)
+        return suggestionService.rejectSuggestion(event.getGuild().getIdLong(), suggestionId, event.getMember(), rejectText)
                 .thenCompose(unused -> interactionService.replyEmbed(REJECT_RESPONSE, event))
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }

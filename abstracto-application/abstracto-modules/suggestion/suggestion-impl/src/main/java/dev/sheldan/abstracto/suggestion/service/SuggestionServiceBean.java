@@ -126,6 +126,11 @@ public class SuggestionServiceBean implements SuggestionService {
         AUserInAServer userSuggester = userInServerManagementService.loadOrCreateUser(suggester);
         Long newSuggestionId = counterService.getNextCounterValue(server, SUGGESTION_COUNTER_KEY);
         Boolean useButtons = featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_BUTTONS);
+        Boolean autoEvaluationEnabled = featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_AUTO_EVALUATE);
+        Long autoEvaluateDays = null;
+        if(autoEvaluationEnabled) {
+            autoEvaluateDays = configService.getLongValueOrConfigDefault(SUGGESTION_AUTO_EVALUATE_DAYS_CONFIG_KEY, serverId);
+        }
         SuggestionLog model = SuggestionLog
                 .builder()
                 .suggestionId(newSuggestionId)
@@ -137,6 +142,8 @@ public class SuggestionServiceBean implements SuggestionService {
                 .useButtons(useButtons)
                 .suggester(suggester.getUser())
                 .text(text)
+                .autoEvaluationEnabled(autoEvaluationEnabled)
+                .autoEvaluationTargetDate(autoEvaluationEnabled ? Instant.now().plus(autoEvaluateDays, ChronoUnit.DAYS) : null)
                 .build();
         if(useButtons) {
             setupButtonIds(model);
@@ -200,6 +207,10 @@ public class SuggestionServiceBean implements SuggestionService {
             String triggerKey = scheduleSuggestionReminder(serverId, suggestionId);
             suggestion.setSuggestionReminderJobTriggerKey(triggerKey);
         }
+        if(featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_AUTO_EVALUATE)) {
+            String triggerKey = scheduleEvaluationReminder(serverId, suggestionId);
+            suggestion.setSuggestionEvaluationJobTriggerKey(triggerKey);
+        }
     }
 
     private String scheduleSuggestionReminder(Long serverId, Long suggestionId) {
@@ -214,25 +225,50 @@ public class SuggestionServiceBean implements SuggestionService {
         return triggerKey;
     }
 
+    private String scheduleEvaluationReminder(Long serverId, Long suggestionId) {
+        HashMap<Object, Object> parameters = new HashMap<>();
+        parameters.put("serverId", serverId.toString());
+        parameters.put("suggestionId", suggestionId.toString());
+        JobParameters jobParameters = JobParameters.builder().parameters(parameters).build();
+        Long days = configService.getLongValueOrConfigDefault(SuggestionService.SUGGESTION_AUTO_EVALUATE_DAYS_CONFIG_KEY, serverId);
+        Instant targetDate = Instant.now().plus(days, ChronoUnit.DAYS);
+        String triggerKey = schedulerService.executeJobWithParametersOnce("suggestionEvaluationJob", "suggestion", jobParameters, Date.from(targetDate));
+        log.info("Starting scheduled job  with trigger {} to execute suggestion evaluation in server {} for suggestion {}.", triggerKey, serverId, suggestionId);
+        return triggerKey;
+    }
+
     @Override
-    public CompletableFuture<Void> acceptSuggestion(Long suggestionId, Member actingMember, String text) {
-        return self.setSuggestionToFinalState(actingMember, suggestionId, text, SuggestionState.ACCEPTED);
+    public CompletableFuture<Void> acceptSuggestion(Long serverId, Long suggestionId, Member actingMember, String text) {
+        return self.setSuggestionToFinalState(actingMember, serverId, suggestionId, text, SuggestionState.ACCEPTED);
+    }
+
+    @Override
+    public CompletableFuture<Void> evaluateSuggestion(Long serverId, Long suggestionId) {
+        Long approvalPercentage = configService.getLongValueOrConfigDefault(SUGGESTION_AUTO_EVALUATE_PERCENTAGE_CONFIG_KEY, serverId);
+        Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
+        Long agreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.AGREE);
+        Long disagreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.DISAGREE);
+        double suggestionPercentage = ((double) agreements) / (disagreements + agreements) * 100;
+        if(suggestionPercentage > approvalPercentage) {
+            return acceptSuggestion(serverId, suggestionId, null, null);
+        } else {
+            return rejectSuggestion(serverId, suggestionId, null, null);
+        }
     }
 
     @Transactional
-    public CompletableFuture<Void> setSuggestionToFinalState(Member executingMember, Long suggestionId, String text, SuggestionState state) {
-        Long serverId = executingMember.getGuild().getIdLong();
+    public CompletableFuture<Void> setSuggestionToFinalState(Member executingMember, Long serverId, Long suggestionId, String text, SuggestionState state) {
         postTargetService.validatePostTarget(SuggestionPostTarget.SUGGESTION, serverId);
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         suggestionManagementService.setSuggestionState(suggestion, state);
-        cancelSuggestionReminder(suggestion);
+        cancelSuggestionJobs(suggestion);
         log.info("Setting suggestion {} in server {} to state {}", suggestionId, suggestion.getServer().getId(), state);
         return updateSuggestion(executingMember, text, suggestion);
     }
 
     @Override
-    public CompletableFuture<Void> vetoSuggestion(Long suggestionId, Member actingMember, String text) {
-        return self.setSuggestionToFinalState(actingMember, suggestionId, text, SuggestionState.VETOED);
+    public CompletableFuture<Void> vetoSuggestion(Long serverId, Long suggestionId, Member actingMember, String text) {
+        return self.setSuggestionToFinalState(actingMember, serverId, suggestionId, text, SuggestionState.VETOED);
     }
 
     private CompletableFuture<Void> updateSuggestion(Member memberExecutingCommand, String reason, Suggestion suggestion) {
@@ -300,13 +336,12 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Override
-    public CompletableFuture<Void> rejectSuggestion(Long suggestionId, Member actingMember, String text) {
-        return self.setSuggestionToFinalState(actingMember, suggestionId, text, SuggestionState.REJECTED);
+    public CompletableFuture<Void> rejectSuggestion(Long serverId, Long suggestionId, Member actingMember, String text) {
+        return self.setSuggestionToFinalState(actingMember, serverId, suggestionId, text, SuggestionState.REJECTED);
     }
 
     @Override
-    public CompletableFuture<Void> removeSuggestion(Long suggestionId, Member member) {
-        Long serverId = member.getGuild().getIdLong();
+    public CompletableFuture<Void> removeSuggestion(Long serverId, Long suggestionId, Member member) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
         if(member.getIdLong() != suggestion.getSuggester().getUserReference().getId() ||
                 suggestion.getCreated().isBefore(Instant.now().minus(Duration.ofSeconds(removalMaxAgeSeconds)))) {
@@ -371,10 +406,14 @@ public class SuggestionServiceBean implements SuggestionService {
     }
 
     @Override
-    public void cancelSuggestionReminder(Suggestion suggestion) {
+    public void cancelSuggestionJobs(Suggestion suggestion) {
         if(suggestion.getSuggestionReminderJobTriggerKey() != null) {
             log.info("Cancelling reminder for suggestion {} in server {}.", suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId());
             schedulerService.stopTrigger(suggestion.getSuggestionReminderJobTriggerKey());
+        }
+        if(suggestion.getSuggestionEvaluationJobTriggerKey() != null) {
+            log.info("Cancelling evaluation job for suggestion {} in server {}.", suggestion.getSuggestionId().getId(), suggestion.getSuggestionId().getServerId());
+            schedulerService.stopTrigger(suggestion.getSuggestionEvaluationJobTriggerKey());
         }
     }
 
@@ -398,7 +437,7 @@ public class SuggestionServiceBean implements SuggestionService {
     @Transactional
     public void deleteSuggestion(Long suggestionId, Long serverId) {
         Suggestion suggestion = suggestionManagementService.getSuggestion(serverId, suggestionId);
-        cancelSuggestionReminder(suggestion);
+        cancelSuggestionJobs(suggestion);
         suggestionVoteManagementService.deleteSuggestionVotes(suggestion);
         suggestionManagementService.deleteSuggestion(suggestion);
     }
