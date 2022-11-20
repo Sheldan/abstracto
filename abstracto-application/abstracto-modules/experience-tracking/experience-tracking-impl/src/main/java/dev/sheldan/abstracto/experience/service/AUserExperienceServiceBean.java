@@ -188,9 +188,14 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
 
         List<List<Long>> partitionedUserIds = ListUtils.partition(userIds, 100);
         List<CompletableFuture<List<Member>>> memberLoadingFutures = new ArrayList<>();
-        partitionedUserIds.forEach(userIdsPart -> {
+        for (List<Long> userIdsPart : partitionedUserIds) {
             memberLoadingFutures.add(memberService.getMembersInServerAsync(server.getId(), userIdsPart));
-        });
+            try {
+                Thread.sleep(500L);
+            } catch (InterruptedException e) {
+                log.error("Failed to sleep.", e);
+            }
+        }
         CompletableFutureList<List<Member>> listCompletableFutureList = new CompletableFutureList<>(memberLoadingFutures);
         listCompletableFutureList.getMainFuture().whenComplete((result, throwable) -> {
                 List<Member> members = new ArrayList<>();
