@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureConfig;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -183,18 +185,32 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         CompletableFuture<Void> returnFuture = new CompletableFuture<>();
         Long serverId = server.getId();
         int supposedUserCount = userIds.size();
-        memberService.getMembersInServerAsync(server.getId(), userIds).whenComplete((members, throwable) -> {
-            if(throwable != null) {
-                log.warn("Failed to load all members in server {} for syncing experience. We started with {} and got {}.",
-                        serverId, supposedUserCount, members.size(), throwable);
-            }
-            self.syncUsers(members, serverId, messageChannel).thenAccept(unused -> {
-                log.info("Finished syncing users for experience roles.");
-                returnFuture.complete(null);
-            }).exceptionally(throwable1 -> {
+
+        List<List<Long>> partitionedUserIds = ListUtils.partition(userIds, 100);
+        List<CompletableFuture<List<Member>>> memberLoadingFutures = new ArrayList<>();
+        partitionedUserIds.forEach(userIdsPart -> {
+            memberLoadingFutures.add(memberService.getMembersInServerAsync(server.getId(), userIdsPart));
+        });
+        CompletableFutureList<List<Member>> listCompletableFutureList = new CompletableFutureList<>(memberLoadingFutures);
+        listCompletableFutureList.getMainFuture().whenComplete((result, throwable) -> {
+                List<Member> members = new ArrayList<>();
+                listCompletableFutureList.getFutures().forEach(listCompletableFuture -> members.addAll(listCompletableFuture.join()));
+                if(throwable != null) {
+                    log.warn("Failed to load all members in server {} for syncing experience. We started with {} and got {}.",
+                            serverId, supposedUserCount, members.size(), throwable);
+                }
+                self.syncUsers(members, serverId, messageChannel).thenAccept(unused -> {
+                    log.info("Finished syncing users for experience roles.");
+                    returnFuture.complete(null);
+                }).exceptionally(throwable1 -> {
+                    log.error("Failed to sync members.", throwable);
+                    returnFuture.complete(null);
+                    return null;
+                });
+            }).exceptionally(throwable -> {
+                log.error("Failed to load members.", throwable);
                 returnFuture.complete(null);
                 return null;
-            });
         });
         return returnFuture;
     }
