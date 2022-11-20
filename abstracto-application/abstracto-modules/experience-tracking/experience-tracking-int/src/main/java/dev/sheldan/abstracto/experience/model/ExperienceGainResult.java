@@ -15,10 +15,6 @@ import java.util.concurrent.CompletableFuture;
 @Setter
 @Builder
 public class ExperienceGainResult {
-    /**
-     * The calculation result contained in a {@link CompletableFuture future}. The future is necessary, because the calculation both calculates the new role
-     * and removes/adds {@link net.dv8tion.jda.api.entities.Role role} to the {@link net.dv8tion.jda.api.entities.Member member}
-     */
     private CompletableFuture<RoleCalculationResult> calculationResult;
     /**
      * The ID of the {@link dev.sheldan.abstracto.core.models.database.AUserInAServer user} for which this is the result

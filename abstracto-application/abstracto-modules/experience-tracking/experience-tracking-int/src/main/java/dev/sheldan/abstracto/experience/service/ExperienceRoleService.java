@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.template.LevelRole;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,34 +16,12 @@ import java.util.concurrent.CompletableFuture;
  * Service providing several methods surrounding {@link dev.sheldan.abstracto.experience.model.database.AExperienceRole experienceRole}.
  */
 public interface ExperienceRoleService {
-    /**
-     * Creates an {@link dev.sheldan.abstracto.experience.model.database.AExperienceRole experienceRole} according to the given
-     * parameters. This actually updates the {@link net.dv8tion.jda.api.entities.Member members}
-     * which currently possessed the given role before and provides a display to see how far the progress is
-     * @param role The {@link ARole role} to set the level to
-     * @param level The new level the {@link ARole role} should be awarded at
-     * @param channelId The ID of the {@link dev.sheldan.abstracto.core.models.database.AChannel} in which the status updates
-     *                  should be sent to
-     * @return A {@link CompletableFuture future} which completes, after all the updates on the {@link net.dv8tion.jda.api.entities.Member}
-     * have been completed
-     */
-    CompletableFuture<Void> setRoleToLevel(Role role, Integer level, Long channelId);
 
-    /**
-     * Removes the role from the {@link dev.sheldan.abstracto.experience.model.database.AExperienceRole} configuration,
-     * this will also update all the {@link net.dv8tion.jda.api.entities.Member} which previously had this role and re-calculates
-     * a new {@link AExperienceRole experienceRole} for them while also updating them in the guild
-     * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.model.database.AExperienceRole}
-     *             configuration
-     * @param channelId The ID of the {@link dev.sheldan.abstracto.core.models.database.AChannel} in which the status updates
-     *                  should be sent to
-     * @return A {@link CompletableFuture future} which completes, after all the updates on the {@link net.dv8tion.jda.api.entities.Member}
-     * have been completed
-     */
-    CompletableFuture<Void> unsetRoles(ARole role, Long channelId);
+    CompletableFuture<Void> setRoleToLevel(Role role, Integer level, GuildMessageChannel messageChannel);
+
+    CompletableFuture<Void> unsetRoles(ARole role, GuildMessageChannel messageChannel);
     List<AExperienceRole> getExperienceRolesAtLevel(Integer level, AServer server);
-    CompletableFuture<Void> unsetRoles(List<ARole> roles, Long channelId);
-    CompletableFuture<Void> unsetRoles(List<ARole> roles, Long channelId, AExperienceRole toAdd);
+    CompletableFuture<Void> unsetRoles(List<ARole> roles, GuildMessageChannel messageChannel);
 
     /**
      * Calculates the appropriate {@link AExperienceRole experienceRole} based on the provided list of {@link AExperienceRole experienceRole}

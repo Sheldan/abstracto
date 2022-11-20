@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.database.LeaderBoardEntryResult;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -51,5 +52,9 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
             "FROM user_experience_ranked rank " +
             "WHERE rank.id = :userInServerId", nativeQuery = true)
     LeaderBoardEntryResult getRankOfUserInServer(@Param("userInServerId") Long id, @Param("serverId") Long serverId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("update AUserExperience u set u.currentExperienceRole = null where u.currentExperienceRole.id = :roleId")
+    void removeExperienceRoleFromUsers(@Param("roleId") Long experienceRoleId);
 
 }

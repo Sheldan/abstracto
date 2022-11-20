@@ -39,7 +39,7 @@ public class SyncRoles extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         AServer server =  serverManagementService.loadServer(commandContext.getGuild());
         log.info("Synchronizing roles on server {}", server.getId());
-        return userExperienceService.syncUserRolesWithFeedback(server, commandContext.getChannel().getIdLong())
+        return userExperienceService.syncUserRolesWithFeedback(server, commandContext.getChannel())
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

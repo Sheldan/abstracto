@@ -1,27 +1,29 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.service.MessageService;
 import dev.sheldan.abstracto.core.service.RoleService;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
-import dev.sheldan.abstracto.core.utils.CompletableFutureList;
-import dev.sheldan.abstracto.experience.model.RoleCalculationResult;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
-import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.template.LevelRole;
+import dev.sheldan.abstracto.experience.model.template.UserSyncStatusModel;
 import dev.sheldan.abstracto.experience.service.management.ExperienceLevelManagementService;
 import dev.sheldan.abstracto.experience.service.management.ExperienceRoleManagementService;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,37 +37,27 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
     private ExperienceLevelManagementService experienceLevelService;
 
     @Autowired
-    private AUserExperienceService userExperienceService;
-
-    @Autowired
-    private ExperienceRoleServiceBean self;
-
-    @Autowired
     private RoleManagementService roleManagementService;
-
-    @Autowired
-    private ChannelManagementService channelManagementService;
 
     @Autowired
     private RoleService roleService;
 
-    /**
-     * UnSets the current configuration for the passed level, and sets the {@link ARole} to be used for this level
-     * in the given {@link AServer}
-     * @param role The {@link ARole} to set the level to
-     * @param level The level the {@link ARole} should be awarded at
-     */
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private MessageService messageService;
+
     @Override
-    public CompletableFuture<Void> setRoleToLevel(Role role, Integer level, Long channelId) {
-        Long roleId = role.getIdLong();
-        ARole aRoleToSet = roleManagementService.findRole(roleId);
+    public CompletableFuture<Void> setRoleToLevel(Role role, Integer level, GuildMessageChannel messageChannel) {
+        ARole aRoleToSet = roleManagementService.findRole(role.getIdLong());
         List<AExperienceRole> experienceRoles = getExperienceRolesAtLevel(level, aRoleToSet.getServer());
-        List<ARole> rolesToUnset = experienceRoles.stream().map(AExperienceRole::getRole).collect(Collectors.toList());
+        List<ARole> rolesToUnset = experienceRoles
+                .stream()
+                .map(AExperienceRole::getRole)
+                .collect(Collectors.toList());
         if(rolesToUnset.size() == 1 && rolesToUnset.contains(aRoleToSet)) {
             return CompletableFuture.completedFuture(null);
-        }
-        if(!rolesToUnset.contains(aRoleToSet)) {
-            rolesToUnset.add(aRoleToSet);
         }
         AExperienceLevel experienceLevel;
         if(!experienceRoles.isEmpty()) {
@@ -73,50 +65,17 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         } else {
             experienceLevel = experienceLevelService.getLevel(level);
         }
-        AExperienceRole newExperienceRole = experienceRoleManagementService.setLevelToRole(experienceLevel, aRoleToSet);
-        Long newlyCreatedExperienceRoleId = newExperienceRole.getId();
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        unsetRoles(rolesToUnset, channelId, newExperienceRole).thenAccept(aVoid ->
-            self.unsetRoleInDb(level, roleId)
-        ).thenAccept(unused -> future.complete(null)).exceptionally(throwable -> {
-            self.deleteExperienceRoleViaId(newlyCreatedExperienceRoleId);
-            future.completeExceptionally(throwable);
-            return null;
-        });
-
-        return future;
+        experienceRoleManagementService.setLevelToRole(experienceLevel, aRoleToSet);
+        if(!rolesToUnset.isEmpty()) {
+            return unsetRoles(rolesToUnset, messageChannel);
+        } else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
-    @Transactional
-     public void deleteExperienceRoleViaId(Long newlyCreatedExperienceRoleId) {
-        AExperienceRole reLoadedRole = experienceRoleManagementService.getExperienceRoleById(newlyCreatedExperienceRoleId);
-        experienceRoleManagementService.unsetRole(reLoadedRole);
-    }
-
-    /**
-     * Removes all previous defined {@link AExperienceRole experienceRoles} from the given level and sets the {@link ARole}
-     * (defined by its ID) to the level.
-     * @param level The level which the {@link ARole role} should be set to
-     * @param roleId The ID of the {@link Role} which should have its level set
-     */
-    @Transactional
-    public void unsetRoleInDb(Integer level, Long roleId) {
-        log.info("Unsetting role {} from level {}.", roleId, level);
-        AExperienceLevel experienceLevel = experienceLevelService.getLevelOptional(level).orElseThrow(() -> new IllegalArgumentException(String.format("Could not find level %s", level)));
-        ARole loadedRole = roleManagementService.findRole(roleId);
-        experienceRoleManagementService.removeAllRoleAssignmentsForLevelInServerExceptRole(experienceLevel, loadedRole.getServer(), loadedRole);
-        experienceRoleManagementService.setLevelToRole(experienceLevel, loadedRole);
-    }
-
-    /**
-     * Deletes the {@link AExperienceRole} and recalculates the experience for all users which currently had the associated
-     * {@link net.dv8tion.jda.api.entities.Role}.
-     * @param role The {@link ARole} to remove from the {@link dev.sheldan.abstracto.experience.model.database.AExperienceRole}
-     *             configuration
-     */
     @Override
-    public CompletableFuture<Void> unsetRoles(ARole role, Long feedbackChannelId) {
-        return unsetRoles(Arrays.asList(role), feedbackChannelId);
+    public CompletableFuture<Void> unsetRoles(ARole role, GuildMessageChannel messageChannel) {
+        return unsetRoles(Arrays.asList(role), messageChannel);
     }
 
     @Override
@@ -125,63 +84,55 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         return experienceRoleManagementService.getExperienceRolesAtLevelInServer(levelObj, server);
     }
 
-    @Override
-    public CompletableFuture<Void> unsetRoles(List<ARole> rolesToUnset, Long feedbackChannelId) {
-        return unsetRoles(rolesToUnset, feedbackChannelId, null);
-    }
 
     @Override
-    public CompletableFuture<Void> unsetRoles(List<ARole> rolesToUnset, Long feedbackChannelId, AExperienceRole toAdd) {
-        if(rolesToUnset.isEmpty()) {
-            return CompletableFuture.completedFuture(null);
+    public CompletableFuture<Void> unsetRoles(List<ARole> rolesToUnset, GuildMessageChannel messageChannel) {
+        List<AExperienceRole> rolesInServer = experienceRoleManagementService.getRolesInServer(rolesToUnset);
+        Integer totalCount = 0;
+        for (AExperienceRole aExperienceRole : rolesInServer) {
+            totalCount += aExperienceRole.getUsers().size();
         }
-        AServer server = rolesToUnset.get(0).getServer();
-        AChannel channel = channelManagementService.loadChannel(feedbackChannelId);
-        List<AExperienceRole> experienceRolesNecessaryToRemove = new ArrayList<>();
-        List<AUserExperience> usersToUpdate = new ArrayList<>();
-        rolesToUnset.forEach(role -> {
-            Optional<AExperienceRole> roleInServerOptional = experienceRoleManagementService.getRoleInServerOptional(role);
-            if(roleInServerOptional.isPresent()) {
-                AExperienceRole experienceRole = roleInServerOptional.get();
-                experienceRolesNecessaryToRemove.add(experienceRole);
-                usersToUpdate.addAll(experienceRole.getUsers());
-            } else {
-                log.info("Experience role {} is not defined in server {} - skipping unset.", role.getId(), server.getId());
+        AtomicInteger totalCountAtomic = new AtomicInteger(totalCount);
+        long serverId = messageChannel.getGuild().getIdLong();
+        MessageToSend status = getUserSyncStatusUpdateModel(0, totalCount, serverId);
+        Message statusMessage = messageService.createStatusMessage(status, messageChannel).join();
+        AtomicInteger atomicInteger = new AtomicInteger();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        rolesInServer.forEach(experienceRole -> {
+            experienceRole.getUsers().forEach(aUserExperience -> {
+                futures.add(roleService.removeRoleFromUserAsync(aUserExperience.getUser(), experienceRole.getRole()).thenAccept(unused -> {
+                    atomicInteger.set(atomicInteger.get() + 1);
+                    log.debug("Finished synchronizing {} users.", atomicInteger.get());
+                    if(atomicInteger.get() % 50 == 0) {
+                        log.info("Notifying for {} current users with synchronize.", atomicInteger.get());
+                        MessageToSend newStatus = getUserSyncStatusUpdateModel(atomicInteger.get(), totalCountAtomic.get(), serverId);
+                        messageService.updateStatusMessage(messageChannel, statusMessage.getIdLong(), newStatus);
+                    }
+                }));
+            });
+        });
+        CompletableFuture<Void> returningFuture = new CompletableFuture<>();
+        experienceRoleManagementService.unsetRoles(rolesInServer);
+        FutureUtils.toSingleFutureGeneric(futures).whenComplete((unused, throwable) -> {
+            MessageToSend newStatus = getUserSyncStatusUpdateModel(atomicInteger.get(), totalCountAtomic.get(), serverId);
+            messageService.updateStatusMessage(messageChannel, statusMessage.getIdLong(), newStatus);
+            if(throwable != null) {
+                log.warn("Failed to unset role in server {}.", serverId, throwable);
             }
+            returningFuture.complete(null);
         });
-        log.info("Recalculating the roles for {} users, because their current role was removed from experience tracking.", usersToUpdate.size());
-        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
-        roles.removeIf(role1 -> experienceRolesNecessaryToRemove.stream().anyMatch(aExperienceRole -> aExperienceRole.getId().equals(role1.getId())));
-        if(toAdd != null) {
-            roles.add(toAdd);
-        }
-        roles.sort(Comparator.comparing(innerRole -> innerRole.getLevel().getLevel()));
-        List<Long> roleIds = experienceRolesNecessaryToRemove.stream().map(AExperienceRole::getId).collect(Collectors.toList());
-        if(toAdd != null) {
-            roleIds.removeIf(aLong -> aLong.equals(toAdd.getRole().getId()));
-        }
-        CompletableFutureList<RoleCalculationResult> calculationResults = userExperienceService.executeActionOnUserExperiencesWithFeedBack(usersToUpdate, channel,
-                (AUserExperience ex) -> userExperienceService.updateUserRole(ex, roles, ex.getLevelOrDefault()));
-        return calculationResults.getMainFuture().thenAccept(aVoid -> self.persistData(calculationResults, roleIds));
+        return returningFuture;
     }
 
-    /**
-     * Stores the changed experience roles for all of the {@link AUserExperience userExperiences} which are referenced in the list of
-     * {@link RoleCalculationResult results}. This is only executed after a role is being "unset", which means, we also
-     * have to remove the existing {@link AExperienceRole experienceRole}
-     * @param results A list of {@link CompletableFuture futures} which each contain a {@link RoleCalculationResult result}, for the members who got
-     *                their {@link AExperienceRole experienceRole} removed
-     * @param roleIds The IDs of the {@link AExperienceRole experienceRoles} which were removed from the experience roles
-     */
-    @Transactional
-    public void persistData(CompletableFutureList<RoleCalculationResult> results, List<Long> roleIds) {
-        log.info("Persisting {} role calculation results.", results.getFutures().size());
-        roleIds.forEach(roleId -> {
-            log.info("Deleting experience role {}.", roleId);
-            deleteExperienceRoleViaId(roleId);
-        });
-        userExperienceService.syncRolesInStorage(results.getObjects());
+    private MessageToSend getUserSyncStatusUpdateModel(Integer current, Integer total, Long serverId) {
+        UserSyncStatusModel statusModel = UserSyncStatusModel
+                .builder()
+                .currentCount(current)
+                .totalUserCount(total)
+                .build();
+        return templateService.renderEmbedTemplate("user_sync_status_message", statusModel, serverId);
     }
+
 
     @Override
     public AExperienceRole calculateRole(List<AExperienceRole> roles, Integer currentLevel) {

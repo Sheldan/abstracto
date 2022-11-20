@@ -21,6 +21,7 @@ public interface ExperienceRoleRepository extends JpaRepository<AExperienceRole,
      * @return The {@link AExperienceRole experienceRole} found or null if the query did not return any results
      */
     Optional<AExperienceRole> findByRole(ARole role);
+    List<AExperienceRole> findByRole_IdIn(List<Long> role);
 
     /**
      * Finds a list of {@link AExperienceRole experienceRoles} (if there are multiple ones, because of misconfiguration) of the given

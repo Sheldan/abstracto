@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.database.LeaderBoardEntryResult;
 
@@ -19,6 +20,7 @@ public interface UserExperienceManagementService {
      * @return The {@link AUserExperience userExperience} object representing the {@link AUserInAServer userInAServer}
      */
     AUserExperience findUserInServer(AUserInAServer aUserInAServer);
+    void removeExperienceRoleFromUsers(AExperienceRole experienceRole);
 
     /**
      * Retrieves a possible {@link AUserExperience userExperience} for the given ID of the {@link AUserInAServer}.

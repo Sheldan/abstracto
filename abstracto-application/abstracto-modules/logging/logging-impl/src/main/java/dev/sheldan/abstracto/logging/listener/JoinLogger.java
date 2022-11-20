@@ -29,13 +29,6 @@ public class JoinLogger implements AsyncJoinListener {
     @Autowired
     private PostTargetService postTargetService;
 
-    @Autowired
-    private MemberService memberService;
-
-    @Autowired
-    private JoinLogger self;
-
-
     @Override
     public DefaultListenerResult execute(MemberJoinModel listenerModel) {
         MemberJoinLogModel model = MemberJoinLogModel

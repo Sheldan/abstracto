@@ -21,6 +21,14 @@ public class RoleDisplay {
                 .build();
     }
 
+    public static RoleDisplay fromRole(Long roleId) {
+        return RoleDisplay
+                .builder()
+                .roleId(roleId)
+                .roleMention("<@&" + roleId + '>')
+                .build();
+    }
+
     public static RoleDisplay fromARole(ARole role) {
         return RoleDisplay
                 .builder()

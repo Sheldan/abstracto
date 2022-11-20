@@ -8,6 +8,8 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.test.command.CommandConfigValidator;
 import dev.sheldan.abstracto.core.test.command.CommandTestUtilities;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,20 +31,18 @@ public class SyncRolesTest {
     private AUserExperienceService userExperienceService;
 
     @Mock
-    private ChannelManagementService channelManagementService;
-
-    @Mock
     private ServerManagementService serverManagementService;
 
-    private static final Long CHANNEL_ID = 4L;
+    @Mock
+    private GuildMessageChannel messageChannel;
 
     @Test
     public void executeCommand() {
-        CommandContext context = CommandTestUtilities.getNoParameters();
+        CommandContext context = Mockito.mock(CommandContext.class);
         AServer server = Mockito.mock(AServer.class);
         when(serverManagementService.loadServer(context.getGuild())).thenReturn(server);
-        when(context.getChannel().getIdLong()).thenReturn(CHANNEL_ID);
-        when(userExperienceService.syncUserRolesWithFeedback(server, CHANNEL_ID)).thenReturn(CompletableFuture.completedFuture(null));
+        when(context.getChannel()).thenReturn(messageChannel);
+        when(userExperienceService.syncUserRolesWithFeedback(server, messageChannel)).thenReturn(CompletableFuture.completedFuture(null));
         CompletableFuture<CommandResult> result = testUnit.executeAsync(context);
         CommandTestUtilities.checkSuccessfulCompletionAsync(result);
     }

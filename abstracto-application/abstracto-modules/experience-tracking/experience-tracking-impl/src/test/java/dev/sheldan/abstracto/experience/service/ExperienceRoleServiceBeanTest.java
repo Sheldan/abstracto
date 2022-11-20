@@ -54,21 +54,6 @@ public class ExperienceRoleServiceBeanTest {
     private static final Long ROLE_ID = 5L;
 
     @Test
-    public void testUnsetRoleInDb() {
-        Integer levelCount = 10;
-        AExperienceLevel level = Mockito.mock(AExperienceLevel.class);
-        ARole roleToChange = Mockito.mock(ARole.class);
-        when(roleToChange.getServer()).thenReturn(server);
-        when(experienceLevelService.getLevelOptional(levelCount)).thenReturn(Optional.of(level));
-        when(roleManagementService.findRole(roleToChange.getId())).thenReturn(roleToChange);
-        testingUnit.unsetRoleInDb(levelCount, roleToChange.getId());
-
-        verify(experienceRoleManagementService, times(1)).removeAllRoleAssignmentsForLevelInServerExceptRole(level, server, roleToChange);
-        verify(experienceRoleManagementService, times(1)).setLevelToRole(level, roleToChange);
-        verify(experienceRoleManagementService, times(0)).getExperienceRolesForServer(server);
-    }
-
-    @Test
     public void testCalculateRoleForLevelInBetween() {
         List<AExperienceRole> roles = getExperienceRoles();
         AExperienceRole aExperienceRole = testingUnit.calculateRole(roles, 7);

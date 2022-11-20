@@ -52,7 +52,7 @@ public class UnSetExpRole extends AbstractConditionableCommand {
         if(!experienceRole.isPresent()) {
             throw new ExperienceRoleNotFoundException();
         }
-        return experienceRoleService.unsetRoles(actualRole, commandContext.getChannel().getIdLong())
+        return experienceRoleService.unsetRoles(actualRole, commandContext.getChannel())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 

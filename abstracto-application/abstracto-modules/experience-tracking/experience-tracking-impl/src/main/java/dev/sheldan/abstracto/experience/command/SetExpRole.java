@@ -10,8 +10,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
-import dev.sheldan.abstracto.core.service.RoleService;
-import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.service.ExperienceRoleService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +32,6 @@ public class SetExpRole extends AbstractConditionableCommand {
     @Autowired
     private ExperienceRoleService experienceRoleService;
 
-    @Autowired
-    private RoleService roleService;
-
-    @Autowired
-    private RoleManagementService roleManagementService;
-
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Integer level = (Integer) commandContext.getParameters().getParameters().get(0);
@@ -48,7 +40,7 @@ public class SetExpRole extends AbstractConditionableCommand {
             throw new EntityGuildMismatchException();
         }
         log.info("Setting role  {} to be used for level {} on server {}", role.getId(), level, role.getGuild().getId());
-        return experienceRoleService.setRoleToLevel(role, level, commandContext.getChannel().getIdLong())
+        return experienceRoleService.setRoleToLevel(role, level, commandContext.getChannel())
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
@@ -56,8 +48,21 @@ public class SetExpRole extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         List<ParameterValidator> levelValidators = Arrays.asList(MinIntegerValueValidator.min(0L));
-        parameters.add(Parameter.builder().name("level").validators(levelValidators).templated(true).type(Integer.class).build());
-        parameters.add(Parameter.builder().name("role").templated(true).type(Role.class).build());
+        Parameter level = Parameter
+                .builder()
+                .name("level")
+                .validators(levelValidators)
+                .templated(true)
+                .type(Integer.class)
+                .build();
+        parameters.add(level);
+        Parameter role = Parameter
+                .builder()
+                .name("role")
+                .templated(true)
+                .type(Role.class)
+                .build();
+        parameters.add(role);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("setExpRole")

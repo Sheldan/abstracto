@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.experience.service.management;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
-import dev.sheldan.abstracto.core.service.management.RoleManagementService;
 import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.repository.ExperienceRoleRepository;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -22,7 +22,7 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     private ExperienceRoleRepository experienceRoleRepository;
 
     @Autowired
-    private RoleManagementService roleManagementService;
+    private UserExperienceManagementService userExperienceManagementService;
 
     /**
      * Removes *all* assignments of roles for the given level
@@ -47,9 +47,27 @@ public class ExperienceRoleManagementServiceBean implements ExperienceRoleManage
     }
 
     @Override
+    public void unsetRoles(List<AExperienceRole> roles) {
+        log.info("Deleting {} roles.", roles.size());
+        roles.forEach(experienceRole -> {
+            userExperienceManagementService.removeExperienceRoleFromUsers(experienceRole);
+        });
+        experienceRoleRepository.deleteAll(roles);
+    }
+
+    @Override
     public AExperienceRole getRoleInServer(ARole role) {
         // TODO throw different exception
         return this.getRoleInServerOptional(role).orElseThrow(AbstractoRunTimeException::new);
+    }
+
+    @Override
+    public List<AExperienceRole> getRolesInServer(List<ARole> roles) {
+        List<Long> roleIds = roles
+                .stream()
+                .map(ARole::getId)
+                .collect(Collectors.toList());
+        return experienceRoleRepository.findByRole_IdIn(roleIds);
     }
 
     @Override

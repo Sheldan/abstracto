@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.logging.listener;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncLeaveListener;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.listener.MemberLeaveModel;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
@@ -27,13 +28,6 @@ public class LeaveLogger implements AsyncLeaveListener {
     @Autowired
     private PostTargetService postTargetService;
 
-    @Autowired
-    private MemberService memberService;
-
-    @Autowired
-    private LeaveLogger self;
-
-
     @Override
     public FeatureDefinition getFeature() {
         return LoggingFeatureDefinition.LOGGING;
@@ -41,8 +35,14 @@ public class LeaveLogger implements AsyncLeaveListener {
 
     @Override
     public DefaultListenerResult execute(MemberLeaveModel listenerModel) {
+        ServerUser leavingUser = ServerUser
+                .builder()
+                .userId(listenerModel.getUser().getIdLong())
+                .serverId(listenerModel.getServerId())
+                .build();
         MemberLeaveModel model = MemberLeaveModel
                 .builder()
+                .leavingUser(leavingUser)
                 .user(listenerModel.getUser())
                 .build();
         log.debug("Logging leave event for user {} in server {}.", listenerModel.getUser().getIdLong(), listenerModel.getServerId());

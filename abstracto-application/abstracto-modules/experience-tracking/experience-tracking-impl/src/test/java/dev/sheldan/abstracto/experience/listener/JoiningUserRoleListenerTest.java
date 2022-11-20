@@ -8,6 +8,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
+import net.dv8tion.jda.api.entities.Member;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,9 @@ public class JoiningUserRoleListenerTest {
     @Mock
     private MemberJoinModel model;
 
+    @Mock
+    private Member member;
+
     private static final Long SERVER_ID = 1L;
     private static final Long USER_ID = 2L;
     private static final Long USER_IN_SERVER_ID = 3L;
@@ -63,7 +67,8 @@ public class JoiningUserRoleListenerTest {
     public void testUserWithExperienceRejoining() {
         AUserExperience experience = Mockito.mock(AUserExperience.class);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(experience));
-        when(userExperienceService.syncForSingleUser(experience)).thenReturn(CompletableFuture.completedFuture(null));
+        when(userExperienceService.syncForSingleUser(experience, member)).thenReturn(CompletableFuture.completedFuture(null));
+        when(model.getMember()).thenReturn(member);
         DefaultListenerResult result = testUnit.execute(model);
         Assert.assertEquals(DefaultListenerResult.PROCESSED, result);
     }
@@ -72,7 +77,7 @@ public class JoiningUserRoleListenerTest {
     public void testUserWithOutExperienceRejoining() {
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
         testUnit.execute(model);
-        verify(userExperienceService, times(0)).syncForSingleUser(any());
+        verify(userExperienceService, times(0)).syncForSingleUser(any(), any());
     }
 
 }

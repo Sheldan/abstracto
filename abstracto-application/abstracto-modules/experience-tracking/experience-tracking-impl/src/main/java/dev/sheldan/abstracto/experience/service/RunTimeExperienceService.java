@@ -1,12 +1,9 @@
 package dev.sheldan.abstracto.experience.service;
 
-import dev.sheldan.abstracto.core.metric.service.CounterMetric;
-import dev.sheldan.abstracto.core.metric.service.MetricService;
-import dev.sheldan.abstracto.experience.model.ServerExperience;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +17,9 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 public class RunTimeExperienceService {
 
-    @Autowired
-    private MetricService metricService;
-
-    public static final String EXPERIENCE_RUNTIME_STORAGE = "experience.runtime.storage";
-    private static final CounterMetric EXPERIENCE_RUNTIME_STORAGE_METRIC = CounterMetric
-            .builder()
-            .name(EXPERIENCE_RUNTIME_STORAGE)
-            .build();
-
-    private Map<Long, List<ServerExperience>> runtimeExperience = new HashMap<>();
+    private Map<Long,Map<Long, Instant>> runtimeExperience = new HashMap<>();
     private static final Lock lock = new ReentrantLock();
-    public Map<Long, List<ServerExperience>> getRuntimeExperience() {
+    public Map<Long, Map<Long, Instant>> getRuntimeExperience() {
         return runtimeExperience;
     }
 
@@ -49,12 +37,16 @@ public class RunTimeExperienceService {
         lock.unlock();
     }
 
-    @PostConstruct
-    public void postConstruct() {
-        metricService.registerGauge(EXPERIENCE_RUNTIME_STORAGE_METRIC, runtimeExperience, serverList -> serverList.values().stream()
-                        .mapToInt(minuteEntry -> minuteEntry.stream()
-                        .mapToInt(individualServerList -> individualServerList.getUserInServerIds().size()).sum()).sum(),
-                "Number of entries in runtime experience storage");
+    public void cleanupRunTimeStorage() {
+        Instant now = Instant.now();
+        runtimeExperience.forEach((serverId, userInstantMap) -> {
+            List<Long> userIdsToRemove = new ArrayList<>();
+            userInstantMap.forEach((userId, instant) -> {
+                if(instant.isBefore(now)) {
+                    userIdsToRemove.add(userId);
+                }
+            });
+            userIdsToRemove.forEach(userInstantMap::remove);
+        });
     }
-
 }

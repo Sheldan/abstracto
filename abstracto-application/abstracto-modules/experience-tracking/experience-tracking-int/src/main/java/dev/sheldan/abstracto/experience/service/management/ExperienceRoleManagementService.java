@@ -37,6 +37,7 @@ public interface ExperienceRoleManagementService {
      * @param role The {@link AExperienceRole experienceRole} to delete.
      */
     void unsetRole(AExperienceRole role);
+    void unsetRoles(List<AExperienceRole> role);
 
     /**
      * Retrieves the {@link AExperienceRole experienceRole} which uses the given {@link ARole role} in the {@link AServer server}
@@ -44,6 +45,7 @@ public interface ExperienceRoleManagementService {
      * @return the {@link AExperienceRole experienceRole} which uses the given {@link ARole role}
      */
     AExperienceRole getRoleInServer(ARole role);
+    List<AExperienceRole> getRolesInServer(List<ARole> role);
 
     /**
      * Retrieves a possible {@link AExperienceRole role}, if it exists, for the given {@link ARole}. Returns an empty  Optional if it does not exist
