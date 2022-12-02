@@ -13,7 +13,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'corretto'
-          java-version: 1.8
+          java-version: 8
       - name: Load current version
         id: version
         run: echo "version=$(mvn --file abstracto-application/pom.xml -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_ENV
