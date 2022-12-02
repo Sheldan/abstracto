@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.exception.InsufficientParametersExcept
 import dev.sheldan.abstracto.core.command.execution.*;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterHandler;
 import dev.sheldan.abstracto.core.command.handler.CommandParameterIterators;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.button.CommandConfirmationModel;
 import dev.sheldan.abstracto.core.interaction.button.CommandConfirmationPayload;
 import dev.sheldan.abstracto.core.command.service.CommandManager;
@@ -108,6 +109,12 @@ public class CommandReceivedHandler extends ListenerAdapter {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private FeatureConfigService featureConfigService;
+
+    @Autowired
+    private FeatureFlagService featureFlagService;
 
     public static final String COMMAND_CONFIRMATION_ORIGIN = "commandConfirmation";
     public static final String COMMAND_CONFIRMATION_MESSAGE_TEMPLATE_KEY = "command_confirmation_message";
@@ -260,7 +267,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 .message(event.getMessage())
                 .jda(event.getJDA())
                 .userInitiatedContext(userInitiatedContext);
-        validateCommandParameters(parsedParameters, foundCommand);
+        validateCommandParameters(parsedParameters, foundCommand, event.getGuild().getIdLong());
         CommandContext commandContext = commandContextBuilder.parameters(parsedParameters).build();
         CompletableFuture<ConditionResult> conditionResultFuture = commandService.isCommandExecutable(foundCommand, commandContext);
         conditionResultFuture.thenAccept(conditionResult -> {
@@ -347,7 +354,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         reportException(event.getMessage(), event.getChannel(), event.getMember(), foundCommand, throwable, s);
     }
 
-    private void validateCommandParameters(Parameters parameters, Command foundCommand) {
+    private void validateCommandParameters(Parameters parameters, Command foundCommand, Long serverId) {
         CommandConfiguration commandConfiguration = foundCommand.getConfiguration();
         List<Parameter> parameterList = commandConfiguration.getParameters();
         // we iterate only over the actually found parameters, that way we dont have to consider the optional parameters
@@ -362,8 +369,9 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 }
             }
         }
-        if (commandConfiguration.getNecessaryParameterCount() > parameters.getParameters().size()) {
-            String nextParameterName = commandConfiguration.getParameters().get(commandConfiguration.getNecessaryParameterCount() - 1).getName();
+        long necessaryParameters = commandManager.getParameterCountForCommandConfig(commandConfiguration, serverId);
+        if (necessaryParameters > parameters.getParameters().size()) {
+            String nextParameterName = commandConfiguration.getParameters().get((int)necessaryParameters - 1).getName();
             throw new InsufficientParametersException(foundCommand, nextParameterName);
         }
     }
@@ -437,6 +445,22 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 param = parameters.get(parameters.size() - 1);
             } else {
                 break;
+            }
+            if(!param.getDependentFeatures().isEmpty()) {
+                List<FeatureDefinition> featureDefinitions = param
+                        .getDependentFeatures()
+                        .stream()
+                        .map(s -> featureConfigService.getFeatureEnum(s))
+                        .collect(Collectors.toList());
+                boolean parameterActiveForFeatures = false;
+                for (FeatureDefinition featureDefinition : featureDefinitions) {
+                    if(featureFlagService.getFeatureFlagValue(featureDefinition, message.getGuild().getIdLong())) {
+                        parameterActiveForFeatures = true;
+                    }
+                }
+                if(!parameterActiveForFeatures) {
+                    break;
+                }
             }
             UnparsedCommandParameterPiece value = unParsedCommandParameter.getParameters().get(i);
             // TODO might be able to do this without iterating, if we directly associated the handler required for each parameter

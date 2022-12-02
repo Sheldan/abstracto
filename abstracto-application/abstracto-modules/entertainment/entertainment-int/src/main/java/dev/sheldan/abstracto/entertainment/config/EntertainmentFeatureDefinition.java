@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum EntertainmentFeatureDefinition implements FeatureDefinition {
-    ENTERTAINMENT("entertainment"), ECONOMY("economy");
+    ENTERTAINMENT("entertainment"), ECONOMY("economy"), GAMES("games");
 
     private String key;
 

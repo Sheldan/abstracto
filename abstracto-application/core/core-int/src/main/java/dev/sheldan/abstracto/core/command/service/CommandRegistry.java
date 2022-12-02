@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.command.service;
 
 
 import dev.sheldan.abstracto.core.command.Command;
+import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.ModuleDefinition;
 import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import net.dv8tion.jda.api.entities.Message;
@@ -19,4 +20,5 @@ public interface CommandRegistry {
     Command getCommandByName(String name, boolean searchAliases, Long serverId);
     Optional<Command> getCommandByNameOptional(String name, boolean searchAliases, Long serverId);
     String getCommandName(String input, Long serverId);
+    long getParameterCountForCommandConfig(CommandConfiguration commandConfiguration, Long serverId);
 }

@@ -26,6 +26,12 @@ public class ComponentPayloadServiceBean implements ComponentPayloadService {
     }
 
     @Override
+    public void updateButtonPayload(String componentId, ButtonPayload payload) {
+        String json = gson.toJson(payload);
+        componentPayloadManagementService.updatePayload(componentId, json);
+    }
+
+    @Override
     public ComponentPayload createSelectionPayload(String componentId, ButtonPayload payload, String origin, AServer server) {
         String json = gson.toJson(payload);
         return componentPayloadManagementService.createPayload(componentId, json, payload.getClass(), origin, server, ComponentType.SELECTION);

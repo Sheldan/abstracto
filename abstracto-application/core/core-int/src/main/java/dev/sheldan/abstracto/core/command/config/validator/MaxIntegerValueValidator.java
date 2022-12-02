@@ -38,6 +38,13 @@ public class MaxIntegerValueValidator implements ParameterValidator {
         return Arrays.asList(param);
     }
 
+    public static MaxIntegerValueValidator max(Long number) {
+        return  MaxIntegerValueValidator
+                .builder()
+                .maxValue(number)
+                .build();
+    }
+
     @Override
     public String getExceptionTemplateName() {
         return "command_parameter_validation_value_too_large";

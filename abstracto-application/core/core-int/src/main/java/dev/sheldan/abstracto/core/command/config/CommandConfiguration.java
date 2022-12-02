@@ -50,7 +50,4 @@ public class CommandConfiguration {
             .enabled(false)
             .build();
 
-    public int getNecessaryParameterCount(){
-        return (int) parameters.stream().filter(parameter -> !parameter.isOptional()).count();
-    }
 }

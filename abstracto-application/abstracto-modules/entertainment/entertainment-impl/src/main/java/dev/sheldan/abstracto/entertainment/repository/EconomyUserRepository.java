@@ -16,6 +16,7 @@ import java.util.Optional;
 @Repository
 public interface EconomyUserRepository extends JpaRepository<EconomyUser, Long> {
     Optional<EconomyUser> findByUser(AUserInAServer aUserInAServer);
+    Optional<EconomyUser> findByServer_IdAndUser_UserReference_Id(Long serverId, Long userId);
 
     @Query(value = "WITH economy_user_ranked AS" +
             "( " +

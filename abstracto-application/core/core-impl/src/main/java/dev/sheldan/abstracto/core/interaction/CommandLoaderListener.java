@@ -92,7 +92,7 @@ public class CommandLoaderListener implements AsyncStartupListener {
                     return;
                 }
                 log.info("Updating slash command {} in guild {}.", command.getConfiguration().getName(), guild.getId());
-                slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), slashCommandsToUpdate);
+                slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), slashCommandsToUpdate, guild.getIdLong());
             });
 
             log.info("Updating context commands for guild {}.", guild.getIdLong());

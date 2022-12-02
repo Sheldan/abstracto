@@ -1,11 +1,15 @@
 package dev.sheldan.abstracto.core.interaction.slash;
 
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
+import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.service.FeatureConfigService;
+import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import net.dv8tion.jda.api.entities.Guild;
@@ -42,8 +46,14 @@ public class SlashCommandServiceBean implements SlashCommandService {
     @Autowired
     private SlashCommandServiceBean self;
 
+    @Autowired
+    private FeatureConfigService featureConfigService;
+
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
     @Override
-    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands) {
+    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands, Long serverId) {
         boolean isTemplated = commandConfiguration.isTemplated();
         SlashCommandConfig slashConfig = commandConfiguration.getSlashCommandConfig();
         String description;
@@ -76,10 +86,10 @@ public class SlashCommandServiceBean implements SlashCommandService {
                 groupData.addSubcommands(slashCommand);
                 rootCommand.addSubcommandGroups(groupData);
             }
-            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName);
+            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId);
             slashCommand.addOptions(requiredParameters);
         } else {
-            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName);
+            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId);
             rootCommand.addOptions(requiredParameters);
         }
         if(!existingRootCommand.isPresent()) {
@@ -95,10 +105,18 @@ public class SlashCommandServiceBean implements SlashCommandService {
         }
     }
 
-    private List<OptionData> getParameters(CommandConfiguration commandConfiguration, boolean isTemplated, String internalCommandName) {
+    @Override
+    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands) {
+        convertCommandConfigToCommandData(commandConfiguration, existingCommands, null);
+    }
+
+    private List<OptionData> getParameters(CommandConfiguration commandConfiguration, boolean isTemplated, String internalCommandName, Long serverId) {
         List<OptionData> requiredParameters = new ArrayList<>();
         List<OptionData> optionalParameters = new ArrayList<>();
         commandConfiguration.getParameters().forEach(parameter -> {
+            if(!shouldParameterBeCreated(parameter, serverId)) {
+                return;
+            }
             List<OptionType> types = slashCommandParameterService.getTypesFromParameter(parameter.getType());
             if(types.size() > 1) {
                 if(parameter.isListParam()) {
@@ -130,6 +148,25 @@ public class SlashCommandServiceBean implements SlashCommandService {
         });
         requiredParameters.addAll(optionalParameters);
         return requiredParameters;
+    }
+
+    private boolean shouldParameterBeCreated(Parameter parameter, Long serverId) {
+        if(parameter.getDependentFeatures().isEmpty()) {
+            return true;
+        } else {
+            List<FeatureDefinition> featureDefinitions = parameter
+                    .getDependentFeatures()
+                    .stream()
+                    .map(s -> featureConfigService.getFeatureEnum(s))
+                    .collect(Collectors.toList());
+
+            for (FeatureDefinition featureDefinition : featureDefinitions) {
+                if(!featureFlagService.getFeatureFlagValue(featureDefinition, serverId)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
 

@@ -100,7 +100,6 @@ public class CommandManagerTest {
         commands.add(firstCommand);
         when(commandConfiguration.getName()).thenReturn(COMMAND_NAME);
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
-        when(commandConfiguration.getNecessaryParameterCount()).thenReturn(0);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
         Optional<Command> foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
         Assert.assertEquals(firstCommand, foundCommand.get());
@@ -132,7 +131,6 @@ public class CommandManagerTest {
         when(commandConfiguration.getName()).thenReturn(COMMAND_NAME_2);
         when(commandConfiguration.getAliases()).thenReturn(Arrays.asList(COMMAND_NAME));
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
-        when(commandConfiguration.getNecessaryParameterCount()).thenReturn(0);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
         Optional<Command> foundCommand = testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
         Assert.assertEquals(firstCommand, foundCommand.get());
@@ -144,7 +142,6 @@ public class CommandManagerTest {
         when(commandConfiguration.getParameters()).thenReturn(Arrays.asList(parameter));
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
         when(commandConfiguration.getName()).thenReturn(COMMAND_NAME);
-        when(commandConfiguration.getNecessaryParameterCount()).thenReturn(1);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
         testUnit.findCommandByParameters(COMMAND_NAME, parsedCommandParameter, SERVER_ID);
     }
@@ -154,7 +151,6 @@ public class CommandManagerTest {
         commands.add(firstCommand);
         when(commandConfiguration.getName()).thenReturn(COMMAND_NAME);
         when(firstCommand.getConfiguration()).thenReturn(commandConfiguration);
-        when(commandConfiguration.getNecessaryParameterCount()).thenReturn(0);
         when(parsedCommandParameter.getParameters()).thenReturn(new ArrayList<>());
         setupAliasTest();
         Optional<Command> foundCommand = testUnit.findCommandByParameters(ALIAS_NAME, parsedCommandParameter, SERVER_ID);

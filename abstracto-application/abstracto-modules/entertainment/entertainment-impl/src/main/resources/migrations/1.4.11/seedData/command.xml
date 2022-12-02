@@ -6,10 +6,15 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.8-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.9-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.3/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.11/collection.xml" relativeToChangelogFile="true"/>
+    <property name="entertainmentModule" value="(SELECT id FROM module WHERE name = 'entertainment')"/>
+    <property name="gamesFeature" value="(SELECT id FROM feature WHERE key = 'games')"/>
+
+    <changeSet  author="Sheldan" id="mines-commands">
+        <insert tableName="command">
+            <column name="name" value="mines"/>
+            <column name="module_id" valueComputed="${entertainmentModule}"/>
+            <column name="feature_id" valueComputed="${gamesFeature}"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

@@ -34,6 +34,9 @@ public class Parameter implements Serializable {
     private List<ParameterValidator> validators = new ArrayList<>();
     @Builder.Default
     private Map<String, Object> additionalInfo = new HashMap<>();
+    // these are the features which potentially require this parameter
+    @Builder.Default
+    private List<String> dependentFeatures = new ArrayList<>();
 
     public String getSlashCompatibleName() {
         return name.toLowerCase(Locale.ROOT);

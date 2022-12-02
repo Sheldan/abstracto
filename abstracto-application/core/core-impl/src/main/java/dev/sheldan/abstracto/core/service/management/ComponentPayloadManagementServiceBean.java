@@ -43,6 +43,11 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     }
 
     @Override
+    public void updatePayload(String id, String payload) {
+        findPayload(id).ifPresent(componentPayload -> componentPayload.setPayload(payload));
+    }
+
+    @Override
     public ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, AServer server) {
         String payload = gson.toJson(buttonConfigModel.getButtonPayload());
         return createPayload(buttonConfigModel.getButtonId(), payload, buttonConfigModel.getPayloadType(), buttonConfigModel.getOrigin(), server, ComponentType.BUTTON);

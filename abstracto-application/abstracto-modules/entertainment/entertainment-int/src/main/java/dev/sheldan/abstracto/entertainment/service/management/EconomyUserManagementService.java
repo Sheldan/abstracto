@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.entertainment.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.entertainment.model.database.EconomyLeaderboardResult;
@@ -11,6 +12,7 @@ import java.util.Optional;
 public interface EconomyUserManagementService {
     EconomyUser createUser(AUserInAServer aUserInAServer);
     Optional<EconomyUser> getUser(AUserInAServer aUserInAServer);
+    Optional<EconomyUser> getUser(ServerUser serverUser);
     EconomyLeaderboardResult getRankOfUserInServer(AUserInAServer aUserInAServer);
     List<EconomyUser> getRanksInServer(AServer server, Integer page, Integer size);
 }

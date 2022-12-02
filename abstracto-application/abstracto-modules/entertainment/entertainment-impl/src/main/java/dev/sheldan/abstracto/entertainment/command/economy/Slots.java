@@ -89,14 +89,14 @@ public class Slots extends AbstractConditionableCommand {
                 .templated(true)
                 .build();
 
-        Parameter lowParameter = Parameter
+        Parameter bidParameter = Parameter
                 .builder()
                 .name(BID_PARAMETER)
                 .type(Integer.class)
                 .templated(true)
                 .validators(Arrays.asList(MinIntegerValueValidator.min(0L)))
                 .build();
-        parameters.add(lowParameter);
+        parameters.add(bidParameter);
 
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()

@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.entertainment.service.management;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.entertainment.model.database.EconomyLeaderboardResult;
@@ -37,6 +38,11 @@ public class EconomyUserManagementServiceBean implements EconomyUserManagementSe
     @Override
     public Optional<EconomyUser> getUser(AUserInAServer aUserInAServer) {
         return repository.findByUser(aUserInAServer);
+    }
+
+    @Override
+    public Optional<EconomyUser> getUser(ServerUser serverUser) {
+        return repository.findByServer_IdAndUser_UserReference_Id(serverUser.getServerId(), serverUser.getUserId());
     }
 
     @Override
