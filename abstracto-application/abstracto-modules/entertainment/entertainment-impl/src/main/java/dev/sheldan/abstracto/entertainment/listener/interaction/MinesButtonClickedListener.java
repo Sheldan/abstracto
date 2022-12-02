@@ -39,6 +39,9 @@ public class MinesButtonClickedListener implements ButtonClickedListener {
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
         MineBoardPayload payload = (MineBoardPayload) model.getDeserializedPayload();
+        if(model.getEvent().getUser().getIdLong() != payload.getMineBoard().getUserId()) {
+            return ButtonClickedListenerResult.IGNORED;
+        }
         MineBoard mineBoard = payload.getMineBoard();
         if(!mineBoard.getState().equals(GameService.MineResult.CONTINUE)) {
             return ButtonClickedListenerResult.IGNORED;

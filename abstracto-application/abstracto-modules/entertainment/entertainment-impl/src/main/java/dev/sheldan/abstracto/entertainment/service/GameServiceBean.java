@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static dev.sheldan.abstracto.entertainment.config.EconomyFeatureConfig.MINES_MINIMUM_MINES_RATIO;
 import static dev.sheldan.abstracto.entertainment.config.GamesFeatureConfig.MINES_CREDITS_FACTOR;
 
 @Component
@@ -51,9 +52,13 @@ public class GameServiceBean implements GameService {
     private ConfigService configService;
 
     @Override
-    public MineBoard createBoard(Integer width, Integer height, Integer mines) {
-        if(mines >= width * height || width > 5 || height > 5 || mines <= 0 || height == 0 || width == 0) {
-            throw new InvalidGameBoardException();
+    public MineBoard createBoard(Integer width, Integer height, Integer mines, Long serverId) {
+        double minMinesRatio = configService.getDoubleValueOrConfigDefault(MINES_MINIMUM_MINES_RATIO, serverId);
+        if(mines >= width * height || width > 5 || height > 5 || mines <= 1 || height <= 1 || width <= 1) {
+            throw new InvalidGameBoardException(minMinesRatio);
+        }
+        if((double) mines / (width * height) < minMinesRatio) {
+            throw new InvalidGameBoardException(minMinesRatio);
         }
         MineBoard mineBoard = generateEmptyBoard(width, height);
         mineBoard.setMineCount(mines);

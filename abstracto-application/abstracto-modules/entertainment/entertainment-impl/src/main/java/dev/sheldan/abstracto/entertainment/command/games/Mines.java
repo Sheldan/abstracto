@@ -81,7 +81,8 @@ public class Mines extends AbstractConditionableCommand {
             mines = slashCommandParameterService.getCommandOption(MINES_PARAMETER, event, Integer.class);
         }
         Integer credit = null;
-        boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, event.getGuild().getIdLong());
+        long serverId = event.getGuild().getIdLong();
+        boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
         if(economyEnabled){
             credit = 50;
             if(slashCommandParameterService.hasCommandOption(CREDITS_PARAMETER, event)) {
@@ -97,10 +98,10 @@ public class Mines extends AbstractConditionableCommand {
                 throw new NotEnoughCreditsException();
             }
         }
-        MineBoard board = gameService.createBoard(width, height, mines);
+        MineBoard board = gameService.createBoard(width, height, mines, serverId);
         board.setCreditsEnabled(economyEnabled);
         board.setUserId(event.getMember().getIdLong());
-        board.setServerId(event.getGuild().getIdLong());
+        board.setServerId(serverId);
         board.setCredits(credit);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board);
         return interactionService.replyMessageToSend(messageToSend, event)
@@ -128,7 +129,8 @@ public class Mines extends AbstractConditionableCommand {
             mines = (Integer) parameters.get(2);
         }
         Integer credit = null;
-        boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, commandContext.getGuild().getIdLong());
+        long serverId = commandContext.getGuild().getIdLong();
+        boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
         if(economyEnabled){
             credit = 50;
             if(parameters.size() == 4) {
@@ -144,10 +146,10 @@ public class Mines extends AbstractConditionableCommand {
                 throw new NotEnoughCreditsException();
             }
         }
-        MineBoard board = gameService.createBoard(width, height, mines);
+        MineBoard board = gameService.createBoard(width, height, mines, serverId);
         board.setCreditsEnabled(economyEnabled);
         board.setUserId(commandContext.getAuthor().getIdLong());
-        board.setServerId(commandContext.getGuild().getIdLong());
+        board.setServerId(serverId);
         board.setCredits(credit);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board);
         List<CompletableFuture<Message>> futures = channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
