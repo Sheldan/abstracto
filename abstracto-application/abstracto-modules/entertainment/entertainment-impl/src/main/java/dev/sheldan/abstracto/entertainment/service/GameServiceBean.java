@@ -23,8 +23,8 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static dev.sheldan.abstracto.entertainment.config.EconomyFeatureConfig.MINES_MINIMUM_MINES_RATIO;
 import static dev.sheldan.abstracto.entertainment.config.GamesFeatureConfig.MINES_CREDITS_FACTOR;
+import static dev.sheldan.abstracto.entertainment.config.GamesFeatureConfig.MINES_MINIMUM_MINES_RATIO;
 
 @Component
 public class GameServiceBean implements GameService {
@@ -134,6 +134,7 @@ public class GameServiceBean implements GameService {
                 .build();
         Optional<EconomyUser> economyUserOptional = economyUserManagementService.getUser(serverUser);
         if(economyUserOptional.isPresent()) {
+            economyService.addCredits(economyUserOptional.get(), -credits);
             economyService.addCredits(economyUserOptional.get(), creditChange);
         }
         mineBoard.setCreditChange(creditChange);

@@ -33,32 +33,31 @@ public class ReportContextCommandListener implements MessageContextCommandListen
 
     @Override
     public DefaultListenerResult execute(MessageContextInteractionModel model) {
-        Message targetMessage = model.getEvent().getTarget();
-        if(targetMessage.getAuthor().getIdLong() == model.getEvent().getUser().getIdLong()) {
-            interactionService.replyEmbed(ReactionReportServiceBean.REACTION_REPORT_OWN_MESSAGE_RESPONSE_TEMPLATE, new Object(), model.getEvent());
-            return DefaultListenerResult.IGNORED;
-        }
-        ServerUser userReporting = ServerUser
-                .builder()
-                .serverId(model.getServerId())
-                .userId(model.getEvent().getUser().getIdLong())
-                .isBot(model.getEvent().getUser().isBot())
-                .build();
-
-        if(!reactionReportService.allowedToReport(userReporting)) {
-            log.info("User {} was reported on message {} in server {} within the cooldown. Ignoring.",
-                    targetMessage.getAuthor().getIdLong(), targetMessage.getIdLong(), targetMessage.getGuild().getIdLong());
-            interactionService.replyEmbed(ReactionReportServiceBean.REACTION_REPORT_COOLDOWN_RESPONSE_TEMPLATE, new Object(), model.getEvent());
-            return DefaultListenerResult.IGNORED;
-        }
-
-        reactionReportService.createReactionReport(targetMessage, userReporting, null).exceptionally(throwable -> {
-            log.error("Failed to create reaction report in server {} on message {} in channel {} with interaction.",
-                    model.getServerId(), targetMessage.getIdLong(), model.getEvent().getChannel().getIdLong(), throwable);
-            return null;
+        model.getEvent().deferReply(true).queue(interactionHook -> {
+            Message targetMessage = model.getEvent().getTarget();
+            if(targetMessage.getAuthor().getIdLong() == model.getEvent().getUser().getIdLong()) {
+                interactionService.sendMessageToInteraction(ReactionReportServiceBean.REACTION_REPORT_OWN_MESSAGE_RESPONSE_TEMPLATE, new Object(), interactionHook);
+                return;
+            }
+            ServerUser userReporting = ServerUser
+                    .builder()
+                    .serverId(model.getServerId())
+                    .userId(model.getEvent().getUser().getIdLong())
+                    .isBot(model.getEvent().getUser().isBot())
+                    .build();
+            if(!reactionReportService.allowedToReport(userReporting)) {
+                log.info("User {} was reported on message {} in server {} within the cooldown. Ignoring.",
+                        targetMessage.getAuthor().getIdLong(), targetMessage.getIdLong(), targetMessage.getGuild().getIdLong());
+                interactionService.sendMessageToInteraction(ReactionReportServiceBean.REACTION_REPORT_COOLDOWN_RESPONSE_TEMPLATE, new Object(),interactionHook);
+                return;
+            }
+            reactionReportService.createReactionReport(targetMessage, userReporting, null).exceptionally(throwable -> {
+                log.error("Failed to create reaction report in server {} on message {} in channel {} with interaction.",
+                        model.getServerId(), targetMessage.getIdLong(), model.getEvent().getChannel().getIdLong(), throwable);
+                return null;
+            });
+            interactionService.sendMessageToInteraction(REACTION_REPORT_RESPONSE_TEMPLATE, new Object(), interactionHook);
         });
-
-        interactionService.replyEmbed(REACTION_REPORT_RESPONSE_TEMPLATE, new Object(), model.getEvent());
 
         return DefaultListenerResult.PROCESSED;
     }

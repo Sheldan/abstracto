@@ -106,6 +106,7 @@ public class InteractionServiceBean implements InteractionService {
 
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
+            interactionHook.setEphemeral(messageToSend.getEphemeral());
             log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                     interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
                     interaction.getMember().getIdLong());

@@ -11,6 +11,7 @@ import java.util.List;
 public class GamesFeatureConfig implements FeatureConfig {
 
     public static final String MINES_CREDITS_FACTOR = "minesCreditsFactor";
+    public static final String MINES_MINIMUM_MINES_RATIO = "minesMinMineRatio";
 
     @Override
     public FeatureDefinition getFeature() {
@@ -19,7 +20,7 @@ public class GamesFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(MINES_CREDITS_FACTOR);
+        return Arrays.asList(MINES_CREDITS_FACTOR, MINES_MINIMUM_MINES_RATIO);
     }
 
 }
