@@ -22,6 +22,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("joinListener");
     }
 
+    @Bean(name = "memberPendingUpdateExecutor")
+    public TaskExecutor memberPendingUpdateExecutor() {
+        return executorService.setupExecutorFor("memberPendingUpdateListener");
+    }
+
     @Bean(name = "leaveListenerExecutor")
     public TaskExecutor leaveListenerExecutor() {
         return executorService.setupExecutorFor("leaveListener");

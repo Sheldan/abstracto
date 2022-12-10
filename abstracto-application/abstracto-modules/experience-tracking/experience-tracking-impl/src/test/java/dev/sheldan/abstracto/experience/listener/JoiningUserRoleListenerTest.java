@@ -75,7 +75,16 @@ public class JoiningUserRoleListenerTest {
 
     @Test
     public void testUserWithOutExperienceRejoining() {
+        when(model.getMember()).thenReturn(member);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
+        testUnit.execute(model);
+        verify(userExperienceService, times(0)).syncForSingleUser(any(), any());
+    }
+
+    @Test
+    public void testPendingUserJoining() {
+        when(member.isPending()).thenReturn(true);
+        when(model.getMember()).thenReturn(member);
         testUnit.execute(model);
         verify(userExperienceService, times(0)).syncForSingleUser(any(), any());
     }
