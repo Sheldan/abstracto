@@ -62,8 +62,6 @@ public class ModalInteractionListenerBean extends ListenerAdapter {
     @Override
     public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
         if(listenerList == null) return;
-        // TODO remove this and make this configurable
-        event.deferEdit().queue();
         CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), modalInteractionExecutor).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in modal interaction event.", throwable);
             return null;

@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static dev.sheldan.abstracto.moderation.service.ReactionReportServiceBean.REACTION_REPORT_FAILURE_RESPONSE_TEMPLATE;
 import static dev.sheldan.abstracto.moderation.service.ReactionReportServiceBean.REACTION_REPORT_RESPONSE_TEMPLATE;
 
 @Component
@@ -46,27 +47,35 @@ public class ReportContextModalListener implements ModalInteractionListener {
                 .map(ModalMapping::getAsString)
                 .findFirst()
                 .orElse(null);
-        messageCache.getMessageFromCache(payload.getServerId(), payload.getChannelId(), payload.getMessageId()).thenAccept(cachedMessage -> {
-            ServerUser userReporting = ServerUser
-                    .builder()
-                    .serverId(model.getServerId())
-                    .userId(cachedMessage.getAuthor().getAuthorId())
-                    .isBot(cachedMessage.getAuthor().getIsBot())
-                    .build();
-            reactionReportService.createReactionReport(cachedMessage, userReporting, context)
-                .thenAccept(unused -> {
-                    interactionService.replyEmbed(REACTION_REPORT_RESPONSE_TEMPLATE, new Object(), model.getEvent());
-                    log.info("Handled modal for message report with id {} in guild {} in channel {} on message {}",
-                            model.getEvent().getModalId(), payload.getServerId(), payload.getChannelId(), payload.getMessageId());
-                    componentPayloadManagementService.deletePayload(payload.getModalId());
-                }).exceptionally(throwable -> {
-                log.error("Failed to create reaction report in server {} on message {} in channel {} with interaction.",
-                        model.getServerId(), cachedMessage.getMessageId(), model.getEvent().getChannel().getIdLong(), throwable);
+        model.getEvent().deferReply(true).queue(interactionHook -> {
+            messageCache.getMessageFromCache(payload.getServerId(), payload.getChannelId(), payload.getMessageId()).thenAccept(cachedMessage -> {
+                ServerUser userReporting = ServerUser
+                        .builder()
+                        .serverId(model.getServerId())
+                        .userId(cachedMessage.getAuthor().getAuthorId())
+                        .isBot(cachedMessage.getAuthor().getIsBot())
+                        .build();
+                reactionReportService.createReactionReport(cachedMessage, userReporting, context)
+                        .thenAccept(unused -> {
+                            interactionService.sendMessageToInteraction(REACTION_REPORT_RESPONSE_TEMPLATE, new Object(), interactionHook);
+                            log.info("Handled modal for message report with id {} in guild {} in channel {} on message {}",
+                                    model.getEvent().getModalId(), payload.getServerId(), payload.getChannelId(), payload.getMessageId());
+                            componentPayloadManagementService.deletePayload(payload.getModalId());
+                        }).exceptionally(throwable -> {
+                            interactionService.sendMessageToInteraction(REACTION_REPORT_FAILURE_RESPONSE_TEMPLATE, new Object(), interactionHook);
+                            log.error("Failed to create reaction report in server {} on message {} in channel {} with interaction.",
+                                    model.getServerId(), cachedMessage.getMessageId(), model.getEvent().getChannel().getIdLong(), throwable);
+                            return null;
+                        });
+            }).exceptionally(throwable -> {
+                interactionService.sendMessageToInteraction(REACTION_REPORT_FAILURE_RESPONSE_TEMPLATE, new Object(), interactionHook);
+                log.error("Failed to load reported message for reporting message {} in channel {} with context.",
+                        model.getEvent().getMessage().getIdLong(), model.getEvent().getChannel().getIdLong(), throwable);
                 return null;
             });
-        }).exceptionally(throwable -> {
-            log.error("Failed to load reported message.", throwable);
-            return null;
+        }, throwable -> {
+            log.error("Failed to acknowledge modal interaction for report context modal listener in guild {} on message {}.", model.getServerId(),
+                    model.getEvent().getMessage() != null ? model.getEvent().getMessage().getIdLong() : 0, throwable);
         });
 
         return ModalInteractionListenerResult.ACKNOWLEDGED;

@@ -71,6 +71,7 @@ public class ReactionReportServiceBean implements ReactionReportService {
     private static final String REACTION_REPORT_TEMPLATE_KEY = "reactionReport_notification";
     public static final String REACTION_REPORT_MODAL_ORIGIN = "reportMessageModal";
     public static final String REACTION_REPORT_RESPONSE_TEMPLATE = "reactionReport_response";
+    public static final String REACTION_REPORT_FAILURE_RESPONSE_TEMPLATE = "reactionReport_failure_response";
     public static final String REACTION_REPORT_COOLDOWN_RESPONSE_TEMPLATE = "reactionReport_cooldown_response";
     public static final String REACTION_REPORT_OWN_MESSAGE_RESPONSE_TEMPLATE = "reactionReport_own_message_response";
 
