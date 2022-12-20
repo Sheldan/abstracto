@@ -57,9 +57,14 @@ public class ExperienceLevelServiceBean implements ExperienceLevelService {
 
     @Override
     public Long calculateExperienceToNextLevel(Integer level, Long currentExperience) {
-        AExperienceLevel nextLevel = experienceLevelManagementService.getLevelOptional(level + 1)
-                .orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", level)));
+        AExperienceLevel nextLevel = calculateNextLevel(level);
         return nextLevel.getExperienceNeeded() - currentExperience;
+    }
+
+    @Override
+    public AExperienceLevel calculateNextLevel(Integer level) {
+        return experienceLevelManagementService.getLevelOptional(level + 1)
+                .orElseThrow(() -> new AbstractoRunTimeException(String.format("Could not find level %s", level)));
     }
 
 }

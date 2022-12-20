@@ -104,7 +104,17 @@ public class Rank extends AbstractConditionableCommand {
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(toRender);
         AUserExperience experienceObj = userExperienceManagementService.findUserInServer(aUserInAServer);
         log.info("Rendering rank for user {} in server {}.", toRender.getId(), toRender.getGuild().getId());
-        rankModel.setExperienceToNextLevel(experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience()));
+        Long currentExpNeeded = experienceObj.getCurrentLevel().getExperienceNeeded();
+        Long experienceNeededToNextLevel = experienceLevelService.calculateExperienceToNextLevel(experienceObj.getCurrentLevel().getLevel(), experienceObj.getExperience());
+        Long nextLevelExperience = experienceLevelService.calculateNextLevel(experienceObj.getCurrentLevel().getLevel()).getExperienceNeeded();
+        Long levelExperience = nextLevelExperience - currentExpNeeded;
+        Long inLevelExperience = experienceObj.getExperience() - currentExpNeeded;
+        rankModel.setExperienceForCurrentLevel(currentExpNeeded);
+        rankModel.setCurrentLevelPercentage((float) inLevelExperience / levelExperience);
+        rankModel.setLevelExperience(levelExperience);
+        rankModel.setExperienceToNextLevel(experienceNeededToNextLevel);
+        rankModel.setInLevelExperience(inLevelExperience);
+        rankModel.setNextLevelExperience(nextLevelExperience);
         return templateService.renderEmbedTemplate(RANK_POST_EMBED_TEMPLATE, rankModel, toRender.getGuild().getIdLong());
     }
 

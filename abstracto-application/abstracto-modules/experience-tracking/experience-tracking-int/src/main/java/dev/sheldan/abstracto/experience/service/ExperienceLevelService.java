@@ -1,5 +1,7 @@
 package dev.sheldan.abstracto.experience.service;
 
+import dev.sheldan.abstracto.experience.model.database.AExperienceLevel;
+
 /**
  * Service responsible for operations on {@link dev.sheldan.abstracto.experience.model.database.AExperienceLevel experienceLevel}
  * This includes creating and calculations.
@@ -20,6 +22,7 @@ public interface ExperienceLevelService {
      * @return The amount of experience required necessary to reach the next level
      */
     Long calculateExperienceToNextLevel(Integer level, Long currentExperience);
+    AExperienceLevel calculateNextLevel(Integer level);
 
     /**
      * Calculates the required experience to reach this level. This calculated experience is relative, in the sense that

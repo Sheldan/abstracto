@@ -24,6 +24,26 @@ public class RankModel {
      */
     private Long experienceToNextLevel;
     /**
+     * Total experience needed for this level
+     */
+    private Long experienceForCurrentLevel;
+    /**
+     * Percentage of progress within this level
+     */
+    private Float currentLevelPercentage;
+    /**
+     * The total amount of experience needed for this level
+     */
+    private Long levelExperience;
+    /**
+     * The experience which has been reached _within_ this level
+     */
+    private Long inLevelExperience;
+    /**
+     * The experience needed to reach the next level
+     */
+    private Long nextLevelExperience;
+    /**
      * The member to show the rank for
      */
     private Member member;
