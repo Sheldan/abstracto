@@ -110,7 +110,7 @@ public class Rank extends AbstractConditionableCommand {
         Long levelExperience = nextLevelExperience - currentExpNeeded;
         Long inLevelExperience = experienceObj.getExperience() - currentExpNeeded;
         rankModel.setExperienceForCurrentLevel(currentExpNeeded);
-        rankModel.setCurrentLevelPercentage((float) inLevelExperience / levelExperience);
+        rankModel.setCurrentLevelPercentage(((float) inLevelExperience / levelExperience) * 100);
         rankModel.setLevelExperience(levelExperience);
         rankModel.setExperienceToNextLevel(experienceNeededToNextLevel);
         rankModel.setInLevelExperience(inLevelExperience);
