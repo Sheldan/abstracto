@@ -122,10 +122,6 @@ public class RoleServiceBean implements RoleService {
     }
 
     private CompletableFuture<Void> addRoleToUserAsync(Guild guild, Long userId, ARole role) {
-        if(role.getDeleted()) {
-            log.warn("Not possible to add role to user. Role {} was marked as deleted.", role.getId());
-            throw new RoleDeletedException(role);
-        }
         Role roleById = guild.getRoleById(role.getId());
         if(roleById != null) {
             log.info("Adding role {} to user {} in server {}.", role.getId(), userId, guild.getId());

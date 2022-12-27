@@ -67,7 +67,7 @@ public class JoiningUserRoleListenerTest {
     public void testUserWithExperienceRejoining() {
         AUserExperience experience = Mockito.mock(AUserExperience.class);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.of(experience));
-        when(userExperienceService.syncForSingleUser(experience, member)).thenReturn(CompletableFuture.completedFuture(null));
+        when(userExperienceService.syncForSingleUser(experience, member, true)).thenReturn(CompletableFuture.completedFuture(null));
         when(model.getMember()).thenReturn(member);
         DefaultListenerResult result = testUnit.execute(model);
         Assert.assertEquals(DefaultListenerResult.PROCESSED, result);
@@ -78,7 +78,7 @@ public class JoiningUserRoleListenerTest {
         when(model.getMember()).thenReturn(member);
         when(userExperienceManagementService.findByUserInServerIdOptional(USER_IN_SERVER_ID)).thenReturn(Optional.empty());
         testUnit.execute(model);
-        verify(userExperienceService, times(0)).syncForSingleUser(any(), any());
+        verify(userExperienceService, times(0)).syncForSingleUser(any(), any(), eq(true));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class JoiningUserRoleListenerTest {
         when(member.isPending()).thenReturn(true);
         when(model.getMember()).thenReturn(member);
         testUnit.execute(model);
-        verify(userExperienceService, times(0)).syncForSingleUser(any(), any());
+        verify(userExperienceService, times(0)).syncForSingleUser(any(), any(), any());
     }
 
 }

@@ -44,7 +44,7 @@ public interface AUserExperienceService {
 
     CompletableFuture<Void> syncUserRolesWithFeedback(AServer server, MessageChannel messageChannel);
 
-    CompletableFuture<Void> syncForSingleUser(AUserExperience userExperience, Member member);
+    CompletableFuture<Void> syncForSingleUser(AUserExperience userExperience, Member member, boolean changeRoles);
 
     /**
      * Loads the desired page of the ordered complete leaderboard from the {@link AServer} and returns the information as a {@link LeaderBoard}

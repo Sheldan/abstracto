@@ -41,7 +41,7 @@ public class MemberPendingRoleListener implements AsyncUpdatePendingListener {
             Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(aUserInAServer.getUserInServerId());
             if(userExperienceOptional.isPresent()) {
                 log.info("User {} updated pending status {} with previous experience. Setting up experience role again (if necessary).", model.getUser().getUserId(), model.getServerId());
-                userExperienceService.syncForSingleUser(userExperienceOptional.get(), model.getMember()).thenAccept(result ->
+                userExperienceService.syncForSingleUser(userExperienceOptional.get(), model.getMember(), true).thenAccept(result ->
                         log.info("Finished re-assigning experience for update pending user {} in server {}.", model.getUser().getUserId(), model.getServerId())
                 );
             } else {

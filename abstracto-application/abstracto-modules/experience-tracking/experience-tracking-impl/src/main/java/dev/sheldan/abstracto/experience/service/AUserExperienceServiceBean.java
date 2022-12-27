@@ -252,17 +252,17 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     public CompletableFuture<Void> syncUser(Member member, List<AExperienceRole> roles) {
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
         AUserExperience userExperience = userExperienceManagementService.findByUserInServerId(aUserInAServer.getUserInServerId());
-        return  calculateAndApplyExperienceRole(userExperience, member, roles);
+        return  calculateAndApplyExperienceRole(userExperience, member, roles, false);
     }
 
     @Override
-    public CompletableFuture<Void> syncForSingleUser(AUserExperience userExperience, Member member) {
+    public CompletableFuture<Void> syncForSingleUser(AUserExperience userExperience, Member member, boolean forceRoles) {
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(userExperience.getServer());
         roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
-        return calculateAndApplyExperienceRole(userExperience, member, roles);
+        return calculateAndApplyExperienceRole(userExperience, member, roles, forceRoles);
     }
 
-    private CompletableFuture<Void> calculateAndApplyExperienceRole(AUserExperience userExperience, Member member, List<AExperienceRole> roles) {
+    private CompletableFuture<Void> calculateAndApplyExperienceRole(AUserExperience userExperience, Member member, List<AExperienceRole> roles, boolean forceRoles) {
         AExperienceRole calculatedNewRole = experienceRoleService.calculateRole(roles, userExperience.getCurrentLevel().getLevel());
         Long oldRoleId = userExperience.getCurrentExperienceRole() != null && userExperience.getCurrentExperienceRole().getRole() != null ? userExperience.getCurrentExperienceRole().getRole().getId() : null;
         Long newRoleId = calculatedNewRole != null ? calculatedNewRole.getRole().getId() : null;
@@ -270,15 +270,15 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         userExperience.setCurrentExperienceRole(calculatedNewRole);
 
         CompletableFuture<Void> returningFuture;
-        if(!Objects.equals(oldRoleId, newRoleId)) {
+        if(!Objects.equals(oldRoleId, newRoleId) || forceRoles) {
             CompletableFuture<Void> addingFuture;
-            if(oldRoleId != null) {
+            if(oldRoleId != null || forceRoles) {
                 addingFuture = roleService.removeRoleFromMemberAsync(member, oldRoleId);
             } else {
                 addingFuture = CompletableFuture.completedFuture(null);
             }
             CompletableFuture<Void> removingFeature;
-            if(newRoleId != null) {
+            if(newRoleId != null || forceRoles) {
                 removingFeature = roleService.addRoleToMemberAsync(member, newRoleId);
             } else {
                 removingFeature = CompletableFuture.completedFuture(null);
