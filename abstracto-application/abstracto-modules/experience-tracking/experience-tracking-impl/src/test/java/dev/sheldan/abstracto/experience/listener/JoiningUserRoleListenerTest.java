@@ -86,7 +86,7 @@ public class JoiningUserRoleListenerTest {
         when(member.isPending()).thenReturn(true);
         when(model.getMember()).thenReturn(member);
         testUnit.execute(model);
-        verify(userExperienceService, times(0)).syncForSingleUser(any(), any(), any());
+        verify(userExperienceService, times(0)).syncForSingleUser(any(), any(), eq(true));
     }
 
 }
