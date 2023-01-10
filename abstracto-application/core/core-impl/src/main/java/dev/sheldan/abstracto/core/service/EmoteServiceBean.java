@@ -166,6 +166,7 @@ public class EmoteServiceBean implements EmoteService {
                     .builder()
                     .fake(true)
                     .custom(false)
+                    .animated(false)
                     .emoteKey(emoteText)
                     .build();
         }

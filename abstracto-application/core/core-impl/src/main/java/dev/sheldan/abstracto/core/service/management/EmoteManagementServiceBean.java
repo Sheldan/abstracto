@@ -160,15 +160,16 @@ public class EmoteManagementServiceBean implements EmoteManagementService {
             if(fakeEmote.getCustom()) {
                 log.debug("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new custom emote configuration: new id {}, animated {}.",
                         emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), fakeEmote.getEmoteId(), fakeEmote.getAnimated());
-                emoteBeingSet.setCustom(fakeEmote.getCustom());
                 emoteBeingSet.setEmoteId(fakeEmote.getEmoteId());
-                emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());
+                emoteBeingSet.setAnimated(fakeEmote.getAnimated());
             } else {
                 log.debug("Setting existing emote (a: {}, c: {}, id: {}, discord id: {}) to new default emote {}.",
                         emoteBeingSet.getAnimated(), emoteBeingSet.getCustom(), emoteBeingSet.getId(), emoteBeingSet.getEmoteId(), fakeEmote.getEmoteKey());
-                emoteBeingSet.setCustom(false);
-                emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());
+                emoteBeingSet.setEmoteId(null);
+                emoteBeingSet.setAnimated(false);
             }
+            emoteBeingSet.setCustom(fakeEmote.getCustom());
+            emoteBeingSet.setEmoteKey(fakeEmote.getEmoteKey());
             return emoteBeingSet;
         }
     }
