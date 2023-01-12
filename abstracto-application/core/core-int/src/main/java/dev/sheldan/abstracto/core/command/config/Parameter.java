@@ -37,6 +37,8 @@ public class Parameter implements Serializable {
     // these are the features which potentially require this parameter
     @Builder.Default
     private List<String> dependentFeatures = new ArrayList<>();
+    @Builder.Default
+    private List<String> choices = new ArrayList<>();
 
     public String getSlashCompatibleName() {
         return name.toLowerCase(Locale.ROOT);
