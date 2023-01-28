@@ -6,8 +6,10 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-experience/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.15/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.8/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.17/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan" id="user_experience-add_level_up_notification">
+        <addColumn tableName="user_experience">
+            <column name="level_up_notification" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

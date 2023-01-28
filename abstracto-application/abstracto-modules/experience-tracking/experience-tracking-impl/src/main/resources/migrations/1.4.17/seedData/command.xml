@@ -6,8 +6,14 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-experience/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.15/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.8/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.17/collection.xml" relativeToChangelogFile="true"/>
+    <property name="experienceModule" value="(SELECT id FROM module WHERE name = 'experience')"/>
+    <property name="experienceFeature" value="(SELECT id FROM feature WHERE key = 'experience')"/>
+    <changeSet  author="Sheldan"  id="experience-expLevelUpNotification_command">
+        <insert tableName="command">
+            <column name="name" value="expLevelUpNotification"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

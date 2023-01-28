@@ -75,6 +75,7 @@ public interface AUserExperienceService {
      * @param userInAServer The {@link AUserInAServer} to enable experience for
      */
     void enableExperienceForUser(AUserInAServer userInAServer);
+    void setLevelUpNotification(AUserInAServer aUserInAServer, Boolean newValue);
 
     boolean experienceGainEnabledInChannel(MessageChannel messageChannel);
 

@@ -340,7 +340,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 Long newRoleId = calculatedNewRole != null ? calculatedNewRole.getRole().getId() : null;
                 result.setOldRoleId(oldRoleId);
                 result.setNewRoleId(newRoleId);
-                if(message != null && featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, serverId, ExperienceFeatureMode.LEVEL_UP_NOTIFICATION)) {
+                if(message != null
+                        && aUserExperience.getLevelUpNotification()
+                        && featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, serverId, ExperienceFeatureMode.LEVEL_UP_NOTIFICATION)) {
                     LevelUpNotificationModel model = LevelUpNotificationModel
                             .builder()
                             .memberDisplay(MemberDisplay.fromMember(member))
@@ -427,6 +429,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         log.info("Enabling experience gain for user {} in server {}.", userInAServer.getUserReference().getId(), userInAServer.getServerReference().getId());
         AUserExperience userExperience = userExperienceManagementService.findUserInServer(userInAServer);
         userExperience.setExperienceGainDisabled(false);
+    }
+
+    @Override
+    public void setLevelUpNotification(AUserInAServer aUserInAServer, Boolean newValue) {
+        Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(aUserInAServer.getUserInServerId());
+        AUserExperience aUserExperience = aUserExperienceOptional.orElseGet(() -> userExperienceManagementService.createUserInServer(aUserInAServer));
+        aUserExperience.setLevelUpNotification(newValue);
     }
 
     /**

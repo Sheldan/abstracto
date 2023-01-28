@@ -60,6 +60,9 @@ public class AUserExperience implements Serializable {
     @Column(name = "experience_gain_disabled", nullable = false)
     private Boolean experienceGainDisabled = false;
 
+    @Column(name = "level_up_notification")
+    private Boolean levelUpNotification;
+
     /**
      * The {@link AExperienceLevel level} which the user currently has.
      */
