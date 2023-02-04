@@ -18,6 +18,7 @@ def deploy_template_folder(db_config, folder):
             file_content = template_file.read()
             template_key = os.path.splitext(os.path.basename(file))[0]
             template = {'key': template_key, 'content': file_content}
+            print('Deployment template %s', template)
             templates.append(template)
 
     print('Deploying %s templates from folder %s' % (len(templates), folder))
