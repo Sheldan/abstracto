@@ -25,7 +25,10 @@ RUN mkdir -p /postgres \
 # Install ansible and required libraries
 
 FROM python:3.7-slim-buster as runtime
-RUN pip3 install --no-cache-dir psycopg2-binary SQLAlchemy jinja2
+ARG sql_alchemy_version=1.4.46
+ARG jinja_version=3.1.2
+ARG psycopg2_version=2.9.5
+RUN pip3 install --no-cache-dir psycopg2-binary==${psycopg2_version} SQLAlchemy==${sql_alchemy_version} jinja2==${jinja_version}
 COPY --from=base /liquibase /liquibase
 COPY --from=base /postgres /postgres
 COPY --from=base /java /java
