@@ -11,7 +11,7 @@
 
     <groupId>dev.sheldan.abstracto</groupId>
     <artifactId>abstracto-application</artifactId>
-    <version>1.4.18-SNAPSHOT</version>
+    <version>1.4.14</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -35,7 +35,7 @@
     <scm>
         <url>https://maven.pkg.github.com/Sheldan/abstracto</url>
         <developerConnection>scm:git:git@github.com:Sheldan/abstracto.git</developerConnection>
-      <tag>abstracto-application-1.4.5</tag>
+      <tag>abstracto-application-1.4.14</tag>
   </scm>
 
     <repositories>
