@@ -138,7 +138,10 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 // we store when the user is eligible for experience _again_
                 Long maxSeconds = configService.getLongValueOrConfigDefault(EXP_COOLDOWN_SECONDS_KEY, serverId);
                 serverExperience.put(userId, Instant.now().plus(maxSeconds, ChronoUnit.SECONDS));
-                CompletableFuture.runAsync(() -> self.addExperienceToMember(member, message), experienceUpdateExecutor);
+                CompletableFuture.runAsync(() -> self.addExperienceToMember(member, message), experienceUpdateExecutor).exceptionally(throwable -> {
+                    log.error("Failed to add experience to member {} in server {}.", message.getAuthor().getId(), message.getGuild().getIdLong(), throwable);
+                    return null;
+                });
             }
         } finally {
             runTimeExperienceService.releaseLock();
@@ -336,8 +339,8 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                         oldLevel);
                 aUserExperience.setCurrentLevel(newLevel);
                 AExperienceRole calculatedNewRole = experienceRoleService.calculateRole(roles, newLevel.getLevel());
-                Long oldRoleId = aUserExperience.getCurrentExperienceRole() != null ? aUserExperience.getCurrentExperienceRole().getRole().getId() : null;
-                Long newRoleId = calculatedNewRole != null ? calculatedNewRole.getRole().getId() : null;
+                Long oldRoleId = aUserExperience.getCurrentExperienceRole() != null && aUserExperience.getCurrentExperienceRole().getRole() != null ? aUserExperience.getCurrentExperienceRole().getRole().getId() : null;
+                Long newRoleId = calculatedNewRole != null && calculatedNewRole.getRole() != null ? calculatedNewRole.getRole().getId() : null;
                 result.setOldRoleId(oldRoleId);
                 result.setNewRoleId(newRoleId);
                 if(message != null
