@@ -58,6 +58,7 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
                 .messageCount(0L)
                 .server(aUserInAServer.getServerReference())
                 .experienceGainDisabled(false)
+                .levelUpNotification(true)
                 .user(aUserInAServer)
                 .id(aUserInAServer.getUserInServerId())
                 .currentLevel(startingLevel)
