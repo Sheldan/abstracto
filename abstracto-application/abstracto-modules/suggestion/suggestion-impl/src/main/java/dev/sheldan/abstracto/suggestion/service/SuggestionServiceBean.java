@@ -279,8 +279,12 @@ public class SuggestionServiceBean implements SuggestionService {
         Long disagreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.DISAGREE);
         Long suggestionId = suggestion.getSuggestionId().getId();
         Long totalVotes = disagreements + agreements;
-        float agreementPercentage = (float) agreements / (totalVotes) * 100;
-        float disAgreementPercentage = 100f - agreementPercentage;
+        float agreementPercentage = 0;
+        float disAgreementPercentage = 0;
+        if(totalVotes > 0) {
+            agreementPercentage = (((float) agreements) / totalVotes) * 100;
+            disAgreementPercentage = 100f - agreementPercentage;
+        }
         SuggestionUpdateModel model = SuggestionUpdateModel
                 .builder()
                 .suggestionId(suggestionId)
