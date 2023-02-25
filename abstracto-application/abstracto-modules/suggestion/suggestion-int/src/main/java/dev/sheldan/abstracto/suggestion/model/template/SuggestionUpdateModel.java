@@ -25,6 +25,9 @@ public class SuggestionUpdateModel {
     private Long originalMessageId;
     private Long agreeVotes;
     private Long disAgreeVotes;
+    private Long totalVotes;
+    private Float agreementPercentage;
+    private Float disAgreementPercentage;
 
     public String getOriginalMessageUrl() {
         return MessageUtils.buildMessageUrl(serverId, originalChannelId , originalMessageId);

@@ -278,6 +278,9 @@ public class SuggestionServiceBean implements SuggestionService {
         Long agreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.AGREE);
         Long disagreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.DISAGREE);
         Long suggestionId = suggestion.getSuggestionId().getId();
+        Long totalVotes = disagreements + agreements;
+        float agreementPercentage = (float) agreements / (totalVotes) * 100;
+        float disAgreementPercentage = 100f - agreementPercentage;
         SuggestionUpdateModel model = SuggestionUpdateModel
                 .builder()
                 .suggestionId(suggestionId)
@@ -290,6 +293,9 @@ public class SuggestionServiceBean implements SuggestionService {
                 .text(suggestion.getSuggestionText())
                 .originalChannelId(channelId)
                 .reason(reason)
+                .totalVotes(totalVotes)
+                .agreementPercentage(agreementPercentage)
+                .disAgreementPercentage(disAgreementPercentage)
                 .build();
         log.info("Updated posted suggestion {} in server {}.", suggestionId, suggestion.getServer().getId());
         CompletableFuture<User> memberById = userService.retrieveUserForId(suggestion.getSuggester().getUserReference().getId());
