@@ -36,7 +36,8 @@ public class SuggestionFeatureConfig implements FeatureConfig {
         return Arrays.asList(
                 SuggestionFeatureMode.SUGGESTION_REMINDER,
                 SuggestionFeatureMode.SUGGESTION_BUTTONS,
-                SuggestionFeatureMode.SUGGESTION_AUTO_EVALUATE);
+                SuggestionFeatureMode.SUGGESTION_AUTO_EVALUATE,
+                SuggestionFeatureMode.SUGGESTION_THREAD);
     }
 
     @Override

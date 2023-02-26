@@ -6,8 +6,10 @@ import dev.sheldan.abstracto.core.models.database.PostTarget;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface PostTargetService {
@@ -23,14 +25,15 @@ public interface PostTargetService {
     List<CompletableFuture<Message>> editEmbedInPostTarget(Long messageId, MessageToSend message, PostTargetEnum postTargetName, Long serverId);
     List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTarget target);
     List<CompletableFuture<Message>> editOrCreatedInPostTarget(Long messageId, MessageToSend messageToSend, PostTargetEnum postTarget, Long serverId);
-    void throwIfPostTargetIsNotDefined(PostTargetEnum name, Long serverId);
-    boolean postTargetDefinedInServer(PostTargetEnum name, Long serverId);
+    void throwIfPostTargetIsNotDefined(PostTargetEnum targetEnum, Long serverId);
+    boolean postTargetDefinedInServer(PostTargetEnum targetEnum, Long serverId);
     boolean validPostTarget(String name);
-    void validatePostTarget(PostTargetEnum name, Long serverId);
-    boolean postTargetUsableInServer(PostTargetEnum name, Long serverId);
+    void validatePostTarget(PostTargetEnum targetEnum, Long serverId);
+    boolean postTargetUsableInServer(PostTargetEnum targetEnum, Long serverId);
     List<PostTarget> getPostTargets(AServer server);
     List<String> getAvailablePostTargets();
     List<String> getPostTargetsOfEnabledFeatures(AServer server);
     void disablePostTarget(String name, Long serverId);
     void enablePostTarget(String name, Long serverId);
+    Optional<GuildMessageChannel> getPostTargetChannel(PostTargetEnum postTargetEnum, Long serverId);
 }

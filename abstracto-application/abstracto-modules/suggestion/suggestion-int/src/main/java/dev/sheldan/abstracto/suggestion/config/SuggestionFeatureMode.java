@@ -5,7 +5,10 @@ import lombok.Getter;
 
 @Getter
 public enum SuggestionFeatureMode implements FeatureMode {
-    SUGGESTION_REMINDER("suggestionReminder"), SUGGESTION_BUTTONS("suggestionButton"), SUGGESTION_AUTO_EVALUATE("suggestionAutoEvaluate");
+    SUGGESTION_REMINDER("suggestionReminder"),
+    SUGGESTION_BUTTONS("suggestionButton"),
+    SUGGESTION_AUTO_EVALUATE("suggestionAutoEvaluate"),
+    SUGGESTION_THREAD("suggestionThread");
 
     private final String key;
 

@@ -29,6 +29,8 @@ import dev.sheldan.abstracto.suggestion.service.management.SuggestionManagementS
 import dev.sheldan.abstracto.suggestion.service.management.SuggestionVoteManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.attribute.IThreadContainer;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,9 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -131,6 +131,7 @@ public class SuggestionServiceBean implements SuggestionService {
         if(autoEvaluationEnabled) {
             autoEvaluateDays = configService.getLongValueOrConfigDefault(SUGGESTION_AUTO_EVALUATE_DAYS_CONFIG_KEY, serverId);
         }
+        Instant autoEvaluationTargetDate = autoEvaluationEnabled ? Instant.now().plus(autoEvaluateDays, ChronoUnit.DAYS) : null;
         SuggestionLog model = SuggestionLog
                 .builder()
                 .suggestionId(newSuggestionId)
@@ -143,7 +144,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .suggester(suggester.getUser())
                 .text(text)
                 .autoEvaluationEnabled(autoEvaluationEnabled)
-                .autoEvaluationTargetDate(autoEvaluationEnabled ? Instant.now().plus(autoEvaluateDays, ChronoUnit.DAYS) : null)
+                .autoEvaluationTargetDate(autoEvaluationTargetDate)
                 .build();
         if(useButtons) {
             setupButtonIds(model);
@@ -151,32 +152,73 @@ public class SuggestionServiceBean implements SuggestionService {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SUGGESTION_CREATION_TEMPLATE, model, serverId);
         log.info("Creating suggestion with id {} in server {} from member {}.", newSuggestionId, serverId, suggester.getIdLong());
         List<CompletableFuture<Message>> completableFutures = postTargetService.sendEmbedInPostTarget(messageToSend, SuggestionPostTarget.SUGGESTION, serverId);
+        List<ButtonConfigModel> buttonConfigModels = Arrays.asList(model.getAgreeButtonModel(), model.getDisAgreeButtonModel(), model.getRemoveVoteButtonModel());
         return FutureUtils.toSingleFutureGeneric(completableFutures)
-                .thenCompose(aVoid -> self.addDeletionPossibility(suggestionChannelId, suggestionMessageId, text, suggester, serverId, newSuggestionId, completableFutures, model));
+                .thenCompose(aVoid -> self.addVotingPossibility(suggestionChannelId, suggestionMessageId, text, suggester, serverId, newSuggestionId, completableFutures, buttonConfigModels, useButtons))
+                .thenCompose(aVoid -> self.createSuggestionThread(serverId, newSuggestionId, suggester, text, autoEvaluationEnabled, autoEvaluationTargetDate));
     }
 
     @Transactional
-    public CompletableFuture<Void> addDeletionPossibility(Long suggestionChannelId, Long suggestionMessageId, String text, Member suggester, Long serverId,
-                                                          Long newSuggestionId, List<CompletableFuture<Message>> completableFutures, SuggestionLog model) {
-        Message message = completableFutures.get(0).join();
-        if(model.getUseButtons()) {
-            configureDecisionButtonPayload(serverId, newSuggestionId, model.getAgreeButtonModel(), SuggestionDecision.AGREE);
-            configureDecisionButtonPayload(serverId, newSuggestionId, model.getDisAgreeButtonModel(), SuggestionDecision.DISAGREE);
-            configureDecisionButtonPayload(serverId, newSuggestionId, model.getRemoveVoteButtonModel(), SuggestionDecision.REMOVE_VOTE);
-            AServer server = serverManagementService.loadServer(serverId);
-            componentPayloadManagementService.createButtonPayload(model.getAgreeButtonModel(), server);
-            componentPayloadManagementService.createButtonPayload(model.getDisAgreeButtonModel(), server);
-            componentPayloadManagementService.createButtonPayload(model.getRemoveVoteButtonModel(), server);
-            self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, suggestionChannelId, suggestionMessageId);
-            return CompletableFuture.completedFuture(null);
+    public CompletableFuture<Void> createSuggestionThread(Long serverId, Long suggestionId, Member suggester, String suggestionText,
+                                                          Boolean autoEvaluationEnabled, Instant autoEvaluationTargetDate) {
+        if(featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_THREAD)) {
+            Optional<GuildMessageChannel> suggestionTargetChannelOptional = postTargetService.getPostTargetChannel(SuggestionPostTarget.SUGGESTION, serverId);
+            log.info("Trying to create thread for suggestion {} in server {}.", suggestionId, serverId);
+            if (suggestionTargetChannelOptional.isPresent()) {
+                GuildMessageChannel messageChannel = suggestionTargetChannelOptional.get();
+                    if(messageChannel instanceof IThreadContainer) {
+                        SuggestionThreadModel model = SuggestionThreadModel
+                                .builder()
+                                .suggestionId(suggestionId)
+                                .suggester(suggester.getUser())
+                                .member(suggester)
+                                .autoEvaluationEnabled(autoEvaluationEnabled)
+                                .text(suggestionText)
+                                .autoEvaluationTargetDate(autoEvaluationTargetDate)
+                                .build();
+                        IThreadContainer threadContainer = (IThreadContainer) messageChannel;
+                        String threadName = templateService.renderTemplate("suggestion_thread_name", model, serverId);
+                        return threadContainer.createThreadChannel(threadName).submit()
+                                .thenAccept(threadChannel -> log.info("Created thread for suggestion {} in server {}.", suggestionId, serverId));
+                    } else {
+                        log.info("Suggestion thread was not created - post target for suggestions does not allow to create threads");
+                    }
+            } else {
+                log.info("Suggestion thread was not created - post target did not evaluate to a channel or post target is disabled.");
+            }
         } else {
-            log.debug("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
-            CompletableFuture<Void> firstReaction = reactionService.addReactionToMessageAsync(SUGGESTION_YES_EMOTE, serverId, message);
-            CompletableFuture<Void> secondReaction = reactionService.addReactionToMessageAsync(SUGGESTION_NO_EMOTE, serverId, message);
-            return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 -> {
-                log.debug("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
+            log.info("Suggestion thread feature disabled - not creating thread for suggestion {} in server {}.", suggestionId, serverId);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Transactional
+    public CompletableFuture<Void> addVotingPossibility(Long suggestionChannelId, Long suggestionMessageId, String text, Member suggester, Long serverId,
+                                                        Long newSuggestionId, List<CompletableFuture<Message>> completableFutures, List<ButtonConfigModel> buttonConfigModels,
+                                                        Boolean useButtons) {
+        if(!completableFutures.isEmpty()) {
+            Message message = completableFutures.get(0).join();
+            if(useButtons) {
+                configureDecisionButtonPayload(serverId, newSuggestionId, buttonConfigModels.get(0), SuggestionDecision.AGREE);
+                configureDecisionButtonPayload(serverId, newSuggestionId, buttonConfigModels.get(1), SuggestionDecision.DISAGREE);
+                configureDecisionButtonPayload(serverId, newSuggestionId, buttonConfigModels.get(2), SuggestionDecision.REMOVE_VOTE);
+                AServer server = serverManagementService.loadServer(serverId);
+                componentPayloadManagementService.createButtonPayload(buttonConfigModels.get(0), server);
+                componentPayloadManagementService.createButtonPayload(buttonConfigModels.get(1), server);
+                componentPayloadManagementService.createButtonPayload(buttonConfigModels.get(2), server);
                 self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, suggestionChannelId, suggestionMessageId);
-            });
+                return CompletableFuture.completedFuture(null);
+            } else {
+                log.debug("Posted message, adding reaction for suggestion {} to message {}.", newSuggestionId, message.getId());
+                CompletableFuture<Void> firstReaction = reactionService.addReactionToMessageAsync(SUGGESTION_YES_EMOTE, serverId, message);
+                CompletableFuture<Void> secondReaction = reactionService.addReactionToMessageAsync(SUGGESTION_NO_EMOTE, serverId, message);
+                return CompletableFuture.allOf(firstReaction, secondReaction).thenAccept(aVoid1 -> {
+                    log.debug("Reaction added to message {} for suggestion {}.", message.getId(), newSuggestionId);
+                    self.persistSuggestionInDatabase(suggester, text, message, newSuggestionId, suggestionChannelId, suggestionMessageId);
+                });
+            }
+        } else {
+            return CompletableFuture.completedFuture(null);
         }
     }
 
@@ -275,6 +317,7 @@ public class SuggestionServiceBean implements SuggestionService {
         Long serverId = suggestion.getServer().getId();
         Long channelId = suggestion.getChannel().getId();
         Long originalMessageId = suggestion.getMessageId();
+        boolean buttonsActive = featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_BUTTONS);
         Long agreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.AGREE);
         Long disagreements = suggestionVoteManagementService.getDecisionsForSuggestion(suggestion, SuggestionDecision.DISAGREE);
         Long suggestionId = suggestion.getSuggestionId().getId();
@@ -290,6 +333,7 @@ public class SuggestionServiceBean implements SuggestionService {
                 .suggestionId(suggestionId)
                 .state(suggestion.getState())
                 .serverId(serverId)
+                .buttonsActive(buttonsActive)
                 .member(memberExecutingCommand)
                 .agreeVotes(agreements)
                 .disAgreeVotes(disagreements)

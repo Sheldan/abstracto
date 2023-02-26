@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.User;
 public class SuggestionUpdateModel {
     private Long suggestionId;
     private SuggestionState state;
+    private Boolean buttonsActive;
     private User suggester;
     private Member member;
     private String text;
