@@ -275,13 +275,13 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
         CompletableFuture<Void> returningFuture;
         if(!Objects.equals(oldRoleId, newRoleId) || forceRoles) {
             CompletableFuture<Void> addingFuture;
-            if(oldRoleId != null || forceRoles) {
+            if(oldRoleId != null) {
                 addingFuture = roleService.removeRoleFromMemberAsync(member, oldRoleId);
             } else {
                 addingFuture = CompletableFuture.completedFuture(null);
             }
             CompletableFuture<Void> removingFeature;
-            if(newRoleId != null || forceRoles) {
+            if(newRoleId != null) {
                 removingFeature = roleService.addRoleToMemberAsync(member, newRoleId);
             } else {
                 removingFeature = CompletableFuture.completedFuture(null);
