@@ -25,6 +25,7 @@ public class EmbedField {
      */
     private Boolean inline;
     private Boolean forceNewEmbed;
+    private Integer valueSplitLength;
     /**
      * this will actively limit the length, not create another field
       */

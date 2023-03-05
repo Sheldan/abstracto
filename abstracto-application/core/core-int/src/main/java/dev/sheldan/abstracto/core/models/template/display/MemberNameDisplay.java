@@ -22,7 +22,7 @@ public class MemberNameDisplay {
         String userAvatar = user.getAvatarUrl() != null ? user.getAvatarUrl() : user.getDefaultAvatar().getUrl(4096);
         return MemberNameDisplay
                 .builder()
-                .memberAvatarUrl(member.getAvatarUrl())
+                .memberAvatarUrl(member.getEffectiveAvatar().getUrl(4096))
                 .nickname(member.getNickname())
                 .userName(user.getName())
                 .memberMention(member.getAsMention())

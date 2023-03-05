@@ -392,10 +392,11 @@ public class TemplateServiceBean implements TemplateService {
         });
         for (int i = 0; i < configuration.getFields().size(); i++) {
             EmbedField field = configuration.getFields().get(i);
-            if (field != null && field.getValue() != null && field.getValue().length() > MessageEmbed.VALUE_MAX_LENGTH) {
+            int maxSplitLength = field != null && field.getValueSplitLength() != null ? Math.min(field.getValueSplitLength(), MessageEmbed.VALUE_MAX_LENGTH) : MessageEmbed.VALUE_MAX_LENGTH;
+            if (field != null && field.getValue() != null && field.getValue().length() > maxSplitLength) {
                 int segmentCounter = 0;
                 int segmentStart = 0;
-                int segmentEnd = MessageEmbed.VALUE_MAX_LENGTH;
+                int segmentEnd = maxSplitLength;
                 int handledIndex = 0;
                 String fullFieldValue = field.getValue();
                 while(handledIndex < fullFieldValue.length()) {
@@ -403,7 +404,7 @@ public class TemplateServiceBean implements TemplateService {
                     // start has a value, so some things are cut off
                     int segmentLength = fullFieldValue.length() - segmentStart;
                     // if its over the hard limit for a field
-                    if(segmentLength > MessageEmbed.VALUE_MAX_LENGTH) {
+                    if(segmentLength > maxSplitLength) {
                         // find the last space in the text, as a natural "splitting point"
                         int lastSpace = fullFieldValue.substring(segmentStart, segmentEnd).lastIndexOf(" ");
                         if(lastSpace != -1) {
@@ -431,7 +432,7 @@ public class TemplateServiceBean implements TemplateService {
                     segmentCounter++;
                     handledIndex = segmentEnd;
                     segmentStart = segmentEnd;
-                    segmentEnd += MessageEmbed.VALUE_MAX_LENGTH;
+                    segmentEnd += maxSplitLength;
                 }
             }
         }

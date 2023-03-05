@@ -249,6 +249,7 @@ public class RemindServiceBeanTest {
         when(guild.getIdLong()).thenReturn(8L);
         when(remindedMember.getIdLong()).thenReturn(9L);
         when(remindedMember.getUser()).thenReturn(jdaUser);
+        when(remindedMember.getEffectiveAvatar()).thenReturn(Mockito.mock(ImageProxy.class));
         when(jdaUser.getDefaultAvatar()).thenReturn(Mockito.mock(ImageProxy.class));
         Reminder remindedReminder = Mockito.mock(Reminder.class);
         when(remindedReminder.getTargetDate()).thenReturn(Instant.now());
