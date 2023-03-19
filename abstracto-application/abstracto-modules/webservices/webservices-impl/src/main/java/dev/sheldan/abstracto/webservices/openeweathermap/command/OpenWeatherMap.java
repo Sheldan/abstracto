@@ -125,6 +125,7 @@ public class OpenWeatherMap extends AbstractConditionableCommand {
                 builder.sunset(systemInfo.getSunset() != null ? Instant.ofEpochSecond(systemInfo.getSunset()) : null);
                 builder.sunset(systemInfo.getSunrise() != null ? Instant.ofEpochSecond(systemInfo.getSunrise()) : null);
             }
+            builder.locationId(weatherResult.getLocationId());
             return templateService.renderEmbedTemplate(OPEN_WEATHER_MAP_RESPONSE_TEMPLATE_KEY, builder.build(), serverId);
         } catch (IOException e) {
             log.warn("Failed to load weather in server {}", serverId, e);

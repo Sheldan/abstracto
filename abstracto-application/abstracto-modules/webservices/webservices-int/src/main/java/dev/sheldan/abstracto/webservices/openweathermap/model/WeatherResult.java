@@ -29,5 +29,6 @@ public class WeatherResult {
     private WeatherResultSystem systemInfo;
     @SerializedName("timezone")
     private Long timezoneShift;
-
+    @SerializedName("id")
+    private Long locationId;
 }

@@ -33,4 +33,5 @@ public class WeatherResponseModel {
     private String locationName;
     private String countryKey;
     private Color embedColor;
+    private Long locationId;
 }
