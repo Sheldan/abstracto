@@ -14,22 +14,20 @@ An example implementation of this bot can be seen [here](https://github.com/Shel
 
 
 ## Technologies
-* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 5.0.0-alpha.21
-* [Spring boot](https://github.com/spring-projects/spring-boot) is used as a framework to create standalone application in Java with Java EE methods. (including Dependency injection and more)
+* [JDA](https://github.com/DV8FromTheWorld/JDA/) The Discord API Wrapper in the version 5.0.0-beta.5
+* [Spring boot](https://github.com/spring-projects/spring-boot) is used as a framework to create standalone application in Java with Java EE methods. (including dependency injection and more)
 * [Hibernate](https://github.com/hibernate/hibernate-orm) is used as a reference implementation of JPA.
 * [Freemarker](https://github.com/apache/freemarker) is used as a templating engine. This is used to provide internationalization for user facing text and enable dynamic embed configuration.
 * [Ehcache](https://github.com/ehcache/ehcache3) is used as a caching implementation.
 * [Lombok](https://github.com/rzwitserloot/lombok) is used as a framework in order to speed up creation of container classes and builders.
-* [Quartz](https://github.com/quartz-scheduler/quartz) is used as a scheduling framework in order to provide functionalities which either require a delayed or cronjob behaviour.
-* [Docker](https://github.com/docker) is used to package the application into a container and [Docker Compose](https://github.com/docker/compose) is used to connect the required containers together.
+* [Quartz](https://github.com/quartz-scheduler/quartz) is used as a scheduling framework in order to provide functionalities which either require a scheduled or cronjob behaviour.
+* [Docker](https://github.com/docker) is used to package the application into an image and [Docker Compose](https://github.com/docker/compose) is used to build the images
 * [Liquibase](https://github.com/liquibase/liquibase) is used to manage changes to the database
 
 ## Documentation
 A detailed documentation of the pure form of Abstracto including the terminology and commands in HTML form is available [here](https://sheldan.github.io/abstracto-docs/current). The PDF is available [here](https://sheldan.github.io/abstracto-docs/current/documentation.pdf)
 If you want to view the documentation to an earlier released version you need to append the desired version to the URL. The current version will be available aforementioned URL, but it is not right now, because Abstracto has not been released yet.
 
-## Customization documentation 
-TBD when Abstracto is released, as the current version is still being adapted, because of findings from the example customization in Crimson.
 
 ## Issues
 If you find any issue, feel free to create a GitHub issue.
