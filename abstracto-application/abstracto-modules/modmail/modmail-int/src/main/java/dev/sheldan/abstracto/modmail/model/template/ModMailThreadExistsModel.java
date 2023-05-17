@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
+import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
 import dev.sheldan.abstracto.core.utils.ChannelUtils;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import lombok.Setter;
 @Builder
 public class ModMailThreadExistsModel {
     private ModMailThread existingModMailThread;
+    private MemberNameDisplay executingMemberDisplay;
 
     public String getThreadUrl() {
         return ChannelUtils.buildChannelUrl(existingModMailThread.getServer().getId(), existingModMailThread.getChannel().getId());

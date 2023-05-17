@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -81,6 +82,7 @@ public class Contact extends AbstractConditionableCommand {
             ModMailThreadExistsModel model = ModMailThreadExistsModel
                     .builder()
                     .existingModMailThread(existingThread)
+                    .executingMemberDisplay(MemberNameDisplay.fromMember(commandContext.getAuthor()))
                     .build();
             List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
@@ -106,6 +108,7 @@ public class Contact extends AbstractConditionableCommand {
             ModMailThreadExistsModel model = ModMailThreadExistsModel
                     .builder()
                     .existingModMailThread(existingThread)
+                    .executingMemberDisplay(MemberNameDisplay.fromMember(event.getMember()))
                     .build();
             return interactionService.replyEmbed(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, event)
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
