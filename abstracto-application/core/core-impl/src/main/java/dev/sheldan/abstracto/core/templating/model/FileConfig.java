@@ -10,4 +10,6 @@ import lombok.Setter;
 public class FileConfig {
     private String fileName;
     private Boolean spoiler;
+    // only used for plaintext files
+    private String fileContent;
 }

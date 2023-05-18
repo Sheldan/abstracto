@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.templating.Templatable;
 import dev.sheldan.abstracto.core.templating.exception.TemplatingException;
 import dev.sheldan.abstracto.core.templating.model.*;
+import dev.sheldan.abstracto.core.utils.FileService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -55,6 +57,9 @@ public class TemplateServiceBean implements TemplateService {
 
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private FileService fileService;
 
     /**
      * Formats the passed passed count with the embed used for formatting pages.
@@ -172,11 +177,22 @@ public class TemplateServiceBean implements TemplateService {
         List<AttachedFile> files = new ArrayList<>();
         if(messageConfiguration.getFiles() != null && !messageConfiguration.getFiles().isEmpty()) {
             messageConfiguration.getFiles().forEach(fileToAttach -> {
+                String fileName = fileToAttach.getFileName() != null ? fileToAttach.getFileName() : RandomStringUtils.randomAlphabetic(5);
                 AttachedFile attachedFile = AttachedFile
                         .builder()
-                        .fileName(fileToAttach.getFileName() != null ? fileToAttach.getFileName() : RandomStringUtils.randomAlphabetic(5))
-                        .spoiler(fileToAttach.getSpoiler())
+                        .fileName(fileName)
+                        .spoiler(fileToAttach.getSpoiler() != null && fileToAttach.getSpoiler())
                         .build();
+                if(fileToAttach.getFileContent() != null) {
+                    File tempFile = fileService.createTempFile(fileName);
+                    try {
+                        fileService.writeContentToFile(tempFile, fileToAttach.getFileContent());
+                    } catch (IOException e) {
+                        log.error("Failed to write local temporary file.", e);
+                        throw new AbstractoRunTimeException(e);
+                    }
+                    attachedFile.setFile(tempFile);
+                }
                 files.add(attachedFile);
             });
         }

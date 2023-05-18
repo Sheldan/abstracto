@@ -2,8 +2,6 @@ package dev.sheldan.abstracto.statistic.emote.command;
 
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.exception.UploadFileTooLargeException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -14,7 +12,6 @@ import dev.sheldan.abstracto.statistic.config.StatisticFeatureDefinition;
 import dev.sheldan.abstracto.statistic.emote.model.DownloadEmoteStatsModel;
 import dev.sheldan.abstracto.statistic.emote.model.database.UsedEmote;
 import dev.sheldan.abstracto.statistic.emote.service.management.UsedEmoteManagementService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,11 +19,8 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -77,51 +71,9 @@ public class ExportEmoteStatsTest {
         verify(channelService, times(1)).sendEmbedTemplateInTextChannelList(eq(DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY), any(), eq(commandContext.getChannel()));
     }
 
-    @Test(expected = AbstractoRunTimeException.class)
-    public void testFileIOException() throws IOException {
-        CommandContext commandContext = CommandTestUtilities.getNoParameters();
-        mockServerAndFileRendering(commandContext);
-        File file = Mockito.mock(File.class);
-        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
-        doThrow(new IOException()).when(fileService).writeContentToFile(file, FILE_CONTENT);
-        testUnit.executeAsync(commandContext);
-    }
-
-    @Test(expected = UploadFileTooLargeException.class)
-    public void testExportAllEmoteStatsTooBig() throws IOException {
-        CommandContext commandContext = CommandTestUtilities.getNoParameters();
-        when(commandContext.getGuild().getMaxFileSize()).thenReturn(2L);
-        mockServerAndFileRendering(commandContext);
-        File file = Mockito.mock(File.class);
-        when(fileService.createTempFile(FILE_NAME)).thenReturn(file);
-        when(file.length()).thenReturn(3L);
-        MessageToSend messageToSend = Mockito.mock(MessageToSend.class);
-        CompletableFuture<CommandResult> asyncResult = testUnit.executeAsync(commandContext);
-        CommandTestUtilities.checkSuccessfulCompletionAsync(asyncResult);
-        verify(fileService, times(1)).writeContentToFile(file, FILE_CONTENT);
-        verify(fileService, times(1)).safeDelete(file);
-        verifyModel();
-    }
-
     @Test
     public void testFeature() {
         Assert.assertEquals(StatisticFeatureDefinition.EMOTE_TRACKING, testUnit.getFeature());
-    }
-
-    private void verifyModel() {
-        DownloadEmoteStatsModel model = modelArgumentCaptor.getValue();
-        Assert.assertEquals(1, model.getEmotes().size());
-        Assert.assertEquals(usedEmote, model.getEmotes().get(0));
-    }
-
-    private void mockServerAndFileRendering(CommandContext commandContext) {
-        when(commandContext.getGuild().getIdLong()).thenReturn(SERVER_ID);
-        AServer server = Mockito.mock(AServer.class);
-        when(serverManagementService.loadServer(SERVER_ID)).thenReturn(server);
-        List<UsedEmote> usedEmotes = Arrays.asList(usedEmote);
-        when(usedEmoteManagementService.loadEmoteUsagesForServerSince(server, Instant.EPOCH)).thenReturn(usedEmotes);
-        when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY), modelArgumentCaptor.capture())).thenReturn(FILE_NAME);
-        when(templateService.renderTemplate(eq(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY), any())).thenReturn(FILE_CONTENT);
     }
 
     @Test

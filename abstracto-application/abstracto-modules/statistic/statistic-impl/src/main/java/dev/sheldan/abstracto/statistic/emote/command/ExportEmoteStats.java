@@ -7,7 +7,6 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.UploadFileTooLargeException;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.service.ChannelService;
@@ -25,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -46,8 +43,6 @@ import java.util.concurrent.CompletableFuture;
 public class ExportEmoteStats extends AbstractConditionableCommand {
 
     public static final String DOWNLOAD_EMOTE_STATS_NO_STATS_AVAILABLE_RESPONSE_TEMPLATE_KEY = "downloadEmoteStats_no_stats_available_response";
-    public static final String DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY = "downloadEmoteStats_file_name";
-    public static final String DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY = "downloadEmoteStats_file_content";
     public static final String DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY = "downloadEmoteStats_response";
     @Autowired
     private ServerManagementService serverManagementService;
@@ -93,30 +88,10 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
                 .requester(commandContext.getAuthor())
                 .statsSince(toUseForModel)
                 .build();
-        String fileName = templateService.renderTemplate(DOWNLOAD_EMOTE_STATS_FILE_NAME_TEMPLATE_KEY, model);
-        String fileContent = templateService.renderTemplate(DOWNLOAD_EMOTE_STATS_FILE_CONTENT_TEMPLATE_KEY, model);
-        model.setEmoteStatsFileName(fileName);
-        File tempFile = fileService.createTempFile(fileName);
-        try {
-            fileService.writeContentToFile(tempFile, fileContent);
-            long maxFileSize = commandContext.getGuild().getMaxFileSize();
-            // in this case, we cannot upload the file, so we need to fail
-            if(tempFile.length() > maxFileSize) {
-                throw new UploadFileTooLargeException(tempFile.length(), maxFileSize);
-            }
-            MessageToSend messageToSend = templateService.renderEmbedTemplate(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY, model, actualServer.getId());
-            messageToSend.getAttachedFiles().get(0).setFile(tempFile.getAbsoluteFile());
-            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
-                    .thenApply(unused -> CommandResult.fromIgnored());
-        } catch (IOException e) {
-            throw new AbstractoRunTimeException(e);
-        } finally {
-            try {
-                fileService.safeDelete(tempFile);
-            } catch (IOException e) {
-                log.error("Failed to delete temporary export emote statistics file {}.", tempFile.getAbsoluteFile(), e);
-            }
-        }
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(DOWNLOAD_EMOTE_STATS_RESPONSE_TEMPLATE_KEY, model, actualServer.getId());
+        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                .thenAccept(unused -> fileService.safeDeleteIgnoreException(messageToSend.getAttachedFiles().get(0).getFile()))
+                .thenApply(unused -> CommandResult.fromIgnored());
     }
 
     @Override

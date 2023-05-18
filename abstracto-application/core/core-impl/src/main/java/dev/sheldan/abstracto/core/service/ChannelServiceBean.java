@@ -199,6 +199,16 @@ public class ChannelServiceBean implements ChannelService {
         if(messageToSend.getEphemeral()) {
             throw new IllegalArgumentException("Ephemeral messages are only supported in interaction context.");
         }
+        if(textChannel instanceof GuildMessageChannel) {
+            GuildMessageChannel guildMessageChannel = (GuildMessageChannel) textChannel;
+            long maxFileSize = guildMessageChannel.getGuild().getMaxFileSize();
+            // in this case, we cannot upload the file, so we need to fail
+            messageToSend.getAttachedFiles().forEach(attachedFile -> {
+                if(attachedFile.getFile().length() > maxFileSize) {
+                    throw new UploadFileTooLargeException(attachedFile.getFile().length(), maxFileSize);
+                }
+            });
+        }
         List<CompletableFuture<Message>> futures = new ArrayList<>();
         List<MessageCreateAction> allMessageActions = new ArrayList<>();
         Iterator<MessageEmbed> embedIterator = messageToSend.getEmbeds().iterator();
@@ -331,6 +341,14 @@ public class ChannelServiceBean implements ChannelService {
             } else {
                 throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }
+        }
+        if(messageToSend.getAttachedFiles() != null && !messageToSend.getAttachedFiles().isEmpty()) {
+            List<FileUpload> files = messageToSend
+                    .getAttachedFiles()
+                    .stream()
+                    .map(AttachedFile::convertToFileUpload)
+                    .collect(Collectors.toList());
+            messageAction = messageAction.setFiles(files);
         }
         messageAction = messageAction.setComponents(messageToSend.getActionRows());
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);

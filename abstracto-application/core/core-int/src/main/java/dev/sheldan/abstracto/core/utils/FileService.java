@@ -36,4 +36,12 @@ public class FileService {
     public void safeDelete(File file) throws IOException {
         java.nio.file.Files.delete(file.toPath());
     }
+
+    public void safeDeleteIgnoreException(File file) {
+        try {
+            Files.delete(file.toPath());
+        } catch (IOException e) {
+            log.warn("Failed to delete file - ignoring.", e);
+        }
+    }
 }

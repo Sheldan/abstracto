@@ -11,7 +11,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.commands.config.ConfigModuleDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.exception.TemplateNotFoundException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.template.commands.GetTemplateModel;
@@ -27,8 +26,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -63,44 +60,20 @@ public class GetTemplate extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         String templateKey = (String) commandContext.getParameters().getParameters().get(0);
         GetTemplateModel model = getModel(templateKey);
-        File tempFile = fileService.createTempFile(templateKey + ".ftl");
-        try {
-            fileService.writeContentToFile(tempFile, model.getTemplateContent());
             MessageToSend messageToSend = templateService.renderEmbedTemplate(GET_TEMPLATE_RESPONSE_TEMPLATE_KEY, model, commandContext.getGuild().getIdLong());
-            messageToSend.getAttachedFiles().get(0).setFile(tempFile);
             return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                    .thenAccept(interactionHook -> fileService.safeDeleteIgnoreException(messageToSend.getAttachedFiles().get(0).getFile()))
                     .thenApply(unused -> CommandResult.fromSuccess());
-        } catch (IOException e) {
-            throw new AbstractoRunTimeException(e);
-        } finally {
-            try {
-                fileService.safeDelete(tempFile);
-            } catch (IOException e) {
-                log.error("Failed to delete temporary get template file {}.", tempFile.getAbsoluteFile(), e);
-            }
-        }
     }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String templateKey = slashCommandParameterService.getCommandOption(TEMPLATE_KEY_PARAMETER, event, String.class);
         GetTemplateModel model = getModel(templateKey);
-        File tempFile = fileService.createTempFile(templateKey + ".ftl");
-        try {
-            fileService.writeContentToFile(tempFile, model.getTemplateContent());
             MessageToSend messageToSend = templateService.renderEmbedTemplate(GET_TEMPLATE_RESPONSE_TEMPLATE_KEY, model, event.getGuild().getIdLong());
-            messageToSend.getAttachedFiles().get(0).setFile(tempFile);
             return interactionService.replyMessageToSend(messageToSend, event)
+                    .thenAccept(interactionHook -> fileService.safeDeleteIgnoreException(messageToSend.getAttachedFiles().get(0).getFile()))
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
-        } catch (IOException e) {
-            throw new AbstractoRunTimeException(e);
-        } finally {
-            try {
-                fileService.safeDelete(tempFile);
-            } catch (IOException e) {
-                log.error("Failed to delete temporary get template file {}.", tempFile.getAbsoluteFile(), e);
-            }
-        }
     }
 
     private GetTemplateModel getModel(String templateKey) {

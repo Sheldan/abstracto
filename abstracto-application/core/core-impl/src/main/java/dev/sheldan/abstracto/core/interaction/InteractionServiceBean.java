@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -56,6 +57,9 @@ public class InteractionServiceBean implements InteractionService {
 
     @Autowired
     private TemplateService templateService;
+
+    @Autowired
+    private FileService fileService;
 
     public static final CounterMetric EPHEMERAL_MESSAGES_SEND = CounterMetric
             .builder()
