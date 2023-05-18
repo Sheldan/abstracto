@@ -243,7 +243,7 @@ public class TemplateServiceBean implements TemplateService {
                 .messageConfig(createMessageConfig(messageConfiguration.getMessageConfig()))
                 .messages(messages)
                 .ephemeral(isEphemeral)
-                .attachedFiles(!files.isEmpty() ? files : null)
+                .attachedFiles(files)
                 .actionRows(buttons)
                 .componentPayloads(componentPayloads)
                 .referencedMessageId(referencedMessageId)
