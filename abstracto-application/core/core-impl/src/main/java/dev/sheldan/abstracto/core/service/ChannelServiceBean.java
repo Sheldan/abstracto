@@ -342,7 +342,7 @@ public class ChannelServiceBean implements ChannelService {
                 throw new IllegalArgumentException("Message to send did not contain anything to send.");
             }
         }
-        if(messageToSend.getAttachedFiles() != null && !messageToSend.getAttachedFiles().isEmpty()) {
+        if(!messageToSend.getAttachedFiles().isEmpty()) {
             List<FileUpload> files = messageToSend
                     .getAttachedFiles()
                     .stream()

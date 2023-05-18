@@ -32,7 +32,8 @@ public class MessageToSend {
     /**
      * The file handle to send attached to the message.
      */
-    private List<AttachedFile> attachedFiles;
+    @Builder.Default
+    private List<AttachedFile> attachedFiles = new ArrayList<>();
     private MessageConfig messageConfig;
     private Long referencedMessageId;
     @Builder.Default
@@ -44,7 +45,7 @@ public class MessageToSend {
     private Boolean ephemeral = false;
 
     public boolean hasFilesToSend() {
-        return attachedFiles != null && !attachedFiles.isEmpty();
+        return !attachedFiles.isEmpty();
     }
 
     @Getter
