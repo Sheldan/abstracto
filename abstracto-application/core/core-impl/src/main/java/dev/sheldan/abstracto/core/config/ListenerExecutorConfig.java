@@ -72,6 +72,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("buttonClickedListener");
     }
 
+    @Bean(name = "stringSelectMenuExecutor")
+    public TaskExecutor stringSelectMenuExecutor() {
+        return executorService.setupExecutorFor("stringSelectMenuListener");
+    }
+
     @Bean(name = "modalInteractionExecutor")
     public TaskExecutor modalInteractionExecutor() {
         return executorService.setupExecutorFor("modalInteractionListener");

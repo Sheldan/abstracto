@@ -21,9 +21,6 @@ public class ServerManagementServiceBean implements ServerManagementService {
     private ServerRepository repository;
 
     @Autowired
-    private PostTargetManagement postTargetManagement;
-
-    @Autowired
     private UserManagementService userManagementService;
 
     @Autowired
@@ -91,29 +88,6 @@ public class ServerManagementServiceBean implements ServerManagementService {
         AUserInAServer aUserInAServer = AUserInAServer.builder().serverReference(serverReference).userReference(user).build();
         serverReference.getUsers().add(aUserInAServer);
         return aUserInAServer;
-    }
-
-    @Override
-    public AChannel getPostTarget(Long serverId, String name) {
-        AServer server = this.loadOrCreate(serverId);
-        return getPostTarget(server, name);
-    }
-
-    @Override
-    public AChannel getPostTarget(Long serverId, PostTarget target) {
-        AServer server = this.loadOrCreate(serverId);
-        return getPostTarget(server, target);
-    }
-
-    @Override
-    public AChannel getPostTarget(AServer server, PostTarget target) {
-        return target.getChannelReference();
-    }
-
-    @Override
-    public AChannel getPostTarget(AServer server, String name) {
-        PostTarget target = postTargetManagement.getPostTarget(name, server);
-        return getPostTarget(server, target);
     }
 
     @Override

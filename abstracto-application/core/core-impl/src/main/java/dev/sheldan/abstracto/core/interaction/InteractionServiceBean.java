@@ -101,7 +101,7 @@ public class InteractionServiceBean implements InteractionService {
                 if(component instanceof ActionComponent) {
                     String id = ((ActionComponent)component).getId();
                     MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                    if(payload.getPersistCallback()) {
+                    if(payload != null && payload.getPersistCallback()) {
                         componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
                     }
                 }
@@ -217,7 +217,7 @@ public class InteractionServiceBean implements InteractionService {
                 if(component instanceof ActionComponent) {
                     String id = ((ActionComponent)component).getId();
                     MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                    if(payload.getPersistCallback()) {
+                    if(payload != null && payload.getPersistCallback()) {
                         componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
                     }
                 }
@@ -273,7 +273,7 @@ public class InteractionServiceBean implements InteractionService {
                 if(component instanceof ActionComponent) {
                     String id = ((ActionComponent)component).getId();
                     MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                    if(payload.getPersistCallback()) {
+                    if(payload != null && payload.getPersistCallback()) {
                         componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
                     }
                 }
@@ -301,6 +301,11 @@ public class InteractionServiceBean implements InteractionService {
         Long serverId = callback.getGuild().getIdLong();
         MessageToSend messageToSend = templateService.renderTemplateToMessageToSend(templateKey, model, serverId);
         return replyMessageToSend(messageToSend, callback);
+    }
+
+    @Override
+    public CompletableFuture<Message> replyString(String text, InteractionHook interactionHook) {
+        return interactionHook.sendMessage(text).submit();
     }
 
     @PostConstruct

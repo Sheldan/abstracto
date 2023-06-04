@@ -37,13 +37,16 @@ public class SuggestionFeatureConfig implements FeatureConfig {
                 SuggestionFeatureMode.SUGGESTION_REMINDER,
                 SuggestionFeatureMode.SUGGESTION_BUTTONS,
                 SuggestionFeatureMode.SUGGESTION_AUTO_EVALUATE,
-                SuggestionFeatureMode.SUGGESTION_THREAD);
+                SuggestionFeatureMode.SUGGESTION_THREAD
+        );
     }
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(SuggestionService.SUGGESTION_REMINDER_DAYS_CONFIG_KEY,
+        return Arrays.asList(
+                SuggestionService.SUGGESTION_REMINDER_DAYS_CONFIG_KEY,
                 SuggestionService.SUGGESTION_AUTO_EVALUATE_DAYS_CONFIG_KEY,
-                SuggestionService.SUGGESTION_AUTO_EVALUATE_PERCENTAGE_CONFIG_KEY);
+                SuggestionService.SUGGESTION_AUTO_EVALUATE_PERCENTAGE_CONFIG_KEY
+        );
     }
 }

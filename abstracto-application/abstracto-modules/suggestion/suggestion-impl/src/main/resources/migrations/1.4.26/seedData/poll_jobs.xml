@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="poll_jobs-insert">
+        <insert tableName="scheduler_job">
+            <column name="name" value="serverPollEvaluationJob"/>
+            <column name="group_name" value="poll"/>
+            <column name="clazz" value="dev.sheldan.abstracto.suggestion.job.ServerPollEvaluationJob"/>
+            <column name="active" value="true"/>
+            <column name="recovery" value="false"/>
+        </insert>
+        <insert tableName="scheduler_job">
+            <column name="name" value="quickPollEvaluationJob"/>
+            <column name="group_name" value="poll"/>
+            <column name="clazz" value="dev.sheldan.abstracto.suggestion.job.QuickPollEvaluationJob"/>
+            <column name="active" value="true"/>
+            <column name="recovery" value="false"/>
+        </insert>
+        <insert tableName="scheduler_job">
+            <column name="name" value="serverPollReminderJob"/>
+            <column name="group_name" value="poll"/>
+            <column name="clazz" value="dev.sheldan.abstracto.suggestion.job.ServerPollReminderJob"/>
+            <column name="active" value="true"/>
+            <column name="recovery" value="false"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

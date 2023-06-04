@@ -17,4 +17,5 @@ public class ButtonConfig {
     private String buttonPayload;
     private String payloadType;
     private ButtonMetaConfig metaConfig;
+    private Integer position;
 }

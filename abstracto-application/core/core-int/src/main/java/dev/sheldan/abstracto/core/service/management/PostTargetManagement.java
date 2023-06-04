@@ -20,6 +20,10 @@ public interface PostTargetManagement {
     Optional<PostTarget> getPostTargetOptional(PostTargetEnum postTargetEnum, Long serverId);
     Boolean postTargetExists(String name, AServer server);
     boolean postTargetExists(String name, Long serverId);
+    AChannel getPostTarget(Long serverId, String name);
+    AChannel getPostTarget(Long serverId, PostTarget target);
+    AChannel getPostTarget(AServer server, PostTarget target);
+    AChannel getPostTarget(AServer server, String name);
     PostTarget updatePostTarget(PostTarget target, AChannel newTargetChannel);
     List<PostTarget> getPostTargetsInServer(AServer server);
 }

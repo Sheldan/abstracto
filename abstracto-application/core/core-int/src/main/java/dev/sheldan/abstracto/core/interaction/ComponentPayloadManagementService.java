@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.interaction;
 
+import dev.sheldan.abstracto.core.interaction.menu.SelectMenuConfigModel;
 import dev.sheldan.abstracto.core.interaction.modal.ModalConfigPayload;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
@@ -14,6 +15,8 @@ public interface ComponentPayloadManagementService {
     void updatePayload(String id, String payload);
     ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, AServer server);
     ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, Long serverId);
+    ComponentPayload createStringSelectMenuPayload(SelectMenuConfigModel selectMenuConfigModel, Long serverId);
+    ComponentPayload createStringSelectMenuPayload(SelectMenuConfigModel selectMenuConfigModel, AServer server);
     ComponentPayload createModalPayload(ModalConfigPayload payloadConfig, Long serverId);
     Optional<ComponentPayload> findPayload(String id);
     List<ComponentPayload> findPayloadsOfOriginInServer(String buttonOrigin, AServer server);

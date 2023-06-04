@@ -123,12 +123,12 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
 
     @Override
     public Object getCommandOption(String name, SlashCommandInteractionEvent event) {
-        return event.getOption(name);
+        return event.getOption(name.toLowerCase(Locale.ROOT));
     }
 
     @Override
     public Boolean hasCommandOption(String name, SlashCommandInteractionEvent event) {
-        return event.getOption(name) != null;
+        return event.getOption(name.toLowerCase(Locale.ROOT)) != null;
     }
 
     @Override

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.service.management;
 
 import com.google.gson.Gson;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
+import dev.sheldan.abstracto.core.interaction.menu.SelectMenuConfigModel;
 import dev.sheldan.abstracto.core.interaction.modal.ModalConfigPayload;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.ComponentPayload;
@@ -57,6 +58,18 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
     public ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, Long serverId) {
         AServer server = serverManagementService.loadOrCreate(serverId);
         return createButtonPayload(buttonConfigModel, server);
+    }
+
+    @Override
+    public ComponentPayload createStringSelectMenuPayload(SelectMenuConfigModel selectMenuConfigModel, Long serverId) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return createStringSelectMenuPayload(selectMenuConfigModel, server);
+    }
+
+    @Override
+    public ComponentPayload createStringSelectMenuPayload(SelectMenuConfigModel selectMenuConfigModel, AServer server) {
+        String payload = gson.toJson(selectMenuConfigModel.getSelectMenuPayload());
+        return createPayload(selectMenuConfigModel.getSelectMenuId(), payload, selectMenuConfigModel.getPayloadType(), selectMenuConfigModel.getOrigin(), server, ComponentType.SELECTION);
     }
 
     @Override

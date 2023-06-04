@@ -62,8 +62,6 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
         if(listenerList == null) return;
-        // TODO remove this and make this configurable
-        event.deferEdit().queue();
         CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), buttonClickedExecutor).exceptionally(throwable -> {
             log.error("Failed to execute listener logic in async button event.", throwable);
             return null;
@@ -83,6 +81,9 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
                 if(listenerOptional.isPresent()) {
                     listener = listenerOptional.get();
                     log.info("Executing button listener {} for event for id {}.", listener.getClass().getSimpleName(), event.getComponentId());
+                    if(listener.autoAcknowledgeEvent()) {
+                        event.deferEdit().queue();
+                    }
                     listener.execute(model);
                     InteractionResult result = InteractionResult.fromSuccess();
                     for (ButtonPostInteractionExecution postInteractionExecution : postInteractionExecutions) {

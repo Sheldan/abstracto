@@ -22,5 +22,6 @@ public class MessageConfiguration {
     private String additionalMessage;
     private MetaMessageConfiguration messageConfig;
     private List<ButtonConfig> buttons;
+    private List<SelectionMenuConfig> selectionMenus;
     private List<FileConfig> files;
 }

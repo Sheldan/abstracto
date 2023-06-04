@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.interaction.modal.config.TextInputComponent;
 import dev.sheldan.abstracto.core.interaction.modal.config.TextInputComponentStyle;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -35,6 +36,12 @@ public class ModalServiceBean implements ModalService {
     }
 
     @Override
+    public CompletableFuture<Void> replyModal(ButtonInteractionEvent event, String templateKey, Object model) {
+        Modal modal = createModalFromTemplate(templateKey, model, event.getGuild().getIdLong());
+        return event.replyModal(modal).submit();
+    }
+
+    @Override
     public Modal createModalFromTemplate(String templateKey, Object model, Long serverId) {
         String modalConfigString = templateService.renderTemplate(templateKey + "_modal", model, serverId);
         ModalConfig modalConfig = gson.fromJson(modalConfigString, ModalConfig.class);
@@ -44,7 +51,7 @@ public class ModalServiceBean implements ModalService {
                 .sorted(Comparator.comparing(ModalComponent::getPosition))
                 .collect(Collectors.toList());
         return Modal.create(modalConfig.getId(), modalConfig.getTitle())
-                .addActionRows(convertToActionRows(components))
+                .addComponents(convertToActionRows(components))
                 .build();
     }
 

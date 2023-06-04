@@ -350,7 +350,7 @@ public class ChannelServiceBean implements ChannelService {
                     .collect(Collectors.toList());
             messageAction = messageAction.setFiles(files);
         }
-        messageAction = messageAction.setComponents(messageToSend.getActionRows());
+        messageAction = messageAction.setComponents(messageToSend.getActionRows()).setReplace(true);
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return messageAction.submit();
     }
@@ -409,6 +409,11 @@ public class ChannelServiceBean implements ChannelService {
             log.debug("Removing field with index {} from message {}.", index, messageId);
             return editEmbedMessageInAChannel(embedBuilder.build(), channel, messageId);
         });
+    }
+
+    @Override
+    public CompletableFuture<Message> removeComponents(MessageChannel channel, Long messageId) {
+        return channel.editMessageComponentsById(messageId, new ArrayList<>()).submit();
     }
 
     @Override

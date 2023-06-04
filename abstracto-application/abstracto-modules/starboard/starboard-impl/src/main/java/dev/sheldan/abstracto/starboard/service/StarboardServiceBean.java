@@ -127,7 +127,7 @@ public class StarboardServiceBean implements StarboardService {
     public void persistPost(CachedMessage message, List<Long> userExceptAuthorIds, List<CompletableFuture<Message>> completableFutures, Long starboardChannelId, Long starredUserId, Long userReactingId) {
         AUserInAServer innerStarredUser = userInServerManagementService.loadUserOptional(starredUserId).orElseThrow(() -> new UserInServerNotFoundException(starredUserId));
         AChannel starboardChannel = channelManagementService.loadChannel(starboardChannelId);
-        Message starboardMessage = completableFutures.get(0).join();
+        Message starboardMessage = completableFutures.get(0).join(); // TODO null pointer if post target is disabled
         AServerAChannelMessage aServerAChannelMessage = AServerAChannelMessage
                 .builder()
                 .messageId(starboardMessage.getIdLong())

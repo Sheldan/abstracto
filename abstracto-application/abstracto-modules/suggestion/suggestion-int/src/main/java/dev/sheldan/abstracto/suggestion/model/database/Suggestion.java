@@ -9,6 +9,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="suggestion")
@@ -57,6 +59,13 @@ public class Suggestion implements Serializable {
 
     @Column(name = "suggestion_text", nullable = false)
     private String suggestionText;
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            mappedBy = "suggestion")
+    @Builder.Default
+    private List<SuggestionVote> votes = new ArrayList<>();
 
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)

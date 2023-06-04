@@ -130,4 +130,27 @@ public class PostTargetManagementBean implements PostTargetManagement {
         return postTargetRepository.findByServerReference(server);
     }
 
+    @Override
+    public AChannel getPostTarget(Long serverId, String name) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return getPostTarget(server, name);
+    }
+
+    @Override
+    public AChannel getPostTarget(Long serverId, PostTarget target) {
+        AServer server = serverManagementService.loadOrCreate(serverId);
+        return getPostTarget(server, target);
+    }
+
+    @Override
+    public AChannel getPostTarget(AServer server, PostTarget target) {
+        return target.getChannelReference();
+    }
+
+    @Override
+    public AChannel getPostTarget(AServer server, String name) {
+        PostTarget target = getPostTarget(name, server);
+        return getPostTarget(server, target);
+    }
+
 }

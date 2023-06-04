@@ -41,6 +41,7 @@ public interface ChannelService {
     CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index);
     CompletableFuture<Message> editFieldValueInMessage(MessageChannel channel, Long messageId, Integer index, String newValue);
     CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index, Integer embedIndex);
+    CompletableFuture<Message> removeComponents(MessageChannel channel, Long messageId);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
     List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, MessageChannel channel);

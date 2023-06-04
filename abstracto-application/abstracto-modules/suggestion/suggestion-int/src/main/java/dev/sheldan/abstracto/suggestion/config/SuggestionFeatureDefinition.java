@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum SuggestionFeatureDefinition implements FeatureDefinition {
-    SUGGEST("suggestion");
+    SUGGEST("suggestion"), POLL("poll");
 
     private String key;
 
