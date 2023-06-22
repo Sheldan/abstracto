@@ -61,7 +61,7 @@ public class WeatherServiceBean implements WeatherService {
         return Color.decode(TEMPERATURE_COLOR_MAP.get(TEMPERATURE_COLOR_MAP
                 .keySet()
                 .stream()
-                .filter(pair -> pair.getLeft() < temperature && pair.getRight() > temperature)
+                .filter(pair -> pair.getLeft() < temperature && pair.getRight() >= temperature)
                 .findFirst().orElse(TEMPERATURE_COLOR_MAP.keySet().iterator().next())));
     }
 }
