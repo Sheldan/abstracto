@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.moderation.model.database;
 import dev.sheldan.abstracto.moderation.model.database.embedded.InfractionParameterId;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity

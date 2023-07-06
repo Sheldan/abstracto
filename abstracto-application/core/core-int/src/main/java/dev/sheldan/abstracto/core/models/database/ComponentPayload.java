@@ -2,7 +2,10 @@ package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.Instant;
 
 @Entity
@@ -25,7 +28,7 @@ public class ComponentPayload {
     private AServer server;
 
     @Lob
-    @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "payload")
     private String payload;
 

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import dev.sheldan.abstracto.core.models.SnowFlake;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;

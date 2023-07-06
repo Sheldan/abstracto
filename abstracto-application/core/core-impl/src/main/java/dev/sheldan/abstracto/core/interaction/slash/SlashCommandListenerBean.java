@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -158,7 +159,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
         });
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void executePostCommandListener(Command foundCommand, SlashCommandInteractionEvent event, CommandResult result) {
         for (PostCommandExecution postCommandExecution : executions) {
             postCommandExecution.executeSlash(event, result, foundCommand);

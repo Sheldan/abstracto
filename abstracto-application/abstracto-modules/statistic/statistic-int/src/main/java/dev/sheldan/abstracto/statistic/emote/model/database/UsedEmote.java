@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.statistic.emote.model.database;
 import dev.sheldan.abstracto.statistic.emote.model.database.embed.UsedEmoteDay;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 /**

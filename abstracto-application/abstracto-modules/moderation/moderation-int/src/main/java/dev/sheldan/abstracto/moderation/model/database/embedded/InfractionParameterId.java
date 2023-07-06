@@ -2,8 +2,8 @@ package dev.sheldan.abstracto.moderation.model.database.embedded;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 
 @Embeddable

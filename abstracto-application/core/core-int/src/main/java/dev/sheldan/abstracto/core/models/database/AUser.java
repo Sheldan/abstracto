@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
@@ -23,8 +23,8 @@ public class AUser implements Serializable {
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            mappedBy = "serverReference")
-    private List<AUserInAServer> servers;
+            mappedBy = "userReference")
+    private List<AUserInAServer> usersInServers;
 
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;

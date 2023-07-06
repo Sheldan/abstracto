@@ -218,6 +218,18 @@
 
             <dependency>
                 <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>twitch-int</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>twitch-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
                 <artifactId>suggestion-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>

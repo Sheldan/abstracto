@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.experience.model.database;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 

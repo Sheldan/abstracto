@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import dev.sheldan.abstracto.core.models.Fakeable;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -16,7 +16,7 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class AEmote implements Serializable, Fakeable {
 
-    @javax.persistence.Id
+    @jakarta.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;

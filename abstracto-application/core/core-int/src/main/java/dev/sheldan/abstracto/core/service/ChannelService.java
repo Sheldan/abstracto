@@ -34,6 +34,7 @@ public interface ChannelService {
     void editMessageInAChannel(MessageToSend messageToSend, AChannel channel, Long messageId);
     void editMessageInAChannel(MessageToSend messageToSend, MessageChannel channel, Long messageId);
     CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, MessageChannel channel, Long messageId);
+    CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, Long serverId, Long channelId, Long messageId);
     CompletableFuture<Message> editEmbedMessageInAChannel(MessageEmbed embedToSend, MessageChannel channel, Long messageId);
     CompletableFuture<Message> editTextMessageInAChannel(String text, MessageChannel channel, Long messageId);
     CompletableFuture<Message> editTextMessageInAChannel(String text, MessageEmbed messageEmbed, MessageChannel channel, Long messageId);

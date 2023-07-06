@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.repostdetection.model.database;
 import dev.sheldan.abstracto.core.models.database.AChannelGroup;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Builder

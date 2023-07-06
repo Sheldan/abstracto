@@ -31,6 +31,7 @@
         <module>dynamic-activity</module>
         <module>anti-raid</module>
         <module>custom-command</module>
+        <module>twitch</module>
     </modules>
 
 </project>

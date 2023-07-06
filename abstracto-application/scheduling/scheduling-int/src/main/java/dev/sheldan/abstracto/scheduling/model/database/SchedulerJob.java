@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.scheduling.model.database;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 
 /**

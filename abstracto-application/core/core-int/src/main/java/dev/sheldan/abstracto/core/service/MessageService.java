@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface MessageService {
     CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId);
+    CompletableFuture<Void> deleteMessagesInChannelInServer(Long serverId, Long channelId, List<Long> messageId);
     CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, AChannel channel);
     CompletableFuture<Message> createStatusMessage(MessageToSend messageToSend, MessageChannel channel);
     CompletableFuture<Long> createStatusMessageId(MessageToSend messageToSend, MessageChannel channel);

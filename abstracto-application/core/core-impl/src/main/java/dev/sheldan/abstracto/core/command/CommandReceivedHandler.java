@@ -46,6 +46,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
@@ -327,12 +328,10 @@ public class CommandReceivedHandler extends ListenerAdapter {
         });
     }
 
-    @Transactional
     public void reportException(CommandContext context, Command foundCommand, Throwable throwable, String s) {
         reportException(context.getMessage(), context.getChannel(), context.getAuthor(), foundCommand, throwable, s);
     }
 
-    @Transactional
     public void reportException(Message message, MessageChannel channel, Member member, Command foundCommand, Throwable throwable, String s) {
         UserInitiatedServerContext userInitiatedContext = buildUserInitiatedServerContext(member, channel, member.getGuild());
         CommandContext.CommandContextBuilder commandContextBuilder = CommandContext.builder()
@@ -349,7 +348,6 @@ public class CommandReceivedHandler extends ListenerAdapter {
         self.executePostCommandListener(foundCommand, commandContext, commandResult);
     }
 
-    @Transactional
     public void reportException(MessageReceivedEvent event, Command foundCommand, Throwable throwable, String s) {
         reportException(event.getMessage(), event.getChannel(), event.getMember(), foundCommand, throwable, s);
     }

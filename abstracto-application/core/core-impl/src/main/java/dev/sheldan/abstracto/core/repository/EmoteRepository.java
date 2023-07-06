@@ -19,7 +19,7 @@ public interface EmoteRepository extends JpaRepository<AEmote, Integer> {
 
     boolean existsByEmoteId(Long emoteId);
 
-    boolean existsByEmoteIdAndServerRef(String emoteId, AServer server);
+    boolean existsByEmoteIdAndServerRef(Long emoteId, AServer server);
 
     @Override
     Optional<AEmote> findById(@NonNull Integer aLong);

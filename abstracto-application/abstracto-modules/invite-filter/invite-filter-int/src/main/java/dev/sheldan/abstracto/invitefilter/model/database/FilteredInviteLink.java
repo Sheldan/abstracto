@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.invitefilter.model.database;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity

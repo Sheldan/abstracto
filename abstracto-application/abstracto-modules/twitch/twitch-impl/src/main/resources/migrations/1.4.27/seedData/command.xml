@@ -1,0 +1,35 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="twitchFeature" value="(SELECT id FROM feature WHERE key = 'twitch')"/>
+
+    <changeSet author="Sheldan" id="twitch-commands">
+        <insert tableName="command">
+            <column name="name" value="addTwitchStreamer"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${twitchFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="listTwitchStreamer"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${twitchFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="changeTwitchStreamer"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${twitchFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeTwitchStreamer"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${twitchFeature}"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

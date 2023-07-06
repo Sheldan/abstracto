@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.models.database;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -15,7 +15,7 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class DefaultEmote implements Serializable {
 
-    @javax.persistence.Id
+    @jakarta.persistence.Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

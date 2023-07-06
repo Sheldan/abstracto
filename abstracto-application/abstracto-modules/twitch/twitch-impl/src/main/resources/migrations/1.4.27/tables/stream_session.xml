@@ -1,0 +1,58 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <changeSet author="Sheldan" id="stream_session-table">
+        <createTable tableName="stream_session">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="streamer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stream_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="streamer_id" baseTableName="stream_session" constraintName="fk_stream_session_streamer"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="streamer" validate="true"/>
+
+        <addForeignKeyConstraint baseColumnNames="channel_id" baseTableName="stream_session" constraintName="fk_stream_session_channel"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="channel" validate="true"/>
+
+        <sql>
+            DROP TRIGGER IF EXISTS stream_session_update_trigger ON stream_session;
+            CREATE TRIGGER stream_session_update_trigger BEFORE UPDATE ON stream_session FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS stream_session_insert_trigger ON stream_session;
+            CREATE TRIGGER stream_session_insert_trigger BEFORE INSERT ON stream_session FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+        <addColumn tableName="streamer">
+            <column name="current_session_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseColumnNames="current_session_id" baseTableName="streamer" constraintName="fk_streamer_current_session"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="stream_session" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

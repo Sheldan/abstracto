@@ -356,6 +356,17 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
+    public CompletableFuture<Message> editMessageInAChannelFuture(MessageToSend messageToSend, Long serverId, Long channelId, Long messageId) {
+        Optional<GuildChannel> textChannelFromServer = getGuildChannelFromServerOptional(serverId, channelId);
+        if(textChannelFromServer.isPresent() && textChannelFromServer.get() instanceof GuildMessageChannel) {
+            GuildMessageChannel messageChannel = (GuildMessageChannel) textChannelFromServer.get();
+            return editMessageInAChannelFuture(messageToSend, messageChannel, messageId);
+        } else {
+            throw new ChannelNotInGuildException(channelId);
+        }
+    }
+
+    @Override
     public CompletableFuture<Message> editEmbedMessageInAChannel(MessageEmbed embedToSend, MessageChannel channel, Long messageId) {
         metricService.incrementCounter(MESSAGE_EDIT_METRIC);
         return channel.editMessageEmbedsById(messageId, embedToSend).submit();

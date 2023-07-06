@@ -4,7 +4,7 @@ import dev.sheldan.abstracto.core.models.database.AChannelGroupCommand;
 import dev.sheldan.abstracto.core.models.database.AFeature;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;

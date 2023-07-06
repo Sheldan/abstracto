@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.activity.models;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Builder

@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.core.models.database;
 import dev.sheldan.abstracto.core.models.RoleImmunityId;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity

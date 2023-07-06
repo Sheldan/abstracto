@@ -3,7 +3,7 @@ package dev.sheldan.abstracto.assignableroles.model.database;
 import dev.sheldan.abstracto.assignableroles.model.condition.AssignableRoleConditionType;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "assignable_role_condition")

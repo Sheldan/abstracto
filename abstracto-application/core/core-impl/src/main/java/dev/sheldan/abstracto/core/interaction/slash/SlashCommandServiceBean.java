@@ -84,7 +84,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
                         .findAny();
                 SubcommandGroupData groupData = commandGroup.orElseGet(() -> new SubcommandGroupData(groupName, description));
                 groupData.addSubcommands(slashCommand);
-                rootCommand.addSubcommandGroups(groupData);
+                if(commandGroup.isEmpty()) {
+                    rootCommand.addSubcommandGroups(groupData);
+                }
             }
             List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId);
             slashCommand.addOptions(requiredParameters);

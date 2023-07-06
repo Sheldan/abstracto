@@ -13,11 +13,11 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageEditAction;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -85,6 +85,17 @@ public class MessageServiceBean implements MessageService {
     public CompletableFuture<Void> deleteMessageInChannelInServer(Long serverId, Long channelId, Long messageId) {
         metricService.incrementCounter(MESSAGE_DELETE_METRIC);
         return channelService.getMessageChannelFromServer(serverId, channelId).deleteMessageById(messageId).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteMessagesInChannelInServer(Long serverId, Long channelId, List<Long> messageId) {
+        List<String> messageIds = messageId.stream().map(Object::toString).toList();
+        GuildMessageChannel guildMessageChannel = channelService.getMessageChannelFromServer(serverId, channelId);
+        if(messageIds.size() == 1) {
+            return guildMessageChannel.deleteMessageById(messageId.get(0)).submit();
+        } else {
+            return guildMessageChannel.deleteMessagesByIds(messageIds).submit();
+        }
     }
 
     @Override
