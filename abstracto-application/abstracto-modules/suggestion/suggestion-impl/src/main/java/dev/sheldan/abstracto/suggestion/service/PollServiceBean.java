@@ -456,6 +456,12 @@ public class PollServiceBean implements PollService {
                 .text(text)
                 .serverId(serverId)
                 .build();
+        if(poll.getReminderJobTriggerKey() != null) {
+            schedulerService.stopTrigger(poll.getReminderJobTriggerKey());
+        }
+        if(poll.getEvaluationJobTriggerKey() != null) {
+            schedulerService.stopTrigger(poll.getEvaluationJobTriggerKey());
+        }
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_CLOSE_MESSAGE, model);
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(messageToSend, PollPostTarget.POLLS, serverId);
         MessageChannel channel = channelService.getMessageChannelFromServer(serverId, poll.getChannel().getId());
