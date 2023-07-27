@@ -40,7 +40,7 @@ public class CoreConfig {
     public Gson gson() {
         GsonBuilder builder = new GsonBuilder()
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter())
-                .registerTypeAdapter(Instant.class, new InstantTimeAdapter())
+                .registerTypeAdapter(Instant.class, new InstantAdapter())
                 .setPrettyPrinting();
         if(customJsonDeSerializers != null) {
             customJsonDeSerializers.forEach(customJsonSerializer ->
