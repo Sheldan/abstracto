@@ -50,6 +50,7 @@ jobs:
           path: ./deployment/installer/.env
       - name: Push container
         run: docker-compose build && docker-compose push
+        working-directory: ./deployment/installer/
         env:
           REGISTRY_PREFIX: ${{ steps.dotenv.outputs.registry_prefix }}
           VERSION: ${{ steps.dotenv.outputs.version }}
