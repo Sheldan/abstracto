@@ -37,15 +37,19 @@ jobs:
           branch: master
           ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           folder: abstracto-application/documentation/target/generated-docs
-      - name: Login to GitHub Packages Docker Registry
-        uses: docker/login-action@v2
+      - name: Login to Harbor
+          uses: docker/login-action@v2
+          with:
+            registry: harbor.sheldan.dev
+            username: ${{ secrets.HARBOR_USERNAME }}
+            password: ${{ secrets.HARBOR_TOKEN }}
+      - name: Load env files
+        id: dotenv
+        uses: falti/dotenv-action@v1.0.4
         with:
-          registry: docker.pkg.github.com
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push deployment container
-        working-directory: ./abstracto-application/installer/src/main/docker/deployment
+          path: deployment/.env
+      - name: Push container
         run: docker-compose build && docker-compose push
         env:
-          REGISTRY_PREFIX: docker.pkg.github.com/sheldan/abstracto/
-          VERSION: ${{ env.version }}
+          REGISTRY_PREFIX: ${{ steps.dotenv.outputs.registry_prefix }}
+          VERSION: ${{ steps.dotenv.outputs.version }}

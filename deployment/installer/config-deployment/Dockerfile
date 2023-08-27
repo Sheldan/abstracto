@@ -33,12 +33,9 @@ COPY --from=base /liquibase /liquibase
 COPY --from=base /postgres /postgres
 COPY --from=base /java /java
 ENV JAVA_HOME=/java/jre
-ADD python/ /python
-ADD wrapper/ /
-RUN chmod +x /deploy.sh
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
-RUN chmod +x /wait
+ADD python /python
+ADD wrapper /
 
 ENV LIQUIBASE_PATH=/liquibase
 ENV POSTGRES_DRIVER=/postgres/driver.jar
-CMD /wait && /deploy.sh
+ENTRYPOINT [ "/bin/sh", "/deploy.sh" ]

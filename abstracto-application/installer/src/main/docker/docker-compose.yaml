@@ -1,6 +1,0 @@
-version: "3.7"
-
-services:
-  bot:
-    build: deployment
-    image: ${REGISTRY_PREFIX}abstracto_deployment:${VERSION:-latest}

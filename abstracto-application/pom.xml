@@ -18,7 +18,6 @@
         <module>abstracto-modules</module>
         <module>scheduling</module>
         <module>documentation</module>
-        <module>installer</module>
         <module>bundle</module>
     </modules>
 
