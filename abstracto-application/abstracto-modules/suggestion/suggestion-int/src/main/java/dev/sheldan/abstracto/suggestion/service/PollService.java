@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.suggestion.service;
 
 import dev.sheldan.abstracto.suggestion.model.database.PollType;
+import dev.sheldan.abstracto.suggestion.model.template.PollInfoModel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 
@@ -26,4 +27,5 @@ public interface PollService {
     CompletableFuture<Void> evaluateQuickPoll(Long pollId, Long serverId);
     CompletableFuture<Void> closePoll(Long pollId, Long serverId, String text, Member cause);
     CompletableFuture<Void> cancelPoll(Long pollId, Long serverId, Member cause);
+    PollInfoModel getPollInfoModel(Long pollId, Long serverId);
 }

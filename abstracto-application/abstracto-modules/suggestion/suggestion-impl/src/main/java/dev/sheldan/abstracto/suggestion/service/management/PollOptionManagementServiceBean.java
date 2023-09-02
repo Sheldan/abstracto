@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.suggestion.service.management;
 
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.suggestion.model.PollCreationRequest;
 import dev.sheldan.abstracto.suggestion.model.database.Poll;
 import dev.sheldan.abstracto.suggestion.model.database.PollOption;
@@ -32,12 +33,18 @@ public class PollOptionManagementServiceBean implements PollOptionManagementServ
 
     @Override
     public void addOptionToPoll(Poll poll, String label, String description) {
+        addOptionToPoll(poll, label, description, null);
+    }
+
+    @Override
+    public void addOptionToPoll(Poll poll, String label, String description, AUserInAServer adder) {
         PollOption option = PollOption
                 .builder()
                 .poll(poll)
                 .label(label)
                 .value(label)
                 .server(poll.getServer())
+                .adder(adder)
                 .description(description)
                 .build();
         pollOptionRepository.save(option);

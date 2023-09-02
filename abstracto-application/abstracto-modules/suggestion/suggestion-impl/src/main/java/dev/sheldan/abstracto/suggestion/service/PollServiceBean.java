@@ -335,7 +335,8 @@ public class PollServiceBean implements PollService {
     public CompletableFuture<Void> addOptionToServerPoll(Long pollId, Long serverId, Member adder, String label, String description) {
         Poll poll = pollManagementService.getPollByPollId(pollId, serverId, PollType.STANDARD);
         log.info("Adding option to server poll {} in server {}.", pollId, serverId);
-        pollOptionManagementService.addOptionToPoll(poll, label, description);
+        AUserInAServer adderUser = userInServerManagementService.loadOrCreateUser(adder);
+        pollOptionManagementService.addOptionToPoll(poll, label, description, adderUser);
         List<PollMessageOption> options = getOptionsOfPoll(poll);
         ServerPollMessageModel model = ServerPollMessageModel.fromPoll(poll, options);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
@@ -487,6 +488,37 @@ public class PollServiceBean implements PollService {
         return messageService.deleteMessageInChannelInServer(serverId, poll.getChannel().getId(), poll.getMessageId());
     }
 
+    @Override
+    public PollInfoModel getPollInfoModel(Long pollId, Long serverId) {
+        Poll poll = pollManagementService.getPollByPollId(pollId, serverId, PollType.STANDARD);
+        Integer totalVotes = getTotalVotesOfPoll(poll);
+        List<PollOptionInfoModel> optionInfoModels = poll.getOptions().stream().map(pollOption -> {
+            Long voteCount = getVotesOfOption(poll, pollOption);
+            return PollOptionInfoModel
+                    .builder()
+                    .value(pollOption.getValue())
+                    .description(pollOption.getDescription())
+                    .label(pollOption.getLabel())
+                    .votes(voteCount)
+                    .percentage(totalVotes > 0 ? (voteCount / (float) totalVotes) * 100 : 0)
+                    .adder(pollOption.getAdder() != null ? MemberDisplay.fromAUserInAServer(pollOption.getAdder()) : null)
+                    .build();
+        }).toList();
+        return PollInfoModel
+                .builder()
+                .id(poll.getPollId())
+                .description(poll.getDescription())
+                .creationDate(poll.getCreated())
+                .targetDate(poll.getTargetDate())
+                .totalVotes(totalVotes)
+                .allowAdditions(poll.getAllowAddition())
+                .allowMultiple(poll.getAllowMultiple())
+                .options(optionInfoModels)
+                .showDecisions(poll.getShowDecisions())
+                .pollDuration(Duration.between(poll.getCreated(), poll.getTargetDate()))
+                .build();
+    }
+
     @Transactional
     public CompletableFuture<Void> updateFinalPollMessage(Long pollId, Guild guild) {
         Poll poll = pollManagementService.getPollByPollId(pollId, guild.getIdLong(), PollType.STANDARD);
@@ -543,22 +575,13 @@ public class PollServiceBean implements PollService {
                     .percentage(0f)
                     .description(description)
                     .build();
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     private List<PollMessageOption> getOptionsOfPoll(Poll poll) {
-        Integer totalVotes = poll
-                .getDecisions()
-                .stream()
-                .map(userDecision -> userDecision.getOptions().size())
-                .mapToInt(Integer::intValue)
-                .sum();
+        Integer totalVotes = getTotalVotesOfPoll(poll);
         return poll.getOptions().stream().map(option -> {
-            Long voteCount = poll
-                    .getDecisions()
-                    .stream()
-                    .filter(decision -> decision.getOptions().stream().anyMatch(pollUserDecisionOption -> pollUserDecisionOption.getPollOption().equals(option)))
-                    .count();
+            Long voteCount = getVotesOfOption(poll, option);
             return PollMessageOption
                     .builder()
                     .value(option.getValue())
@@ -567,7 +590,24 @@ public class PollServiceBean implements PollService {
                     .percentage(totalVotes > 0 ? (voteCount / (float) totalVotes) * 100 : 0)
                     .description(option.getDescription())
                     .build();
-        }).collect(Collectors.toList());
+        }).toList();
+    }
+
+    private Long getVotesOfOption(Poll poll, PollOption option) {
+        return poll
+                .getDecisions()
+                .stream()
+                .filter(decision -> decision.getOptions().stream().anyMatch(pollUserDecisionOption -> pollUserDecisionOption.getPollOption().equals(option)))
+                .count();
+    }
+
+    private Integer getTotalVotesOfPoll(Poll poll) {
+        return poll
+                .getDecisions()
+                .stream()
+                .map(userDecision -> userDecision.getOptions().size())
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 
 }
