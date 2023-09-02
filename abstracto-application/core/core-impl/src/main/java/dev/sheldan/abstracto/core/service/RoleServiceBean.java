@@ -86,6 +86,23 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
+    public CompletableFuture<Void> updateRolesIds(Member member, List<Long> rolesToRemove, List<Long> rolesToAdd) {
+        List<Role> rolesObjToRemove = rolesToRemove
+                .stream().map(aLong -> member.getGuild().getRoleById(aLong))
+                .toList();
+
+        List<Role> rolesObjToAdd = rolesToAdd
+                .stream().map(aLong -> member.getGuild().getRoleById(aLong))
+                .toList();
+        return updateRolesObj(member, rolesObjToRemove, rolesObjToAdd);
+    }
+
+    @Override
+    public CompletableFuture<Void> updateRolesObj(Member member, List<Role> rolesToRemove, List<Role> rolesToAdd) {
+        return member.getGuild().modifyMemberRoles(member, rolesToAdd, rolesToRemove).submit();
+    }
+
+    @Override
     public CompletableFuture<Void> addRoleToMemberAsync(Member member, Role role) {
         return addRoleToMemberAsync(member.getGuild(), member.getIdLong(), role);
     }

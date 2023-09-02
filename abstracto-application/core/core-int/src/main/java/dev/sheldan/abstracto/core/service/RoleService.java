@@ -16,6 +16,8 @@ public interface RoleService {
     void addRoleToMember(AUserInAServer aUserInAServer, ARole role);
     CompletableFuture<Void> addRoleToUserAsync(AUserInAServer aUserInAServer, ARole role);
     CompletableFuture<Void> addRoleToMemberAsync(Member member, Long roleId);
+    CompletableFuture<Void> updateRolesIds(Member member, List<Long> rolesToRemove, List<Long> rolesToAdd);
+    CompletableFuture<Void> updateRolesObj(Member member, List<Role> rolesToRemove, List<Role> rolesToAdd);
     CompletableFuture<Void> addRoleToMemberAsync(Member member, Role role);
     void addRoleToMember(Member member, ARole role);
     CompletableFuture<Void> addRoleToMemberAsync(Member member, ARole role);

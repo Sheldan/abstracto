@@ -371,21 +371,30 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 userExperienceManagementService.saveUser(aUserExperience);
             }
             if(!Objects.equals(result.getOldRoleId(), result.getNewRoleId())) {
-                if(result.getOldRoleId() != null) {
-                    roleService.removeRoleFromMemberAsync(member, result.getOldRoleId()).thenAccept(unused -> {
-                        log.debug("Removed role {} to member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong());
+                if(result.getOldRoleId() != null && result.getNewRoleId() != null) {
+                    roleService.updateRolesIds(member, Arrays.asList(result.getOldRoleId()), Arrays.asList(result.getNewRoleId())).thenAccept(unused -> {
+                        log.debug("Removed role {} from and added role {} to member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
                     }).exceptionally(throwable -> {
-                        log.warn("Failed to remove role {} from {} member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                        log.warn("Failed to remove role {} from and add role {} to  member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
                         return null;
                     });
-                }
-                if(result.getNewRoleId() != null) {
-                    roleService.addRoleToMemberAsync(member, result.getNewRoleId()).thenAccept(unused -> {
-                        log.debug("Added role {} to member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong());
-                    }).exceptionally(throwable -> {
-                        log.warn("Failed to add role {} to {} member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
-                        return null;
-                    });
+                } else {
+                    if(result.getOldRoleId() != null) {
+                        roleService.removeRoleFromMemberAsync(member, result.getOldRoleId()).thenAccept(unused -> {
+                            log.debug("Removed role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong());
+                        }).exceptionally(throwable -> {
+                            log.warn("Failed to remove role {} from {} member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                            return null;
+                        });
+                    }
+                    if(result.getNewRoleId() != null) {
+                        roleService.addRoleToMemberAsync(member, result.getNewRoleId()).thenAccept(unused -> {
+                            log.debug("Added role {} to member {} in server {}.", result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
+                        }).exceptionally(throwable -> {
+                            log.warn("Failed to add role {} to {} member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                            return null;
+                        });
+                    }
                 }
             }
         } else {
