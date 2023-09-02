@@ -31,6 +31,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -138,6 +139,7 @@ public class StreamerServiceBean implements StreamerService {
                 .mature(stream.isMature())
                 .currentSection(StreamSectionDisplay.fromStream(stream))
                 .streamerAvatarURL(streamerUser.getProfileImageUrl())
+                .randomString(RandomStringUtils.randomAlphabetic(15))
                 .streamURL(formatStreamUrl(stream.getUserName()))
                 .build();
         MessageToSend messagetoSend;

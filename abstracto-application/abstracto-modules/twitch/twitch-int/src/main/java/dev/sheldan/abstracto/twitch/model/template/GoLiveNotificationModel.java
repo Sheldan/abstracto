@@ -13,5 +13,6 @@ public class GoLiveNotificationModel {
     private List<StreamSectionDisplay> pastSections;
     private Boolean mature;
     private String streamURL;
+    private String randomString;
     private String streamerAvatarURL;
 }
