@@ -11,9 +11,13 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.template.commands.EchoModel;
+import dev.sheldan.abstracto.core.models.template.commands.EchoRedirectResponseModel;
+import dev.sheldan.abstracto.core.models.template.display.ChannelDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +30,10 @@ import java.util.concurrent.CompletableFuture;
 public class Echo extends AbstractConditionableCommand {
 
     private static final String TEMPLATE_NAME = "echo_response";
+    private static final String REDIRECT_TEMPLATE_NAME = "echo_redirect_response";
     public static final String ECHO_COMMAND = "echo";
+    public static final String INPUT_PARAMETER = "input";
+    public static final String TARGET_CHANNEL_PARAMETER = "targetChannel";
 
     @Autowired
     private TemplateService templateService;
@@ -37,11 +44,14 @@ public class Echo extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private SlashCommandParameterService slashCommandParameterService;
+
     @Override
     public CommandResult execute(CommandContext commandContext) {
         StringBuilder sb = new StringBuilder();
         commandContext.getParameters().getParameters().forEach(o ->
-            sb.append(o.toString())
+                sb.append(o.toString())
         );
         EchoModel model = EchoModel
                 .builder()
@@ -54,12 +64,33 @@ public class Echo extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
+
+        String message = slashCommandParameterService.getCommandOption(INPUT_PARAMETER, event, String.class);
+        GuildMessageChannel messageChannel;
+        if (slashCommandParameterService.hasCommandOption(TARGET_CHANNEL_PARAMETER, event)) {
+            messageChannel = slashCommandParameterService.getCommandOption(TARGET_CHANNEL_PARAMETER, event, GuildMessageChannel.class);
+        } else {
+            messageChannel = event.getGuildChannel();
+        }
+
         EchoModel model = EchoModel
                 .builder()
-                .text(event.getOption("input").getAsString())
+                .text(message)
                 .build();
-        return interactionService.replyMessage(TEMPLATE_NAME, model, event)
-                .thenApply(unused -> CommandResult.fromSuccess());
+
+        if (messageChannel.equals(event.getMessageChannel())) {
+            return interactionService.replyMessage(TEMPLATE_NAME, model, event)
+                    .thenApply(unused -> CommandResult.fromSuccess());
+        } else {
+
+            EchoRedirectResponseModel redirectResponseModel = EchoRedirectResponseModel
+                    .builder()
+                    .channel(ChannelDisplay.fromChannel(messageChannel))
+                    .build();
+            return interactionService.replyEmbed(REDIRECT_TEMPLATE_NAME, redirectResponseModel, event)
+                    .thenCompose(interactionHook -> channelService.sendTextTemplateInMessageChannel(TEMPLATE_NAME, model, messageChannel))
+                    .thenApply(createdMessage -> CommandResult.fromSuccess());
+        }
     }
 
     @Override
@@ -67,11 +98,22 @@ public class Echo extends AbstractConditionableCommand {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter
                 .builder()
-                .name("input")
+                .name(INPUT_PARAMETER)
                 .type(String.class)
                 .templated(true)
                 .remainder(true)
                 .build());
+
+        parameters.add(Parameter
+                .builder()
+                .name(TARGET_CHANNEL_PARAMETER)
+                .type(GuildMessageChannel.class)
+                .slashCommandOnly(true)
+                .optional(true)
+                .templated(true)
+                .remainder(true)
+                .build());
+
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
