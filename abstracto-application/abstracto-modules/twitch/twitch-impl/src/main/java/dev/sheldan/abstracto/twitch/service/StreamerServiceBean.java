@@ -175,6 +175,7 @@ public class StreamerServiceBean implements StreamerService {
                 .builder()
                 .channelName(stream.getUserName())
                 .mature(stream.isMature())
+                .randomString(RandomStringUtils.randomAlphabetic(15))
                 .currentSection(StreamSectionDisplay.fromStream(stream))
                 .streamerAvatarURL(streamerUser.getProfileImageUrl())
                 .pastSections(pastSections)
