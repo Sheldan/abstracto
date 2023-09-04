@@ -6,6 +6,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.5.8/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan" id="custom_command-add_auto_increment">
+        <sql>
+            create sequence custom_command_id_seq;
+            alter table custom_command alter id set default nextval('custom_command_id_seq');
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
