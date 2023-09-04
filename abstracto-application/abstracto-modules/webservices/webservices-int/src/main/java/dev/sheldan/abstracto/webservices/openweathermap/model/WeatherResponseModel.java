@@ -34,4 +34,5 @@ public class WeatherResponseModel {
     private String countryKey;
     private Color embedColor;
     private Long locationId;
+    private Float windSpeed;
 }

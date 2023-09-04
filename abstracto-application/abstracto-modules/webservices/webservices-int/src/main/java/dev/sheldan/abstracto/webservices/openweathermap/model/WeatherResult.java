@@ -21,6 +21,8 @@ public class WeatherResult {
     private WeatherResultRain rainInfo;
     @SerializedName("snow")
     private WeatherResultSnow snowInfo;
+    @SerializedName("wind")
+    private WeatherResultWind wind;
     @SerializedName("dt")
     private Long dayTime;
     @SerializedName("clouds")

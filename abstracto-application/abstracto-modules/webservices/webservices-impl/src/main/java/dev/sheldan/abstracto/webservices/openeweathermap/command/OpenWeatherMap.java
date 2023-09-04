@@ -102,6 +102,7 @@ public class OpenWeatherMap extends AbstractConditionableCommand {
                     .rain3H(weatherResult.getRainInfo() != null ? weatherResult.getRainInfo().getRain3H() : null)
                     .snow1H(weatherResult.getSnowInfo() != null ? weatherResult.getSnowInfo().getSnow1H() : null)
                     .snow3H(weatherResult.getSnowInfo() != null ? weatherResult.getSnowInfo().getSnow3H() : null)
+                    .windSpeed(weatherResult.getWind() != null ? weatherResult.getWind().getSpeed() : null)
                     .visibility(weatherResult.getVisibility())
                     .locationName(chosenLocation.getName())
                     .countryKey(chosenLocation.getCountryKey())

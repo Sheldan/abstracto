@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.webservices.openeweathermap.service;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import dev.sheldan.abstracto.webservices.openweathermap.exception.LocationNotFoundException;
 import dev.sheldan.abstracto.webservices.openweathermap.model.GeoCodingLocation;
 import dev.sheldan.abstracto.webservices.openweathermap.model.GeoCodingResult;
 import dev.sheldan.abstracto.webservices.openweathermap.model.WeatherResult;
@@ -44,6 +45,9 @@ public class OpenWeatherMapServiceBean implements OpenWeatherMapService {
                 .get()
                 .build();
         Response response = okHttpClient.newCall(request).execute();
+        if(response.code() == 400) {
+            throw new LocationNotFoundException();
+        }
         List<GeoCodingLocation> result = gson.fromJson(response.body().string(), geoCodingType);
         return GeoCodingResult
                 .builder()
