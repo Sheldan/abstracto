@@ -16,8 +16,6 @@ import dev.sheldan.abstracto.core.command.execution.UnParsedCommandParameter;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.model.database.AModule;
-import dev.sheldan.abstracto.core.command.service.CommandRegistry;
-import dev.sheldan.abstracto.core.command.service.CommandService;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
 import dev.sheldan.abstracto.core.command.service.management.CommandManagementService;
 import dev.sheldan.abstracto.core.command.service.management.FeatureManagementService;
@@ -33,6 +31,7 @@ import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -40,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -207,6 +207,12 @@ public class CommandServiceBean implements CommandService {
                 .validators(parameter.getValidators())
                 .isListParam(parameter.isListParam())
                 .build();
+    }
+
+    @Override
+    public void setServerCooldownTo(String commandName, Guild guild, Duration duration) {
+        ACommand aCommand = commandManagementService.findCommandByName(commandName);
+        commandInServerManagementService.getCommandForServer(aCommand, guild.getIdLong()).setMemberCooldown(duration);
     }
 
     private CompletableFuture<ConditionResult> checkConditions(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command, List<CommandCondition> conditions) {

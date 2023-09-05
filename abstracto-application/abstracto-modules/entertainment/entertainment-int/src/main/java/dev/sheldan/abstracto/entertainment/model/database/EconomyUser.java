@@ -33,12 +33,6 @@ public class EconomyUser implements Serializable {
     @Column(name = "credits", nullable = false)
     private Long credits;
 
-    @Column(name = "last_slots", nullable = false)
-    private Instant lastSlots;
-
-    @Column(name = "last_pay_day", nullable = false)
-    private Instant lastPayDay;
-
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 

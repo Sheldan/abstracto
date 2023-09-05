@@ -241,7 +241,13 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
                     durationInSeconds = Math.max(durationInSeconds, channelGroup.getMemberCoolDown());
                 }
             }
-            return Duration.ofSeconds(durationInSeconds);
+            if(durationInSeconds > 0) {
+                return Duration.ofSeconds(durationInSeconds);
+            }
+        }
+        ACommandInAServer commandInServer = commandInServerManagementService.getCommandForServer(aCommand, serverIdChannelId.getServerId());
+        if(commandInServer.getMemberCooldown() != null) {
+            return commandInServer.getMemberCooldown();
         }
         if(commandConfiguration.getCoolDownConfig() != null) {
             return commandConfiguration.getCoolDownConfig().getMemberCoolDown();
@@ -261,7 +267,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         }
         try {
             Duration coolDown = getServerCoolDownForCommand(command, serverId);
-            if(coolDown.equals(Duration.ZERO)) {
+            if(Duration.ZERO.equals(coolDown) || coolDown == null) {
                 return;
             }
             log.info("Updating cooldowns for command {} in server {}.", command.getConfiguration().getName(), serverId);
@@ -288,7 +294,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         }
         try {
             Duration coolDown = getChannelGroupCoolDownForCommand(command, serverIdChannelId);
-            if(coolDown.equals(Duration.ZERO)) {
+            if(Duration.ZERO.equals(coolDown) || coolDown == null) {
                 return;
             }
             log.info("Updating cooldowns for command {} in server {} in channel {}.",
@@ -358,7 +364,7 @@ public class CommandCoolDownServiceBean implements CommandCoolDownService {
         }
         try {
             Duration coolDown = getMemberCoolDownForCommand(command, serverChannelUserId.toServerChannelId());
-            if(coolDown.equals(Duration.ZERO)) {
+            if(Duration.ZERO.equals(coolDown) || coolDown == null) {
                 return;
             }
             log.info("Updating cooldowns for command {} in server {} in channel {} for user {}.",

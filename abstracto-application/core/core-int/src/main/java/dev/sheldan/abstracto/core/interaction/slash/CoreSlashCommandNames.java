@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.interaction.slash;
 public class CoreSlashCommandNames {
     public static final String UTILITY = "utility";
     public static final String CONFIG = "config";
+    public static final String COOLDOWN = "cooldown";
     public static final String FEATURE = "feature";
     public static final String CHANNELS = "channels";
     public static final String POST_TARGET = "posttarget";

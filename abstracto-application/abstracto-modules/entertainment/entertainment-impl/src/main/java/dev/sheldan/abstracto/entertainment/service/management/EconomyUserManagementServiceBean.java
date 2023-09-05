@@ -27,8 +27,6 @@ public class EconomyUserManagementServiceBean implements EconomyUserManagementSe
                 .builder()
                 .id(aUserInAServer.getUserInServerId())
                 .server(aUserInAServer.getServerReference())
-                .lastPayDay(Instant.now().minus(1, ChronoUnit.DAYS))
-                .lastSlots(Instant.now().minus(1, ChronoUnit.DAYS))
                 .credits(0L)
                 .user(aUserInAServer)
                 .build();

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.List;
 
 @Component
@@ -45,6 +46,11 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
     @Override
     public ACommandInAServer getCommandForServer(ACommand command, AServer server) {
         return repository.findByServerReferenceAndCommandReference(server, command).orElseThrow(CommandNotFoundException::new);
+    }
+
+    @Override
+    public void setCooldownForCommandInServer(ACommand command, AServer server, Duration duration) {
+        getCommandForServer(command, server).setMemberCooldown(duration);
     }
 
     @Override

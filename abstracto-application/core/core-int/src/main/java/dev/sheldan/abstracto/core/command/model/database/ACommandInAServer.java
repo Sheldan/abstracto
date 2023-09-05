@@ -6,6 +6,7 @@ import lombok.*;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -50,6 +51,9 @@ public class ACommandInAServer implements Serializable {
 
     @Column(name = "slash_command_id")
     private Long slashCommandId;
+
+    @Column(name = "member_cooldown")
+    private Duration memberCooldown;
 
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;

@@ -9,8 +9,6 @@ import dev.sheldan.abstracto.entertainment.dto.CreditGambleResult;
 import dev.sheldan.abstracto.entertainment.dto.PayDayResult;
 import dev.sheldan.abstracto.entertainment.dto.SlotsResult;
 import dev.sheldan.abstracto.entertainment.exception.NotEnoughCreditsException;
-import dev.sheldan.abstracto.entertainment.exception.PayDayCooldownException;
-import dev.sheldan.abstracto.entertainment.exception.SlotsCooldownException;
 import dev.sheldan.abstracto.entertainment.model.command.CreditsLeaderboardEntry;
 import dev.sheldan.abstracto.entertainment.model.database.EconomyLeaderboardResult;
 import dev.sheldan.abstracto.entertainment.model.database.EconomyUser;
@@ -19,13 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-import static dev.sheldan.abstracto.entertainment.config.EconomyFeatureConfig.PAYDAY_COOLDOWN_CONFIG_KEY;
-import static dev.sheldan.abstracto.entertainment.config.EconomyFeatureConfig.SLOTS_COOLDOWN_CONFIG_KEY;
 
 @Component
 public class EconomyServiceBean implements EconomyService {
@@ -71,42 +63,6 @@ public class EconomyServiceBean implements EconomyService {
     private static final Integer DOUBLE_FACTOR = 2;
 
     @Override
-    public boolean canTriggerPayDay(AUserInAServer aUserInAServer) {
-        Optional<EconomyUser> userOptional = economyUserManagementService.getUser(aUserInAServer);
-        return userOptional.map(this::canTriggerPayDay).orElse(true);
-    }
-
-    @Override
-    public boolean canTriggerSlots(AUserInAServer aUserInAServer) {
-        Optional<EconomyUser> userOptional = economyUserManagementService.getUser(aUserInAServer);
-        return userOptional.map(this::canTriggerSlots).orElse(true);
-    }
-
-    @Override
-    public boolean canTriggerPayDay(EconomyUser economyUser) {
-        return slotsTriggerIn(economyUser).isNegative();
-    }
-
-    @Override
-    public boolean canTriggerSlots(EconomyUser economyUser) {
-        return payDayTriggerIn(economyUser).isNegative();
-    }
-
-    @Override
-    public Duration payDayTriggerIn(EconomyUser economyUser) {
-        Long cooldownSeconds = configService.getLongValueOrConfigDefault(PAYDAY_COOLDOWN_CONFIG_KEY, economyUser.getServer().getId());
-        Instant minTimeStamp = Instant.now().minus(cooldownSeconds, ChronoUnit.SECONDS);
-        return Duration.between(economyUser.getLastPayDay(), minTimeStamp);
-    }
-
-    @Override
-    public Duration slotsTriggerIn(EconomyUser economyUser) {
-        Long cooldownSeconds = configService.getLongValueOrConfigDefault(SLOTS_COOLDOWN_CONFIG_KEY, economyUser.getServer().getId());
-        Instant minTimeStamp = Instant.now().minus(cooldownSeconds, ChronoUnit.SECONDS);
-        return Duration.between(economyUser.getLastSlots(), minTimeStamp);
-    }
-
-    @Override
     public EconomyUser addCredits(AUserInAServer aUserInAServer, Long credits) {
         Optional<EconomyUser> existingUserOptional = economyUserManagementService.getUser(aUserInAServer);
         if (existingUserOptional.isPresent()) {
@@ -137,11 +93,6 @@ public class EconomyServiceBean implements EconomyService {
         Long creditsToAdd = configService.getLongValueOrConfigDefault(EconomyFeatureConfig.PAYDAY_CREDITS_CONFIG_KEY,
                 aUserInAServer.getServerReference().getId());
         EconomyUser economyUser = addCredits(aUserInAServer, creditsToAdd);
-        Duration durationForPayday = payDayTriggerIn(economyUser);
-        if (durationForPayday.isNegative()) {
-            throw new PayDayCooldownException(durationForPayday.abs());
-        }
-        economyUser.setLastPayDay(Instant.now());
         return PayDayResult
                 .builder()
                 .currentCredits(economyUser.getCredits())
@@ -160,17 +111,12 @@ public class EconomyServiceBean implements EconomyService {
         if(user.getCredits() < bid) {
             throw new NotEnoughCreditsException();
         }
-        Duration durationForSlots = slotsTriggerIn(user);
-        if (durationForSlots.isNegative()) {
-            throw new SlotsCooldownException(durationForSlots.abs());
-        }
         SlotGame slotGame = playSlots();
         Integer factor = slotGame.getResultFactor();
         Long creditChange = bid * factor;
         addCredits(user, -bid);
         addCredits(user, creditChange);
 
-        user.setLastSlots(Instant.now());
         return SlotsResult
                 .builder()
                 .bid(bid)

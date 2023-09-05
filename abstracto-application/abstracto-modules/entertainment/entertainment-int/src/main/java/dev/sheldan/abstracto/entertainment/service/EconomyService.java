@@ -10,16 +10,9 @@ import dev.sheldan.abstracto.entertainment.model.database.EconomyUser;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.Duration;
 import java.util.List;
 
 public interface EconomyService {
-    boolean canTriggerPayDay(AUserInAServer aUserInAServer);
-    boolean canTriggerSlots(AUserInAServer aUserInAServer);
-    boolean canTriggerPayDay(EconomyUser economyUser);
-    boolean canTriggerSlots(EconomyUser economyUser);
-    Duration payDayTriggerIn(EconomyUser economyUser);
-    Duration slotsTriggerIn(EconomyUser economyUser);
     EconomyUser addCredits(AUserInAServer aUserInAServer, Long credits);
     void addCredits(EconomyUser economyUser, Long credits);
     void addPayDayCredits(AUserInAServer aUserInAServer);

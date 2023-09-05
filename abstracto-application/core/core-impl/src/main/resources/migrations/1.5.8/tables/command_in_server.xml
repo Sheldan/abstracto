@@ -6,11 +6,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.0-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.8-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.2.9-entertainment/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.0/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.3/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.11/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.5.8/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan" id="command_in_server-add-server-member-cooldown">
+        <addColumn tableName="command_in_server" >
+            <column name="member_cooldown" type="BIGINT">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

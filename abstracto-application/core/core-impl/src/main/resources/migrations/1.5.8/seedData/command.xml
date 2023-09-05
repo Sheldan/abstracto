@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <property name="coreFeature" value="(SELECT id FROM feature WHERE key = 'core')"/>
+    <property name="configModule" value="(SELECT id FROM module WHERE name = 'config')"/>
+    <changeSet author="Sheldan" id="cooldown-command" >
+        <insert tableName="command">
+            <column name="name" value="setCommandMemberCooldown"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeCommandMemberCooldown"/>
+            <column name="module_id" valueComputed="${configModule}"/>
+            <column name="feature_id" valueComputed="${coreFeature}"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

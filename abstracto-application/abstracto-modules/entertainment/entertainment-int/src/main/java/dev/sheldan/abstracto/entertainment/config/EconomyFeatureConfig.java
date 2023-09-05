@@ -11,8 +11,6 @@ import java.util.List;
 public class EconomyFeatureConfig implements FeatureConfig {
 
     public static final String PAYDAY_CREDITS_CONFIG_KEY = "paydayCredits";
-    public static final String PAYDAY_COOLDOWN_CONFIG_KEY = "paydayCooldown";
-    public static final String SLOTS_COOLDOWN_CONFIG_KEY = "slotsCooldown";
 
     @Override
     public FeatureDefinition getFeature() {
@@ -21,6 +19,6 @@ public class EconomyFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(PAYDAY_CREDITS_CONFIG_KEY, PAYDAY_COOLDOWN_CONFIG_KEY, SLOTS_COOLDOWN_CONFIG_KEY);
+        return Arrays.asList(PAYDAY_CREDITS_CONFIG_KEY);
     }
 }

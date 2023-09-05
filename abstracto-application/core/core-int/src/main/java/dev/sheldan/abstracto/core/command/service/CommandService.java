@@ -10,9 +10,11 @@ import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 public interface CommandService {
@@ -30,4 +32,5 @@ public interface CommandService {
     UnParsedCommandParameter getUnParsedCommandParameter(String messageContent, Message message);
     CompletableFuture<Parameters> getParametersForCommand(String commandName, Message messageContainingContent);
     Parameter cloneParameter(Parameter parameter);
+    void setServerCooldownTo(String commandName, Guild guild, Duration duration);
 }
