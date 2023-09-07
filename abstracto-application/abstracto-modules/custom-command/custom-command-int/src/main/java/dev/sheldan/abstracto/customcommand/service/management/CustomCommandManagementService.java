@@ -12,4 +12,5 @@ public interface CustomCommandManagementService {
     CustomCommand createCustomCommand(String name, String content, AUserInAServer creator);
     void deleteCustomCommand(String name, AServer server);
     List<CustomCommand> getCustomCommands(AServer server);
+    List<CustomCommand> getCustomCommandsStartingWith(String prefix, AServer server);
 }

@@ -11,4 +11,5 @@ public interface CustomCommandService {
     void deleteCustomCommand(String name, Guild guild);
     List<CustomCommand> getCustomCommands(Guild guild);
     CustomCommand getCustomCommand(String name, Guild guild);
+    List<CustomCommand> getCustomCommandsStartingWith(String prefix, Guild guild);
 }

@@ -13,4 +13,5 @@ public interface CustomCommandRepository extends JpaRepository<CustomCommand, Lo
     Optional<CustomCommand> getByNameIgnoreCaseAndServer(String name, AServer server);
     void deleteByNameAndServer(String name, AServer server);
     List<CustomCommand> findByServer(AServer server);
+    List<CustomCommand> findByNameStartsWithIgnoreCaseAndServer(String prefix, AServer server);
 }

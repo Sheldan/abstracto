@@ -9,16 +9,19 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandAutoCompleteService;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandFeatureDefinition;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandSlashCommandNames;
 import dev.sheldan.abstracto.customcommand.model.command.CustomCommandResponseModel;
 import dev.sheldan.abstracto.customcommand.model.database.CustomCommand;
 import dev.sheldan.abstracto.customcommand.service.management.CustomCommandService;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -39,6 +42,9 @@ public class GetCustomCommand extends AbstractConditionableCommand {
     @Autowired
     private CustomCommandService customCommandService;
 
+    @Autowired
+    private SlashCommandAutoCompleteService slashCommandAutoCompleteService;
+
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String name = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_NAME_PARAMETER, event, String.class);
@@ -52,6 +58,19 @@ public class GetCustomCommand extends AbstractConditionableCommand {
     }
 
     @Override
+    public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), CUSTOM_COMMAND_NAME_PARAMETER)) {
+            String input = event.getFocusedOption().getValue();
+            return customCommandService.getCustomCommandsStartingWith(input, event.getGuild())
+                    .stream()
+                    .map(CustomCommand::getName)
+                    .toList();
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
     public FeatureDefinition getFeature() {
         return CustomCommandFeatureDefinition.CUSTOM_COMMAND;
     }
@@ -62,9 +81,9 @@ public class GetCustomCommand extends AbstractConditionableCommand {
                 .builder()
                 .name(CUSTOM_COMMAND_NAME_PARAMETER)
                 .templated(true)
+                .supportsAutoComplete(true)
                 .type(String.class)
                 .build();
-
 
         List<Parameter> parameters = Arrays.asList(commandNameParameter);
         HelpInfo helpInfo = HelpInfo

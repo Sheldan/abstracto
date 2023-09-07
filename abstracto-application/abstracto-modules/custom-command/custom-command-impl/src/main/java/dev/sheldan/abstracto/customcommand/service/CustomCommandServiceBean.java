@@ -57,4 +57,10 @@ public class CustomCommandServiceBean implements CustomCommandService {
         return customCommandManagementService.getCustomCommandByName(name, guild.getIdLong())
                 .orElseThrow(CustomCommandNotFoundException::new);
     }
+
+    @Override
+    public List<CustomCommand> getCustomCommandsStartingWith(String prefix, Guild guild) {
+        AServer server = serverManagementService.loadServer(guild);
+        return customCommandManagementService.getCustomCommandsStartingWith(prefix, server);
+    }
 }

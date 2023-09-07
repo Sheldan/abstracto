@@ -48,4 +48,9 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
         return repository.findByServer(server);
     }
 
+    @Override
+    public List<CustomCommand> getCustomCommandsStartingWith(String prefix, AServer server) {
+        return repository.findByNameStartsWithIgnoreCaseAndServer(prefix, server);
+    }
+
 }
