@@ -64,6 +64,7 @@ public class GetCustomCommand extends AbstractConditionableCommand {
             return customCommandService.getCustomCommandsStartingWith(input, event.getGuild())
                     .stream()
                     .map(CustomCommand::getName)
+                    .limit(25)
                     .toList();
         } else {
             return new ArrayList<>();
