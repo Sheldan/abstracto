@@ -67,8 +67,10 @@ public class Echo extends AbstractConditionableCommand {
 
         String message = slashCommandParameterService.getCommandOption(INPUT_PARAMETER, event, String.class);
         GuildMessageChannel messageChannel;
+        boolean redirect = false;
         if (slashCommandParameterService.hasCommandOption(TARGET_CHANNEL_PARAMETER, event)) {
             messageChannel = slashCommandParameterService.getCommandOption(TARGET_CHANNEL_PARAMETER, event, GuildMessageChannel.class);
+            redirect = true;
         } else {
             messageChannel = event.getGuildChannel();
         }
@@ -78,11 +80,10 @@ public class Echo extends AbstractConditionableCommand {
                 .text(message)
                 .build();
 
-        if (messageChannel.equals(event.getMessageChannel())) {
+        if (messageChannel.equals(event.getMessageChannel()) && !redirect) {
             return interactionService.replyMessage(TEMPLATE_NAME, model, event)
                     .thenApply(unused -> CommandResult.fromSuccess());
         } else {
-
             EchoRedirectResponseModel redirectResponseModel = EchoRedirectResponseModel
                     .builder()
                     .channel(ChannelDisplay.fromChannel(messageChannel))
