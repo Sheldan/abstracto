@@ -80,7 +80,7 @@ public class Echo extends AbstractConditionableCommand {
                 .text(message)
                 .build();
 
-        if (messageChannel.equals(event.getMessageChannel()) && !redirect) {
+        if (!redirect) {
             return interactionService.replyMessage(TEMPLATE_NAME, model, event)
                     .thenApply(unused -> CommandResult.fromSuccess());
         } else {
