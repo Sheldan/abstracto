@@ -31,13 +31,24 @@ public class RemoveCommandFromChannelGroup extends AbstractConditionableCommand 
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelGroupName = Parameter.builder().name("channelGroupName").type(String.class).templated(true).build();
-        Parameter commandName = Parameter.builder().name("commandName").type(String.class).templated(true).build();
+        Parameter channelGroupName = Parameter
+                .builder()
+                .name("channelGroupName")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter commandName = Parameter
+                .builder()
+                .name("commandName")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, commandName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("removeCommandFromChannelGroup")
                 .module(ChannelsModuleDefinition.CHANNELS)
+                .messageCommandOnly(true)
                 .parameters(parameters)
                 .supportsEmbedException(true)
                 .help(helpInfo)

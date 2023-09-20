@@ -156,6 +156,7 @@ public class Poll extends AbstractConditionableCommand {
                 .name(POLL_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)

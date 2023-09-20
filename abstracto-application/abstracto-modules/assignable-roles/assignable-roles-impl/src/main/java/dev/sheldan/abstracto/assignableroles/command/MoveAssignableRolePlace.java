@@ -67,6 +67,7 @@ public class MoveAssignableRolePlace extends AbstractConditionableCommand {
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

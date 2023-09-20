@@ -45,11 +45,15 @@ public class ShowAssignableRolePlaces extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("showAssignableRolePlaces")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

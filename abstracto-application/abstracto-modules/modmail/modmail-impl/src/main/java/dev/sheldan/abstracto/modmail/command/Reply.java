@@ -58,11 +58,19 @@ public class Reply extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter responseText = Parameter.builder().name("text").type(String.class).remainder(true).optional(true).templated(true).build();
+        Parameter responseText = Parameter
+                .builder()
+                .name("text")
+                .type(String.class)
+                .remainder(true)
+                .optional(true)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(responseText);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("reply")
+                .messageCommandOnly(true)
                 .async(true)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .parameters(parameters)

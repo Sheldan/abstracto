@@ -67,13 +67,23 @@ public class Profanities extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter memberParameter = Parameter.builder().templated(true).name("member").type(Member.class).optional(true).build();
+        Parameter memberParameter = Parameter
+                .builder()
+                .templated(true)
+                .name("member")
+                .type(Member.class)
+                .optional(true)
+                .build();
         List<Parameter> parameters = Collections.singletonList(memberParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("profanities")
                 .module(ProfanityFilterModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .causesReaction(false)
                 .parameters(parameters)

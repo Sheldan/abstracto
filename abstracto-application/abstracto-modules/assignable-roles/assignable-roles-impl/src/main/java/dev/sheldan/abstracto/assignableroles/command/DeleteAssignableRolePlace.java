@@ -41,7 +41,12 @@ public class DeleteAssignableRolePlace extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
+        Parameter rolePostName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(rolePostName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
@@ -50,6 +55,7 @@ public class DeleteAssignableRolePlace extends AbstractConditionableCommand {
                 .templated(true)
                 .causesReaction(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

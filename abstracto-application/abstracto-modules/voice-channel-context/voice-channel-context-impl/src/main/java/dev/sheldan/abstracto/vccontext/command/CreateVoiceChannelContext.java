@@ -35,14 +35,28 @@ public class CreateVoiceChannelContext extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter voiceChannel = Parameter.builder().name("voiceChannel").type(VoiceChannel.class).templated(true).build();
-        Parameter contextRole = Parameter.builder().name("role").type(Role.class).templated(true).build();
+        Parameter voiceChannel = Parameter
+                .builder()
+                .name("voiceChannel")
+                .type(VoiceChannel.class)
+                .templated(true)
+                .build();
+        Parameter contextRole = Parameter
+                .builder()
+                .name("role")
+                .type(Role.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(voiceChannel, contextRole);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("createVoiceChannelContext")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

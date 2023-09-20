@@ -82,7 +82,14 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("period").templated(true).optional(true).type(Duration.class).build());
+        Parameter periodParameter = Parameter
+                .builder()
+                .name("period")
+                .templated(true)
+                .optional(true)
+                .type(Duration.class)
+                .build();
+        parameters.add(periodParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("deletedEmoteStats")
@@ -90,6 +97,7 @@ public class DeletedEmoteStats extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .supportsEmbedException(true)
+                .messageCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

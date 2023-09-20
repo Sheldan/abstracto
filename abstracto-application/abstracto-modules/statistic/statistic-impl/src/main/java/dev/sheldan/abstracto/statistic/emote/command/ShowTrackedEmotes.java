@@ -114,12 +114,20 @@ public class ShowTrackedEmotes extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
-        parameters.add(Parameter.builder().name("showAll").templated(true).optional(true).type(Boolean.class).build());
+        Parameter showAllParameter = Parameter
+                .builder()
+                .name("showAll")
+                .templated(true)
+                .optional(true)
+                .type(Boolean.class)
+                .build();
+        parameters.add(showAllParameter);
         return CommandConfiguration.builder()
                 .name("showTrackedEmotes")
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

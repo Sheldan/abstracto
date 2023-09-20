@@ -57,13 +57,21 @@ public class SetupFeature extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter newPrefixParameter = Parameter.builder().name("feature").type(String.class).build();
+        Parameter newPrefixParameter = Parameter
+                .builder()
+                .name("feature")
+                .type(String.class)
+                .build();
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("setupFeature")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .messageCommandOnly(true)
                 .templated(true)
                 .async(true)
                 .supportsEmbedException(true)

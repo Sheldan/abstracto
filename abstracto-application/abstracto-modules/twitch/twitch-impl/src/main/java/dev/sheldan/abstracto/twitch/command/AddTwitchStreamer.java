@@ -119,6 +119,7 @@ public class AddTwitchStreamer extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();

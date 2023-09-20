@@ -49,15 +49,31 @@ public class CommandCoolDownChannelGroup extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelGroupName = Parameter.builder().name("channelGroupName").templated(true).type(AChannelGroup.class).build();
-        Parameter channelDuration = Parameter.builder().name("channelDuration").templated(true).type(Duration.class).build();
-        Parameter memberDuration = Parameter.builder().name("memberDuration").templated(true).type(Duration.class).build();
+        Parameter channelGroupName = Parameter
+                .builder()
+                .name("channelGroupName")
+                .templated(true)
+                .type(AChannelGroup.class)
+                .build();
+        Parameter channelDuration = Parameter
+                .builder()
+                .name("channelDuration")
+                .templated(true)
+                .type(Duration.class)
+                .build();
+        Parameter memberDuration = Parameter
+                .builder()
+                .name("memberDuration")
+                .templated(true)
+                .type(Duration.class)
+                .build();
         List<Parameter> parameters = Arrays.asList(channelGroupName, channelDuration, memberDuration);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("commandCoolDownChannelGroup")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .messageCommandOnly(true)
                 .templated(true)
                 .help(helpInfo)
                 .causesReaction(true)

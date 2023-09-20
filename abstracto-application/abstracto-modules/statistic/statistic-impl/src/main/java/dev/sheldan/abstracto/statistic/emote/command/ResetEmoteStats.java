@@ -38,6 +38,7 @@ public class ResetEmoteStats extends AbstractConditionableCommand {
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("resetEmoteStats")
+                .messageCommandOnly(true)
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .supportsEmbedException(true)

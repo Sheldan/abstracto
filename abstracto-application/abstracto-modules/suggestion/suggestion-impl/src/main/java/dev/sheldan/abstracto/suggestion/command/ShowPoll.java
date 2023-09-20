@@ -81,6 +81,7 @@ public class ShowPoll extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

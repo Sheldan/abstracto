@@ -49,11 +49,6 @@ public class DeleteCustomCommand extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureDefinition getFeature() {
-        return CustomCommandFeatureDefinition.CUSTOM_COMMAND;
-    }
-
-    @Override
     public CommandConfiguration getConfiguration() {
         Parameter commandNameParameter = Parameter
                 .builder()
@@ -82,9 +77,15 @@ public class DeleteCustomCommand extends AbstractConditionableCommand {
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .causesReaction(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public FeatureDefinition getFeature() {
+        return CustomCommandFeatureDefinition.CUSTOM_COMMAND;
     }
 }

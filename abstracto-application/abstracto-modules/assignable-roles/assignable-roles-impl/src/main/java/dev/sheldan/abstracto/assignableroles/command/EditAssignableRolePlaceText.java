@@ -46,15 +46,29 @@ public class EditAssignableRolePlaceText extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<ParameterValidator> rolePlaceNameValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
-        Parameter rolePostName = Parameter.builder().name("name").validators(rolePlaceNameValidator).type(String.class).templated(true).build();
-        Parameter newText = Parameter.builder().name("newText").type(String.class).templated(true).build();
+        Parameter rolePostName = Parameter
+                .builder().name("name")
+                .validators(rolePlaceNameValidator)
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter newText = Parameter
+                .builder()
+                .name("newText")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(rolePostName, newText);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("editAssignableRolePlaceText")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

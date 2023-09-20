@@ -82,6 +82,7 @@ public class SetCommandMemberCooldown extends AbstractConditionableCommand {
                 .name(SET_COMMAND_MEMBER_COOLDOWN)
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .supportsEmbedException(true)

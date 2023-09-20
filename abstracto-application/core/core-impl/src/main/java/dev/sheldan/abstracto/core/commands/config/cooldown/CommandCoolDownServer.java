@@ -42,14 +42,25 @@ public class CommandCoolDownServer extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter commandName = Parameter.builder().name("command").templated(true).type(String.class).build();
-        Parameter coolDownDuration = Parameter.builder().name("duration").templated(true).type(Duration.class).build();
+        Parameter commandName = Parameter
+                .builder()
+                .name("command")
+                .templated(true)
+                .type(String.class)
+                .build();
+        Parameter coolDownDuration = Parameter
+                .builder()
+                .name("duration")
+                .templated(true)
+                .type(Duration.class)
+                .build();
         List<Parameter> parameters = Arrays.asList(commandName, coolDownDuration);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("commandCoolDownServer")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .messageCommandOnly(true)
                 .templated(true)
                 .help(helpInfo)
                 .causesReaction(true)

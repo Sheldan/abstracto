@@ -73,6 +73,7 @@ public class RemoveCommandMemberCooldown extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

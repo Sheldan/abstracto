@@ -70,6 +70,7 @@ public class ShowEmote extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

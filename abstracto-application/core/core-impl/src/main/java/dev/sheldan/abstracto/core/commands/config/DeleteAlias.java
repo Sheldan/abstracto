@@ -31,14 +31,23 @@ public class DeleteAlias extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter aliasParameter = Parameter.builder().name("alias").type(String.class).templated(true).build();
+        Parameter aliasParameter = Parameter
+                .builder()
+                .name("alias")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(aliasParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("deleteAlias")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
+                .messageCommandOnly(true)
                 .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

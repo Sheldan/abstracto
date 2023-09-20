@@ -69,6 +69,7 @@ public class SetExpRole extends AbstractConditionableCommand {
                 .module(ExperienceModuleDefinition.EXPERIENCE)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .requiresConfirmation(true)

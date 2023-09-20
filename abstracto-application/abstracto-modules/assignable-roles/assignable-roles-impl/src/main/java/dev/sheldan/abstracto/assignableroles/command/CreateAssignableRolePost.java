@@ -33,9 +33,6 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
     @Autowired
     private ChannelManagementService channelManagementService;
 
-    @Autowired
-    private ServerManagementService serverManagementService;
-
     @Override
     public CommandResult execute(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -57,20 +54,47 @@ public class CreateAssignableRolePost extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<ParameterValidator> rolePlaceNameValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
-        Parameter rolePostName = Parameter.builder().name("name").validators(rolePlaceNameValidator).type(String.class).templated(true).build();
-        Parameter channel = Parameter.builder().name("channel").type(TextChannel.class).templated(true).build();
-        Parameter type = Parameter.builder().name("type").type(AssignableRolePlaceType.class).templated(true).optional(true).build();
+        Parameter rolePostName = Parameter
+                .builder()
+                .name("name")
+                .validators(rolePlaceNameValidator)
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter channel = Parameter
+                .builder()
+                .name("channel")
+                .type(TextChannel.class)
+                .templated(true)
+                .build();
+        Parameter type = Parameter
+                .builder()
+                .name("type")
+                .type(AssignableRolePlaceType.class)
+                .templated(true)
+                .optional(true)
+                .build();
         List<ParameterValidator> rolePlaceDescriptionValidator = Arrays.asList(MaxStringLengthValidator.max(AssignableRolePlace.ASSIGNABLE_PLACE_NAME_LIMIT));
-        Parameter text = Parameter.builder().name("text").validators(rolePlaceDescriptionValidator).type(String.class).templated(true).build();
+        Parameter text = Parameter
+                .builder()
+                .name("text")
+                .validators(rolePlaceDescriptionValidator)
+                .type(String.class)
+                .templated(true)
+                .build();
         List<String> aliases = Arrays.asList("crRPl", "crAssRoPl");
         List<Parameter> parameters = Arrays.asList(rolePostName, channel, text, type);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("createAssignableRolePlace")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .messageCommandOnly(true)
                 .parameters(parameters)
                 .aliases(aliases)
                 .help(helpInfo)

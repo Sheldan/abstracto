@@ -35,15 +35,31 @@ public class RemoveAssignableRoleCondition extends AbstractConditionableCommand 
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter placeName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter role = Parameter.builder().name("role").type(Role.class).templated(true).build();
-        Parameter conditionKey = Parameter.builder().name("conditionKey").type(AssignableRoleConditionType.class).templated(true).build();
+        Parameter placeName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter role = Parameter
+                .builder()
+                .name("role")
+                .type(Role.class)
+                .templated(true)
+                .build();
+        Parameter conditionKey = Parameter
+                .builder()
+                .name("conditionKey")
+                .type(AssignableRoleConditionType.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(placeName, role, conditionKey);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("removeAssignableRoleCondition")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

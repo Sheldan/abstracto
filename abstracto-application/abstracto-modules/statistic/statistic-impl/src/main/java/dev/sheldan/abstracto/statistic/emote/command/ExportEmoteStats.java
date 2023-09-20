@@ -97,13 +97,24 @@ public class ExportEmoteStats extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("period").templated(true).optional(true).type(Duration.class).build());
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        Parameter periodParameter = Parameter
+                .builder()
+                .name("period")
+                .templated(true)
+                .optional(true)
+                .type(Duration.class)
+                .build();
+        parameters.add(periodParameter);
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("exportEmoteStats")
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

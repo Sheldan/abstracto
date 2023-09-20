@@ -32,15 +32,29 @@ public class CreateAlias extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter commandNameParameter = Parameter.builder().name("commandName").type(String.class).templated(true).build();
-        Parameter aliasParameter = Parameter.builder().name("alias").type(String.class).templated(true).build();
+        Parameter commandNameParameter = Parameter
+                .builder()
+                .name("commandName")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter aliasParameter = Parameter
+                .builder()
+                .name("alias")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(commandNameParameter, aliasParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("createAlias")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

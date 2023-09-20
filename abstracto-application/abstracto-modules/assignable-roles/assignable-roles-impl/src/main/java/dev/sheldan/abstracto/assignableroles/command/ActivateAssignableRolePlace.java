@@ -41,13 +41,19 @@ public class ActivateAssignableRolePlace extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter placeName = Parameter.builder().name("name").type(String.class).templated(true).build();
+        Parameter placeName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(placeName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("activateAssignableRolePlace")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

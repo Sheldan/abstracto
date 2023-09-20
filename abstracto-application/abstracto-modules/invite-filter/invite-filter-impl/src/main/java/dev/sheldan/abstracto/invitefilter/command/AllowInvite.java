@@ -33,13 +33,20 @@ public class AllowInvite extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("invite").type(String.class).templated(true).build());
+        Parameter inviteParameter = Parameter
+                .builder()
+                .name("invite")
+                .type(String.class)
+                .templated(true)
+                .build();
+        parameters.add(inviteParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("allowInvite")
                 .module(InviteFilterModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

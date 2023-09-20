@@ -42,6 +42,12 @@ public class CommandConfiguration {
     @Builder.Default
     private boolean supportsMessageCommand = true;
 
+    @Builder.Default
+    private boolean slashCommandOnly = false;
+
+    @Builder.Default
+    private boolean messageCommandOnly = false;
+
     private CommandCoolDownConfig coolDownConfig;
 
     @Builder.Default

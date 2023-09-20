@@ -45,7 +45,12 @@ public class EnableRepostCheck extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelToSet = Parameter.builder().name("channelGroup").type(AChannelGroup.class).templated(true).build();
+        Parameter channelToSet = Parameter
+                .builder()
+                .name("channelGroup")
+                .type(AChannelGroup.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(channelToSet);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
@@ -53,6 +58,7 @@ public class EnableRepostCheck extends AbstractConditionableCommand {
                 .module(RepostDetectionModuleDefinition.REPOST_DETECTION)
                 .templated(true)
                 .async(false)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

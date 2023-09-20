@@ -44,16 +44,30 @@ public class RemoveRoleFromAssignableRolePlace extends AbstractConditionableComm
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter rolePostName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter role = Parameter.builder().name("role").type(ARole.class).templated(true).build();
+        Parameter rolePostName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter role = Parameter
+                .builder()
+                .name("role")
+                .type(ARole.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(rolePostName, role);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("removeRoleFromAssignableRolePlace")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

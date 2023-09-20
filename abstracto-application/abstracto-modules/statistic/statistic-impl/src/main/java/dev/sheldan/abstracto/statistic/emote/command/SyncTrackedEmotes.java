@@ -46,11 +46,15 @@ public class SyncTrackedEmotes extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("syncTrackedEmotes")
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

@@ -68,15 +68,30 @@ public class DisAllowRole extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter featureName = Parameter.builder().name("component").type(String.class).templated(true).build();
-        Parameter role = Parameter.builder().name("role").type(ARole.class).templated(true).build();
+        Parameter featureName = Parameter
+                .builder()
+                .name("component")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter role = Parameter
+                .builder()
+                .name("role")
+                .type(ARole.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(featureName, role);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .hasExample(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("disAllowRole")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .help(helpInfo)
+                .messageCommandOnly(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

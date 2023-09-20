@@ -84,6 +84,7 @@ public class EditInfraction extends AbstractConditionableCommand {
                 .templated(true)
                 .async(true)
                 .causesReaction(false)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .parameters(parameters)

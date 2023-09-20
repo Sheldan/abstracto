@@ -55,11 +55,6 @@ public class ClosePoll extends AbstractConditionableCommand {
     }
 
     @Override
-    public FeatureDefinition getFeature() {
-        return SuggestionFeatureDefinition.POLL;
-    }
-
-    @Override
     public CommandConfiguration getConfiguration() {
         List<ParameterValidator> pollIdValidator = Arrays.asList(MinIntegerValueValidator.min(1L));
         Parameter pollIdParameter = Parameter
@@ -94,6 +89,7 @@ public class ClosePoll extends AbstractConditionableCommand {
 
         return CommandConfiguration.builder()
                 .name(CLOSE_POLL_COMMAND)
+                .slashCommandOnly(true)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
@@ -103,5 +99,10 @@ public class ClosePoll extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+    @Override
+    public FeatureDefinition getFeature() {
+        return SuggestionFeatureDefinition.POLL;
     }
 }

@@ -176,7 +176,7 @@ public class Help extends AbstractConditionableCommand {
                             .getEffects()
                             .stream()
                             .map(EffectConfig::getEffectKey)
-                            .collect(Collectors.toList());
+                            .toList();
                     if(!effects.isEmpty()) {
                         model.setEffects(effects);
                     }
@@ -237,6 +237,7 @@ public class Help extends AbstractConditionableCommand {
                 .module(SupportModuleDefinition.SUPPORT)
                 .parameters(Collections.singletonList(moduleOrCommandName))
                 .help(helpInfo)
+                .messageCommandOnly(true)
                 .templated(true)
                 .causesReaction(true)
                 .build();

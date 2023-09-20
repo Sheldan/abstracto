@@ -75,14 +75,24 @@ public class RepostLeaderboard extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelToSet = Parameter.builder().name("page").type(Integer.class).templated(true).optional(true).build();
+        Parameter channelToSet = Parameter
+                .builder()
+                .name("page")
+                .type(Integer.class)
+                .templated(true)
+                .optional(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(channelToSet);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("repostLeaderboard")
                 .module(RepostDetectionModuleDefinition.REPOST_DETECTION)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

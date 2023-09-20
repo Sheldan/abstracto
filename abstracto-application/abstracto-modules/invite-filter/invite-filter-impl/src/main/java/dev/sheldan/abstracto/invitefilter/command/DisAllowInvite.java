@@ -33,12 +33,19 @@ public class DisAllowInvite extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("invite").type(String.class).templated(true).build());
+        Parameter inviteParameter = Parameter
+                .builder()
+                .name("invite")
+                .type(String.class)
+                .templated(true)
+                .build();
+        parameters.add(inviteParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("disAllowInvite")
                 .module(InviteFilterModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

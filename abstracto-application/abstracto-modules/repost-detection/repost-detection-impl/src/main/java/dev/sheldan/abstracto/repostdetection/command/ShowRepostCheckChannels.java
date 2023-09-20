@@ -43,11 +43,15 @@ public class ShowRepostCheckChannels extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("showRepostCheckChannels")
                 .module(RepostDetectionModuleDefinition.REPOST_DETECTION)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)

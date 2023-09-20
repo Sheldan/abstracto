@@ -75,9 +75,6 @@ public class Infractions extends AbstractConditionableCommand {
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
-    @Autowired
-    private UserService userService;
-
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Infraction> infractions;

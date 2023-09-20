@@ -42,7 +42,13 @@ public class PurgeReposts extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelToSet = Parameter.builder().name("member").type(AUserInAServer.class).templated(true).optional(true).build();
+        Parameter channelToSet = Parameter
+                .builder()
+                .name("member")
+                .type(AUserInAServer.class)
+                .templated(true)
+                .optional(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(channelToSet);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
@@ -51,6 +57,7 @@ public class PurgeReposts extends AbstractConditionableCommand {
                 .templated(true)
                 .async(false)
                 .requiresConfirmation(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

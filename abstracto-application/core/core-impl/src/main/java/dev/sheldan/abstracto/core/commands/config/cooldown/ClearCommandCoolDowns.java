@@ -26,11 +26,15 @@ public class ClearCommandCoolDowns extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("clearCommandCoolDowns")
                 .module(ConfigModuleDefinition.CONFIG)
                 .templated(true)
+                .messageCommandOnly(true)
                 .help(helpInfo)
                 .causesReaction(true)
                 .build();

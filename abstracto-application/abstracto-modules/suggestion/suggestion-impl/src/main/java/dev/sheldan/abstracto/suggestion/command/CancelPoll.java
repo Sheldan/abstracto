@@ -80,6 +80,7 @@ public class CancelPoll extends AbstractConditionableCommand {
                 .name(CANCEL_POLL_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .supportsEmbedException(true)

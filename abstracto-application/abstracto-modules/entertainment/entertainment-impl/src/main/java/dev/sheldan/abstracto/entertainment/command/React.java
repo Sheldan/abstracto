@@ -52,14 +52,28 @@ public class React extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("message").type(Message.class).templated(true).build());
-        parameters.add(Parameter.builder().name("text").type(String.class).remainder(true).templated(true).build());
+        Parameter messageParameter = Parameter
+                .builder()
+                .name("message")
+                .type(Message.class)
+                .templated(true)
+                .build();
+        parameters.add(messageParameter);
+        Parameter textParameter = Parameter
+                .builder()
+                .name("text")
+                .type(String.class)
+                .remainder(true)
+                .templated(true)
+                .build();
+        parameters.add(textParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("react")
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .causesReaction(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

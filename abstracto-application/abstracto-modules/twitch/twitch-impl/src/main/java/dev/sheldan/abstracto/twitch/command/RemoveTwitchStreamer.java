@@ -76,6 +76,7 @@ public class RemoveTwitchStreamer extends AbstractConditionableCommand {
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
+                .slashCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

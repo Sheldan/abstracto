@@ -66,12 +66,20 @@ public class CloseSilently extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter note = Parameter.builder().name("note").type(String.class).remainder(true).optional(true).templated(true).build();
+        Parameter note = Parameter
+                .builder()
+                .name("note")
+                .type(String.class)
+                .remainder(true)
+                .optional(true)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(note);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("closeSilently")
                 .async(true)
+                .messageCommandOnly(true)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .parameters(parameters)
                 .help(helpInfo)

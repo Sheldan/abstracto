@@ -44,13 +44,21 @@ public class RemoveTrackedInviteLinks extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("invite").type(String.class).optional(true).templated(true).build());
+        Parameter inviteParameter = Parameter
+                .builder()
+                .name("invite")
+                .type(String.class)
+                .optional(true)
+                .templated(true)
+                .build();
+        parameters.add(inviteParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("removeTrackedInviteLinks")
                 .module(InviteFilterModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .requiresConfirmation(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

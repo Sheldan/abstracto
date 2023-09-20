@@ -32,14 +32,25 @@ public class EnableCommand extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter commandName = Parameter.builder().name("commandName").type(String.class).templated(true).build();
-        Parameter channelGroupname = Parameter.builder().name("channelGroupName").type(String.class).templated(true).build();
-        List<Parameter> parameters = Arrays.asList(commandName, channelGroupname);
+        Parameter commandName = Parameter
+                .builder()
+                .name("commandName")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter channelGroupName = Parameter
+                .builder()
+                .name("channelGroupName")
+                .type(String.class)
+                .templated(true)
+                .build();
+        List<Parameter> parameters = Arrays.asList(commandName, channelGroupName);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("enableCommand")
                 .module(ChannelsModuleDefinition.CHANNELS)
                 .parameters(parameters)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .templated(true)
                 .help(helpInfo)

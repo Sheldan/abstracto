@@ -46,7 +46,10 @@ public class SyncRoles extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("syncExpRoles")
                 .module(ExperienceModuleDefinition.EXPERIENCE)
@@ -54,6 +57,7 @@ public class SyncRoles extends AbstractConditionableCommand {
                 .async(true)
                 .requiresConfirmation(true)
                 .supportsEmbedException(true)
+                .messageCommandOnly(true)
                 .causesReaction(true)
                 .parameters(parameters)
                 .help(helpInfo)

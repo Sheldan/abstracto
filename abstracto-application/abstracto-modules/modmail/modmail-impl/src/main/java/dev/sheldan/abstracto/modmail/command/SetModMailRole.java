@@ -46,14 +46,23 @@ public class SetModMailRole extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter categoryId = Parameter.builder().name("role").type(Role.class).templated(true).build();
+        Parameter categoryId = Parameter
+                .builder()
+                .name("role")
+                .type(Role.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(categoryId);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         List<String> aliases = Arrays.asList("modMailRole");
         return CommandConfiguration.builder()
                 .name("setModMailRole")
                 .module(ModMailModuleDefinition.MODMAIL)
                 .aliases(aliases)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

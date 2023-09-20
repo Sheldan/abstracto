@@ -38,13 +38,19 @@ public class DeleteVoiceChannelContext extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter voiceChannel = Parameter.builder().name("channel").type(AChannel.class).templated(true).build();
+        Parameter voiceChannel = Parameter
+                .builder()
+                .name("channel")
+                .type(AChannel.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(voiceChannel);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("deleteVoiceChannelContext")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

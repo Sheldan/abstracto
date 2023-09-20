@@ -43,7 +43,13 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("trackedEmote").templated(true).type(TrackedEmote.class).build());
+        Parameter trackedEmoteParameter = Parameter
+                .builder()
+                .name("trackedEmote")
+                .templated(true)
+                .type(TrackedEmote.class)
+                .build();
+        parameters.add(trackedEmoteParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("deleteTrackedEmote")
@@ -51,6 +57,7 @@ public class DeleteTrackedEmote extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
+                .messageCommandOnly(true)
                 .requiresConfirmation(true)
                 .parameters(parameters)
                 .help(helpInfo)

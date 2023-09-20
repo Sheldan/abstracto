@@ -47,12 +47,20 @@ public class DisableEmoteTracking extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("trackedEmote").templated(true).optional(true).type(TrackedEmote.class).build());
+        Parameter trackedEmoteParameter = Parameter
+                .builder()
+                .name("trackedEmote")
+                .templated(true)
+                .optional(true)
+                .type(TrackedEmote.class)
+                .build();
+        parameters.add(trackedEmoteParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("disableEmoteTracking")
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

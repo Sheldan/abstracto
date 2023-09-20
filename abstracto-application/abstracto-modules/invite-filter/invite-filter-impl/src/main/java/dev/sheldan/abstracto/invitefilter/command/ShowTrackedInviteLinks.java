@@ -61,13 +61,21 @@ public class ShowTrackedInviteLinks extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("amount").type(Integer.class).optional(true).templated(true).build());
+        Parameter amountParameter = Parameter
+                .builder()
+                .name("amount")
+                .type(Integer.class)
+                .optional(true)
+                .templated(true)
+                .build();
+        parameters.add(amountParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("showTrackedInviteLinks")
                 .module(InviteFilterModerationModuleDefinition.MODERATION)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)
                 .help(helpInfo)

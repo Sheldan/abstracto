@@ -66,14 +66,28 @@ public class EmoteStat extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("trackedEmote").templated(true).type(TrackedEmote.class).build());
-        parameters.add(Parameter.builder().name("period").templated(true).optional(true).type(Duration.class).build());
+        Parameter trackedEmoteParameter = Parameter
+                .builder()
+                .name("trackedEmote")
+                .templated(true)
+                .type(TrackedEmote.class)
+                .build();
+        parameters.add(trackedEmoteParameter);
+        Parameter periodParameter = Parameter
+                .builder()
+                .name("period")
+                .templated(true)
+                .optional(true)
+                .type(Duration.class)
+                .build();
+        parameters.add(periodParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("emoteStat")
                 .module(EmoteTrackingModuleDefinition.EMOTE_TRACKING)
                 .templated(true)
                 .async(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

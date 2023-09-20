@@ -47,9 +47,24 @@ public class ChangeAssignableRolePlaceConfig extends AbstractConditionableComman
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter assignableRolePlaceName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter parameterKey = Parameter.builder().name("key").type(AssignableRolePlaceParameterKey.class).templated(true).build();
-        Parameter parameterValue = Parameter.builder().name("value").type(String.class).templated(true).build();
+        Parameter assignableRolePlaceName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter parameterKey = Parameter
+                .builder()
+                .name("key")
+                .type(AssignableRolePlaceParameterKey.class)
+                .templated(true)
+                .build();
+        Parameter parameterValue = Parameter
+                .builder()
+                .name("value")
+                .type(String.class)
+                .templated(true)
+                .build();
 
         List<Parameter> parameters = Arrays.asList(assignableRolePlaceName, parameterKey, parameterValue);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
@@ -57,6 +72,7 @@ public class ChangeAssignableRolePlaceConfig extends AbstractConditionableComman
                 .name("changeAssignableRolePlaceConfig")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)

@@ -60,7 +60,14 @@ public class AnonReply extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter responseText = Parameter.builder().name("text").type(String.class).remainder(true).optional(true).templated(true).build();
+        Parameter responseText = Parameter
+                .builder()
+                .name("text")
+                .type(String.class)
+                .remainder(true)
+                .optional(true)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(responseText);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
@@ -68,6 +75,7 @@ public class AnonReply extends AbstractConditionableCommand {
                 .async(true)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .parameters(parameters)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .templated(true)

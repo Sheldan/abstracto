@@ -89,6 +89,7 @@ public class CreateCustomCommand extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
+                .slashCommandOnly(true)
                 .slashCommandConfig(slashCommandConfig)
                 .causesReaction(true)
                 .supportsEmbedException(true)

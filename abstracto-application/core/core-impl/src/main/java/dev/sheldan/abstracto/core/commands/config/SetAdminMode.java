@@ -30,13 +30,19 @@ public class SetAdminMode extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter valueToSet = Parameter.builder().name("value").type(Boolean.class).templated(true).build();
+        Parameter valueToSet = Parameter
+                .builder()
+                .name("value")
+                .type(Boolean.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(valueToSet);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).hasExample(true).build();
         return CommandConfiguration.builder()
                 .name("setAdminMode")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
+                .messageCommandOnly(true)
                 .templated(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)

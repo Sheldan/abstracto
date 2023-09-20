@@ -62,17 +62,42 @@ public class AddRoleToAssignableRolePost extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter placeName = Parameter.builder().name("name").type(String.class).templated(true).build();
-        Parameter role = Parameter.builder().name("role").type(Role.class).templated(true).build();
-        Parameter rolePostName = Parameter.builder().name("displayText").type(String.class).templated(true).build();
-        Parameter emote = Parameter.builder().name("emote").type(FullEmote.class).optional(true).templated(true).build();
+        Parameter placeName = Parameter
+                .builder()
+                .name("name")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter role = Parameter
+                .builder()
+                .name("role")
+                .type(Role.class)
+                .templated(true)
+                .build();
+        Parameter rolePostName = Parameter
+                .builder()
+                .name("displayText")
+                .type(String.class)
+                .templated(true)
+                .build();
+        Parameter emote = Parameter
+                .builder()
+                .name("emote")
+                .type(FullEmote.class)
+                .optional(true)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(placeName, role, rolePostName, emote);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("addRoleToAssignableRolePlace")
                 .module(AssignableRoleModuleDefinition.ASSIGNABLE_ROLES)
                 .templated(true)
                 .causesReaction(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .supportsEmbedException(true)
                 .parameters(parameters)

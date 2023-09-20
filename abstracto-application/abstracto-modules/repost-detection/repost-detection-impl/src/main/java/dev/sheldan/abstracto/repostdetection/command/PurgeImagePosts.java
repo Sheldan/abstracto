@@ -42,13 +42,23 @@ public class PurgeImagePosts extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter channelToSet = Parameter.builder().name("member").type(AUserInAServer.class).templated(true).optional(true).build();
+        Parameter channelToSet = Parameter
+                .builder()
+                .name("member")
+                .type(AUserInAServer.class)
+                .templated(true)
+                .optional(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(channelToSet);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("purgeImagePosts")
                 .module(RepostDetectionModuleDefinition.REPOST_DETECTION)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(false)
                 .requiresConfirmation(true)
                 .supportsEmbedException(true)

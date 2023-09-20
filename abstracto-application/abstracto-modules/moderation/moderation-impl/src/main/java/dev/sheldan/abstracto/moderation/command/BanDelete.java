@@ -65,15 +65,35 @@ public class BanDelete extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(Parameter.builder().name("user").templated(true).type(User.class).build());
-        parameters.add(Parameter.builder().name("delDays").templated(true).type(Integer.class).build());
-        parameters.add(Parameter.builder().name("reason").templated(true).type(String.class).remainder(true).build());
+        Parameter userParameter = Parameter
+                .builder()
+                .name("user")
+                .templated(true)
+                .type(User.class)
+                .build();
+        parameters.add(userParameter);
+        Parameter delDaysParameter = Parameter
+                .builder()
+                .name("delDays")
+                .templated(true)
+                .type(Integer.class)
+                .build();
+        parameters.add(delDaysParameter);
+        Parameter reasonParameter = Parameter
+                .builder()
+                .name("reason")
+                .templated(true)
+                .type(String.class)
+                .remainder(true)
+                .build();
+        parameters.add(reasonParameter);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         List<EffectConfig> effectConfig = Arrays.asList(EffectConfig.builder().position(0).effectKey(BAN_EFFECT_KEY).build());
         return CommandConfiguration.builder()
                 .name("banDelete")
                 .module(ModerationModuleDefinition.MODERATION)
                 .templated(true)
+                .messageCommandOnly(true)
                 .async(true)
                 .effects(effectConfig)
                 .supportsEmbedException(true)

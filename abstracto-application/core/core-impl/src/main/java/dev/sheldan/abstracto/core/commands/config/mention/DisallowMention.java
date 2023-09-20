@@ -33,14 +33,23 @@ public class DisallowMention extends AbstractConditionableCommand {
 
     @Override
     public CommandConfiguration getConfiguration() {
-        Parameter mentionTypeParameter = Parameter.builder().name("mentionType").type(String.class).templated(true).build();
+        Parameter mentionTypeParameter = Parameter
+                .builder()
+                .name("mentionType")
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(mentionTypeParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("disallowMention")
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .templated(true)
+                .messageCommandOnly(true)
                 .supportsEmbedException(true)
                 .help(helpInfo)
                 .causesReaction(true)

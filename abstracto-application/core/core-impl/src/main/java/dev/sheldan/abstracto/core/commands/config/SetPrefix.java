@@ -33,11 +33,21 @@ public class SetPrefix extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<ParameterValidator> validators = Arrays.asList(MaxStringLengthValidator.max(10L));
-        Parameter newPrefixParameter = Parameter.builder().name("prefix").validators(validators).type(String.class).templated(true).build();
+        Parameter newPrefixParameter = Parameter
+                .builder()
+                .name("prefix")
+                .validators(validators)
+                .type(String.class)
+                .templated(true)
+                .build();
         List<Parameter> parameters = Arrays.asList(newPrefixParameter);
-        HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
+        HelpInfo helpInfo = HelpInfo
+                .builder()
+                .templated(true)
+                .build();
         return CommandConfiguration.builder()
                 .name("setPrefix")
+                .messageCommandOnly(true)
                 .module(ConfigModuleDefinition.CONFIG)
                 .parameters(parameters)
                 .supportsEmbedException(true)
