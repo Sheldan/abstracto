@@ -78,7 +78,7 @@ public class BanReasonUpdatedListener implements InfractionUpdatedDescriptionLis
         Duration deletionDuration = infraction
                 .getParameters()
                 .stream()
-                .filter(infractionParameter -> infractionParameter.getInfractionParameterId().getName().equals(BanService.INFRACTION_PARAMETER_DELETION_DAYS_KEY))
+                .filter(infractionParameter -> infractionParameter.getInfractionParameterId().getName().equals(BanService.INFRACTION_PARAMETER_DELETION_DURATION_KEY))
                 .findAny()
                 .map(InfractionParameter::getValue)
                 .map(Duration::parse)
