@@ -60,12 +60,12 @@ public class BanServiceBean implements BanService {
     private InfractionService infractionService;
 
     @Override
-    public CompletableFuture<BanResult> banUserWithNotification(User user, String reason, Member banningMember, Integer deletionDays) {
+    public CompletableFuture<BanResult> banUserWithNotification(User user, String reason, Member banningMember, Duration deletionDuration) {
         BanLog banLog = BanLog
                 .builder()
                 .bannedUser(user)
                 .banningMember(banningMember)
-                .deletionDays(deletionDays)
+                .deletionDuration(deletionDuration)
                 .reason(reason)
                 .build();
         Guild guild = banningMember.getGuild();
@@ -75,20 +75,20 @@ public class BanServiceBean implements BanService {
                     result[0] = BanResult.NOTIFICATION_FAILED;
                     return null;
                 })
-                .thenCompose(unused -> banUser(guild, user, deletionDays, reason))
+                .thenCompose(unused -> banUser(guild, user, deletionDuration, reason))
                 .thenCompose(unused -> sendBanLogMessage(banLog, guild.getIdLong()))
-                .thenAccept(banLogMessage -> self.evaluateAndStoreInfraction(user, guild, reason, banningMember, banLogMessage, deletionDays))
+                .thenAccept(banLogMessage -> self.evaluateAndStoreInfraction(user, guild, reason, banningMember, banLogMessage, deletionDuration))
                 .thenApply(unused -> result[0]);
     }
 
     @Transactional
-    public CompletableFuture<Long> evaluateAndStoreInfraction(User user, Guild guild, String reason, Member banningMember, Message banLogMessage, Integer deletionDays) {
+    public CompletableFuture<Long> evaluateAndStoreInfraction(User user, Guild guild, String reason, Member banningMember, Message banLogMessage, Duration deletionDuration) {
         if(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, guild.getIdLong())) {
             Long infractionPoints = configService.getLongValueOrConfigDefault(ModerationFeatureConfig.BAN_INFRACTION_POINTS, guild.getIdLong());
             AUserInAServer bannedUser = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), user.getIdLong());
             AUserInAServer banningUser = userInServerManagementService.loadOrCreateUser(banningMember);
             Map<String, String> parameters = new HashMap<>();
-            parameters.put(INFRACTION_PARAMETER_DELETION_DAYS_KEY, deletionDays.toString());
+            parameters.put(INFRACTION_PARAMETER_DELETION_DAYS_KEY, deletionDuration.toString());
             return infractionService.createInfractionWithNotification(bannedUser, infractionPoints, BAN_INFRACTION_TYPE, reason, banningUser, parameters, banLogMessage)
                     .thenApply(Infraction::getId);
         } else {
@@ -119,9 +119,12 @@ public class BanServiceBean implements BanService {
     }
 
     @Override
-    public CompletableFuture<Void> banUser(Guild guild, User user, Integer deletionDays, String reason) {
+    public CompletableFuture<Void> banUser(Guild guild, User user, Duration deletionDuration, String reason) {
         log.info("Banning user {} in guild {}.", user.getIdLong(), guild.getId());
-        return guild.ban(user, deletionDays, TimeUnit.DAYS).reason(reason).submit();
+        if(deletionDuration == null || deletionDuration.isNegative()) {
+            deletionDuration = Duration.ZERO;
+        }
+        return guild.ban(user, (int) deletionDuration.getSeconds(), TimeUnit.SECONDS).reason(reason).submit();
     }
 
     @Override
@@ -132,8 +135,7 @@ public class BanServiceBean implements BanService {
 
     @Override
     public CompletableFuture<Void> softBanUser(Guild guild, User user, Duration delDays) {
-        Long days = delDays.toDays();
-        return banUser(guild, user, days.intValue(), "")
+        return banUser(guild, user, delDays, "")
                 .thenCompose(unused -> unbanUser(guild, user));
     }
 

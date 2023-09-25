@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -74,19 +75,19 @@ public class BanReasonUpdatedListener implements InfractionUpdatedDescriptionLis
     public void handleBanUpdate(InfractionDescriptionEventModel model, CompletableFuture<User> infractionUser, CompletableFuture<Member> infractionCreator, CompletableFuture<DefaultListenerResult> returningFuture) {
         Infraction infraction = infractionManagementService.loadInfraction(model.getInfractionId());
         GuildMessageChannel messageChannel = channelService.getMessageChannelFromServer(model.getServerId(), infraction.getLogChannel().getId());
-        Integer deletionDays = infraction
+        Duration deletionDuration = infraction
                 .getParameters()
                 .stream()
                 .filter(infractionParameter -> infractionParameter.getInfractionParameterId().getName().equals(BanService.INFRACTION_PARAMETER_DELETION_DAYS_KEY))
                 .findAny()
                 .map(InfractionParameter::getValue)
-                .map(Integer::parseInt)
-                .orElse(0);
+                .map(Duration::parse)
+                .orElse(Duration.ZERO);
         BanLog banLog = BanLog
                 .builder()
                 .bannedUser(infractionUser.isCompletedExceptionally() ? null : infractionUser.join())
                 .banningMember(infractionCreator.isCompletedExceptionally() ? null : infractionCreator.join())
-                .deletionDays(deletionDays)
+                .deletionDuration(deletionDuration)
                 .reason(model.getNewDescription())
                 .build();
 

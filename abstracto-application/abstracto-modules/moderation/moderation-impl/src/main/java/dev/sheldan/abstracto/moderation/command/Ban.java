@@ -3,7 +3,6 @@ package dev.sheldan.abstracto.moderation.command;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.*;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
@@ -12,20 +11,20 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.service.BanService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -39,15 +38,13 @@ public class Ban extends AbstractConditionableCommand {
 
     private static final String BAN_COMMAND = "ban";
     private static final String REASON_PARAMETER = "reason";
+    private static final String DELETION_DURATION_PARAMETER = "deletionDuration";
     private static final String USER_PARAMETER = "user";
     public static final String BAN_NOTIFICATION_NOT_POSSIBLE = "ban_notification_not_possible";
     private static final String BAN_RESPONSE = "ban_response";
 
     @Autowired
     private BanService banService;
-
-    @Autowired
-    private ChannelService channelService;
 
     @Autowired
     private TemplateService templateService;
@@ -62,33 +59,18 @@ public class Ban extends AbstractConditionableCommand {
     private UserService userService;
 
     @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        User user = (User) parameters.get(0);
-        String reason = (String) parameters.get(1);
-        Guild guild = commandContext.getGuild();
-        Message message = commandContext.getMessage();
-        Member banningMember = commandContext.getAuthor();
-        return banService.banUserWithNotification(user, reason, commandContext.getAuthor(), 0)
-                .thenCompose(banResult -> {
-                    if(banResult == NOTIFICATION_FAILED) {
-                        String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, guild.getIdLong());
-                        return channelService.sendTextToChannel(errorNotification, message.getChannel())
-                                .thenAccept(message1 -> log.info("Notified about not being able to send ban notification in server {} and channel {} from user {}."
-                                        , guild, message.getChannel().getIdLong(), banningMember.getIdLong()));
-                    } else {
-                        return CompletableFuture.completedFuture(null);
-                    }
-                })
-                .thenApply(aVoid -> CommandResult.fromSuccess());
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String reason = slashCommandParameterService.getCommandOption(REASON_PARAMETER, event, String.class, String.class);
+        Duration duration;
+        if(slashCommandParameterService.hasCommandOption(DELETION_DURATION_PARAMETER, event)) {
+            String durationString = slashCommandParameterService.getCommandOption(DELETION_DURATION_PARAMETER, event, Duration.class, String.class);
+            duration = ParseUtils.parseDuration(durationString);
+        } else {
+            duration = null;
+        }
         if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.USER)) {
             Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
-            return banService.banUserWithNotification(member.getUser(), reason, event.getMember(), 0)
+            return banService.banUserWithNotification(member.getUser(), reason, event.getMember(), duration)
                     .thenCompose(banResult -> {
                         if(banResult == NOTIFICATION_FAILED) {
                             String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
@@ -102,7 +84,7 @@ public class Ban extends AbstractConditionableCommand {
             String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, String.class);
             Long userId = Long.parseLong(userIdStr);
             return userService.retrieveUserForId(userId)
-                    .thenCompose(user -> banService.banUserWithNotification(user, reason, event.getMember(), 0))
+                    .thenCompose(user -> banService.banUserWithNotification(user, reason, event.getMember(), duration))
                     .thenCompose(banResult -> {
                         if(banResult == NOTIFICATION_FAILED) {
                             String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
@@ -128,9 +110,17 @@ public class Ban extends AbstractConditionableCommand {
                 .name(REASON_PARAMETER)
                 .templated(true)
                 .type(String.class)
-                .remainder(true)
                 .build();
-        List<Parameter> parameters = Arrays.asList(userParameter, reasonParameter);
+
+        Parameter deletionDurationParameter = Parameter
+                .builder()
+                .name(DELETION_DURATION_PARAMETER)
+                .templated(true)
+                .type(String.class)
+                .optional(true)
+                .build();
+
+        List<Parameter> parameters = Arrays.asList(userParameter, reasonParameter, deletionDurationParameter);
         HelpInfo helpInfo = HelpInfo
                 .builder()
                 .templated(true)
@@ -157,6 +147,7 @@ public class Ban extends AbstractConditionableCommand {
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .slashCommandOnly(true)
                 .effects(effectConfig)
                 .supportsEmbedException(true)
                 .causesReaction(true)

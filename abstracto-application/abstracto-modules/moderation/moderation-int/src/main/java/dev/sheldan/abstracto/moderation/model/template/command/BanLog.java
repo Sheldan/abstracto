@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 
+import java.time.Duration;
+
 
 /**
  * Used when rendering the notification when a member was banned. The template is: "ban_log_embed"
@@ -28,5 +30,5 @@ public class BanLog {
      */
     private User bannedUser;
     private Message commandMessage;
-    private Integer deletionDays;
+    private Duration deletionDuration;
 }
