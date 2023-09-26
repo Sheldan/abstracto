@@ -88,6 +88,9 @@ public class CommandManager implements CommandRegistry {
             if (commandConfiguration == null) {
                 return false;
             }
+            if (commandConfiguration.isSlashCommandOnly()) {
+                return false;
+            }
             if (!commandNameOrAliasMatches(name, commandConfiguration)) {
                 return false;
             }
