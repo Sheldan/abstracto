@@ -88,6 +88,9 @@ public class BanServiceBean implements BanService {
             AUserInAServer bannedUser = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), user.getIdLong());
             AUserInAServer banningUser = userInServerManagementService.loadOrCreateUser(banningMember);
             Map<String, String> parameters = new HashMap<>();
+            if(deletionDuration == null) {
+                deletionDuration = Duration.ZERO;
+            }
             parameters.put(INFRACTION_PARAMETER_DELETION_DURATION_KEY, deletionDuration.toString());
             return infractionService.createInfractionWithNotification(bannedUser, infractionPoints, BAN_INFRACTION_TYPE, reason, banningUser, parameters, banLogMessage)
                     .thenApply(Infraction::getId);
