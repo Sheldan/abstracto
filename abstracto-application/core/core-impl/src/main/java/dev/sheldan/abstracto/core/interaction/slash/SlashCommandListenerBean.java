@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -129,7 +130,8 @@ public class SlashCommandListenerBean extends ListenerAdapter {
         Optional<Command> potentialCommand = findCommand(event);
         potentialCommand.ifPresent(command -> {
             try {
-                List<String> replies = command.performAutoComplete(event);
+                List<String> fullRepliesList = command.performAutoComplete(event);
+                List<String> replies = fullRepliesList.subList(0, Math.min(fullRepliesList.size(), OptionData.MAX_CHOICES));
                 event.replyChoiceStrings(replies).queue(unused -> {},
                         throwable -> log.error("Failed to response to complete of command {} in guild {}.", command.getConfiguration().getName(), event.getGuild().getIdLong()));
             } catch (Exception exception) {

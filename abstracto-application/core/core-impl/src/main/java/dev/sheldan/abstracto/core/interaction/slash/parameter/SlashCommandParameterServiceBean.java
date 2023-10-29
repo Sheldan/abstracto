@@ -6,7 +6,7 @@ import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteractionPayload;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     private List<SlashCommandParameterProvider> parameterProviders;
 
     @Override
-    public <T, Z> Z getCommandOption(String name, SlashCommandInteractionEvent event, Class<T> parameterType, Class<Z> slashParameterType) {
+    public <T, Z> Z getCommandOption(String name, CommandInteractionPayload event, Class<T> parameterType, Class<Z> slashParameterType) {
         name = name.toLowerCase(Locale.ROOT);
         List<OptionType> potentialOptionTypes = getTypesFromParameter(parameterType);
         OptionType actualOptionType = potentialOptionTypes.size() == 1 ? potentialOptionTypes.get(0) : null;
@@ -71,7 +71,7 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     }
 
     @Override
-    public <T, Z> boolean hasCommandOption(String name, SlashCommandInteractionEvent event, Class<T> parameterType, Class<Z> slashParameterType) {
+    public <T, Z> boolean hasCommandOption(String name, CommandInteractionPayload event, Class<T> parameterType, Class<Z> slashParameterType) {
         name = name.toLowerCase(Locale.ROOT);
         List<OptionType> potentialOptionTypes = getTypesFromParameter(parameterType);
         OptionType actualOptionType = potentialOptionTypes.size() == 1 ? potentialOptionTypes.get(0) : null;
@@ -117,33 +117,33 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
     }
 
     @Override
-    public <T> T getCommandOption(String name, SlashCommandInteractionEvent event, Class<T> parameterType) {
+    public <T> T getCommandOption(String name, CommandInteractionPayload event, Class<T> parameterType) {
         return getCommandOption(name, event, parameterType, parameterType);
     }
 
     @Override
-    public Object getCommandOption(String name, SlashCommandInteractionEvent event) {
+    public Object getCommandOption(String name, CommandInteractionPayload event) {
         return event.getOption(name.toLowerCase(Locale.ROOT));
     }
 
     @Override
-    public Boolean hasCommandOption(String name, SlashCommandInteractionEvent event) {
+    public Boolean hasCommandOption(String name, CommandInteractionPayload event) {
         return event.getOption(name.toLowerCase(Locale.ROOT)) != null;
     }
 
     @Override
-    public Boolean hasCommandOptionWithFullType(String name, SlashCommandInteractionEvent event, OptionType optionType) {
+    public Boolean hasCommandOptionWithFullType(String name, CommandInteractionPayload event, OptionType optionType) {
         return hasCommandOption(getFullQualifiedParameterName(name, optionType), event);
     }
 
     @Override
-    public AEmote loadAEmoteFromString(String input, SlashCommandInteractionEvent event) {
+    public AEmote loadAEmoteFromString(String input, CommandInteractionPayload event) {
         Emoji emoji = loadEmoteFromString(input, event);
         return emoteService.getFakeEmoteFromEmoji(emoji);
     }
 
     @Override
-    public Emoji loadEmoteFromString(String input, SlashCommandInteractionEvent event) {
+    public Emoji loadEmoteFromString(String input, CommandInteractionPayload event) {
         if(StringUtils.isNumeric(input)) {
             long emoteId = Long.parseLong(input);
             return event.getGuild().getEmojiById(emoteId);
