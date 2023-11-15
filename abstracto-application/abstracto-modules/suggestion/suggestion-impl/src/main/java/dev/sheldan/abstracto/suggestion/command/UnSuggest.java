@@ -48,7 +48,7 @@ public class UnSuggest extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Long suggestionId = slashCommandParameterService.getCommandOption(SUGGESTION_ID_PARAMETER, event, Long.class, Integer.class).longValue();
-        return suggestionService.removeSuggestion(event.getMember().getIdLong(), suggestionId, event.getMember())
+        return suggestionService.removeSuggestion(event.getGuild().getIdLong(), suggestionId, event.getMember())
                 .thenCompose(unused -> interactionService.replyEmbed(UN_SUGGEST_RESPONSE, event))
                 .thenApply(aVoid ->  CommandResult.fromSuccess());
     }
