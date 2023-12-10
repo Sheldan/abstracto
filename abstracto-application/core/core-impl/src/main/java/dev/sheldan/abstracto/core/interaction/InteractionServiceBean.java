@@ -163,6 +163,13 @@ public class InteractionServiceBean implements InteractionService {
     }
 
     @Override
+    public List<CompletableFuture<Message>> sendEmbed(String templateKey, InteractionHook interactionHook) {
+        Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, new Object(), serverId);
+        return sendMessageToInteraction(messageToSend, interactionHook);
+    }
+
+    @Override
     public CompletableFuture<Message> editOriginal(MessageToSend messageToSend, InteractionHook interactionHook) {
         Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
 

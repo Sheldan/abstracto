@@ -32,6 +32,7 @@
         <module>anti-raid</module>
         <module>custom-command</module>
         <module>twitch</module>
+        <module>giveaway</module>
     </modules>
 
 </project>

@@ -293,6 +293,12 @@
                 <artifactId>custom-command-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>dev.sheldan.abstracto.modules</groupId>
+                <artifactId>giveaway-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
