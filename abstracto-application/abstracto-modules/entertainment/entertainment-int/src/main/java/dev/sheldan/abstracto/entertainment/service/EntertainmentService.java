@@ -1,9 +1,13 @@
 package dev.sheldan.abstracto.entertainment.service;
 
 import dev.sheldan.abstracto.entertainment.exception.ReactDuplicateCharacterException;
+import dev.sheldan.abstracto.entertainment.model.command.PressFPromptModel;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface EntertainmentService {
     String getEightBallValue(String text);
@@ -12,6 +16,10 @@ public interface EntertainmentService {
     boolean executeRoulette(Member memberExecuting);
     String takeChoice(List<String> choices, Member memberExecuting);
     String createMockText(String text, Member memberExecuting, Member mockedUser);
+    PressFPromptModel getPressFModel(String text);
+    void persistPressF(String text, Duration duration, Member executingMember, String componentId, GuildMessageChannel guildMessageChannel, Long messageId);
+
+    CompletableFuture<Void> evaluatePressF(Long pressFId);
 
     /**
      * Converts the given text to unicode characters (with predefined values from a manual mapping) and returns the matched

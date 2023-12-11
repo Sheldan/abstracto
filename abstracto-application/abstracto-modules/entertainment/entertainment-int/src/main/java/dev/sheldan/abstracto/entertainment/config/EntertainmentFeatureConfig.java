@@ -12,6 +12,7 @@ public class EntertainmentFeatureConfig implements FeatureConfig {
 
     public static final String ROULETTE_BULLETS_CONFIG_KEY = "rouletteBullets";
     public static final String ROLL_DEFAULT_HIGH_KEY = "rollDefaultHigh";
+    public static final String PRESS_F_DEFAULT_DURATION_SECONDS = "pressFDefaultDurationSeconds";
     @Override
     public FeatureDefinition getFeature() {
         return EntertainmentFeatureDefinition.ENTERTAINMENT;
@@ -19,6 +20,6 @@ public class EntertainmentFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(ROULETTE_BULLETS_CONFIG_KEY, ROLL_DEFAULT_HIGH_KEY);
+        return Arrays.asList(ROULETTE_BULLETS_CONFIG_KEY, ROLL_DEFAULT_HIGH_KEY, PRESS_F_DEFAULT_DURATION_SECONDS);
     }
 }

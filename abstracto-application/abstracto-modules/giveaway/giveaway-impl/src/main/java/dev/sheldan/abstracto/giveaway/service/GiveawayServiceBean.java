@@ -148,6 +148,7 @@ public class GiveawayServiceBean implements GiveawayService {
         Giveaway giveaway = giveAwayOptional.get();
         Set<Long> winners = new HashSet<>();
         Integer winnerCount = giveaway.getWinnerCount();
+        giveaway.getParticipants().forEach(giveawayParticipant -> giveawayParticipant.setWon(false));
         List<Long> potentialWinners = new ArrayList<>(giveaway
                 .getParticipants()
                 .stream()
@@ -170,6 +171,7 @@ public class GiveawayServiceBean implements GiveawayService {
                 .stream()
                 .filter(giveawayParticipant -> winners.contains(giveawayParticipant.getParticipant().getUserInServerId()))
                 .toList();
+        winningParticipants.forEach(giveawayParticipant -> giveawayParticipant.setWon(true));
         List<MemberDisplay> winnerDisplays = winningParticipants
                 .stream()
                 .map(giveawayParticipant -> MemberDisplay.fromAUserInAServer(giveawayParticipant.getParticipant()))

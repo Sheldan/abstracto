@@ -2,12 +2,33 @@ package dev.sheldan.abstracto.entertainment.service;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
+import dev.sheldan.abstracto.core.interaction.ComponentPayloadService;
+import dev.sheldan.abstracto.core.interaction.ComponentService;
+import dev.sheldan.abstracto.core.models.database.AChannel;
+import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
+import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureConfig;
 import dev.sheldan.abstracto.entertainment.exception.ReactDuplicateCharacterException;
+import dev.sheldan.abstracto.entertainment.model.PressFPayload;
 import dev.sheldan.abstracto.entertainment.model.ReactMapping;
+import dev.sheldan.abstracto.entertainment.model.command.PressFPromptModel;
+import dev.sheldan.abstracto.entertainment.model.command.PressFResultModel;
+import dev.sheldan.abstracto.entertainment.model.database.PressF;
+import dev.sheldan.abstracto.entertainment.service.management.PressFManagementService;
+import dev.sheldan.abstracto.scheduling.model.JobParameters;
+import dev.sheldan.abstracto.scheduling.service.SchedulerService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -17,7 +38,10 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -30,6 +54,9 @@ public class EntertainmentServiceBean implements EntertainmentService {
             "DONT_COUNT", "REPLY_NO", "SOURCES_NO", "OUTLOOK_NOT_GOOD", "DOUBTFUL" // negative
     );
 
+    public static final String PRESS_F_BUTTON_ORIGIN = "PRESS_F_BUTTON";
+    private static final String PRESS_F_RESULT_TEMPLATE_KEY = "pressF_result";
+
     private ReactMapping reactMapping;
 
     @Autowired
@@ -37,6 +64,33 @@ public class EntertainmentServiceBean implements EntertainmentService {
 
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private ComponentService componentService;
+
+    @Autowired
+    private PressFManagementService pressFManagementService;
+
+    @Autowired
+    private UserInServerManagementService userInServerManagementService;
+
+    @Autowired
+    private SchedulerService schedulerService;
+
+    @Autowired
+    private ComponentPayloadService componentPayloadService;
+
+    @Autowired
+    private ChannelManagementService channelManagementService;
+
+    @Autowired
+    private ChannelService channelService;
+
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Value("classpath:react_mappings.json")
     private Resource reactMappingSource;
@@ -89,6 +143,66 @@ public class EntertainmentServiceBean implements EntertainmentService {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public PressFPromptModel getPressFModel(String text) {
+        String pressFComponent = componentService.generateComponentId();
+        return PressFPromptModel
+                .builder()
+                .pressFComponentId(pressFComponent)
+                .text(text)
+                .build();
+    }
+
+    @Transactional
+    public void persistPressF(String text, Duration duration, Member executingMember, String componentId, GuildMessageChannel guildMessageChannel, Long messageId) {
+        Instant targetDate = Instant.now().plus(duration);
+        log.info("Persisting pressF started by {} in server {} with due date {}.", executingMember.getIdLong(), executingMember.getGuild().getIdLong(), targetDate);
+        AUserInAServer creator = userInServerManagementService.loadOrCreateUser(executingMember);
+        AChannel channel = channelManagementService.loadChannel(guildMessageChannel);
+        PressF pressF = pressFManagementService.createPressF(text, targetDate, creator, channel, messageId);
+        HashMap<Object, Object> parameters = new HashMap<>();
+        parameters.put("pressFId", pressF.getId().toString());
+        JobParameters jobParameters = JobParameters
+                .builder()
+                .parameters(parameters)
+                .build();
+        log.debug("Starting scheduled job for pressF {}", pressF.getId());
+        schedulerService.executeJobWithParametersOnce("pressFEvaluationJob", "entertainment", jobParameters, Date.from(targetDate));
+        PressFPayload pressFPayload = PressFPayload
+                .builder()
+                .pressFId(pressF.getId())
+                .build();
+        log.debug("Persisting payload for pressF {}", pressF.getId());
+        componentPayloadService.createButtonPayload(componentId, pressFPayload, PRESS_F_BUTTON_ORIGIN, creator.getServerReference());
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<Void> evaluatePressF(Long pressFId) {
+        Optional<PressF> pressFOptional = pressFManagementService.getPressFById(pressFId);
+        if(pressFOptional.isPresent()) {
+            log.info("Evaluating pressF with id {}", pressFId);
+            PressF pressF = pressFOptional.get();
+            PressFResultModel model = PressFResultModel
+                    .builder()
+                    .userCount((long) pressF.getPresser().size())
+                    .text(pressF.getText())
+                    .messageId(pressF.getMessageId())
+                    .build();
+            MessageToSend messageToSend = templateService.renderEmbedTemplate(PRESS_F_RESULT_TEMPLATE_KEY, model);
+            Long serverId = pressF.getServer().getId();
+            Long channelId = pressF.getPressFChannel().getId();
+            Long messageId = pressF.getMessageId();
+            return FutureUtils.toSingleFutureGeneric(channelService.sendMessageEmbedToSendToAChannel(messageToSend, pressF.getPressFChannel()))
+            .thenCompose(unused -> messageService.loadMessage(serverId, channelId, messageId).thenCompose(message -> {
+                log.info("Clearing buttons from pressF {} in with message {} in channel {} in server {}.", pressFId, pressFId, channelId, serverId);
+                return componentService.clearButtons(message);
+            }));
+        } else {
+            throw new AbstractoRunTimeException(String.format("PressF with id %s not found.", pressFId));
+        }
     }
 
     @Override

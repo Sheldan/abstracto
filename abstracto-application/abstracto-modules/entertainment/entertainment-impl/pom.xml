@@ -9,11 +9,6 @@
 
     <artifactId>entertainment-impl</artifactId>
 
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -55,6 +50,12 @@
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.sheldan.abstracto.scheduling</groupId>
+            <artifactId>scheduling-int</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

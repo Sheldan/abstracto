@@ -126,7 +126,8 @@ public class CommandManager implements CommandRegistry {
         }
         return commandConfiguration
                 .getParameters()
-                .stream().filter(parameter -> isParameterRequired(parameter, serverId))
+                .stream().filter(parameter -> !parameter.getSlashCommandOnly())
+                .filter(parameter -> isParameterRequired(parameter, serverId))
                 .count();
     }
 
