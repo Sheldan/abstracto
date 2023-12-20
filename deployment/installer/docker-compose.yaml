@@ -1,9 +1,0 @@
-version: "3.7"
-
-services:
-  config_deployment:
-    build: config-deployment
-    image: ${REGISTRY_PREFIX}abstracto-db-deployment:${VERSION:-latest}
-  template_deployment:
-    build: template-deployment
-    image: ${REGISTRY_PREFIX}abstracto-template-deployment:${VERSION:-latest}

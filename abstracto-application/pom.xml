@@ -19,7 +19,6 @@
         <module>scheduling</module>
         <module>documentation</module>
         <module>bundle</module>
-        <module>rest-api</module>
     </modules>
 
     <distributionManagement>

@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  config_deployment:
+    build: python/deployment/installer/config-deployment
+    image: ${REGISTRY_PREFIX}abstracto-db-deployment:${VERSION:-latest}
+  template_deployment:
+    build: python/deployment/installer/template-deployment
+    image: ${REGISTRY_PREFIX}abstracto-template-deployment:${VERSION:-latest}
+  rest_api:
+    build:
+      context: python/components/rest-api
+      dockerfile: docker/Dockerfile
+    image: ${REGISTRY_PREFIX}abstracto-rest-api:${VERSION:-latest}
