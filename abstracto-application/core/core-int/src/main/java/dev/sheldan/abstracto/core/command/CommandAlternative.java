@@ -6,6 +6,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public interface CommandAlternative extends Prioritized {
-    boolean shouldExecute(UnParsedCommandParameter parameter, Guild guild);
+    boolean shouldExecute(UnParsedCommandParameter parameter, Guild guild, Message message);
     void execute(UnParsedCommandParameter parameter, Message message);
 }

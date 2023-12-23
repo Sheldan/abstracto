@@ -166,7 +166,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
                 if(commandAlternatives != null) {
                     Optional<CommandAlternative> foundAlternativeOptional = commandAlternatives
                             .stream()
-                            .filter(commandAlternative -> commandAlternative.shouldExecute(result.getParameter(), event.getGuild()))
+                            .filter(commandAlternative -> commandAlternative.shouldExecute(result.getParameter(), event.getGuild(), message))
                             .findFirst();
                     if(foundAlternativeOptional.isPresent()) {
                         CommandAlternative foundAlternative = foundAlternativeOptional.get();
@@ -584,7 +584,7 @@ public class CommandReceivedHandler extends ListenerAdapter {
         metricService.registerCounter(COMMANDS_WRONG_PARAMETER_COUNTER, "Commands with incorrect parameter");
         this.parameterHandlers = parameterHandlers.stream().sorted(comparing(CommandParameterHandler::getPriority)).collect(Collectors.toList());
         if(commandAlternatives != null) {
-            this.commandAlternatives = commandAlternatives.stream().sorted(comparing(Prioritized::getPriority)).collect(Collectors.toList());
+            this.commandAlternatives = commandAlternatives.stream().sorted(comparing(Prioritized::getPriority).reversed()).collect(Collectors.toList());
         }
     }
 

@@ -45,8 +45,16 @@ public class CustomCommandAlternative implements CommandAlternative {
     private CustomCommandFeatureConfig customCommandFeatureConfig;
 
     @Override
-    public boolean shouldExecute(UnParsedCommandParameter parameter, Guild guild) {
-        return featureFlagService.isFeatureEnabled(customCommandFeatureConfig, guild.getIdLong());
+    public boolean shouldExecute(UnParsedCommandParameter parameter, Guild guild, Message message) {
+        boolean featureEnabled = featureFlagService.isFeatureEnabled(customCommandFeatureConfig, guild.getIdLong());
+        if(featureEnabled) {
+            String contentStripped = message.getContentRaw();
+            List<String> parameters = Arrays.asList(contentStripped.split(" "));
+            String commandName = commandRegistry.getCommandName(parameters.get(0), message.getGuild().getIdLong());
+            Optional<CustomCommand> customCommandOptional = customCommandManagementService.getCustomCommandByName(commandName, message.getGuild().getIdLong());
+            return customCommandOptional.isPresent();
+        }
+        return false;
     }
 
     @Override
