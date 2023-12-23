@@ -7,8 +7,13 @@ services:
   template_deployment:
     build: python/deployment/installer/template-deployment
     image: ${REGISTRY_PREFIX}abstracto-template-deployment:${VERSION:-latest}
-  rest_api:
+  rest_api_base:
     build:
-      context: python/components/rest-api
+      context: python/components/rest-api-base
       dockerfile: docker/Dockerfile
     image: ${REGISTRY_PREFIX}abstracto-rest-api:${VERSION:-latest}
+  rest_api_image_gen:
+    build:
+      context: python/components/image-gen
+      dockerfile: docker/Dockerfile
+    image: ${REGISTRY_PREFIX}abstracto-rest-api-image-gen:${VERSION:-latest}

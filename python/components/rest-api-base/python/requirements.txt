@@ -15,3 +15,4 @@ waitress==2.1.2
 Werkzeug==3.0.1
 zipp==3.17.0
 pytz==2023.3.post1
+validators==0.22.0

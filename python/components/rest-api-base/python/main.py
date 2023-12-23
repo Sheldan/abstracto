@@ -11,8 +11,6 @@ app = Flask(__name__, template_folder=template_dir)
 
 import sys
 sys.path.append("..")
-# loads the api end points
-from base import image_gen
 
 # This code was only done, because "from custom import *" did not work, it seems it did not execute the code in it
 # while the code was valid
@@ -48,7 +46,7 @@ def dynamic_import_from_src(src, star_import=False):
 
 
 if __name__ == "__main__":
-    dynamic_import_from_src("custom", star_import=False)
+    dynamic_import_from_src("endpoints", star_import=False)
 
 @app.route('/')
 def hello():

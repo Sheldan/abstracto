@@ -1,0 +1,20 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
+    http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
+    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="imageGenerationFeature" value="(SELECT id FROM feature WHERE key = 'imageGeneration')"/>
+
+    <changeSet  author="Sheldan" id="triggered-command">
+        <insert tableName="command">
+            <column name="name" value="triggered"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${imageGenerationFeature}"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
