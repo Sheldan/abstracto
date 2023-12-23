@@ -47,7 +47,7 @@ jobs:
         id: dotenv
         uses: falti/dotenv-action@v1.0.4
         with:
-          path: ./deployment/installer/.env
+          path: .env
       - name: Push container
         run: docker-compose build && docker-compose push
         env:
