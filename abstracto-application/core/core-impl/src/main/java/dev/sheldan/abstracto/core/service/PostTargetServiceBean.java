@@ -289,11 +289,13 @@ public class PostTargetServiceBean implements PostTargetService {
     public List<String> getPostTargetsOfEnabledFeatures(AServer server) {
         List<String> postTargets = new ArrayList<>();
         List<FeatureConfig> allFeatureConfigs = featureConfigService.getAllFeatureConfigs();
-        allFeatureConfigs.forEach(featureConfig -> {
-            if (featureFlagService.isFeatureEnabled(featureConfig, server)) {
-                featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> postTargets.add(postTargetEnum.getKey()));
-            }
-        });
+        if(allFeatureConfigs != null) {
+            allFeatureConfigs.forEach(featureConfig -> {
+                if (featureFlagService.isFeatureEnabled(featureConfig, server)) {
+                    featureConfig.getRequiredPostTargets().forEach(postTargetEnum -> postTargets.add(postTargetEnum.getKey()));
+                }
+            });
+        }
         return postTargets;
     }
 

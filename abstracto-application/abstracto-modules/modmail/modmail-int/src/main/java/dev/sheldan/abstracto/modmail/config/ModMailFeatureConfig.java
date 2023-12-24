@@ -20,6 +20,7 @@ import java.util.List;
 @Component
 public class ModMailFeatureConfig implements FeatureConfig {
 
+    public static final String MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY = "modMailClosingText";
     @Autowired
     private ModMailFeatureValidator modMailFeatureValidator;
 
@@ -33,7 +34,7 @@ public class ModMailFeatureConfig implements FeatureConfig {
 
     @Override
     public List<PostTargetEnum> getRequiredPostTargets() {
-        return Arrays.asList(ModMailPostTargets.MOD_MAIL_PING, ModMailPostTargets.MOD_MAIL_LOG);
+        return Arrays.asList(ModMailPostTargets.MOD_MAIL_PING, ModMailPostTargets.MOD_MAIL_LOG, ModMailPostTargets.MOD_MAIL_CONTAINER);
     }
 
     @Override
@@ -48,12 +49,12 @@ public class ModMailFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(ModMailMode.LOGGING, ModMailMode.SEPARATE_MESSAGE);
+        return Arrays.asList(ModMailMode.LOGGING, ModMailMode.SEPARATE_MESSAGE, ModMailMode.THREAD_CONTAINER);
     }
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList("modMailClosingText");
+        return Arrays.asList(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY);
     }
 
     @Override

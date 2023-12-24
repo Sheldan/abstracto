@@ -16,7 +16,8 @@ import java.util.List;
 public class FeatureValidationResult implements Templatable {
 
     private FeatureConfig feature;
-    private Boolean validationResult;
+    @Builder.Default
+    private Boolean validationResult = false;
     @Builder.Default
     private List<ValidationErrorModel> validationErrorModels = new ArrayList<>();
     private String validationText;

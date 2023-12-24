@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -196,11 +197,8 @@ public class ChannelServiceBean implements ChannelService {
 
     @Override
     public List<CompletableFuture<Message>> sendMessageToSendToChannel(MessageToSend messageToSend, MessageChannel textChannel) {
-        if(messageToSend.getEphemeral()) {
-            throw new IllegalArgumentException("Ephemeral messages are only supported in interaction context.");
-        }
-        if(textChannel instanceof GuildMessageChannel) {
-            GuildMessageChannel guildMessageChannel = (GuildMessageChannel) textChannel;
+        messageToSend.setEphemeral(false);
+        if(textChannel instanceof GuildMessageChannel guildMessageChannel) {
             long maxFileSize = guildMessageChannel.getGuild().getMaxFileSize();
             // in this case, we cannot upload the file, so we need to fail
             messageToSend.getAttachedFiles().forEach(attachedFile -> {
@@ -428,17 +426,27 @@ public class ChannelServiceBean implements ChannelService {
     }
 
     @Override
+    public ThreadChannel getThreadChannel(Long threadChannelId) {
+        return botService.getInstance().getThreadChannelById(threadChannelId);
+    }
+
+    @Override
+    public CompletableFuture<Void> archiveThreadChannel(ThreadChannel threadChannel) {
+        return threadChannel.getManager().setArchived(true).submit();
+    }
+
+    @Override
     public CompletableFuture<Void> deleteTextChannel(AChannel channel) {
        return deleteTextChannel(channel.getServer().getId(), channel.getId());
     }
 
     @Override
     public CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId) {
-        TextChannel textChannelById = botService.getInstance().getTextChannelById(channelId);
-        if(textChannelById != null) {
+        GuildChannel channelById = botService.getInstance().getGuildChannelById(channelId);
+        if(channelById != null) {
             log.info("Deleting channel {} on server {}.", channelId, serverId);
             metricService.incrementCounter(CHANNEL_DELETE_METRIC);
-            return textChannelById.delete().submit();
+            return channelById.delete().submit();
         }
         throw new ChannelNotInGuildException(channelId);
     }
@@ -506,6 +514,21 @@ public class ChannelServiceBean implements ChannelService {
             throw new CategoryNotFoundException(categoryId, server.getId());
         }
         throw new GuildNotFoundException(server.getId());
+    }
+
+    @Override
+    public CompletableFuture<ThreadChannel> createThread(TextChannel textChannel, String name) {
+        return textChannel.createThreadChannel(name).submit();
+    }
+
+    @Override
+    public CompletableFuture<ThreadChannel> createThreadWithStarterMessage(TextChannel textChannel, String name, Long messageId) {
+        return textChannel.createThreadChannel(name, messageId).submit();
+    }
+
+    @Override
+    public CompletableFuture<ThreadChannel> createPrivateThread(TextChannel textChannel, String name) {
+        return textChannel.createThreadChannel(name, true).submit();
     }
 
     @Override

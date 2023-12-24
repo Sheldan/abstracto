@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -43,6 +44,8 @@ public interface ChannelService {
     CompletableFuture<Message> editFieldValueInMessage(MessageChannel channel, Long messageId, Integer index, String newValue);
     CompletableFuture<Message> removeFieldFromMessage(MessageChannel channel, Long messageId, Integer index, Integer embedIndex);
     CompletableFuture<Message> removeComponents(MessageChannel channel, Long messageId);
+    ThreadChannel getThreadChannel(Long threadChannelId);
+    CompletableFuture<Void> archiveThreadChannel(ThreadChannel threadChannel);
     CompletableFuture<Void> deleteTextChannel(AChannel channel);
     CompletableFuture<Void> deleteTextChannel(Long serverId, Long channelId);
     List<CompletableFuture<Message>> sendEmbedTemplateInTextChannelList(String templateKey, Object model, MessageChannel channel);
@@ -52,6 +55,9 @@ public interface ChannelService {
     CompletableFuture<Void> deleteMessagesInChannel(MessageChannel messageChannel, List<Message> messages);
 
     CompletableFuture<TextChannel> createTextChannel(String name, AServer server, Long categoryId);
+    CompletableFuture<ThreadChannel> createThread(TextChannel textChannel, String name);
+    CompletableFuture<ThreadChannel> createThreadWithStarterMessage(TextChannel textChannel, String name, Long messageId);
+    CompletableFuture<ThreadChannel> createPrivateThread(TextChannel textChannel, String name);
     Optional<GuildChannel> getChannelFromAChannel(AChannel channel);
     Optional<GuildMessageChannel> getGuildMessageChannelFromAChannelOptional(AChannel channel);
     GuildMessageChannel getGuildMessageChannelFromAChannel(AChannel channel);

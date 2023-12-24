@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.exception.FeatureModeNotFoundException;
+import dev.sheldan.abstracto.core.listener.AsyncStartupListener;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.property.FeatureModeProperty;
 import dev.sheldan.abstracto.core.models.template.commands.AFeatureModeDisplay;
@@ -15,17 +16,18 @@ import dev.sheldan.abstracto.core.service.management.DefaultFeatureModeManagemen
 import dev.sheldan.abstracto.core.service.management.FeatureFlagManagementService;
 import dev.sheldan.abstracto.core.service.management.FeatureModeManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Component
-public class FeatureModeServiceBean implements FeatureModeService {
+@Slf4j
+public class FeatureModeServiceBean implements FeatureModeService, AsyncStartupListener {
 
     @Autowired
     private FeatureConfigService featureConfigService;
@@ -122,7 +124,10 @@ public class FeatureModeServiceBean implements FeatureModeService {
     @Override
     public List<FeatureMode> getAllAvailableFeatureModes() {
         List<FeatureMode> fullFeatureModes = new ArrayList<>();
-        featureConfigService.getAllFeatureConfigs().forEach(featureConfig -> fullFeatureModes.addAll(featureConfig.getAvailableModes()));
+        List<FeatureConfig> allFeatureConfigs = featureConfigService.getAllFeatureConfigs();
+        if(allFeatureConfigs != null) {
+            allFeatureConfigs.forEach(featureConfig -> fullFeatureModes.addAll(featureConfig.getAvailableModes()));
+        }
         return fullFeatureModes;
     }
 
@@ -209,13 +214,16 @@ public class FeatureModeServiceBean implements FeatureModeService {
     }
 
 
-    @PostConstruct
-    public void postConstruct() {
-        featureConfigService.getAllFeatureConfigs().forEach(featureConfig -> {
-            List<String> modes = new ArrayList<>();
-            featureConfig.getAvailableModes().forEach(featureMode -> modes.add(featureMode.getKey()));
-            featureModes.put(featureConfig.getFeature().getKey(), modes);
-        });
+    @Override
+    public void execute() {
+        List<FeatureConfig> allFeatureConfigs = featureConfigService.getAllFeatureConfigs();
+        log.info("Loading feature modes.");
+        if(allFeatureConfigs != null) {
+            allFeatureConfigs.forEach(featureConfig -> {
+                List<String> modes = new ArrayList<>();
+                featureConfig.getAvailableModes().forEach(featureMode -> modes.add(featureMode.getKey()));
+                featureModes.put(featureConfig.getFeature().getKey(), modes);
+            });
+        }
     }
-
 }

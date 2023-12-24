@@ -73,7 +73,17 @@ public class EnableFeature extends AbstractConditionableCommand {
         EnableFeatureResult result = enableFeature(serverId, featureKey);
 
         if(result.featureDependencies.isEmpty()) {
-            return CompletableFuture.completedFuture(CommandResult.fromSuccess());
+            if(!result.validationResult.getValidationResult()) {
+                FeatureSwitchModel model = FeatureSwitchModel
+                        .builder()
+                        .validationText(result.validationResult.getValidationText())
+                        .build();
+                MessageToSend messageToSend = templateService.renderEmbedTemplate(ENABLE_FEATURE_RESPONSE_TEMPLATE_KEY, model, serverId);
+                return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
+                        .thenApply(message -> CommandResult.fromIgnored());
+            } else {
+                return CompletableFuture.completedFuture(CommandResult.fromSuccess());
+            }
         } else {
             List<String> additionalFeatures = result.featureDependencies
                     .stream()
@@ -96,7 +106,11 @@ public class EnableFeature extends AbstractConditionableCommand {
         String featureName = slashCommandParameterService.getCommandOption(FEATURE_NAME_PARAMETER, event, String.class);
         EnableFeatureResult enableFeatureResult = enableFeature(event.getGuild().getIdLong(), featureName);
         if(enableFeatureResult.featureDependencies.isEmpty()) {
-            return interactionService.replyEmbed(ENABLE_FEATURE_RESPONSE_TEMPLATE_KEY, event)
+            FeatureSwitchModel model = FeatureSwitchModel
+                    .builder()
+                    .validationText(enableFeatureResult.validationResult.getValidationText())
+                    .build();
+            return interactionService.replyEmbed(ENABLE_FEATURE_RESPONSE_TEMPLATE_KEY, model, event)
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
         } else {
             List<String> additionalFeatures = enableFeatureResult.featureDependencies

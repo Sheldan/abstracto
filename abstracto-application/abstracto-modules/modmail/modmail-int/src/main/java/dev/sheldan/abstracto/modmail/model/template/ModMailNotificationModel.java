@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public class ModMailNotificationModel extends ServerContext {
      */
     private List<ModMailRole> roles;
     /**
-     * The {@link TextChannel} in which the mod mail thread is handled
+     * The {@link GuildMessageChannel} in which the mod mail thread is handled
      */
-    private TextChannel channel;
+    private GuildMessageChannel channel;
 }

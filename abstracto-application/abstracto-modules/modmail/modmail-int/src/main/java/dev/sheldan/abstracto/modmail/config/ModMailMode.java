@@ -9,7 +9,7 @@ import lombok.Getter;
  */
 @Getter
 public enum  ModMailMode implements FeatureMode {
-    LOGGING("log"), SEPARATE_MESSAGE("threadMessage");
+    LOGGING("log"), SEPARATE_MESSAGE("threadMessage"), THREAD_CONTAINER("threadContainer");
 
     private final String key;
 

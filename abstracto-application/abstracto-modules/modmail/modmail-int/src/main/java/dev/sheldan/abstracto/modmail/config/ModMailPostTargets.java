@@ -12,7 +12,11 @@ public enum  ModMailPostTargets implements PostTargetEnum {
     /**
      * The channel to be used to log the contents of closed  mod mail threads
      */
-    MOD_MAIL_LOG("modmailLog");
+    MOD_MAIL_LOG("modmailLog"),
+    /**
+     * The thread used as a container for the modmail threads
+     */
+    MOD_MAIL_CONTAINER("modmailContainer");
 
     private String key;
 

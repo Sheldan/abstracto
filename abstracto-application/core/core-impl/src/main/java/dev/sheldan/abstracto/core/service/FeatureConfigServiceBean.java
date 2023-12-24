@@ -53,9 +53,12 @@ public class FeatureConfigServiceBean implements FeatureConfigService {
 
     @Override
     public FeatureConfig getFeatureDisplayForFeature(FeatureDefinition featureDefinition) {
-        Optional<FeatureConfig> any = getAllFeatureConfigs().stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureDefinition)).findAny();
-        if(any.isPresent()) {
-            return any.get();
+        List<FeatureConfig> allFeatureConfigs = getAllFeatureConfigs();
+        if(allFeatureConfigs != null) {
+            Optional<FeatureConfig> any = allFeatureConfigs.stream().filter(featureDisplay -> featureDisplay.getFeature().equals(featureDefinition)).findAny();
+            if(any.isPresent()) {
+                return any.get();
+            }
         }
         throw new FeatureNotFoundException(featureDefinition.getKey(), getFeaturesAsList());
     }

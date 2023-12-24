@@ -41,4 +41,5 @@ public class ModMailClosingHeaderModel {
     private Boolean silently;
     private User user;
     private Long serverId;
+    private Long modmailThreadId;
 }
