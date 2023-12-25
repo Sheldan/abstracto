@@ -16,6 +16,8 @@ public class ImageGenerationServiceBean implements ImageGenerationService {
     @Value("${abstracto.feature.imagegeneration.triggered.url}")
     private String triggeredUrl;
 
+    @Value("${abstracto.feature.imagegeneration.pat.url}")
+    private String patUrl;
 
     @Autowired
     private HttpService httpService;
@@ -26,6 +28,15 @@ public class ImageGenerationServiceBean implements ImageGenerationService {
             return httpService.downloadFileToTempFile(triggeredUrl.replace("{1}", imageUrl));
         } catch (IOException e) {
             throw new AbstractoRunTimeException(String.format("Failed to download triggered gif for url %s with error %s", imageUrl, e.getMessage()));
+        }
+    }
+
+    @Override
+    public File getPatGif(String imageUrl) {
+        try {
+            return httpService.downloadFileToTempFile(patUrl.replace("{1}", imageUrl));
+        } catch (IOException e) {
+            throw new AbstractoRunTimeException(String.format("Failed to download pat gif for url %s with error %s", imageUrl, e.getMessage()));
         }
     }
 

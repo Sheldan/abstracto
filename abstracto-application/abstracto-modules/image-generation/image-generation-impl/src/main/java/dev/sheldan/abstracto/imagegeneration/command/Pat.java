@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-public class Triggered extends AbstractConditionableCommand {
-
+public class Pat extends AbstractConditionableCommand {
     public static final String MEMBER_PARAMETER_KEY = "member";
+
     @Autowired
     private ImageGenerationService imageGenerationService;
 
@@ -53,9 +53,9 @@ public class Triggered extends AbstractConditionableCommand {
     @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
-    private static final String TRIGGERED_EMBED_TEMPLATE_KEY = "triggered_response";
+    private static final String PAT_EMBED_TEMPLATE_KEY = "pat_response";
 
-    @Value("${abstracto.feature.imagegeneration.triggered.imagesize}")
+    @Value("${abstracto.feature.imagegeneration.pat.imagesize}")
     private Integer imageSize;
 
     @Override
@@ -67,13 +67,13 @@ public class Triggered extends AbstractConditionableCommand {
         } else {
             member = (Member) parameters.get(0);
         }
-        File triggeredGifFile = imageGenerationService.getTriggeredGif(member.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object());
+        File patGifFile = imageGenerationService.getPatGif(member.getEffectiveAvatar().getUrl(imageSize));
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()
-                .file(triggeredGifFile)
-                .fileName("triggered.gif")
+                .file(patGifFile)
+                .fileName("pat.gif")
                 .build();
         messageToSend.getAttachedFiles().add(file);
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
@@ -90,13 +90,13 @@ public class Triggered extends AbstractConditionableCommand {
         } else {
             targetMember = event.getMember();
         }
-        File triggeredGifFile = imageGenerationService.getTriggeredGif(targetMember.getEffectiveAvatar().getUrl(imageSize));
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(TRIGGERED_EMBED_TEMPLATE_KEY, new Object());
+        File patGifFile = imageGenerationService.getPatGif(targetMember.getEffectiveAvatar().getUrl(imageSize));
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object());
         // template support does not support binary files
         AttachedFile file = AttachedFile
                 .builder()
-                .file(triggeredGifFile)
-                .fileName("triggered.gif")
+                .file(patGifFile)
+                .fileName("pat.gif")
                 .build();
         messageToSend.getAttachedFiles().add(file);
         return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(messageToSend, event.getHook()))
@@ -125,11 +125,11 @@ public class Triggered extends AbstractConditionableCommand {
                 .enabled(true)
                 .rootCommandName(ImageGenerationSlashCommandNames.IMAGE_GENERATION)
                 .groupName("memes")
-                .commandName("triggered")
+                .commandName("pat")
                 .build();
 
         return CommandConfiguration.builder()
-                .name("triggered")
+                .name("pat")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .supportsEmbedException(true)
