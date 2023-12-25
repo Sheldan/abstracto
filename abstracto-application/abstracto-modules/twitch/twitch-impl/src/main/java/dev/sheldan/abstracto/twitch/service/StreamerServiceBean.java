@@ -400,23 +400,37 @@ public class StreamerServiceBean implements StreamerService {
                 }
                 streamer.setCurrentGameId(stream.getGameId());
             }
-            return;
-        }
-        CompletableFutureList<Message> messages = notifyAboutOnlineStream(stream, streamer, streamerUser);
-        messages.getMainFuture()
-                .thenAccept(unused -> {
-                    Message message = messages.getFutures().get(0).join();
-                    if(message != null) {
+        } else if(currentSession == null &&
+                !postTargetService.postTargetUsableInServer(TwitchPostTarget.TWITCH_LIVE_NOTIFICATION, server.getId())) {
+            // this is the case in which the streamer is online, and we should in theory notify about the online status
+            // _but_ the difference is that there is no current session on going - as the sessions in our database are
+            // bound to actual notifications sent, and this is the case in which the post target has been disabled.
+            // In this case we only update current game if necessary
+            // this only really serves as a shortcut to not evaluate and create a full MessageToSend object
+            // just to not actually send it
+            if(streamer.getCurrentGameId() == null || !streamer.getCurrentGameId().equals(stream.getGameId())) {
+                log.info("Game for streamer {} has changed - updating game.", streamerId);
+                streamer.setCurrentGameId(stream.getGameId());
+            }
+            streamer.setOnline(true);
+            streamerManagementService.saveStreamer(streamer);
+        } else {
+            CompletableFutureList<Message> messages = notifyAboutOnlineStream(stream, streamer, streamerUser);
+            messages.getMainFuture()
+                    .thenAccept(unused -> {
+                        Message message = messages.getFutures().get(0).join();
                         try {
-                            self.storeStreamNotificationMessage(message, streamerId, stream);
+                            if(message != null) {
+                                self.storeStreamNotificationMessage(message, streamerId, stream);
+                            }
                         } catch (Exception exception) {
-                            log.error("Failed to store stream notification message of streamer {}.", streamerId, exception);
+                            log.error("Failed to update streamer {} in database.", streamerId, exception);
                         }
-                    }
-                }).exceptionally(throwable -> {
-                    log.error("Failed to notify about online stream of streamer {}.", streamerId, throwable);
-                    return null;
-                });
+                    }).exceptionally(throwable -> {
+                        log.error("Failed to notify about online stream of streamer {}.", streamerId, throwable);
+                        return null;
+                    });
+        }
     }
 
     @Transactional
