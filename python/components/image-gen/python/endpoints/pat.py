@@ -37,7 +37,7 @@ def pat_animated():
     original_input_image = input_image
     frame_count = original_input_image.n_frames
     old_width, old_height = input_image.size
-    with Image.open('resources/img/pet_sprite.png') as pat_background:
+    with Image.open('resources/img/pat_sprite.png') as pat_background:
         pat_background = pat_background.convert('RGBA')
         pat_width, pat_height = pat_background.size
         pat_ratio = old_width / sprite_size
