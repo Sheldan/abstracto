@@ -19,6 +19,9 @@ public class ImageGenerationServiceBean implements ImageGenerationService {
     @Value("${abstracto.feature.imagegeneration.pat.url}")
     private String patUrl;
 
+    @Value("${abstracto.feature.imagegeneration.bonk.url}")
+    private String bonkUrl;
+
     @Autowired
     private HttpService httpService;
 
@@ -37,6 +40,15 @@ public class ImageGenerationServiceBean implements ImageGenerationService {
             return httpService.downloadFileToTempFile(patUrl.replace("{1}", imageUrl));
         } catch (IOException e) {
             throw new AbstractoRunTimeException(String.format("Failed to download pat gif for url %s with error %s", imageUrl, e.getMessage()));
+        }
+    }
+
+    @Override
+    public File getBonkGif(String imageUrl) {
+        try {
+            return httpService.downloadFileToTempFile(bonkUrl.replace("{1}", imageUrl));
+        } catch (IOException e) {
+            throw new AbstractoRunTimeException(String.format("Failed to download bonk gif for url %s with error %s", imageUrl, e.getMessage()));
         }
     }
 

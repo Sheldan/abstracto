@@ -314,7 +314,8 @@ public class StreamerServiceBean implements StreamerService {
         }
         log.info("Streamer {} went offline.", streamerId);
         if (deleteFlagValues.computeIfAbsent(streamer.getServer().getId(),
-                aLong -> featureModeService.featureModeActive(TwitchFeatureDefinition.TWITCH, aLong, TwitchFeatureMode.DELETE_NOTIFICATION))) {
+                aLong -> featureModeService.featureModeActive(TwitchFeatureDefinition.TWITCH, aLong, TwitchFeatureMode.DELETE_NOTIFICATION))
+                && streamer.getCurrentSession() != null) {
             Long channelId = streamer.getCurrentSession().getChannel().getId();
             Long messageId = streamer.getCurrentSession().getId();
             messageService.deleteMessageInChannelInServer(streamer.getServer().getId(), channelId, messageId).thenAccept(unused -> {

@@ -9,9 +9,14 @@
     <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
     <property name="imageGenerationFeature" value="(SELECT id FROM feature WHERE key = 'imageGeneration')"/>
 
-    <changeSet  author="Sheldan" id="pat-command">
+    <changeSet  author="Sheldan" id="pat_bonk-commands">
         <insert tableName="command">
             <column name="name" value="pat"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${imageGenerationFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="bonk"/>
             <column name="module_id" valueComputed="${utilityModule}"/>
             <column name="feature_id" valueComputed="${imageGenerationFeature}"/>
         </insert>

@@ -54,7 +54,7 @@ def pat_animated():
                 resized_background = ImageOps.contain(background_image, (desired_new_pat_width, pat_height))
             resized_background_images.append(resized_background)
         if content_type == 'image/gif':
-            logging.info(f'Rendering pet for gif.')
+            logging.info(f'Rendering pat for gif.')
             old_frames = []
             for frame_index in range(frame_count):
                 input_image.seek(frame_index)
@@ -70,7 +70,7 @@ def pat_animated():
             return flask_utils.serve_pil_gif_image(frames, int(original_input_image.info['duration']))
         else:
             frames = []
-            logging.info(f'Rendering pet for static image.')
+            logging.info(f'Rendering pat for static image.')
             input_image = input_image.convert('RGBA')
             for background_image in resized_background_images:
                 frame = Image.new('RGBA', (old_width, old_height), (0, 0, 0, 0))
