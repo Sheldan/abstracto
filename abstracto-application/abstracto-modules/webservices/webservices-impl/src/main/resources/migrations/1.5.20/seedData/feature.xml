@@ -6,8 +6,12 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog dbchangelog.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext dbchangelog.xsd
     http://www.liquibase.org/xml/ns/pro dbchangelog.xsd" >
-    <include file="1.2.5-webservices/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.7/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.4.22/collection.xml" relativeToChangelogFile="true"/>
-    <include file="1.5.20/collection.xml" relativeToChangelogFile="true"/>
+    <changeSet author="Sheldan" id="wikipedia_feature-insertion">
+        <insert tableName="feature">
+            <column name="key" value="wikipedia"/>
+        </insert>
+        <insert tableName="feature">
+            <column name="key" value="dictionary"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

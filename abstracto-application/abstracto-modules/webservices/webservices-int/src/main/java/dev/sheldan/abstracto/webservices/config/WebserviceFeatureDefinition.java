@@ -8,7 +8,9 @@ public enum WebserviceFeatureDefinition implements FeatureDefinition {
     YOUTUBE("youtube"),
     URBAN_DICTIONARY("urban"),
     THREAD_READER("threadReader"),
-    OPEN_WEATHER_MAP("openWeatherMap");
+    OPEN_WEATHER_MAP("openWeatherMap"),
+    WIKIPEDIA("wikipedia"),
+    DICTIONARY("dictionary");
 
     private String key;
 

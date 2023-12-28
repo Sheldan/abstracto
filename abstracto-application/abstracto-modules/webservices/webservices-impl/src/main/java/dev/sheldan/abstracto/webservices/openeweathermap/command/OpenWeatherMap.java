@@ -26,7 +26,6 @@ import dev.sheldan.abstracto.webservices.openweathermap.service.OpenWeatherMapSe
 import dev.sheldan.abstracto.webservices.openweathermap.service.WeatherService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.checkerframework.checker.index.qual.SameLen;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
