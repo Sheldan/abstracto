@@ -8,12 +8,12 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
-import dev.sheldan.abstracto.core.models.database.AChannel;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
+import dev.sheldan.abstracto.modmail.exception.ModMailThreadClosedException;
 import dev.sheldan.abstracto.modmail.model.ClosingContext;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThreadState;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
@@ -43,16 +43,15 @@ public class CloseSilently extends AbstractConditionableCommand {
     @Autowired
     private TemplateService templateService;
 
-    @Autowired
-    private ChannelManagementService channelManagementService;
-
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
         // default note text is configurable via template, because the note is optional
         String note = parameters.size() == 1 ? (String) parameters.get(0) : templateService.renderTemplate("modmail_close_default_note", new Object());
-        AChannel channel = channelManagementService.loadChannel(commandContext.getChannel());
-        ModMailThread thread = modMailThreadManagementService.getByChannel(channel);
+        ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
+        if(ModMailThreadState.CLOSED.equals(modMailThread.getState()) || ModMailThreadState.CLOSING.equals(modMailThread.getState())) {
+            throw new ModMailThreadClosedException();
+        }
         ClosingContext context = ClosingContext
                 .builder()
                 .closingMember(commandContext.getAuthor())
@@ -60,7 +59,7 @@ public class CloseSilently extends AbstractConditionableCommand {
                 .log(true)
                 .note(note)
                 .build();
-        return modMailThreadService.closeModMailThread(thread, context, commandContext.getUndoActions())
+        return modMailThreadService.closeModMailThread(modMailThread, context, commandContext.getUndoActions())
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 

@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.condition.CommandCondition;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
@@ -14,7 +13,9 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.config.ModMailSlashCommandNames;
+import dev.sheldan.abstracto.modmail.exception.ModMailThreadClosedException;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
+import dev.sheldan.abstracto.modmail.model.database.ModMailThreadState;
 import dev.sheldan.abstracto.modmail.service.ModMailSubscriptionService;
 import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -51,16 +52,11 @@ public class UnSubscribe extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Override
-    public CommandResult execute(CommandContext commandContext) {
-        ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(commandContext.getChannel().getIdLong());
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(commandContext.getAuthor());
-        modMailSubscriptionService.unsubscribeFromThread(aUserInAServer, modMailThread);
-        return CommandResult.fromSuccess();
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(event.getChannel().getIdLong());
+        if(ModMailThreadState.CLOSED.equals(modMailThread.getState()) || ModMailThreadState.CLOSING.equals(modMailThread.getState())) {
+            throw new ModMailThreadClosedException();
+        }
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(event.getMember());
         modMailSubscriptionService.unsubscribeFromThread(aUserInAServer, modMailThread);
         return interactionService.replyEmbed(UN_SUBSCRIBE_RESPONSE, event)
@@ -86,6 +82,7 @@ public class UnSubscribe extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .help(helpInfo)
+                .slashCommandOnly(true)
                 .supportsEmbedException(true)
                 .templated(true)
                 .causesReaction(true)
