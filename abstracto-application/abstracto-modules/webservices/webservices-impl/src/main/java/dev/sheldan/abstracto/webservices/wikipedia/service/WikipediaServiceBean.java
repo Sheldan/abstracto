@@ -47,7 +47,9 @@ public class WikipediaServiceBean implements WikipediaService {
         WikipediaResponse wikipediaResponse = gson.fromJson(response.body().string(), WikipediaResponse.class);
         if(wikipediaResponse.getQuery() == null
                 || wikipediaResponse.getQuery().getPages() == null
-                || (wikipediaResponse.getQuery().getPages().stream().anyMatch(wikipediaResponsePageModel -> wikipediaResponsePageModel.getPageId().equals(-1L))
+                || (wikipediaResponse.getQuery().getPages().stream().anyMatch(wikipediaResponsePageModel ->
+                    wikipediaResponsePageModel.getPageId() == null
+                    || wikipediaResponsePageModel.getPageId().equals(-1L))
                 && wikipediaResponse.getQuery().getPages().size() == 1)
                 ) {
             throw new NoWikipediaArticleFoundException();
