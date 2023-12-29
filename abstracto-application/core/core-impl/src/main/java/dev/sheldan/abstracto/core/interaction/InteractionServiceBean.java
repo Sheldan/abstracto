@@ -58,9 +58,6 @@ public class InteractionServiceBean implements InteractionService {
     @Autowired
     private TemplateService templateService;
 
-    @Autowired
-    private FileService fileService;
-
     public static final CounterMetric EPHEMERAL_MESSAGES_SEND = CounterMetric
             .builder()
             .name(DISCORD_API_INTERACTION_METRIC)
@@ -296,6 +293,10 @@ public class InteractionServiceBean implements InteractionService {
                 action = action.setEphemeral(messageToSend.getEphemeral());
             }
         }
+        Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
+        if(action != null) {
+            action.setAllowedMentions(allowedMentions);
+        }
 
         if(action == null) {
             throw new AbstractoRunTimeException("The callback did not result in any message.");
@@ -312,7 +313,8 @@ public class InteractionServiceBean implements InteractionService {
 
     @Override
     public CompletableFuture<Message> replyString(String text, InteractionHook interactionHook) {
-        return interactionHook.sendMessage(text).submit();
+        Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(interactionHook.getInteraction().getMessageChannel(), null);
+        return interactionHook.sendMessage(text).setAllowedMentions(allowedMentions).submit();
     }
 
     @PostConstruct
