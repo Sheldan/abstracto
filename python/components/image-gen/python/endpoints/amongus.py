@@ -21,15 +21,16 @@ space_width = 80
 character_height = 120
 
 
-@app.route('/memes/amogus/text')
-def generate_amogus_text():
+@app.route('/memes/amongus/text')
+def generate_amongus_text():
     text = request.args.get('text', type=str)
     if text is None:
         return 'no text', 400
     if len(text) > max_chars:
         return f'too long text, max {max_chars}', 400
     text = text.lower()
-    text = re.sub(r'[^a-z!\\? ]', "", text)
+    text = text.replace('ö', 'oe').replace('ä', 'ae').replace('ü', 'ue')  # "fixing" umlauts
+    text = re.sub(r'[^a-z!? ]', "", text)
     if len(text) == 0:
         return 'No valid characters found.', 400
     logging.info(f'Rendering amogus text.')
@@ -49,7 +50,7 @@ def generate_amogus_text():
             chosen_sub_image = random.randint(1, 3)
             cache_key = f'{character}{chosen_sub_image}'
             if cache_key not in image_cache:
-                character_image = Image.open(f'resources/img/amogus/crewmate-{character}{chosen_sub_image}.png').__enter__()
+                character_image = Image.open(f'resources/img/amongus/crewmate-{character}{chosen_sub_image}.png').__enter__()
                 old_character_width, old_character_height = character_image.size
                 character_ratio = old_character_height / character_height
                 desired_width = int(old_character_width * character_ratio)
