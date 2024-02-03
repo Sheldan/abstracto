@@ -11,7 +11,8 @@ public enum ModerationFeatureDefinition implements FeatureDefinition {
     AUTOMATIC_WARN_DECAY("warnDecay"),
     USER_NOTES("userNotes"),
     REPORT_REACTIONS("reportReactions"),
-    INFRACTIONS("infractions")
+    INFRACTIONS("infractions"),
+    HONEYPOT("honeypot")
     ;
 
     private final String key;
