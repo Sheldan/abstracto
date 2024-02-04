@@ -11,6 +11,7 @@ import java.util.List;
 public class HoneyPotFeatureConfig implements FeatureConfig {
 
     public static final String HONEYPOT_ROLE_ID = "honeypotRoleId";
+    public static final String HONEYPOT_IGNORED_LEVEL = "honeypotIgnoredLevel";
 
     @Override
     public FeatureDefinition getFeature() {
@@ -19,6 +20,6 @@ public class HoneyPotFeatureConfig implements FeatureConfig {
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(HONEYPOT_ROLE_ID);
+        return Arrays.asList(HONEYPOT_ROLE_ID, HONEYPOT_IGNORED_LEVEL);
     }
 }

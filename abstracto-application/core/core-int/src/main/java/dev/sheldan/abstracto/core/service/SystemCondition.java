@@ -18,5 +18,9 @@ public interface SystemCondition {
         public static boolean consideredSuccessful(Result result) {
             return result == Result.SUCCESSFUL || result == Result.IGNORED;
         }
+
+        public static boolean isSuccessful(Result result) {
+            return result == Result.SUCCESSFUL;
+        }
     }
 }
