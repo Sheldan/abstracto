@@ -23,6 +23,8 @@ import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,10 +64,11 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
         }
         if(roleId.equals(model.getRoleId())) {
             Integer levelToSkipBan = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_IGNORED_LEVEL, model.getServerId()).intValue();
-            boolean allowed = userHasLevel(model.getTargetMember(), levelToSkipBan);
+            Long amountOfSecondsToIgnore = configService.getLongValueOrConfigDefault(HoneyPotFeatureConfig.HONEYPOT_IGNORED_JOIN_DURATION_SECONDS, model.getServerId());
+            boolean allowed = userHasLevel(model.getTargetMember(), levelToSkipBan) || userJoinedLongerThanSeconds(model.getTargetMember(), amountOfSecondsToIgnore);
             if(allowed) {
-                log.info("User {} in server {} has at least level {} and will not get banned by honey pot.",
-                        model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), levelToSkipBan);
+                log.info("User {} in server {} has at least level {} or joined more than {} seconds ago and will not get banned by honeypot.",
+                        model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), levelToSkipBan, amountOfSecondsToIgnore);
             } else  {
                 log.info("Banning user {} in guild {} due to role {}.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), model.getRoleId());
                 HoneyPotReasonModel reasonModel = HoneyPotReasonModel
@@ -100,6 +103,12 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
                 .build();
         SystemCondition.Result result = conditionService.checkConditions(contextInstance);
         return SystemCondition.Result.isSuccessful(result);
+    }
+
+    private boolean userJoinedLongerThanSeconds(Member member, Long seconds) {
+        log.info("Checking if member {} joined the server more than {} seconds ago.", member.getIdLong(), seconds);
+        // the incorrectness of timejoined should not matter, we chunk anyway
+        return member.getTimeJoined().toInstant().isBefore(Instant.now().minus(seconds, ChronoUnit.SECONDS));
     }
 
     @Override
