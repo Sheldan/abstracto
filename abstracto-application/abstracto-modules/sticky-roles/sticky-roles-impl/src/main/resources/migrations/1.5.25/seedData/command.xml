@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd" >
+
+    <property name="utilityModule" value="(SELECT id FROM module WHERE name = 'utility')"/>
+    <property name="stickyRolesFeature" value="(SELECT id FROM feature WHERE key = 'stickyRoles')"/>
+
+    <changeSet  author="Sheldan" id="stickyRole-commands">
+        <insert tableName="command">
+            <column name="name" value="configureStickyRole"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${stickyRolesFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="toggleStickiness"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${stickyRolesFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="showStickyRoles"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${stickyRolesFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="toggleStickinessManagement"/>
+            <column name="module_id" valueComputed="${utilityModule}"/>
+            <column name="feature_id" valueComputed="${stickyRolesFeature}"/>
+        </insert>
+    </changeSet>
+
+
+</databaseChangeLog>

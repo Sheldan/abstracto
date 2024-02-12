@@ -7,11 +7,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>repost-detection</artifactId>
+    <artifactId>sticky-roles</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>repost-detection-int</module>
-        <module>repost-detection-impl</module>
+        <module>sticky-roles-int</module>
+        <module>sticky-roles-impl</module>
     </modules>
 
     <dependencies>

@@ -10,7 +10,7 @@ public class FeatureNotFoundException extends AbstractoRunTimeException implemen
     private final FeatureNotFoundExceptionModel model;
 
     public FeatureNotFoundException(String feature, List<String> availableFeatures) {
-        super("Feature not found.");
+        super(String.format("Feature %s not found.", feature));
         this.model = FeatureNotFoundExceptionModel
                 .builder()
                 .featureName(feature)

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 public class CommandManager implements CommandRegistry {
@@ -54,7 +53,7 @@ public class CommandManager implements CommandRegistry {
     @Override
     public Optional<Command> findCommandByParameters(String name, UnParsedCommandParameter unParsedCommandParameter, Long serverId) {
         Optional<Command> commandOptional = commands.stream().filter(getCommandByNameAndParameterPredicate(name, unParsedCommandParameter, serverId)).findFirst();
-        if(!commandOptional.isPresent()) {
+        if(commandOptional.isEmpty()) {
             commandOptional = getCommandViaAliasAndParameter(name, unParsedCommandParameter, serverId);
         }
         return commandOptional;
@@ -139,7 +138,7 @@ public class CommandManager implements CommandRegistry {
                     .getDependentFeatures()
                     .stream()
                     .map(s -> featureConfigService.getFeatureEnum(s))
-                    .collect(Collectors.toList());
+                    .toList();
             boolean required = false;
             for (FeatureDefinition featureDefinition : featureDefinitions) {
                 if(featureFlagService.getFeatureFlagValue(featureDefinition, serverId)) {

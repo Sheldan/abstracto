@@ -46,6 +46,7 @@ public class AsyncLeaveListenerBean extends ListenerAdapter {
                 .build();
         return MemberLeaveModel
                 .builder()
+                .member(event.getMember())
                 .leavingUser(serverUser)
                 .user(event.getUser())
                 .build();

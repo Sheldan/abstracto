@@ -23,6 +23,7 @@
         <module>remind</module>
         <module>suggestion</module>
         <module>repost-detection</module>
+        <module>sticky-roles</module>
         <module>webservices</module>
         <module>logging</module>
         <module>invite-filter</module>
