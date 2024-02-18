@@ -5,7 +5,10 @@ import re
 import liquibase_deploy
 import sys
 from zipfile import ZipFile
+import logging
 
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
 
 class DbConfig:
     def __init__(self):
@@ -21,14 +24,14 @@ config_dir = sys.argv[1]
 
 db_config = DbConfig()
 postgres_driver_path = os.getenv('POSTGRES_DRIVER', '/postgres/driver.jar')
-liquibase_path = os.getenv('LIQUIBASE_PATH', '/liquibase')
+root_path = os.getenv('ROOT_PATH', '/liquibase')
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-print("Loading versions.")
+logging.info("Loading versions.")
 with open(config_dir + 'artifact_versions.json') as artifact_config_file:
     artifact_config = json.load(artifact_config_file)
 
-print("Loading templates")
+logging.info("Loading templates")
 templateLoader = jinja2.FileSystemLoader(searchpath="/python/templates")
 templateEnv = jinja2.Environment(loader=templateLoader)
 variable_prefix_pattern = re.compile(r'ABSTRACTO_\w+')
@@ -39,7 +42,7 @@ for key, val in os.environ.items():
 
 template = templateEnv.get_template("liquibase.properties.j2")
 
-print("Starting liquibase deployment")
+logging.info("Starting liquibase deployment")
 for liquibase_artifact in artifact_config['liquibase_artifacts']:
     zip_file = liquibase_artifact['zip']
     target_folder = config_dir + '/liquibase-zips/' + zip_file
@@ -52,4 +55,4 @@ for liquibase_artifact in artifact_config['liquibase_artifacts']:
     property_path = script_directory + '/templates/liquibase.properties'
     with open(property_path, 'w') as liquibase_target_properties:
         liquibase_target_properties.write(liquibase_config_text)
-    liquibase_deploy.deploy_liquibase(zip_file, property_path, liquibase_path, config_dir, db_config)
+    liquibase_deploy.deploy_liquibase(zip_file, property_path, root_path, config_dir, db_config)

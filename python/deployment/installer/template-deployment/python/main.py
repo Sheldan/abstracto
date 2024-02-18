@@ -3,7 +3,10 @@ import os
 import sys
 import templates_deploy
 from zipfile import ZipFile
+import logging
 
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
 
 use_folder = False
 local_folder = None
@@ -25,12 +28,12 @@ class DbConfig:
 
 db_config = DbConfig()
 if not use_folder:
-    print("Not deploying with folder.")
-    print("Loading versions.")
+    logging.info("Not deploying with folder.")
+    logging.info("Loading versions.")
     with open(config_dir + 'artifact_versions.json') as artifact_config_file:
         artifact_config = json.load(artifact_config_file)
 
-    print("Deploying templates.")
+    logging.info("Deploying templates.")
     for template_artifact in artifact_config['template_artifacts']:
         folder_name = config_dir + '/' + template_artifact + "-templates"
         os.mkdir(folder_name)
@@ -38,7 +41,7 @@ if not use_folder:
             template_zip.extractall(folder_name)
         templates_deploy.deploy_template_folder(db_config, folder_name)
 
-    print("Deploying translation templates")
+    logging.info("Deploying translation templates")
     for template_artifact in artifact_config['translation_artifacts']:
         folder_name = config_dir + '/' + template_artifact + "-translations"
         with ZipFile(config_dir + 'translations/' + template_artifact + '.zip', 'r') as template_zip:
@@ -46,5 +49,5 @@ if not use_folder:
         templates_deploy.deploy_template_folder(db_config, folder_name)
 
 if use_folder:
-    print("Only deploying folder.")
+    logging.info("Only deploying folder.")
     templates_deploy.deploy_template_folder(db_config, local_folder)

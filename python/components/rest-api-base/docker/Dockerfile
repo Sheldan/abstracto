@@ -1,4 +1,4 @@
-FROM python:3.10.13-alpine3.18
+FROM python:3.12.2-alpine3.19
 RUN apk --no-cache add msttcorefonts-installer fontconfig && \
     update-ms-fonts && \
     fc-cache -f

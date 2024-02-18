@@ -2,8 +2,8 @@ FROM ubuntu as base
 MAINTAINER Sheldan
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG liquibase_version=4.3.5
-ARG postgres_driver_version=42.2.14
+ARG liquibase_version=4.26.0
+ARG postgres_driver_version=42.7.1
 # Install prerequisities for Ansible
 RUN apt-get update \
 && apt-get install -y unzip wget \
@@ -24,10 +24,17 @@ RUN mkdir -p /postgres \
 
 # Install ansible and required libraries
 
-FROM python:3.7-slim-buster as runtime
-ARG sql_alchemy_version=1.4.46
-ARG jinja_version=3.1.2
-ARG psycopg2_version=2.9.5
+FROM python:3.12.2-slim-bullseye as runtime
+ARG sql_alchemy_version=2.0.27
+ARG jinja_version=3.1.3
+ARG psycopg2_version=2.9.9
+# required for psycopg2
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    g++ \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --no-cache-dir psycopg2-binary==${psycopg2_version} SQLAlchemy==${sql_alchemy_version} jinja2==${jinja_version}
 COPY --from=base /liquibase /liquibase
 COPY --from=base /postgres /postgres
@@ -36,6 +43,6 @@ ENV JAVA_HOME=/java/jre
 ADD python /python
 ADD wrapper /
 
-ENV LIQUIBASE_PATH=/liquibase
+ENV ROOT_PATH=/liquibase
 ENV POSTGRES_DRIVER=/postgres/driver.jar
 ENTRYPOINT [ "/bin/sh", "/deploy.sh" ]
