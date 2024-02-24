@@ -29,7 +29,7 @@ def generate_amongus_text():
     if len(text) > max_chars:
         return f'too long text, max {max_chars}', 400
     text = text.lower()
-    text = text.replace('ö', 'oe').replace('ä', 'ae').replace('ü', 'ue')  # "fixing" umlauts
+    text = text.replace('ö', 'oe').replace('ä', 'ae').replace('ü', 'ue').replace('ß', 'ss')  # "fixing" umlauts and other replaceable characters
     text = re.sub(r'[^a-z!? ]', "", text)
     if len(text) == 0:
         return 'No valid characters found.', 400
