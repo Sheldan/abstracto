@@ -5,10 +5,13 @@ import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncUpdatePendingListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.listener.MemberUpdatePendingModel;
+import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
+import dev.sheldan.abstracto.experience.config.ExperienceFeatureMode;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import dev.sheldan.abstracto.experience.service.LevelActionService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
@@ -34,16 +37,34 @@ public class MemberPendingRoleListener implements AsyncUpdatePendingListener {
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private FeatureModeService featureModeService;
+
+    @Autowired
+    private LevelActionService levelActionService;
+
     @Override
     public DefaultListenerResult execute(MemberUpdatePendingModel model) {
         Optional<AUserInAServer> userInAServerOptional = userInServerManagementService.loadUserOptional(model.getServerId(), model.getUser().getUserId());
         userInAServerOptional.ifPresent(aUserInAServer -> {
-            Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(aUserInAServer.getUserInServerId());
+            Long userInServerId = aUserInAServer.getUserInServerId();
+            Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInServerId);
             if(userExperienceOptional.isPresent()) {
                 log.info("User {} updated pending status {} with previous experience. Setting up experience role again (if necessary).", model.getUser().getUserId(), model.getServerId());
-                userExperienceService.syncForSingleUser(userExperienceOptional.get(), model.getMember(), true).thenAccept(result ->
+                AUserExperience aUserExperience = userExperienceOptional.get();
+                userExperienceService.syncForSingleUser(aUserExperience, model.getMember(), true).thenAccept(result ->
                         log.info("Finished re-assigning experience for update pending user {} in server {}.", model.getUser().getUserId(), model.getServerId())
                 );
+                if(featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, aUserInAServer.getServerReference() , ExperienceFeatureMode.LEVEL_ACTION)) {
+                    levelActionService.applyLevelActionsToUser(aUserExperience)
+                            .thenAccept(unused -> {
+                                log.info("Executed level actions for user {}.", userInServerId);
+                            })
+                            .exceptionally(throwable -> {
+                                log.warn("Failed to execute level actions for user {}.", userInServerId, throwable);
+                                return null;
+                            });
+                }
             } else {
                 log.info("Member updating pending {} in server {} does not have any previous experience. Not setting up anything.", model.getUser().getUserId(), model.getServerId());
             }

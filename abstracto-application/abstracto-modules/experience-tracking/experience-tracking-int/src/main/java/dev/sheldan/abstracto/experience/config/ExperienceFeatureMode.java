@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum ExperienceFeatureMode implements FeatureMode {
-    LEVEL_UP_NOTIFICATION("levelUpNotification");
+    LEVEL_UP_NOTIFICATION("levelUpNotification"),
+    LEVEL_ACTION("levelAction");
 
     private final String key;
 

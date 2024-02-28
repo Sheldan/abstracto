@@ -105,6 +105,9 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
     private FeatureModeService featureModeService;
 
     @Autowired
+    private LevelActionService levelActionService;
+
+    @Autowired
     private AUserExperienceServiceBean self;
 
     @Autowired
@@ -306,25 +309,26 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             log.debug("User {} has a experience disable role in server {} - not giving any experience.", member.getIdLong(), serverId);
             return;
         }
-        List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
-        levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
-
-        Long minExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MIN_EXP_KEY, serverId);
-        Long maxExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MAX_EXP_KEY, serverId);
-        Double multiplier = configService.getDoubleValueOrConfigDefault(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverId);
-        Long experienceRange = maxExp - minExp + 1;
-        Long gainedExperience = (secureRandom.nextInt(experienceRange.intValue()) + minExp);
-        gainedExperience = (long) Math.floor(gainedExperience * multiplier);
-
-        List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
-        roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
-
         AUserInAServer userInAServer = userInServerManagementService.loadOrCreateUser(member);
         Long userInServerId = userInAServer.getUserInServerId();
-        log.debug("Handling {}. The user might gain {}.", userInServerId, gainedExperience);
         Optional<AUserExperience> aUserExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInAServer.getUserInServerId());
         AUserExperience aUserExperience = aUserExperienceOptional.orElseGet(() -> userExperienceManagementService.createUserInServer(userInAServer));
         if(Boolean.FALSE.equals(aUserExperience.getExperienceGainDisabled())) {
+            List<AExperienceLevel> levels = experienceLevelManagementService.getLevelConfig();
+            levels.sort(Comparator.comparing(AExperienceLevel::getExperienceNeeded));
+
+            Long minExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MIN_EXP_KEY, serverId);
+            Long maxExp = configService.getLongValueOrConfigDefault(ExperienceFeatureConfig.MAX_EXP_KEY, serverId);
+            Double multiplier = configService.getDoubleValueOrConfigDefault(ExperienceFeatureConfig.EXP_MULTIPLIER_KEY, serverId);
+            Long experienceRange = maxExp - minExp + 1;
+            Long gainedExperience = (secureRandom.nextInt(experienceRange.intValue()) + minExp);
+            gainedExperience = (long) Math.floor(gainedExperience * multiplier);
+
+            List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
+            roles.sort(Comparator.comparing(role -> role.getLevel().getLevel()));
+
+            log.debug("Handling {}. The user gains {}.", userInServerId, gainedExperience);
+
             Long oldExperience = aUserExperience.getExperience();
             Long newExperienceCount = oldExperience + gainedExperience;
             aUserExperience.setExperience(newExperienceCount);
@@ -367,7 +371,17 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 aUserExperience.setCurrentExperienceRole(calculatedNewRole);
             }
             aUserExperience.setMessageCount(aUserExperience.getMessageCount() + 1L);
-            if(!aUserExperienceOptional.isPresent()) {
+            if(featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, server, ExperienceFeatureMode.LEVEL_ACTION)) {
+                levelActionService.applyLevelActionsToUser(aUserExperience)
+                    .thenAccept(unused -> {
+                        log.info("Executed level actions for user {}.", userInServerId);
+                    })
+                    .exceptionally(throwable -> {
+                        log.warn("Failed to execute level actions for user {}.", userInServerId, throwable);
+                        return null;
+                    });
+            }
+            if(aUserExperienceOptional.isEmpty()) {
                 userExperienceManagementService.saveUser(aUserExperience);
             }
             if(!Objects.equals(result.getOldRoleId(), result.getNewRoleId())) {
@@ -375,7 +389,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                     roleService.updateRolesIds(member, Arrays.asList(result.getOldRoleId()), Arrays.asList(result.getNewRoleId())).thenAccept(unused -> {
                         log.debug("Removed role {} from and added role {} to member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
                     }).exceptionally(throwable -> {
-                        log.warn("Failed to remove role {} from and add role {} to  member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                        log.warn("Failed to remove role {} from and add role {} to  member {} in server {}.", result.getOldRoleId(), result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
                         return null;
                     });
                 } else {
@@ -383,7 +397,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                         roleService.removeRoleFromMemberAsync(member, result.getOldRoleId()).thenAccept(unused -> {
                             log.debug("Removed role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong());
                         }).exceptionally(throwable -> {
-                            log.warn("Failed to remove role {} from {} member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                            log.warn("Failed to remove role {} from member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
                             return null;
                         });
                     }
@@ -391,7 +405,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                         roleService.addRoleToMemberAsync(member, result.getNewRoleId()).thenAccept(unused -> {
                             log.debug("Added role {} to member {} in server {}.", result.getNewRoleId(), member.getIdLong(), member.getGuild().getIdLong());
                         }).exceptionally(throwable -> {
-                            log.warn("Failed to add role {} to {} member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
+                            log.warn("Failed to add role {} to member {} in server {}.", result.getOldRoleId(), member.getIdLong(), member.getGuild().getIdLong(), throwable);
                             return null;
                         });
                     }

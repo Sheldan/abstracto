@@ -1,0 +1,25 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <property name="experienceModule" value="(SELECT id FROM module WHERE name = 'experience')"/>
+    <property name="experienceFeature" value="(SELECT id FROM feature WHERE key = 'experience')"/>
+    <changeSet  author="Sheldan" id="experience-levelAction-commands">
+        <insert tableName="command">
+            <column name="name" value="addLevelAction"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="removeLevelAction"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+        </insert>
+        <insert tableName="command">
+            <column name="name" value="showLevelActions"/>
+            <column name="module_id" valueComputed="${experienceModule}"/>
+            <column name="feature_id" valueComputed="${experienceFeature}"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

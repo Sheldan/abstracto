@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -79,4 +81,7 @@ public interface ChannelService {
     CompletableFuture<Void> setSlowModeInChannel(TextChannel textChannel, Integer seconds);
     List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileNameTemplate, String messageTemplate, Object model, MessageChannel channel);
     List<CompletableFuture<Message>> sendFileToChannel(String fileContent, String fileName, MessageChannel channel);
+
+    CompletableFuture<Void> addMemberViewToChannel(Guild guild, Long channelId, Long memberId, Collection<Permission> permissions);
+    CompletableFuture<Void> removeChannelOverrideForMember(Guild guild, Long channelId, Long memberId);
 }

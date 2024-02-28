@@ -17,12 +17,14 @@ public interface RoleService {
     CompletableFuture<Void> addRoleToUserAsync(AUserInAServer aUserInAServer, ARole role);
     CompletableFuture<Void> addRoleToMemberAsync(Member member, Long roleId);
     CompletableFuture<Void> updateRolesIds(Member member, List<Long> rolesToRemove, List<Long> rolesToAdd);
+    CompletableFuture<Void> updateRolesIds(AUserInAServer aUserInAServer, List<Long> rolesToAdd, List<Long> rolesToRemove);
     CompletableFuture<Void> updateRolesObj(Member member, List<Role> rolesToRemove, List<Role> rolesToAdd);
     CompletableFuture<Void> addRoleToMemberAsync(Member member, Role role);
     void addRoleToMember(Member member, ARole role);
     CompletableFuture<Void> addRoleToMemberAsync(Member member, ARole role);
     void removeRoleFromMember(Member member, ARole role);
     CompletableFuture<Void> removeRoleFromMemberAsync(Member member, ARole role);
+    CompletableFuture<Void> removeRoleFromMemberAsync(AUserInAServer user, ARole role);
     CompletableFuture<Void> removeRoleFromMemberAsync(Member member, Long roleId);
     CompletableFuture<Void> addRoleToMemberAsync(Guild guild, Long userId, Role roleById);
     CompletableFuture<Void> removeRoleFromUserAsync(Guild guild, Long userId, Role roleById);

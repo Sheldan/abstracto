@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+import static dev.sheldan.abstracto.experience.config.ExperienceFeatureMode.LEVEL_ACTION;
 import static dev.sheldan.abstracto.experience.config.ExperienceFeatureMode.LEVEL_UP_NOTIFICATION;
 
 /**
@@ -46,6 +47,6 @@ public class ExperienceFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(LEVEL_UP_NOTIFICATION);
+        return Arrays.asList(LEVEL_UP_NOTIFICATION, LEVEL_ACTION);
     }
 }

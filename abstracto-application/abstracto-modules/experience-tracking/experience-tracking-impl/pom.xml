@@ -39,6 +39,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>dev.sheldan.abstracto.core</groupId>
             <artifactId>core-int</artifactId>
             <version>${project.version}</version>

@@ -16,6 +16,7 @@ import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -725,6 +726,26 @@ public class ChannelServiceBean implements ChannelService {
                 log.error("Failed to safely delete local temporary file for template download.", e);
             }
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> addMemberViewToChannel(Guild guild, Long channelId, Long memberId, Collection<Permission> permissions) {
+        return guild.getGuildChannelById(channelId)
+                .getPermissionContainer()
+                .getPermissionContainer()
+                .getManager()
+                .putMemberPermissionOverride(memberId, permissions, new ArrayList<>())
+                .submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> removeChannelOverrideForMember(Guild guild, Long channelId, Long memberId) {
+        return guild
+                .getGuildChannelById(channelId)
+                .getPermissionContainer()
+                .getManager()
+                .removePermissionOverride(memberId)
+                .submit();
     }
 
 

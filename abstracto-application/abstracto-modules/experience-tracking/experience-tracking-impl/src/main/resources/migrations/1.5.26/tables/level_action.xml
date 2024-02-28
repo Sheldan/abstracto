@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <changeSet author="Sheldan" id="level_action-table">
+        <createTable tableName="level_action">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_level_action"/>
+            </column>
+            <column name="action" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="affected_user_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="level_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="level_id" baseTableName="level_action" constraintName="fk_level_action_level" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="level"
+                                 referencedTableName="experience_level" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="affected_user_id" baseTableName="level_action" constraintName="fk_level_action_user" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="user_experience" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="server_id" baseTableName="level_action" constraintName="fk_level_action_server" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="server"
+                                 validate="true"/>
+        <sql>
+            DROP TRIGGER IF EXISTS level_action_update_trigger ON level_action;
+            CREATE TRIGGER level_action_update_trigger BEFORE UPDATE ON level_action FOR EACH ROW EXECUTE PROCEDURE update_trigger_procedure();
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS level_action_insert_trigger ON level_action;
+            CREATE TRIGGER level_action_insert_trigger BEFORE INSERT ON level_action FOR EACH ROW EXECUTE PROCEDURE insert_trigger_procedure();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

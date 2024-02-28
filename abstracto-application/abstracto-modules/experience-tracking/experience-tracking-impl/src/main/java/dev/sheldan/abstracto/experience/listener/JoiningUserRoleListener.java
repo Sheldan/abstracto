@@ -6,10 +6,13 @@ import dev.sheldan.abstracto.core.listener.async.jda.AsyncJoinListener;
 import dev.sheldan.abstracto.core.listener.sync.jda.JoinListener;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.listener.MemberJoinModel;
+import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
+import dev.sheldan.abstracto.experience.config.ExperienceFeatureMode;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
+import dev.sheldan.abstracto.experience.service.LevelActionService;
 import dev.sheldan.abstracto.experience.service.management.UserExperienceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
@@ -35,6 +38,12 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
     @Autowired
     private UserInServerManagementService userInServerManagementService;
 
+    @Autowired
+    private FeatureModeService featureModeService;
+
+    @Autowired
+    private LevelActionService levelActionService;
+
     @Override
     public DefaultListenerResult execute(MemberJoinModel model) {
         if(model.getMember().isPending()) {
@@ -43,12 +52,24 @@ public class JoiningUserRoleListener implements AsyncJoinListener {
         }
         Optional<AUserInAServer> userInAServerOptional = userInServerManagementService.loadUserOptional(model.getServerId(), model.getJoiningUser().getUserId());
         userInAServerOptional.ifPresent(aUserInAServer -> {
-            Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(aUserInAServer.getUserInServerId());
+            Long userInServerId = aUserInAServer.getUserInServerId();
+            Optional<AUserExperience> userExperienceOptional = userExperienceManagementService.findByUserInServerIdOptional(userInServerId);
             if(userExperienceOptional.isPresent()) {
                 log.info("User {} joined {} with previous experience. Setting up experience role again (if necessary).", model.getJoiningUser().getUserId(), model.getServerId());
-                userExperienceService.syncForSingleUser(userExperienceOptional.get(), model.getMember(), true).thenAccept(result ->
+                AUserExperience aUserExperience = userExperienceOptional.get();
+                userExperienceService.syncForSingleUser(aUserExperience, model.getMember(), true).thenAccept(result ->
                         log.info("Finished re-assigning experience for re-joining user {} in server {}.", model.getJoiningUser().getUserId(), model.getServerId())
                 );
+                if(featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, aUserInAServer.getServerReference() , ExperienceFeatureMode.LEVEL_ACTION)) {
+                    levelActionService.applyLevelActionsToUser(aUserExperience)
+                            .thenAccept(unused -> {
+                                log.info("Executed level actions for user {}.", userInServerId);
+                            })
+                            .exceptionally(throwable -> {
+                                log.warn("Failed to execute level actions for user {}.", userInServerId, throwable);
+                                return null;
+                            });
+                }
             } else {
                 log.info("Joined user {} in server {} does not have any previous experience. Not setting up anything.", model.getJoiningUser().getUserId(), model.getServerId());
             }

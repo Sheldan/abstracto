@@ -41,6 +41,9 @@ public class RoleServiceBean implements RoleService {
     private RoleManagementService roleManagementService;
 
     @Autowired
+    private MemberService memberService;
+
+    @Autowired
     private MetricService metricService;
 
     public static final CounterMetric ROLE_ASSIGNED_METRIC = CounterMetric
@@ -98,6 +101,22 @@ public class RoleServiceBean implements RoleService {
     }
 
     @Override
+    public CompletableFuture<Void> updateRolesIds(AUserInAServer aUserInAServer, List<Long> rolesToAdd, List<Long> rolesToRemove) {
+        Guild guild = guildService.getGuildById(aUserInAServer.getServerReference().getId());
+        List<Role> rolesObjToAdd = rolesToAdd
+                .stream()
+                .map(guild::getRoleById)
+                .toList();
+
+        List<Role> rolesObjToRemove = rolesToRemove
+                .stream()
+                .map(guild::getRoleById)
+                .toList();
+        Member member = memberService.getMemberInServer(aUserInAServer);
+        return guild.modifyMemberRoles(member, rolesObjToAdd, rolesObjToRemove).submit();
+    }
+
+    @Override
     public CompletableFuture<Void> updateRolesObj(Member member, List<Role> rolesToRemove, List<Role> rolesToAdd) {
         return member.getGuild().modifyMemberRoles(member, rolesToAdd, rolesToRemove).submit();
     }
@@ -127,6 +146,16 @@ public class RoleServiceBean implements RoleService {
     public CompletableFuture<Void> removeRoleFromMemberAsync(Member member, ARole role) {
         Guild guild = member.getGuild();
         return removeRoleFromUserFuture(guild, role, member.getIdLong());
+    }
+
+    @Override
+    public CompletableFuture<Void> removeRoleFromMemberAsync(AUserInAServer user, ARole role) {
+        Optional<Guild> guildById = guildService.getGuildByIdOptional(user.getServerReference().getId());
+        if(guildById.isPresent()) {
+            return removeRoleFromUserFuture(guildById.get(), role, user.getUserReference().getId());
+        } else {
+            throw new GuildNotFoundException(user.getServerReference().getId());
+        }
     }
 
     @Override
