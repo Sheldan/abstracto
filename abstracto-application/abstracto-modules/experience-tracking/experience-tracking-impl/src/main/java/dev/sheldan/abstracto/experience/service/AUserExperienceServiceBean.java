@@ -336,7 +336,8 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
             RoleCalculationResult result = RoleCalculationResult
                     .builder()
                     .build();
-            if(!Objects.equals(newLevel.getLevel(), aUserExperience.getCurrentLevel().getLevel())) {
+            boolean userChangesLevel = !Objects.equals(newLevel.getLevel(), aUserExperience.getCurrentLevel().getLevel());
+            if(userChangesLevel) {
                 Integer oldLevel = aUserExperience.getCurrentLevel() != null ? aUserExperience.getCurrentLevel().getLevel() : 0;
                 log.info("User {} in server {} changed level. New {}, Old {}.", member.getIdLong(),
                         member.getGuild().getIdLong(), newLevel.getLevel(),
@@ -371,7 +372,7 @@ public class AUserExperienceServiceBean implements AUserExperienceService {
                 aUserExperience.setCurrentExperienceRole(calculatedNewRole);
             }
             aUserExperience.setMessageCount(aUserExperience.getMessageCount() + 1L);
-            if(featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, server, ExperienceFeatureMode.LEVEL_ACTION)) {
+            if(userChangesLevel && featureModeService.featureModeActive(ExperienceFeatureDefinition.EXPERIENCE, server, ExperienceFeatureMode.LEVEL_ACTION)) {
                 levelActionService.applyLevelActionsToUser(aUserExperience)
                     .thenAccept(unused -> {
                         log.info("Executed level actions for user {}.", userInServerId);
