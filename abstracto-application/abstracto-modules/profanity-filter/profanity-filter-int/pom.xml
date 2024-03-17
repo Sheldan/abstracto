@@ -20,6 +20,11 @@
             <artifactId>core-int</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>dev.sheldan.abstracto.modules</groupId>
+            <artifactId>moderation-int</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

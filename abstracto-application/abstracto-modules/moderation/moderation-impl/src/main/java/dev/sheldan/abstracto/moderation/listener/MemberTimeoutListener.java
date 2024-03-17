@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMemberTimeoutUpdatedListener;
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.listener.MemberTimeoutUpdatedModel;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
@@ -116,8 +117,8 @@ public class MemberTimeoutListener implements AsyncMemberTimeoutUpdatedListener 
                         .builder()
                         .muteTargetDate(model.getNewTimeout() != null ? model.getNewTimeout().toInstant() : null)
                         .oldMuteTargetDate(model.getOldTimeout() != null ? model.getOldTimeout().toInstant() : null)
-                        .mutingUser(future.isCompletedExceptionally() ? null : future.join())
-                        .mutedUser(model.getMember())
+                        .mutingUser(future.isCompletedExceptionally() ? null : MemberDisplay.fromMember(future.join()))
+                        .mutedUser(MemberDisplay.fromMember(model.getMember()))
                         .reason(reason)
                         .build();
                 MessageToSend message = templateService.renderEmbedTemplate(MuteServiceBean.MUTE_LOG_TEMPLATE, muteLogModel, guild.getIdLong());

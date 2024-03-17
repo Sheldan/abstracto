@@ -11,7 +11,7 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParame
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
@@ -52,8 +52,9 @@ public class UnMute extends AbstractConditionableCommand {
         if(!member.getGuild().equals(commandContext.getGuild())) {
             throw new EntityGuildMismatchException();
         }
-        AUserInAServer userToUnMute = userInServerManagementService.loadOrCreateUser(member);
-        return muteService.unMuteUser(userToUnMute, commandContext.getAuthor()).thenApply(aVoid ->
+        ServerUser userToUnmute = ServerUser.fromMember(member);
+        ServerUser unMutingMember = ServerUser.fromMember(commandContext.getAuthor());
+        return muteService.unMuteUser(userToUnmute, unMutingMember, commandContext.getGuild()).thenApply(aVoid ->
             CommandResult.fromSuccess()
         );
     }
@@ -64,8 +65,9 @@ public class UnMute extends AbstractConditionableCommand {
         if(!targetMember.getGuild().equals(event.getGuild())) {
             throw new EntityGuildMismatchException();
         }
-        AUserInAServer userToUnMute = userInServerManagementService.loadOrCreateUser(targetMember);
-        return muteService.unMuteUser(userToUnMute, event.getMember())
+        ServerUser userToUnmute = ServerUser.fromMember(targetMember);
+        ServerUser unMutingMember = ServerUser.fromMember(event.getMember());
+        return muteService.unMuteUser(userToUnmute, unMutingMember, event.getGuild())
                 .thenCompose(unused -> interactionService.replyEmbed(UN_MUTE_RESPONSE, event))
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }

@@ -1,11 +1,13 @@
 package dev.sheldan.abstracto.moderation.service;
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.moderation.model.MuteResult;
 import dev.sheldan.abstracto.moderation.model.database.Mute;
-import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Guild;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -13,14 +15,13 @@ public interface MuteService {
     String MUTE_EFFECT_KEY = "mute";
     String MUTE_INFRACTION_TYPE = "mute";
     String INFRACTION_PARAMETER_DURATION_KEY = "DURATION";
-    CompletableFuture<Void> muteMember(Member memberToMute, String reason, Instant unMuteDate, Long channelId);
-    CompletableFuture<Void> muteUserInServer(FullUserInServer userToMute, String reason, Instant unMuteDate, Long channelId);
-    CompletableFuture<Void> muteMemberWithLog(MuteContext context);
+    CompletableFuture<MuteResult> muteUserInServer(Guild guild, ServerUser userBeingMuted, String reason, Duration duration);
+    CompletableFuture<MuteResult> muteMemberWithLog(ServerUser userToMute, ServerUser mutingUser, String reason, Duration duration, Guild guild, ServerChannelMessage origin);
     String startUnMuteJobFor(Instant unMuteDate, Long muteId, Long serverId);
     void cancelUnMuteJob(Mute mute);
-    CompletableFuture<Void> unMuteUser(AUserInAServer userToUnmute, Member memberUnMuting);
-    CompletableFuture<Void> endMute(Mute mute);
+    CompletableFuture<Void> unMuteUser(ServerUser userToUnMute, ServerUser memberUnMuting, Guild guild);
+    CompletableFuture<Void> endMute(Mute mute, Guild guild);
     CompletableFuture<Void> endMute(Long muteId, Long serverId);
     void completelyUnMuteUser(AUserInAServer aUserInAServer);
-    void completelyUnMuteMember(Member member);
+    void completelyUnMuteMember(ServerUser serverUser);
 }

@@ -87,7 +87,7 @@ public class ModalInteractionListenerBean extends ListenerAdapter {
                         postInteractionExecution.execute(model, result, listener);
                     }
                 } else {
-                    log.warn("No listener found for button event for id {}.", event.getModalId());
+                    log.warn("No listener found for modal event for id {}.", event.getModalId());
                 }
             } else {
                 log.warn("No callback found for id {}.", event.getModalId());

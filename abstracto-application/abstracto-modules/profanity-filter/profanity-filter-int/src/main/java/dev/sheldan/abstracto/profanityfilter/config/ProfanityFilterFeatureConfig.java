@@ -24,12 +24,7 @@ public class ProfanityFilterFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(
-                ProfanityFilterMode.PROFANITY_VOTE,
-                ProfanityFilterMode.AUTO_DELETE_PROFANITIES,
-                ProfanityFilterMode.TRACK_PROFANITIES,
-                ProfanityFilterMode.AUTO_DELETE_AFTER_VOTE
-        );
+        return Arrays.asList(ProfanityFilterMode.values());
     }
 
     @Override

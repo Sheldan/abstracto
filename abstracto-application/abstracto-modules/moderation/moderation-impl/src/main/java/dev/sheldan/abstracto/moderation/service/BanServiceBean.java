@@ -1,6 +1,9 @@
 package dev.sheldan.abstracto.moderation.service;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
@@ -60,32 +63,31 @@ public class BanServiceBean implements BanService {
     private InfractionService infractionService;
 
     @Override
-    public CompletableFuture<BanResult> banUserWithNotification(User user, String reason, Member banningMember, Duration deletionDuration) {
+    public CompletableFuture<BanResult> banUserWithNotification(ServerUser userToBeBanned, String reason, ServerUser banningUser, Guild guild, Duration deletionDuration) {
         BanLog banLog = BanLog
                 .builder()
-                .bannedUser(user)
-                .banningMember(banningMember)
+                .bannedUser(UserDisplay.fromServerUser(userToBeBanned))
+                .banningMember(MemberDisplay.fromServerUser(banningUser))
                 .deletionDuration(deletionDuration)
                 .reason(reason)
                 .build();
-        Guild guild = banningMember.getGuild();
         BanResult[] result = {BanResult.SUCCESSFUL};
-        return sendBanNotification(user, reason, guild)
+        return sendBanNotification(userToBeBanned, reason, guild)
                 .exceptionally(throwable -> {
                     result[0] = BanResult.NOTIFICATION_FAILED;
                     return null;
                 })
-                .thenCompose(unused -> banUser(guild, user, deletionDuration, reason))
+                .thenCompose(unused -> banUser(guild, userToBeBanned, deletionDuration, reason))
                 .thenCompose(unused -> sendBanLogMessage(banLog, guild.getIdLong()))
-                .thenAccept(banLogMessage -> self.evaluateAndStoreInfraction(user, guild, reason, banningMember, banLogMessage, deletionDuration))
+                .thenAccept(banLogMessage -> self.evaluateAndStoreInfraction(userToBeBanned, guild, reason, banningUser, banLogMessage, deletionDuration))
                 .thenApply(unused -> result[0]);
     }
 
     @Transactional
-    public CompletableFuture<Long> evaluateAndStoreInfraction(User user, Guild guild, String reason, Member banningMember, Message banLogMessage, Duration deletionDuration) {
+    public CompletableFuture<Long> evaluateAndStoreInfraction(ServerUser user, Guild guild, String reason, ServerUser banningMember, Message banLogMessage, Duration deletionDuration) {
         if(featureFlagService.getFeatureFlagValue(ModerationFeatureDefinition.INFRACTIONS, guild.getIdLong())) {
             Long infractionPoints = configService.getLongValueOrConfigDefault(ModerationFeatureConfig.BAN_INFRACTION_POINTS, guild.getIdLong());
-            AUserInAServer bannedUser = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), user.getIdLong());
+            AUserInAServer bannedUser = userInServerManagementService.loadOrCreateUser(guild.getIdLong(), user.getUserId());
             AUserInAServer banningUser = userInServerManagementService.loadOrCreateUser(banningMember);
             Map<String, String> parameters = new HashMap<>();
             if(deletionDuration == null) {
@@ -99,47 +101,46 @@ public class BanServiceBean implements BanService {
         }
     }
 
-    private CompletableFuture<Void> sendBanNotification(User user, String reason, Guild guild) {
+    private CompletableFuture<Void> sendBanNotification(ServerUser serverUser, String reason, Guild guild) {
         BanNotificationModel model = BanNotificationModel
                 .builder()
                 .serverName(guild.getName())
                 .reason(reason)
                 .build();
         String message = templateService.renderTemplate(BAN_NOTIFICATION, model, guild.getIdLong());
-        return messageService.sendMessageToUser(user, message).thenAccept(message1 -> {});
+        return messageService.sendMessageToUser(serverUser, message).thenAccept(message1 -> {});
     }
 
     @Override
-    public CompletableFuture<Void> unBanUserWithNotification(User user, Member unBanningMember) {
-        Guild guild = unBanningMember.getGuild();
+    public CompletableFuture<Void> unBanUserWithNotification(Long userId, ServerUser unBanningMember, Guild guild) {
         UnBanLog banLog = UnBanLog
                 .builder()
-                .bannedUser(user)
-                .unBanningMember(unBanningMember)
+                .bannedUser(UserDisplay.fromId(userId))
+                .unBanningMember(MemberDisplay.fromServerUser(unBanningMember))
                 .build();
-        return unbanUser(guild, user)
+        return unbanUser(guild, userId)
                 .thenCompose(unused -> self.sendUnBanLogMessage(banLog, guild.getIdLong(), UN_BAN_LOG_TEMPLATE));
     }
 
     @Override
-    public CompletableFuture<Void> banUser(Guild guild, User user, Duration deletionDuration, String reason) {
-        log.info("Banning user {} in guild {}.", user.getIdLong(), guild.getId());
+    public CompletableFuture<Void> banUser(Guild guild, ServerUser userToBeBanned, Duration deletionDuration, String reason) {
+        log.info("Banning user {} in guild {}.", userToBeBanned.getUserId(), guild.getId());
         if(deletionDuration == null || deletionDuration.isNegative()) {
             deletionDuration = Duration.ZERO;
         }
-        return guild.ban(user, (int) deletionDuration.getSeconds(), TimeUnit.SECONDS).reason(reason).submit();
+        return guild.ban(UserSnowflake.fromId(userToBeBanned.getUserId()), (int) deletionDuration.getSeconds(), TimeUnit.SECONDS).reason(reason).submit();
     }
 
     @Override
-    public CompletableFuture<Void> unbanUser(Guild guild, User user) {
-        log.info("Unbanning user {} in guild {}.", user.getIdLong(), guild.getId());
-        return guild.unban(user).submit();
+    public CompletableFuture<Void> unbanUser(Guild guild, Long userId) {
+        log.info("Unbanning user {} in guild {}.", userId, guild.getId());
+        return guild.unban(UserSnowflake.fromId(userId)).submit();
     }
 
     @Override
-    public CompletableFuture<Void> softBanUser(Guild guild, User user, Duration delDays) {
+    public CompletableFuture<Void> softBanUser(Guild guild, ServerUser user, Duration delDays) {
         return banUser(guild, user, delDays, "")
-                .thenCompose(unused -> unbanUser(guild, user));
+                .thenCompose(unused -> unbanUser(guild, user.getUserId()));
     }
 
     public CompletableFuture<Message> sendBanLogMessage(BanLog banLog, Long guildId) {

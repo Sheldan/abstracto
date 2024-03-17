@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.sync.jda.RoleAddedListener;
 import dev.sheldan.abstracto.core.models.ConditionContextInstance;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.listener.RoleAddedModel;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
@@ -23,6 +24,7 @@ import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -77,7 +79,8 @@ public class HoneyPotRoleAddedListener implements RoleAddedListener {
                         .roleDisplay(RoleDisplay.fromRole(model.getRole()))
                         .build();
                 String banReason = templateService.renderTemplate(HONEYPOT_BAN_REASON_TEMPLATE, reasonModel);
-                banService.banUserWithNotification(model.getTargetMember().getUser(), banReason, model.getTargetMember().getGuild().getSelfMember(), null).thenAccept(banResult -> {
+                banService.banUserWithNotification(model.getTargetUser(), banReason, ServerUser.fromMember(model.getTargetMember().getGuild().getSelfMember()),
+                        model.getTargetMember().getGuild(), Duration.ofDays(7)).thenAccept(banResult -> {
                     log.info("Banned user {} in guild {} due to role {}.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), model.getRoleId());
                 }).exceptionally(throwable -> {
                     log.error("Failed to ban user {} in guild {} due to role {}.", model.getTargetUser().getUserId(), model.getTargetUser().getServerId(), model.getRoleId(), throwable);

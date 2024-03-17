@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.models.database.ProfanityRegex;
 import dev.sheldan.abstracto.core.service.*;
@@ -12,6 +13,8 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.moderation.model.ModerationActionButton;
+import dev.sheldan.abstracto.moderation.service.ModerationActionService;
 import dev.sheldan.abstracto.profanityfilter.config.ProfanityFilterFeatureDefinition;
 import dev.sheldan.abstracto.profanityfilter.config.ProfanityFilterMode;
 import dev.sheldan.abstracto.profanityfilter.config.ProfanityFilterPostTarget;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -71,6 +75,9 @@ public class ProfanityFilterServiceBean implements ProfanityFilterService {
     private RoleImmunityService roleImmunityService;
 
     @Autowired
+    private ModerationActionService moderationActionService;
+
+    @Autowired
     private ProfanityFilterServiceBean self;
 
     private static final String PROFANITY_REPORT_TEMPLATE_KEY = "profanityDetection_listener_report";
@@ -102,13 +109,21 @@ public class ProfanityFilterServiceBean implements ProfanityFilterService {
 
     @Override
     public CompletableFuture<Void> createProfanityReport(Message message, ProfanityRegex foundProfanityRegex) {
+        Long serverId = message.getGuild().getIdLong();
+        boolean moderationActionsEnabled = featureModeService.featureModeActive(ProfanityFilterFeatureDefinition.PROFANITY_FILTER, serverId, ProfanityFilterMode.PROFANITY_MODERATION_ACTIONS);
+        List<ModerationActionButton> moderationActionComponents = new ArrayList<>();
+        if(moderationActionsEnabled && moderationActionService != null) {
+            ServerUser reportedServerUser = ServerUser.fromMember(message.getMember());
+            List<ModerationActionButton> moderationActions = moderationActionService.getModerationActionButtons(reportedServerUser);
+            moderationActionComponents.addAll(moderationActions);
+        }
         ProfanityReportModel reportModel = ProfanityReportModel
                 .builder()
                 .profaneMessage(message)
+                .moderationActionComponents(moderationActionComponents)
                 .profanityGroupKey(foundProfanityRegex.getGroup().getGroupName())
                 .profanityRegexName(foundProfanityRegex.getRegexName())
                 .build();
-        Long serverId = message.getGuild().getIdLong();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(PROFANITY_REPORT_TEMPLATE_KEY, reportModel, serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService
                 .sendEmbedInPostTarget(messageToSend, ProfanityFilterPostTarget.PROFANITY_FILTER_QUEUE, serverId);

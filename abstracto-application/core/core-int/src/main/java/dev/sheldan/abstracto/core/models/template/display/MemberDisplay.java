@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.models.template.display;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.MemberUtils;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.api.entities.Member;
 @Builder
 public class MemberDisplay {
     private String memberMention;
+    private String name;
     private Long userId;
     private Long serverId;
 
@@ -19,6 +21,7 @@ public class MemberDisplay {
         return MemberDisplay
                 .builder()
                 .memberMention(member.getAsMention())
+                .name(member.getEffectiveName())
                 .serverId(member.getGuild().getIdLong())
                 .userId(member.getIdLong())
                 .build();
@@ -39,6 +42,15 @@ public class MemberDisplay {
                 .memberMention(MemberUtils.getUserAsMention(userId))
                 .serverId(serverId)
                 .userId(userId)
+                .build();
+    }
+
+    public static MemberDisplay fromServerUser(ServerUser serverUser) {
+        return MemberDisplay
+                .builder()
+                .memberMention(MemberUtils.getUserAsMention(serverUser.getUserId()))
+                .serverId(serverUser.getServerId())
+                .userId(serverUser.getUserId())
                 .build();
     }
 }

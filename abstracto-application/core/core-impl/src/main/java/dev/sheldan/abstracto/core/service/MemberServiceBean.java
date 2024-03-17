@@ -118,12 +118,22 @@ public class MemberServiceBean implements MemberService {
     }
 
     @Override
+    public Member getMemberInServer(ServerUser serverUser) {
+        return getMemberInServer(serverUser.getServerId(), serverUser.getUserId());
+    }
+
+    @Override
+    public CompletableFuture<Member> getMemberInServerAsync(ServerUser serverUser) {
+        return getMemberInServerAsync(serverUser.getServerId(), serverUser.getUserId());
+    }
+
+    @Override
     public CompletableFuture<Member> getMemberInServerAsync(AUserInAServer aUserInAServer) {
         return getMemberInServerAsync(aUserInAServer.getServerReference().getId(), aUserInAServer.getUserReference().getId());
     }
 
     @Override
-    public Member getMemberInServer(AServer server, AUser member) {
+    public Member getMemberInServerAsync(AServer server, AUser member) {
         return getMemberInServer(server.getId(), member.getId());
     }
 
@@ -151,8 +161,7 @@ public class MemberServiceBean implements MemberService {
 
     @Override
     public CompletableFuture<Void> timeoutUser(Member member, Duration duration, String reason) {
-        log.info("Applying timeout for user {} in guild {} for {}", member.getId(), member.getGuild().getIdLong(), duration);
-        return member.timeoutFor(duration).reason(reason).submit();
+        return timeoutMember(member.getGuild(), ServerUser.fromMember(member), duration, reason);
     }
 
     @Override
@@ -172,8 +181,18 @@ public class MemberServiceBean implements MemberService {
     }
 
     @Override
+    public CompletableFuture<Void> timeoutMember(Guild guild, ServerUser serverUser, Duration duration, String reason) {
+        return guild.timeoutFor(UserSnowflake.fromId(serverUser.getUserId()), duration).reason(reason).submit();
+    }
+
+    @Override
+    public CompletableFuture<Void> removeTimeout(Guild guild, ServerUser serverUser, String reason) {
+        log.info("Removing timeout for user {} in guild {}.", serverUser.getUserId(), guild.getIdLong());
+        return guild.removeTimeout(UserSnowflake.fromId(serverUser.getUserId())).reason(reason).submit();
+    }
+
+    @Override
     public CompletableFuture<Void> removeTimeout(Member member) {
-        log.info("Removing timeout for user {} in guild {}.", member.getId(), member.getGuild().getIdLong());
-        return member.removeTimeout().submit();
+        return removeTimeout(member.getGuild(), ServerUser.fromMember(member), null);
     }
 }

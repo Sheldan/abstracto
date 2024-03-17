@@ -8,7 +8,7 @@ import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
@@ -70,7 +70,7 @@ public class Ban extends AbstractConditionableCommand {
         }
         if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.USER)) {
             Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, Member.class);
-            return banService.banUserWithNotification(member.getUser(), reason, event.getMember(), duration)
+            return banService.banUserWithNotification(ServerUser.fromMember(member), reason, ServerUser.fromMember(event.getMember()), event.getGuild(), duration)
                     .thenCompose(banResult -> {
                         if(banResult == NOTIFICATION_FAILED) {
                             String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());
@@ -84,7 +84,7 @@ public class Ban extends AbstractConditionableCommand {
             String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, String.class);
             Long userId = Long.parseLong(userIdStr);
             return userService.retrieveUserForId(userId)
-                    .thenCompose(user -> banService.banUserWithNotification(user, reason, event.getMember(), duration))
+                    .thenCompose(user -> banService.banUserWithNotification(ServerUser.fromId(event.getGuild().getIdLong(), userId), reason, ServerUser.fromMember(event.getMember()), event.getGuild(), duration))
                     .thenCompose(banResult -> {
                         if(banResult == NOTIFICATION_FAILED) {
                             String errorNotification = templateService.renderSimpleTemplate(BAN_NOTIFICATION_NOT_POSSIBLE, event.getGuild().getIdLong());

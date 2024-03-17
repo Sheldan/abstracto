@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum InviteFilterMode implements FeatureMode {
-    TRACK_USES("trackUses"), FILTER_NOTIFICATIONS("filterNotifications");
+    TRACK_USES("trackUses"), FILTER_NOTIFICATIONS("filterNotifications"), FILTER_MODERATION_ACTIONS("filterModerationActions");
 
     private final String key;
 

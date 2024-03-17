@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.service;
 
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -25,6 +26,7 @@ public interface MessageService {
     void updateStatusMessage(AChannel channel, Long messageId, MessageToSend messageToSend);
     void updateStatusMessage(MessageChannel channel, Long messageId, MessageToSend messageToSend);
     CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text);
+    CompletableFuture<Message> sendMessageToUser(ServerUser serverUser, String text);
     CompletableFuture<Message> sendSimpleTemplateToUser(Long userId, String templateKey);
     List<CompletableFuture<Message>> retrieveMessages(List<ServerChannelMessage> messages);
     CompletableFuture<Message> sendTemplateToUser(User user, String template, Object model);

@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
@@ -127,6 +128,13 @@ public class MessageServiceBean implements MessageService {
     public CompletableFuture<Message> sendMessageToUser(AUserInAServer userInAServer, String text) {
         return memberService.getMemberInServerAsync(userInAServer).thenCompose(member ->
             sendMessageToUser(member.getUser(), text)
+        );
+    }
+
+    @Override
+    public CompletableFuture<Message> sendMessageToUser(ServerUser serverUser, String text) {
+        return memberService.getMemberInServerAsync(serverUser).thenCompose(member ->
+                sendMessageToUser(member.getUser(), text)
         );
     }
 

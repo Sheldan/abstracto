@@ -23,6 +23,6 @@ public class InviteFilterFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(InviteFilterMode.FILTER_NOTIFICATIONS, InviteFilterMode.TRACK_USES);
+        return Arrays.asList(InviteFilterMode.values());
     }
 }

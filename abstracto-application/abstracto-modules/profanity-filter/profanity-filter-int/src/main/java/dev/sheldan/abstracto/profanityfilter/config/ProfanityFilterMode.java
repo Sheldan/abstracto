@@ -8,6 +8,7 @@ public enum ProfanityFilterMode implements FeatureMode {
     AUTO_DELETE_PROFANITIES("autoDeleteProfanities"),
     PROFANITY_VOTE("profanityVote"),
     PROFANITY_REPORT("profanityReport"),
+    PROFANITY_MODERATION_ACTIONS("profanityModerationActions"),
     AUTO_DELETE_AFTER_VOTE("autoDeleteAfterVote"),
     TRACK_PROFANITIES("trackProfanities");
 

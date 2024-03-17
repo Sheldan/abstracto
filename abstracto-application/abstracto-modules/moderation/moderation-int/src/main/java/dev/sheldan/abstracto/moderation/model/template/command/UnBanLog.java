@@ -1,12 +1,10 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.User;
-
 
 /**
  * Used when rendering the notification when a member was banned. The template is: "ban_log_embed"
@@ -18,10 +16,9 @@ public class UnBanLog {
     /**
      * The member executing the unban
      */
-    private Member unBanningMember;
+    private MemberDisplay unBanningMember;
     /**
      * The user being unbanned
      */
-    private User bannedUser;
-    private Message commandMessage;
+    private UserDisplay bannedUser;
 }

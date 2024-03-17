@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.invitefilter.model.template.listener;
 
+import dev.sheldan.abstracto.moderation.model.ModerationActionButton;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,4 +18,5 @@ public class DeletedInvitesNotificationModel {
     private Member author;
     private Message message;
     private List<DeletedInvite> invites;
+    private List<ModerationActionButton> moderationActionComponents;
 }

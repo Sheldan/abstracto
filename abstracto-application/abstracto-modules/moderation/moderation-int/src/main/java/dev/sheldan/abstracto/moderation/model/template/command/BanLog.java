@@ -1,11 +1,10 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.User;
 
 import java.time.Duration;
 
@@ -24,11 +23,10 @@ public class BanLog {
     /**
      * The member executing the ban
      */
-    private Member banningMember;
+    private MemberDisplay banningMember;
     /**
      * The user being banned
      */
-    private User bannedUser;
-    private Message commandMessage;
+    private UserDisplay bannedUser;
     private Duration deletionDuration;
 }

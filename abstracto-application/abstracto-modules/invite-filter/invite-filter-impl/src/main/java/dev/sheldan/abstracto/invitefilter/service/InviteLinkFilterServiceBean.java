@@ -21,6 +21,8 @@ import dev.sheldan.abstracto.invitefilter.model.template.listener.DeletedInvite;
 import dev.sheldan.abstracto.invitefilter.model.template.listener.DeletedInvitesNotificationModel;
 import dev.sheldan.abstracto.invitefilter.service.management.AllowedInviteLinkManagement;
 import dev.sheldan.abstracto.invitefilter.service.management.FilteredInviteLinkManagement;
+import dev.sheldan.abstracto.moderation.model.ModerationActionButton;
+import dev.sheldan.abstracto.moderation.service.ModerationActionService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -77,6 +79,9 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
 
     @Autowired
     private RoleImmunityService roleImmunityService;
+
+    @Autowired(required = false)
+    private ModerationActionService moderationActionService;
 
     private static final Pattern INVITE_CODE_PATTERN = Pattern.compile("(?<code>[a-z0-9-]+)", Pattern.CASE_INSENSITIVE);
 
@@ -230,10 +235,18 @@ public class InviteLinkFilterServiceBean implements InviteLinkFilterService {
             log.info("Post target {} not defined for server {} - not sending invite link deletion notification.", InviteFilterPostTarget.INVITE_DELETE_LOG.getKey(), serverId);
             return CompletableFuture.completedFuture(null);
         }
+        boolean moderationActionsEnabled = featureModeService.featureModeActive(InviteFilterFeatureDefinition.INVITE_FILTER, serverId, InviteFilterMode.FILTER_MODERATION_ACTIONS);
+        List<ModerationActionButton> moderationActionComponents = new ArrayList<>();
+        if(moderationActionsEnabled && moderationActionService != null) {
+            ServerUser reportedServerUser = ServerUser.fromMember(message.getMember());
+            List<ModerationActionButton> moderationActions = moderationActionService.getModerationActionButtons(reportedServerUser);
+            moderationActionComponents.addAll(moderationActions);
+        }
         DeletedInvitesNotificationModel model = DeletedInvitesNotificationModel
                 .builder()
                 .author(message.getMember())
                 .guild(message.getGuild())
+                .moderationActionComponents(moderationActionComponents)
                 .message(message)
                 .channel(message.getChannel())
                 .invites(groupInvites(codes))

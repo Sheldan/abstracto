@@ -38,6 +38,6 @@ public class ReportReactionFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(ReportReactionMode.SINGULAR_MESSAGE, ReportReactionMode.ANONYMOUS);
+        return Arrays.asList(ReportReactionMode.values());
     }
 }

@@ -2,20 +2,21 @@ package dev.sheldan.abstracto.moderation.command;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.condition.CommandCondition;
-import dev.sheldan.abstracto.core.command.config.*;
-import dev.sheldan.abstracto.core.command.execution.CommandContext;
+import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
+import dev.sheldan.abstracto.core.command.config.EffectConfig;
+import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
-import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
-import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
+import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.model.template.command.KickLogModel;
 import dev.sheldan.abstracto.moderation.service.KickServiceBean;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,30 +49,6 @@ public class Kick extends AbstractConditionableCommand {
     private InteractionService interactionService;
 
     @Override
-    public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
-        List<Object> parameters = commandContext.getParameters().getParameters();
-        Member member = (Member) parameters.get(0);
-        if(!member.getGuild().equals(commandContext.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
-        String defaultReason = templateService.renderSimpleTemplate(KICK_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
-        String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
-
-        KickLogModel kickLogModel = KickLogModel
-                .builder()
-                .kickedUser(member)
-                .reason(reason)
-                .guild(commandContext.getGuild())
-                .channel(commandContext.getChannel())
-                .member(commandContext.getAuthor())
-                .build();
-        kickLogModel.setKickedUser(member);
-        kickLogModel.setReason(reason);
-        return kickService.kickMember(member, reason, kickLogModel)
-                .thenApply(aVoid -> CommandResult.fromSuccess());
-    }
-
-    @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Member member = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, Member.class);
         if(!member.getGuild().equals(event.getGuild())) {
@@ -84,17 +61,7 @@ public class Kick extends AbstractConditionableCommand {
             reason = templateService.renderSimpleTemplate(KICK_DEFAULT_REASON_TEMPLATE, event.getGuild().getIdLong());
         }
 
-        KickLogModel kickLogModel = KickLogModel
-                .builder()
-                .kickedUser(member)
-                .reason(reason)
-                .guild(event.getGuild())
-                .channel(event.getGuildChannel())
-                .member(event.getMember())
-                .build();
-        kickLogModel.setKickedUser(member);
-        kickLogModel.setReason(reason);
-        return kickService.kickMember(member, reason, kickLogModel)
+        return kickService.kickMember(member, event.getMember(), reason)
                 .thenCompose(unused -> interactionService.replyEmbed(KICK_RESPONSE, event))
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
@@ -143,6 +110,7 @@ public class Kick extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .async(true)
+                .slashCommandOnly(true)
                 .effects(effectConfig)
                 .causesReaction(true)
                 .parameters(parameters)

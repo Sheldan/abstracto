@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -13,27 +14,19 @@ public class MuteListenerModel {
     /**
      * The {@link Member} being muted
      */
-    private Member mutedUser;
+    private MemberDisplay mutedUser;
     /**
      * The {@link Member} executing the mute
      */
-    private Member mutingUser;
+    private MemberDisplay mutingUser;
     /**
      * The persisted mute object from the database containing the information about the mute
      */
     private Long muteId;
     private Instant muteTargetDate;
     private Instant oldMuteTargetDate;
+    private Duration duration;
     private String reason;
-    private Long channelId;
-
-    /**
-     * The {@link Duration} of the mute between the mute was cast and and the date it should end
-     * @return The {@link Duration} between start and target date
-     */
-    public Duration getMuteDuration() {
-        return Duration.between(Instant.now(), muteTargetDate);
-    }
 
     public boolean getMuteEnded() {
         return oldMuteTargetDate != null && muteTargetDate == null || oldMuteTargetDate == null && muteTargetDate == null;

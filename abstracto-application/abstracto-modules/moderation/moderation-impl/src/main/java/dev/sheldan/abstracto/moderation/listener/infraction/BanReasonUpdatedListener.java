@@ -4,6 +4,8 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
@@ -85,8 +87,8 @@ public class BanReasonUpdatedListener implements InfractionUpdatedDescriptionLis
                 .orElse(Duration.ZERO);
         BanLog banLog = BanLog
                 .builder()
-                .bannedUser(infractionUser.isCompletedExceptionally() ? null : infractionUser.join())
-                .banningMember(infractionCreator.isCompletedExceptionally() ? null : infractionCreator.join())
+                .bannedUser(infractionUser.isCompletedExceptionally() ? null : UserDisplay.fromUser(infractionUser.join()))
+                .banningMember(infractionCreator.isCompletedExceptionally() ? null : MemberDisplay.fromMember(infractionCreator.join()))
                 .deletionDuration(deletionDuration)
                 .reason(model.getNewDescription())
                 .build();

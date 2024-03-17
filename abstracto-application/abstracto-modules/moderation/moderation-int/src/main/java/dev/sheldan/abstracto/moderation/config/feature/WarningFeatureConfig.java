@@ -37,7 +37,7 @@ public class WarningFeatureConfig implements FeatureConfig {
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(WarningMode.WARN_DECAY_LOG);
+        return Arrays.asList(WarningMode.values());
     }
 
     @Override

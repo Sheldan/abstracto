@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.GuildService;
 import dev.sheldan.abstracto.core.service.MemberService;
@@ -14,7 +15,7 @@ import dev.sheldan.abstracto.moderation.listener.InfractionUpdatedDescriptionLis
 import dev.sheldan.abstracto.moderation.model.database.Infraction;
 import dev.sheldan.abstracto.moderation.model.database.Warning;
 import dev.sheldan.abstracto.moderation.model.listener.InfractionDescriptionEventModel;
-import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
+import dev.sheldan.abstracto.moderation.model.template.command.WarnLogModel;
 import dev.sheldan.abstracto.moderation.service.WarnServiceBean;
 import dev.sheldan.abstracto.moderation.service.management.InfractionManagementService;
 import dev.sheldan.abstracto.moderation.service.management.WarnManagementService;
@@ -82,15 +83,14 @@ public class WarnReasonUpdatedListener implements InfractionUpdatedDescriptionLi
         Guild guild = guildService.getGuildById(model.getServerId());
         Infraction infraction = infractionManagementService.loadInfraction(model.getInfractionId());
         GuildMessageChannel messageChannel = channelService.getMessageChannelFromServer(model.getServerId(), infraction.getLogChannel().getId());
-        WarnContext context = WarnContext
+        WarnLogModel context = WarnLogModel
                 .builder()
-                .warnedMember(warnedUser.isCompletedExceptionally() ? null : warnedUser.join())
-                .member(warningUser.isCompletedExceptionally() ? null : warningUser.join())
+                .warnedMember(warnedUser.isCompletedExceptionally() ? null : MemberDisplay.fromMember(warnedUser.join()))
+                .warningMember(warningUser.isCompletedExceptionally() ? null : MemberDisplay.fromMember(warningUser.join()))
                 .reason(model.getNewDescription())
                 .warnId(warnId)
-                .guild(guild)
                 .build();
-        MessageToSend message = warnService.renderMessageModel(context);
+        MessageToSend message = warnService.renderMessageModel(context, guild.getIdLong());
         messageService.editMessageInChannel(messageChannel, message, infraction.getLogMessageId())
                 .thenAccept(unused1 -> returningFuture.complete(DefaultListenerResult.PROCESSED))
                 .exceptionally(throwable1 -> {

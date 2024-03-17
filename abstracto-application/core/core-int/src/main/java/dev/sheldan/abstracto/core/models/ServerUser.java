@@ -22,7 +22,16 @@ public class ServerUser implements Serializable {
         return ServerUser
                 .builder()
                 .serverId(aUserInAServer.getServerReference().getId())
-                .userId(aUserInAServer.getUserReference().getId()).build();
+                .userId(aUserInAServer.getUserReference().getId())
+                .build();
+    }
+
+    public static ServerUser fromId(Long serverId, Long userId) {
+        return ServerUser
+                .builder()
+                .serverId(serverId)
+                .userId(userId)
+                .build();
     }
 
     public static ServerUser fromMember(Member member) {

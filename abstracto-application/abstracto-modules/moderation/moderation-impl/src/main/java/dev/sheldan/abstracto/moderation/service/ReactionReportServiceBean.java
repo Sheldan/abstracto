@@ -12,6 +12,7 @@ import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefiniti
 import dev.sheldan.abstracto.moderation.config.feature.mode.ReportReactionMode;
 import dev.sheldan.abstracto.moderation.config.posttarget.ReactionReportPostTarget;
 import dev.sheldan.abstracto.moderation.listener.manager.ReportMessageCreatedListenerManager;
+import dev.sheldan.abstracto.moderation.model.ModerationActionButton;
 import dev.sheldan.abstracto.moderation.model.database.ModerationUser;
 import dev.sheldan.abstracto.moderation.model.database.ReactionReport;
 import dev.sheldan.abstracto.moderation.model.template.listener.ReportReactionNotificationModel;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -68,6 +70,9 @@ public class ReactionReportServiceBean implements ReactionReportService {
     @Autowired
     private ReportMessageCreatedListenerManager reportMessageCreatedListenerManager;
 
+    @Autowired
+    private ModerationActionService moderationActionService;
+
     private static final String REACTION_REPORT_TEMPLATE_KEY = "reactionReport_notification";
     public static final String REACTION_REPORT_MODAL_ORIGIN = "reportMessageModal";
     public static final String REACTION_REPORT_RESPONSE_TEMPLATE = "reactionReport_response";
@@ -93,11 +98,19 @@ public class ReactionReportServiceBean implements ReactionReportService {
             return channelService.editFieldValueInMessage(reportTextChannel, report.getReportMessageId(), 0, report.getReportCount().toString())
                     .thenAccept(message -> self.updateModerationUserReportCooldown(reporter));
         } else {
+            boolean reportActionsEnabled = featureModeService.featureModeActive(ModerationFeatureDefinition.REPORT_REACTIONS, serverId, ReportReactionMode.REPORT_ACTIONS);
+            List<ModerationActionButton> moderationActionComponents = new ArrayList<>();
+            if(reportActionsEnabled) {
+                ServerUser reportedServerUser = ServerUser.fromAUserInAServer(reportedUser);
+                List<ModerationActionButton> moderationActions = moderationActionService.getModerationActionButtons(reportedServerUser);
+                moderationActionComponents.addAll(moderationActions);
+            }
             ReportReactionNotificationModel model = ReportReactionNotificationModel
                     .builder()
                     .reportCount(1)
                     .context(context)
                     .singularMessage(singularMessage)
+                    .moderationActionComponents(moderationActionComponents)
                     .reportedMessage(reportedMessage)
                     .build();
             MessageToSend messageToSend = templateService.renderEmbedTemplate(REACTION_REPORT_TEMPLATE_KEY, model, serverId);

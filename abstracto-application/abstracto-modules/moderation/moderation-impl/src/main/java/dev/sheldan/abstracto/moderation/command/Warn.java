@@ -10,10 +10,12 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParame
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.model.template.command.WarnContext;
 import dev.sheldan.abstracto.moderation.service.WarnService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
@@ -59,16 +61,8 @@ public class Warn extends AbstractConditionableCommand {
         }
         String defaultReason = templateService.renderSimpleTemplate(WARN_DEFAULT_REASON_TEMPLATE, commandContext.getGuild().getIdLong());
         String reason = parameters.size() == 2 ? (String) parameters.get(1) : defaultReason;
-        WarnContext warnLogModel = WarnContext
-                .builder()
-                .reason(reason)
-                .warnedMember(member)
-                .channel(commandContext.getChannel())
-                .member(commandContext.getAuthor())
-                .guild(commandContext.getGuild())
-                .message(commandContext.getMessage())
-                .build();
-        return warnService.warnUserWithLog(warnLogModel)
+        ServerChannelMessage commandMessage = ServerChannelMessage.fromMessage(commandContext.getMessage());
+        return warnService.warnUserWithLog(commandContext.getGuild(), ServerUser.fromMember(member), ServerUser.fromMember(commandContext.getAuthor()), reason, commandMessage)
                 .thenApply(warning -> CommandResult.fromSuccess());
     }
 
@@ -84,15 +78,13 @@ public class Warn extends AbstractConditionableCommand {
         } else {
             reason = templateService.renderSimpleTemplate(WARN_DEFAULT_REASON_TEMPLATE, event.getGuild().getIdLong());
         }
-        WarnContext warnLogModel = WarnContext
+        ServerChannelMessage commandMessage = ServerChannelMessage
                 .builder()
-                .reason(reason)
-                .warnedMember(member)
-                .member(event.getMember())
-                .channel(event.getGuildChannel())
-                .guild(event.getGuild())
+                .serverId(event.getGuild().getIdLong())
+                .channelId(event.getChannel().getIdLong())
+                .messageId(SnowflakeUtils.createSnowFlake())
                 .build();
-        return warnService.warnUserWithLog(warnLogModel)
+        return warnService.warnUserWithLog(event.getGuild(), ServerUser.fromMember(member), ServerUser.fromMember(event.getMember()), reason, commandMessage)
                 .thenCompose(unused -> interactionService.replyEmbed(WARN_RESPONSE, event))
                 .thenApply(warning -> CommandResult.fromSuccess());
     }

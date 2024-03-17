@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum ReportReactionMode implements FeatureMode {
-    SINGULAR_MESSAGE("singularReportReactions"), ANONYMOUS("anonymousReportReactions");
+    SINGULAR_MESSAGE("singularReportReactions"), ANONYMOUS("anonymousReportReactions"), REPORT_ACTIONS("reactionReportActions");
 
     private final String key;
 

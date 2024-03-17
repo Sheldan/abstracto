@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
-import dev.sheldan.abstracto.core.models.context.ServerContext;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.utils.MessageUtils;
 import dev.sheldan.abstracto.moderation.model.database.Mute;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import net.dv8tion.jda.api.entities.Member;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,15 +20,15 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UnMuteLog extends ServerContext {
+public class UnMuteLog {
     /**
      * The un-muted Member, is null if the member left the server
      */
-    private Member unMutedUser;
+    private MemberDisplay unMutedUser;
     /**
      * The user casting the mute, is null if the member left the server
      */
-    private Member mutingUser;
+    private MemberDisplay mutingUser;
     /**
      * The persisted mute object from the database containing the information about the mute
      */

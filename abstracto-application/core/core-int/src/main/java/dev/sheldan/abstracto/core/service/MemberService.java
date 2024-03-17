@@ -25,8 +25,10 @@ public interface MemberService {
     boolean isUserInGuild(AUserInAServer aUserInAServer);
     boolean isUserInGuild(Guild guild, AUserInAServer aUserInAServer);
     Member getMemberInServer(AUserInAServer aUserInAServer);
+    Member getMemberInServer(ServerUser serverUser);
+    CompletableFuture<Member> getMemberInServerAsync(ServerUser serverUser);
     CompletableFuture<Member> getMemberInServerAsync(AUserInAServer aUserInAServer);
-    Member getMemberInServer(AServer server, AUser member);
+    Member getMemberInServerAsync(AServer server, AUser member);
     CompletableFuture<Member> forceReloadMember(Member member);
     Member getBotInGuild(AServer server);
     CompletableFuture<User> getUserViaId(Long userId);
@@ -35,5 +37,7 @@ public interface MemberService {
     CompletableFuture<Void> timeoutUserMaxDuration(Member member);
     CompletableFuture<Void> timeoutUser(Member member, Instant target);
     CompletableFuture<Void> timeoutUser(Member member, Instant target, String reason);
+    CompletableFuture<Void> timeoutMember(Guild guild, ServerUser serverUser, Duration duration, String reason);
+    CompletableFuture<Void> removeTimeout(Guild guild, ServerUser serverUser, String reason);
     CompletableFuture<Void> removeTimeout(Member member);
 }

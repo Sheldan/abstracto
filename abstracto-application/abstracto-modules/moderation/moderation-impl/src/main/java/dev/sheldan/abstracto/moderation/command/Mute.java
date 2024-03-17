@@ -10,12 +10,17 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParame
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
+import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.service.ChannelService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
+import dev.sheldan.abstracto.core.utils.SnowflakeUtils;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.model.template.command.MuteContext;
 import dev.sheldan.abstracto.moderation.service.MuteService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -24,17 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static dev.sheldan.abstracto.moderation.model.MuteResult.NOTIFICATION_FAILED;
 import static dev.sheldan.abstracto.moderation.service.MuteService.MUTE_EFFECT_KEY;
 
 @Component
 public class Mute extends AbstractConditionableCommand {
 
     private static final String MUTE_DEFAULT_REASON_TEMPLATE = "mute_default_reason";
+    public static final String MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY = "mute_notification_not_possible";
     private static final String DURATION_PARAMETER = "duration";
     private static final String MUTE_COMMAND = "mute";
     private static final String USER_PARAMETER = "user";
@@ -53,6 +59,9 @@ public class Mute extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -64,15 +73,19 @@ public class Mute extends AbstractConditionableCommand {
         Duration duration = (Duration) parameters.get(1);
         String defaultReason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, guild.getIdLong());
         String reason = parameters.size() == 3 ? (String) parameters.get(2) : defaultReason;
-        MuteContext muteLogModel = MuteContext
-                .builder()
-                .muteTargetDate(Instant.now().plus(duration))
-                .mutedUser(member)
-                .channelId(commandContext.getChannel().getIdLong())
-                .reason(reason)
-                .mutingUser(commandContext.getAuthor())
-                .build();
-        return muteService.muteMemberWithLog(muteLogModel)
+        ServerUser userToMute = ServerUser.fromMember(member);
+        ServerUser mutingUser = ServerUser.fromMember(commandContext.getAuthor());
+        Long serverId = commandContext.getGuild().getIdLong();
+        ServerChannelMessage serverChannelMessage = ServerChannelMessage.fromMessage(commandContext.getMessage());
+        return muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, commandContext.getGuild(), serverChannelMessage)
+                .thenCompose(muteResult -> {
+                    if(muteResult == NOTIFICATION_FAILED) {
+                        MessageToSend errorNotification = templateService.renderEmbedTemplate(MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY, new Object(), serverId);
+                        return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(errorNotification, commandContext.getChannel()));
+                    } else {
+                        return CompletableFuture.completedFuture(null);
+                    }
+                })
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
@@ -88,16 +101,23 @@ public class Mute extends AbstractConditionableCommand {
         } else {
             reason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, guild.getIdLong());
         }
-        MuteContext muteLogModel = MuteContext
+        Long serverId = event.getGuild().getIdLong();
+        ServerChannelMessage commandMessage = ServerChannelMessage
                 .builder()
-                .muteTargetDate(Instant.now().plus(duration))
-                .mutedUser(targetMember)
-                .reason(reason)
+                .serverId(serverId)
                 .channelId(event.getChannel().getIdLong())
-                .mutingUser(event.getMember())
+                .messageId(SnowflakeUtils.createSnowFlake())
                 .build();
-        return muteService.muteMemberWithLog(muteLogModel)
-                .thenCompose(unused -> interactionService.replyEmbed(MUTE_RESPONSE, event))
+        ServerUser userToMute = ServerUser.fromMember(targetMember);
+        ServerUser mutingUser = ServerUser.fromMember(event.getMember());
+        return muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, event.getGuild(), commandMessage)
+                .thenCompose(muteResult -> {
+                    if(muteResult == NOTIFICATION_FAILED) {
+                        return interactionService.replyEmbed(MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY, new Object(), event);
+                    } else {
+                        return interactionService.replyEmbed(MUTE_RESPONSE, event);
+                    }
+                })
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
