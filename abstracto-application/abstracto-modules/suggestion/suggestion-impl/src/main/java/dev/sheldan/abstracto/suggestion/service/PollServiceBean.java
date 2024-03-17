@@ -340,7 +340,7 @@ public class PollServiceBean implements PollService {
         List<PollMessageOption> options = getOptionsOfPoll(poll);
         ServerPollMessageModel model = ServerPollMessageModel.fromPoll(poll, options);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
-        MessageChannel pollChannel = adder.getGuild().getChannelById(MessageChannel.class, poll.getChannel().getId());
+        MessageChannel pollChannel = adder.getGuild().getChannelById(GuildMessageChannel.class, poll.getChannel().getId());
         List<CompletableFuture<Message>> messageFutures = channelService.editMessagesInAChannelFuture(messageToSend, pollChannel, Arrays.asList(poll.getMessageId()));
         return FutureUtils.toSingleFutureGeneric(messageFutures);
     }
@@ -528,7 +528,7 @@ public class PollServiceBean implements PollService {
         model.setShowDecisions(true);
         model.setAllowMultiple(false);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
-        MessageChannel pollChannel = guild.getChannelById(MessageChannel.class, poll.getChannel().getId());
+        MessageChannel pollChannel = guild.getChannelById(GuildMessageChannel.class, poll.getChannel().getId());
         return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), pollChannel, poll.getMessageId())
                 .thenApply(message -> null);
     }
@@ -537,7 +537,7 @@ public class PollServiceBean implements PollService {
         List<PollMessageOption> options = getOptionsOfPoll(poll);
         ServerPollMessageModel model = ServerPollMessageModel.fromPoll(poll, options);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(SERVER_POLL_TEMPLATE_KEY, model);
-        MessageChannel pollChannel = guild.getChannelById(MessageChannel.class, poll.getChannel().getId());
+        MessageChannel pollChannel = guild.getChannelById(GuildMessageChannel.class, poll.getChannel().getId());
         return channelService.editEmbedMessageInAChannel(messageToSend.getEmbeds().get(0), pollChannel, poll.getMessageId())
                 .thenApply(message -> null);
     }
