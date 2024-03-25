@@ -166,7 +166,10 @@ public class ExperienceRoleServiceBean implements ExperienceRoleService {
         List<AExperienceRole> roles = experienceRoleManagementService.getExperienceRolesForServer(server);
         List<LevelRole> levelRoles = new ArrayList<>();
         roles.forEach(aExperienceRole -> {
-            Role role = roleService.getRoleFromGuild(aExperienceRole.getRole());
+            Role role = null;
+            if(!aExperienceRole.getRole().getDeleted()) {
+                role = roleService.getRoleFromGuild(aExperienceRole.getRole());
+            }
             LevelRole levelRole = LevelRole
                     .builder()
                     .role(role)

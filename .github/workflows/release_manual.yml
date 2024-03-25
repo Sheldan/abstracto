@@ -15,6 +15,10 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 17
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '21.x'
       - name: Load current version
         id: version
         working-directory: ./abstracto-application
@@ -37,6 +41,14 @@ jobs:
           release-branch-name: master
           maven-args: "-Dmaven.javadoc.skip=true -s settings.xml -DskipTests"
           access-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install node dependencies and build
+        working-directory: ./ui/experience-tracking
+        run: npm ci
+      - name: Build ui application
+        working-directory: ./ui/experience-tracking
+        run: npm run build
+      - name: Copy built UI
+        run: cp -R ui/experience-tracking/build/* python/components/experience-tracking/resources/templates/experience/leaderboards/
       - name: Login to Harbor
         uses: docker/login-action@v2
         with:

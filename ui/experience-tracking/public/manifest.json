@@ -1,0 +1,8 @@
+{
+  "short_name": "Experience leaderboard",
+  "name": "Leaderboard showing experience gathered",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

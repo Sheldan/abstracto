@@ -6,6 +6,8 @@ import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.experience.model.database.AExperienceRole;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.database.LeaderBoardEntryResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +52,7 @@ public interface UserExperienceManagementService {
      * @return A list of {@link AUserExperience} objects associated with the given {@link AServer}
      */
     List<AUserExperience> loadAllUsers(AServer server);
+    Page<AUserExperience> loadAllUsersPaginated(AServer server, Pageable pageable);
 
     /**
      * Retrieves a list of {@link AUserExperience} ordered by {@link AUserExperience} experience and only returns the positions between {@code start} and @{code end}.

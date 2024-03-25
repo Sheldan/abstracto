@@ -11,7 +11,9 @@ import dev.sheldan.abstracto.experience.model.database.LeaderBoardEntryResult;
 import dev.sheldan.abstracto.experience.repository.UserExperienceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -68,6 +70,11 @@ public class UserExperienceManagementServiceBean implements UserExperienceManage
     @Override
     public List<AUserExperience> loadAllUsers(AServer server) {
         return repository.findByUser_ServerReference(server);
+    }
+
+    @Override
+    public Page<AUserExperience> loadAllUsersPaginated(AServer server, Pageable pageable) {
+        return repository.findAllByServer(server, pageable);
     }
 
     @Override

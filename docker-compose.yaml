@@ -17,3 +17,13 @@ services:
       context: python/components/image-gen
       dockerfile: docker/Dockerfile
     image: ${REGISTRY_PREFIX}abstracto-rest-api-image-gen:${VERSION:-latest}
+  core_api:
+    build:
+      context: python/components/core
+      dockerfile: docker/Dockerfile
+    image: ${REGISTRY_PREFIX}abstracto-rest-api-core:${VERSION:-latest}
+  experience_api:
+    build:
+      context: python/components/experience-tracking
+      dockerfile: docker/Dockerfile
+    image: ${REGISTRY_PREFIX}abstracto-rest-api-experience:${VERSION:-latest}

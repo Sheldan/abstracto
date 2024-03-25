@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.experience.repository;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.experience.model.database.AUserExperience;
 import dev.sheldan.abstracto.experience.model.database.LeaderBoardEntryResult;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,6 +25,7 @@ public interface UserExperienceRepository  extends JpaRepository<AUserExperience
      * @return A complete list of {@link AUserExperience} of the given {@link AServer server}
      */
     List<AUserExperience> findByUser_ServerReference(AServer server);
+    Page<AUserExperience> findAllByServer(AServer server, Pageable pageable);
 
     /**
      * Retrieves the {@link AUserExperience userExperience} ordered by experience, and applies the {@link Pageable pageable} to only filter out certain pages.
