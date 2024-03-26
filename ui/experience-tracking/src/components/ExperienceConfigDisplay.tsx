@@ -30,20 +30,21 @@ export const ExperienceConfigDisplay = ({serverId}: { serverId: bigint }) => {
 
     return (
         <>
-            {!hasError ?
+            {!hasError && roles.length !== 0 ?
                 <div className="bg-gray-800 p-4 mx-auto w-4/5 rounded-lg">
                     <button className="w-full flex justify-between items-center p-2 px-4" onClick={toggleOpen}>
                         <h2 className="text-xl font-extrabold leading-none tracking-tight text-gray-100">Role config</h2>
                             <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={`w-6 h-6 stroke-white stroke-2 duration-300 ${isOpen ? "rotate-180" : ""}`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={`w-6 h-6 stroke-white stroke-2 duration-500 ${isOpen ? "rotate-180" : ""}`}>
                                     <path strokeLinecap="round" strike-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
                                 </svg>
                             </div>
                     </button>
-                    <div className={`grid grid-cols-1 ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'} overflow-hidden duration-300`}>
-                        <div className="w-full gap-3 min-h-0 overflow-hidden flex flex-col items-start">
+                    <div className={`grid grid-cols-1 ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'} overflow-hidden duration-500`}>
+                        <div className="w-full min-h-0 overflow-hidden">
+                            <div className="p-4 flex flex-col gap-3 items-start">
                             {roles.map(role =>
-                                <div key={role.role.id} className="border-gray-700 flex gap-2 p-2 px-4 items-center flex-row-reverse">
+                                <div key={role.role.id} className="border-gray-700 flex gap-4 items-center flex-row-reverse">
                                     <p>
                                         <RoleDisplay role={role.role}/>
                                     </p>
@@ -51,11 +52,8 @@ export const ExperienceConfigDisplay = ({serverId}: { serverId: bigint }) => {
                                         {role.level}
                                     </p>
                                 </div>)}
+                            </div>
                         </div>
-                        {roles.length === 0 ?
-                            <div className="w-full flex items-center justify-center">
-                                <span className="text-gray-400">No roles</span>
-                            </div> : ''}
                     </div>
                 </div>
             : ''}

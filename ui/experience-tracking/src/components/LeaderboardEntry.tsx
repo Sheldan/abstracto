@@ -9,16 +9,18 @@ export const LeaderboardEntry = ({member, index}: { member: ExperienceMember, in
         <img alt={member.member!.name} src={member.member!.avatarUrl}
                     className="object-contain h-16 w-16 rounded-full"/>
         <span className="align-middle" style={{color: nameColor}}>{member.member!.name}</span>
-    </> : <>{member.id}</>;
+    </> :
+        <span className="inline-flex items-center h-16">
+            {member.id.toString()}
+        </span>;
     return (
         <>
-            <tr className={`${index % 2 === 0 ? "bg-gray-800" : "bg-gray-600"}`}>
+            <tr className={`${index % 2 === 0 ? "bg-gray-600" : "bg-gray-800"} h-full`} style={{ minHeight: 64}}>
                 <td
                     className="text-center">
                     {member.rank}
                 </td>
-                <td
-                    className="px-2 py-4 font-medium whitespace-nowrap text-white flex items-center gap-3">
+                <td className="px-2 py-4 font-medium whitespace-nowrap text-white flex items-center gap-3">
                     {memberDisplay}
                 </td>
                 <td className="px-6 py-4 text-center">

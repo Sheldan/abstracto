@@ -72,7 +72,7 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
 
                     </div>
                     <div className="flex flex-col">
-                        <div>
+                        <div className="mt-4">
                             <ExperienceConfigDisplay serverId={serverId}/>
                         </div>
                         <div className="text-sm text-left w-full mt-4">
