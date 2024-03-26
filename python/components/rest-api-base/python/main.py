@@ -7,7 +7,7 @@ import importlib
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
 template_dir = os.path.abspath('resources/templates')
-app = Flask(__name__, template_folder=template_dir)
+app = Flask(__name__, template_folder=template_dir, static_url_path='', static_folder=template_dir)
 
 import sys
 sys.path.append("..")
