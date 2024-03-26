@@ -83,16 +83,16 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
                                     <th scope="col" className="px-2 py-3 w-5">
                                         Rank
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-1/2">
+                                    <th scope="col" className="px-1 py-3 w-1/2 sm:w-1/2">
                                         Member
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-1/4 text-center">
+                                    <th scope="col" className="px-1 py-3 w-1/5 sm:w-1/5 text-center">
                                         Experience
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-1/4 text-center">
+                                    <th scope="col" className="px-1 py-3 w-1/5 sm:w-1/6 text-center">
                                         Messages
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-5 text-center">
+                                    <th scope="col" className="px-1 py-3 w-1/5 text-center">
                                         Level
                                     </th>
                                 </tr>
