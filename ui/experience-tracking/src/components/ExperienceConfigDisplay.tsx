@@ -6,6 +6,7 @@ export const ExperienceConfigDisplay = ({serverId}: { serverId: bigint }) => {
 
     const [roles, setRoles] = useState<ExperienceRole[]>([])
     const [hasError, setError] = useState(false)
+    const [isOpen, setOpen] = useState(false)
     async function loadConfig() {
         try {
             const configResponse = await fetch(`/experience/v1/leaderboards/${serverId}/config`)
@@ -23,37 +24,39 @@ export const ExperienceConfigDisplay = ({serverId}: { serverId: bigint }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
+    function toggleOpen() {
+        setOpen(!isOpen)
+    }
+
     return (
         <>
             {!hasError ?
-                <div className="py-10">
-                    <h2 className="text-4xl font-extrabold leading-none tracking-tight text-white">Role
-                        config</h2>
-                        <table className="w-full text-gray-400">
-                            <thead
-                                className="text-xs uppercase bg-gray-700 text-gray-400">
-                                <tr>
-                                    <th className="px-6 py-3 w-1/2">Role</th>
-                                    <th className="px-6 py-3 w-1/8">Level</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                <div className="bg-gray-800 p-4 mx-auto w-4/5 rounded-lg">
+                    <button className="w-full flex justify-between items-center p-2 px-4" onClick={toggleOpen}>
+                        <h2 className="text-xl font-extrabold leading-none tracking-tight text-gray-100">Role config</h2>
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={`w-6 h-6 stroke-white stroke-2 duration-300 ${isOpen ? "rotate-180" : ""}`}>
+                                    <path strokeLinecap="round" strike-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
+                                </svg>
+                            </div>
+                    </button>
+                    <div className={`grid grid-cols-1 ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'} overflow-hidden duration-300`}>
+                        <div className="w-full gap-3 min-h-0 overflow-hidden flex flex-col items-start">
                             {roles.map(role =>
-                                <tr key={role.role.id} className="border-b bg-gray-800 border-gray-700">
-                                    <td className="px-6 py-4">
+                                <div key={role.role.id} className="border-gray-700 flex gap-2 p-2 px-4 items-center flex-row-reverse">
+                                    <p>
                                         <RoleDisplay role={role.role}/>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
+                                    </p>
+                                    <p className="font-bold text-gray-200">
                                         {role.level}
-                                    </td>
-                                </tr>)}
-                            </tbody>
-
-                        </table>
+                                    </p>
+                                </div>)}
+                        </div>
                         {roles.length === 0 ?
                             <div className="w-full flex items-center justify-center">
                                 <span className="text-gray-400">No roles</span>
                             </div> : ''}
+                    </div>
                 </div>
             : ''}
         </>

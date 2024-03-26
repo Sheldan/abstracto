@@ -1,8 +1,7 @@
 import {ExperienceMember} from "../data/leaderboard";
-import {RoleDisplay} from "./RoleDisplay";
 import createStyle from "../utils/styleUtils";
 
-export const LeaderboardEntry = ({member}: { member: ExperienceMember }) => {
+export const LeaderboardEntry = ({member, index}: { member: ExperienceMember, index: number }) => {
     const userHasRole = member.role !== null;
     const memberExists = member.member !== null;
     const nameColor = userHasRole ? createStyle(member.role!) : ''
@@ -13,7 +12,11 @@ export const LeaderboardEntry = ({member}: { member: ExperienceMember }) => {
     </> : <>{member.id}</>;
     return (
         <>
-            <tr className="border-b bg-gray-800 border-gray-700">
+            <tr className={`${index % 2 === 0 ? "bg-gray-800" : "bg-gray-600"}`}>
+                <td
+                    className="text-center">
+                    {member.rank}
+                </td>
                 <td
                     className="px-2 py-4 font-medium whitespace-nowrap text-white flex items-center gap-3">
                     {memberDisplay}
@@ -26,9 +29,6 @@ export const LeaderboardEntry = ({member}: { member: ExperienceMember }) => {
                 </td>
                 <td className="px-6 py-4 text-center">
                     {member.level.toString()}
-                </td>
-                <td className="px-6 py-4 text-center">
-                    {userHasRole ? <RoleDisplay role={member.role!}/> : 'No role'}
                 </td>
             </tr>
 

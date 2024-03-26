@@ -51,7 +51,7 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
     function loadMore() {
         loadLeaderboard(pageCount + 1, pageSize)
     }
-    let loadMoreButton = <button className="w-full bg-gray-500 hover:bg-gray-700 text-white" onClick={loadMore}>Load more</button>;
+    let loadMoreButton = <button className="w-full h-10 bg-gray-500 hover:bg-gray-700 text-white mt-4" onClick={loadMore}>Load more</button>;
     return (
         <>
             {!hasError ?
@@ -67,41 +67,41 @@ export function Leaderboard({serverId}: { serverId: bigint }) {
                                 alt="Icon"
                                 className="w-24"/>
                                 : ''}
-                            <h1 className="text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl text-white">{'Leaderboard for ' + guildInfo.name}</h1>
+                            <h1 className="text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl text-white px-5">{guildInfo.name + ' Leaderboard'}</h1>
                         </div>
 
                     </div>
-                    <div className="flex">
-                        <div className="text-sm text-left w-3/4 ">
+                    <div className="flex flex-col">
+                        <div>
+                            <ExperienceConfigDisplay serverId={serverId}/>
+                        </div>
+                        <div className="text-sm text-left w-full mt-4">
                             <table className="w-full text-gray-400">
                                 <thead
                                     className="text-xs uppercase bg-gray-700 text-gray-400">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 w-1/3">
+                                    <th scope="col" className="px-2 py-3 w-5">
+                                        Rank
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 w-1/2">
                                         Member
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-1/6 text-center">
+                                    <th scope="col" className="px-6 py-3 w-1/4 text-center">
                                         Experience
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-1/6 text-center">
+                                    <th scope="col" className="px-6 py-3 w-1/4 text-center">
                                         Messages
                                     </th>
-                                    <th scope="col" className="px-6 py-3 w-1/6 text-center">
+                                    <th scope="col" className="px-6 py-3 w-5 text-center">
                                         Level
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 w-1/3 text-center">
-                                        Role
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {members.map(member => <LeaderboardEntry key={member.id} member={member}/>)}
+                                {members.map((member, index) => <LeaderboardEntry key={member.id} index={index} member={member}/>)}
                                 </tbody>
                             </table>
                             {hasMore ? loadMoreButton : ''}
-                        </div>
-                        <div className="w-1/4 px-3">
-                            <ExperienceConfigDisplay serverId={serverId}/>
                         </div>
                     </div>
                 </>

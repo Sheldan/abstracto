@@ -11,6 +11,7 @@ import lombok.Getter;
 public class UserExperienceDisplay {
     private UserDisplay member;
     private Long id;
+    private Integer rank;
     private Integer level;
     private Long experience;
     private Long messages;

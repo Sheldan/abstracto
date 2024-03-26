@@ -18,7 +18,8 @@ public class RoleDisplay {
 
     public static RoleDisplay fromRole(Role role) {
         RoleDisplayBuilder builder = builder()
-                .name(role.getName());
+                .name(role.getName())
+                .id(role.getIdLong());
         Color roleColor = role.getColor();
         if(roleColor != null) {
             builder.r(roleColor.getRed()).

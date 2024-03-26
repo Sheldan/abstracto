@@ -1,5 +1,6 @@
 export interface ExperienceMember {
     experience: bigint;
+    rank: number;
     id: bigint;
     level: number;
     messages: bigint;

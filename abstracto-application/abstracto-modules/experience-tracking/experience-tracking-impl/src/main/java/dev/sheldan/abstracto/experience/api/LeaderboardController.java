@@ -44,11 +44,12 @@ public class LeaderboardController {
                                                     Pageable pageable) {
         AServer server = serverManagementService.loadServer(serverId);
         Guild guild = guildService.getGuildById(serverId);
-        return userExperienceManagementService.loadAllUsersPaginated(server, pageable)
-                .map(userExperience -> convertFromUser(guild, userExperience));
+        Page<AUserExperience> allElements = userExperienceManagementService.loadAllUsersPaginated(server, pageable);
+        return allElements
+                .map(userExperience -> convertFromUser(guild, userExperience, pageable, allElements));
     }
 
-    private UserExperienceDisplay convertFromUser(Guild guild, AUserExperience aUserExperience) {
+    private UserExperienceDisplay convertFromUser(Guild guild, AUserExperience aUserExperience, Pageable pageable, Page<AUserExperience> page) {
         Long userId = aUserExperience.getUser().getUserReference().getId();
         Member member = guild.getMember(UserSnowflake.fromId(userId));
         AExperienceRole experienceRole = aUserExperience.getCurrentExperienceRole();
@@ -70,6 +71,7 @@ public class LeaderboardController {
                 .id(userId)
                 .messages(aUserExperience.getMessageCount())
                 .level(aUserExperience.getLevelOrDefault())
+                .rank((int) pageable.getOffset() + page.getContent().indexOf(aUserExperience) + 1)
                 .experience(aUserExperience.getExperience())
                 .role(roleDisplay)
                 .member(userDisplay)
