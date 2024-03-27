@@ -8,7 +8,7 @@ export const LeaderboardEntry = ({member, index}: { member: ExperienceMember, in
     let memberDisplay = memberExists ? <>
         <img alt={member.member!.name} src={member.member!.avatarUrl}
                     className="object-contain h-16 w-16 rounded-full"/>
-        <span className="align-middle" style={{color: nameColor}}>{member.member!.name}</span>
+        <span className="align-middle max-[480px]:max-w-48 truncate" style={{color: nameColor}}>{member.member!.name}</span>
     </> :
         <span className="inline-flex items-center h-16">
             {member.id.toString()}
@@ -20,16 +20,16 @@ export const LeaderboardEntry = ({member, index}: { member: ExperienceMember, in
                     className="text-center">
                     {member.rank}
                 </td>
-                <td className="px-2 py-4 font-medium whitespace-nowrap text-white flex items-center gap-3">
+                <td className="px-2 py-3 font-medium whitespace-nowrap text-white flex items-center gap-2">
                     {memberDisplay}
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-1 py-3 text-center">
                     {member.experience.toLocaleString()}
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-1 py-3 text-center">
                     {member.messages.toLocaleString()}
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-2 py-3 text-center">
                     {member.level.toString()}
                 </td>
             </tr>
