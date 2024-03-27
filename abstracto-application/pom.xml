@@ -10,7 +10,7 @@
 
     <groupId>dev.sheldan.abstracto</groupId>
     <artifactId>abstracto-application</artifactId>
-    <version>1.5.33-SNAPSHOT</version>
+    <version>1.5.33</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -33,7 +33,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/Sheldan/abstracto.git</url>
-        <tag>HEAD</tag>
+        <tag>v1.5.33</tag>
     </scm>
 
     <repositories>
