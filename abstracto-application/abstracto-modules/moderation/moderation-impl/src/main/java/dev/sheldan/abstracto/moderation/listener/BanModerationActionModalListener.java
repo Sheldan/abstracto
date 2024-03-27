@@ -76,7 +76,7 @@ public class BanModerationActionModalListener implements ModalInteractionListene
                 .getEvent()
                 .getValues()
                 .stream()
-                .filter(modalMapping -> modalMapping.getId().equals(payload.getDurationInputId()))
+                .filter(modalMapping -> modalMapping.getId().equals(payload.getReasonInputId()))
                 .map(ModalMapping::getAsString)
                 .findFirst()
                 .orElse(null);
