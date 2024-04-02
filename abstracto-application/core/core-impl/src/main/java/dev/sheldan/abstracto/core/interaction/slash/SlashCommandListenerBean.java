@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -126,7 +127,11 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         try {
             if(commands == null || commands.isEmpty()) return;
-            log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
+            if(ContextUtils.hasGuild(event.getInteraction())) {
+                log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getUser().getIdLong());
+            } else {
+                log.debug("Executing slash command by user {}", event.getUser().getIdLong());
+            }
             CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), slashCommandExecutor).exceptionally(throwable -> {
                 log.error("Failed to execute listener logic in async slash command event.", throwable);
                 return null;
@@ -135,6 +140,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
             log.error("Failed to process slash command interaction event.", exception);
         }
     }
+
 
     @Transactional
     public void executeListenerLogic(SlashCommandInteractionEvent event) {
@@ -179,7 +185,14 @@ public class SlashCommandListenerBean extends ListenerAdapter {
                 List<String> fullRepliesList = command.performAutoComplete(event);
                 List<String> replies = fullRepliesList.subList(0, Math.min(fullRepliesList.size(), OptionData.MAX_CHOICES));
                 event.replyChoiceStrings(replies).queue(unused -> {},
-                        throwable -> log.error("Failed to response to complete of command {} in guild {}.", command.getConfiguration().getName(), event.getGuild().getIdLong()));
+                        throwable -> {
+                            if(ContextUtils.hasGuild(event)) {
+                                log.error("Failed to respond to complete of command {} in guild {} by user {}.",
+                                        command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
+                            } else {
+                                log.error("Failed to resp ond to complete of command {} for user {}.", command.getConfiguration().getName(), event.getUser().getIdLong());
+                            }
+                        });
             } catch (Exception exception) {
                 log.error("Error while executing autocomplete of command {}.", command.getConfiguration().getName(), exception);
             }
@@ -268,7 +281,11 @@ public class SlashCommandListenerBean extends ListenerAdapter {
             CompletableFuture<CommandResult> commandOutput;
             if(conditionResult.isResult()) {
                 commandOutput = command.executeSlash(event).thenApply(commandResult -> {
-                    log.info("Command {} in server {} was executed.", commandName, event.getGuild().getIdLong());
+                    if(ContextUtils.hasGuild(event)) {
+                        log.info("Command {} in server {} was executed by user {}.", command.getConfiguration().getName(), event.getGuild().getIdLong(), event.getUser().getIdLong());
+                    } else {
+                        log.info("Command {} was executed by user {}.", command.getConfiguration().getName(), event.getUser().getId());
+                    }
                     return commandResult;
                 });
             } else {

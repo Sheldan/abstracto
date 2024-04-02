@@ -55,12 +55,14 @@ public class CombinedSlashCommandParameterProvider implements SlashCommandParame
         }
         Set<OptionType> optionTypes = new HashSet<>();
         possibleTypes.forEach(additionalType -> {
-            optionTypes.addAll(slashCommandParameterService.getTypesFromParameter(additionalType));
+            optionTypes.addAll(slashCommandParameterService.getTypesFromParameter(additionalType, parameter.getUseStrictParameters()));
         });
         return SlashCommandOptionTypeMapping
                 .builder()
                 .type(CombinedParameter.class)
                 .optionTypes(new ArrayList<>(optionTypes))
+                // this is needed, because the combined parameter is defined as strict, hence we are using the strictTypes value from the returned object
+                .strictTypes(parameter.getUseStrictParameters() ? new ArrayList<>(optionTypes) : new ArrayList<>())
                 .build();
     }
 

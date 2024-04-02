@@ -39,6 +39,10 @@ public class Parameter implements Serializable {
     private List<String> dependentFeatures = new ArrayList<>();
     @Builder.Default
     private List<String> choices = new ArrayList<>();
+    @Builder.Default
+    private Boolean useStrictParameters = false;
+    @Builder.Default
+    private Boolean supportsUserCommands = true;
 
     public String getSlashCompatibleName() {
         return name.toLowerCase(Locale.ROOT);

@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.Message;
 
 public interface GameService {
     MineBoard createBoard(Integer width, Integer height, Integer mines, Long serverId);
-    void persistMineBoardMessage(MineBoard mineBoard, Message message);
+    void persistMineBoardMessage(MineBoard mineBoard, Message message, Long serverId);
     void updateMineBoard(MineBoard mineBoard);
     void uncoverBoard(MineBoard mineBoard);
     void evaluateCreditChanges(MineBoard mineBoard);

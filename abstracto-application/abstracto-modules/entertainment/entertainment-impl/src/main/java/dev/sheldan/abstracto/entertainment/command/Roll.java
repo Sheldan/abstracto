@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.validator.MinIntegerValueValidator;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -125,6 +126,8 @@ public class Roll extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(EntertainmentSlashCommandNames.UTILITY)
                 .commandName(ROLL_COMMAND)
                 .build();

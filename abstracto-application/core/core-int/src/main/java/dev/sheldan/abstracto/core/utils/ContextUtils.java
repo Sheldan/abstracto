@@ -1,47 +1,42 @@
 package dev.sheldan.abstracto.core.utils;
 
-import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
-import dev.sheldan.abstracto.core.models.GuildChannelMember;
-import dev.sheldan.abstracto.core.models.cache.CachedMessage;
-import dev.sheldan.abstracto.core.models.context.UserInitiatedServerContext;
-import dev.sheldan.abstracto.core.service.MemberService;
-import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-@Component
 @Slf4j
 public class ContextUtils {
 
-    @Autowired
-    private ChannelManagementService channelManagementService;
+    public static boolean isGuildKnown(Interaction interaction) {
+        return interaction.hasFullGuild();
+    }
 
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
+    public static boolean isGuildNotKnown(Interaction interaction) {
+        return !isGuildKnown(interaction);
+    }
 
-    @Autowired
-    private MemberService memberService;
+    public static boolean hasGuild(Interaction interaction) {
+        return interaction.getGuild() != null;
+    }
 
-    public <T extends UserInitiatedServerContext> UserInitiatedServerContext fromMessage(CachedMessage message, Class<T> clazz) {
-        Method m = null;
-        GuildChannelMember guildChannelMember = memberService.getServerChannelUser(message.getServerId(), message.getChannelId(), message.getAuthor().getAuthorId());
-        try {
-            m = clazz.getMethod("builder");
-            UserInitiatedServerContext.UserInitiatedServerContextBuilder<?, ?> builder = (UserInitiatedServerContext.UserInitiatedServerContextBuilder) m.invoke(null, null);
-            return builder
-                    .member(guildChannelMember.getMember())
-                    .guild(guildChannelMember.getGuild())
-                    .messageChannel((GuildMessageChannel) guildChannelMember.getTextChannel())
-                    .build();
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            log.error("Failed to execute builder method", e);
-        }
-        throw new AbstractoRunTimeException("Failed to create UserInitiatedServerContext from message");
+
+    public static boolean isUserCommandInGuild(Interaction interaction) {
+        return isUserCommand(interaction) && interaction.getGuild() != null && interaction.getGuild().isDetached();
+    }
+
+    public static boolean isUserCommand(Interaction interaction) {
+        return interaction.getIntegrationOwners().getUserIntegration() != null && interaction.getIntegrationOwners().getGuildIntegration() == null;
+    }
+
+    public static boolean isNotUserCommand(Interaction interaction) {
+        return !isUserCommand(interaction);
+    }
+
+    public static Long serverIdOrNull(Interaction interaction) {
+        return ContextUtils.isGuildKnown(interaction) ? interaction.getGuild().getIdLong() : null;
+    }
+
+    public static Long serverIdOrNull(InteractionHook hook) {
+        return ContextUtils.isGuildKnown(hook.getInteraction()) ? hook.getInteraction().getGuild().getIdLong() : null;
     }
 }

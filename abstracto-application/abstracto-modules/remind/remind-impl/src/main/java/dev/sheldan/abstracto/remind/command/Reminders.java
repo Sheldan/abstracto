@@ -4,17 +4,21 @@ import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.models.ServerChannelMessage;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
@@ -26,6 +30,7 @@ import dev.sheldan.abstracto.remind.service.management.ReminderManagementService
 import dev.sheldan.abstracto.remind.service.management.ReminderParticipantManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,16 +62,19 @@ public class Reminders extends AbstractConditionableCommand {
     @Autowired
     private ReminderParticipantManagementService reminderParticipantManagementService;
 
+    @Autowired
+    private UserManagementService userManagementService;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         Long serverId = commandContext.getGuild().getIdLong();
         Member member = commandContext.getAuthor();
-        MessageToSend messageToSend = getMessageToSend(serverId, member);
+        MessageToSend messageToSend = getServerReminders(serverId, member);
         return FutureUtils.toSingleFutureGeneric(channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
-    private MessageToSend getMessageToSend(Long serverId, Member member) {
+    private MessageToSend getServerReminders(Long serverId, Member member) {
         AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
         List<Reminder> activeReminders = reminderManagementService.getActiveRemindersForUser(aUserInAServer);
         List<Reminder> joinedReminders = reminderParticipantManagementService.getActiveReminders(aUserInAServer)
@@ -85,17 +93,37 @@ public class Reminders extends AbstractConditionableCommand {
         RemindersModel model = RemindersModel
                 .builder()
                 .reminders(reminders)
-                .member(member)
+                .userDisplay(UserDisplay.fromUser(member.getUser()))
                 .build();
         log.info("Showing {} reminders for user {} in server {}.", activeReminders.size(), aUserInAServer.getUserReference().getId(), serverId);
         return templateService.renderEmbedTemplate(REMINDERS_RESPONSE_TEMPLATE, model, serverId);
     }
 
+    private MessageToSend getUserReminders(User user) {
+        AUser aUser = userManagementService.loadOrCreateUser(user.getIdLong());
+        List<Reminder> activeReminders = reminderManagementService.getActiveUserRemindersForUser(aUser);
+        List<ReminderDisplay> reminders = activeReminders
+                .stream()
+                .map(ReminderDisplay::fromReminder)
+                .collect(Collectors.toList());
+        RemindersModel model = RemindersModel
+                .builder()
+                .reminders(reminders)
+                .userDisplay(UserDisplay.fromUser(user))
+                .build();
+        return templateService.renderEmbedTemplate(REMINDERS_RESPONSE_TEMPLATE, model);
+    }
+
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        Long serverId = event.getGuild().getIdLong();
-        Member member = event.getMember();
-        MessageToSend messageToSend = getMessageToSend(serverId, member);
+        MessageToSend messageToSend;
+        if(ContextUtils.isUserCommand(event)) {
+            messageToSend = getUserReminders(event.getUser());
+        } else {
+            Member member = event.getMember();
+            Long serverId = event.getGuild().getIdLong();
+            messageToSend = getServerReminders(serverId, member);
+        }
         return interactionService.replyMessageToSend(messageToSend, event)
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
@@ -110,6 +138,8 @@ public class Reminders extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(RemindSlashCommandNames.REMIND)
                 .commandName("list")
                 .build();

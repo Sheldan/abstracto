@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.service.paginator;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.config.ListenerPriority;
+import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerResult;
 import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListener;
 import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListenerModel;
@@ -30,6 +31,9 @@ public class PaginatorButtonListener implements ButtonClickedListener {
 
     @Autowired
     private TemplateServiceBean templateServiceBean;
+
+    @Autowired
+    private InteractionService interactionService;
 
     @Override
     public ButtonClickedListenerResult execute(ButtonClickedListenerModel model) {
@@ -64,8 +68,12 @@ public class PaginatorButtonListener implements ButtonClickedListener {
         log.debug("Moving to page {} in paginator {}.", targetPage, payload.getPaginatorId());
         MessageConfiguration messageConfiguration = payload.getEmbedConfigs().get(targetPage);
         MessageToSend messageToSend = templateServiceBean.convertEmbedConfigurationToMessageToSend(messageConfiguration);
-        messageService.editMessageInChannel(model.getEvent().getMessageChannel(), messageToSend, originalMessage.getIdLong())
-                .thenAccept(unused -> log.info("Updated paginator {} to switch to page {}.", payload.getPaginatorId(), targetPage));
+        interactionService.replaceOriginal(messageToSend, model.getEvent().getHook())
+                .thenAccept(unused -> log.info("Updated paginator {} to switch to page {}.", payload.getPaginatorId(), targetPage))
+                .exceptionally(throwable -> {
+                    log.warn("Failed to update the paginator message.", throwable);
+                    return null;
+                });
         String accessorId = UUID.randomUUID().toString();
         paginatorServiceBean.updateCurrentPage(payload.getPaginatorId(), targetPage, accessorId);
         paginatorServiceBean.schedulePaginationDeletion(payload.getPaginatorId(), accessorId);
@@ -79,7 +87,7 @@ public class PaginatorButtonListener implements ButtonClickedListener {
 
     @Override
     public Boolean handlesEvent(ButtonClickedListenerModel model) {
-        return PaginatorServiceBean.PAGINATOR_BUTTON.equals(model.getOrigin()) && model.getEvent().isFromGuild();
+        return PaginatorServiceBean.PAGINATOR_BUTTON.equals(model.getOrigin());
     }
 
     @Override

@@ -55,7 +55,7 @@ public class SlashCommandFeatureActivationListener implements FeatureActivationL
                 return;
             }
             log.info("Updating slash command {} in guild {}.", command.getConfiguration().getName(), guild.getId());
-            slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), commandsToUpDate, model.getServerId());
+            slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), commandsToUpDate, model.getServerId(), false);
         });
         slashCommandService.addGuildSlashCommands(guild, commandsToUpDate)
                 .thenAccept(commands1 -> log.info("Updating {} slash commands in guild {}.", commandsToUpDate.size(), guild.getIdLong()));

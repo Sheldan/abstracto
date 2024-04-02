@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.GuildChannelMember;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.ReactionService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class ConditionPostExecution implements PostCommandExecution {
 
     @Override
     public void executeSlash(SlashCommandInteractionEvent interaction, CommandResult commandResult, Command command) {
-        if(commandResult.getResult().equals(ResultState.CONDITION)
+        if(commandResult.getResult().equals(ResultState.CONDITION) && ContextUtils.isNotUserCommand(interaction)
                 && commandResult.getConditionResult() != null &&
                 !commandResult.getConditionResult().isResult()
                 && commandResult.getConditionResult().getConditionDetail() != null

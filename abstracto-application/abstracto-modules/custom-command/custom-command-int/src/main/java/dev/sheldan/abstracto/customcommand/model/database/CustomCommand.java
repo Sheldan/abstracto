@@ -29,12 +29,19 @@ public class CustomCommand implements Serializable {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "server_id", nullable = false)
+    @JoinColumn(name = "server_id")
     private AServer server;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_user_in_server_id", nullable = false)
+    @JoinColumn(name = "creator_user_in_server_id")
     private AUserInAServer creator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id", nullable = false)
+    private AUser creatorUser;
+
+    @Column(name = "user_specific")
+    private Boolean userSpecific;
 
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;

@@ -4,8 +4,6 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interaction.context.ContextCommandService;
-import dev.sheldan.abstracto.core.interaction.context.management.ContextCommandInServerManagementService;
-import dev.sheldan.abstracto.core.interaction.context.management.ContextCommandManagementService;
 import dev.sheldan.abstracto.core.interaction.context.message.MessageContextCommandListenerBean;
 import dev.sheldan.abstracto.core.interaction.context.message.listener.MessageContextCommandListener;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandListenerBean;
@@ -20,6 +18,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -28,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -61,12 +61,6 @@ public class CommandLoaderListener implements AsyncStartupListener {
     private ServerManagementService serverManagementService;
 
     @Autowired
-    private ContextCommandManagementService contextCommandManagementService;
-
-    @Autowired
-    private ContextCommandInServerManagementService contextCommandInServerManagementService;
-
-    @Autowired
     private CommandLoaderListener self;
 
     @Autowired
@@ -92,7 +86,7 @@ public class CommandLoaderListener implements AsyncStartupListener {
                     return;
                 }
                 log.info("Updating slash command {} in guild {}.", command.getConfiguration().getName(), guild.getId());
-                slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), slashCommandsToUpdate, guild.getIdLong());
+                slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), slashCommandsToUpdate, guild.getIdLong(), false);
             });
 
             log.info("Updating context commands for guild {}.", guild.getIdLong());
@@ -126,7 +120,15 @@ public class CommandLoaderListener implements AsyncStartupListener {
                 return null;
             });
         });
-
+        List<Pair<List<CommandConfiguration>, SlashCommandData>> userCommandsToUpdate = new ArrayList<>();
+        incomingSlashCommands.forEach(command -> {
+            slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), userCommandsToUpdate, null, true);
+        });
+        List<CommandData> userCommands = userCommandsToUpdate
+                .stream()
+                .map(Pair::getSecond)
+                .collect(Collectors.toList());
+        jda.updateCommands().addCommands(userCommands).queue();
     }
 
     @Transactional

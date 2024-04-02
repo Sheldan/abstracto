@@ -2,9 +2,35 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <changeSet author="Sheldan" id="reminder-add_user_installable_support">
+        <addColumn tableName="reminder">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="send_dm" type="BOOLEAN" value="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_command" type="BOOLEAN" value="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            update reminder set user_id = (select ua.user_id from user_in_server ua where ua.user_in_server_id = user_in_server_id order by ua.server_id limit 1)
+        </sql>
+        <addNotNullConstraint columnName="user_id"
+                              tableName="reminder"
+                              validate="true"/>
+        <sql>
+            ALTER TABLE reminder ALTER COLUMN server_id DROP NOT NULL;
+            ALTER TABLE reminder ALTER COLUMN channel_id DROP NOT NULL;
+            ALTER TABLE reminder ALTER COLUMN user_in_server_id DROP NOT NULL;
+        </sql>
+    </changeSet>
+
     <changeSet author="Sheldan" id="reminder-resize_text">
         <modifyDataType columnName="text"
-                         newDataType="VARCHAR(4000)"
-                         tableName="reminder"/>
+                        newDataType="VARCHAR(4000)"
+                        tableName="reminder"/>
     </changeSet>
+
 </databaseChangeLog>

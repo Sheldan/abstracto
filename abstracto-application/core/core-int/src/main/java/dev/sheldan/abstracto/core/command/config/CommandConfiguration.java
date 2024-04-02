@@ -8,7 +8,9 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter @Builder @EqualsAndHashCode
+@Getter
+@Builder
+@EqualsAndHashCode
 public class CommandConfiguration {
 
     private String name;
@@ -55,5 +57,9 @@ public class CommandConfiguration {
             .builder()
             .enabled(false)
             .build();
+
+    public boolean isUserInstallable() {
+        return slashCommandConfig != null && slashCommandConfig.isUserInstallable();
+    }
 
 }

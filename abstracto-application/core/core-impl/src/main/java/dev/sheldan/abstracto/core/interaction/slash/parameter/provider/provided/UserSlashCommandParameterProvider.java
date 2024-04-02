@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class UserSlashCommandParameterProvider implements SlashCommandParameterProvider {
@@ -16,6 +17,7 @@ public class UserSlashCommandParameterProvider implements SlashCommandParameterP
                 .builder()
                 .type(User.class)
                 .optionTypes(Arrays.asList(OptionType.USER, OptionType.STRING))
+                .strictTypes(List.of(OptionType.USER))
                 .build();
     }
 }

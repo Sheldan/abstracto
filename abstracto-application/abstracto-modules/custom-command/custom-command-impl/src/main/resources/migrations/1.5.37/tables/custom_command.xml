@@ -1,0 +1,26 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd" >
+    <changeSet author="Sheldan" id="custom_command-add_user_installable_support">
+        <addColumn tableName="custom_command">
+            <column name="creator_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="user_specific" type="BOOLEAN" value="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            update custom_command set creator_id = (select ua.user_id from user_in_server ua where ua.user_in_server_id = creator_user_in_server_id order by ua.server_id limit 1)
+        </sql>
+        <addNotNullConstraint columnName="creator_id"
+                              tableName="custom_command"
+                              validate="true"/>
+        <sql>
+            ALTER TABLE custom_command ALTER COLUMN server_id DROP NOT NULL;
+            ALTER TABLE custom_command ALTER COLUMN creator_user_in_server_id DROP NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

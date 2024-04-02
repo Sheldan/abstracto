@@ -31,6 +31,7 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
         name = name.toLowerCase(Locale.ROOT);
         List<OptionType> potentialOptionTypes = getTypesFromParameter(parameterType);
         OptionType actualOptionType = potentialOptionTypes.size() == 1 ? potentialOptionTypes.get(0) : null;
+        boolean useFullName = true;
         if (potentialOptionTypes.size() > 1) {
             for (OptionType optionType: potentialOptionTypes) {
                 if(event.getOption(getFullQualifiedParameterName(name, optionType)) != null) {
@@ -38,11 +39,17 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
                     break;
                 }
             }
+            if(actualOptionType == null) { // if we still didnt find it, lets try without the fully qualified name
+                if(event.getOption(name) != null) {
+                    actualOptionType = event.getOption(name).getType();
+                    useFullName = false;
+                }
+            }
         }
         if(actualOptionType == null) {
             throw new IllegalArgumentException(String.format("Could not determine option type for parameter %s", name));
         }
-        if(potentialOptionTypes.size() > 1) {
+        if(potentialOptionTypes.size() > 1 && useFullName) {
             name = getFullQualifiedParameterName(name, actualOptionType);
         }
         if(actualOptionType == OptionType.BOOLEAN) {
@@ -77,6 +84,7 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
         name = name.toLowerCase(Locale.ROOT);
         List<OptionType> potentialOptionTypes = getTypesFromParameter(parameterType);
         OptionType actualOptionType = potentialOptionTypes.size() == 1 ? potentialOptionTypes.get(0) : null;
+        boolean useFullName = true;
         if (potentialOptionTypes.size() > 1) {
             for (OptionType optionType: potentialOptionTypes) {
                 if(event.getOption(getFullQualifiedParameterName(name, optionType)) != null) {
@@ -84,11 +92,17 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
                     break;
                 }
             }
+            if(actualOptionType == null) { // if we still didnt find it, lets try without the fully qualified name
+                if(event.getOption(name) != null) {
+                    actualOptionType = event.getOption(name).getType();
+                    useFullName = false;
+                }
+            }
         }
         if(actualOptionType == null) {
             return false;
         }
-        if(potentialOptionTypes.size() > 1) {
+        if(potentialOptionTypes.size() > 1 && useFullName) {
             name = getFullQualifiedParameterName(name, actualOptionType);
         }
         if(actualOptionType == OptionType.BOOLEAN) {
@@ -159,17 +173,38 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
                 .stream()
                 .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(parameter.getType()))
                 .findAny()
-                .map(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping(parameter).getOptionTypes())
+                .map(slashCommandParameterProvider -> {
+                    List<OptionType> optionTypes;
+                    if(parameter.getUseStrictParameters()) {
+                        optionTypes = slashCommandParameterProvider.getOptionMapping(parameter).getStrictTypes();
+                    } else {
+                        optionTypes = slashCommandParameterProvider.getOptionMapping(parameter).getOptionTypes();
+                    }
+                    return optionTypes;
+                })
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Unknown type for slash command parameter desired %s", parameter.getType().getName())));
     }
 
     @Override
     public List<OptionType> getTypesFromParameter(Class clazz) {
+        return getTypesFromParameter(clazz, false);
+    }
+
+    @Override
+    public List<OptionType> getTypesFromParameter(Class clazz, boolean strict) {
         return parameterProviders
                 .stream()
                 .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(clazz))
                 .findAny()
-                .map(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getOptionTypes())
+                .map(slashCommandParameterProvider -> {
+                    List<OptionType> optionTypes;
+                    if(strict) {
+                        optionTypes = slashCommandParameterProvider.getOptionMapping().getStrictTypes();
+                    } else {
+                        optionTypes = slashCommandParameterProvider.getOptionMapping().getOptionTypes();
+                    }
+                    return optionTypes;
+                })
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Unknown type for slash command parameter desired %s", clazz.getName())));
     }
 

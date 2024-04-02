@@ -21,5 +21,6 @@ public interface SlashCommandParameterService {
     Emoji loadEmoteFromString(String input, Guild guild);
     List<OptionType> getTypesFromParameter(Parameter parameter);
     List<OptionType> getTypesFromParameter(Class clazz);
+    List<OptionType> getTypesFromParameter(Class clazz, boolean strict);
     String getFullQualifiedParameterName(String name, OptionType type);
 }

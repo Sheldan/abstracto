@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
@@ -15,6 +16,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
@@ -81,33 +83,39 @@ public class Mines extends AbstractConditionableCommand {
             mines = slashCommandParameterService.getCommandOption(MINES_PARAMETER, event, Integer.class);
         }
         Integer credit = null;
-        long serverId = event.getGuild().getIdLong();
-        boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
-        if(economyEnabled){
-            credit = 50;
-            if(slashCommandParameterService.hasCommandOption(CREDITS_PARAMETER, event)) {
-                credit = slashCommandParameterService.getCommandOption(CREDITS_PARAMETER, event, Integer.class);
-            }
+        Long serverId;
+        boolean economyEnabled = false;
+        if(ContextUtils.isNotUserCommand(event)) {
+            serverId = event.getGuild().getIdLong();
+            economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
+            if(economyEnabled){
+                credit = 50;
+                if(slashCommandParameterService.hasCommandOption(CREDITS_PARAMETER, event)) {
+                    credit = slashCommandParameterService.getCommandOption(CREDITS_PARAMETER, event, Integer.class);
+                }
 
-            Optional<EconomyUser> userOptional = economyUserManagementService.getUser(ServerUser.fromMember(event.getMember()));
-            if(!userOptional.isPresent()) {
-                throw new NotEnoughCreditsException();
+                Optional<EconomyUser> userOptional = economyUserManagementService.getUser(ServerUser.fromMember(event.getMember()));
+                if(!userOptional.isPresent()) {
+                    throw new NotEnoughCreditsException();
+                }
+                EconomyUser user = userOptional.get();
+                if(user.getCredits() < credit) {
+                    throw new NotEnoughCreditsException();
+                }
             }
-            EconomyUser user = userOptional.get();
-            if(user.getCredits() < credit) {
-                throw new NotEnoughCreditsException();
-            }
+        } else {
+            serverId = null;
         }
         MineBoard board = gameService.createBoard(width, height, mines, serverId);
         board.setCreditsEnabled(economyEnabled);
-        board.setUserId(event.getMember().getIdLong());
+        board.setUserId(event.getUser().getIdLong());
         board.setServerId(serverId);
         board.setCredits(credit);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board, serverId);
         return interactionService.replyMessageToSend(messageToSend, event)
                 .thenCompose(interactionHook -> interactionHook.retrieveOriginal().submit())
                 .thenApply(message -> {
-                    gameService.persistMineBoardMessage(board, message);
+                    gameService.persistMineBoardMessage(board, message, serverId);
                     return CommandResult.fromSuccess();
                 });
     }
@@ -129,7 +137,7 @@ public class Mines extends AbstractConditionableCommand {
             mines = (Integer) parameters.get(2);
         }
         Integer credit = null;
-        long serverId = commandContext.getGuild().getIdLong();
+        Long serverId = commandContext.getGuild().getIdLong();
         boolean economyEnabled = featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, serverId);
         if(economyEnabled){
             credit = 50;
@@ -154,7 +162,7 @@ public class Mines extends AbstractConditionableCommand {
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MINE_BOARD_TEMPLATE_KEY, board, serverId);
         List<CompletableFuture<Message>> futures = channelService.sendMessageToSendToChannel(messageToSend, commandContext.getChannel());
         return FutureUtils.toSingleFutureGeneric(futures)
-                .thenAccept(unused ->  gameService.persistMineBoardMessage(board, futures.get(0).join()))
+                .thenAccept(unused ->  gameService.persistMineBoardMessage(board, futures.get(0).join(), serverId))
                 .thenApply(unused -> CommandResult.fromSuccess());
 
     }
@@ -207,6 +215,8 @@ public class Mines extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(EntertainmentSlashCommandNames.GAME)
                 .commandName(MINES_COMMAND_NAME)
                 .build();

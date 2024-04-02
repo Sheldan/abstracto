@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -16,6 +17,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.webservices.common.service.SuggestQueriesService;
 import dev.sheldan.abstracto.webservices.config.WebServicesSlashCommandNames;
@@ -95,9 +97,16 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
                 .builder()
                 .video(foundVideo)
                 .build();
-        boolean sendInfo = featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, event.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS);
-        MessageToSend linkEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY, model, event.getGuild().getIdLong());
-        MessageToSend infoEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY, model, event.getGuild().getIdLong());
+        boolean sendInfo;
+        MessageToSend linkEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY, model, ContextUtils.serverIdOrNull(event));
+        MessageToSend infoEmbed;
+        if(ContextUtils.isNotUserCommand(event)) {
+            sendInfo = featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, event.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS);
+            infoEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY, model, ContextUtils.serverIdOrNull(event));
+        } else {
+            infoEmbed = null;
+            sendInfo = false;
+        }
         return interactionService.replyMessageToSend(linkEmbed, event)
                 .thenCompose(interactionHook -> {
                     if(sendInfo) {
@@ -139,6 +148,8 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(WebServicesSlashCommandNames.YOUTUBE)
                 .commandName("search")
                 .build();

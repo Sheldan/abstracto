@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.FeatureConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class FeatureEnabledCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        if(ContextUtils.isUserCommand(slashCommandInteractionEvent)) {
+            return ConditionResult.SUCCESS;
+        }
         Long serverId = slashCommandInteractionEvent.getGuild().getIdLong();
         return evaluateFeatureCondition(command, serverId);
     }

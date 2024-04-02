@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.core.models.template.display;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.utils.MemberUtils;
 import lombok.Builder;
@@ -35,6 +36,14 @@ public class MemberDisplay {
                 .memberMention(MemberUtils.getAUserInAServerAsMention(aUserInAServer))
                 .serverId(aUserInAServer.getServerReference().getId())
                 .userId(aUserInAServer.getUserReference().getId())
+                .build();
+    }
+
+    public static MemberDisplay fromAUser(AUser aUser) {
+        return MemberDisplay
+                .builder()
+                .memberMention(MemberUtils.getUserAsMention(aUser.getId()))
+                .userId(aUser.getId())
                 .build();
     }
 

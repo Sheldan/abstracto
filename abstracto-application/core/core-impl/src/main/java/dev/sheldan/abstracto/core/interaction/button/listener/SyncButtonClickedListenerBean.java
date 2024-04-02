@@ -11,6 +11,7 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.FeatureModeService;
 import dev.sheldan.abstracto.core.interaction.ComponentPayloadManagementService;
 import dev.sheldan.abstracto.core.utils.BeanUtils;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -122,6 +123,9 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
         return featureAwareListeners.stream().filter(trFeatureAwareListener -> {
             FeatureConfig feature = featureConfigService.getFeatureDisplayForFeature(trFeatureAwareListener.getFeature());
             if(!model.getEvent().isFromGuild()) {
+                return true;
+            }
+            if(ContextUtils.isUserCommand(model.getEvent())) {
                 return true;
             }
             if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {

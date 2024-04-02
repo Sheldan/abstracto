@@ -2,10 +2,7 @@ package dev.sheldan.abstracto.imagegeneration.command;
 
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
-import dev.sheldan.abstracto.core.command.config.CombinedParameterEntry;
-import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
-import dev.sheldan.abstracto.core.command.config.HelpInfo;
-import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.*;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
@@ -24,6 +21,7 @@ import dev.sheldan.abstracto.imagegeneration.config.ImageGenerationSlashCommandN
 import dev.sheldan.abstracto.imagegeneration.service.ImageGenerationService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,13 +90,25 @@ public class Pat extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
+        String avatarUrl;
         Member targetMember;
         if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER_KEY, event)) {
             targetMember = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER_KEY, event, Member.class);
         } else {
             targetMember = event.getMember();
         }
-        File patGifFile = imageGenerationService.getPatGif(targetMember.getEffectiveAvatar().getUrl(imageSize));
+        if(targetMember == null) {
+            User targetUser;
+            if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER_KEY, event)) {
+                targetUser = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER_KEY, event, User.class);
+            } else {
+                targetUser = event.getUser();
+            }
+            avatarUrl = targetUser.getEffectiveAvatar().getUrl(imageSize);
+        } else {
+            avatarUrl = targetMember.getEffectiveAvatar().getUrl(imageSize);
+        }
+        File patGifFile = imageGenerationService.getPatGif(avatarUrl);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(PAT_EMBED_TEMPLATE_KEY, new Object(), event.getGuild().getIdLong());
         // template support does not support binary files
         AttachedFile file = AttachedFile
@@ -116,13 +126,17 @@ public class Pat extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Map<String, Object> parameterAlternatives = new HashMap<>();
-        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(CombinedParameterEntry.messageParameter(Message.class), CombinedParameterEntry.parameter(Member.class)));
+        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, List.of(
+                CombinedParameterEntry.messageParameter(Message.class),
+                CombinedParameterEntry.parameter(Member.class),
+                CombinedParameterEntry.parameter(User.class)));
         Parameter memberParameter = Parameter
                 .builder()
                 .name(MEMBER_PARAMETER_KEY)
                 .type(CombinedParameter.class)
                 .additionalInfo(parameterAlternatives)
                 .templated(true)
+                .useStrictParameters(true)
                 .optional(true)
                 .build();
         parameters.add(memberParameter);
@@ -134,6 +148,8 @@ public class Pat extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(ImageGenerationSlashCommandNames.IMAGE_GENERATION)
                 .groupName("memes")
                 .commandName("pat")

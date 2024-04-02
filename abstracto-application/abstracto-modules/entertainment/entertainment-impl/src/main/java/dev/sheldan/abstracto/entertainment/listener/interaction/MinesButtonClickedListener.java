@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.interaction.button.listener.ButtonClickedListe
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.entertainment.command.games.Mines;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.model.command.games.MineBoard;
@@ -49,8 +50,10 @@ public class MinesButtonClickedListener implements ButtonClickedListener {
         GameService.MineResult mineResult = gameService.uncoverField(mineBoard, payload.getX(), payload.getY());
         mineBoard.setState(mineResult);
         if(mineBoard.getState() != GameService.MineResult.CONTINUE) {
-            if(featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, model.getServerId())){
-                gameService.evaluateCreditChanges(mineBoard);
+            if(ContextUtils.isNotUserCommand(model.getEvent())) {
+                if(featureFlagService.getFeatureFlagValue(EntertainmentFeatureDefinition.ECONOMY, model.getServerId())){
+                    gameService.evaluateCreditChanges(mineBoard);
+                }
             }
             gameService.uncoverBoard(mineBoard);
         }

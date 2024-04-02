@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.condition.detail.AdminModeDetail;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.service.ServerService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -42,6 +43,9 @@ public class AdminModeCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        if(ContextUtils.isUserCommand(slashCommandInteractionEvent)) {
+            return ConditionResult.SUCCESS;
+        }
         boolean adminModeActive = service.adminModeActive(slashCommandInteractionEvent.getGuild());
         if(adminModeActive){
             if(slashCommandInteractionEvent.getMember().hasPermission(Permission.ADMINISTRATOR)) {

@@ -10,6 +10,8 @@ import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParame
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.service.management.UserManagementService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.remind.config.RemindFeatureDefinition;
 import dev.sheldan.abstracto.remind.config.RemindSlashCommandNames;
 import dev.sheldan.abstracto.remind.service.ReminderService;
@@ -37,6 +39,9 @@ public class UnRemind extends AbstractConditionableCommand {
     private UserInServerManagementService userInServerManagementService;
 
     @Autowired
+    private UserManagementService userManagementService;
+
+    @Autowired
     private SlashCommandParameterService slashCommandParameterService;
 
     @Autowired
@@ -52,7 +57,11 @@ public class UnRemind extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         Long reminderId = slashCommandParameterService.getCommandOption(REMINDER_ID_PARAMETER, event, Long.class, Integer.class).longValue();
-        reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(event.getMember()));
+        if(ContextUtils.isUserCommand(event)) {
+            reminderService.unRemind(reminderId, userManagementService.loadOrCreateUser(event.getUser().getIdLong()));
+        } else {
+            reminderService.unRemind(reminderId, userInServerManagementService.loadOrCreateUser(event.getMember()));
+        }
         return interactionService.replyEmbed(UN_REMIND_RESPONSE, event)
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
@@ -74,6 +83,8 @@ public class UnRemind extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(RemindSlashCommandNames.REMIND)
                 .commandName("cancel")
                 .build();

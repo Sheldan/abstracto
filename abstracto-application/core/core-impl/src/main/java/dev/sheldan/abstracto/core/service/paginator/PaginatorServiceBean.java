@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.core.templating.model.EmbedFooter;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.templating.service.TemplateServiceBean;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
@@ -77,12 +78,12 @@ public class PaginatorServiceBean implements PaginatorService {
     private static final ReentrantLock lock = new ReentrantLock();
 
     @Override
-    public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, GuildMessageChannel textChannel, Long userId) {
-        Long serverId = textChannel.getGuild().getIdLong();
+    public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, GuildMessageChannel messageChannel, Long userId) {
+        Long serverId = messageChannel.getGuild().getIdLong();
         PaginatorSetup setup = getPaginatorSetup(templateKey, model, userId, serverId);
-        log.info("Setting up paginator in channel {} in server {} with {} pages.", textChannel.getIdLong(),
-                textChannel.getGuild().getIdLong(), setup.getConfiguration().getEmbedConfigs().size());
-        List<CompletableFuture<Message>> paginatorFutures = channelService.sendMessageToSendToChannel(setup.getMessageToSend(), textChannel);
+        log.info("Setting up paginator in channel {} in server {} with {} pages.", messageChannel.getIdLong(),
+                messageChannel.getGuild().getIdLong(), setup.getConfiguration().getEmbedConfigs().size());
+        List<CompletableFuture<Message>> paginatorFutures = channelService.sendMessageToSendToChannel(setup.getMessageToSend(), messageChannel);
         return FutureUtils.toSingleFutureGeneric(paginatorFutures)
                 .thenAccept(unused -> self.setupButtonPayloads(paginatorFutures.get(0).join(), setup, serverId));
     }
@@ -106,7 +107,7 @@ public class PaginatorServiceBean implements PaginatorService {
         PaginatorConfiguration configuration = gson.fromJson(embedConfig, PaginatorConfiguration.class);
         setupFooters(configuration, serverId);
 
-        configuration.setPaginatorId(componentService.generateComponentId());
+        configuration.setPaginatorId(componentService.generateComponentId(serverId));
         configuration.setSinglePage(configuration.getEmbedConfigs().size() < 2);
         PaginatorButtonPayload buttonPayload = getButtonPayload(configuration, exitButtonId, startButtonId, previousButtonId, nextButtonId, lastButtonId);
         if(configuration.getRestrictUser() != null && configuration.getRestrictUser()) {
@@ -133,8 +134,8 @@ public class PaginatorServiceBean implements PaginatorService {
 
     @Override
     public CompletableFuture<Void> createPaginatorFromTemplate(String templateKey, Object model, IReplyCallback callback) {
-        Long serverId = callback.getGuild().getIdLong();
-        PaginatorSetup setup = getPaginatorSetup(templateKey, model, callback.getMember().getIdLong(), serverId);
+        Long serverId = ContextUtils.serverIdOrNull(callback);
+        PaginatorSetup setup = getPaginatorSetup(templateKey, model, callback.getUser().getIdLong(), serverId);
         return interactionService.replyMessageToSend(setup.getMessageToSend(), callback)
                 .thenCompose(interactionHook -> interactionHook.retrieveOriginal().submit())
                 .thenAccept(message -> self.setupButtonPayloads(message, setup, serverId));
@@ -287,9 +288,12 @@ public class PaginatorServiceBean implements PaginatorService {
 
     @Transactional
     public void cleanupPaginator(PaginatorInfo paginatorInfo) {
+        // TODO not sure how this is supposed to work, maybe .... not sure
         log.info("Cleaning up paginator {} in server {} channel {} message {}.", paginatorInfo.getPaginatorId(),
                 paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
-        messageService.deleteMessageInChannelInServer(paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
+        if(paginatorInfo.getServerId() != null) { // user commands store them with null, and we cannot cleanup those
+            messageService.deleteMessageInChannelInServer(paginatorInfo.getServerId(), paginatorInfo.getChannelId(), paginatorInfo.getMessageId());
+        }
         componentPayloadManagementService.deletePayloads(paginatorInfo.getPayloadIds());
     }
 

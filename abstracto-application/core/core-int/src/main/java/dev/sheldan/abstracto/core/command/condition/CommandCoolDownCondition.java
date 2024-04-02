@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.condition.detail.CommandCoolDownDetail
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CoolDownCheckResult;
 import dev.sheldan.abstracto.core.command.service.CommandCoolDownService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,9 @@ public class CommandCoolDownCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        if(ContextUtils.isUserCommand(slashCommandInteractionEvent)) {
+            return ConditionResult.SUCCESS;
+        }
         commandCoolDownService.takeLock();
         try {
             CoolDownCheckResult result = commandCoolDownService.allowedToExecuteCommand(command, slashCommandInteractionEvent);

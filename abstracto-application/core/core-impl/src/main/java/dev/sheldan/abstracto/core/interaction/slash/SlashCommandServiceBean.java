@@ -3,6 +3,7 @@ package dev.sheldan.abstracto.core.interaction.slash;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.command.model.database.ACommand;
 import dev.sheldan.abstracto.core.command.model.database.ACommandInAServer;
 import dev.sheldan.abstracto.core.command.service.management.CommandInServerManagementService;
@@ -15,19 +16,19 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.IntegrationType;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -58,8 +59,19 @@ public class SlashCommandServiceBean implements SlashCommandService {
     @Autowired
     private InteractionService interactionService;
 
+    private final static Map<UserCommandConfig.CommandContext, InteractionContextType> CONTEXT_CONFIG = new HashMap<>();
+
+    static {
+        CONTEXT_CONFIG.put(UserCommandConfig.CommandContext.DM, InteractionContextType.PRIVATE_CHANNEL);
+        CONTEXT_CONFIG.put(UserCommandConfig.CommandContext.BOT_DM, InteractionContextType.BOT_DM);
+        CONTEXT_CONFIG.put(UserCommandConfig.CommandContext.GUILD, InteractionContextType.GUILD);
+    }
+
     @Override
-    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands, Long serverId) {
+    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands, Long serverId, boolean userCommandsOnly) {
+        if(userCommandsOnly && !commandConfiguration.isUserInstallable()) {
+            return;
+        }
         boolean isTemplated = commandConfiguration.isTemplated();
         SlashCommandConfig slashConfig = commandConfiguration.getSlashCommandConfig();
         String description;
@@ -69,15 +81,25 @@ public class SlashCommandServiceBean implements SlashCommandService {
         } else {
             description = templateService.renderSimpleTemplate(internalCommandName + "_description", serverId);
         }
-        String rootName = slashConfig.getSlashCompatibleRootName();
-        String groupName = slashConfig.getSlashCompatibleGroupName();
-        String commandName = slashConfig.getSlashCompatibleCommandName();
+        String rootName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleRootName(), slashConfig.getSlashCompatibleRootName()) : slashConfig.getSlashCompatibleRootName();
+        String groupName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleGroupName(), slashConfig.getSlashCompatibleGroupName()) : slashConfig.getSlashCompatibleGroupName();
+        String commandName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleCommandName(), slashConfig.getSlashCompatibleCommandName()) : slashConfig.getSlashCompatibleCommandName();
         Optional<SlashCommandData> existingRootCommand = existingCommands
                 .stream()
                 .filter(commandData -> commandData.getSecond().getName().equals(rootName))
                 .map(Pair::getSecond)
                 .findAny();
         SlashCommandData rootCommand = existingRootCommand.orElseGet(() -> Commands.slash(rootName, description));
+        if(commandConfiguration.isUserInstallable() && userCommandsOnly) {
+            rootCommand.setIntegrationTypes(IntegrationType.USER_INSTALL);
+            if(commandConfiguration.getSlashCommandConfig().getUserCommandConfig() != null) {
+                Set<UserCommandConfig.CommandContext> allowedContexts = commandConfiguration.getSlashCommandConfig().getUserCommandConfig().getContexts();
+                Set<InteractionContextType> interactionContextTypes = mapCommandContexts(allowedContexts);
+                rootCommand.setContexts(interactionContextTypes);
+            } else {
+                rootCommand.setContexts(InteractionContextType.GUILD);
+            }
+        }
         if(commandName != null) {
             SubcommandData slashCommand = new SubcommandData(commandName, description);
             if(groupName == null) {
@@ -94,13 +116,13 @@ public class SlashCommandServiceBean implements SlashCommandService {
                     rootCommand.addSubcommandGroups(groupData);
                 }
             }
-            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId);
+            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId, userCommandsOnly);
             slashCommand.addOptions(requiredParameters);
         } else {
-            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId);
+            List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId, userCommandsOnly);
             rootCommand.addOptions(requiredParameters);
         }
-        if(!existingRootCommand.isPresent()) {
+        if(existingRootCommand.isEmpty()) {
             Optional<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommand = existingCommands
                     .stream()
                     .filter(listSlashCommandDataPair -> listSlashCommandDataPair.getSecond().equals(rootCommand))
@@ -111,6 +133,18 @@ public class SlashCommandServiceBean implements SlashCommandService {
                 existingCommands.add(Pair.of(new ArrayList<>(Arrays.asList(commandConfiguration)), rootCommand));
             }
         }
+    }
+
+    private Set<InteractionContextType> mapCommandContexts(Set<UserCommandConfig.CommandContext> contexts) {
+        Set<InteractionContextType> mapped = new HashSet<>();
+        contexts.forEach(commandContext -> {
+            if(commandContext == UserCommandConfig.CommandContext.ALL) {
+                mapped.addAll(InteractionContextType.ALL);
+            } else {
+                mapped.add(CONTEXT_CONFIG.get(commandContext));
+            }
+        });
+        return mapped;
     }
 
     @Override
@@ -131,14 +165,17 @@ public class SlashCommandServiceBean implements SlashCommandService {
 
     @Override
     public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands) {
-        convertCommandConfigToCommandData(commandConfiguration, existingCommands, null);
+        convertCommandConfigToCommandData(commandConfiguration, existingCommands, null, false);
     }
 
-    private List<OptionData> getParameters(CommandConfiguration commandConfiguration, boolean isTemplated, String internalCommandName, Long serverId) {
+    private List<OptionData> getParameters(CommandConfiguration commandConfiguration, boolean isTemplated, String internalCommandName, Long serverId, boolean userCommandsOnly) {
         List<OptionData> requiredParameters = new ArrayList<>();
         List<OptionData> optionalParameters = new ArrayList<>();
         commandConfiguration.getParameters().forEach(parameter -> {
             if(!shouldParameterBeCreated(parameter, serverId)) {
+                return;
+            }
+            if(userCommandsOnly && !parameter.getSupportsUserCommands()) {
                 return;
             }
             List<OptionType> types = slashCommandParameterService.getTypesFromParameter(parameter);
@@ -193,6 +230,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
         if(parameter.getDependentFeatures().isEmpty()) {
             return true;
         } else {
+            if(serverId == null) {
+                return false;
+            }
             List<FeatureDefinition> featureDefinitions = parameter
                     .getDependentFeatures()
                     .stream()

@@ -56,7 +56,12 @@ public class ComponentPayloadManagementServiceBean implements ComponentPayloadMa
 
     @Override
     public ComponentPayload createButtonPayload(ButtonConfigModel buttonConfigModel, Long serverId) {
-        AServer server = serverManagementService.loadOrCreate(serverId);
+        AServer server;
+        if(serverId != null) {
+            server = serverManagementService.loadOrCreate(serverId);
+        } else {
+            server = null;
+        }
         return createButtonPayload(buttonConfigModel, server);
     }
 
