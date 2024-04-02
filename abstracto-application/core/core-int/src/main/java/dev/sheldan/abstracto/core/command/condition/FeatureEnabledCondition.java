@@ -29,6 +29,9 @@ public class FeatureEnabledCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        if(!slashCommandInteractionEvent.hasGuild()) {
+            return ConditionResult.SUCCESS;
+        }
         Long serverId = slashCommandInteractionEvent.getGuild().getIdLong();
         return evaluateFeatureCondition(command, serverId);
     }

@@ -10,7 +10,6 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -235,7 +234,6 @@ public class InteractionServiceBean implements InteractionService {
     }
 
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {
-        Long serverId = callback.getGuild().getIdLong();
         ReplyCallbackAction action = null;
         if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
@@ -272,6 +270,7 @@ public class InteractionServiceBean implements InteractionService {
                 action = callback.reply(".");
             }
             action = action.setComponents(actionRows);
+            Long serverId = callback.getGuild().getIdLong();
             AServer server = serverManagementService.loadServer(serverId);
             actionRows.forEach(components -> components.forEach(component -> {
                 if(component instanceof ActionComponent) {
@@ -293,9 +292,12 @@ public class InteractionServiceBean implements InteractionService {
                 action = action.setEphemeral(messageToSend.getEphemeral());
             }
         }
-        Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
-        if(action != null) {
-            action.setAllowedMentions(allowedMentions);
+        if(callback.getHook().getInteraction().hasGuild()) {
+            Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
+            if(action != null) {
+                action.setAllowedMentions(allowedMentions);
+            }
+
         }
 
         if(action == null) {
@@ -306,7 +308,10 @@ public class InteractionServiceBean implements InteractionService {
 
     @Override
     public CompletableFuture<InteractionHook> replyMessage(String templateKey, Object model, IReplyCallback callback) {
-        Long serverId = callback.getGuild().getIdLong();
+        Long serverId = null;
+        if(callback.getHook().getInteraction().hasGuild()) {
+            serverId = callback.getGuild().getIdLong();
+        }
         MessageToSend messageToSend = templateService.renderTemplateToMessageToSend(templateKey, model, serverId);
         return replyMessageToSend(messageToSend, callback);
     }

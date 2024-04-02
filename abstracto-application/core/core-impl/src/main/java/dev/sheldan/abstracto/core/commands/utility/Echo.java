@@ -64,7 +64,6 @@ public class Echo extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-
         String message = slashCommandParameterService.getCommandOption(INPUT_PARAMETER, event, String.class);
         GuildMessageChannel messageChannel;
         boolean redirect = false;
@@ -127,6 +126,7 @@ public class Echo extends AbstractConditionableCommand {
                 .templated(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
+                .userInstallable(true)
                 .slashCommandConfig(slashCommandConfig)
                 .parameters(parameters)
                 .help(helpInfo)

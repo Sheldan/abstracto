@@ -42,6 +42,9 @@ public class AdminModeCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        if(!slashCommandInteractionEvent.hasGuild()) {
+            return ConditionResult.SUCCESS;
+        }
         boolean adminModeActive = service.adminModeActive(slashCommandInteractionEvent.getGuild());
         if(adminModeActive){
             if(slashCommandInteractionEvent.getMember().hasPermission(Permission.ADMINISTRATOR)) {

@@ -20,6 +20,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -92,7 +94,7 @@ public class CommandLoaderListener implements AsyncStartupListener {
                     return;
                 }
                 log.info("Updating slash command {} in guild {}.", command.getConfiguration().getName(), guild.getId());
-                slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), slashCommandsToUpdate, guild.getIdLong());
+                slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), slashCommandsToUpdate, guild.getIdLong(), false);
             });
 
             log.info("Updating context commands for guild {}.", guild.getIdLong());
@@ -126,7 +128,15 @@ public class CommandLoaderListener implements AsyncStartupListener {
                 return null;
             });
         });
-
+        List<Pair<List<CommandConfiguration>, SlashCommandData>> userCommandsToUpdate = new ArrayList<>();
+        incomingSlashCommands.forEach(command -> {
+            slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), userCommandsToUpdate, jda.getGuilds().get(0).getIdLong(), true);
+        });
+        List<CommandData> userCommands = userCommandsToUpdate
+                .stream()
+                .map(Pair::getSecond)
+                .collect(Collectors.toList());
+        jda.updateCommands().addCommands(userCommands).queue();
     }
 
     @Transactional

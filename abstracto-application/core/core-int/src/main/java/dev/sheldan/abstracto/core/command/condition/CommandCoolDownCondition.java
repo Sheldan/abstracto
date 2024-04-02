@@ -39,6 +39,9 @@ public class CommandCoolDownCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
+        if(!slashCommandInteractionEvent.hasGuild()) {
+            return ConditionResult.SUCCESS;
+        }
         commandCoolDownService.takeLock();
         try {
             CoolDownCheckResult result = commandCoolDownService.allowedToExecuteCommand(command, slashCommandInteractionEvent);

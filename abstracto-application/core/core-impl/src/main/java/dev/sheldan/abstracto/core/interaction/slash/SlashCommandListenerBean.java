@@ -80,7 +80,9 @@ public class SlashCommandListenerBean extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         try {
             if(commands == null || commands.isEmpty()) return;
-            log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
+            if(event.hasGuild())  {
+                log.debug("Executing slash command in guild {} from user {}.", event.getGuild().getIdLong(), event.getMember().getIdLong());
+            }
             CompletableFuture.runAsync(() ->  self.executeListenerLogic(event), slashCommandExecutor).exceptionally(throwable -> {
                 log.error("Failed to execute listener logic in async slash command event.", throwable);
                 return null;
@@ -89,6 +91,7 @@ public class SlashCommandListenerBean extends ListenerAdapter {
             log.error("Failed to process slash command interaction event.", exception);
         }
     }
+
 
     @Transactional
     public void executeListenerLogic(SlashCommandInteractionEvent event) {

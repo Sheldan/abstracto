@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.IntegrationType;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
@@ -53,7 +54,10 @@ public class SlashCommandServiceBean implements SlashCommandService {
     private FeatureFlagService featureFlagService;
 
     @Override
-    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands, Long serverId) {
+    public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands, Long serverId, boolean userCommandsOnly) {
+        if(userCommandsOnly && !commandConfiguration.isUserInstallable()) {
+            return;
+        }
         boolean isTemplated = commandConfiguration.isTemplated();
         SlashCommandConfig slashConfig = commandConfiguration.getSlashCommandConfig();
         String description;
@@ -72,6 +76,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
                 .map(Pair::getSecond)
                 .findAny();
         SlashCommandData rootCommand = existingRootCommand.orElseGet(() -> Commands.slash(rootName, description));
+        if(commandConfiguration.isUserInstallable() && userCommandsOnly) {
+            rootCommand.setIntegrationTypes(IntegrationType.USER_INSTALL);
+        }
         if(commandName != null) {
             SubcommandData slashCommand = new SubcommandData(commandName, description);
             if(groupName == null) {
@@ -94,7 +101,7 @@ public class SlashCommandServiceBean implements SlashCommandService {
             List<OptionData> requiredParameters = getParameters(commandConfiguration, isTemplated, internalCommandName, serverId);
             rootCommand.addOptions(requiredParameters);
         }
-        if(!existingRootCommand.isPresent()) {
+        if(existingRootCommand.isEmpty()) {
             Optional<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommand = existingCommands
                     .stream()
                     .filter(listSlashCommandDataPair -> listSlashCommandDataPair.getSecond().equals(rootCommand))
@@ -109,7 +116,7 @@ public class SlashCommandServiceBean implements SlashCommandService {
 
     @Override
     public void convertCommandConfigToCommandData(CommandConfiguration commandConfiguration, List<Pair<List<CommandConfiguration>, SlashCommandData>> existingCommands) {
-        convertCommandConfigToCommandData(commandConfiguration, existingCommands, null);
+        convertCommandConfigToCommandData(commandConfiguration, existingCommands, null, false);
     }
 
     private List<OptionData> getParameters(CommandConfiguration commandConfiguration, boolean isTemplated, String internalCommandName, Long serverId) {

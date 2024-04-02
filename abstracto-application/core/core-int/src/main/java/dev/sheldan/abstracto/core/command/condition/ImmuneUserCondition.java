@@ -113,6 +113,9 @@ public class ImmuneUserCondition implements CommandCondition {
 
     @Override
     public CompletableFuture<ConditionResult> shouldExecuteAsync(SlashCommandInteractionEvent event, Command command) {
+        if(!event.hasGuild()) {
+            return CompletableFuture.completedFuture(ConditionResult.SUCCESS);
+        }
         CommandConfiguration commandConfig = command.getConfiguration();
         if(commandConfig.getEffects().isEmpty()) {
             return ConditionResult.fromAsyncSuccess();

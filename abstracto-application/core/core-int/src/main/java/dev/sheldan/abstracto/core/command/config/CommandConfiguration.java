@@ -14,6 +14,8 @@ public class CommandConfiguration {
     private String name;
     private String module;
     private String description;
+    @Builder.Default
+    private boolean userInstallable = false;
 
     @Builder.Default
     private boolean async = false;
