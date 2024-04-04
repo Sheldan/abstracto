@@ -72,8 +72,8 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
-    @Value("${abstracto.experience.leaderboard.externalHost}")
-    private String leaderboardExternalHost;
+    @Value("${abstracto.experience.leaderboard.externalUrl}")
+    private String leaderboardExternalURL;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -97,8 +97,8 @@ public class LeaderBoardCommand extends AbstractConditionableCommand {
         CompletableFuture<List<LeaderBoardEntryModel>> userRankFuture = converter.fromLeaderBoardEntry(Arrays.asList(userRank));
         futures.add(userRankFuture);
         String leaderboardUrl;
-        if(!StringUtils.isBlank(leaderboardExternalHost)) {
-            leaderboardUrl = String.format("%s/experience/leaderboards/%s", leaderboardExternalHost, actorUser.getGuild().getIdLong());
+        if(!StringUtils.isBlank(leaderboardExternalURL)) {
+            leaderboardUrl = String.format("%s/experience/leaderboards/%s", leaderboardExternalURL, actorUser.getGuild().getIdLong());
         } else {
             leaderboardUrl = null;
         }
