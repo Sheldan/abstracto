@@ -24,4 +24,5 @@ public class LeaderBoardModel extends SlimUserInitiatedServerContext {
      * The {@link LeaderBoardEntryModel} containing the leaderboard information executing the command.
      */
     private LeaderBoardEntryModel userExecuting;
+    private String leaderboardUrl;
 }
