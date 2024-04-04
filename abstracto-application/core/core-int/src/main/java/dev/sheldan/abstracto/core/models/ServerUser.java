@@ -1,10 +1,7 @@
 package dev.sheldan.abstracto.core.models;
 
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import net.dv8tion.jda.api.entities.Member;
 
 import java.io.Serializable;
@@ -12,10 +9,12 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Builder
+@ToString
 @EqualsAndHashCode
 public class ServerUser implements Serializable {
     private Long serverId;
     private Long userId;
+    @EqualsAndHashCode.Exclude
     private Boolean isBot;
 
     public static ServerUser fromAUserInAServer(AUserInAServer aUserInAServer) {

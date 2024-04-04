@@ -7,10 +7,12 @@ import dev.sheldan.abstracto.core.exception.RoleNotFoundInGuildException;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
+import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.RoleManagementService;
+import dev.sheldan.abstracto.core.utils.LockByKeyService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -45,6 +47,9 @@ public class RoleServiceBean implements RoleService {
 
     @Autowired
     private MetricService metricService;
+
+    @Autowired
+    private LockByKeyService<ServerUser> roleLockService;
 
     public static final CounterMetric ROLE_ASSIGNED_METRIC = CounterMetric
             .builder()
@@ -113,12 +118,31 @@ public class RoleServiceBean implements RoleService {
                 .map(guild::getRoleById)
                 .toList();
         Member member = memberService.getMemberInServer(aUserInAServer);
-        return guild.modifyMemberRoles(member, rolesObjToAdd, rolesObjToRemove).submit();
+        return updateRolesObj(member, rolesObjToRemove, rolesObjToAdd);
     }
 
     @Override
     public CompletableFuture<Void> updateRolesObj(Member member, List<Role> rolesToRemove, List<Role> rolesToAdd) {
-        return member.getGuild().modifyMemberRoles(member, rolesToAdd, rolesToRemove).submit();
+        ServerUser serverUser = ServerUser.fromId(member.getGuild().getIdLong(), member.getIdLong()); // only use ids, so its completely comparable with the other server users
+        try {
+            roleLockService.lock(serverUser);
+            return member.getGuild().modifyMemberRoles(member, rolesToAdd, rolesToRemove).submit()
+                    .whenComplete((unused, throwable) -> roleLockService.unlock(serverUser));
+        /*
+            the intended reason why we only have it in a catch block:
+            the "finally" block runs before the whenComplete block, which would lead
+            to be possibility of another request being done immediately, and also doing it twice
+            We only unlock synchronously in case of an exception, because then something _before_ the future
+            actually failed. The future (whenComplete) is _never_ evaluated in such a case
+            this is also the case in addRoleToMemberAsync and removeRoleFromUserAsync
+         */
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(interruptedException);
+        } catch (Exception e) {
+            roleLockService.unlock(serverUser);
+            throw e;
+        }
     }
 
     @Override
@@ -164,7 +188,7 @@ public class RoleServiceBean implements RoleService {
         if(role == null) {
             throw new RoleNotFoundInGuildException(roleId, member.getGuild().getIdLong());
         }
-        return member.getGuild().removeRoleFromMember(member, role).submit();
+        return removeRoleFromUserAsync(member.getGuild(), member.getIdLong(), role);
     }
 
     private CompletableFuture<Void> addRoleToUserAsync(Guild guild, Long userId, ARole role) {
@@ -180,13 +204,35 @@ public class RoleServiceBean implements RoleService {
     @Override
     public CompletableFuture<Void> addRoleToMemberAsync(Guild guild, Long userId, Role roleById) {
         metricService.incrementCounter(ROLE_ASSIGNED_METRIC);
-        return guild.addRoleToMember(UserSnowflake.fromId(userId), roleById).submit();
+        ServerUser serverUser = ServerUser.fromId(guild.getIdLong(), userId);
+        try {
+            roleLockService.lock(serverUser);
+            return guild.addRoleToMember(UserSnowflake.fromId(userId), roleById).submit()
+                    .whenComplete((unused, ex) -> roleLockService.unlock(serverUser));
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(interruptedException);
+        } catch (Exception e){ // see updateRolesObj for why
+            roleLockService.unlock(serverUser);
+            throw e;
+        }
     }
 
     @Override
     public CompletableFuture<Void> removeRoleFromUserAsync(Guild guild, Long userId, Role roleById) {
         metricService.incrementCounter(ROLE_REMOVED_METRIC);
-        return guild.removeRoleFromMember(UserSnowflake.fromId(userId), roleById).submit();
+        ServerUser serverUser = ServerUser.fromId(guild.getIdLong(), userId);
+        try {
+            roleLockService.lock(serverUser);
+            return guild.removeRoleFromMember(UserSnowflake.fromId(userId), roleById).submit()
+                    .whenComplete((unused, ex) -> roleLockService.unlock(serverUser));
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(interruptedException);
+        } catch (Exception e) { // see updateRolesObj for why
+            roleLockService.unlock(serverUser);
+            throw e;
+        }
     }
 
 
