@@ -27,7 +27,7 @@ public class ServerController {
         return GuildDisplay
                 .builder()
                 .name(guild.getName())
-                .id(guild.getIdLong())
+                .id(guild.getId())
                 .bannerUrl(guild.getBannerUrl())
                 .iconUrl(guild.getIconUrl())
                 .build();

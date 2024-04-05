@@ -56,7 +56,7 @@ public class ExperienceConfigController {
         } else {
             roleDisplay = RoleDisplay
                     .builder()
-                    .id(levelRole.getRoleId())
+                    .id(String.valueOf(levelRole.getRoleId()))
                     .build();
         }
         return ExperienceRoleDisplay

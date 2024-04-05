@@ -1,7 +1,7 @@
 export interface ExperienceMember {
     experience: bigint;
     rank: number;
-    id: bigint;
+    id: string;
     level: number;
     messages: bigint;
     member: Member | null;
@@ -11,7 +11,7 @@ export interface ExperienceMember {
 export interface Member {
     avatarUrl: string;
     name: string;
-    id: bigint;
+    id: string;
 }
 
 export interface Role {
@@ -19,7 +19,7 @@ export interface Role {
     g: number | null;
     b: number | null;
     name: string | null;
-    id: number;
+    id: string;
 }
 
 export interface ExperienceRole {
@@ -32,7 +32,7 @@ export interface ExperienceConfig {
 }
 
 export interface GuildInfo {
-    id: number;
+    id: string;
     name: string;
     iconUrl: string | null;
     bannerUrl: string | null;

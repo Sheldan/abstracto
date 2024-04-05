@@ -9,13 +9,13 @@ import net.dv8tion.jda.api.entities.Member;
 public class UserDisplay {
     private String avatarUrl;
     private String name;
-    private Long id;
+    private String id;
 
     public static UserDisplay fromMember(Member member) {
         return builder()
                 .avatarUrl(member.getEffectiveAvatarUrl())
                 .name(member.getEffectiveName())
-                .id(member.getIdLong())
+                .id(member.getId())
                 .build();
     }
 }

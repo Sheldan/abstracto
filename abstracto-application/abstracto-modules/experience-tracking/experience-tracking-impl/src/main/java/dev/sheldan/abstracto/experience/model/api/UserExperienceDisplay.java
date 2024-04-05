@@ -10,7 +10,7 @@ import lombok.Getter;
 @Builder
 public class UserExperienceDisplay {
     private UserDisplay member;
-    private Long id;
+    private String id;
     private Integer rank;
     private Integer level;
     private Long experience;

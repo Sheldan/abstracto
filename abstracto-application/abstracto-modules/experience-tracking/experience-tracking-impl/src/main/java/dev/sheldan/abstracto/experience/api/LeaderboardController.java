@@ -68,7 +68,7 @@ public class LeaderboardController {
         }
         return UserExperienceDisplay
                 .builder()
-                .id(userId)
+                .id(String.valueOf(userId))
                 .messages(aUserExperience.getMessageCount())
                 .level(aUserExperience.getLevelOrDefault())
                 .rank((int) pageable.getOffset() + page.getContent().indexOf(aUserExperience) + 1)

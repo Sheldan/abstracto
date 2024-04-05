@@ -10,7 +10,7 @@ import java.awt.*;
 @Getter
 @Builder
 public class RoleDisplay {
-    private Long id;
+    private String id;
     private String name;
     private Integer r;
     private Integer g;
@@ -19,7 +19,7 @@ public class RoleDisplay {
     public static RoleDisplay fromRole(Role role) {
         RoleDisplayBuilder builder = builder()
                 .name(role.getName())
-                .id(role.getIdLong());
+                .id(role.getId());
         Color roleColor = role.getColor();
         if(roleColor != null) {
             builder.r(roleColor.getRed()).
@@ -30,7 +30,7 @@ public class RoleDisplay {
     }
     public static RoleDisplay fromARole(ARole role) {
         return builder()
-                .id(role.getId())
+                .id(String.valueOf(role.getId()))
                 .build();
     }
 }
