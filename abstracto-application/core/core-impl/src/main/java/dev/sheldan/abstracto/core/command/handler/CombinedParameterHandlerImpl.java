@@ -53,9 +53,7 @@ public class CombinedParameterHandlerImpl implements CombinedParametersHandler {
                         }
                     }
                 } catch (Exception e) {
-                    CompletableFuture<Object> exceptionFuture = new CompletableFuture<>();
-                    futures.add(exceptionFuture);
-                    exceptionFuture.completeExceptionally(e);
+                    futures.add(CompletableFuture.failedFuture(e));
                 }
             }
         }

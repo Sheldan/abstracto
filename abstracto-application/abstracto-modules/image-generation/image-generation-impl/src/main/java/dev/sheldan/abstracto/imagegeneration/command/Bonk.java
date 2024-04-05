@@ -7,6 +7,7 @@ import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
+import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
@@ -21,15 +22,17 @@ import dev.sheldan.abstracto.imagegeneration.config.ImageGenerationFeatureDefini
 import dev.sheldan.abstracto.imagegeneration.config.ImageGenerationSlashCommandNames;
 import dev.sheldan.abstracto.imagegeneration.service.ImageGenerationService;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.sheldan.abstracto.core.command.config.Parameter.ADDITIONAL_TYPES_KEY;
 
 @Component
 public class Bonk extends AbstractConditionableCommand {
@@ -65,7 +68,11 @@ public class Bonk extends AbstractConditionableCommand {
         if(parameters.isEmpty()) {
             member = commandContext.getAuthor();
         } else {
-            member = (Member) parameters.get(0);
+            if(parameters.get(0) instanceof Message) {
+                member = ((Message) parameters.get(0)).getMember();
+            } else {
+                member = (Member) parameters.get(0);
+            }
         }
         File bonkGifFile = imageGenerationService.getBonkGif(member.getEffectiveAvatar().getUrl(imageSize));
         MessageToSend messageToSend = templateService.renderEmbedTemplate(BONK_EMBED_TEMPLATE_KEY, new Object());
@@ -107,10 +114,13 @@ public class Bonk extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
+        Map<String, Object> parameterAlternatives = new HashMap<>();
+        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(Message.class, Member.class));
         Parameter memberParameter = Parameter
                 .builder()
                 .name(MEMBER_PARAMETER_KEY)
-                .type(Member.class)
+                .type(CombinedParameter.class)
+                .additionalInfo(parameterAlternatives)
                 .templated(true)
                 .optional(true)
                 .build();
