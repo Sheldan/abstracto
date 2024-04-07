@@ -5,7 +5,6 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.ParameterPieceType;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.exception.DurationFormatException;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -15,6 +14,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,28 +36,30 @@ public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(Duration.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(Duration.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
     public void testSimpleParsing() {
-        Assert.assertEquals(Duration.ofMinutes(1), testUnit.handle(getPieceWithValue("1m"), null, parameter, null, command));
+        assertThat(testUnit.handle(getPieceWithValue("1m"), null, parameter, null, command)).isEqualTo(Duration.ofMinutes(1));
     }
 
     @Test
     public void testMoreComplicatedParsing() {
         Duration targetDuration = Duration.ofDays(4).plus(5, ChronoUnit.HOURS).plus(5, ChronoUnit.MINUTES);
-        Assert.assertEquals(targetDuration, testUnit.handle(getPieceWithValue("5h5m4d"), null, parameter, null, command));
+        assertThat(testUnit.handle(getPieceWithValue("5h5m4d"), null, parameter, null, command)).isEqualTo(targetDuration);
     }
 
-    @Test(expected = DurationFormatException.class)
+    @Test
     public void testEmptyStringAsInput() {
-        testUnit.handle(getPieceWithValue(""), null, parameter, null, command);
+        assertThatThrownBy(() -> {
+            testUnit.handle(getPieceWithValue(""), null, parameter, null, command);
+        }).isInstanceOf(DurationFormatException.class);
     }
 
 }

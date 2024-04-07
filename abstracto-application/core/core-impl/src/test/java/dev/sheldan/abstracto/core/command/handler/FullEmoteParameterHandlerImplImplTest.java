@@ -10,13 +10,13 @@ import dev.sheldan.abstracto.core.models.database.AEmote;
 import dev.sheldan.abstracto.core.service.EmoteService;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,12 +61,12 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(FullEmote.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(FullEmote.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
@@ -77,8 +77,8 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
         when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(emote);
         when(emoteService.getFakeEmoteFromEmote(emote)).thenReturn(aEmote);
         FullEmote parsed = (FullEmote) testUnit.handle(piece, iterators, parameter, message, command);
-        Assert.assertEquals(aEmote, parsed.getFakeEmote());
-        Assert.assertEquals(emote, parsed.getEmote());
+        assertThat(parsed.getFakeEmote()).isEqualTo(aEmote);
+        assertThat(parsed.getEmote()).isEqualTo(emote);
     }
 
 
@@ -90,8 +90,8 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
         when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(null);
         when(emoteService.getFakeEmote(input)).thenReturn(aEmote);
         FullEmote parsed = (FullEmote) testUnit.handle(piece, iterators, parameter, message, command);
-        Assert.assertNull(parsed.getEmote());
-        Assert.assertEquals(aEmote, parsed.getFakeEmote());
+        assertThat(parsed.getEmote()).isNull();
+        assertThat(parsed.getFakeEmote()).isEqualTo(aEmote);
     }
 
 

@@ -9,13 +9,13 @@ import dev.sheldan.abstracto.core.models.database.ARole;
 import dev.sheldan.abstracto.core.service.RoleService;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -60,12 +60,12 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(ARole.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(ARole.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
@@ -75,7 +75,7 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
         when(roleParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
         ARole parsed = (ARole) testUnit.handle(piece, iterators, parameter, message, command);
-        Assert.assertEquals(aRole, parsed);
+        assertThat(parsed).isEqualTo(aRole);
     }
 
 

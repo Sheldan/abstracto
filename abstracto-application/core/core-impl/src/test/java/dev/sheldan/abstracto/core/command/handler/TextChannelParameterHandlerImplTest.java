@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -20,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,12 +55,12 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(TextChannel.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(TextChannel.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
@@ -67,7 +68,7 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
         oneChannelInIterator();
         String input = getChannelMention();
         TextChannel parsed = (TextChannel) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
-        Assert.assertEquals(channel, parsed);
+        assertThat(parsed).isEqualTo(channel);
     }
 
     @Test
@@ -75,24 +76,28 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
         setupMessage();
         String input = CHANNEL_ID.toString();
         TextChannel parsed = (TextChannel) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertEquals(channel, parsed);
+        assertThat(parsed).isEqualTo(channel);
     }
 
-    @Test(expected = AbstractoTemplatedException.class)
+    @Test
     public void testInvalidChannelName() {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getTextChannelsByName(input, true)).thenReturn(new ArrayList<>());
-        testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        assertThatThrownBy(() -> {
+            testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        }).isInstanceOf(AbstractoTemplatedException.class);
     }
 
-    @Test(expected = AbstractoTemplatedException.class)
+    @Test
     public void testFoundMultipleChannelsByName() {
         String input = "test";
         TextChannel secondChannel = Mockito.mock(TextChannel.class);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getTextChannelsByName(input, true)).thenReturn(Arrays.asList(channel, secondChannel));
-        testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        assertThatThrownBy(() -> {
+            testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        }).isInstanceOf(AbstractoTemplatedException.class);
     }
 
     @Test
@@ -101,7 +106,7 @@ public class TextChannelParameterHandlerImplTest extends AbstractParameterHandle
         when(message.getGuild()).thenReturn(guild);
         when(guild.getTextChannelsByName(input, true)).thenReturn(Arrays.asList(channel));
         TextChannel returnedChannel =  (TextChannel) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertEquals(channel, returnedChannel);
+        assertThat(returnedChannel).isEqualTo(channel);
     }
 
 

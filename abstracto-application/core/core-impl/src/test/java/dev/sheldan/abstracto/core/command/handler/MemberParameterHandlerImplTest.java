@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 import net.dv8tion.jda.internal.utils.concurrent.task.GatewayTask;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,12 +56,12 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(Member.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(Member.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
@@ -70,7 +70,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         oneMemberInIterator();
         String input = getUserMention();
         CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), iterators, parameter, null, command);
-        Assert.assertEquals(member, parsed.join());
+        assertThat(parsed.join()).isEqualTo(member);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         setupMessage();
         String input = USER_ID.toString();
         CompletableFuture<Member> parsed = (CompletableFuture) testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertEquals(member, parsed.join());
+        assertThat(parsed.join()).isEqualTo(member);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         GatewayTask task = new GatewayTask(CompletableFuture.completedFuture(new ArrayList()), () -> {});
         when(guild.retrieveMembersByPrefix(input, 1)).thenReturn(task);
         CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertTrue(future.isCompletedExceptionally());
+        assertThat(future.isCompletedExceptionally()).isTrue();
     }
 
     @Test
@@ -100,7 +100,7 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         GatewayTask task = new GatewayTask(CompletableFuture.completedFuture(Arrays.asList(member, secondMember)), () -> {});
         when(guild.retrieveMembersByPrefix(input, 1)).thenReturn(task);
         CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertTrue(future.isCompletedExceptionally());
+        assertThat(future.isCompletedExceptionally()).isTrue();
     }
 
     @Test
@@ -111,8 +111,8 @@ public class MemberParameterHandlerImplTest extends AbstractParameterHandlerTest
         when(guild.retrieveMembersByPrefix(input, 1)).thenReturn(task);
         CompletableFuture<Object> future = testUnit.handleAsync(getPieceWithValue(input), null, parameter, message, command);
         Member returnedMember = (Member) future.join();
-        Assert.assertFalse(future.isCompletedExceptionally());
-        Assert.assertEquals(member, returnedMember);
+        assertThat(future.isCompletedExceptionally()).isFalse();
+        assertThat(returnedMember).isEqualTo(member);
     }
 
     private String getUserMention() {

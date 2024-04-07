@@ -8,7 +8,6 @@ import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiec
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -18,8 +17,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,20 +54,20 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(Role.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(Role.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
     public void testProperRoleMention() {
-        oneRoleIterator();
+        setupMessage();
         String input = getRoleMention();
-        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
-        Assert.assertEquals(role, parsed);
+        Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, parameter, message, command);
+        assertThat(parsed).isEqualTo(role);
     }
 
     @Test
@@ -75,24 +75,29 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         setupMessage();
         String input = ROLE_ID.toString();
         Role parsed = (Role) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertEquals(role, parsed);
+        assertThat(parsed).isEqualTo(role);
     }
 
-    @Test(expected = AbstractoTemplatedException.class)
+    @Test
     public void testInvalidRoleMention() {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(new ArrayList<>());
-        testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        assertThatThrownBy(() -> {
+            testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        }).isInstanceOf(AbstractoTemplatedException.class);
+
     }
 
-    @Test(expected = AbstractoTemplatedException.class)
+    @Test
     public void testMultipleRolesFoundByName() {
         String input = "test";
         Role secondRole = Mockito.mock(Role.class);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role, secondRole));
-        testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        assertThatThrownBy(() -> {
+            testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+        }).isInstanceOf(AbstractoTemplatedException.class);
     }
 
     @Test
@@ -101,21 +106,16 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role));
         Role returnedRole =  (Role) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertEquals(role, returnedRole);
+        assertThat(returnedRole).isEqualTo(role);
     }
 
     private String getRoleMention() {
         return String.format("<@&%d>", ROLE_ID);
     }
 
-    private void oneRoleIterator() {
-        List<Role> members = Arrays.asList(role);
-        when(iterators.getRoleIterator()).thenReturn(members.iterator());
-    }
-
     private void setupMessage()  {
         when(message.getGuild()).thenReturn(guild);
-        when(guild.getRoleById(ROLE_ID)).thenReturn(role);
+        when(guild.getRoleById(String.valueOf(ROLE_ID))).thenReturn(role);
     }
 
 }

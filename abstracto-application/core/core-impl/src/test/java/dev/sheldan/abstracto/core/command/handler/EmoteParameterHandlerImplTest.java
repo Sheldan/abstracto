@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -18,6 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,12 +53,12 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(CustomEmoji.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(CustomEmoji.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
@@ -66,7 +66,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
         oneEmoteInIterator();
         String input = getEmoteMention();
         CustomEmoji parsed = (CustomEmoji) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
-        Assert.assertEquals(parsed, emote);
+        assertThat(parsed).isEqualTo(emote);
     }
 
     @Test
@@ -74,12 +74,12 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
         setupMessage();
         String input = EMOTE_ID.toString();
         CustomEmoji parsed = (CustomEmoji) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
-        Assert.assertEquals(parsed, emote);
+        assertThat(parsed).isEqualTo(emote);
     }
 
     @Test
     public void testInvalidEmoteMention() {
-        Assert.assertNull(testUnit.handle(getPieceWithValue("test"), null, parameter, null, command));
+        assertThat(testUnit.handle(getPieceWithValue("test"), null, parameter, null, command)).isNull();
     }
 
     private String getEmoteMention() {

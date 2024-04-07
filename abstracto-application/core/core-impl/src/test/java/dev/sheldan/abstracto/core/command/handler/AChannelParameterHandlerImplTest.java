@@ -8,13 +8,13 @@ import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,12 +53,12 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
-        Assert.assertTrue(testUnit.handles(AChannel.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(AChannel.class, unparsedCommandParameterPiece)).isTrue();
     }
 
     @Test
     public void testWrongCondition() {
-        Assert.assertFalse(testUnit.handles(String.class, unparsedCommandParameterPiece));
+        assertThat(testUnit.handles(String.class, unparsedCommandParameterPiece)).isFalse();
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
         when(textChannelParameterHandler.handle(piece, iterators, parameter, message, command)).thenReturn(channel);
         when(channelService.getFakeChannelFromTextChannel(channel)).thenReturn(aChannel);
         AChannel parsed = (AChannel) testUnit.handle(piece, iterators, parameter, message, command);
-        Assert.assertEquals(aChannel, parsed);
+        assertThat(parsed).isEqualTo(aChannel);
     }
 
 
