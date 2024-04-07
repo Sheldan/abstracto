@@ -66,7 +66,9 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
     public void testProperRoleMention() {
         setupMessage();
         String input = getRoleMention();
+
         Role parsed = (Role) testUnit.handle(getPieceWithValue(input), iterators, parameter, message, command);
+
         assertThat(parsed).isEqualTo(role);
     }
 
@@ -74,7 +76,9 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
     public void testRoleById() {
         setupMessage();
         String input = ROLE_ID.toString();
+
         Role parsed = (Role) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+
         assertThat(parsed).isEqualTo(role);
     }
 
@@ -83,6 +87,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(new ArrayList<>());
+
         assertThatThrownBy(() -> {
             testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
         }).isInstanceOf(AbstractoTemplatedException.class);
@@ -95,6 +100,7 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         Role secondRole = Mockito.mock(Role.class);
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role, secondRole));
+
         assertThatThrownBy(() -> {
             testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
         }).isInstanceOf(AbstractoTemplatedException.class);
@@ -105,7 +111,9 @@ public class RoleParameterHandlerImplTest extends AbstractParameterHandlerTest {
         String input = "test";
         when(message.getGuild()).thenReturn(guild);
         when(guild.getRolesByName(input, true)).thenReturn(Arrays.asList(role));
+
         Role returnedRole =  (Role) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+
         assertThat(returnedRole).isEqualTo(role);
     }
 

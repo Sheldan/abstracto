@@ -32,6 +32,7 @@ public class IntegerParameterHandlerImplTest extends AbstractParameterHandlerTes
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(Integer.class, unparsedCommandParameterPiece)).isTrue();
     }
 

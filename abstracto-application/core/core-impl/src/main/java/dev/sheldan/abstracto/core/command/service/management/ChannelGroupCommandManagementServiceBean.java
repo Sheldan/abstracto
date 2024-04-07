@@ -31,7 +31,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
     @Override
     public void addCommandToGroup(ACommand command, AChannelGroup group) {
         Optional<AChannelGroupCommand> groupCommandOptional = groupCommandRepository.findByCommandAndGroup(command, group);
-        if(!groupCommandOptional.isPresent()) {
+        if(groupCommandOptional.isEmpty()) {
             createCommandInGroup(command, group);
         }
     }
@@ -39,7 +39,7 @@ public class ChannelGroupCommandManagementServiceBean implements ChannelGroupCom
     @Override
     public void removeCommandFromGroup(ACommand command, AChannelGroup group) {
         Optional<AChannelGroupCommand> groupCommandOptional = groupCommandRepository.findByCommandAndGroup(command, group);
-        if(!groupCommandOptional.isPresent()) {
+        if(groupCommandOptional.isEmpty()) {
             throw new CommandNotFoundInGroupException();
         }
         groupCommandOptional.ifPresent(channelGroupCommand -> groupCommandRepository.delete(channelGroupCommand));

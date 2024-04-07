@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface CommandInServerManagementService {
     ACommandInAServer createCommandInServer(ACommand command, AServer server);
-    ACommandInAServer createCommandInServer(ACommand command, AServer server, Long commandId);
     boolean doesCommandExistInServer(ACommand command, AServer server);
     ACommandInAServer getCommandForServer(ACommand command, AServer server);
     void  setCooldownForCommandInServer(ACommand command, AServer server, Duration duration);

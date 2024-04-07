@@ -34,6 +34,6 @@ public class CommandDisabledChannelGroupManagementServiceBean implements Command
 
     @Override
     public CommandDisabledChannelGroup findViaChannelGroup(AChannelGroup channelGroup) {
-        return commandDisabledChannelGroupRepository.getOne(channelGroup.getId());
+        return commandDisabledChannelGroupRepository.getReferenceById(channelGroup.getId());
     }
 }

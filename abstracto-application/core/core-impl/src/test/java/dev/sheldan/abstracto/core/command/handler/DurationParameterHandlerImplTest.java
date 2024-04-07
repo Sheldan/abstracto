@@ -36,6 +36,7 @@ public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(Duration.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -52,6 +53,7 @@ public class DurationParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Test
     public void testMoreComplicatedParsing() {
         Duration targetDuration = Duration.ofDays(4).plus(5, ChronoUnit.HOURS).plus(5, ChronoUnit.MINUTES);
+
         assertThat(testUnit.handle(getPieceWithValue("5h5m4d"), null, parameter, null, command)).isEqualTo(targetDuration);
     }
 

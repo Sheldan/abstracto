@@ -61,6 +61,7 @@ public class FullRoleParameterHandlerImplImplTest extends AbstractParameterHandl
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(FullRole.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -75,7 +76,9 @@ public class FullRoleParameterHandlerImplImplTest extends AbstractParameterHandl
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(roleParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
+
         FullRole parsed = (FullRole) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed.getRole()).isEqualTo(aRole);
         assertThat(parsed.getServerRole()).isEqualTo(role);
     }

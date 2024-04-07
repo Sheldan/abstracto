@@ -32,6 +32,7 @@ public class LongParameterHandlerImplTest extends AbstractParameterHandlerTest {
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(Long.class, unparsedCommandParameterPiece)).isTrue();
     }
 

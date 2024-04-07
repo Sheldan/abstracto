@@ -31,6 +31,7 @@ public class DoubleParameterHandlerImplTest extends AbstractParameterHandlerTest
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(Double.class, unparsedCommandParameterPiece)).isTrue();
     }
 

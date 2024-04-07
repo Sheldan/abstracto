@@ -27,11 +27,11 @@ public class CoolDownChannelGroupManagementServiceBean implements CoolDownChanne
 
     @Override
     public CoolDownChannelGroup findByChannelGroupId(Long channelGroupId) {
-        return repository.getOne(channelGroupId);
+        return repository.getReferenceById(channelGroupId);
     }
 
     @Override
     public void deleteCoolDownChannelGroup(AChannelGroup aChannelGroup) {
-        repository.delete(findByChannelGroupId(aChannelGroup.getId()));
+        repository.deleteById(aChannelGroup.getId());
     }
 }

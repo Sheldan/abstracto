@@ -61,6 +61,7 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(FullEmote.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -76,7 +77,9 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(emote);
         when(emoteService.getFakeEmoteFromEmote(emote)).thenReturn(aEmote);
+
         FullEmote parsed = (FullEmote) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed.getFakeEmote()).isEqualTo(aEmote);
         assertThat(parsed.getEmote()).isEqualTo(emote);
     }
@@ -89,7 +92,9 @@ public class FullEmoteParameterHandlerImplImplTest extends AbstractParameterHand
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(null);
         when(emoteService.getFakeEmote(input)).thenReturn(aEmote);
+
         FullEmote parsed = (FullEmote) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed.getEmote()).isNull();
         assertThat(parsed.getFakeEmote()).isEqualTo(aEmote);
     }

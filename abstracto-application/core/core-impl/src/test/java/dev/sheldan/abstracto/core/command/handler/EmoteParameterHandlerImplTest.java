@@ -53,6 +53,7 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(CustomEmoji.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -65,7 +66,9 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     public void testProperEmoteMention() {
         oneEmoteInIterator();
         String input = getEmoteMention();
+
         CustomEmoji parsed = (CustomEmoji) testUnit.handle(getPieceWithValue(input), iterators, parameter, null, command);
+
         assertThat(parsed).isEqualTo(emote);
     }
 
@@ -73,7 +76,9 @@ public class EmoteParameterHandlerImplTest extends AbstractParameterHandlerTest 
     public void testEmoteById() {
         setupMessage();
         String input = EMOTE_ID.toString();
+
         CustomEmoji parsed = (CustomEmoji) testUnit.handle(getPieceWithValue(input), null, parameter, message, command);
+
         assertThat(parsed).isEqualTo(emote);
     }
 

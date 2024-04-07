@@ -31,6 +31,7 @@ public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTes
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(Boolean.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -42,18 +43,21 @@ public class BooleanParameterHandlerImplTest extends AbstractParameterHandlerTes
     @Test
     public void testTrueParsing() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("true");
+
         assertThat((Boolean)testUnit.handle(piece, null, parameter, null, command)).isTrue();
     }
 
     @Test
     public void testAnyOtherText() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("test");
+
         assertThat((Boolean)testUnit.handle(piece, null, parameter, null, command)).isFalse();
     }
 
     @Test
     public void testEmptyStringAsInput() {
         UnparsedCommandParameterPiece piece = getPieceWithValue("");
+
         assertThat((Boolean)testUnit.handle(piece, null, parameter, null, command)).isFalse();
     }
 

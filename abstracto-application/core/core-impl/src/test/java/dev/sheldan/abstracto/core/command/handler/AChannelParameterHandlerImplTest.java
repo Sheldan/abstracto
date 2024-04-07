@@ -53,6 +53,7 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(AChannel.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -66,7 +67,9 @@ public class AChannelParameterHandlerImplTest extends AbstractParameterHandlerTe
         UnparsedCommandParameterPiece piece = getPiece();
         when(textChannelParameterHandler.handle(piece, iterators, parameter, message, command)).thenReturn(channel);
         when(channelService.getFakeChannelFromTextChannel(channel)).thenReturn(aChannel);
+
         AChannel parsed = (AChannel) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed).isEqualTo(aChannel);
     }
 

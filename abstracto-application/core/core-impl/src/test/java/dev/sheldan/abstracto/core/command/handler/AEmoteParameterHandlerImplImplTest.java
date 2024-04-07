@@ -75,7 +75,9 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(emote);
         when(emoteService.getFakeEmoteFromEmote(emote)).thenReturn(aEmote);
+
         AEmote parsed = (AEmote) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed).isEqualTo(aEmote);
     }
 
@@ -85,7 +87,9 @@ public class AEmoteParameterHandlerImplImplTest extends AbstractParameterHandler
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(emoteParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(null);
         when(emoteService.getFakeEmote(INPUT)).thenReturn(aEmote);
+
         AEmote parsed = (AEmote) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed).isEqualTo(aEmote);
     }
 

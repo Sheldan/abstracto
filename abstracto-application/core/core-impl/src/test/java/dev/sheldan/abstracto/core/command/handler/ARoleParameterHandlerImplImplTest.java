@@ -60,6 +60,7 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
     @Test
     public void testSuccessfulCondition() {
         when(unparsedCommandParameterPiece.getType()).thenReturn(ParameterPieceType.STRING);
+
         assertThat(testUnit.handles(ARole.class, unparsedCommandParameterPiece)).isTrue();
     }
 
@@ -74,7 +75,9 @@ public class ARoleParameterHandlerImplImplTest extends AbstractParameterHandlerT
         when(commandService.cloneParameter(parameter)).thenReturn(parameter2);
         when(roleParameterHandler.handle(piece, iterators, parameter2, message, command)).thenReturn(role);
         when(roleService.getFakeRoleFromRole(role)).thenReturn(aRole);
+
         ARole parsed = (ARole) testUnit.handle(piece, iterators, parameter, message, command);
+
         assertThat(parsed).isEqualTo(aRole);
     }
 

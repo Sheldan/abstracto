@@ -22,11 +22,6 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
 
     @Override
     public ACommandInAServer createCommandInServer(ACommand command, AServer server) {
-        return createCommandInServer(command, server, null);
-    }
-
-    @Override
-    public ACommandInAServer createCommandInServer(ACommand command, AServer server, Long commandId) {
         ACommandInAServer commandInAServer = ACommandInAServer
                 .builder()
                 .commandReference(command)
@@ -60,7 +55,7 @@ public class CommandInServerManagementServiceBean implements CommandInServerMana
 
     @Override
     public ACommandInAServer getCommandForServer(Long commandInServerId) {
-        return repository.getOne(commandInServerId);
+        return repository.getReferenceById(commandInServerId);
     }
 
     @Override

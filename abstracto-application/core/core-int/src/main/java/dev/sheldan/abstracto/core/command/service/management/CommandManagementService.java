@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CommandManagementService {
-    ACommand createCommand(String name, String moduleName, String featureName);
     ACommand createCommand(String name, AModule moduleName, AFeature feature);
     Optional<ACommand> findCommandByNameOptional(String name);
     ACommand findCommandByName(String name);
