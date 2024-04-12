@@ -106,6 +106,7 @@ public class ShowAvatar extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

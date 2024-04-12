@@ -16,6 +16,7 @@ import dev.sheldan.abstracto.core.models.template.display.MemberNameDisplay;
 import dev.sheldan.abstracto.core.models.template.display.RoleDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.utility.config.UtilityFeatureDefinition;
 import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
@@ -71,12 +72,12 @@ public class UserInfo extends AbstractConditionableCommand {
         if(!memberToShow.hasTimeJoined()) {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
             return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
-                fillUserInfoModel(model,  member);
+                fillUserInfoModel(model,  member, false);
                 return self.sendResponse(commandContext.getChannel(), model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             });
         } else {
-            fillUserInfoModel(model, memberToShow);
+            fillUserInfoModel(model, memberToShow, false);
             return self.sendResponse(commandContext.getChannel(), model)
                 .thenApply(aVoid -> CommandResult.fromIgnored());
         }
@@ -106,33 +107,36 @@ public class UserInfo extends AbstractConditionableCommand {
         UserInfoModel model = UserInfoModel
                 .builder()
                 .build();
+        boolean userCommand = ContextUtils.isUserCommand(event.getInteraction());
         if(!memberToShow.hasTimeJoined()) {
             log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
             return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
-                fillUserInfoModel(model, member);
+                fillUserInfoModel(model, member, userCommand);
                 return self.sendResponse(event, model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());
             });
         } else {
-            fillUserInfoModel(model, memberToShow);
+            fillUserInfoModel(model, memberToShow, userCommand);
             return self.sendResponse(event, model)
                     .thenApply(aVoid -> CommandResult.fromIgnored());
         }
     }
 
-    private void fillUserInfoModel(UserInfoModel model, Member member) {
+    private void fillUserInfoModel(UserInfoModel model, Member member, boolean userCommand) {
         model.setCreationDate(member.getTimeCreated().toInstant());
         model.setJoinDate(member.getTimeJoined().toInstant());
         model.setId(member.getIdLong());
         model.setMemberDisplay(MemberNameDisplay.fromMember(member));
-        model.setOnlineStatus(member.getOnlineStatus().getKey());
-        member.getRoles().forEach(role -> model.getRoles().add(RoleDisplay.fromRole(role)));
-        member.getActivities().forEach(activity -> model.getActivities().add(activity.getType().name()));
-        Optional<Activity> customStatusOptional = member.getActivities().stream().filter(activity -> activity.getType().equals(Activity.ActivityType.CUSTOM_STATUS)).findFirst();
-        customStatusOptional.ifPresent(activity -> {
-            model.setCustomStatus(activity.getName());
-            model.setCustomEmoji(activity.getEmoji() != null ? activity.getEmoji().getFormatted() : null);
-        });
+        if(!userCommand) {
+            model.setOnlineStatus(member.getOnlineStatus().getKey());
+            member.getRoles().forEach(role -> model.getRoles().add(RoleDisplay.fromRole(role)));
+            member.getActivities().forEach(activity -> model.getActivities().add(activity.getType().name()));
+            Optional<Activity> customStatusOptional = member.getActivities().stream().filter(activity -> activity.getType().equals(Activity.ActivityType.CUSTOM_STATUS)).findFirst();
+            customStatusOptional.ifPresent(activity -> {
+                model.setCustomStatus(activity.getName());
+                model.setCustomEmoji(activity.getEmoji() != null ? activity.getEmoji().getFormatted() : null);
+            });
+        }
     }
 
     @Override
@@ -164,6 +168,7 @@ public class UserInfo extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)
