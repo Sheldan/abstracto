@@ -2,12 +2,12 @@ package dev.sheldan.abstracto.core.command.handler;
 
 import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.CommandConstants;
+import dev.sheldan.abstracto.core.command.config.CombinedParameterEntry;
 import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.exception.IncorrectParameterException;
 import dev.sheldan.abstracto.core.command.execution.UnparsedCommandParameterPiece;
 import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.command.handler.provided.CombinedParametersHandler;
-import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -28,9 +28,6 @@ public class CombinedParameterHandlerImpl implements CombinedParametersHandler {
     @Lazy
     private List<CommandParameterHandler> parameterHandlers;
 
-    @Autowired
-    private MetricService metricService;
-
     @Override
     public boolean async() {
         return true;
@@ -40,11 +37,16 @@ public class CombinedParameterHandlerImpl implements CombinedParametersHandler {
     public CompletableFuture<Object> handleAsync(UnparsedCommandParameterPiece input, CommandParameterIterators iterators, Parameter param, Message context, Command command) {
         List<CompletableFuture<Object>> futures = new ArrayList<>();
         CompletableFuture<Object> returningFuture = new CompletableFuture<>();
-        List<Object> possibleTypes = (List) param.getAdditionalInfo().get(Parameter.ADDITIONAL_TYPES_KEY);
-        for (Object concreteParameter: possibleTypes) {
+        List<CombinedParameterEntry> combinedParameterEntries = (List) param.getAdditionalInfo().get(Parameter.ADDITIONAL_TYPES_KEY);
+        List<Class> possibleTypes = combinedParameterEntries
+                .stream()
+                .filter(CombinedParameterEntry::isUsableInMessageCommands)
+                .map(CombinedParameterEntry::getType)
+                .toList();
+        for (Class concreteParameter: possibleTypes) {
             for (CommandParameterHandler handler : parameterHandlers) {
                 try {
-                    if (handler.handles((Class) concreteParameter, input)) {
+                    if (handler.handles(concreteParameter, input)) {
                         if (handler.async()) {
                             futures.add(handler.handleAsync(input, iterators, param, context, command));
                         } else {

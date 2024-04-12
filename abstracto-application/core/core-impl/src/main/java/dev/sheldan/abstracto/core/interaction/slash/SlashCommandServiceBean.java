@@ -119,7 +119,7 @@ public class SlashCommandServiceBean implements SlashCommandService {
             if(!shouldParameterBeCreated(parameter, serverId)) {
                 return;
             }
-            List<OptionType> types = slashCommandParameterService.getTypesFromParameter(parameter.getType());
+            List<OptionType> types = slashCommandParameterService.getTypesFromParameter(parameter);
             if(types.size() > 1) {
                 if(parameter.isListParam()) {
                     for (int i = 0; i < parameter.getListSize(); i++) {

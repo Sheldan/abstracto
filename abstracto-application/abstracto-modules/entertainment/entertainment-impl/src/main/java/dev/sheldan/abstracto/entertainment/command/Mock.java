@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.entertainment.command;
 
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
+import dev.sheldan.abstracto.core.command.config.CombinedParameterEntry;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -86,7 +87,7 @@ public class Mock extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Map<String, Object> parameterAlternatives = new HashMap<>();
-        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(Message.class, String.class));
+        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(CombinedParameterEntry.messageParameter(Message.class), CombinedParameterEntry.parameter(String.class)));
 
         Parameter messageParameter = Parameter
                 .builder()

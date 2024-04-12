@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.interaction.slash.parameter;
 
+import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.provider.SlashCommandParameterProvider;
 import dev.sheldan.abstracto.core.exception.AbstractoRunTimeException;
 import dev.sheldan.abstracto.core.models.database.AEmote;
@@ -149,6 +150,16 @@ public class SlashCommandParameterServiceBean implements SlashCommandParameterSe
             return event.getGuild().getEmojiById(emoteId);
         }
         return Emoji.fromFormatted(input);
+    }
+
+    @Override
+    public List<OptionType> getTypesFromParameter(Parameter parameter) {
+        return parameterProviders
+                .stream()
+                .filter(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping().getType().equals(parameter.getType()))
+                .findAny()
+                .map(slashCommandParameterProvider -> slashCommandParameterProvider.getOptionMapping(parameter).getOptionTypes())
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Unknown type for slash command parameter desired %s", parameter.getType().getName())));
     }
 
     @Override

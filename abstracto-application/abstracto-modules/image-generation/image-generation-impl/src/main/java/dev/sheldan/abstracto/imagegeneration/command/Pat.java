@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.imagegeneration.command;
 
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
+import dev.sheldan.abstracto.core.command.config.CombinedParameterEntry;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
@@ -115,7 +116,7 @@ public class Pat extends AbstractConditionableCommand {
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
         Map<String, Object> parameterAlternatives = new HashMap<>();
-        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(Message.class, Member.class));
+        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, Arrays.asList(CombinedParameterEntry.messageParameter(Message.class), CombinedParameterEntry.parameter(Member.class)));
         Parameter memberParameter = Parameter
                 .builder()
                 .name(MEMBER_PARAMETER_KEY)
