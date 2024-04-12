@@ -166,6 +166,7 @@ public class OpenWeatherMap extends AbstractConditionableCommand {
                 .name(OPEN_WEATHER_MAP_COMMAND)
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .userInstallable(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .supportsEmbedException(true)

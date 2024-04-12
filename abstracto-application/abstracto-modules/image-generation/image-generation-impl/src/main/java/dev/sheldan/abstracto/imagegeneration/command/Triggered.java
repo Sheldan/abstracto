@@ -132,6 +132,7 @@ public class Triggered extends AbstractConditionableCommand {
                 .name("triggered")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)

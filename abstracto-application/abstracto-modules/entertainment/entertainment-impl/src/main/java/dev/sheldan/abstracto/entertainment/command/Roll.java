@@ -133,6 +133,7 @@ public class Roll extends AbstractConditionableCommand {
                 .name(ROLL_COMMAND)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .userInstallable(true)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .supportsEmbedException(true)

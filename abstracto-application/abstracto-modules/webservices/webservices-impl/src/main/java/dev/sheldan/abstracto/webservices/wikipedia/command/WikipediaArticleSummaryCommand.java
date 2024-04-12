@@ -143,6 +143,7 @@ public class WikipediaArticleSummaryCommand extends AbstractConditionableCommand
                 .templated(true)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .userInstallable(true)
                 .aliases(aliases)
                 .supportsEmbedException(true)
                 .causesReaction(false)

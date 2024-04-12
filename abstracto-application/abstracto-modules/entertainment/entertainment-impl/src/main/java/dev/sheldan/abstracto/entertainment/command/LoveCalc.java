@@ -113,6 +113,7 @@ public class LoveCalc extends AbstractConditionableCommand {
                 .name(LOVE_CALC_COMMAND)
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
+                .userInstallable(true)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .supportsEmbedException(true)

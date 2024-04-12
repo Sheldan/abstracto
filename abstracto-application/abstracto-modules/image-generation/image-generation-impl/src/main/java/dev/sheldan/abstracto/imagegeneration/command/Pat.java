@@ -143,6 +143,7 @@ public class Pat extends AbstractConditionableCommand {
                 .name("pat")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)

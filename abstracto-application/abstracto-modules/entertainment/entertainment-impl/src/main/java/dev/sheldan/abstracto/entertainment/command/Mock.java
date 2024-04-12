@@ -117,6 +117,7 @@ public class Mock extends AbstractConditionableCommand {
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
                 .async(true)
+                .userInstallable(true)
                 .slashCommandConfig(slashCommandConfig)
                 .supportsEmbedException(true)
                 .parameters(parameters)

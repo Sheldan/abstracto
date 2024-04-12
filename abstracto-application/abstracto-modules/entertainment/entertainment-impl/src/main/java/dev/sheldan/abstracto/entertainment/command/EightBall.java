@@ -103,6 +103,7 @@ public class EightBall extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

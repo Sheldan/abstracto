@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -270,17 +271,19 @@ public class InteractionServiceBean implements InteractionService {
                 action = callback.reply(".");
             }
             action = action.setComponents(actionRows);
-            Long serverId = callback.getGuild().getIdLong();
-            AServer server = serverManagementService.loadServer(serverId);
-            actionRows.forEach(components -> components.forEach(component -> {
-                if(component instanceof ActionComponent) {
-                    String id = ((ActionComponent)component).getId();
-                    MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
-                    if(payload != null && payload.getPersistCallback()) {
-                        componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+            if(ContextUtils.isGuildAware(callback)) {
+                Long serverId = callback.getGuild().getIdLong();
+                AServer server = serverManagementService.loadServer(serverId);
+                actionRows.forEach(components -> components.forEach(component -> {
+                    if(component instanceof ActionComponent) {
+                        String id = ((ActionComponent)component).getId();
+                        MessageToSend.ComponentConfig payload = messageToSend.getComponentPayloads().get(id);
+                        if(payload != null && payload.getPersistCallback()) {
+                            componentPayloadManagementService.createPayload(id, payload.getPayload(), payload.getPayloadType(), payload.getComponentOrigin(), server, payload.getComponentType());
+                        }
                     }
-                }
-            }));
+                }));
+            }
         }
 
         if(messageToSend.getEphemeral()) {
@@ -292,12 +295,11 @@ public class InteractionServiceBean implements InteractionService {
                 action = action.setEphemeral(messageToSend.getEphemeral());
             }
         }
-        if(callback.getHook().getInteraction().hasGuild()) {
+        if(ContextUtils.isGuildAware(callback)) {
             Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
-            if(action != null) {
+            if (action != null) {
                 action.setAllowedMentions(allowedMentions);
             }
-
         }
 
         if(action == null) {
@@ -308,10 +310,7 @@ public class InteractionServiceBean implements InteractionService {
 
     @Override
     public CompletableFuture<InteractionHook> replyMessage(String templateKey, Object model, IReplyCallback callback) {
-        Long serverId = null;
-        if(callback.getHook().getInteraction().hasGuild()) {
-            serverId = callback.getGuild().getIdLong();
-        }
+        Long serverId = callback.getGuild().getIdLong();
         MessageToSend messageToSend = templateService.renderTemplateToMessageToSend(templateKey, model, serverId);
         return replyMessageToSend(messageToSend, callback);
     }

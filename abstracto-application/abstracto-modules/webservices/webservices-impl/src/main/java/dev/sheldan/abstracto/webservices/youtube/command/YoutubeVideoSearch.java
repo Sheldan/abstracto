@@ -148,6 +148,7 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
+                .userInstallable(true)
                 .async(true)
                 .aliases(aliases)
                 .supportsEmbedException(true)

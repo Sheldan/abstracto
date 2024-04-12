@@ -154,7 +154,7 @@
             <dependency>
                 <groupId>io.github.freya022</groupId>
                 <artifactId>JDA</artifactId>
-                <version>73d3694</version>
+                <version>930d437468</version>
                 <exclusions>
                     <exclusion>
                         <groupId>club.minnced</groupId>

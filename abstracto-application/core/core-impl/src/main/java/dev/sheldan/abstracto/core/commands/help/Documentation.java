@@ -62,6 +62,7 @@ public class Documentation extends AbstractConditionableCommand {
                 .aliases(Arrays.asList("docu", "docs"))
                 .module(SupportModuleDefinition.SUPPORT)
                 .help(helpInfo)
+                .userInstallable(true)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .causesReaction(true)

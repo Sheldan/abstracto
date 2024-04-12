@@ -143,6 +143,7 @@ public class Bonk extends AbstractConditionableCommand {
                 .name("bonk")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)

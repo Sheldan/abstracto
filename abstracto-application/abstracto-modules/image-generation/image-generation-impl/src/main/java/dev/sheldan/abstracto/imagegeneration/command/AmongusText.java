@@ -118,6 +118,7 @@ public class AmongusText extends AbstractConditionableCommand {
                 .name("amongusText")
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .async(true)
                 .slashCommandConfig(slashCommandConfig)

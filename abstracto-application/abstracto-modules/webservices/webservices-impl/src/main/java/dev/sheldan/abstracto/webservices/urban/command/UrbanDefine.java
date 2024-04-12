@@ -122,6 +122,7 @@ public class UrbanDefine extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .async(true)
                 .aliases(aliases)
+                .userInstallable(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

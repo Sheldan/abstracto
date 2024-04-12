@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.models.database.RoleImmunity;
 import dev.sheldan.abstracto.core.service.RoleImmunityService;
 import dev.sheldan.abstracto.core.service.RoleService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -113,7 +114,7 @@ public class ImmuneUserCondition implements CommandCondition {
 
     @Override
     public CompletableFuture<ConditionResult> shouldExecuteAsync(SlashCommandInteractionEvent event, Command command) {
-        if(!event.hasGuild()) {
+        if(ContextUtils.isNotGuildAware(event)) {
             return CompletableFuture.completedFuture(ConditionResult.SUCCESS);
         }
         CommandConfiguration commandConfig = command.getConfiguration();

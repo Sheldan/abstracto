@@ -77,6 +77,7 @@ public class Uptime extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
+                .userInstallable(true)
                 .help(helpInfo)
                 .slashCommandConfig(slashCommandConfig)
                 .causesReaction(false)
