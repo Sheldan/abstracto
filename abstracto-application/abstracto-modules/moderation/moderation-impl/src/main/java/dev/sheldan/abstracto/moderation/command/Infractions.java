@@ -116,7 +116,7 @@ public class Infractions extends AbstractConditionableCommand {
         } else if(slashCommandParameterService.hasCommandOptionWithFullType(USER_PARAMETER, event, OptionType.STRING)){
             String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, User.class, String.class);
             Long userId = Long.parseLong(userIdStr);
-            AUserInAServer userInServer = userInServerManagementService.createUserInServer(event.getGuild().getIdLong(), userId);
+            AUserInAServer userInServer = userInServerManagementService.loadOrCreateUser(event.getGuild().getIdLong(), userId);
             infractions = infractionManagementService.getInfractionsForUser(userInServer);
 
         } else {

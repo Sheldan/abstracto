@@ -74,8 +74,12 @@
                                 <configuration>
                                     <outputFile>index.html</outputFile>
                                     <sourceDirectory>src/main/docs/asciidoc</sourceDirectory>
-                                    <backend>html</backend>
+                                    <backend>html5</backend>
                                     <doctype>book</doctype>
+                                    <attributes>
+                                        <toc>left</toc>
+                                        <icons>font</icons>
+                                    </attributes>
                                 </configuration>
                             </execution>
                         </executions>

@@ -18,6 +18,7 @@ import dev.sheldan.abstracto.core.service.management.UserInServerManagementServi
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureMode;
 import dev.sheldan.abstracto.experience.config.ExperienceSlashCommandNames;
+import dev.sheldan.abstracto.experience.exception.LevelActionAlreadyExistsException;
 import dev.sheldan.abstracto.experience.exception.LevelActionNotFoundException;
 import dev.sheldan.abstracto.experience.listener.LevelActionListener;
 import dev.sheldan.abstracto.experience.model.LevelActionPayload;
@@ -98,6 +99,9 @@ public class AddLevelAction extends AbstractConditionableCommand {
                 AUserExperience user = userExperienceManagementService.createUserInServer(aUserInAServer);
                 return userExperienceManagementService.saveUser(user);
             });
+        }
+        if(levelActionManagementService.getLevelAction(actionName, level, server, userExperience).isPresent()) {
+            throw new LevelActionAlreadyExistsException();
         }
         levelActionManagementService.createLevelAction(level, server, actionName, userExperience, payload);
         return interactionService.replyEmbed(RESPONSE_TEMPLATE, event)

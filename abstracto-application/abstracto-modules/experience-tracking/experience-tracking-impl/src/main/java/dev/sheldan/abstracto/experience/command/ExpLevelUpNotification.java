@@ -7,12 +7,14 @@ import dev.sheldan.abstracto.core.command.config.Parameter;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
+import dev.sheldan.abstracto.core.config.FeatureMode;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.experience.config.ExperienceFeatureDefinition;
+import dev.sheldan.abstracto.experience.config.ExperienceFeatureMode;
 import dev.sheldan.abstracto.experience.config.ExperienceSlashCommandNames;
 import dev.sheldan.abstracto.experience.service.AUserExperienceService;
 import net.dv8tion.jda.api.entities.Member;
@@ -99,5 +101,11 @@ public class ExpLevelUpNotification extends AbstractConditionableCommand {
                 .parameters(parameters)
                 .help(helpInfo)
                 .build();
+    }
+
+
+    @Override
+    public List<FeatureMode> getFeatureModeLimitations() {
+        return Arrays.asList(ExperienceFeatureMode.LEVEL_UP_NOTIFICATION);
     }
 }
