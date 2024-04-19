@@ -98,21 +98,26 @@ Show the currently configured experience roles in the server::
 Toggle the level up notification::
 * Usage: `expLevelUpNotification <newValue>`
 * Slash command: `experience explevelupnotification`
-* Description: Toggles for the executing user, if they receive level up notifications. Only `true` really enables the notification, any other value disables the notification. This command requires the feature mode `levelUpNotification`.
+* Description: Toggles for the executing user, if they receive level up notifications. Only `true` really enables the notification, any other value disables the notification.
+* Mode Restriction: This command is only available when the feature mode `levelUpNotification` is enabled.
 
 Add a level action::
 * Usage: `addLevelAction <action> <level> <parameter> [member]`
 * Slash command: `experienceconfig levelAction add`
 * Description: Adds an `action` to be executed at `level` with the given `parameter`. If a `member` is provided, the action is restricted to be executed for only this member. The parameters `action` uses auto complete to show the currently available actions. The combination of `action`, `level` and `member` (if provided), is considered unique. If such a combination already exists, an error is shown. Each action then requires a different `parameter` passed. The actions `add_member_to_channel_above_level` and `remove_member_from_channel_above_level` require a channel mention/name/id, and `add_role_above_level` and `remove_role_above_level` require a role mention/name/id.
+* Mode Restriction: This command is only available when the feature mode `levelAction` is enabled.
 
 Viewing the current configured level actions::
 * Usage: `showLevelActions`
 * Slash command: `levelAction show`
+* Description: Shows the currently configured level actions, this includes the level they are active at, the type of action and if
+* Mode Restriction: This command is only available when the feature mode `levelAction` is enabled.
 
 Removing a level action::
 * Usage: `removeLevelAction <action> <level> [member]`
 * Slash command:  `experienceconfig levelAction remove`
 * Description: Removes an action to be executed at a certain level. Such an action is identified by a combination of `action`, `level` and optionally `member`. If no identifiable combination is found, an error is shown.
+* Mode Restriction: This command is only available when the feature mode `levelAction` is enabled.
 
 ==== Level actions
 

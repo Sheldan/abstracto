@@ -2,6 +2,8 @@
 
 Feature key: `moderation`
 
+This feature contains various generic utilities like kicking and banning.
+
 ==== Post targets
 `banLog`:: target of the message notifying about bans, both via command and via UI. Will still ban if not setup.
 `unBanLog`:: target of the message notifying about un-bans, both via command and via UI. Will still unban if not setup.
@@ -9,38 +11,41 @@ Feature key: `moderation`
 
 ==== Commands
 Ban a member::
-* Usage: `ban <member> <reason>`
+* Usage: `ban <user> <reason> [deletionDuration]`
+* Slash command: `moderation ban`
 * Description:
-Bans `member` with the given `reason`. This sends a logging message to the `banLog` post target.
-Banning this way does not delete old messages of the member on the server.
-It is also possible to ban users via ID, if they are not part of the server anymore.
-* Example: `ban @Member bad` in order to ban `Member` with the reason `bad` (the @Member is a user mention)
+Bans `user` with the given `reason`. This sends a logging message to the `banLog` post target.
+Per default no messages are deleted, you can pass a duration in the parameter `deletionDuration`
+It is also possible to ban users via ID, if they are not part of the server anymore. When using the slash command, the parameter `user_user` enables you to mention the user, and `user_string` serves as the input for the user ID.
+* Example: `ban @Member bad` in order to ban `Member` with the reason `banned` (the @Member is a user mention)
 * Required bot permission: `BAN_MEMBERS`
 Unban a user::
 * Usage: `unBan <userId>`
+* Slash command: `moderation unBan`
 * Description: Un-bans the given user with the id `userId`.
 * Required bot permission: `BAN_MEMBERS`
 Kick a member::
 * Usage: `kick <member> [reason]`
+* Slash command: `moderation kick`
 * Description: Kicks the `member` from the guild with the given `reason`. If the `reason` is not provided, a default reason is used.
 * Example: `kick @Member bad` in order to kick `Member` with the reason `bad` (the @Member is a user mention)
 * Required bot permission: `KICK_MEMBERS`
 Change slowmode in a channel::
 * Usage: `slowmode <duration> [channel]`
+* Slash command: `moderation slowmode`
 * Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
 * Example: `slowMode 1h2m3s #general` in order to set the slow mode in channel `general` to 1 hour 2 minutes and 3 seconds (the #general is a channel mention)
 Purging messages in a channel::
 * Usage: `purge <messageCount> [member]`
-* Description: Deletes the last `messageCount` messages in the current channel. If a `member` is provided as parameter, only the messages by this member
+* Slash command: `moderation purge`
+* Description: Deletes the last `messageCount` messages in the current channel. If a `member` is provided as parameter, only messages by this member
 will be deleted. The deletion of this messages will *not* be logged by the logging mechanism. The messages to be deleted need to be from within the last 2 weeks, but there is no limit on how much messages can be deleted besides that.
 While the command is ongoing, a status update message will be shown indicating how far the command is. This message will be deleted after the command is done.
-Deleting all messages and kicking a member::
-* Usage `softBan <user> [delDays]`
-* Description: Bans the given `user` and deletes the messages for the given time period in `delDays`. This duration must be in days and can be at most 7 days. When no duration is provided 7 days are used. This command automatically unbans the user afterwards.
+
 
 === Warning
 
-This feature can be used to warn specific users if they did something not allowed by the rules.
+This feature can be used to warn specific users and track the warnings.
 
 Feature key: `warnings`
 
@@ -49,27 +54,32 @@ Feature key: `warnings`
 `decayLog`:: will be used when all the warnings are decayed by `decayAllWarnings` and feature mode `warnDecayLogging` is enabled.
 
 ==== Feature modes
-`automaticWarnDecayLogging`:: if enabled, warn decays by `decayAllWarnings` are logged to the post target `decayLog`. Enabled by default.
+`automaticWarnDecayLogging`:: if enabled, warn decays by the command `decayAllWarnings` are logged to the post target `decayLog`. Enabled by default.
 
 
 ==== Commands
 Warn a user::
 * Usage: `warn <member> [reason]`
+* Slash command: `warnings create`
 * Description: Warns the `member` with the given `reason` or a default one, if none is provided. This command sends a log message to the `warnLog` post
 target and notifies the member about the warning.
 * Example: `warn @Member bad` in order to warn `Member` with the reason `bad` (the @Member is a user mention)
 Listing the warnings of users::
 * Usage: `warnings [member]`
+* Slash command: `warnings list`
 * Description: If no `member` is provided displays all the warnings on the server. If a `member` is provided, will only display the warnings of the user.
 This uses a paginated output, which means multiple pages in case there are more warnings to display. This will also display the date the warning was decayed if applicable.
 Showing your warnings::
 * Usage: `myWarnings`
+* Slash command: `warningspublic myWarnings`
 * Description: Displays the amount of warnings of the user executing on the server. This will show both active and total warnings.
 Decaying all warnings regardless of the date::
 * Usage: `decayAllWarnings`
+* Slash command: `warningdecay decayAllWarnings`
 * Description: This will cause all warnings of this server which are not decayed yet to be decayed instantly. Requires you to confirm the command.
 Deleting a warning::
 * Usage: `deleteWarning <warnId>`
+* Slash command: `warnings delete`
 * Description: Deletes the warning identified by `warnId` completely from the database.
 
 
@@ -83,7 +93,7 @@ Feature key: `warnDecay`
 `decayDays` The amount of days after which a warning gets decayed. Default: 90
 
 ==== Post targets
-`decayLog`:: target of the log message containing the information in case a warning is decayed.
+`decayLog`:: target of the log message containing the information in case a warning is decayed. This post target is the same from the `warnings` feature.
 
 ==== Feature modes
 `automaticWarnDecayLogging`:: if enabled, automatic warn decays are logged to the `decayLog` post target. Enabled by default.
@@ -95,8 +105,7 @@ Decaying all warnings if necessary::
 
 === Muting
 
-This feature provides the capability to mute users, which effectively means it applies a role which prevents them from sending messages and speaking in voice chat.
-The role used to mute member will not be created and needs to be provided. There is no validation if the provided role actually mutes members.
+This feature provides the capability to mute users using the Discord functionality of timeouts.
 If the user leaves the guild and rejoins, the mute will be re-applied.
 
 Feature key `muting`
@@ -106,15 +115,15 @@ Feature key `muting`
 
 ==== Feature modes
 `muteLogging`:: if enabled, each mute is to be logged to the post target `muteLog`. Enabled by default.
-`unMuteLogging`:: if enabled, each un mute which happens 'naturally' (after the defined time period is over) will be logged to the `muteLog` post target. Enabled by default.
+`unMuteLogging`:: if enabled, each un-mute which happens 'naturally' (after the defined time period is over) will be logged to the `muteLog` post target. Enabled by default.
 
 
 ==== Commands
 Muting a user::
 * Usage: `mute <member> <duration> [reason]`
-* Description: Applies the mute role to the given `member` for the given `duration`. If `reason` is not provided, a default reason will be used for logging in the `muteLog` post target.  This will automatically un-mute the user after the duration has passed. If the un-mute happens automatically, this will also be logged in the `muteLog` post target.
-This command sends a notification to the user about the mute and kicks the user from the voice channel, if any.
-* Example: `mute @Member 1h2m3s bad` in order to mute the member `Member` for 1 hour 2 minutes and 3 seconds with the reason `bad` (the @Member is a user mention)
+* Description: Timeouts the given `member` for the given `duration`. If `reason` is not provided, a default reason will be used for logging in the `muteLog` post target. This will automatically un-mute the user after the duration has passed. If the un-mute happens automatically, this will also be logged in the `muteLog` post target.
+This command sends a notification to the user about the mute.
+* Example: `mute @Member 1h2m3s muted` in order to mute the member `Member` for 1 hour 2 minutes and 3 seconds with the reason `muted` (the @Member is a user mention)
 Un-Muting a user::
 * Usage: `unMute <member>`
 * Description: Removes the mute role from `member`. This does *not* log the un-mute.
@@ -164,7 +173,7 @@ Retrieving user notes::
 
 Feature key `inviteFilter`
 
-This feature provides the ability to automatically delete invites not allowed on the server. These illegal invites can be tracked in a specific feature mode, in order to analyze if allowing them would make sense.
+This feature provides the ability to automatically delete invites not allowed on the server. These not allowed invites can be tracked in a specific feature mode, in order to analyze if allowing them would make sense.
 Another feature mode can send a notification to a post target in case an invite link has been deleted.
 
 ==== Post targets
@@ -198,9 +207,11 @@ Remove all or individual invites from the tracked filtered invites::
 
 Feature key `profanityFilter`
 
-This functionality provides the ability to automatically delete any detected profanities. These profanities are configured via the profanity groups and profanity regexes.
-It is possible to use a voting process to validate a reported profanity.
+This functionality provides the ability to automatically delete any detected profanities. These profanities are configured via the profanity groups and profanity regexes, and uses the functionality provided by the <<profanitygroups,core profanity groups>>. Additionally, it is possible to use a voting process to validate a reported profanity.
 The uses of profanities can be tracked and a command is available to show the profanities for a user.
+
+==== Relevant system configuration
+`profanityVotes` The amount of votes necessary to confirm or deny a profanity. As long this threshold of votes is not reached, the reported profanity is considered not validated. Default: 5
 
 ==== Post targets
 `profanityQueue`:: target for reports to be voted on - if the feature mode `filterNotifications` is enabled.
@@ -211,6 +222,7 @@ The uses of profanities can be tracked and a command is available to show the pr
 `profanityVote`:: if enabled, sends a notification to the `profanityQueue` post target to notify about a detected profanity to be voted on. Requires feature mode `profanityReport` to be enabled. Enabled by default.
 `autoDeleteAfterVote`:: if enabled, after a profanity vote has reached the threshold (system config key `profanityVotes`), depending on the outcome, it will be deleted. Requires feature mode `profanityVote` to be enabled. Enabled by default.
 `trackProfanities`:: if enabled, the command `profanities` is available to show the profanities of a member. Requires feature mode `profanityVote` to be enabled. Enabled by default.
+`profanityModerationActions`:: if enabled, a profanity report shows actions which can be executed on the user that used the profanity. This mode shows different actions depending on the other features enabled. If `moderation` is enabled, the actions for banning and kicking are shown. If `muting` is enabled, an action for muting is available. If `warnings` is enabled, the action for creating warnings is available. Disabled by default.
 
 ==== Emotes
 * `profanityFilterAgreeEmote` reaction emote to indicate agreement about a reported profanity
@@ -219,20 +231,24 @@ The uses of profanities can be tracked and a command is available to show the pr
 ==== Commands
 Show the profanities of a member::
 * Usage `profanities <member>`
-* Description: Shows the true and false positive profanities of the given member. Also, if there any, shows the recent true positive reports.
+* Description: Shows the true and false positive profanities of the given member. Also, if there are any, shows the recent true positive reports.
 
 === Reporting a message via reaction
 
 Feature key `reportReactions`
 
-This functionality is used to report user by members via adding a reaction to a message. This message is then send to the post target `reactionReports`
-notifying the moderation of the server. Additional reports of the same user, within the cooldown defined by system config `reactionReportCooldownSeconds` (in seconds), increment the report counter instead of adding another notification. A reporting user cannot report another user within a time range defined by the same system config.
+This functionality is used to report user by members via adding a reaction to a message or by message context command. This message is then send to the post target `reactionReports` notifying the moderation of the server. Additional reports of the same user, within the cooldown defined by system config `reactionReportCooldownSeconds` (in seconds), increment the report counter instead of adding another notification. A reporting user cannot report another user within a time range defined by the same system config.
 
 ==== Relevant system configuration
 `reactionReportCooldownSeconds` The amount of seconds between the reports to create a new report for a user. The amount of seconds necessary for a new report of a user to be reported again. Default: 300
 
 ==== Post targets
-`reactionReports`:: target for report notification messages
+`reactionReports`:: channel for report notification messages
+
+=== Feature modes
+`singularReportReactions`:: if enabled, causes additional reports of the same message to show a counter which is being incremented, instead of creating new reports. Disabled by default.
+`anonymousReportReactions`:: if enabled, makes it impossible to detect the reporter of a message. No report is stored in the database. Disabled by default.
+`reactionReportActions`:: if enabled, shows potential actions to perform on the report. This mode shows different actions depending on the other features enabled. If `moderation` is enabled, the actions for banning and kicking are shown. If `muting` is enabled, an action for muting is available. If `warnings` is enabled, the action for creating warnings is available. Disabled by default.
 
 ==== Emotes
 * `reactionReport` reaction emote to report a message
@@ -251,7 +267,7 @@ This functionality will automatically mute a member who mentions more than a con
 ==== Relevant system configuration
 `massPingMinLevel`:: The level at which members are allowed to mass ping and not get muted.
 
-=== Tracking general infractions
+=== Tracking infractions
 
 Feature key `infractions`
 
@@ -261,5 +277,20 @@ This functionality just behaves to track general infractions of users, be it thr
 `infractionNotification`:: target for notifications of infraction level changes
 
 ==== Relevant system configuration
-`infractionLevels`:: The amount of infraction levels which should be possible to configure
-`infractionLevel`:: This system config key acts as a prefix up until the amount of infraction levels. With this you can configure the amount of points necessary to reach the given level: For example `infractionLevel2` would be the amount of points necessary to reach level 2. These levels are not enforced to be ordered nor if all levels have a value assigned to it. Any level evaluation will stop at the first level not defined.
+`infractionLevels`:: The amount of infraction levels which should be possible to configure. Default: 5
+`infractionLevel`:: This system config key acts as a prefix up until the amount of infraction levels. With this you can configure the amount of points necessary to reach the given level: For example `infractionLevel2` would be the amount of points necessary to reach level 2. These levels are not enforced to be ordered nor if all levels have a value assigned to it. Any level evaluation will stop at the first level not defined. Per default, the levels are 10, 20, 30, 40, and 50.
+`warnInfractionPoints`:: The amount of infraction points a warning has. Default: 50
+`banInfractionPoints`:: The amount of infraction points a ban has. Default: 150
+`kickInfractionPoints`:: The amount of infraction points a kick has. Default: 20
+`muteInfractionPoints`:: The amount of infraction points a kick has. Default: 10
+
+=== Honey pot
+
+Feature key `honeypot`
+
+This feature is used to create a honey pot for bots using the onboarding feature. It works by adding a specific role to onboarding as an selectable role and specifically mark it so that normal users do not pick it. Bots often pick the all or the first role from a role selection, and this mechanism tries to detect bots this way. The feature uses a configurable, and bans users who receive this role (with some configurable filtering, so that normal users do not pick the role inadvertently).
+
+==== Relevant system configuration
+`honeypotRoleId`:: The ID of the role to use as a honey pot role. Default: 5
+`honeypotIgnoredLevel`:: The level starting from which users should be ignored when they receive the honey pot role. If the `experience` feature is not enabled, this takes no effect. The purpose of this is to ignore people who re-joined the server and select it. Default: 100
+`honeypotIgnoredJoinDurationSeconds`:: The amount of seconds after joining a user should be ignored. Bots usually take very quick actions, this is to select normal users, who are probably slower than a bot. Default: 86400

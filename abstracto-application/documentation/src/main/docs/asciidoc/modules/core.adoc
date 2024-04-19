@@ -259,6 +259,7 @@ An example of a feature mode is mod mail logging: If the feature mode `log` of m
 If the feature mode is enabled, the messages from the thread are logged in the respective post target and the command will be available.
 
 .What is a profanity group?
+[[profanitygroups,Profanity groups]]
 A profanity group is just a container for various regexes. They are grouped together in order to be identified together and kept organized.
 Each profanity regex within that group has an additional identifier. For example a profanity group can be used to detect a particular word, but there are different profanities which would detect various possibilities for that one word. This helps reduce the complexity of individual regexes.
 
