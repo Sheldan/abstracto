@@ -261,7 +261,7 @@ public class MuteServiceBean implements MuteService {
         Long muteId = mute.getMuteId().getId();
         AServer mutingServer = mute.getServer();
         ServerUser mutedUser = ServerUser.fromAUserInAServer(mute.getMutedUser());
-        ServerUser mutingUser = ServerUser.fromAUserInAServer(mute.getMutedUser());
+        ServerUser mutingUser = ServerUser.fromAUserInAServer(mute.getMutingUser());
         log.info("UnMuting {} in server {}", mute.getMutedUser().getUserReference().getId(), mutingServer.getId());
         return memberService.removeTimeout(guild, mutedUser, null)
                 .thenCompose(unused -> self.sendUnmuteLog(muteId, guild, mutedUser, mutingUser));
