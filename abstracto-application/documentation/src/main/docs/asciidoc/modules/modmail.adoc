@@ -1,36 +1,37 @@
 === Mod mail
 
+Feature key: `modmail`
+
 This feature enables users to contact the moderation of the server in a private manner. This can be initiated by messaging the bot.
 The messages, in the channel which is created to contain the mod mail thread, are not automatically sent to the user, but only when using the commands
 `reply` or `anonReply`. Any other message is ignored with the intention of enabling discussions within the channel. In case the message of a message sent to the user
-needs to be updated or deleted, you can do simply by editing/deleting the message containing the command.
-
-Feature key: `modmail`
+needs to be updated or deleted, you can do simply by editing/deleting the message containing the command. This channel can also be a thread in a special feature mode `threadContainer`.
 
 ==== Necessary bot permissions
-`MANAGE_CHANNEL` to create the channels representing the mod mail threads
+`MANAGE_CHANNEL` to create the channels representing the mod mail threads (if feature mode is not `threadContainer`)
 
 ==== Workflow
 * User messages the bot
 * If the bot is active in multiple servers with mod mail enabled, the user is prompted to which server they want to open a mod mail thread for.
-* A channel in the mod mail category is created for the user and notification is sent that a new mod mail thread has been opened
-* User can send messages in the private channel and they get relayed to this created text channel.
+* A channel/thread in the mod mail category/channel is created for the user and notification is sent that a new mod mail thread has been opened
+* User can send messages in the private channel and they get relayed to this created channel/thread
 * Moderators can answer in the thread with the commands
-* Moderators close the thread
-* The interactions between the user and the moderators gets logged in the mod mail logging channel
+* Moderators close the mod mail thread
+* Optionally: The interactions between the user and the moderators gets logged in the mod mail logging channel
 
 ==== Relevant system configuration
-`modmailCategory`:: The category on the server which is used to hold the text channels representing the threads
-
+`modmailCategory`:: The category on the server which is used to hold the text channels representing the threads. Not relevant when feature mode `threadContainer` is enabled
 `modMailClosingText`:: The text being used when notifying the user when a thread is closed.
 
 ==== Post targets
 `modmailPing`:: Will be used to send the notification when a new thread is opened.
 `modmailLog`:: Will be used to log the interactions when a thread is closed.
+`modmailContainer`:: Will be used to create threads in when feature mode `threadContainer` is enabled.
 
 ==== Feature modes
-`log`:: If this is enabled, the messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands). Makes the command `closeNoLog` available. Enabled by default.
-`threadMessage`:: If this is enabled, every message which is sent via the commands `reply` and `anonReply` will also be sent to the thread in order to have a visualizer how the message looks and to have a clear indication which messages were sent. Enabled by default.
+`log`:: If enabled, the messages should be logged into the `modmailLog` post target when the thread is closed (by the respective commands). Makes the command `closeNoLog` available. Enabled by default.
+`threadMessage`:: If enabled, every message which is sent via the commands `reply` and `anonReply` will also be sent to the thread in order to have a visualizer how the message looks and to have a clear indication which messages were sent. Enabled by default.
+`threadContainer`:: If enabled, the bot uses threads instead of channels to facilitate communication. This requires the post target `modmailContainer` to function correctly. This feature mode changes the functionality of the closing process: if a mod mail thread is closed, this will archive thread instead of logging the contents. Disabled by default.
 
 ==== Emotes
 * `readReaction` to indicate to the user that the message sent was processed
@@ -38,7 +39,7 @@ Feature key: `modmail`
 ==== Commands
 Opening a mod mail thread for a user::
 * Usage: `contact <member>`
-* Description: Creates a new mod mail thread with the `member`. Does not send a notification about the new thread.
+* Description: Creates a new mod mail thread with the `member` and does not send a notification about the new thread. This will send a message linking to the existing mod mail thread, if there already exists one.
 Adding a role to the roles responsible for managing mod mail threads::
 * Usage: `setModMailRole <role>`
 * Description: Adds this role to the roles responsible for mod mail threads, which means: this role will be pinged when a new thread is created and this role is automatically added to the roles allowed to execute all commands related to mod mail.

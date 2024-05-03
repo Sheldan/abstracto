@@ -12,32 +12,31 @@ This feature contains various generic utilities like kicking and banning.
 ==== Commands
 Ban a member::
 * Usage: `ban <user> <reason> [deletionDuration]`
-* Slash command: `moderation ban`
+* Slash command: `moderation ban <reason> [user_user/user_string] [deletionDuration]`
 * Description:
 Bans `user` with the given `reason`. This sends a logging message to the `banLog` post target.
 Per default no messages are deleted, you can pass a duration in the parameter `deletionDuration`
-It is also possible to ban users via ID, if they are not part of the server anymore. When using the slash command, the parameter `user_user` enables you to mention the user, and `user_string` serves as the input for the user ID.
-* Example: `ban @Member bad` in order to ban `Member` with the reason `banned` (the @Member is a user mention)
+It is also possible to ban users via ID using the slash command, if they are not part of the server anymore. When using the slash command, the parameter `user_user` enables you to mention the user, and `user_string` serves as the input for the user ID. This command is slash command only.
 * Required bot permission: `BAN_MEMBERS`
 Unban a user::
-* Usage: `unBan <userId>`
-* Slash command: `moderation unBan`
-* Description: Un-bans the given user with the id `userId`.
+* Usage: `unBan <user>`
+* Slash command: `moderation unBan <user>`
+* Description: Un-bans the given user with the id provided in `userId`.
 * Required bot permission: `BAN_MEMBERS`
 Kick a member::
 * Usage: `kick <member> [reason]`
-* Slash command: `moderation kick`
+* Slash command: `moderation kick <member> [reason]`
 * Description: Kicks the `member` from the guild with the given `reason`. If the `reason` is not provided, a default reason is used.
 * Example: `kick @Member bad` in order to kick `Member` with the reason `bad` (the @Member is a user mention)
 * Required bot permission: `KICK_MEMBERS`
 Change slowmode in a channel::
 * Usage: `slowmode <duration> [channel]`
-* Slash command: `moderation slowmode`
+* Slash command: `moderation slowmode <duration> [channel]`
 * Description: This command sets the slow mode in the `channel` to the given `duration`. This command uses duration parsing. The `channel` is optional and if none is provided, the current channel is used.
 * Example: `slowMode 1h2m3s #general` in order to set the slow mode in channel `general` to 1 hour 2 minutes and 3 seconds (the #general is a channel mention)
 Purging messages in a channel::
-* Usage: `purge <messageCount> [member]`
-* Slash command: `moderation purge`
+* Usage: `purge <amount> [member]`
+* Slash command: `moderation purge <amount> [member]`
 * Description: Deletes the last `messageCount` messages in the current channel. If a `member` is provided as parameter, only messages by this member
 will be deleted. The deletion of this messages will *not* be logged by the logging mechanism. The messages to be deleted need to be from within the last 2 weeks, but there is no limit on how much messages can be deleted besides that.
 While the command is ongoing, a status update message will be shown indicating how far the command is. This message will be deleted after the command is done.
@@ -59,14 +58,14 @@ Feature key: `warnings`
 
 ==== Commands
 Warn a user::
-* Usage: `warn <member> [reason]`
-* Slash command: `warnings create`
+* Usage: `warn <user> [reason]`
+* Slash command: `warnings create <user> [reason]`
 * Description: Warns the `member` with the given `reason` or a default one, if none is provided. This command sends a log message to the `warnLog` post
 target and notifies the member about the warning.
 * Example: `warn @Member bad` in order to warn `Member` with the reason `bad` (the @Member is a user mention)
 Listing the warnings of users::
-* Usage: `warnings [member]`
-* Slash command: `warnings list`
+* Usage: `warnings [user]`
+* Slash command: `warnings list [user]`
 * Description: If no `member` is provided displays all the warnings on the server. If a `member` is provided, will only display the warnings of the user.
 This uses a paginated output, which means multiple pages in case there are more warnings to display. This will also display the date the warning was decayed if applicable.
 Showing your warnings::
@@ -79,7 +78,7 @@ Decaying all warnings regardless of the date::
 * Description: This will cause all warnings of this server which are not decayed yet to be decayed instantly. Requires you to confirm the command.
 Deleting a warning::
 * Usage: `deleteWarning <warnId>`
-* Slash command: `warnings delete`
+* Slash command: `warnings delete <warnId>`
 * Description: Deletes the warning identified by `warnId` completely from the database.
 
 
@@ -120,15 +119,18 @@ Feature key `muting`
 
 ==== Commands
 Muting a user::
-* Usage: `mute <member> <duration> [reason]`
+* Usage: `mute <user> <duration> [reason]`
+* Slash command: `mute create <user> <duration> [reason]`
 * Description: Timeouts the given `member` for the given `duration`. If `reason` is not provided, a default reason will be used for logging in the `muteLog` post target. This will automatically un-mute the user after the duration has passed. If the un-mute happens automatically, this will also be logged in the `muteLog` post target.
 This command sends a notification to the user about the mute.
 * Example: `mute @Member 1h2m3s muted` in order to mute the member `Member` for 1 hour 2 minutes and 3 seconds with the reason `muted` (the @Member is a user mention)
 Un-Muting a user::
-* Usage: `unMute <member>`
+* Usage: `unMute <user>`
+* Slash command: `mute remove <user>`
 * Description: Removes the mute role from `member`. This does *not* log the un-mute.
 Showing all mutes::
 * Usage: `mutes [member]`
+* Slash command: `mute list [member]`
 * Description: Shows all the mutes in a paginated matter with buttons to navigate the pages. If `member` is provided, it will only show mutes for this member.
 
 === Logging
@@ -159,14 +161,17 @@ This feature provides the ability to store specific notes for members in the dat
 ==== Commands
 Creating a user note::
 * Usage: `userNote <user> <text>`
+* Slash command: `usernote create <user> <text>`
 * Description: Creates a single user note for the specified user.
 
 Deleting a user note::
 * Usage: `deleteNote <id>`
+* Slash command: `usernote delete <id>`
 * Description: Deletes the user note identified by its ID. The ID can be retrieved by the command `userNotes`.
 
 Retrieving user notes::
 * Usage: `userNotes [user]`
+* Slash command: `usernote list [user]`
 * Description: If `user` is not provided, this will list the user notes of the whole server, if `user` is provided, this will only list user notes from this particular `user`.
 
 === Invite filter
@@ -275,6 +280,12 @@ This functionality just behaves to track general infractions of users, be it thr
 
 ==== Post targets
 `infractionNotification`:: target for notifications of infraction level changes
+
+==== Commands
+List infractions::
+* Usage: `infractions [user]`
+* Slash command: `infractions list [user_user/user_string]`
+* Description: Shows the infractions of the provided `user`, or all if no `user` is provided. For the slash command you can provide a user mention via `user_user` or an ID via `user_string`.
 
 ==== Relevant system configuration
 `infractionLevels`:: The amount of infraction levels which should be possible to configure. Default: 5

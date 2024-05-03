@@ -23,16 +23,16 @@ This information includes a short description, a more detailed description, alia
 and which effects a command has.
 Changing the system configuration::
 * Usage `setConfig <key> <value>`
-* Slash command: `config set`
+* Slash command: `config set <key> <value>`
 * Description: Changes the value of this configuration identified by `key` to `value`. Some of these configurations have separate specific commands, but this works in general.
 * Example: `setConfig expMin 15` to set the minimum experience to 15
 Resetting the configuration to default values::
 * Usage `resetConfig [key/feature]`
-* Slash command: `config reset`
+* Slash command: `config reset [key/feature>`
 * Description: Resets the configuration of the given `key` or for the complete feature identified by `feature`. If this is not provided, it will reset the entire server to the default configuration.
 Changing emotes the bot uses::
 * Usage: `setEmote <key> <emote>`
-* Slash command: `config setemote`
+* Slash command: `config setemote <emotekey> <emote>`
 * Description: Sets the emote identified by `key` used by the bot on this server to `emote`.
 This allows both built in emotes and custom emotes, but the bot must be in the server of the custom emote in order to use them.
 Clearing the cache::
@@ -44,25 +44,25 @@ Ping::
 * Slash command: `ping`
 * Description: Prints the gateway ping of the bot to the Discord servers.
 Echo::
-* Usage: `echo <text> [targetChannel]`
-* Slash command: `echo`
+* Usage: `echo <text>`
+* Slash command: `echo <teyt> [targetchannel]`
 * Description: Echos `text` in the same channel this command as executed in. The slash command offers the ability to provide a `targetChannel`.
 Changing the prefix::
 * Usage: `setPrefix <prefix>`
 * Description: Changes the prefix of the bot in this guild to `prefix`. This can be one or multiple characters.
 Changing a post target::
-* Usage: `posttarget <name> <channel>`
-* Slash command: `posttarget posttarget`
+* Usage: `posttarget [name] [channel]`
+* Slash command: `posttarget posttarget [name] [channel>`
 * Description: Changes the given post target identified by `name` to `channel`. All messages using this post target will be sent to this channel from now on.
 If neither `name` nor `channel` is given, this will print the currently available post targets and the channels they point to, if set.
 * Example: `posttarget banLog #general` to log the bans in the #general channel.
 Disabling a post target::
-* Usage: `disablePostTarget <key>`
-* Slash command: `posttarget diable`
+* Usage: `disablePostTarget <name>`
+* Slash command: `posttarget diable <name>`
 * Description: Disables the post target identified by `key` to not send any messages towards. Some features require a post target to be enabled, and have the option to throw an exception, others might just ignore it.
 Enabling a post target::
-* Usage: `enablePostTarget <key>`
-* Slash command: `posttarget enable`
+* Usage: `enablePostTarget <name>`
+* Slash command: `posttarget enable <name>`
 * Description: Enables the post target identified by `key` to not send any messages towards.
 Changing admin mode::
 * Usage: `setAdminMode <true/false>`
@@ -72,57 +72,59 @@ Listing the features::
 * Slash command: `feature list`
 * Description: Lists the available features and whether they are enabled in this server.
 Enabling a feature::
-* Usage: `enableFeature <key>`
-* Slash command: `feature enable`
+* Usage: `enableFeature <featurename>`
+* Slash command: `feature enable <featurename>`
 * Description: Enables the feature identified by `key` in this server. If the feature dependents on other features, they will be enabled as well. Any configuration which requires setup will be listed. In order to start a configuration wizard execute the command `setupFeature`.
 * Example: `enableFeature moderation` to enable the moderation feature
 Setting up a feature with an interactive wizard::
 * Usage: `setupFeature <featureName>`
 * Description: Starts an interactive wizard to configure the necessary configuration of a feature. Closes with a summary page to see all changes.
 Disabling a feature::
-* Usage: `disableFeature <key>`
-* Slash command: `feature disable`
+* Usage: `disableFeature <featurename>`
+* Slash command: `feature disable <featurename>`
 * Description: Disables the feature identified by `key` in this server. If the feature is required for other features, they will be disabled as well.
 * Example: `disableFeature moderation` to disable the moderation feature
 Enabling a feature mode::
-* Usage: `enableMode <featureName> <mode>`
-* Slash command: `feature enablemode`
+* Usage: `enableMode <feature> <mode>`
+* Slash command: `feature enablemode <feature> <mode>`
 * Description: Enables the mode `mode` in feature `featureName`. If the mode followed default configuration previously, it will not anymore after executing this command.
 Disabling a feature mode::
-* Usage: `disableMode <featureName> <mode>`
-* Slash command: `feature disablemode`
+* Usage: `disableMode <feature> <mode>`
+* Slash command: `feature disablemode <feature> <mode>`
 * Description: Disables the mode `mode` in feature `featureName`. If the mode followed default configuration previously, it will not anymore after executing this command.
 Listing all feature modes::
 * Usage `featureModes [feature]`
-* Slash command: `feature featuremodes`
+* Slash command: `feature featuremodes [feature]`
 * Description: Lists all the currently available feature modes and the feature they are associated with. If `feature` is given, it only lists the feature modes of this feature. The output also includes whether it is enabled and if this value comes from the default configuration.
 Creating a channel group::
 * Usage: `createChannelGroup <key>`
-* Slash command: `channels createchannelgroup`
+* Slash command: `channels createchannelgroup <name> <grouptype>`
 * Description: Creates a new channel group identified by `key`. There are different types of channel groups, depending on the features available. Per default `command` and `commandCoolDown` are available.
 * Aliases: `+ChGroup`
 
 Disabling a channel group::
 * Usage: `disableChannelGroup <channelGroupName>`
+* Slash command: `channels disablechannelgroup <channelgroupname>`
 * Description: Disables the effect the channel group `channelGroupName` has.
 Enabling a channel group::
 * Usage: `enableChannelGroup <channelGroupName>`
+* Slash command: `channels enablechannelgroup <channelgroupname>`
 * Description: Enables the effect the channel group `channelGroupName` has.
 Adding a channel to a channel group::
 * Usage: `addToChannelGroup <groupName> <channel>`
-* Slash command: `channels addtochannelgroup`
+* Slash command: `channels addtochannelgroup <name> <channel>`
 * Description: Adds the `channel` to the channel group identified by the `groupName`. It is not possible for a channel to be in a group twice.
 * Aliases: `addTChGrp`, `chGrpCh+`
 * Example: `addToChannelGroup group1 #general` to add the channel #general to the group `group1`
 Removing a channel from a channel group::
-* Usage: `removeFromChannelGroup <groupName> <channel>`
-* Slash command: `channels removefromchannelgroup`
-* Description: Removes the `channel` from the channel group identified by `groupName`.
+* Usage: `removeFromChannelGroup <name> <channel>`
+* Slash command: `channels removefromchannelgroup <name> [channel_channel/channel_string]`
+* Description: Removes the `channel` from the channel group identified by `groupName`. The second parameter for slash command is used to either use a mention for `channel_channel` or the ID of the channel using `channel_string`.
 * Aliases: `rmChChgrp`, `chGrpCh-`
 * Example: `removeFromChannelGroup group1 #general` to remove the channel #general from the group `group1`
 Deleting a channel group::
-* Usage: `deleteChannelGroup <key>`
-* Slash command: `channels deletechannelgroup`
+* Usage: `deleteChannelGroup <name>`
+* Slash command: `channels deletechannelgroup <name>`
 * Description: Deletes the channel group identified by `key`. This will also remove all associated channels from this group. This command fails, if the group is used in other features and referenced.
 * Aliases: `-ChGroup`
 Showing all available channel groups::
@@ -146,12 +148,12 @@ Removing role restrictions from a command::
 * Description: Allows everyone to execute all commands in this `feature`/the `command`. Which means, any restrictions concerning which role is able to execute a certain command is ignored even if it still configured.
 Make a role affected by a command::
 * Usage: `makeAffected <effect> <role>`
-* Slash command: `config makeaffected`
+* Slash command: `config makeaffected <effect> <role>`
 * Description: Makes the `role` affected by the `effect`.
 * Example: `makeAffected ban @Staff` in order to the role `Staff` can be banned (where @Staff is a role mention)
 Make a role immune against a command::
 * Usage: `makeImmune <effect> <role>`
-* Slash command: `config makeimmune`
+* Slash command: `config makeimmune <effect> <role>`
 * Description: Makes the `role` immune to `effect`.
 * Example: `makeImmune ban @Staff` in order to the role `Staff` cannot be banned (where @Staff is a role mention)
 Show all effects::
@@ -168,19 +170,19 @@ Disallow the bot to use certain mentions::
 This change takes immediate effect and is only for the current server. Per default everyone/here mentions are disabled. This configuration can be overwritten on a template base.
 Setting a custom template for this server::
 * Usage: `setTemplate <templateKey>`
-* Slash command: `internal settemplate`
+* Slash command: `internal settemplate <templatekey> <file>`
 * Description: Adds or updates the given template identified by `templateKey` only for the current server. The content of the template needs to be attached to the message as a file and is required to be a plaintext file. The file can be named anything. The template needs to be in https://freemarker.apache.org/[Freemarker] format. This change is only in effect for this server and is called a 'customized template'. This will take effect immediately.
 Retrieving the current default template::
 * Usage: `getTemplate <templateKey>`
-* Slash command: `internal gettemplate`
+* Slash command: `internal gettemplate <templatekey>`
 * Description: Loads the current global template identified by `templateKey` and returns the content as an attached file.
 Retrieving the current customized template for this server::
 * Usage: `getCustomTemplate <templateKey>`
-* Slash command: `internal getcustomtemplate`
+* Slash command: `internal getcustomtemplate <templateKey>`
 * Description: Loads the current customized template identified by `templateKey` and returns the content as an attached file.
 Resetting a customized template to the default template::
 * Usage `resetTemplate <templateKey>`
-* Slash command: `internal resettemplate`
+* Slash command: `internal resettemplate <templateKey>`
 * Description: Resets the template identified by `templateKey` to the default content.
 Show a link to documentation::
 * Usage `documentation`
@@ -194,11 +196,11 @@ Delete a server specific alias::
 * Description: Deletes the server specific alias identified by `alias`. It is not possible to delete built-in aliases.  Requires you to confirm the command.
 Creating a profanity group::
 * Usage: `createProfanityGroup <profanityGroupName>`
-* Slash command: `profanity createprofanitygroup`
+* Slash command: `profanity createprofanitygroup <profanityGroupName>`
 * Description: Creates a profanity group with the given `profanityGroupName`. This name must be unique within the server.
 Adding a profanity regex to a profanity group::
 * Usage: `addProfanityRegex <profanityGroupName> <profanityName> <regex> [replacement]`
-* Slash command: `profanity addprofanityregex`
+* Slash command: `profanity addprofanityregex <profanityGroupName> <profanityName> <regex> [replacement]`
 * Description: Adds a profanity regex `profanityName` to the profanity group `profanityGroupName`. The regex to be used is in `regex`. Depending on how the regex is used, you can define a `replacement`, with which a found text can be replaced. The `profanityName` must be unique within the profanity group.
 Show the current profanity configuration::
 * Usage: `showProfanityConfig`
@@ -206,11 +208,11 @@ Show the current profanity configuration::
 * Description: Shows the current profanity configuration for the current server, including all profanity groups and profanity regex.
 Removing a profanity regex from a profanity group::
 * Usage: `removeProfanityRegex <profanityGroupName> <profanityName>`
-* Slash command: `profanity removeprofanityregex`
+* Slash command: `profanity removeprofanityregex <profanityGroupName> <profanityName>`
 * Description: Removes the profanity regex `profanityName` from the profanity group `profanityGroupName`.
 Deleting a profanity group::
 * Usage: `deleteProfanityGroup <profanityGroupName>`
-* Slash command: `profanity deleteprofanitygroup`
+* Slash command: `profanity deleteprofanitygroup <profanityGroupName>`
 * Description: Deletes the profanity group identified by `profanityGroupName` and all profanity regexes within.
 Showing the uptime of the bot::
 * Usage: `uptime`
@@ -240,12 +242,12 @@ Setting the global cooldown for a command::
 * Usage: `commandCoolDownServer <command> <duration>`
 * Description: Sets the cooldown for command `command` to `duration` for the whole server.
 Setting the cooldown which is applied to every member in a server for a specific command::
-* Usage: `setCommandMemberCooldown <command> <duration>`
-* Slash command: `cooldown commandmember set`
+* Usage: `setCommandMemberCooldown <commandName> <duration>`
+* Slash command: `cooldown commandmember set <commandName> <duration>`
 * Description: This causes the command to only be executable every `<duration>` by each specific member. This means, that member B can execute the command after member A, but is restricted after doing so.
 Removing the cooldown which is applied to every member in a server for a specific command::
 * Usage: `removeCommandMemberCooldown <commandName>`
-* Slash command: `cooldown commandmember remove`
+* Slash command: `cooldown commandmember remove <commandName>`
 * Description: This removes the cooldown which is applied for every member, if that member executes a command.
 
 .What is a channel group?

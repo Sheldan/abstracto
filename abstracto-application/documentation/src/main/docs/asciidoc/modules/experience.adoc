@@ -27,18 +27,18 @@ Currently, members only have their highest earned role assigned.
 
 ==== Commands
 Changing the experience scale of the server::
-* Usage: `expScale <value>`
-* Slash command: `experienceconfig expscale`
+* Usage: `expScale <scale>`
+* Slash command: `experienceconfig expscale <scale>`
 * Description: Changes the value of `expScale` on this server to `value`.
 
 Showing the current rank of a user::
 * Usage: `rank [member]`
-* Slash command: `experience rank`
+* Slash command: `experience rank [member]`
 * Description: Shows the experience amount, level, message count, experience until next level, server rank and level progress of the executing user, or the user provided as a parameter.
 
 Showing the leaderboard of the server::
 * Usage: `leaderboard [page]`
-* Slash command: `experience leaderboard`
+* Slash command: `experience leaderboard [page]`
 * Description: Shows the leaderboard of the server in a paginated format.
 If no parameter is provided, it will show message count, level, experience and rank of the top 10 members.
 Additionally, the same information for the executing user is shown, regardless whether the user is already shown on the given leader board page.
@@ -53,7 +53,7 @@ A status image indicating the progress will be shown. It will not award this rol
 * Example: `setExpRole 50 @HighLevel` in order to award the role `HighLevel` at level `50` (the @HighLevel is a role mention)
 
 Syncing the roles of the members with the configuration::
-* Usage: `syncRoles`
+* Usage: `syncExpRoles`
 * Description: Recalculates the appropriate levels for all users on the server and awards the roles appropriate for the level.
 There will be a message indicating the current status of the progress, and it is highly advised to not execute this command while another instance is still processing. Requires you to confirm the command.
 This command can run for a longer period of time, depending on the amount of members in the guild.
@@ -65,13 +65,13 @@ This will provide a status update message displaying the process.
 
 Disable experience gain for a certain role::
 * Usage: `disableExpForRole <role>`
-* Slash command: `experienceconfig disableexpforrole`
+* Slash command: `experienceconfig disableexpforrole <role>`
 * Description: Disables any experience gain for members with this role. They will not gain any experience until the role is removed or it is possible for the role to gain experience again.
 If a member has *any* role of the ones for which experience is disabled, the member will not gain experience. This command has a slash command
 
 Enable experience gain for a certain role::
 * Usage: `enableExpForRole <role>`
-* Slash command: `experienceconfig enableexpforrole`
+* Slash command: `experienceconfig enableexpforrole <role>`
 * Description: Enables experience gain for `role`.
 
 List roles for which experience gain is disabled::
@@ -82,12 +82,12 @@ List roles for which experience gain is disabled::
 
 Disable experience gain for a specific member::
 * Usage: `disableExpGain <member>`
-* Slash command: `exeprienceconfig disableexpgain`
+* Slash command: `exeprienceconfig disableexpgain <member>`
 * Description: Disables experience gain fpr `member`.
 
 Enable experience gain for a specific member::
 * Usage: `enableExpGain <member>`
-* Slash command: `experienceconfig enableexpgain`
+* Slash command: `experienceconfig enableexpgain <member>`
 * Description: Enables experience gain for `member`.
 
 Show the currently configured experience roles in the server::
@@ -97,13 +97,13 @@ Show the currently configured experience roles in the server::
 
 Toggle the level up notification::
 * Usage: `expLevelUpNotification <newValue>`
-* Slash command: `experience explevelupnotification`
+* Slash command: `experience explevelupnotification <newValue>`
 * Description: Toggles for the executing user, if they receive level up notifications. Only `true` really enables the notification, any other value disables the notification.
 * Mode Restriction: This command is only available when the feature mode `levelUpNotification` is enabled.
 
 Add a level action::
 * Usage: `addLevelAction <action> <level> <parameter> [member]`
-* Slash command: `experienceconfig levelAction add`
+* Slash command: `experienceconfig levelAction add <action> <level> <parameter> [member]``
 * Description: Adds an `action` to be executed at `level` with the given `parameter`. If a `member` is provided, the action is restricted to be executed for only this member. The parameters `action` uses auto complete to show the currently available actions. The combination of `action`, `level` and `member` (if provided), is considered unique. If such a combination already exists, an error is shown. Each action then requires a different `parameter` passed. The actions `add_member_to_channel_above_level` and `remove_member_from_channel_above_level` require a channel mention/name/id, and `add_role_above_level` and `remove_role_above_level` require a role mention/name/id.
 * Mode Restriction: This command is only available when the feature mode `levelAction` is enabled.
 
@@ -115,7 +115,7 @@ Viewing the current configured level actions::
 
 Removing a level action::
 * Usage: `removeLevelAction <action> <level> [member]`
-* Slash command:  `experienceconfig levelAction remove`
+* Slash command:  `experienceconfig levelAction remove <action> <level> [member]`
 * Description: Removes an action to be executed at a certain level. Such an action is identified by a combination of `action`, `level` and optionally `member`. If no identifiable combination is found, an error is shown.
 * Mode Restriction: This command is only available when the feature mode `levelAction` is enabled.
 
