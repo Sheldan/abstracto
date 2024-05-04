@@ -4,30 +4,21 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncUserUnBannedListener;
 import dev.sheldan.abstracto.core.models.listener.UserUnBannedModel;
-import dev.sheldan.abstracto.core.service.FeatureModeService;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.PostTargetService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.config.posttarget.ModerationPostTarget;
-import dev.sheldan.abstracto.moderation.model.template.listener.UserUnBannedListenerModel;
+import dev.sheldan.abstracto.moderation.model.template.listener.UserUnBannedListenerLogModel;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.audit.ActionType;
-import net.dv8tion.jda.api.audit.AuditLogEntry;
-import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
 public class UserUnBannedListener implements AsyncUserUnBannedListener {
-    @Autowired
-    private FeatureModeService featureModeService;
 
     @Autowired
     private TemplateService templateService;
@@ -35,56 +26,20 @@ public class UserUnBannedListener implements AsyncUserUnBannedListener {
     @Autowired
     private PostTargetService postTargetService;
 
-    @Autowired
-    private UserUnBannedListener self;
-
     private static final String USER_UN_BANNED_NOTIFICATION_TEMPLATE = "userUnBanned_listener_notification";
 
     @Override
-    public DefaultListenerResult execute(UserUnBannedModel model) {
-        log.info("Notifying about unban of user {} in guild {}.", model.getUnbannedUser().getUserId(), model.getServerId());
-        model.getGuild()
-                .retrieveAuditLogs()
-                .type(ActionType.UNBAN)
-                .limit(5)
-                .queue(auditLogEntries -> {
-                    try {
-                        if(auditLogEntries.isEmpty()) {
-                            log.info("Did not find recent bans in guild {}.", model.getServerId());
-                            return;
-                        }
-                        Optional<AuditLogEntry> banEntryOptional = auditLogEntries
-                                .stream()
-                                .filter(auditLogEntry -> auditLogEntry.getTargetIdLong() == model.getUnbannedUser().getUserId())
-                                .findFirst();
-                        if(banEntryOptional.isPresent()) {
-                            AuditLogEntry auditLogEntry = banEntryOptional.get();
-                            if(!model.getGuild().getJDA().getSelfUser().equals(auditLogEntry.getUser())) {
-                                self.sendUnBannedNotification(model.getUser(), auditLogEntry.getUser(), model.getServerId());
-                            }
-                        } else {
-                            log.info("Did not find the un-banned user in the most recent un-bans for guild {}. Not adding audit log information.", model.getServerId());
-                            self.sendUnBannedNotification(model.getUser(), null, model.getServerId());
-                        }
-                    } catch (Exception exception) {
-                        log.error("Failed to properly send un ban log with error.", exception);
-                    }
-                }, throwable -> {
-                    log.error("Failed to retrieve audit log entries for unban log.", throwable);
-                    self.sendUnBannedNotification(model.getUser(), null, model.getServerId());
-                });
-        return DefaultListenerResult.PROCESSED;
-    }
-
-    @Transactional
-    public CompletableFuture<Void> sendUnBannedNotification(User unbannedUser, User unbanningUser, Long serverId) {
-        UserUnBannedListenerModel model = UserUnBannedListenerModel
+    public DefaultListenerResult execute(UserUnBannedModel eventModel) {
+        log.info("Notifying about unban of user {} in guild {}.", eventModel.getUnBannedServerUser().getUserId(), eventModel.getServerId());
+        UserUnBannedListenerLogModel model = UserUnBannedListenerLogModel
                 .builder()
-                .unBannedUser(unbannedUser)
-                .unBanningUser(unbanningUser)
+                .unBannedUser(eventModel.getUnBannedUser() != null ? UserDisplay.fromUser(eventModel.getUnBannedUser()) : UserDisplay.fromId(eventModel.getUnBannedServerUser().getUserId()))
+                .unBanningUser(eventModel.getUnBanningUser() != null ? UserDisplay.fromUser(eventModel.getUnBanningUser()) : UserDisplay.fromServerUser(eventModel.getUnBanningServerUser()))
+                .reason(eventModel.getReason())
                 .build();
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_UN_BANNED_NOTIFICATION_TEMPLATE, model, serverId);
-        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.BAN_LOG, serverId));
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(USER_UN_BANNED_NOTIFICATION_TEMPLATE, model, eventModel.getServerId());
+        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModerationPostTarget.BAN_LOG, eventModel.getServerId()));
+        return DefaultListenerResult.PROCESSED;
     }
 
     @Override

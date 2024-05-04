@@ -13,6 +13,7 @@ import dev.sheldan.abstracto.core.models.FullGuild;
 import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.UndoActionInstance;
 import dev.sheldan.abstracto.core.models.database.*;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
@@ -914,7 +915,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .build();
         Long modmailThreadId = modMailThread.getId();
         return userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenApply(user -> {
-            headerModel.setUser(user);
+            headerModel.setUser(UserDisplay.fromUser(user));
             return self.sendClosingHeader(headerModel, modmailThreadId).get(0);
         }).thenCompose(Function.identity());
     }

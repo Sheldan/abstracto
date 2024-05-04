@@ -11,7 +11,6 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
-import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
@@ -51,7 +50,7 @@ public class UnBan extends AbstractConditionableCommand {
         String userIdStr = (String) parameters.get(0);
         Long userId = Long.parseLong(userIdStr);
         return userService.retrieveUserForId(userId)
-                .thenCompose(user -> banService.unBanUserWithNotification(userId, ServerUser.fromMember(commandContext.getAuthor()), commandContext.getGuild()))
+                .thenCompose(user -> banService.unbanUser(commandContext.getGuild(), userId))
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
@@ -60,7 +59,7 @@ public class UnBan extends AbstractConditionableCommand {
         String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, String.class);
         Long userId = Long.parseLong(userIdStr);
         return userService.retrieveUserForId(userId)
-                .thenCompose(user -> banService.unBanUserWithNotification(userId, ServerUser.fromMember(event.getMember()), event.getGuild()))
+                .thenCompose(user -> banService.unbanUser(event.getGuild(), userId))
                 .thenCompose(unused -> interactionService.replyEmbed(UN_BAN_RESPONSE, event))
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }

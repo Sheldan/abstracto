@@ -1,13 +1,15 @@
 package dev.sheldan.abstracto.logging.model.template;
 
+import dev.sheldan.abstracto.core.models.ServerUser;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
 
 @Getter
 @Setter
 @Builder
 public class MemberLeaveLogModel {
-    private Member member;
+    private ServerUser leavingUser;
+    private UserDisplay user;
 }

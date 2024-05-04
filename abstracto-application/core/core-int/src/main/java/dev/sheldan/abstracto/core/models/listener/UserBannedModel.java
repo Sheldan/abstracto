@@ -12,9 +12,12 @@ import net.dv8tion.jda.api.entities.User;
 @Setter
 @Builder
 public class UserBannedModel implements FeatureAwareListenerModel {
-    private ServerUser bannedUser;
-    private User user;
+    private ServerUser bannedServerUser;
+    private ServerUser banningServerUser;
+    private User bannedUser;
+    private User banningUser;
     private Guild guild;
+    private String reason;
     @Override
     public Long getServerId() {
         return guild.getIdLong();

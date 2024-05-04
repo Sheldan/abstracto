@@ -1,11 +1,11 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -39,7 +39,7 @@ public class ModMailClosingHeaderModel {
 
     private Member closingMember;
     private Boolean silently;
-    private User user;
+    private UserDisplay user;
     private Long serverId;
     private Long modmailThreadId;
 }

@@ -1,15 +1,15 @@
 package dev.sheldan.abstracto.moderation.model.template.listener;
 
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.User;
 
 @Getter
 @Setter
 @Builder
-public class UserBannedListenerModel {
-    private User bannedUser;
+public class UserBannedListenerLogModel {
+    private UserDisplay bannedUser;
     private String reason;
-    private User banningUser;
+    private UserDisplay banningUser;
 }

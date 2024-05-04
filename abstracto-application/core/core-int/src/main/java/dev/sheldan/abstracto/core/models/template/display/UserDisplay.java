@@ -11,14 +11,18 @@ import net.dv8tion.jda.api.entities.User;
 @Setter
 @Builder
 public class UserDisplay {
-    private Long userId;
+    private Long id;
     private String userMention;
+    private String discriminator;
+    private String name;
 
     public static UserDisplay fromUser(User user) {
         return UserDisplay
                 .builder()
                 .userMention(MemberUtils.getUserAsMention(user.getIdLong()))
-                .userId(user.getIdLong())
+                .name(user.getEffectiveName())
+                .discriminator(user.getDiscriminator())
+                .id(user.getIdLong())
                 .build();
     }
 
@@ -26,7 +30,7 @@ public class UserDisplay {
         return UserDisplay
                 .builder()
                 .userMention(MemberUtils.getUserAsMention(serverUser.getUserId()))
-                .userId(serverUser.getUserId())
+                .id(serverUser.getUserId())
                 .build();
     }
 
@@ -34,7 +38,7 @@ public class UserDisplay {
         return UserDisplay
                 .builder()
                 .userMention(MemberUtils.getUserAsMention(id))
-                .userId(id)
+                .id(id)
                 .build();
     }
 

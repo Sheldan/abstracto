@@ -81,7 +81,7 @@ public class InfractionServiceBean implements InfractionService {
         List<Infraction> infractions = infractionManagementService.getActiveInfractionsForUser(aUserInAServer);
         log.info("Calculating points for user {} in server {} with {} infractions.",
                 aUserInAServer.getUserReference().getId(), aUserInAServer.getServerReference().getId(), infractions.size());
-        return infractions.stream().collect(Collectors.summarizingLong(Infraction::getPoints)).getCount();
+        return infractions.stream().collect(Collectors.summarizingLong(Infraction::getPoints)).getSum();
     }
 
     @Override
@@ -112,8 +112,8 @@ public class InfractionServiceBean implements InfractionService {
     public CompletableFuture<Void> createInfractionNotification(AUserInAServer aUserInAServer, Long points, String type, String description) {
         Long serverId = aUserInAServer.getServerReference().getId();
         Long currentPoints = getActiveInfractionPointsForUser(aUserInAServer);
-        Long newPoints = currentPoints + points;
-        Pair<Integer, Integer> levelChange = infractionLevelChanged(serverId, newPoints, currentPoints);
+        Long oldPoints = currentPoints - points;
+        Pair<Integer, Integer> levelChange = infractionLevelChanged(serverId, currentPoints, oldPoints);
         Integer oldLevel = levelChange.getFirst();
         Integer newLevel = levelChange.getSecond();
         if(!oldLevel.equals(newLevel)) {
@@ -124,10 +124,10 @@ public class InfractionServiceBean implements InfractionService {
                     .oldLevel(oldLevel)
                     .type(type)
                     .description(description)
-                    .oldPoints(currentPoints)
-                    .newPoints(newPoints)
+                    .oldPoints(oldPoints)
+                    .newPoints(currentPoints)
                     .build();
-            infractionLevelChangedListenerManager.sendInfractionLevelChangedEvent(newLevel, oldLevel, newPoints, currentPoints, ServerUser.fromAUserInAServer(aUserInAServer));
+            infractionLevelChangedListenerManager.sendInfractionLevelChangedEvent(newLevel, oldLevel, currentPoints, oldPoints, ServerUser.fromAUserInAServer(aUserInAServer));
             MessageToSend messageToSend = templateService.renderEmbedTemplate(INFRACTION_NOTIFICATION_TEMPLATE_KEY, model, serverId);
             return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, InfractionPostTarget.INFRACTION_NOTIFICATION, serverId));
         } else {
