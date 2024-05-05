@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.moderation.model.template.command;
 
-import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +13,6 @@ import lombok.Setter;
 @Setter
 public class KickLogModel {
     private String reason;
-    private MemberDisplay kickedMember;
-    private MemberDisplay kickingMember;
+    private UserDisplay kickedUser;
+    private UserDisplay kickingUser;
 }

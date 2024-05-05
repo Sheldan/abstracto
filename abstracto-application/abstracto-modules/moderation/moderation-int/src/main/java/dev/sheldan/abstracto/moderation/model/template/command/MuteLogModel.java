@@ -10,15 +10,15 @@ import java.time.Instant;
 
 @Getter
 @SuperBuilder
-public class MuteListenerModel {
+public class MuteLogModel {
     /**
      * The {@link Member} being muted
      */
-    private MemberDisplay mutedUser;
+    private MemberDisplay mutedMember;
     /**
      * The {@link Member} executing the mute
      */
-    private MemberDisplay mutingUser;
+    private MemberDisplay mutingMember;
     /**
      * The persisted mute object from the database containing the information about the mute
      */

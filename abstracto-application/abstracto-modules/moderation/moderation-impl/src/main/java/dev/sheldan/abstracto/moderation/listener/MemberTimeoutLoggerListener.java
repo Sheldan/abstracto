@@ -5,16 +5,10 @@ import dev.sheldan.abstracto.core.listener.DefaultListenerResult;
 import dev.sheldan.abstracto.core.listener.async.jda.AsyncMemberTimeoutUpdatedListener;
 import dev.sheldan.abstracto.core.models.listener.MemberTimeoutUpdatedModel;
 import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
-import dev.sheldan.abstracto.core.service.PostTargetService;
-import dev.sheldan.abstracto.core.templating.model.MessageToSend;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
-import dev.sheldan.abstracto.moderation.config.posttarget.MutingPostTarget;
-import dev.sheldan.abstracto.moderation.model.template.command.MuteListenerModel;
-import dev.sheldan.abstracto.moderation.service.MuteServiceBean;
+import dev.sheldan.abstracto.moderation.model.template.command.MuteLogModel;
+import dev.sheldan.abstracto.moderation.service.MuteService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,30 +20,31 @@ import java.time.Instant;
 public class MemberTimeoutLoggerListener implements AsyncMemberTimeoutUpdatedListener {
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
-    private PostTargetService postTargetService;
+    private MuteService muteService;
 
     @Override
     public DefaultListenerResult execute(MemberTimeoutUpdatedModel model) {
-        Guild guild = model.getGuild();
-        MemberDisplay memberDisplay = model.getMember() != null ? MemberDisplay.fromMember(model.getMember()) : MemberDisplay.fromServerUser(model.getTimeoutUser());
+        log.info("Notifying about timeout of user {} in guild {}.", model.getMutedUser().getUserId(), model.getServerId());
+        if(model.getMutingUser().getUserId() == model.getGuild().getSelfMember().getIdLong()) {
+            log.info("Skipping logging timeout event about user {} in guild {}, because it was done by us.", model.getMutedUser().getUserId(), model.getGuild().getIdLong());
+            return DefaultListenerResult.IGNORED;
+        }
+        MemberDisplay mutedMemberDisplay = model.getMutedMember() != null ? MemberDisplay.fromMember(model.getMutedMember()) : MemberDisplay.fromServerUser(model.getMutedUser());
+        MemberDisplay mutingMemberDisplay = model.getMutingMember() != null ? MemberDisplay.fromMember(model.getMutingMember()) : MemberDisplay.fromServerUser(model.getMutingUser());
         Duration duration = null;
         if(model.getNewTimeout() != null) {
             duration = Duration.between(Instant.now(), model.getNewTimeout());
         }
-        MuteListenerModel muteLogModel = MuteListenerModel
+        MuteLogModel muteLogModel = MuteLogModel
                 .builder()
                 .muteTargetDate(model.getNewTimeout() != null ? model.getNewTimeout().toInstant() : null)
                 .oldMuteTargetDate(model.getOldTimeout() != null ? model.getOldTimeout().toInstant() : null)
-                .mutingUser(MemberDisplay.fromIds(model.getServerId(), model.getResponsibleUserId()))
-                .mutedUser(memberDisplay)
+                .mutingMember(mutingMemberDisplay)
+                .mutedMember(mutedMemberDisplay)
                 .duration(duration)
                 .reason(model.getReason())
                 .build();
-        MessageToSend message = templateService.renderEmbedTemplate(MuteServiceBean.MUTE_LOG_TEMPLATE, muteLogModel, guild.getIdLong());
-        FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, model.getServerId()));
+        muteService.sendMuteLogMessage(muteLogModel, model.getServerId());
         return DefaultListenerResult.PROCESSED;
     }
 

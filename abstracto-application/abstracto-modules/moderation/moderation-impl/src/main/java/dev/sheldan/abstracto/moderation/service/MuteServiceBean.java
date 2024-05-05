@@ -6,23 +6,29 @@ import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
+import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
 import dev.sheldan.abstracto.core.service.*;
 import dev.sheldan.abstracto.core.service.management.ChannelManagementService;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
 import dev.sheldan.abstracto.moderation.config.feature.MutingFeatureConfig;
+import dev.sheldan.abstracto.moderation.config.posttarget.MutingPostTarget;
 import dev.sheldan.abstracto.moderation.exception.NoMuteFoundException;
 import dev.sheldan.abstracto.moderation.model.MuteResult;
 import dev.sheldan.abstracto.moderation.model.database.Infraction;
 import dev.sheldan.abstracto.moderation.model.database.Mute;
+import dev.sheldan.abstracto.moderation.model.template.command.MuteLogModel;
 import dev.sheldan.abstracto.moderation.model.template.command.MuteNotification;
 import dev.sheldan.abstracto.moderation.service.management.MuteManagementService;
 import dev.sheldan.abstracto.scheduling.model.JobParameters;
 import dev.sheldan.abstracto.scheduling.service.SchedulerService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -161,16 +167,56 @@ public class MuteServiceBean implements MuteService {
 
     @Override
     public CompletableFuture<MuteResult> muteMemberWithLog(ServerUser userToMute, ServerUser mutingUser, String reason, Duration duration, Guild guild, ServerChannelMessage origin) {
+        return muteMemberWithLog(userToMute, mutingUser, reason, duration, guild, origin, null);
+    }
+
+    @Override
+    public CompletableFuture<MuteResult> muteMemberWithLog(ServerUser userToMute, ServerUser mutingUser, String reason, Duration duration, Guild guild, ServerChannelMessage origin, Instant oldTimeout) {
         Long serverId = userToMute.getServerId();
         Instant targetDate = Instant.now().plus(duration);
-        log.debug("Muting member {} in server {}.", userToMute.getUserId(), serverId);
+        log.info("Muting member {} in server {}.", userToMute.getUserId(), serverId);
         AServer server = serverManagementService.loadOrCreate(serverId);
         Long muteId = counterService.getNextCounterValue(server, MUTE_COUNTER_KEY);
         CompletableFuture<MuteResult> result = muteUserInServer(guild, userToMute, reason, duration);
         return result
+                .thenCompose(muteResult -> self.composeAndLogMute(userToMute, mutingUser, reason, duration, guild, oldTimeout))
                 .thenCompose(logMessage -> self.evaluateAndStoreInfraction(userToMute, mutingUser, reason, targetDate))
                 .thenAccept(infractionId -> self.persistMute(userToMute, mutingUser, targetDate, muteId, reason, infractionId, origin))
                 .thenApply(unused -> result.join());
+    }
+
+    @Transactional
+    public CompletableFuture<Void> composeAndLogMute(ServerUser userToMute, ServerUser mutingUser, String reason, Duration duration, Guild guild, Instant oldTimeout) {
+        CompletableFuture<Member> mutedMemberFuture = memberService.retrieveMemberInServer(userToMute);
+        CompletableFuture<Member> mutingMemberFuture = memberService.retrieveMemberInServer(mutingUser);
+        Instant targetDate = Instant.now().plus(duration);
+        return CompletableFuture.allOf(mutedMemberFuture, mutingMemberFuture).thenCompose(unused -> {
+            Member mutedMember = mutedMemberFuture.join();
+            Member mutingMember = mutingMemberFuture.join();
+            MuteLogModel muteLogModel = MuteLogModel
+                    .builder()
+                    .muteTargetDate(targetDate)
+                    .oldMuteTargetDate(oldTimeout)
+                    .mutingMember(MemberDisplay.fromMember(mutingMember))
+                    .mutedMember(MemberDisplay.fromMember(mutedMember))
+                    .duration(duration)
+                    .reason(reason)
+                    .build();
+            return self.sendMuteLogMessage(muteLogModel, guild.getIdLong());
+        }).exceptionally(throwable -> {
+            log.warn("Failed to load users for mute log ({}, {}) in guild {}.", userToMute.getUserId(), mutingUser.getUserId(), guild.getIdLong(), throwable);
+            MuteLogModel muteLogModel = MuteLogModel
+                    .builder()
+                    .muteTargetDate(targetDate)
+                    .oldMuteTargetDate(null)
+                    .mutingMember(MemberDisplay.fromServerUser(mutingUser))
+                    .mutedMember(MemberDisplay.fromServerUser(userToMute))
+                    .duration(duration)
+                    .reason(reason)
+                    .build();
+            self.sendMuteLogMessage(muteLogModel, guild.getIdLong());
+            return null;
+        });
     }
 
     @Transactional
@@ -218,13 +264,35 @@ public class MuteServiceBean implements MuteService {
         Long muteId = mute.getMuteId().getId();
         AServer mutingServer = mute.getServer();
         ServerUser mutedUser = ServerUser.fromAUserInAServer(mute.getMutedUser());
+        ServerUser mutingUser = ServerUser.fromAUserInAServer(mute.getMutingUser());
         log.info("UnMuting {} in server {}", mute.getMutedUser().getUserReference().getId(), mutingServer.getId());
         return memberService.removeTimeout(guild, mutedUser, null)
+                .thenCompose(unused -> self.composeAndLogUnmute(mutedUser, mutingUser, guild))
                 .thenAccept(unused -> {
                     if(muteId != null) {
                         self.endMuteInDatabase(muteId, guild.getIdLong());
                     }
                 });
+    }
+
+    @Transactional
+    public CompletableFuture<Void> composeAndLogUnmute(ServerUser mutedUser, ServerUser mutingUser, Guild guild) {
+        CompletableFuture<Member> mutedMemberFuture = memberService.retrieveMemberInServer(mutedUser);
+        CompletableFuture<Member> mutingMemberFuture = memberService.retrieveMemberInServer(mutingUser);
+        return CompletableFuture.allOf(mutedMemberFuture, mutingMemberFuture).thenCompose(unused -> {
+            Member mutedMember = mutedMemberFuture.join();
+            Member mutingMember = mutingMemberFuture.join();
+            MuteLogModel muteLogModel = MuteLogModel
+                    .builder()
+                    .muteTargetDate(null)
+                    .oldMuteTargetDate(null)
+                    .mutingMember(MemberDisplay.fromMember(mutingMember))
+                    .mutedMember(MemberDisplay.fromMember(mutedMember))
+                    .duration(null)
+                    .reason(null)
+                    .build();
+            return self.sendMuteLogMessage(muteLogModel, guild.getIdLong());
+        });
     }
 
     @Transactional
@@ -246,6 +314,12 @@ public class MuteServiceBean implements MuteService {
         } else {
             throw new NoMuteFoundException();
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> sendMuteLogMessage(MuteLogModel model, Long serverId) {
+        MessageToSend message = templateService.renderEmbedTemplate(MuteServiceBean.MUTE_LOG_TEMPLATE, model, serverId);
+        return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(message, MutingPostTarget.MUTE_LOG, serverId));
     }
 
     @Override

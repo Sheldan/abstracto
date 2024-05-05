@@ -17,6 +17,11 @@ public class ListenerExecutorConfig {
         return executorService.setupExecutorFor("memberTimeoutListener");
     }
 
+    @Bean(name = "memberKickedListenerExecutor")
+    public TaskExecutor memberKickedListenerExecutor() {
+        return executorService.setupExecutorFor("memberKickedListener");
+    }
+
     @Bean(name = "joinListenerExecutor")
     public TaskExecutor joinListenerExecutor() {
         return executorService.setupExecutorFor("joinListener");

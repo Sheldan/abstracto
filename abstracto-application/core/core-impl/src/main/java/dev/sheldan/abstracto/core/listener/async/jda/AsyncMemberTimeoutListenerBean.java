@@ -44,14 +44,15 @@ public class AsyncMemberTimeoutListenerBean extends ListenerAdapter {
         if(event.getEntry().getType().equals(ActionType.MEMBER_UPDATE)) {
             AuditLogChange memberTimeoutChange = event.getEntry().getChangeByKey(AuditLogKey.MEMBER_TIME_OUT);
             if(memberTimeoutChange != null) {
-                CompletableFuture<Member> memberInstanceFuture = memberService.retrieveMemberInServer(ServerUser.fromId(event.getGuild().getIdLong(), event.getEntry().getTargetIdLong()));
-                memberInstanceFuture.whenComplete((member, throwable) -> {
-                    executeListeners(memberTimeoutChange, event, member);
+                CompletableFuture<Member> targetMemberFuture = memberService.retrieveMemberInServer(ServerUser.fromId(event.getGuild().getIdLong(), event.getEntry().getTargetIdLong()));
+                CompletableFuture<Member> mutingMemberFuture = memberService.retrieveMemberInServer(ServerUser.fromId(event.getGuild().getIdLong(), event.getEntry().getUserIdLong()));
+                CompletableFuture.allOf(targetMemberFuture, mutingMemberFuture).whenComplete((avoid, throwable) -> {
+                    executeListeners(memberTimeoutChange, event, targetMemberFuture.join(), mutingMemberFuture.join());
                 }).exceptionally(throwable -> {
                     Long memberId = event.getEntry().getTargetIdLong();
                     Long serverId = event.getGuild().getIdLong();
                     log.warn("Failed to load member {} for member update audit log in server {}.", memberId, serverId, throwable);
-                    executeListeners(memberTimeoutChange, event, null);
+                    executeListeners(memberTimeoutChange, event, null, null);
                     return null;
                 });
 
@@ -59,21 +60,23 @@ public class AsyncMemberTimeoutListenerBean extends ListenerAdapter {
         }
     }
 
-   private void executeListeners(AuditLogChange change, GuildAuditLogEntryCreateEvent event, Member member) {
+   private void executeListeners(AuditLogChange change, GuildAuditLogEntryCreateEvent event, Member mutedMember, Member mutingMember) {
        DateTimeFormatter timeFormatter = DateTimeFormatter.ISO_DATE_TIME;
        OffsetDateTime timeoutAfter = change.getNewValue() != null ? OffsetDateTime.parse(change.getNewValue(), timeFormatter) : null;
        OffsetDateTime timeoutBefore = change.getOldValue() != null ? OffsetDateTime.parse(change.getOldValue(), timeFormatter) : null;
        String reason = event.getEntry().getReason();
+       Long serverId = event.getGuild().getIdLong();
        MemberTimeoutUpdatedModel model =  MemberTimeoutUpdatedModel
                .builder()
                .oldTimeout(timeoutBefore)
                .newTimeout(timeoutAfter)
                .responsibleUserId(event.getEntry().getUserIdLong())
-               .member(member)
+               .mutedMember(mutedMember)
+               .mutingMember(mutingMember)
                .reason(reason)
                .guild(event.getGuild())
-               .user(member != null ? member.getUser() : null)
-               .timeoutUser(ServerUser.fromId(event.getGuild().getIdLong(), event.getEntry().getTargetIdLong()))
+               .mutingUser(ServerUser.fromId(serverId, event.getEntry().getUserIdLong()))
+               .mutedUser(ServerUser.fromId(serverId, event.getEntry().getTargetIdLong()))
                .build();
        listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, memberTimeoutExecutor));
    }

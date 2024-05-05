@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserBannedListenerLogModel {
+public class UserBannedLogModel {
     private UserDisplay bannedUser;
     private String reason;
     private UserDisplay banningUser;

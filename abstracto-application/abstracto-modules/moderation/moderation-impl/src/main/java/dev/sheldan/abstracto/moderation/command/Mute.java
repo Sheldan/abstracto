@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -73,11 +74,15 @@ public class Mute extends AbstractConditionableCommand {
         Duration duration = (Duration) parameters.get(1);
         String defaultReason = templateService.renderSimpleTemplate(MUTE_DEFAULT_REASON_TEMPLATE, guild.getIdLong());
         String reason = parameters.size() == 3 ? (String) parameters.get(2) : defaultReason;
+        Instant oldTimeoutDate = null;
+        if(member.getTimeOutEnd() != null && member.isTimedOut()) {
+            oldTimeoutDate = member.getTimeOutEnd().toInstant();
+        }
         ServerUser userToMute = ServerUser.fromMember(member);
         ServerUser mutingUser = ServerUser.fromMember(commandContext.getAuthor());
         Long serverId = commandContext.getGuild().getIdLong();
         ServerChannelMessage serverChannelMessage = ServerChannelMessage.fromMessage(commandContext.getMessage());
-        return muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, commandContext.getGuild(), serverChannelMessage)
+        return muteService.muteMemberWithLog(userToMute, mutingUser, reason, duration, commandContext.getGuild(), serverChannelMessage, oldTimeoutDate)
                 .thenCompose(muteResult -> {
                     if(muteResult == NOTIFICATION_FAILED) {
                         MessageToSend errorNotification = templateService.renderEmbedTemplate(MUTE_NOTIFICATION_NOT_POSSIBLE_TEMPLATE_KEY, new Object(), serverId);

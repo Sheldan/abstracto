@@ -12,7 +12,6 @@ import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.exception.EntityGuildMismatchException;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.moderation.config.ModerationModuleDefinition;
 import dev.sheldan.abstracto.moderation.config.ModerationSlashCommandNames;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -41,9 +40,6 @@ public class UnMute extends AbstractConditionableCommand {
 
     @Autowired
     private InteractionService interactionService;
-
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {

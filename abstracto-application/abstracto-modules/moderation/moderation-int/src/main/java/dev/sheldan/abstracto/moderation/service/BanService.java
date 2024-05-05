@@ -2,6 +2,8 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.moderation.model.BanResult;
+import dev.sheldan.abstracto.moderation.model.template.listener.UserBannedLogModel;
+import dev.sheldan.abstracto.moderation.model.template.listener.UserUnBannedLogModel;
 import net.dv8tion.jda.api.entities.*;
 
 import java.time.Duration;
@@ -13,6 +15,7 @@ public interface BanService {
     String INFRACTION_PARAMETER_DELETION_DURATION_KEY = "DELETION_DURATION";
     CompletableFuture<BanResult> banUserWithNotification(ServerUser userToBeBanned, String reason, ServerUser banningUser, Guild guild, Duration deletionDuration);
     CompletableFuture<Void> banUser(Guild guild, ServerUser userToBeBanned, Duration deletionDuration, String reason);
-    CompletableFuture<Void> unbanUser(Guild guild, Long userId);
-    CompletableFuture<Void> softBanUser(Guild guild, ServerUser user, Duration delDays);
+    CompletableFuture<Void> unbanUser(Guild guild, User user, Member memberPerforming);
+    CompletableFuture<Void> sendBanLogMessage(UserBannedLogModel model, Long serverId);
+    CompletableFuture<Void> sendUnBanLogMessage(UserUnBannedLogModel model, Long serverId);
 }

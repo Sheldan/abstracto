@@ -9,7 +9,6 @@ import dev.sheldan.abstracto.core.interaction.modal.listener.ModalInteractionLis
 import dev.sheldan.abstracto.core.interaction.modal.listener.ModalInteractionListenerResult;
 import dev.sheldan.abstracto.core.models.ServerChannelMessage;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.core.utils.ParseUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -37,9 +36,6 @@ public class MuteModerationActionModalListener implements ModalInteractionListen
 
     @Autowired
     private InteractionService interactionService;
-
-    @Autowired
-    private TemplateService templateService;
 
     @Autowired
     private InteractionExceptionService interactionExceptionService;

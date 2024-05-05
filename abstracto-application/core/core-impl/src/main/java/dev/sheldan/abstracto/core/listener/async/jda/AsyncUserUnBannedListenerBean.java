@@ -2,7 +2,7 @@ package dev.sheldan.abstracto.core.listener.async.jda;
 
 import dev.sheldan.abstracto.core.listener.ListenerService;
 import dev.sheldan.abstracto.core.models.ServerUser;
-import dev.sheldan.abstracto.core.models.listener.UserUnBannedModel;
+import dev.sheldan.abstracto.core.models.listener.UserUnBannedListenerModel;
 import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureMap;
 import lombok.extern.slf4j.Slf4j;
@@ -44,18 +44,18 @@ public class AsyncUserUnBannedListenerBean extends ListenerAdapter {
             longUserCompletableFutureMap.getMainFuture().thenAccept(avoid -> {
                 User unBannedUser = longUserCompletableFutureMap.getElement(event.getEntry().getTargetIdLong());
                 User unBanningUser = longUserCompletableFutureMap.getElement(event.getEntry().getUserIdLong());
-                UserUnBannedModel model = getModel(event, unBannedUser, unBanningUser);
+                UserUnBannedListenerModel model = getModel(event, unBannedUser, unBanningUser);
                 listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, leaveListenerExecutor));
             }).exceptionally(throwable -> {
                 log.warn("Failed to fetch users {} or {} for unbanned event.", event.getEntry().getTargetIdLong(), event.getEntry().getUserIdLong(), throwable);
-                UserUnBannedModel model = getModel(event, null, null);
+                UserUnBannedListenerModel model = getModel(event, null, null);
                 listenerList.forEach(leaveListener -> listenerService.executeFeatureAwareListener(leaveListener, model, leaveListenerExecutor));
                 return null;
             });
         }
     }
 
-    private UserUnBannedModel getModel(GuildAuditLogEntryCreateEvent event, User unBannedUser, User unBanningUser) {
+    private UserUnBannedListenerModel getModel(GuildAuditLogEntryCreateEvent event, User unBannedUser, User unBanningUser) {
         ServerUser unBannedServerUser = ServerUser
                 .builder()
                 .serverId(event.getGuild().getIdLong())
@@ -66,7 +66,7 @@ public class AsyncUserUnBannedListenerBean extends ListenerAdapter {
                 .serverId(event.getGuild().getIdLong())
                 .userId(event.getEntry().getUserIdLong())
                 .build();
-        return UserUnBannedModel
+        return UserUnBannedListenerModel
                 .builder()
                 .unBannedServerUser(unBannedServerUser)
                 .unBanningUser(unBanningUser)

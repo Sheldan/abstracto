@@ -15,6 +15,7 @@ public class MemberDisplay {
     private String memberMention;
     private String name;
     private Long userId;
+    private String discriminator;
     private Long serverId;
 
     public static MemberDisplay fromMember(Member member) {
@@ -22,6 +23,7 @@ public class MemberDisplay {
                 .builder()
                 .memberMention(member.getAsMention())
                 .name(member.getEffectiveName())
+                .discriminator(member.getUser().getDiscriminator())
                 .serverId(member.getGuild().getIdLong())
                 .userId(member.getIdLong())
                 .build();

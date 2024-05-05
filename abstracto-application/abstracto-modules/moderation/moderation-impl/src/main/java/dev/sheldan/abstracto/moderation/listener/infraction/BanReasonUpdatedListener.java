@@ -14,8 +14,9 @@ import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefiniti
 import dev.sheldan.abstracto.moderation.listener.InfractionUpdatedDescriptionListener;
 import dev.sheldan.abstracto.moderation.model.database.Infraction;
 import dev.sheldan.abstracto.moderation.model.listener.InfractionDescriptionEventModel;
-import dev.sheldan.abstracto.moderation.model.template.listener.UserBannedListenerLogModel;
+import dev.sheldan.abstracto.moderation.model.template.listener.UserBannedLogModel;
 import dev.sheldan.abstracto.moderation.service.BanService;
+import dev.sheldan.abstracto.moderation.service.BanServiceBean;
 import dev.sheldan.abstracto.moderation.service.management.InfractionManagementService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.User;
@@ -25,8 +26,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.CompletableFuture;
-
-import static dev.sheldan.abstracto.moderation.listener.UserBannedListener.USER_BANNED_NOTIFICATION_TEMPLATE;
 
 
 @Component
@@ -75,14 +74,14 @@ public class BanReasonUpdatedListener implements InfractionUpdatedDescriptionLis
     public void handleBanUpdate(InfractionDescriptionEventModel model, CompletableFuture<User> infractionUser, CompletableFuture<User> infractionCreator, CompletableFuture<DefaultListenerResult> returningFuture) {
         Infraction infraction = infractionManagementService.loadInfraction(model.getInfractionId());
         GuildMessageChannel messageChannel = channelService.getMessageChannelFromServer(model.getServerId(), infraction.getLogChannel().getId());
-        UserBannedListenerLogModel banLog = UserBannedListenerLogModel
+        UserBannedLogModel banLog = UserBannedLogModel
                 .builder()
                 .bannedUser(infractionUser.isCompletedExceptionally() ? null : UserDisplay.fromUser(infractionUser.join()))
                 .banningUser(infractionCreator.isCompletedExceptionally() ? null : UserDisplay.fromUser(infractionCreator.join()))
                 .reason(model.getNewDescription())
                 .build();
 
-        MessageToSend message = templateService.renderEmbedTemplate(USER_BANNED_NOTIFICATION_TEMPLATE, banLog, model.getServerId());
+        MessageToSend message = templateService.renderEmbedTemplate(BanServiceBean.USER_BANNED_NOTIFICATION_TEMPLATE, banLog, model.getServerId());
         messageService.editMessageInChannel(messageChannel, message, infraction.getLogMessageId())
                 .thenAccept(unused1 -> returningFuture.complete(DefaultListenerResult.PROCESSED))
                 .exceptionally(throwable1 -> {

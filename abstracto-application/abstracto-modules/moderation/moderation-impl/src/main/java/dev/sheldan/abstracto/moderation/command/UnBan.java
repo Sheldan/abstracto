@@ -50,7 +50,7 @@ public class UnBan extends AbstractConditionableCommand {
         String userIdStr = (String) parameters.get(0);
         Long userId = Long.parseLong(userIdStr);
         return userService.retrieveUserForId(userId)
-                .thenCompose(user -> banService.unbanUser(commandContext.getGuild(), userId))
+                .thenCompose(user -> banService.unbanUser(commandContext.getGuild(), user, commandContext.getAuthor()))
                 .thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
@@ -59,7 +59,7 @@ public class UnBan extends AbstractConditionableCommand {
         String userIdStr = slashCommandParameterService.getCommandOption(USER_PARAMETER, event, String.class);
         Long userId = Long.parseLong(userIdStr);
         return userService.retrieveUserForId(userId)
-                .thenCompose(user -> banService.unbanUser(event.getGuild(), userId))
+                .thenCompose(user -> banService.unbanUser(event.getGuild(), user, event.getMember()))
                 .thenCompose(unused -> interactionService.replyEmbed(UN_BAN_RESPONSE, event))
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }

@@ -2,11 +2,13 @@ package dev.sheldan.abstracto.moderation.service;
 
 import dev.sheldan.abstracto.core.models.ServerUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
-import dev.sheldan.abstracto.core.models.template.display.MemberDisplay;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.ConfigService;
 import dev.sheldan.abstracto.core.service.FeatureFlagService;
 import dev.sheldan.abstracto.core.service.PostTargetService;
+import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
+import dev.sheldan.abstracto.core.utils.CompletableFutureMap;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureConfig;
 import dev.sheldan.abstracto.moderation.config.feature.ModerationFeatureDefinition;
@@ -16,14 +18,12 @@ import dev.sheldan.abstracto.moderation.model.template.command.KickLogModel;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -52,6 +52,9 @@ public class KickServiceBean implements KickService {
     private InfractionService infractionService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private KickServiceBean self;
 
     @Override
@@ -59,7 +62,7 @@ public class KickServiceBean implements KickService {
         Guild guild = kickedMember.getGuild();
         log.info("Kicking user {} from guild {}", kickedMember.getUser().getIdLong(), guild.getIdLong());
         CompletableFuture<Void> kickFuture = guild.kick(kickedMember, reason).submit();
-        CompletableFuture<Message> logFuture = sendKickLog(kickedMember, kickingMember, reason, guild.getIdLong());
+        CompletableFuture<Message> logFuture = sendKickLog(kickedMember.getUser(), ServerUser.fromMember(kickedMember), kickingMember.getUser(), ServerUser.fromMember(kickingMember), reason, guild.getIdLong());
         return CompletableFuture.allOf(kickFuture, logFuture)
                 .thenAccept(unused -> self.storeInfraction(kickedMember, kickingMember, reason, logFuture.join(), guild.getIdLong()));
     }
@@ -96,27 +99,30 @@ public class KickServiceBean implements KickService {
         }
     }
 
-    private CompletableFuture<Message> sendKickLog(Member kickedMember, Member kickingMember, String reason, Long serverId)  {
+    public CompletableFuture<Message> sendKickLog(User kickedUser, ServerUser kickedServerUser, User kickingUser, ServerUser kickingServerUser, String reason, Long serverId)  {
         KickLogModel kickLogModel = KickLogModel
                 .builder()
-                .kickedMember(MemberDisplay.fromMember(kickedMember))
-                .kickingMember(MemberDisplay.fromMember(kickingMember))
+                .kickedUser(kickedUser != null ? UserDisplay.fromUser(kickedUser) : UserDisplay.fromServerUser(kickedServerUser))
+                .kickingUser(kickingUser != null ? UserDisplay.fromUser(kickingUser) : UserDisplay.fromServerUser(kickingServerUser))
                 .reason(reason)
                 .build();
-        return sendKicklog(serverId, kickLogModel);
+        return sendKicklog(kickLogModel, serverId);
     }
 
-    private CompletableFuture<Message> sendKickLog(ServerUser kickedMember, ServerUser kickingMember, String reason, Long serverId)  {
-        KickLogModel kickLogModel = KickLogModel
-                .builder()
-                .kickedMember(MemberDisplay.fromServerUser(kickedMember))
-                .kickingMember(MemberDisplay.fromServerUser(kickingMember))
-                .reason(reason)
-                .build();
-        return sendKicklog(serverId, kickLogModel);
+    public CompletableFuture<Message> sendKickLog(ServerUser kickedMember, ServerUser kickingMember, String reason, Long serverId)  {
+        CompletableFutureMap<Long, User> userMap = userService.retrieveUsersMapped(Arrays.asList(kickedMember.getUserId(), kickingMember.getUserId()));
+        return userMap.getMainFuture().thenCompose(unused -> {
+            User kickedUser = userMap.getElement(kickedMember.getUserId());
+            User kickingUser = userMap.getElement(kickingMember.getUserId());
+            return self.sendKickLog(kickedUser, kickedMember, kickingUser, kickingMember, reason, serverId);
+        }).exceptionally(throwable -> {
+            log.warn("Failed to fetch users ({}, {}) for kick event logging in server {}.", kickingMember.getUserId(), kickedMember.getUserId(), serverId, throwable);
+            self.sendKickLog(null, kickedMember, null, kickingMember, reason, serverId);
+            return null;
+        });
     }
 
-    private CompletableFuture<Message> sendKicklog(Long serverId, KickLogModel kickLogModel) {
+    public CompletableFuture<Message> sendKicklog(KickLogModel kickLogModel, Long serverId) {
         MessageToSend warnLogMessage = templateService.renderEmbedTemplate(KICK_LOG_TEMPLATE, kickLogModel, serverId);
         log.debug("Sending kick log message in guild {}.", serverId);
         List<CompletableFuture<Message>> messageFutures = postTargetService.sendEmbedInPostTarget(warnLogMessage, ModerationPostTarget.KICK_LOG, serverId);
