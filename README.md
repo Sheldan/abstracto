@@ -8,7 +8,6 @@ Abstracto represents a framework to be used as a basis for a Discord bot. It use
 and provides an extensive tool set to create new commands and a wide range of commands out of the box.
 
 This repository does not provide the full functionality in order to start a discord bot, because it requires a Main class. 
-An example implementation of this bot can be seen [here](https://github.com/Sheldan/Crimson). This repository contains the required configuration in order to run a bot and example customizations.
 
 
 ## Technologies
