@@ -2,9 +2,8 @@ package dev.sheldan.abstracto.utility.command;
 
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
-import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
-import dev.sheldan.abstracto.core.command.config.HelpInfo;
-import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.*;
+import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -24,6 +23,8 @@ import dev.sheldan.abstracto.utility.model.UserInfoModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -32,10 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.sheldan.abstracto.core.command.config.Parameter.ADDITIONAL_TYPES_KEY;
 
 @Component
 @Slf4j
@@ -95,31 +96,58 @@ public class UserInfo extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        Member memberToShow;
-        if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
-            memberToShow = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
-        } else {
-            memberToShow = event.getMember();
-        }
-        if(!memberToShow.getGuild().equals(event.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
+        boolean userCommand = ContextUtils.isUserCommand(event);
+        boolean guildAware = ContextUtils.isGuildAware(event);
         UserInfoModel model = UserInfoModel
                 .builder()
                 .build();
-        boolean userCommand = ContextUtils.isUserCommand(event.getInteraction());
-        if(!memberToShow.hasTimeJoined()) {
-            log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
-            return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
-                fillUserInfoModel(model, member, userCommand);
+        if(guildAware) {
+            Member memberToShow;
+            if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
+                memberToShow = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
+            } else {
+                memberToShow = event.getMember();
+            }
+            if(ContextUtils.isGuildAware(event) && !memberToShow.getGuild().equals(event.getGuild())) {
+                throw new EntityGuildMismatchException();
+            }
+            if(!memberToShow.hasTimeJoined()) {
+                log.info("Force reloading member {} in guild {} for user info.", memberToShow.getId(), memberToShow.getGuild().getId());
+                return memberService.forceReloadMember(memberToShow).thenCompose(member -> {
+                    fillUserInfoModel(model, member, userCommand);
+                    return self.sendResponse(event, model)
+                            .thenApply(aVoid -> CommandResult.fromIgnored());
+                });
+            } else {
+                fillUserInfoModel(model, memberToShow, userCommand);
                 return self.sendResponse(event, model)
                         .thenApply(aVoid -> CommandResult.fromIgnored());
-            });
+            }
         } else {
-            fillUserInfoModel(model, memberToShow, userCommand);
+            User targetUser;
+            if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
+                targetUser = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, User.class);
+            } else {
+                targetUser = event.getUser();
+            }
+            fillUserInfoModel(model, targetUser);
             return self.sendResponse(event, model)
                     .thenApply(aVoid -> CommandResult.fromIgnored());
         }
+
+    }
+
+    private void fillUserInfoModel(UserInfoModel model, User targetUser) {
+        model.setCreationDate(targetUser.getTimeCreated().toInstant());
+        model.setId(targetUser.getIdLong());
+        MemberNameDisplay memberDisplay = MemberNameDisplay
+                .builder()
+                .userName(targetUser.getName())
+                .userAvatarUrl(targetUser.getEffectiveAvatarUrl())
+                .discriminator(targetUser.getDiscriminator())
+                .displayName(targetUser.getGlobalName())
+                .build();
+        model.setMemberDisplay(memberDisplay);
     }
 
     private void fillUserInfoModel(UserInfoModel model, Member member, boolean userCommand) {
@@ -142,11 +170,18 @@ public class UserInfo extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
+        Map<String, Object> parameterAlternatives = new HashMap<>();
+        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, List.of(
+                CombinedParameterEntry.messageParameter(Message.class),
+                CombinedParameterEntry.parameter(Member.class),
+                CombinedParameterEntry.parameter(User.class)));
         Parameter memberParameter = Parameter
                 .builder()
-                .type(Member.class)
                 .name(MEMBER_PARAMETER)
+                .type(CombinedParameter.class)
+                .additionalInfo(parameterAlternatives)
                 .templated(true)
+                .useStrictParameters(true)
                 .optional(true)
                 .build();
         parameters.add(memberParameter);
@@ -158,6 +193,8 @@ public class UserInfo extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.guildOnly())
                 .rootCommandName(UtilitySlashCommandNames.UTILITY)
                 .commandName(USER_INFO_COMMAND)
                 .build();
@@ -168,7 +205,6 @@ public class UserInfo extends AbstractConditionableCommand {
                 .module(UtilityModuleDefinition.UTILITY)
                 .templated(true)
                 .async(true)
-                .userInstallable(true)
                 .supportsEmbedException(true)
                 .causesReaction(false)
                 .parameters(parameters)

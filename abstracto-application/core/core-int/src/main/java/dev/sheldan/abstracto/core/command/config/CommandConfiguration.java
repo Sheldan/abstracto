@@ -8,14 +8,14 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter @Builder @EqualsAndHashCode
+@Getter
+@Builder
+@EqualsAndHashCode
 public class CommandConfiguration {
 
     private String name;
     private String module;
     private String description;
-    @Builder.Default
-    private boolean userInstallable = false;
 
     @Builder.Default
     private boolean async = false;
@@ -57,5 +57,9 @@ public class CommandConfiguration {
             .builder()
             .enabled(false)
             .build();
+
+    public boolean isUserInstallable() {
+        return slashCommandConfig != null && slashCommandConfig.isUserInstallable();
+    }
 
 }

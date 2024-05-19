@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -11,4 +12,6 @@ import java.util.List;
 public class SlashCommandOptionTypeMapping {
     private Class type;
     private List<OptionType> optionTypes;
+    @Builder.Default
+    private List<OptionType> strictTypes = new ArrayList<>();
 }

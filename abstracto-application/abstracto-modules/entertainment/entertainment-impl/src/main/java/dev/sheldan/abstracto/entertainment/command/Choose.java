@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -96,6 +97,8 @@ public class Choose extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(EntertainmentSlashCommandNames.UTILITY)
                 .commandName(CHOOSE_COMMAND)
                 .build();
@@ -106,7 +109,6 @@ public class Choose extends AbstractConditionableCommand {
                 .slashCommandConfig(slashCommandConfig)
                 .module(EntertainmentModuleDefinition.ENTERTAINMENT)
                 .templated(true)
-                .userInstallable(true)
                 .supportsEmbedException(true)
                 .causesReaction(true)
                 .parameters(parameters)

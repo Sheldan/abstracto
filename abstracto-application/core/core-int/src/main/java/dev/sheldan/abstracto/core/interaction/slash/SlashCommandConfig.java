@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.interaction.slash;
 
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,6 +16,10 @@ public class SlashCommandConfig {
     private String rootCommandName;
     private String groupName;
     private String commandName;
+
+    @Builder.Default
+    private boolean userInstallable = false;
+    private UserCommandConfig userCommandConfig;
 
     public boolean matchesInteraction(CommandInteractionPayload payload) {
         if(getSlashCompatibleRootName() != null && payload.getName() != null && !getSlashCompatibleRootName().equals(payload.getName())) {

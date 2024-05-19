@@ -4,8 +4,6 @@ import dev.sheldan.abstracto.core.command.Command;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.config.FeatureConfig;
 import dev.sheldan.abstracto.core.interaction.context.ContextCommandService;
-import dev.sheldan.abstracto.core.interaction.context.management.ContextCommandInServerManagementService;
-import dev.sheldan.abstracto.core.interaction.context.management.ContextCommandManagementService;
 import dev.sheldan.abstracto.core.interaction.context.message.MessageContextCommandListenerBean;
 import dev.sheldan.abstracto.core.interaction.context.message.listener.MessageContextCommandListener;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandListenerBean;
@@ -61,12 +59,6 @@ public class CommandLoaderListener implements AsyncStartupListener {
 
     @Autowired
     private ServerManagementService serverManagementService;
-
-    @Autowired
-    private ContextCommandManagementService contextCommandManagementService;
-
-    @Autowired
-    private ContextCommandInServerManagementService contextCommandInServerManagementService;
 
     @Autowired
     private CommandLoaderListener self;
@@ -130,7 +122,7 @@ public class CommandLoaderListener implements AsyncStartupListener {
         });
         List<Pair<List<CommandConfiguration>, SlashCommandData>> userCommandsToUpdate = new ArrayList<>();
         incomingSlashCommands.forEach(command -> {
-            slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), userCommandsToUpdate, jda.getGuilds().get(0).getIdLong(), true);
+            slashCommandService.convertCommandConfigToCommandData(command.getConfiguration(), userCommandsToUpdate, null, true);
         });
         List<CommandData> userCommands = userCommandsToUpdate
                 .stream()

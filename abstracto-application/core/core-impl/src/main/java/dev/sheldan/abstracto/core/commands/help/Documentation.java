@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.core.commands.help;
 
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.CoreSlashCommandNames;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
@@ -52,6 +53,8 @@ public class Documentation extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(CoreSlashCommandNames.INFO)
                 .commandName("documentation")
                 .build();
@@ -62,7 +65,6 @@ public class Documentation extends AbstractConditionableCommand {
                 .aliases(Arrays.asList("docu", "docs"))
                 .module(SupportModuleDefinition.SUPPORT)
                 .help(helpInfo)
-                .userInstallable(true)
                 .slashCommandConfig(slashCommandConfig)
                 .templated(true)
                 .causesReaction(true)
