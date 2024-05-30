@@ -5,7 +5,7 @@
     <property name="modmailModule" value="(SELECT id FROM module WHERE name = 'modmail')"/>
     <property name="modmailFeature" value="(SELECT id FROM feature WHERE key = 'modmail')"/>
 
-    <changeSet  author="Sheldan"  id="modmail_denyModmailAppeal_commands">
+    <changeSet  author="Sheldan" id="modmail_denyModmailAppeal_command">
         <insert tableName="command">
             <column name="name" value="denyModmailAppeal"/>
             <column name="module_id" valueComputed="${modmailModule}"/>

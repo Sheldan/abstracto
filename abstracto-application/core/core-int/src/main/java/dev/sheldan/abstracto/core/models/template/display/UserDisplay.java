@@ -16,7 +16,6 @@ public class UserDisplay {
     private String discriminator;
     private String name;
     private String avatarUrl;
-    // TODO add avatar, only available from user
 
     public static UserDisplay fromUser(User user) {
         return UserDisplay

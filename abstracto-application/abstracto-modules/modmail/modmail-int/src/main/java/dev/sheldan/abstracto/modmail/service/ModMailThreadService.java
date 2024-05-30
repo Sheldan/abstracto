@@ -23,6 +23,7 @@ public interface ModMailThreadService {
      * in the appropriate {@link net.dv8tion.jda.api.entities.channel.concrete.Category} and calls the methods responsible for storing
      * the necessary data in the database, notifying the users and sending messages  related to the creation of the {@link ModMailThread}
      * @param user The {@link User} to create the mod mail thread for
+     * @param guild The {@link Guild} in which the mod mail thread should be created in
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
      * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
