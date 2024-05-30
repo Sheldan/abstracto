@@ -8,10 +8,7 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.metric.service.CounterMetric;
 import dev.sheldan.abstracto.core.metric.service.MetricService;
 import dev.sheldan.abstracto.core.metric.service.MetricTag;
-import dev.sheldan.abstracto.core.models.FeatureValidationResult;
-import dev.sheldan.abstracto.core.models.FullGuild;
-import dev.sheldan.abstracto.core.models.FullUserInServer;
-import dev.sheldan.abstracto.core.models.UndoActionInstance;
+import dev.sheldan.abstracto.core.models.*;
 import dev.sheldan.abstracto.core.models.database.*;
 import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.*;
@@ -20,6 +17,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.service.management.UserInServerManagementService;
 import dev.sheldan.abstracto.core.utils.CompletableFutureList;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
+import dev.sheldan.abstracto.moderation.service.BanService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureConfig;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.config.ModMailMode;
@@ -52,6 +50,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -111,6 +110,9 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Autowired
     private GuildService guildService;
+
+    @Autowired
+    private BanService banService;
 
     @Autowired
     private MessageService messageService;
@@ -188,22 +190,21 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     public static final String MODMAIL_INITIAL_ORIGIN = "modmailInitial";
 
     @Override
-    public CompletableFuture<MessageChannel> createModMailThreadForUser(Member member, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions) {
-        Long serverId = member.getGuild().getIdLong();
-        User user = member.getUser();
-        AServer server = serverManagementService.loadServer(member.getGuild().getIdLong());
+    public CompletableFuture<MessageChannel> createModMailThreadForUser(User user, Guild guild, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions) {
+        Long serverId = guild.getIdLong();
+        AServer server = serverManagementService.loadServer(serverId);
         metricService.incrementCounter(MODMAIL_THREAD_CREATED_COUNTER);
         ModMailChannelNameModel model = ModMailChannelNameModel
                 .builder()
                 .serverId(serverId)
-                .userId(member.getIdLong())
+                .userId(user.getIdLong())
                 .randomText(RandomStringUtils.randomAlphanumeric(25))
                 .uuid(UUID.randomUUID().toString())
                 .currentDate(Instant.now())
                 .build();
         String channelName = templateService.renderTemplate(TEXT_CHANNEL_NAME_TEMPLATE_KEY, model, serverId);
         if (featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, serverId, ModMailMode.THREAD_CONTAINER)) {
-            MessageToSend notificationMessageToSend = getModmailNotificationMessageToSend(member, null, serverId, false);
+            MessageToSend notificationMessageToSend = getModmailNotificationMessageToSend(user, null, serverId, false);
             Optional<GuildMessageChannel> modmailContainerOptional = postTargetService.getPostTargetChannel(ModMailPostTargets.MOD_MAIL_CONTAINER, serverId);
             if(modmailContainerOptional.isEmpty()) {
                 throw new AbstractoRunTimeException("Modmail thread container not setup.");
@@ -219,7 +220,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                     .thenCompose(unused -> channelService.createThreadWithStarterMessage(textChannel, channelName, notificationMessage.get(0).join().getIdLong()))
                     .thenCompose(threadChannel -> {
                         undoActions.add(UndoActionInstance.getChannelDeleteAction(serverId, threadChannel.getIdLong()));
-                        return self.performModMailThreadSetup(member, initialMessage, threadChannel, userInitiated, undoActions)
+                        return self.performModMailThreadSetup(user, initialMessage, threadChannel, userInitiated, undoActions)
                                 .thenCompose(unused -> CompletableFuture.completedFuture(threadChannel));
                     });
         } else {
@@ -228,7 +229,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             CompletableFuture<TextChannel> textChannelFuture = channelService.createTextChannel(channelName, server, categoryId);
             return textChannelFuture.thenCompose(channel -> {
                 undoActions.add(UndoActionInstance.getChannelDeleteAction(serverId, channel.getIdLong()));
-                return self.performModMailThreadSetup(member, initialMessage, channel, userInitiated, undoActions)
+                return self.performModMailThreadSetup(user, initialMessage, channel, userInitiated, undoActions)
                         .thenCompose(unused -> CompletableFuture.completedFuture(channel));
             });
         }
@@ -236,21 +237,21 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Transactional
     @Override
-    public CompletableFuture<Void> sendContactNotification(Member member, MessageChannel messageChannel, MessageChannel feedBackChannel) {
+    public CompletableFuture<Void> sendContactNotification(User user, MessageChannel messageChannel, MessageChannel feedBackChannel) {
         ContactNotificationModel model = ContactNotificationModel
                 .builder()
                 .createdChannel(messageChannel)
-                .targetMember(member)
+                .userDisplay(UserDisplay.fromUser(user))
                 .build();
         return FutureUtils.toSingleFutureGeneric(channelService.sendEmbedTemplateInMessageChannelList(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, feedBackChannel));
     }
 
     @Override
-    public CompletableFuture<Void> sendContactNotification(Member member, MessageChannel createdMessageChannel, InteractionHook interactionHook) {
+    public CompletableFuture<Void> sendContactNotification(User user, MessageChannel createdMessageChannel, InteractionHook interactionHook) {
         ContactNotificationModel model = ContactNotificationModel
                 .builder()
                 .createdChannel(createdMessageChannel)
-                .targetMember(member)
+                .userDisplay(UserDisplay.fromUser(user))
                 .build();
         return FutureUtils.toSingleFutureGeneric(interactionService.sendMessageToInteraction(MODMAIL_THREAD_CREATED_TEMPLATE_KEY, model, interactionHook));
     }
@@ -258,7 +259,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
     /**
      * This method is responsible for creating the instance in the database, sending the header in the newly created text channel and forwarding the initial message
      * by the user (if any), after this is complete, this method executes the method to perform the mod mail notification.
-     * @param member The {@link Member} for which a {@link ModMailThread} is being created
+     * @param user The {@link User} for which a {@link ModMailThread} is being created
      * @param initialMessage The {@link Message} which was sent by the user to open a thread, this is null, if the thread was opened via a command
      * @param channel The created {@link TextChannel} in which the mod mail thread is dealt with
      * @param userInitiated Whether the thread was initiated by a member
@@ -266,33 +267,33 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @return A {@link CompletableFuture future} which completes when the setup is done
      */
     @Transactional
-    public CompletableFuture<Void> performModMailThreadSetup(Member member, Message initialMessage, GuildMessageChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions) {
-        log.info("Performing modmail thread setup for channel {} for user {} in server {}. It was initiated by a user: {}.", channel.getIdLong(), member.getId(), channel.getGuild().getId(), userInitiated);
-        CompletableFuture<Void> headerFuture = sendModMailHeader(channel, member);
+    public CompletableFuture<Void> performModMailThreadSetup(User user, Message initialMessage, GuildMessageChannel channel, boolean userInitiated, List<UndoActionInstance> undoActions) {
+        log.info("Performing modmail thread setup for channel {} for user {} in server {}. It was initiated by a user: {}.", channel.getIdLong(), user.getId(), channel.getGuild().getId(), userInitiated);
+        CompletableFuture<Void> headerFuture = sendModMailHeader(channel, user);
         CompletableFuture<Message> userReplyMessage;
         if(initialMessage != null){
-            log.info("Sending initial message {} of user {} to modmail thread {}.", initialMessage.getId(), member.getId(), channel.getId());
-            userReplyMessage = self.sendUserReply(channel, 0L, initialMessage, member, false);
+            log.info("Sending initial message {} of user {} to modmail thread {}.", initialMessage.getId(), user.getId(), channel.getId());
+            userReplyMessage = self.sendUserReply(channel, 0L, initialMessage, false);
         } else {
             log.info("No initial message to send.");
             userReplyMessage = CompletableFuture.completedFuture(null);
         }
         CompletableFuture notificationFuture;
         if (userInitiated) {
-            notificationFuture = self.sendModMailNotification(member, channel);
+            notificationFuture = self.sendModMailNotification(user, channel);
         } else {
             notificationFuture = CompletableFuture.completedFuture(null);
         }
         return CompletableFuture.allOf(headerFuture, notificationFuture, userReplyMessage).thenAccept(aVoid -> {
             undoActions.clear();
-            self.setupModMailThreadInDB(initialMessage, channel, member, userReplyMessage.join());
+            self.setupModMailThreadInDB(initialMessage, channel, user, userReplyMessage.join());
         });
     }
 
     @Transactional
-    public void setupModMailThreadInDB(Message initialMessage, GuildMessageChannel channel, Member member, Message sendMessage) {
+    public void setupModMailThreadInDB(Message initialMessage, GuildMessageChannel channel, User user, Message sendMessage) {
         log.info("Persisting info about modmail thread {} in database.", channel.getIdLong());
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(channel.getGuild().getIdLong(), user.getIdLong());
         ModMailThread thread = createThreadObject(channel, aUserInAServer);
         if(initialMessage != null) {
             log.debug("Adding initial message {} to modmail thread in channel {}.", initialMessage.getId(), channel.getId());
@@ -302,19 +303,19 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     /**
      * Sends the message containing the pings to notify the staff members to handle the opened {@link ModMailThread}
-     * @param member The {@link FullUserInServer} which opened the thread
+     * @param user The {@link FullUserInServer} which opened the thread
      * @param channel The created {@link GuildMessageChannel} in which the mod mail thread is dealt with
      * @return A {@link CompletableFuture future} which completes when the notification has been sent
      */
     @Transactional
-    public CompletableFuture<Void> sendModMailNotification(Member member, GuildMessageChannel channel) {
-        Long serverId = member.getGuild().getIdLong();
-        MessageToSend messageToSend = getModmailNotificationMessageToSend(member, channel, serverId, true);
+    public CompletableFuture<Void> sendModMailNotification(User user, GuildMessageChannel channel) {
+        Long serverId = channel.getGuild().getIdLong();
+        MessageToSend messageToSend = getModmailNotificationMessageToSend(user, channel, serverId, true);
         return FutureUtils.toSingleFutureGeneric(postTargetService.sendEmbedInPostTarget(messageToSend, ModMailPostTargets.MOD_MAIL_PING, serverId));
     }
 
-    private MessageToSend getModmailNotificationMessageToSend(Member member, GuildMessageChannel channel, Long serverId, boolean pingRole) {
-        log.info("Sending modmail notification for new modmail thread about user {} in server {}.", member.getId(), serverId);
+    private MessageToSend getModmailNotificationMessageToSend(User user, GuildMessageChannel channel, Long serverId, boolean pingRole) {
+        log.info("Sending modmail notification for new modmail thread about user {} in server {}.", user.getId(), serverId);
         AServer server = serverManagementService.loadServer(serverId);
         List<ModMailRole> rolesToPing;
         if(pingRole) {
@@ -322,10 +323,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         } else {
             rolesToPing = new ArrayList<>();
         }
-        log.debug("Pinging {} roles to notify about modmail thread about user {} in server {}.", rolesToPing.size(), member.getId(), serverId);
+        log.debug("Pinging {} roles to notify about modmail thread about user {} in server {}.", rolesToPing.size(), user.getId(), serverId);
         ModMailNotificationModel modMailNotificationModel = ModMailNotificationModel
                 .builder()
-                .member(member)
+                .userDisplay(UserDisplay.fromUser(user))
                 .roles(rolesToPing)
                 .channel(channel)
                 .build();
@@ -370,24 +371,57 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         if(!servers.isEmpty()) {
             log.info("There are {} shared servers between user and the bot.", servers.size());
             List<ServerChoice> availableGuilds = new ArrayList<>();
+            Set<Long> alreadyConsideredServers = new HashSet<>();
             for (AServer server : servers) {
                 // only take the servers in which mod mail is actually enabled, would not make much sense to make the
                 // other servers available
-                if (featureFlagService.isFeatureEnabled(modMailFeatureConfig, server)) {
-                    FullGuild guild = FullGuild
-                            .builder()
-                            .guild(guildService.getGuildById(server.getId()))
-                            .server(server)
-                            .build();
+                boolean possibleForModmail = featureFlagService.isFeatureEnabled(modMailFeatureConfig, server);
+                if (possibleForModmail) {
+                    Guild guild = guildService.getGuildById(server.getId());
                     ServerChoice serverChoice = ServerChoice
                             .builder()
-                            .serverId(guild.getGuild().getIdLong())
-                            .serverName(guild.getGuild().getName())
+                            .serverId(guild.getIdLong())
+                            .serverName(guild.getName())
+                            .build();
+                    availableGuilds.add(serverChoice);
+                }
+                alreadyConsideredServers.add(server.getId());
+            }
+
+            List<AServer> restOfKnownServers = serverManagementService.getAllServers()
+                    .stream()
+                    .filter(server -> alreadyConsideredServers.contains(server.getId()))
+                    .toList();
+            for (AServer server : restOfKnownServers) {
+                boolean possibleForModmail = false;
+                Long actualServerId = 0L;
+                Long potentialMainServer = configService.getLongValue(ModMailFeatureConfig.MOD_MAIL_APPEAL_SERVER, server.getId()); // what _other_ server is the appeal server
+                if(potentialMainServer != 0) {
+                    if(featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, potentialMainServer, ModMailMode.MOD_MAIL_APPEALS)) {
+                        Long configuredAppealServerId = configService.getLongValue(ModMailFeatureConfig.MOD_MAIL_APPEAL_SERVER, potentialMainServer);
+                        if(configuredAppealServerId != 0 && configuredAppealServerId.equals(server.getId())) { // if the other server has set the current server as the appeal config
+                            Guild otherGuild = guildService.getGuildById(potentialMainServer);
+                            if(otherGuild != null) { // check if we are part of that server
+                                possibleForModmail = true;
+                                actualServerId = potentialMainServer;
+                                log.info("Server {} was available, because it is using server {} as a mod mail appeal server.", server.getId(), otherGuild.getIdLong());
+                            }
+                        }
+                    } else {
+                        log.info("Server {} has set the appeal server {}, but that server does not have mod mail appeals enabled.", server.getId(), potentialMainServer);
+                    }
+                }
+                if(possibleForModmail) {
+                    Guild guild = guildService.getGuildById(actualServerId);
+                    ServerChoice serverChoice = ServerChoice
+                            .builder()
+                            .serverId(guild.getIdLong())
+                            .serverName(guild.getName())
                             .build();
                     availableGuilds.add(serverChoice);
                 }
             }
-            log.info("There were {} shared servers found which have modmail enabled.", availableGuilds.size());
+            log.info("There were {} available servers found.", availableGuilds.size());
             // if more than 1 server is available, show a choice dialog
             ArrayList<UndoActionInstance> undoActions = new ArrayList<>();
             if(availableGuilds.size() > 1) {
@@ -415,20 +449,15 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             } else if(availableGuilds.size() == 1) {
                 // if exactly one server is available, open the thread directly
                 Long chosenServerId = availableGuilds.get(0).getServerId();
+                Guild guild = guildService.getGuildById(chosenServerId);
                 log.info("Only one server available to modmail. Directly opening modmail thread for user {} in server {}.", initialMessage.getAuthor().getId(), chosenServerId);
-                memberService.getMemberInServerAsync(chosenServerId, initialMessage.getAuthor().getIdLong()).thenCompose(member -> {
-                            try {
-                                return self.createModMailThreadForUser(member, initialMessage, true, undoActions).thenApply(messageChannel -> null);
-                            } catch (Exception exception) {
-                                CompletableFuture<Void> future = new CompletableFuture<>();
-                                future.completeExceptionally(exception);
-                                return future;
-                            }
-                        }).exceptionally(throwable -> {
-                            log.error("Failed to setup thread correctly", throwable);
-                            undoActionService.performActions(undoActions);
-                            return null;
-                        });
+                createModMailThreadForUser(initialMessage.getAuthor(), guild , initialMessage, true, undoActions)
+                    .thenAccept(messageChannel -> {
+                        log.info("Setup modmail thread for user {} in guild {}.", initialMessage.getAuthor().getIdLong(), guild.getIdLong());
+                    }).exceptionally(throwable -> {
+                        log.error("Failed to setup modmail channel in guild {} for user {}.", guild.getIdLong(), initialMessage.getAuthor().getIdLong(), throwable);
+                        return null;
+                    });
             } else {
                 log.info("No server available to open a modmail thread in.");
                 // in case there is no server available, send an error message
@@ -451,18 +480,17 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * Method used to send the header of a newly created mod mail thread. This message contains information about
      * the user which the thread is about
      * @param channel The {@link GuildMessageChannel} in which the mod mail thread is present in
-     * @param member The {@link Member} which the {@link ModMailThread} is about
+     * @param user The {@link User} which the {@link ModMailThread} is about
      */
-    private CompletableFuture<Void> sendModMailHeader(GuildMessageChannel channel, Member member) {
+    private CompletableFuture<Void> sendModMailHeader(GuildMessageChannel channel, User user) {
         log.debug("Sending modmail thread header for tread in channel {} on server {}.", channel.getIdLong(), channel.getGuild().getId());
-        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(member);
+        AUserInAServer aUserInAServer = userInServerManagementService.loadOrCreateUser(channel.getGuild().getIdLong(), user.getIdLong());
         ModMailThread latestThread = modMailThreadManagementService.getLatestModMailThread(aUserInAServer);
         List<ModMailThread> oldThreads = modMailThreadManagementService.getModMailThreadForUser(aUserInAServer);
         ModMailThreaderHeader header = ModMailThreaderHeader
                 .builder()
-                .member(member)
+                .userDisplay(UserDisplay.fromUser(user))
                 .latestModMailThread(latestThread)
-                .memberJoinDate(member.getTimeJoined().toInstant())
                 .pastModMailThreadCount((long)oldThreads.size())
                 .build();
         List<CompletableFuture<Message>> messages = channelService.sendEmbedTemplateInTextChannelList("modmail_thread_header", header, channel);
@@ -476,18 +504,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         Long modmailThreadId = modMailThread.getId();
         metricService.incrementCounter(MDOMAIL_THREAD_MESSAGE_RECEIVED);
         log.debug("Relaying message {} to modmail thread {} for user {} to server {}.", messageFromUser.getId(), modMailThread.getId(), messageFromUser.getAuthor().getIdLong(), modMailThread.getServer().getId());
-        return memberService.getMemberInServerAsync(modMailThread.getServer().getId(), messageFromUser.getAuthor().getIdLong()).thenCompose(member ->
-            self.relayMessage(messageFromUser, serverId, channelId, modmailThreadId, member)
-        );
-
-    }
-
-    @Transactional
-    public CompletableFuture<Message> relayMessage(Message messageFromUser, Long serverId, Long channelId, Long modmailThreadId, Member member) {
         Optional<GuildMessageChannel> textChannelFromServer = channelService.getMessageChannelFromServerOptional(serverId, channelId);
         if(textChannelFromServer.isPresent()) {
             GuildMessageChannel guildMessageChannel = textChannelFromServer.get();
-            return self.sendUserReply(guildMessageChannel, modmailThreadId, messageFromUser, member, true);
+            return self.sendUserReply(guildMessageChannel, modmailThreadId, messageFromUser, true);
         } else {
             log.warn("Closing mod mail thread {}, because it seems the channel {} in server {} got deleted.", modmailThreadId, channelId, serverId);
             // in this case there was no text channel on the server associated with the mod mail thread
@@ -505,11 +525,10 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param messageChannel The {@link GuildMessageChannel} in which the {@link ModMailThread} is being handled
      * @param modMailThreadId The id of the modmail thread to which the received {@link Message} is a reply to, can be null, if it is null, its the initial message
      * @param messageFromUser The received message from the user
-     * @param member The {@link Member} instance from the user the thread is about. It is used as author
      * @param modMailThreadExists  Whether the modmail thread already exists and is persisted.
      * @return A {@link CompletableFuture} which resolves when the postprocessing of the message is completed (adding read notification, and storing messageIDs)
      */
-    public CompletableFuture<Message> sendUserReply(GuildMessageChannel messageChannel, Long modMailThreadId, Message messageFromUser, Member member, boolean modMailThreadExists) {
+    public CompletableFuture<Message> sendUserReply(GuildMessageChannel messageChannel, Long modMailThreadId, Message messageFromUser, boolean modMailThreadExists) {
         List<CompletableFuture<Member>> subscriberMemberFutures = new ArrayList<>();
         if(modMailThreadExists) {
             ModMailThread modMailThread = modMailThreadManagementService.getById(modMailThreadId);
@@ -550,7 +569,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             ModMailUserReplyModel modMailUserReplyModel = ModMailUserReplyModel
                     .builder()
                     .postedMessage(messageFromUser)
-                    .member(member)
+                    .userDisplay(UserDisplay.fromUser(messageFromUser.getAuthor()))
                     .attachedImageUrls(imageUrls)
                     .remainingAttachments(otherAttachments)
                     .subscribers(subscribers)
@@ -604,21 +623,16 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
 
     @Override
     @Transactional
-    public CompletableFuture<Void> loadExecutingMemberAndRelay(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, Member targetMember) {
-        log.info("Relaying message {} to user {} in modmail thread {} on server {}.", replyCommandMessage.getId(), targetMember.getId(), modmailThreadId, targetMember.getGuild().getId());
+    public CompletableFuture<Void> loadExecutingMemberAndRelay(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, User user, Guild guild) {
+        log.info("Relaying message {} to user {} in modmail thread {} on server {}.", replyCommandMessage.getId(), user.getId(), modmailThreadId, guild.getId());
         return memberService.getMemberInServerAsync(replyCommandMessage.getGuild().getIdLong(), replyCommandMessage.getAuthor().getIdLong())
-                .thenCompose(executingMember -> self.relayMessageToDm(modmailThreadId, text, replyCommandMessage, anonymous, targetMember, executingMember));
+                .thenCompose(executingMember -> self.relayMessageToDm(modmailThreadId, text, replyCommandMessage, anonymous, user, executingMember));
     }
 
     @Transactional
-    public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, Member targetMember, Member executingMember) {
+    public CompletableFuture<Void> relayMessageToDm(Long modmailThreadId, String text, Message replyCommandMessage, boolean anonymous, User user, Member executingMember) {
         metricService.incrementCounter(MDOMAIL_THREAD_MESSAGE_SENT);
         ModMailThread modMailThread = modMailThreadManagementService.getById(modmailThreadId);
-        FullUserInServer fullThreadUser = FullUserInServer
-                .builder()
-                .aUserInAServer(modMailThread.getUser())
-                .member(targetMember)
-                .build();
         List<String> imageUrls = replyCommandMessage
                 .getAttachments()
                 .stream()
@@ -638,7 +652,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 .remainingAttachments(otherAttachments)
                 .attachedImageUrls(imageUrls)
                 .anonymous(anonymous)
-                .threadUser(fullThreadUser);
+                .userDisplay(UserDisplay.fromUser(user));
         if(anonymous) {
             log.debug("Message is sent anonymous.");
             modMailModeratorReplyModelBuilder.moderator(memberService.getBotInGuild(modMailThread.getServer()));
@@ -647,7 +661,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         }
         ModMailModeratorReplyModel modMailUserReplyModel = modMailModeratorReplyModelBuilder.build();
         MessageToSend messageToSend = templateService.renderEmbedTemplate(MODMAIL_STAFF_MESSAGE_TEMPLATE_KEY, modMailUserReplyModel, modMailThread.getServer().getId());
-        CompletableFuture<Message> future = messageService.sendMessageToSendToUser(targetMember.getUser(), messageToSend);
+        CompletableFuture<Message> future = messageService.sendMessageToSendToUser(user, messageToSend);
         CompletableFuture<Message> sameThreadMessageFuture;
         if(featureModeService.featureModeActive(ModMailFeatureDefinition.MOD_MAIL, modMailThread.getServer(), ModMailMode.SEPARATE_MESSAGE)) {
             sameThreadMessageFuture = channelService.sendMessageEmbedToSendToAChannel(messageToSend, modMailThread.getChannel()).get(0);
@@ -679,24 +693,24 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
             log.info("Archiving thread {} for modmail thread closing.", modMailThread.getChannel().getId());
             return loadUserAndSendClosingHeader(modMailThread, closingConfig)
                     .thenCompose(unused -> channelService.archiveThreadChannel(threadChannel))
-                    .thenCompose(unused -> memberService.getMemberInServerAsync(serverId, userId))
-                    .thenAccept(member -> self.afterSuccessfulLog(modMailThreadId, closingConfig.getNotifyUser(), member, undoActions));
+                    .thenCompose(unused -> userService.retrieveUserForId(userId))
+                    .thenCompose(user -> self.afterSuccessfulLog(modMailThreadId, closingConfig.getNotifyUser(), user, undoActions));
         } else {
             if(closingConfig.getLog()) {
                 if(!modMailMessages.isEmpty()) {
                     return modMailMessageService.loadModMailMessages(modMailMessages)
-                            .thenAccept(loadedModmailThreadMessages -> self.logMessagesToModMailLog(closingConfig, modMailThreadId, undoActions, loadedModmailThreadMessages, serverId, userId));
+                            .thenCompose(loadedModmailThreadMessages -> self.logMessagesToModMailLog(closingConfig, modMailThreadId, undoActions, loadedModmailThreadMessages, serverId, userId));
                 } else {
                     log.info("Modmail thread {} in server {} has no messages. Only logging header.", modMailThreadId, serverId);
                     return loadUserAndSendClosingHeader(modMailThread, closingConfig)
-                            .thenAccept(unused -> memberService.getMemberInServerAsync(modMailThread.getUser()).thenCompose(member ->
-                                    self.afterSuccessfulLog(modMailThreadId, closingConfig.getNotifyUser(), member, undoActions)
+                            .thenCompose(unused -> userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenCompose(user ->
+                                    self.afterSuccessfulLog(modMailThreadId, closingConfig.getNotifyUser(), user, undoActions)
                             ));
                 }
             } else {
                 log.debug("Not logging modmail thread {}.", modMailThreadId);
-                return memberService.getMemberInServerAsync(modMailThread.getUser()).thenCompose(member ->
-                        self.afterSuccessfulLog(modMailThreadId, closingConfig.getNotifyUser(), member, undoActions)
+                return userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenCompose(user ->
+                        self.afterSuccessfulLog(modMailThreadId, closingConfig.getNotifyUser(), user, undoActions)
                 );
             }
         }
@@ -736,8 +750,8 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                             undoActions.add(UndoActionInstance.getMessageDeleteAction(message.getGuild().getIdLong(), message.getChannel().getIdLong(), message.getIdLong()));
                         }
                     });
-                    return memberService.getMemberInServerAsync(serverId, userId).thenCompose(member ->
-                            self.afterSuccessfulLog(modMailThreadId, closingContext.getNotifyUser(), member, undoActions)
+                    return userService.retrieveUserForId(userId).thenCompose(user ->
+                            self.afterSuccessfulLog(modMailThreadId, closingContext.getNotifyUser(), user, undoActions)
                     ).exceptionally(throwable -> {
                         log.warn("Failed to retrieve member for closing the modmail thread. Closing without member information.", throwable);
                         self.afterSuccessfulLog(modMailThreadId, false, null, undoActions);
@@ -756,12 +770,12 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
      * @param modMailThreadId The ID of the {@link ModMailThread} which is being closed.
      * @param notifyUser Whether the user should be notified
      * @param undoActions The list of {@link UndoActionInstance} to execute in case of exceptions
-     * @param modMailThreaduser The {@link Member member} for which the {@link ModMailThread thread} was for
+     * @param modMailThreaduser The {@link User member} for which the {@link ModMailThread thread} was for
      * @throws ModMailThreadNotFoundException in case the {@link ModMailThread} is not found by the ID
      * @return A {@link CompletableFuture future} which completes after the messages have been logged
      */
     @Transactional
-    public CompletableFuture<Void> afterSuccessfulLog(Long modMailThreadId, Boolean notifyUser, Member modMailThreaduser, List<UndoActionInstance> undoActions) {
+    public CompletableFuture<Void> afterSuccessfulLog(Long modMailThreadId, Boolean notifyUser, User modMailThreaduser, List<UndoActionInstance> undoActions) {
         log.debug("Mod mail logging for thread {} has completed. Starting post logging activities.", modMailThreadId);
         Optional<ModMailThread> modMailThreadOpt = modMailThreadManagementService.getByIdOptional(modMailThreadId);
         if(modMailThreadOpt.isPresent()) {
@@ -771,7 +785,7 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
                 HashMap<String, String> closingMessage = new HashMap<>();
                 String defaultValue = templateService.renderSimpleTemplate("modmail_closing_user_message_description");
                 closingMessage.put("closingMessage", configService.getStringValue(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY, modMailThread.getServer().getId(), defaultValue));
-                return messageService.sendEmbedToUser(modMailThreaduser.getUser(), "modmail_closing_user_message", closingMessage).thenAccept(message ->
+                return messageService.sendEmbedToUser(modMailThreaduser, "modmail_closing_user_message", closingMessage).thenCompose(message ->
                     self.deleteChannelAndClose(modMailThreadId, undoActions)
                 ).exceptionally(throwable -> {
                     self.deleteChannelAndClose(modMailThreadId, undoActions);
@@ -1000,6 +1014,28 @@ public class ModMailThreadServiceBean implements ModMailThreadService {
         } else {
             throw new ModMailThreadNotFoundException(modMailThreadId);
         }
+    }
+
+    @Transactional
+    public CompletableFuture<Void> banUserFromAppealServer(Long mainServerId, Long userId, String reason) {
+        Long configuredAppealServerId = configService.getLongValue(ModMailFeatureConfig.MOD_MAIL_APPEAL_SERVER, mainServerId);
+        Guild appealGuild = guildService.getGuildById(configuredAppealServerId);
+        return banService.banUser(appealGuild, ServerUser.fromId(configuredAppealServerId,  userId), Duration.ZERO, reason);
+    }
+
+    @Override
+    public CompletableFuture<Void> rejectAppeal(ModMailThread modMailThread, String reason, Member memberPerforming) {
+        ClosingContext context = ClosingContext
+                .builder()
+                .closingMember(memberPerforming)
+                .notifyUser(true)
+                .log(true)
+                .note(reason)
+                .build();
+        Long mainServerId = modMailThread.getServer().getId();
+        Long userToBanId = modMailThread.getUser().getUserReference().getId();
+        return closeModMailThread(modMailThread, context, new ArrayList<>())
+                .thenCompose((nul) -> self.banUserFromAppealServer(mainServerId, userToBanId , reason));
     }
 
     @PostConstruct

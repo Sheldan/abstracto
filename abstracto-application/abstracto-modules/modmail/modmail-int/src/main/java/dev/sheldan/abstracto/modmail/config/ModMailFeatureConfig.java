@@ -21,6 +21,7 @@ import java.util.List;
 public class ModMailFeatureConfig implements FeatureConfig {
 
     public static final String MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY = "modMailClosingText";
+    public static final String MOD_MAIL_APPEAL_SERVER = "modMailAppealServer";
     @Autowired
     private ModMailFeatureValidator modMailFeatureValidator;
 
@@ -34,27 +35,33 @@ public class ModMailFeatureConfig implements FeatureConfig {
 
     @Override
     public List<PostTargetEnum> getRequiredPostTargets() {
-        return Arrays.asList(ModMailPostTargets.MOD_MAIL_PING, ModMailPostTargets.MOD_MAIL_LOG, ModMailPostTargets.MOD_MAIL_CONTAINER);
+        return List.of(ModMailPostTargets.MOD_MAIL_PING,
+                ModMailPostTargets.MOD_MAIL_LOG,
+                ModMailPostTargets.MOD_MAIL_CONTAINER);
     }
 
     @Override
     public List<FeatureValidator> getAdditionalFeatureValidators() {
-        return Arrays.asList(modMailFeatureValidator);
+        return List.of(modMailFeatureValidator);
     }
 
     @Override
     public List<String> getRequiredEmotes() {
-        return Arrays.asList("readReaction");
+        return List.of("readReaction");
     }
 
     @Override
     public List<FeatureMode> getAvailableModes() {
-        return Arrays.asList(ModMailMode.LOGGING, ModMailMode.SEPARATE_MESSAGE, ModMailMode.THREAD_CONTAINER);
+        return List.of(ModMailMode.LOGGING,
+                ModMailMode.SEPARATE_MESSAGE,
+                ModMailMode.THREAD_CONTAINER,
+                ModMailMode.MOD_MAIL_APPEALS
+        );
     }
 
     @Override
     public List<String> getRequiredSystemConfigKeys() {
-        return Arrays.asList(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY);
+        return List.of(MOD_MAIL_CLOSING_TEXT_SYSTEM_CONFIG_KEY, MOD_MAIL_APPEAL_SERVER);
     }
 
     @Override

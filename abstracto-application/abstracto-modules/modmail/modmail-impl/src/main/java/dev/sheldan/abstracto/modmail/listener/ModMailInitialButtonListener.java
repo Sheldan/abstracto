@@ -14,6 +14,7 @@ import dev.sheldan.abstracto.modmail.model.dto.ServiceChoicesPayload;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadService;
 import dev.sheldan.abstracto.modmail.service.ModMailThreadServiceBean;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 public class ModMailInitialButtonListener implements ButtonClickedListener {
 
     @Autowired
-    private MemberService memberService;
+    private GuildService guildService;
 
     @Autowired
     private ModMailThreadService modMailThreadService;
@@ -51,20 +52,19 @@ public class ModMailInitialButtonListener implements ButtonClickedListener {
         Long userId = choices.getUserId();
         log.debug("Executing action for creationg a modmail thread in server {} for user {}.", chosenServer.getServerId(), userId);
         ArrayList<UndoActionInstance> undoActions = new ArrayList<>();
-        memberService.getMemberInServerAsync(chosenServer.getServerId(), userId)
-                .thenCompose(member -> channelService.retrieveMessageInChannel(model.getEvent().getChannel(), choices.getMessageId())
+        Guild guild = guildService.getGuildById(chosenServer.getServerId());
+        channelService.retrieveMessageInChannel(model.getEvent().getChannel(), choices.getMessageId())
                 .thenCompose(originalMessage -> {
                     try {
-                        return modMailThreadService.createModMailThreadForUser(member, originalMessage, true, undoActions);
+                        return modMailThreadService.createModMailThreadForUser(model.getEvent().getUser(), guild, originalMessage, true, undoActions);
                     } catch (Exception ex) {
                         log.error("Failed to setup thread correctly", ex);
                         undoActionService.performActions(undoActions);
                         return null;
                     }
                 })
-                .thenAccept(unused -> self.cleanup(model)))
-                .exceptionally(throwable -> {
-                    log.error("Failed to setup thread correctly", throwable);
+                .thenAccept(unused -> self.cleanup(model)).exceptionally(throwable -> {
+                    log.warn("Failed to setup modmail thread.");
                     undoActionService.performActions(undoActions);
                     return null;
                 });

@@ -36,9 +36,6 @@ public class ModMailMessageListener implements PrivateMessageReceivedListener {
     @Autowired
     private UserManagementService userManagementService;
 
-    @Autowired
-    private UserInServerManagementService userInServerManagementService;
-
     @Override
     @Transactional
     public void execute(Message message) {

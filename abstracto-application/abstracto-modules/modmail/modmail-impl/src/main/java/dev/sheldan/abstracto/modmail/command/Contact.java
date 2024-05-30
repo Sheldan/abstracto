@@ -25,6 +25,7 @@ import dev.sheldan.abstracto.modmail.service.management.ModMailThreadManagementS
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -44,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class Contact extends AbstractConditionableCommand {
 
-    private static final String CONTACT_PARAMETER = "contact";
+    private static final String COMMAND_NAME = "contact";
     private static final String USER_PARMETER = "user";
     private static final String MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE = "modmail_thread_already_exists";
     private static final String CONTACT_RESPONSE = "contact_response";
@@ -87,24 +88,21 @@ public class Contact extends AbstractConditionableCommand {
             List<CompletableFuture<Message>> futures = channelService.sendEmbedTemplateInTextChannelList(MODMAIL_THREAD_ALREADY_EXISTS_TEMPLATE, model, commandContext.getChannel());
             return FutureUtils.toSingleFutureGeneric(futures).thenApply(aVoid -> CommandResult.fromIgnored());
         } else {
-            return modMailThreadService.createModMailThreadForUser(targetUser, null,  false, commandContext.getUndoActions())
-                    .thenCompose(unused -> modMailThreadService.sendContactNotification(targetUser, unused, commandContext.getChannel()))
+            return modMailThreadService.createModMailThreadForUser(targetUser.getUser(), targetUser.getGuild(), null,  false, commandContext.getUndoActions())
+                    .thenCompose(unused -> modMailThreadService.sendContactNotification(targetUser.getUser(), unused, commandContext.getChannel()))
                     .thenApply(aVoid -> CommandResult.fromSuccess());
         }
     }
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        Member member = slashCommandParameterService.getCommandOption(USER_PARMETER, event, Member.class);
-        if(!member.getGuild().equals(event.getGuild())) {
-            throw new EntityGuildMismatchException();
-        }
-        AUserInAServer user = userManagementService.loadOrCreateUser(member);
+        User user = slashCommandParameterService.getCommandOption(USER_PARMETER, event, User.class);
+        AUserInAServer userInAServer = userManagementService.loadOrCreateUser(user.getIdLong(), event.getGuild().getIdLong());
         // if this AUserInAServer already has an open thread, we should instead post a message
         // containing a link to the channel, instead of opening a new one
-        if(modMailThreadManagementService.hasOpenModMailThreadForUser(user)) {
-            log.info("Modmail thread for user {} in server {} already exists. Notifying user {}.", event.getMember().getId(), event.getGuild().getId(), user.getUserReference().getId());
-            ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(user);
+        if(modMailThreadManagementService.hasOpenModMailThreadForUser(userInAServer)) {
+            log.info("Modmail thread for userInAServer {} in server {} already exists. Notifying userInAServer {}.", event.getMember().getId(), event.getGuild().getId(), userInAServer.getUserReference().getId());
+            ModMailThread existingThread = modMailThreadManagementService.getOpenModMailThreadForUser(userInAServer);
             ModMailThreadExistsModel model = ModMailThreadExistsModel
                     .builder()
                     .existingModMailThread(existingThread)
@@ -114,9 +112,9 @@ public class Contact extends AbstractConditionableCommand {
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
         } else {
             CompletableFuture<InteractionHook> response = interactionService.replyEmbed(CONTACT_RESPONSE, event);
-            CompletableFuture<MessageChannel> threadFuture = modMailThreadService.createModMailThreadForUser(member, null, false, new ArrayList<>());
+            CompletableFuture<MessageChannel> threadFuture = modMailThreadService.createModMailThreadForUser(user, event.getGuild(), null, false, new ArrayList<>());
             return CompletableFuture.allOf(response, threadFuture)
-                    .thenCompose(unused -> modMailThreadService.sendContactNotification(member, threadFuture.join(), response.join()))
+                    .thenCompose(unused -> modMailThreadService.sendContactNotification(user, threadFuture.join(), response.join()))
                     .thenApply(o -> CommandResult.fromSuccess());
         }
     }
@@ -126,7 +124,7 @@ public class Contact extends AbstractConditionableCommand {
         Parameter responseText = Parameter
                 .builder()
                 .name(USER_PARMETER)
-                .type(Member.class)
+                .type(User.class)
                 .templated(true)
                 .build();
         List<Parameter> parameters = Arrays.asList(responseText);
@@ -139,11 +137,11 @@ public class Contact extends AbstractConditionableCommand {
                 .builder()
                 .enabled(true)
                 .rootCommandName(ModMailSlashCommandNames.MODMAIL)
-                .commandName(CONTACT_PARAMETER)
+                .commandName(COMMAND_NAME)
                 .build();
 
         return CommandConfiguration.builder()
-                .name(CONTACT_PARAMETER)
+                .name(COMMAND_NAME)
                 .module(ModMailModuleDefinition.MODMAIL)
                 .parameters(parameters)
                 .slashCommandConfig(slashCommandConfig)

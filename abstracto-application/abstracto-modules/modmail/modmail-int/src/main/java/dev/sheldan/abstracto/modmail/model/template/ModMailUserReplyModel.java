@@ -1,5 +1,6 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,10 +17,7 @@ import java.util.Map;
 @Setter
 @Builder
 public class ModMailUserReplyModel {
-    /**
-     * The {@link Member} from which the message is and whose mod mail thread it is
-     */
-    private Member member;
+    private UserDisplay userDisplay;
     /**
      * The {@link Message} which was posted, which contains all the possible information
      */

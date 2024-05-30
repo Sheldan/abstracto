@@ -10,9 +10,11 @@ import dev.sheldan.abstracto.core.models.FullUserInServer;
 import dev.sheldan.abstracto.core.models.cache.CachedMessage;
 import dev.sheldan.abstracto.core.models.database.AChannel;
 import dev.sheldan.abstracto.core.models.listener.MessageUpdatedModel;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.MemberService;
 import dev.sheldan.abstracto.core.service.MessageService;
+import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.model.database.ModMailMessage;
 import dev.sheldan.abstracto.modmail.model.template.ModMailModeratorReplyModel;
@@ -24,6 +26,7 @@ import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,9 +49,6 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
     private CommandService commandService;
 
     @Autowired
-    private MemberService memberService;
-
-    @Autowired
     private TemplateService templateService;
 
     @Autowired
@@ -65,6 +65,12 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
 
     @Autowired
     private ModMailThreadService modMailThreadService;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public DefaultListenerResult execute(MessageUpdatedModel model) {
@@ -85,7 +91,7 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
                     log.info("Edit did not contain the original command to retrieve the parameters for. Resulting to {}.", DEFAULT_COMMAND_FOR_MODMAIL_EDIT);
                 }
                 CompletableFuture<Parameters> parameterParseFuture = commandService.getParametersForCommand(commandName, message);
-                CompletableFuture<Member> loadTargetUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getThreadReference().getUser().getUserReference().getId());
+                CompletableFuture<User> loadTargetUser = userService.retrieveUserForId(modMailMessage.getThreadReference().getUser().getUserReference().getId());
                 CompletableFuture<Member> loadEditingUser = memberService.getMemberInServerAsync(messageBefore.getServerId(), modMailMessage.getAuthor().getUserReference().getId());
                 CompletableFuture.allOf(parameterParseFuture, loadTargetUser, loadEditingUser).thenAccept(unused ->
                     self.updateMessageInThread(message, parameterParseFuture.join(), loadTargetUser.join(), loadEditingUser.join())
@@ -100,15 +106,10 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
     }
 
     @Transactional
-    public void updateMessageInThread(Message loadedMessage, Parameters parameters, Member targetMember, Member editingUser) {
+    public void updateMessageInThread(Message loadedMessage, Parameters parameters, User user, Member editingUser) {
         String newText = (String) parameters.getParameters().get(0);
         Optional<ModMailMessage> messageOptional = modMailMessageManagementService.getByMessageIdOptional(loadedMessage.getIdLong());
         messageOptional.ifPresent(modMailMessage -> {
-            FullUserInServer fullThreadUser = FullUserInServer
-                    .builder()
-                    .aUserInAServer(modMailMessage.getThreadReference().getUser())
-                    .member(targetMember)
-                    .build();
             List<String> imageUrls = loadedMessage
                     .getAttachments()
                     .stream()
@@ -128,7 +129,7 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
                     .attachedImageUrls(imageUrls)
                     .remainingAttachments(otherAttachments)
                     .anonymous(modMailMessage.getAnonymous())
-                    .threadUser(fullThreadUser);
+                    .userDisplay(UserDisplay.fromUser(user));
             if(modMailMessage.getAnonymous()) {
                 modMailModeratorReplyModelBuilder.moderator(memberService.getBotInGuild(modMailMessage.getThreadReference().getServer()));
             } else {
@@ -143,13 +144,13 @@ public class ModMailMessageEditedListener implements AsyncMessageUpdatedListener
                 log.debug("Editing message {} in mod mail channel {} for thread {} in server {} as well.", modMailMessage.getCreatedMessageInChannel(), channel.getId(), threadId, serverId);
                 channelService.editMessageInAChannel(messageToSend, channel, modMailMessage.getCreatedMessageInChannel());
             }
-            log.debug("Editing message {} in DM channel with user {} for thread {} in server {}.", modMailMessage.getCreatedMessageInDM(), targetMember.getUser().getIdLong(), threadId, serverId);
-            messageService.editMessageInDMChannel(targetMember.getUser(), messageToSend, modMailMessage.getCreatedMessageInDM());
+            log.debug("Editing message {} in DM channel with user {} for thread {} in server {}.", modMailMessage.getCreatedMessageInDM(), user.getIdLong(), threadId, serverId);
+            messageService.editMessageInDMChannel(user, messageToSend, modMailMessage.getCreatedMessageInDM());
         });
 
         if(!messageOptional.isPresent()) {
             log.warn("Message {} of user {} in channel {} for server {} for thread about user {} could not be found in the mod mail messages when updating the text.",
-                    loadedMessage.getIdLong(), editingUser.getIdLong(), loadedMessage.getChannel().getIdLong(), loadedMessage.getGuild().getIdLong(), targetMember.getIdLong());
+                    loadedMessage.getIdLong(), editingUser.getIdLong(), loadedMessage.getChannel().getIdLong(), loadedMessage.getGuild().getIdLong(), user.getIdLong());
         }
     }
 
