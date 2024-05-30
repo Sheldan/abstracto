@@ -9,6 +9,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.service.MemberService;
+import dev.sheldan.abstracto.core.service.UserService;
 import dev.sheldan.abstracto.modmail.condition.ModMailContextCondition;
 import dev.sheldan.abstracto.modmail.config.ModMailFeatureDefinition;
 import dev.sheldan.abstracto.modmail.exception.ModMailThreadClosedException;
@@ -39,7 +40,7 @@ public class Reply extends AbstractConditionableCommand {
     private ModMailThreadManagementService modMailThreadManagementService;
 
     @Autowired
-    private MemberService memberService;
+    private UserService userService;
 
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
@@ -50,8 +51,8 @@ public class Reply extends AbstractConditionableCommand {
             throw new ModMailThreadClosedException();
         }
         Long threadId = modMailThread.getId();
-        return memberService.getMemberInServerAsync(modMailThread.getUser()).thenCompose(member ->
-            modMailThreadService.loadExecutingMemberAndRelay(threadId, text, commandContext.getMessage(), false, member)
+        return userService.retrieveUserForId(modMailThread.getUser().getUserReference().getId()).thenCompose(user ->
+            modMailThreadService.loadExecutingMemberAndRelay(threadId, text, commandContext.getMessage(), false, user, commandContext.getGuild())
         ).thenApply(aVoid -> CommandResult.fromSuccess());
     }
 
@@ -65,7 +66,7 @@ public class Reply extends AbstractConditionableCommand {
                 .optional(true)
                 .templated(true)
                 .build();
-        List<Parameter> parameters = Arrays.asList(responseText);
+        List<Parameter> parameters = List.of(responseText);
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();
         return CommandConfiguration.builder()
                 .name("reply")

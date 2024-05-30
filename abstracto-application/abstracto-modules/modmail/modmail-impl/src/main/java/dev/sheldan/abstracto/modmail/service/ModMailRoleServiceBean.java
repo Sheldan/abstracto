@@ -19,9 +19,6 @@ public class ModMailRoleServiceBean implements ModMailRoleService {
     @Autowired
     private CommandService commandService;
 
-    @Autowired
-    private FeatureManagementService featureManagementService;
-
     @Override
     public void addRoleToModMailRoles(ARole role) {
         log.info("Adding role {} to modmail roles in server {}.", role.getId(), role.getServer().getId());

@@ -81,7 +81,6 @@ public class Close extends AbstractConditionableCommand {
                 .builder()
                 .closingMember(commandContext.getAuthor())
                 .notifyUser(true)
-                .channel(commandContext.getChannel())
                 .log(true)
                 .note(note)
                 .build();
@@ -112,19 +111,18 @@ public class Close extends AbstractConditionableCommand {
         ClosingContext context = ClosingContext
                 .builder()
                 .closingMember(event.getMember())
-                .channel(event.getChannel())
                 .notifyUser(!silently)
                 .log(log)
                 .note(note)
                 .build();
         return interactionService.replyEmbed(CLOSE_RESPONSE, event)
-                .thenCompose(interactionHook -> self.closeThread(context))
+                .thenCompose(interactionHook -> self.closeThread(context, event.getChannelIdLong()))
                 .thenApply(aVoid -> CommandResult.fromIgnored());
     }
 
     @Transactional
-    public CompletableFuture<Void> closeThread(ClosingContext closingContext) {
-        ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(closingContext.getChannel().getIdLong());
+    public CompletableFuture<Void> closeThread(ClosingContext closingContext, Long channelId) {
+        ModMailThread modMailThread = modMailThreadManagementService.getByChannelId(channelId);
         if(ModMailThreadState.CLOSED.equals(modMailThread.getState()) || ModMailThreadState.CLOSING.equals(modMailThread.getState())) {
             throw new ModMailThreadClosedException();
         }

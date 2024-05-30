@@ -15,6 +15,8 @@ public class UserDisplay {
     private String userMention;
     private String discriminator;
     private String name;
+    private String avatarUrl;
+    // TODO add avatar, only available from user
 
     public static UserDisplay fromUser(User user) {
         return UserDisplay
@@ -23,6 +25,7 @@ public class UserDisplay {
                 .name(user.getEffectiveName())
                 .discriminator(user.getDiscriminator())
                 .id(user.getIdLong())
+                .avatarUrl(user.getEffectiveAvatarUrl())
                 .build();
     }
 

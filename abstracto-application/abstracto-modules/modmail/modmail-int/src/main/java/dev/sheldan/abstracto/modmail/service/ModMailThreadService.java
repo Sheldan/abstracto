@@ -22,16 +22,16 @@ public interface ModMailThreadService {
      * Creates a new mod mail thread for the given user. including: the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel}
      * in the appropriate {@link net.dv8tion.jda.api.entities.channel.concrete.Category} and calls the methods responsible for storing
      * the necessary data in the database, notifying the users and sending messages  related to the creation of the {@link ModMailThread}
-     * @param member The {@link AUserInAServer} to create the mod mail thread for
+     * @param user The {@link User} to create the mod mail thread for
      * @param initialMessage The initial message sparking this mod mail thread, null in case it was created by a command
      * @param userInitiated Whether or not the mod mail thread was initiated by a user
      * @param undoActions A list of {@link dev.sheldan.abstracto.core.models.UndoAction actions} to be undone in case the operation fails. This list will be filled in the method.
      * @return A {@link CompletableFuture future} which completes when the modmail thread is set up
      */
-    CompletableFuture<MessageChannel> createModMailThreadForUser(Member member, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions);
+    CompletableFuture<MessageChannel> createModMailThreadForUser(User user, Guild guild, Message initialMessage, boolean userInitiated, List<UndoActionInstance> undoActions);
 
-    CompletableFuture<Void> sendContactNotification(Member member, MessageChannel createdMessageChannel, MessageChannel feedBackChannel);
-    CompletableFuture<Void> sendContactNotification(Member member, MessageChannel createdMessageChannel, InteractionHook interactionHook);
+    CompletableFuture<Void> sendContactNotification(User user, MessageChannel createdMessageChannel, MessageChannel feedBackChannel);
+    CompletableFuture<Void> sendContactNotification(User user, MessageChannel createdMessageChannel, InteractionHook interactionHook);
 
     /**
      * Changes the configuration value of the category used to create mod mail threads to the given ID.
@@ -68,10 +68,11 @@ public interface ModMailThreadService {
      * @param text The parsed text of the reply
      * @param message  The pure {@link Message} containing the command which caused the reply
      * @param anonymous Whether or nor the message should be send anonymous
-     * @param targetMember The {@link Member} the {@link ModMailThread} is about.
+     * @param targetUser The {@link User} the {@link ModMailThread} is about.
+     * @param guild The guild the reply is created in
      * @return A {@link CompletableFuture future} which completes when the message has been relayed to the DM
      */
-    CompletableFuture<Void> loadExecutingMemberAndRelay(Long threadId, String text, Message message, boolean anonymous, Member targetMember);
+    CompletableFuture<Void> loadExecutingMemberAndRelay(Long threadId, String text, Message message, boolean anonymous, User targetUser, Guild guild);
 
     /**
      * Closes the mod mail thread which means: deletes the {@link net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel} associated with the mod mail thread,
@@ -98,4 +99,6 @@ public interface ModMailThreadService {
 
     boolean isModMailThread(AChannel channel);
     boolean isModMailThread(Long channelId);
+
+    CompletableFuture<Void> rejectAppeal(ModMailThread modMailThread, String reason, Member memberPerforming);
 }

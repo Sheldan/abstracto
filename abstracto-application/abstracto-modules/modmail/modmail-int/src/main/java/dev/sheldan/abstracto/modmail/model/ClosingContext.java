@@ -13,6 +13,5 @@ public class ClosingContext {
     private Boolean notifyUser;
     private Boolean log;
     private Member closingMember;
-    private Channel channel;
     private String note;
 }

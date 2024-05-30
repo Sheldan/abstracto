@@ -1,6 +1,6 @@
 package dev.sheldan.abstracto.modmail.model.template;
 
-import dev.sheldan.abstracto.core.models.FullUserInServer;
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import dev.sheldan.abstracto.modmail.model.database.ModMailThread;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,10 +18,7 @@ import java.util.Map;
 @Setter
 @Builder
 public class ModMailModeratorReplyModel {
-    /**
-     * A {@link FullUserInServer} reference representing the user the thread is about. The member attribute is null, if the user left the guild
-     */
-    private FullUserInServer threadUser;
+    private UserDisplay userDisplay;
     /**
      * The staff {@link Member} which replied to the thread, be it anonymously or normal.
      */
