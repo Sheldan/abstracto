@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.models.database.AServer;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.attribute.IThreadContainer;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -20,6 +21,8 @@ import java.util.concurrent.CompletableFuture;
 public interface ChannelService {
     void sendTextToAChannelNotAsync(String text, AChannel channel);
     void sendTextToChannelNotAsync(String text, MessageChannel channel);
+    CompletableFuture<ThreadChannel> createThreadChannel(IThreadContainer threadContainer, String name);
+    CompletableFuture<ThreadChannel> createThreadChannel(IThreadContainer threadContainer, String name, Long messageId);
     CompletableFuture<Message> sendTextToAChannel(String text, AChannel channel);
     CompletableFuture<Message> sendMessageToAChannel(Message message, AChannel channel);
     CompletableFuture<Message> sendMessageToChannel(Message message, GuildMessageChannel channel);

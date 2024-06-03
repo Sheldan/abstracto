@@ -105,6 +105,9 @@ public class SuggestionServiceBean implements SuggestionService {
     @Autowired
     private SuggestionVoteManagementService suggestionVoteManagementService;
 
+    @Autowired
+    private ChannelService channelService;
+
     @Value("${abstracto.feature.suggestion.removalMaxAge}")
     private Long removalMaxAgeSeconds;
 
@@ -155,18 +158,18 @@ public class SuggestionServiceBean implements SuggestionService {
         List<ButtonConfigModel> buttonConfigModels = Arrays.asList(model.getAgreeButtonModel(), model.getDisAgreeButtonModel(), model.getRemoveVoteButtonModel());
         return FutureUtils.toSingleFutureGeneric(completableFutures)
                 .thenCompose(aVoid -> self.addVotingPossibility(suggestionChannelId, suggestionMessageId, text, suggester, serverId, newSuggestionId, completableFutures, buttonConfigModels, useButtons))
-                .thenCompose(aVoid -> self.createSuggestionThread(serverId, newSuggestionId, suggester, text, autoEvaluationEnabled, autoEvaluationTargetDate));
+                .thenCompose(aVoid -> self.createSuggestionThread(serverId, newSuggestionId, suggester, text, autoEvaluationEnabled, autoEvaluationTargetDate, completableFutures));
     }
 
     @Transactional
     public CompletableFuture<Void> createSuggestionThread(Long serverId, Long suggestionId, Member suggester, String suggestionText,
-                                                          Boolean autoEvaluationEnabled, Instant autoEvaluationTargetDate) {
+                                                          Boolean autoEvaluationEnabled, Instant autoEvaluationTargetDate, List<CompletableFuture<Message>> completableFutures) {
         if(featureModeService.featureModeActive(SuggestionFeatureDefinition.SUGGEST, serverId, SuggestionFeatureMode.SUGGESTION_THREAD)) {
             Optional<GuildMessageChannel> suggestionTargetChannelOptional = postTargetService.getPostTargetChannel(SuggestionPostTarget.SUGGESTION, serverId);
             log.info("Trying to create thread for suggestion {} in server {}.", suggestionId, serverId);
             if (suggestionTargetChannelOptional.isPresent()) {
                 GuildMessageChannel messageChannel = suggestionTargetChannelOptional.get();
-                    if(messageChannel instanceof IThreadContainer) {
+                    if(messageChannel instanceof IThreadContainer threadContainer) {
                         SuggestionThreadModel model = SuggestionThreadModel
                                 .builder()
                                 .suggestionId(suggestionId)
@@ -176,10 +179,15 @@ public class SuggestionServiceBean implements SuggestionService {
                                 .text(suggestionText)
                                 .autoEvaluationTargetDate(autoEvaluationTargetDate)
                                 .build();
-                        IThreadContainer threadContainer = (IThreadContainer) messageChannel;
                         String threadName = templateService.renderTemplate("suggestion_thread_name", model, serverId);
-                        return threadContainer.createThreadChannel(threadName).submit()
-                                .thenAccept(threadChannel -> log.info("Created thread for suggestion {} in server {}.", suggestionId, serverId));
+                        if(!completableFutures.isEmpty()) {
+                            Long suggestionMessageId = completableFutures.get(0).join().getIdLong();
+                            return channelService.createThreadChannel(threadContainer, threadName, suggestionMessageId)
+                                    .thenAccept(threadChannel -> log.info("Created thread for suggestion {} in server {} using the suggestion message {} as starter.", suggestionId, serverId, suggestionMessageId));
+                        } else {
+                            return channelService.createThreadChannel(threadContainer, threadName)
+                                    .thenAccept(threadChannel -> log.info("Created thread for suggestion {} in server {}.", suggestionId, serverId));
+                        }
                     } else {
                         log.info("Suggestion thread was not created - post target for suggestions does not allow to create threads");
                     }

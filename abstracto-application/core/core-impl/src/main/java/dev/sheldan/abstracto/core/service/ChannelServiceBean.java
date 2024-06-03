@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.attribute.IThreadContainer;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
@@ -114,6 +115,16 @@ public class ChannelServiceBean implements ChannelService {
     @Override
     public void sendTextToChannelNotAsync(String text, MessageChannel channel) {
         sendTextToChannel(text, channel);
+    }
+
+    @Override
+    public CompletableFuture<ThreadChannel> createThreadChannel(IThreadContainer threadContainer, String name) {
+        return threadContainer.createThreadChannel(name).submit();
+    }
+
+    @Override
+    public CompletableFuture<ThreadChannel> createThreadChannel(IThreadContainer threadContainer, String name, Long messageId) {
+        return threadContainer.createThreadChannel(name, messageId).submit();
     }
 
     @Override
