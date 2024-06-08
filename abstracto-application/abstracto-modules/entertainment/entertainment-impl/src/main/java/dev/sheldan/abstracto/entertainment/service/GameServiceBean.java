@@ -70,10 +70,16 @@ public class GameServiceBean implements GameService {
 
     @Override
     @Transactional
-    public void persistMineBoardMessage(MineBoard mineBoard, Message message) {
+    public void persistMineBoardMessage(MineBoard mineBoard, Message message, Long serverId) {
         mineBoard.setMessageId(message.getIdLong());
         mineBoard.setChannelId(message.getChannel().getIdLong());
-        AServer server = serverManagementService.loadServer(message.getGuild());
+
+        AServer server;
+        if(serverId != null) {
+            server = serverManagementService.loadServer(serverId);
+        } else {
+            server = null;
+        }
         mineBoard.getFields().forEach(mineBoardField -> {
             MineBoardPayload payload = MineBoardPayload
                     .builder()
