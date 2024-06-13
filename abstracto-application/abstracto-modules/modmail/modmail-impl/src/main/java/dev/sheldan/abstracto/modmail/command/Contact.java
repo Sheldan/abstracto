@@ -97,7 +97,7 @@ public class Contact extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         User user = slashCommandParameterService.getCommandOption(USER_PARMETER, event, User.class);
-        AUserInAServer userInAServer = userManagementService.loadOrCreateUser(user.getIdLong(), event.getGuild().getIdLong());
+        AUserInAServer userInAServer = userManagementService.loadOrCreateUser(event.getGuild().getIdLong(), user.getIdLong());
         // if this AUserInAServer already has an open thread, we should instead post a message
         // containing a link to the channel, instead of opening a new one
         if(modMailThreadManagementService.hasOpenModMailThreadForUser(userInAServer)) {
