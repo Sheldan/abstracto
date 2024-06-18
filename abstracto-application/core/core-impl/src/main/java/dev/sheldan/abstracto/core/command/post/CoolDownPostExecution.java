@@ -36,7 +36,7 @@ public class CoolDownPostExecution implements PostCommandExecution {
     public void executeSlash(SlashCommandInteractionEvent interaction, CommandResult commandResult, Command command) {
         ResultState result = commandResult.getResult();
         if(result.equals(ResultState.SUCCESSFUL) || result.equals(ResultState.IGNORED)) {
-            if(ContextUtils.isGuildAware(interaction)) {
+            if(ContextUtils.isGuildKnown(interaction)) {
                 commandCoolDownService.updateCoolDowns(command, interaction);
             }
         }

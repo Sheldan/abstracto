@@ -59,7 +59,7 @@ public class InteractionExceptionServiceBean implements InteractionExceptionServ
 
     @Override
     public void reportSlashException(Throwable exception, SlashCommandInteractionEvent event, Command command) {
-        if(ContextUtils.isGuildAware(event)) {
+        if(ContextUtils.isGuildKnown(event)) {
             log.info("Reporting exception of {} command {} in channel {} in guild {} from user {}.",
                     exception.getClass().getSimpleName(), command.getConfiguration().getName(),
                     event.getChannel().getIdLong(), event.getGuild().getIdLong(), event.getMember().getIdLong(), exception);

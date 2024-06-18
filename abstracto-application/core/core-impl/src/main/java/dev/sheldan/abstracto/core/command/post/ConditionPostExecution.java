@@ -54,7 +54,7 @@ public class ConditionPostExecution implements PostCommandExecution {
 
     @Override
     public void executeSlash(SlashCommandInteractionEvent interaction, CommandResult commandResult, Command command) {
-        if(commandResult.getResult().equals(ResultState.CONDITION) && ContextUtils.isGuildAware(interaction)
+        if(commandResult.getResult().equals(ResultState.CONDITION) && ContextUtils.isGuildKnown(interaction)
                 && commandResult.getConditionResult() != null &&
                 !commandResult.getConditionResult().isResult()
                 && commandResult.getConditionResult().getConditionDetail() != null

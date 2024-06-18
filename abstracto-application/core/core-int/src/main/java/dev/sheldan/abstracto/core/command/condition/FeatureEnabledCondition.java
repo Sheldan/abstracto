@@ -30,7 +30,7 @@ public class FeatureEnabledCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
-        if(ContextUtils.isNotGuildAware(slashCommandInteractionEvent)) {
+        if(ContextUtils.isGuildNotKnown(slashCommandInteractionEvent)) {
             return ConditionResult.SUCCESS;
         }
         Long serverId = slashCommandInteractionEvent.getGuild().getIdLong();

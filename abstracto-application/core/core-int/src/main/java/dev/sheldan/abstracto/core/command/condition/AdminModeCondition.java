@@ -43,7 +43,7 @@ public class AdminModeCondition implements CommandCondition {
 
     @Override
     public ConditionResult shouldExecute(SlashCommandInteractionEvent slashCommandInteractionEvent, Command command) {
-        if(ContextUtils.isNotGuildAware(slashCommandInteractionEvent)) {
+        if(ContextUtils.isGuildNotKnown(slashCommandInteractionEvent)) {
             return ConditionResult.SUCCESS;
         }
         boolean adminModeActive = service.adminModeActive(slashCommandInteractionEvent.getGuild());

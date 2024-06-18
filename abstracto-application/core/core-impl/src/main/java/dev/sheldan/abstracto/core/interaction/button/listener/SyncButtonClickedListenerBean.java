@@ -125,7 +125,7 @@ public class SyncButtonClickedListenerBean extends ListenerAdapter {
             if(!model.getEvent().isFromGuild()) {
                 return true;
             }
-            if(ContextUtils.isNotGuildAware(model.getEvent())) {
+            if(ContextUtils.isGuildNotKnown(model.getEvent())) {
                 return true;
             }
             if (!featureFlagService.isFeatureEnabled(feature, model.getServerId())) {

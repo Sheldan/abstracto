@@ -45,7 +45,7 @@ public class ListCustomCommands extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         List<CustomCommand> customCommands;
-        if(ContextUtils.isGuildAware(event)) {
+        if(ContextUtils.isGuildKnown(event)) {
             customCommands = customCommandService.getCustomCommands(event.getGuild());
         } else {
             customCommands = customCommandService.getUserCustomCommands(event.getUser());

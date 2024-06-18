@@ -44,7 +44,7 @@ public class DeleteCustomCommand extends AbstractConditionableCommand {
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String name = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_NAME_PARAMETER, event, String.class);
-        if(ContextUtils.isGuildAware(event)) {
+        if(ContextUtils.isGuildKnown(event)) {
             customCommandService.deleteCustomCommand(name, event.getGuild());
         } else {
             customCommandService.deleteUserCustomCommand(name, event.getUser());

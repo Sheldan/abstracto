@@ -100,7 +100,7 @@ public class YoutubeVideoSearch extends AbstractConditionableCommand {
         boolean sendInfo;
         MessageToSend linkEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_LINK_TEMPLATE_KEY, model, ContextUtils.serverIdOrNull(event));
         MessageToSend infoEmbed;
-        if(ContextUtils.isGuildAware(event)) {
+        if(ContextUtils.isGuildKnown(event)) {
             sendInfo = featureModeService.featureModeActive(WebserviceFeatureDefinition.YOUTUBE, event.getGuild().getIdLong(), YoutubeWebServiceFeatureMode.VIDEO_DETAILS);
             infoEmbed = templateService.renderEmbedTemplate(YOUTUBE_SEARCH_COMMAND_RESPONSE_TEMPLATE_KEY, model, ContextUtils.serverIdOrNull(event));
         } else {

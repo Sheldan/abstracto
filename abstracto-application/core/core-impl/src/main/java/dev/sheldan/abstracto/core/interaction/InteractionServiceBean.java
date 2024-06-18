@@ -108,7 +108,7 @@ public class InteractionServiceBean implements InteractionService {
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
             interactionHook.setEphemeral(messageToSend.getEphemeral());
-            if(ContextUtils.isGuildAware(interaction)) {
+            if(ContextUtils.isGuildKnown(interaction)) {
                 log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
                         interaction.getMember().getIdLong());
@@ -175,7 +175,7 @@ public class InteractionServiceBean implements InteractionService {
 
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
-            if(ContextUtils.isGuildAware(interaction)) {
+            if(ContextUtils.isGuildKnown(interaction)) {
                 log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
                         interaction.getMember().getIdLong());
@@ -223,7 +223,7 @@ public class InteractionServiceBean implements InteractionService {
                 action = interactionHook.editOriginal(".");
             }
             action = action.setComponents(actionRows);
-            if(ContextUtils.isGuildAware(interactionHook.getInteraction())) {
+            if(ContextUtils.isGuildKnown(interactionHook.getInteraction())) {
                 AServer server = serverManagementService.loadServer(serverId);
                 actionRows.forEach(components -> components.forEach(component -> {
                     if(component instanceof ActionComponent) {
@@ -280,7 +280,7 @@ public class InteractionServiceBean implements InteractionService {
                 action = callback.reply(".");
             }
             action = action.setComponents(actionRows);
-            if(ContextUtils.isGuildAware(callback)) {
+            if(ContextUtils.isGuildKnown(callback)) {
                 Long serverId = callback.getGuild().getIdLong();
                 AServer server = serverManagementService.loadServer(serverId);
                 actionRows.forEach(components -> components.forEach(component -> {
@@ -296,7 +296,7 @@ public class InteractionServiceBean implements InteractionService {
         }
 
         if(messageToSend.getEphemeral()) {
-            if(ContextUtils.isGuildAware(callback)) {
+            if(ContextUtils.isGuildKnown(callback)) {
                 log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
                         callback.getGuild().getIdLong(), callback.getChannel().getId(),
                         callback.getMember().getIdLong());
@@ -308,7 +308,7 @@ public class InteractionServiceBean implements InteractionService {
                 action = action.setEphemeral(messageToSend.getEphemeral());
             }
         }
-        if(ContextUtils.isGuildAware(callback)) {
+        if(ContextUtils.isGuildKnown(callback)) {
             Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
             if (action != null) {
                 action.setAllowedMentions(allowedMentions);

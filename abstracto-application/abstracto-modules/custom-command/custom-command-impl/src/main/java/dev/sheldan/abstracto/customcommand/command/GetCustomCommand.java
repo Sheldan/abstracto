@@ -51,7 +51,7 @@ public class GetCustomCommand extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String name = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_NAME_PARAMETER, event, String.class);
         CustomCommand customCommand;
-        if(ContextUtils.isGuildAware(event)) {
+        if(ContextUtils.isGuildKnown(event)) {
             customCommand = customCommandService.getCustomCommand(name, event.getGuild());
         } else {
             customCommand = customCommandService.getUserCustomCommand(name, event.getUser());
@@ -68,7 +68,7 @@ public class GetCustomCommand extends AbstractConditionableCommand {
     public List<String> performAutoComplete(CommandAutoCompleteInteractionEvent event) {
         if(slashCommandAutoCompleteService.matchesParameter(event.getFocusedOption(), CUSTOM_COMMAND_NAME_PARAMETER)) {
             String input = event.getFocusedOption().getValue();
-            if(ContextUtils.isGuildAware(event)) {
+            if(ContextUtils.isGuildKnown(event)) {
                 return customCommandService.getCustomCommandsStartingWith(input, event.getGuild())
                         .stream()
                         .map(CustomCommand::getName)

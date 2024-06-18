@@ -15,6 +15,6 @@ public class MessageContextInteractionModel implements FeatureAwareListenerModel
 
     @Override
     public Long getServerId() {
-        return ContextUtils.isGuildAware(event) ? event.getGuild().getIdLong() : null;
+        return ContextUtils.isGuildKnown(event) ? event.getGuild().getIdLong() : null;
     }
 }
