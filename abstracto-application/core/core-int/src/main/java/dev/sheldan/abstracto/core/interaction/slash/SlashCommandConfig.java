@@ -14,8 +14,11 @@ import java.util.Locale;
 public class SlashCommandConfig {
     private boolean enabled;
     private String rootCommandName;
+    private String userRootCommandName;
     private String groupName;
+    private String userGroupName;
     private String commandName;
+    private String userCommandName;
 
     @Builder.Default
     private boolean userInstallable = false;
@@ -45,5 +48,17 @@ public class SlashCommandConfig {
 
     public String getSlashCompatibleCommandName() {
         return commandName != null ? commandName.toLowerCase(Locale.ROOT) : null;
+    }
+
+    public String getUserSlashCompatibleRootName() {
+        return userRootCommandName != null ? userRootCommandName.toLowerCase(Locale.ROOT) : null;
+    }
+
+    public String getUserSlashCompatibleGroupName() {
+        return userGroupName != null ? userGroupName.toLowerCase(Locale.ROOT) : null;
+    }
+
+    public String getUserSlashCompatibleCommandName() {
+        return userCommandName != null ? userCommandName.toLowerCase(Locale.ROOT) : null;
     }
 }

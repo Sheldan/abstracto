@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
@@ -74,9 +75,9 @@ public class SlashCommandServiceBean implements SlashCommandService {
         } else {
             description = templateService.renderSimpleTemplate(internalCommandName + "_description", serverId);
         }
-        String rootName = slashConfig.getSlashCompatibleRootName();
-        String groupName = slashConfig.getSlashCompatibleGroupName();
-        String commandName = slashConfig.getSlashCompatibleCommandName();
+        String rootName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleRootName(), slashConfig.getSlashCompatibleRootName()) : slashConfig.getSlashCompatibleRootName();
+        String groupName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleGroupName(), slashConfig.getSlashCompatibleGroupName()) : slashConfig.getSlashCompatibleGroupName();
+        String commandName = userCommandsOnly ? StringUtils.defaultString(slashConfig.getUserSlashCompatibleCommandName(), slashConfig.getSlashCompatibleCommandName()) : slashConfig.getSlashCompatibleCommandName();
         Optional<SlashCommandData> existingRootCommand = existingCommands
                 .stream()
                 .filter(commandData -> commandData.getSecond().getName().equals(rootName))

@@ -77,6 +77,7 @@ public class ListCustomCommands extends AbstractConditionableCommand {
                 .userInstallable(true)
                 .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND_PUBLIC)
+                .userRootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND)
                 .commandName("list")
                 .build();
 

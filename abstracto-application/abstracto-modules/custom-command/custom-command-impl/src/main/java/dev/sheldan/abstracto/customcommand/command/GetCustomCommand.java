@@ -111,6 +111,7 @@ public class GetCustomCommand extends AbstractConditionableCommand {
                 .userInstallable(true)
                 .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND_PUBLIC)
+                .userRootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND)
                 .commandName("get")
                 .build();
 
