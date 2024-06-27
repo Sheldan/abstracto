@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.User;
 @Builder
 public class MemberNameDisplay {
     private String userName;
+    private String displayName;
     private String nickname;
     private String discriminator;
     private String userAvatarUrl;
@@ -25,6 +26,7 @@ public class MemberNameDisplay {
                 .memberAvatarUrl(member.getEffectiveAvatar().getUrl(4096))
                 .nickname(member.getNickname())
                 .userName(user.getName())
+                .displayName(user.getGlobalName())
                 .memberMention(member.getAsMention())
                 .userAvatarUrl(userAvatar)
                 .discriminator(user.getDiscriminator())

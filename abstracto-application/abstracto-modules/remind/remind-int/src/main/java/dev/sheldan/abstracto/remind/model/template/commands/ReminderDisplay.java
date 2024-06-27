@@ -17,6 +17,8 @@ public class ReminderDisplay {
     private String text;
     private Instant targetDate;
     private Instant creationDate;
+    private Boolean sentInDm;
+    private Boolean userCommand;
     @Builder.Default
     private Boolean joined = false;
     private ServerChannelMessage message;
@@ -25,15 +27,17 @@ public class ReminderDisplay {
         ServerChannelMessage message = ServerChannelMessage
                 .builder()
                 .messageId(reminder.getMessageId())
-                .channelId(reminder.getChannel().getId())
-                .serverId(reminder.getServer().getId())
+                .channelId(reminder.getChannel() != null ? reminder.getChannel().getId() : null)
+                .serverId(reminder.getServer() != null ? reminder.getServer().getId() : null)
                 .build();
         return ReminderDisplay
                 .builder()
                 .creationDate(reminder.getReminderDate())
                 .targetDate(reminder.getTargetDate())
                 .id(reminder.getId())
-                .reminded(reminder.isReminded())
+                .sentInDm(reminder.getSendInDm())
+                .reminded(reminder.getReminded())
+                .userCommand(reminder.getUserCommand())
                 .message(message)
                 .text(reminder.getText())
                 .build();

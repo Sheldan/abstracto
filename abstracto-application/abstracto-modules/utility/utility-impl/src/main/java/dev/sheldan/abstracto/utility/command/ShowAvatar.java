@@ -2,9 +2,8 @@ package dev.sheldan.abstracto.utility.command;
 
 import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
-import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
-import dev.sheldan.abstracto.core.command.config.HelpInfo;
-import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.*;
+import dev.sheldan.abstracto.core.command.handler.parameter.CombinedParameter;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -19,13 +18,20 @@ import dev.sheldan.abstracto.utility.config.UtilitySlashCommandNames;
 import dev.sheldan.abstracto.utility.model.ShowAvatarModel;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.sheldan.abstracto.core.command.config.Parameter.ADDITIONAL_TYPES_KEY;
 
 @Component
 @Slf4j
@@ -44,6 +50,9 @@ public class ShowAvatar extends AbstractConditionableCommand {
     @Autowired
     private InteractionService interactionService;
 
+    @Value("${abstracto.feature.avatar.imagesize}")
+    private Integer imageSize;
+
     @Override
     public CompletableFuture<CommandResult> executeAsync(CommandContext commandContext) {
         List<Object> parameters = commandContext.getParameters().getParameters();
@@ -53,7 +62,7 @@ public class ShowAvatar extends AbstractConditionableCommand {
         }
         ShowAvatarModel model = ShowAvatarModel
                 .builder()
-                .memberInfo(memberToShow)
+                .avatarUrl(memberToShow.getEffectiveAvatar().getUrl(imageSize))
                 .build();
         log.info("Showing avatar for member {} towards user {} in channel {} in server {}.",
                 memberToShow.getId(), commandContext.getAuthor().getId(), commandContext.getChannel().getId(), commandContext.getGuild().getId());
@@ -63,15 +72,27 @@ public class ShowAvatar extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        Member memberToShow;
+        String avatarUrl;
+        Member targetMember;
         if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
-            memberToShow = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
+            targetMember = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, Member.class);
         } else {
-            memberToShow = event.getMember();
+            targetMember = event.getMember();
+        }
+        if(targetMember == null) {
+            User targetUser;
+            if(slashCommandParameterService.hasCommandOption(MEMBER_PARAMETER, event)) {
+                targetUser = slashCommandParameterService.getCommandOption(MEMBER_PARAMETER, event, User.class);
+            } else {
+                targetUser = event.getUser();
+            }
+            avatarUrl = targetUser.getEffectiveAvatar().getUrl(imageSize);
+        } else {
+            avatarUrl = targetMember.getEffectiveAvatar().getUrl(imageSize);
         }
         ShowAvatarModel model = ShowAvatarModel
                 .builder()
-                .memberInfo(memberToShow)
+                .avatarUrl(avatarUrl)
                 .build();
         return interactionService.replyEmbed(SHOW_AVATAR_RESPONSE_TEMPLATE, model, event.getInteraction())
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
@@ -80,11 +101,18 @@ public class ShowAvatar extends AbstractConditionableCommand {
     @Override
     public CommandConfiguration getConfiguration() {
         List<Parameter> parameters = new ArrayList<>();
+        Map<String, Object> parameterAlternatives = new HashMap<>();
+        parameterAlternatives.put(ADDITIONAL_TYPES_KEY, List.of(
+                CombinedParameterEntry.messageParameter(Message.class),
+                CombinedParameterEntry.parameter(Member.class),
+                CombinedParameterEntry.parameter(User.class)));
         Parameter memberParameter = Parameter
                 .builder()
-                .type(Member.class)
                 .name(MEMBER_PARAMETER)
+                .type(CombinedParameter.class)
+                .additionalInfo(parameterAlternatives)
                 .templated(true)
+                .useStrictParameters(true)
                 .optional(true)
                 .build();
         parameters.add(memberParameter);
@@ -96,6 +124,8 @@ public class ShowAvatar extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.guildOnly())
                 .rootCommandName(UtilitySlashCommandNames.UTILITY)
                 .commandName(SHOW_AVATAR_COMMAND)
                 .build();

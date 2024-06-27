@@ -6,4 +6,5 @@
     <include file="1.2.10-remind/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.2.12/collection.xml" relativeToChangelogFile="true"/>
     <include file="1.4.3/collection.xml" relativeToChangelogFile="true"/>
+    <include file="1.5.39/collection.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
