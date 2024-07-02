@@ -10,7 +10,7 @@ import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.core.templating.model.AttachedFile;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
-import dev.sheldan.abstracto.core.utils.FileService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -108,9 +108,11 @@ public class InteractionServiceBean implements InteractionService {
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
             interactionHook.setEphemeral(messageToSend.getEphemeral());
-            log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
-                    interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
-                    interaction.getMember().getIdLong());
+            if(ContextUtils.hasGuild(interaction)) {
+                log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
+                        interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
+                        interaction.getUser().getIdLong());
+            }
             metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
         }
 
@@ -135,13 +137,14 @@ public class InteractionServiceBean implements InteractionService {
 
     @Override
     public List<CompletableFuture<Message>> sendMessageToInteraction(String templateKey, Object model, InteractionHook interactionHook) {
-        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model, interactionHook.getInteraction().getGuild().getIdLong());
+        Long serverId = ContextUtils.serverIdOrNull(interactionHook);
+        MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model, serverId);
         return sendMessageToInteraction(messageToSend, interactionHook);
     }
 
     @Override
     public CompletableFuture<InteractionHook> replyEmbed(String templateKey, Object model, IReplyCallback callback) {
-        Long serverId = callback.getGuild().getIdLong();
+        Long serverId = ContextUtils.serverIdOrNull(callback);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, model, serverId);
         return replyMessageToSend(messageToSend, callback);
     }
@@ -161,20 +164,24 @@ public class InteractionServiceBean implements InteractionService {
 
     @Override
     public List<CompletableFuture<Message>> sendEmbed(String templateKey, InteractionHook interactionHook) {
-        Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
+        Long serverId = ContextUtils.serverIdOrNull(interactionHook);
         MessageToSend messageToSend = templateService.renderEmbedTemplate(templateKey, new Object(), serverId);
         return sendMessageToInteraction(messageToSend, interactionHook);
     }
 
     @Override
     public CompletableFuture<Message> editOriginal(MessageToSend messageToSend, InteractionHook interactionHook) {
-        Long serverId = interactionHook.getInteraction().getGuild().getIdLong();
+        Long serverId = ContextUtils.serverIdOrNull(interactionHook);
 
         if(messageToSend.getEphemeral()) {
             Interaction interaction = interactionHook.getInteraction();
-            log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
-                    interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
-                    interaction.getMember().getIdLong());
+            if(ContextUtils.hasGuild(interaction)) {
+                log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
+                        interaction.getGuild().getIdLong(), interaction.getChannel().getId(),
+                        interaction.getUser().getIdLong());
+            } else {
+                log.info("Sending ephemeral message to interaction for user {}", interactionHook.getInteraction().getUser().getIdLong());
+            }
             metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
             interactionHook.setEphemeral(true);
         }
@@ -216,7 +223,11 @@ public class InteractionServiceBean implements InteractionService {
                 action = interactionHook.editOriginal(".");
             }
             action = action.setComponents(actionRows);
-            AServer server = serverManagementService.loadServer(serverId);
+            AServer server;
+            if(ContextUtils.isGuildKnown(interactionHook.getInteraction())) {
+                server = serverManagementService.loadServer(serverId);
+            } else {
+                server = null; }
             actionRows.forEach(components -> components.forEach(component -> {
                 if(component instanceof ActionComponent) {
                     String id = ((ActionComponent)component).getId();
@@ -235,7 +246,6 @@ public class InteractionServiceBean implements InteractionService {
     }
 
     public CompletableFuture<InteractionHook> replyMessageToSend(MessageToSend messageToSend, IReplyCallback callback) {
-        Long serverId = callback.getGuild().getIdLong();
         ReplyCallbackAction action = null;
         if(messageToSend.getMessages() != null && !messageToSend.getMessages().isEmpty()) {
             metricService.incrementCounter(MESSAGE_SEND_METRIC);
@@ -272,7 +282,12 @@ public class InteractionServiceBean implements InteractionService {
                 action = callback.reply(".");
             }
             action = action.setComponents(actionRows);
-            AServer server = serverManagementService.loadServer(serverId);
+            AServer server;
+            if(ContextUtils.isGuildKnown(callback)) {
+                server = serverManagementService.loadServer(callback.getGuild().getIdLong());
+            } else {
+               server = null;
+            }
             actionRows.forEach(components -> components.forEach(component -> {
                 if(component instanceof ActionComponent) {
                     String id = ((ActionComponent)component).getId();
@@ -285,17 +300,23 @@ public class InteractionServiceBean implements InteractionService {
         }
 
         if(messageToSend.getEphemeral()) {
-            log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
-                    callback.getGuild().getIdLong(), callback.getChannel().getId(),
-                    callback.getMember().getIdLong());
+            if(ContextUtils.hasGuild(callback)) {
+                log.info("Sending ephemeral message to interaction in guild {} in channel {} for user {}.",
+                        callback.getGuild().getIdLong(), callback.getChannel().getId(),
+                        callback.getUser().getIdLong());
+            } else {
+                log.info("Sending ephemeral message to user {}.", callback.getUser().getIdLong());
+            }
             metricService.incrementCounter(EPHEMERAL_MESSAGES_SEND);
             if(action != null) {
                 action = action.setEphemeral(messageToSend.getEphemeral());
             }
         }
-        Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
-        if(action != null) {
-            action.setAllowedMentions(allowedMentions);
+        if(ContextUtils.isGuildKnown(callback)) {
+            Set<Message.MentionType> allowedMentions = allowedMentionService.getAllowedMentionsFor(callback.getMessageChannel(), messageToSend);
+            if (action != null) {
+                action.setAllowedMentions(allowedMentions);
+            }
         }
 
         if(action == null) {
@@ -306,7 +327,7 @@ public class InteractionServiceBean implements InteractionService {
 
     @Override
     public CompletableFuture<InteractionHook> replyMessage(String templateKey, Object model, IReplyCallback callback) {
-        Long serverId = callback.getGuild().getIdLong();
+        Long serverId = ContextUtils.serverIdOrNull(callback);
         MessageToSend messageToSend = templateService.renderTemplateToMessageToSend(templateKey, model, serverId);
         return replyMessageToSend(messageToSend, callback);
     }

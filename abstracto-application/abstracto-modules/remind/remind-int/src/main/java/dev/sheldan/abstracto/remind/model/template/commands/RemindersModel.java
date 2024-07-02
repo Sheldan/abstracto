@@ -1,9 +1,9 @@
 package dev.sheldan.abstracto.remind.model.template.commands;
 
+import dev.sheldan.abstracto.core.models.template.display.UserDisplay;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.api.entities.Member;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,5 +14,5 @@ import java.util.List;
 public class RemindersModel {
     @Builder.Default
     private List<ReminderDisplay> reminders = new ArrayList<>();
-    private Member member;
+    private UserDisplay userDisplay;
 }

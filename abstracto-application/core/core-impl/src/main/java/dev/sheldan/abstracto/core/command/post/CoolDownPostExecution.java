@@ -6,6 +6,7 @@ import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.command.execution.ResultState;
 import dev.sheldan.abstracto.core.command.service.CommandCoolDownService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,9 @@ public class CoolDownPostExecution implements PostCommandExecution {
     public void executeSlash(SlashCommandInteractionEvent interaction, CommandResult commandResult, Command command) {
         ResultState result = commandResult.getResult();
         if(result.equals(ResultState.SUCCESSFUL) || result.equals(ResultState.IGNORED)) {
-            commandCoolDownService.updateCoolDowns(command, interaction);
+            if(ContextUtils.isNotUserCommand(interaction)) {
+                commandCoolDownService.updateCoolDowns(command, interaction);
+            }
         }
     }
 }

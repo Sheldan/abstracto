@@ -84,7 +84,7 @@
         </dependency>
 
         <dependency>
-            <groupId>net.dv8tion</groupId>
+            <groupId>io.github.freya022</groupId>
             <artifactId>JDA</artifactId>
             <exclusions>
                 <exclusion>

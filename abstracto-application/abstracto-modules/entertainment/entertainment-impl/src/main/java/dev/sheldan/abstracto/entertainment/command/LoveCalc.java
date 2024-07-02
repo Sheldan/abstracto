@@ -4,6 +4,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -13,6 +14,7 @@ import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentFeatureDefinition;
 import dev.sheldan.abstracto.entertainment.config.EntertainmentModuleDefinition;
@@ -64,7 +66,7 @@ public class LoveCalc extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String firstPart = slashCommandParameterService.getCommandOption(FIRST_SUBJECT_PARAMETER, event, String.class);
         String secondPart = slashCommandParameterService.getCommandOption(SECOND_SUBJECT_PARAMETER, event, String.class);
-        MessageToSend messageToSend = getMessageToSend(event.getGuild().getIdLong(), firstPart, secondPart);
+        MessageToSend messageToSend = getMessageToSend(ContextUtils.serverIdOrNull(event), firstPart, secondPart);
         return interactionService.replyMessageToSend(messageToSend, event.getInteraction())
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
@@ -105,6 +107,8 @@ public class LoveCalc extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(EntertainmentSlashCommandNames.UTILITY)
                 .commandName(LOVE_CALC_COMMAND)
                 .build();

@@ -4,11 +4,13 @@ import dev.sheldan.abstracto.core.command.UtilityModuleDefinition;
 import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand;
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.service.PaginatorService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandFeatureDefinition;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandSlashCommandNames;
 import dev.sheldan.abstracto.customcommand.model.command.ListCustomCommandsResponseModel;
@@ -42,7 +44,12 @@ public class ListCustomCommands extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-        List<CustomCommand> customCommands = customCommandService.getCustomCommands(event.getGuild());
+        List<CustomCommand> customCommands;
+        if(ContextUtils.isUserCommand(event)) {
+            customCommands = customCommandService.getUserCustomCommands(event.getUser());
+        } else {
+            customCommands = customCommandService.getCustomCommands(event.getGuild());
+        }
         if(customCommands.isEmpty()) {
             return interactionService.replyEmbed(NO_CUSTOM_COMMANDS_TEMPLATE_KEY, event)
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
@@ -67,7 +74,10 @@ public class ListCustomCommands extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND_PUBLIC)
+                .userRootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND)
                 .commandName("list")
                 .build();
 

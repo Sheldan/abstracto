@@ -5,11 +5,13 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
 import dev.sheldan.abstracto.core.config.FeatureDefinition;
 import dev.sheldan.abstracto.core.interaction.InteractionService;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.parameter.SlashCommandParameterService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandFeatureDefinition;
 import dev.sheldan.abstracto.customcommand.config.CustomCommandSlashCommandNames;
 import dev.sheldan.abstracto.customcommand.service.management.CustomCommandService;
@@ -44,8 +46,11 @@ public class CreateCustomCommand extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String name = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_NAME_PARAMETER, event, String.class);
         String content = slashCommandParameterService.getCommandOption(CUSTOM_COMMAND_CONTENT_PARAMETER, event, String.class);
-
-        customCommandService.createCustomCommand(name, content, event.getMember());
+        if(ContextUtils.isUserCommand(event)) {
+            customCommandService.createUserCustomCommand(name, content, event.getUser());
+        } else {
+            customCommandService.createCustomCommand(name, content, event.getMember());
+        }
         return interactionService.replyEmbed(CREATE_CUSTOM_COMMAND_RESPONSE_TEMPLATE_KEY, event)
                 .thenApply(interactionHook -> CommandResult.fromSuccess());
     }
@@ -80,6 +85,8 @@ public class CreateCustomCommand extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(CustomCommandSlashCommandNames.CUSTOM_COMMAND)
                 .commandName("create")
                 .build();

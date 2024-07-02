@@ -13,11 +13,18 @@ public class ListCustomCommandModel {
     private MemberDisplay creator;
 
     public static ListCustomCommandModel fromCustomCommand(CustomCommand customCommand) {
+        MemberDisplay creatorObj;
+        if(customCommand.getUserSpecific()) {
+            creatorObj = MemberDisplay.fromAUser(customCommand.getCreatorUser());
+        } else {
+            creatorObj = MemberDisplay.fromAUserInAServer(customCommand.getCreator());
+        }
+
         return ListCustomCommandModel
                 .builder()
                 .name(customCommand.getName())
                 .content(customCommand.getAdditionalMessage())
-                .creator(MemberDisplay.fromAUserInAServer(customCommand.getCreator()))
+                .creator(creatorObj)
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package dev.sheldan.abstracto.core.interaction.modal.listener;
 
 import dev.sheldan.abstracto.core.interaction.modal.ModalPayload;
 import dev.sheldan.abstracto.core.listener.FeatureAwareListenerModel;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,6 @@ public class ModalInteractionListenerModel implements FeatureAwareListenerModel 
 
     @Override
     public Long getServerId() {
-        return event.isFromGuild() ? event.getGuild().getIdLong() : null;
+        return ContextUtils.hasGuild(event) ? event.getGuild().getIdLong() : null;
     }
 }

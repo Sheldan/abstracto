@@ -10,6 +10,7 @@ import dev.sheldan.abstracto.core.command.service.ExceptionService;
 import dev.sheldan.abstracto.core.command.service.PostCommandExecution;
 import dev.sheldan.abstracto.core.interaction.InteractionExceptionService;
 import dev.sheldan.abstracto.core.service.ConfigService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.apache.commons.lang3.BooleanUtils;
@@ -53,7 +54,7 @@ public class ExceptionPostExecution implements PostCommandExecution {
         if(result.equals(ResultState.ERROR)) {
             Throwable throwable = commandResult.getThrowable();
             if(throwable != null) {
-                if(throwable instanceof CommandNotFoundException){
+                if(throwable instanceof CommandNotFoundException && ContextUtils.isNotUserCommand(interaction)){
                     String configValue = configService.getStringValueOrConfigDefault(CoreFeatureConfig.NO_COMMAND_REPORTING_CONFIG_KEY, interaction.getGuild().getIdLong());
                     if(!BooleanUtils.toBoolean(configValue)) {
                         return;

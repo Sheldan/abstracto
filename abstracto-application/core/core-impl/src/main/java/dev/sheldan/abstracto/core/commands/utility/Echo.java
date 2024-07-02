@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.config.features.CoreFeatureDefinition;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
@@ -18,6 +19,7 @@ import dev.sheldan.abstracto.core.models.template.display.ChannelDisplay;
 import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,15 +66,14 @@ public class Echo extends AbstractConditionableCommand {
 
     @Override
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
-
         String message = slashCommandParameterService.getCommandOption(INPUT_PARAMETER, event, String.class);
-        GuildMessageChannel messageChannel;
+        MessageChannel messageChannel;
         boolean redirect = false;
         if (slashCommandParameterService.hasCommandOption(TARGET_CHANNEL_PARAMETER, event)) {
             messageChannel = slashCommandParameterService.getCommandOption(TARGET_CHANNEL_PARAMETER, event, GuildMessageChannel.class);
             redirect = true;
         } else {
-            messageChannel = event.getGuildChannel();
+            messageChannel = event.getChannel();
         }
 
         EchoModel model = EchoModel
@@ -110,6 +111,7 @@ public class Echo extends AbstractConditionableCommand {
                 .name(TARGET_CHANNEL_PARAMETER)
                 .type(GuildMessageChannel.class)
                 .slashCommandOnly(true)
+                .supportsUserCommands(false)
                 .optional(true)
                 .templated(true)
                 .remainder(true)
@@ -118,6 +120,8 @@ public class Echo extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(ECHO_COMMAND)
                 .build();
         HelpInfo helpInfo = HelpInfo.builder().templated(true).build();

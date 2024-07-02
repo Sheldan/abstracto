@@ -5,6 +5,7 @@ import dev.sheldan.abstracto.core.command.condition.AbstractConditionableCommand
 import dev.sheldan.abstracto.core.command.config.CommandConfiguration;
 import dev.sheldan.abstracto.core.command.config.HelpInfo;
 import dev.sheldan.abstracto.core.command.config.Parameter;
+import dev.sheldan.abstracto.core.command.config.UserCommandConfig;
 import dev.sheldan.abstracto.core.interaction.slash.SlashCommandConfig;
 import dev.sheldan.abstracto.core.command.execution.CommandContext;
 import dev.sheldan.abstracto.core.command.execution.CommandResult;
@@ -16,6 +17,7 @@ import dev.sheldan.abstracto.core.service.ChannelService;
 import dev.sheldan.abstracto.core.service.ProfanityService;
 import dev.sheldan.abstracto.core.templating.model.MessageToSend;
 import dev.sheldan.abstracto.core.templating.service.TemplateService;
+import dev.sheldan.abstracto.core.utils.ContextUtils;
 import dev.sheldan.abstracto.core.utils.FutureUtils;
 import dev.sheldan.abstracto.webservices.config.WebServicesSlashCommandNames;
 import dev.sheldan.abstracto.webservices.config.WebserviceFeatureDefinition;
@@ -73,7 +75,7 @@ public class UrbanDefine extends AbstractConditionableCommand {
     public CompletableFuture<CommandResult> executeSlash(SlashCommandInteractionEvent event) {
         String query = slashCommandParameterService.getCommandOption(SEARCH_QUERY_PARAMETER, event, String.class);
         try {
-            MessageToSend messageToSend = getMessageToSend(event.getGuild().getIdLong(), query);
+            MessageToSend messageToSend = getMessageToSend(ContextUtils.serverIdOrNull(event), query);
             return interactionService.replyMessageToSend(messageToSend, event)
                     .thenApply(interactionHook -> CommandResult.fromSuccess());
         } catch (IOException e) {
@@ -111,6 +113,8 @@ public class UrbanDefine extends AbstractConditionableCommand {
         SlashCommandConfig slashCommandConfig = SlashCommandConfig
                 .builder()
                 .enabled(true)
+                .userInstallable(true)
+                .userCommandConfig(UserCommandConfig.all())
                 .rootCommandName(WebServicesSlashCommandNames.URBAN)
                 .commandName("search")
                 .build();

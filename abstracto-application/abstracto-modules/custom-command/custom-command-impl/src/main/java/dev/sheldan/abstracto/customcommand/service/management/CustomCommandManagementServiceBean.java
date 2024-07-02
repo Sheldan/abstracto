@@ -1,6 +1,7 @@
 package dev.sheldan.abstracto.customcommand.service.management;
 
 import dev.sheldan.abstracto.core.models.database.AServer;
+import dev.sheldan.abstracto.core.models.database.AUser;
 import dev.sheldan.abstracto.core.models.database.AUserInAServer;
 import dev.sheldan.abstracto.core.service.management.ServerManagementService;
 import dev.sheldan.abstracto.customcommand.model.database.CustomCommand;
@@ -27,6 +28,16 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
     }
 
     @Override
+    public Optional<CustomCommand> getUserCustomCommandByName(String name, AUser user) {
+        return repository.getByNameIgnoreCaseAndCreatorUser(name, user);
+    }
+
+    @Override
+    public Optional<CustomCommand> getUserCustomCommandByName(String name, Long userId) {
+        return repository.getByNameIgnoreCaseAndCreatorUser_IdAndUserSpecific(name, userId, true);
+    }
+
+    @Override
     public CustomCommand createCustomCommand(String name, String content, AUserInAServer creator) {
         CustomCommand customCommand = CustomCommand
                 .builder()
@@ -34,6 +45,20 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
                 .additionalMessage(content)
                 .server(creator.getServerReference())
                 .creator(creator)
+                .userSpecific(false)
+                .creatorUser(creator.getUserReference())
+                .build();
+        return repository.save(customCommand);
+    }
+
+    @Override
+    public CustomCommand createUserCustomCommand(String name, String content, AUser user) {
+        CustomCommand customCommand = CustomCommand
+                .builder()
+                .name(name)
+                .additionalMessage(content)
+                .creatorUser(user)
+                .userSpecific(true)
                 .build();
         return repository.save(customCommand);
     }
@@ -44,13 +69,28 @@ public class CustomCommandManagementServiceBean implements CustomCommandManageme
     }
 
     @Override
+    public void deleteCustomCommand(String name, AUser user) {
+        repository.deleteByNameAndCreatorUserAndUserSpecific(name, user, true);
+    }
+
+    @Override
     public List<CustomCommand> getCustomCommands(AServer server) {
         return repository.findByServer(server);
     }
 
     @Override
+    public List<CustomCommand> getUserCustomCommands(AUser aUser) {
+        return repository.findByCreatorUserAndUserSpecific(aUser, true);
+    }
+
+    @Override
     public List<CustomCommand> getCustomCommandsStartingWith(String prefix, AServer server) {
         return repository.findByNameStartsWithIgnoreCaseAndServer(prefix, server);
+    }
+
+    @Override
+    public List<CustomCommand> getUserCustomCommandsStartingWith(String prefix, AUser aUser) {
+        return repository.findByNameStartsWithIgnoreCaseAndCreatorUserAndUserSpecific(prefix, aUser, true);
     }
 
 }
